@@ -1,0 +1,18 @@
+module SDF-Folding
+
+imports
+  SDF-Folding.generated
+
+folding
+
+  context-free-syntax
+  
+  lexical-syntax
+  
+  kernel-syntax
+  
+  
+
+// This file can be used for custom folding rules.
+
+// See the imported file for a brief introduction and examples.

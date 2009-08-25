@@ -1,0 +1,11 @@
+module SDF-Syntax.generated
+
+language Syntax properties (static defaults)
+                  
+  line comment  : "//"
+  block comment : "/*" * "*/"
+  fences        : [  ]
+                  (  )
+                  {  }
+                  |[ ]|
+                  <? ?>

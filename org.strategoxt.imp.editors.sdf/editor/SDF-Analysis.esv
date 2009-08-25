@@ -1,0 +1,13 @@
+module SDF-Analysis
+
+imports
+  SDF-Analysis.generated
+
+analysis
+  
+
+
+
+// This file can be used for custom analysis rules.
+
+// See the imported file for a brief introduction and examples.

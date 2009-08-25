@@ -1,0 +1,55 @@
+module SDF-Folding.generated
+
+folding Default folding definitions
+  
+  // Folding rules indicate grammar productions to be foldable,
+  // and take one of the following forms, and :
+  //
+  //   - <sort>.<constructor>
+  //   - <sort>._,
+  //   - _.<constructor>
+  
+  Module.module
+  ModuleName.parameterized
+  ImpSection.imports
+  ListStarOfImport1
+  Import.renamed-module
+  Renamings.renamings
+  Renaming.symbol
+  Production.prod
+  Attributes.attrs
+  Attribute.term
+  ATermAttribute.default
+  Production.prefix-fun
+  ListStarOfSection1
+  Section.exports
+  Grammar.syntax
+  ListStarOfProduction1
+  Grammar.lexical-syntax
+  Grammar.context-free-syntax
+  Grammar.variables
+  Grammar.lexical-variables
+  Grammar.imp-section
+  Grammar.priorities
+  ListStarOfPriority1
+  Priority.chain
+  Group.with-arguments
+  ArgumentIndicator.default
+  Group.prods-group
+  Group.assoc-group
+  Priority.assoc
+  Grammar.sorts
+  Grammar.kernel-start-symbols
+  Grammar.lexical-start-symbols
+  Grammar.context-free-start-symbols
+  Grammar.restrictions
+  ListStarOfRestriction1
+  Restriction.follow
+  Grammar.aliases
+  ListStarOfAlias1
+  Alias.alias
+  Grammar.lexical-priorities
+  Grammar.context-free-priorities
+  Grammar.lexical-restrictions
+  Grammar.context-free-restrictions
+  Section.hiddens
