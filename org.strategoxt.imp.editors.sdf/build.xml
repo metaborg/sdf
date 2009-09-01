@@ -2,7 +2,7 @@
 
 <project name="SDF" default="standalone">
     
-        <!-- Project directories -->
+         <!-- Project directories -->
         <property name="trans" location="trans"/>
         <property name="syntax" location="syntax"/>
         <property name="editor" location="editor"/>
@@ -16,9 +16,12 @@
         <property name="strmodule" location="sdf"/>
 	    <available file="${trans}/${strmodule}.str" property="strmodule.present"/>
         
+        <!-- Pre-built .def location -->
+        <property name="externaldef" location="syntax/${sdfmodule}.def"/>
+        
         <!-- Environment configuration -->
         <property name="build.strategoxt" location="${user.home}/.nix-profile/bin"/>
-        <property name="build.strategoxt.sdf.imports" value=""/>
+        <property name="build.strategoxt.sdf.imports"  value=""/>
         <property name="build.strategoxt.strc.imports" value=""/>
         
         <!-- Default target for building within Eclipse -->
@@ -34,9 +37,10 @@
         
         <target name="sdf2imp-eclipse" depends="sdf2table">
             <!-- HACK: Trigger the Eclipse builder rather than build it here -->
+            <!-- (if we did built it here, we'd have to use the -p option to -->
+            <!--  specify the parse table, and put the table in another dir  -->
             <touch file="include/${esvmodule}.packed.esv"/>
             <eclipse.refreshLocal resource="include/${esvmodule}.packed.esv"/>
-        	<echo message="Refreshed include/${esvmodule}.packed.esv"/>
         </target>
         
         <target name="sdf2imp-standalone" depends="sdf2table">
@@ -44,7 +48,7 @@
         </target>
     
         <target name="sdf2table" depends="make-permissive">
-            <apply executable="${build.strategoxt}/sdf2table" dest="include" failonerror="true">
+            <apply executable="${build.strategoxt}/sdf2table" dest="${dist}" failonerror="true">
                 <arg value="-i"/>
                 <srcfile/>
                 <arg value="-o"/>
@@ -52,36 +56,30 @@
                 <arg value="-m"/>
                 <arg value="${sdfmodule}"/>
                 
-                <fileset file="${syntax}/${sdfmodule}-Permissive.gendef"/>
-                <mapper type="glob" from="*-Permissive.gendef" to="*.tbl"/>
+                <fileset file="include/${sdfmodule}-Permissive.def"/>
+                <mapper type="glob" from="*-Permissive.def" to="*.tbl"/>
             </apply>
         </target>
         
-        <target name="make-permissive" depends="pack-sdf">
+        <target name="make-permissive" depends="pack-sdf,copy-sdf">
             <dependset>
-                <srcfileset file="${build}/${sdfmodule}.def"/>
-                <targetfileset file="${syntax}/${sdfmodule}-Permissive.gendef"/>
+                <srcfileset    file="include/${sdfmodule}.def"/>
+                <targetfileset file="include/${sdfmodule}-Permissive.def"/>
             </dependset>
             <java classname="org.strategoxt.permissivegrammars.make_permissive" classpath="aux/make_permissive.jar:aux/strategoxt.jar" failonerror="true">
                 <arg value="-i"/>
-                <arg value="${build}/${sdfmodule}.def"/>
+                <arg value="${basedir}/include/${sdfmodule}.def"/>
                 <arg value="-o"/>
-            	<arg value="${syntax}/${sdfmodule}-Permissive.gendef"/>
+            	<arg value="${basedir}/include/${sdfmodule}-Permissive.def"/>
             </java>
         </target>
-
-        <target name="pack-sdf" depends="init">
-            <available property="source-sdf-exists" resource="${syntax}/${sdfmodule}.sdf"/>
-        	<antcall target="pack-sdf.real"/>
-        	<antcall target="pack-sdf.copy"/>
-        </target>
     
-        <target name="pack-sdf.real" depends="init" if="source-sdf-exists">
+        <target name="pack-sdf" depends="init" unless="externaldef">
             <dependset>
                 <srcfilelist dir="${syntax}" files="**/*.sdf"/>
                 <targetfileset file="${syntax}/${sdfmodule}.def"/>
             </dependset>
-            <apply executable="${build.strategoxt}/pack-sdf" dest="${build}" failonerror="true">
+            <apply executable="${build.strategoxt}/pack-sdf" failonerror="true" dest="include">
                 <arg value="-i"/>
                 <srcfile/>
                 <arg value="-o"/>
@@ -97,8 +95,8 @@
             </apply>
         </target>
 	
-	    <target name="pack-sdf.copy" depends="init" unless="source-sdf-exists">
-            <copy file="${syntax}/${sdfmodule}.def" todir="${build}"/>
+	    <target name="copy-sdf" depends="init" if="externaldef">
+            <copy file="${externaldef}" todir="include"/>
         </target>
     
         <target name="rtg2sig" depends="init,sdf2rtg">
@@ -118,7 +116,7 @@
                 <arg value="-i"/>
                 <srcfile/>
                 <arg value="-m"/>
-                <arg value="${sdfmodule}"/>
+            	<arg value="${sdfmodule}"/>
                 <arg value="-o"/>
                 <targetfile/>
                 
@@ -153,9 +151,9 @@
         
         <target name="strc-call" depends="init,rtg2sig">
             <dependset>
-                <srcfilelist dir="${trans}" files="**/*.str"/> <!-- */-->
-                <srcfilelist dir="${build}" files="**/*.str"/> <!-- */-->
-                <targetfileset dir="${dist}" includes="**/*"/> <!-- */-->
+                <srcfilelist dir="${trans}" files="**/*.str"/>
+                <srcfilelist dir="${build}" files="**/*.str"/>
+                <targetfileset dir="${dist}" includes="**/*"/>
             </dependset>
             <apply executable="${build.strategoxt}/{strcExecutable}" dest="${dist}" failonerror="true">
                 <arg value=".str"/>
@@ -194,10 +192,10 @@
             <!-- Remove any intermediate files -->
             <delete>
                 <fileset dir="${dist}">
-                    <include name="**/*.c"/>   <!-- */ -->
-                    <include name="**/*.dep"/> <!-- */ -->
-                    <include name="**/*.lo"/>  <!-- */ -->
-                    <include name="**/*.o"/>   <!-- */ -->
+                    <include name="**/*.c"/>
+                    <include name="**/*.dep"/>
+                    <include name="**/*.lo"/>
+                    <include name="**/*.o"/>
                 </fileset>
             </delete>
         </target>
