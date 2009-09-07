@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project name="SDF" default="standalone">
+<project name="SDF" default="all">
     
-         <!-- Project directories -->
+        <!-- Project directories -->
         <property name="trans" location="trans"/>
         <property name="syntax" location="syntax"/>
         <property name="editor" location="editor"/>
@@ -14,41 +14,43 @@
         <property name="sdfmodule" value="SDF"/>
         <property name="esvmodule" value="SDF"/>
         <property name="strmodule" location="sdf"/>
-	    <available file="${trans}/${strmodule}.str" property="strmodule.present"/>
+        <available file="${trans}/${strmodule}.str" property="strmodule.present"/>
         
-        <!-- Pre-built .def location -->
+        <!-- External .def location (optional)
         <property name="externaldef" location="syntax/${sdfmodule}.def"/>
+        -->
         
         <!-- Environment configuration -->
         <property name="build.strategoxt" location="${user.home}/.nix-profile/bin"/>
-        <property name="build.strategoxt.sdf.imports"  value=""/>
+        <property name="build.strategoxt.sdf.imports" value=""/>
         <property name="build.strategoxt.strc.imports" value=""/>
         
-        <!-- Default target for building within Eclipse -->
-        <target name="from-eclipse" depends="strc,sdf2table,sdf2imp-eclipse"/>
-        
-        <!-- Default target for building outside of Eclipse -->
-        <target name="standalone" depends="strc,sdf2table,sdf2imp-standalone"/>
+        <target name="all" depends="strc,sdf2table,sdf2imp.eclipse,sdf2imp.standalone"/>
         
         <target name="init">
             <mkdir dir="${build}"/>
             <mkdir dir="${dist}"/>
         </target>
         
-        <target name="sdf2imp-eclipse" depends="sdf2table">
+        <target name="sdf2imp.eclipse" depends="sdf2table" if="eclipse.running">
             <!-- HACK: Trigger the Eclipse builder rather than build it here -->
-            <!-- (if we did built it here, we'd have to use the -p option to -->
-            <!--  specify the parse table, and put the table in another dir  -->
+            <!-- (if we did do this here, we'd have to use the -p option to -->
+            <!--  specify the parse table, and put the table in another dir) -->
             <touch file="include/${esvmodule}.packed.esv"/>
             <eclipse.refreshLocal resource="include/${esvmodule}.packed.esv"/>
         </target>
         
-        <target name="sdf2imp-standalone" depends="sdf2table">
-            <echo message="Only building from within Eclipse is implemented at this time"/>
+        <target name="sdf2imp.standalone" depends="sdf2table,aux-files" unless="eclipse.running">
+            <java classname="org.strategoxt.imp.generator.sdf2imp" classpath="aux/sdf2imp.jar:aux/strategoxt.jar" failonerror="true">
+                <arg value="-i"/>
+                <arg value="${basedir}/editor/${esvmodule}.main.esv"/>
+                <arg value="-p"/>
+                <arg value="${basedir}/include/${sdfmodule}.tbl"/>
+            </java>
         </target>
     
         <target name="sdf2table" depends="make-permissive">
-            <apply executable="${build.strategoxt}/sdf2table" dest="${dist}" failonerror="true">
+            <apply executable="${build.strategoxt}/sdf2table" dest="include" failonerror="true">
                 <arg value="-i"/>
                 <srcfile/>
                 <arg value="-o"/>
@@ -63,15 +65,28 @@
         
         <target name="make-permissive" depends="pack-sdf,copy-sdf">
             <dependset>
-                <srcfileset    file="include/${sdfmodule}.def"/>
+                <srcfileset file="include/${sdfmodule}.def"/>
                 <targetfileset file="include/${sdfmodule}-Permissive.def"/>
             </dependset>
+            <available file="include/${sdfmodule}-Permissive.def" property="permissive-grammar.available"/>
+            <antcall target="make-permissive.real"/>
+        </target>
+    
+        <target name="make-permissive.real" unless="permissive-grammar.available" depends="aux-files">
             <java classname="org.strategoxt.permissivegrammars.make_permissive" classpath="aux/make_permissive.jar:aux/strategoxt.jar" failonerror="true">
                 <arg value="-i"/>
                 <arg value="${basedir}/include/${sdfmodule}.def"/>
                 <arg value="-o"/>
-            	<arg value="${basedir}/include/${sdfmodule}-Permissive.def"/>
+                <arg value="${basedir}/include/${sdfmodule}-Permissive.def"/>
             </java>
+        </target>
+
+        <target name="aux-files">
+            <property name="site" value="http://www.st.ewi.tudelft.nl/~kats/strategoxt/18a"/>
+            <mkdir dir="aux"/>
+            <get src="${site}/strategoxt.jar" dest="aux/strategoxt.jar" usetimestamp="true" ignoreerrors="true"/>
+            <get src="${site}/make_permissive.jar" dest="aux/make_permissive.jar" usetimestamp="true" ignoreerrors="true"/>
+            <get src="${site}/sdf2imp.jar" dest="aux/sdf2imp.jar" usetimestamp="true" ignoreerrors="true"/>
         </target>
     
         <target name="pack-sdf" depends="init" unless="externaldef">
@@ -94,12 +109,12 @@
                 <mapper type="glob" from="*.sdf" to="*.def"/>
             </apply>
         </target>
-	
-	    <target name="copy-sdf" depends="init" if="externaldef">
+    
+        <target name="copy-sdf" depends="init" if="externaldef">
             <copy file="${externaldef}" todir="include"/>
         </target>
     
-        <target name="rtg2sig" depends="init,sdf2rtg">
+        <target name="rtg2sig" depends="init,sdf2rtg" if="strmodule.present" unless="external-def">
             <apply executable="${build.strategoxt}/rtg2sig" dest="${build}" failonerror="true">
                 <arg value="-i"/>
                 <srcfile/>
@@ -111,12 +126,12 @@
             </apply>
         </target>
         
-        <target name="sdf2rtg" depends="init,pack-sdf">
+        <target name="sdf2rtg" depends="init,pack-sdf" if="strmodule.present" unless="external-def">
             <apply executable="${build.strategoxt}/sdf2rtg" dest="${build}" failonerror="true">
                 <arg value="-i"/>
                 <srcfile/>
                 <arg value="-m"/>
-            	<arg value="${sdfmodule}"/>
+                <arg value="${sdfmodule}"/>
                 <arg value="-o"/>
                 <targetfile/>
                 
@@ -155,7 +170,7 @@
                 <srcfilelist dir="${build}" files="**/*.str"/>
                 <targetfileset dir="${dist}" includes="**/*"/>
             </dependset>
-            <apply executable="${build.strategoxt}/{strcExecutable}" dest="${dist}" failonerror="true">
+            <apply executable="${build.strategoxt}/{strcExecutable}" dest="include" failonerror="true">
                 <arg value=".str"/>
                 <arg value="-i"/>
                 <srcfile/>
