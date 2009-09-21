@@ -37,9 +37,9 @@ public class SDFParseController extends DynamicParseController
       InputStream descriptorStream = SDFParseController.class.getResourceAsStream(DESCRIPTOR);
       InputStream table = SDFParseController.class.getResourceAsStream(TABLE);
       if(descriptorStream == null)
-        throw new BadDescriptorException("Could not load descriptor file from " + DESCRIPTOR + " (not found in plugin)");
+        throw new BadDescriptorException("Could not load descriptor file from " + DESCRIPTOR + " (not found in plugin: " + getPluginLocation() + ")");
       if(table == null)
-        throw new BadDescriptorException("Could not load parse table from " + TABLE + " (not found in plugin)");
+        throw new BadDescriptorException("Could not load parse table from " + TABLE + " (not found in plugin: " + getPluginLocation() + ")");
       descriptor = DescriptorFactory.load(descriptorStream, table, null);
       descriptor.setAttachmentProvider(SDFParseController.class);
     }
@@ -55,6 +55,11 @@ public class SDFParseController extends DynamicParseController
       Environment.logException("I/O problem loading descriptor for " + LANGUAGE + " plugin", exc);
       throw new RuntimeException("I/O problem loading descriptor for " + LANGUAGE + " plugin", exc);
     }
+  }
+
+  private static String getPluginLocation()
+  { 
+    return SDFParseController.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   }
 
   @Override public IParseController getWrapped()
