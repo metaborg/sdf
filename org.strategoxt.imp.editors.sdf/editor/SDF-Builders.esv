@@ -1,7 +1,7 @@
-module SDF-Analysis
+module SDF-Builders
 
 imports
-  SDF-Analysis.generated
+  SDF-Builders.generated
 
 analysis
   
