@@ -1,0 +1,53 @@
+module sdf
+
+imports
+  libstratego-lib
+  libstratego-sdf
+  libstrc
+
+signature constructors
+
+  context-free-syntax : Term -> Term
+
+rules
+
+  generate-pp-rules:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      filename  := <guarantee-extension(|"pp")> path;
+      selected' := <add-context; sdf-desugar> (selected, ast, project-path);
+      result    := <ppgenerate; pp-pp-table> selected'
+    <+
+      fatal-err(|"Could not generate pretty printer rules for this selection.\n Only productions with {cons()} attributes are supported.")
+  
+  generate-rtg:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      filename  := <guarantee-extension(|"pp")> path;
+      selected' := <add-context; sdf-desugar> (selected, ast, project-path);
+      result    := <core-rtg2sig; pp-stratego-string> selected'
+    <+
+      fatal-err(|"Could not generate abstract syntax signatures for this selection.\n Only productions with {cons()} attributes are supported.")
+  
+  add-context =
+    if not(oncetd(?context-free-syntax(_))) then
+      if is-list then
+        !context-free-syntax(<id>)
+      else
+        !context-free-syntax([<id>])
+      end
+    end
+
+rules // External tools not included in the standard libraries
+
+  ppgenerate =
+    <call> ("org.strategoxt.tools.ppgenerate", [<id>])
+
+  core-rtg2sig =
+    <call> ("org.strategoxt.tools.core-rtg2sig", [<id>])
+
+  pp-pp-table =
+    <call> ("org.strategoxt.tools.pp-pp-table", [<id>])
+  
+  sdf-desugar =
+    <call> ("org.strategoxt.tools.sdf-desugar", [<id>])
