@@ -8,6 +8,28 @@ imports
 signature constructors
 
   context-free-syntax : Term -> Term
+  sort                : Term -> Term
+  term                : Term -> Term
+  cons                : Term -> Term
+  iter-star           : Term -> Term
+  iter-plus           : Term -> Term
+  iter-star-sep       : Term * Term -> Term
+  iter-plus-sep       : Term * Term -> Term
+  prod                : Term * Term * Term -> Term
+  
+
+rules
+
+  editor-analyze:
+    (ast, path, project-path) -> (errors, [], [])
+    with
+      errors := <alltd(context-free-syntax(collect-all(context-free-syntax-error)))> ast
+  
+  context-free-syntax-error:
+    prod(s*, s, a*) -> (s, "Production should contain a {cons(\"Label\")} attribute used as a label in the abstract syntax")
+    where
+      <collect(?sort(_) + ?iter-star(_) + ?iter-plus(_) + ?iter-star-sep(_, _) + ?iter-plus-sep(_, _))> s;
+      <not(one(?term(cons(_))))> a*
 
 rules
 
