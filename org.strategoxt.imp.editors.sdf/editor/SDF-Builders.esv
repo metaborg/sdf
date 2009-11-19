@@ -6,6 +6,8 @@ imports
 builders
   
   provider : include/sdf.ctree
+  
+  observer : editor-analyze
 
   builder : "Show pretty printer rules (for selection)" =
     generate-pp-rules (realtime) (openeditor)

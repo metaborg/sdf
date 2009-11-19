@@ -23,7 +23,8 @@ rules
   editor-analyze:
     (ast, path, project-path) -> (errors, [], [])
     with
-      errors := <alltd(context-free-syntax(collect-all(context-free-syntax-error)))> ast
+      errors := [] // TODO
+      // errors := <alltd(context-free-syntax(collect-all(context-free-syntax-error)))> ast
   
   context-free-syntax-error:
     prod(s*, s, a*) -> (s, "Production should contain a {cons(\"Label\")} attribute used as a label in the abstract syntax")
