@@ -6,6 +6,8 @@
         <property name="sdfmodule" value="SDF"/>
         <property name="esvmodule" value="SDF"/>
         <property name="strmodule" value="sdf"/>
+        
+        <!-- Standard build file without ppgen dependency follows -->
     
         <!-- Project directories -->
         <property name="trans" location="trans"/>
@@ -116,8 +118,8 @@
         <target name="utils-files">
             <mkdir dir="utils"/>
             <copy file="${eclipse.spoofaximp.jars}/make_permissive.jar" todir="utils"/>
-            <copy file="${eclipse.spoofaximp.jars}/sdf2imp.jar" todir="utils"/>
-            <copy file="${eclipse.spoofaximp.strategojar}" todir="utils"/>
+            <copy file="${eclipse.spoofaximp.jars}/sdf2imp.jar"         todir="utils"/>
+            <copy file="${eclipse.spoofaximp.strategojar}"              todir="utils"/>
         </target>
     
         <target name="pack-sdf" unless="externaldef">
@@ -223,7 +225,7 @@
         </target>
     
         <!-- Stratego to Java interpreter -->
-        <target name="stratego.ctree" depends="rtg2sig,ppgen">
+        <target name="stratego.ctree" depends="rtg2sig">
             <dependset>
                 <srcfileset dir="${basedir}">
                     <include name="**/*.str"/>
@@ -241,7 +243,7 @@
         </target>
     
         <!-- Stratego to Java compiler -->
-        <target name="stratego.jar" depends="rtg2sig,ppgen">
+        <target name="stratego.jar" depends="rtg2sig">
             <dependset>
                 <srcfileset dir="${basedir}">
                     <include name="**/*.str"/>
@@ -288,7 +290,7 @@
         </target>
         
         <!-- Helper target for calling the stratego compiler -->
-        <target name="stratego.c.helper" depends="rtg2sig,ppgen" if="build.stratego.enabled">
+        <target name="stratego.c.helper" depends="rtg2sig" if="build.stratego.enabled">
             <apply executable="${build.strategoxt.stratego}/${build.stratego.compiler}" dest="${build.stratego.outputpath}" failonerror="true">
                 <arg value="-i"/>
                 <srcfile/>

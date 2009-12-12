@@ -8,6 +8,9 @@ builders
   provider : include/sdf.ctree
   
   observer : editor-analyze
+  
+  // builder : "Show current term (for selection)" =
+  //   generate-ast (realtime) (openeditor)
 
   builder : "Show pretty printer rules (for selection)" =
     generate-pp-rules (realtime) (openeditor)

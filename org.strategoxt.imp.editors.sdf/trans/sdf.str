@@ -10,9 +10,12 @@ signature constructors
   context-free-syntax : Term -> Term
   sort                : Term -> Term
   term                : Term -> Term
-  cons                : Term -> Term
+  default             : Term -> Term
   iter-star           : Term -> Term
   iter-plus           : Term -> Term
+  unquoted            : Term -> Term
+  attrs               : Term -> Term
+  appl                : Term * Term -> Term
   iter-star-sep       : Term * Term -> Term
   iter-plus-sep       : Term * Term -> Term
   prod                : Term * Term * Term -> Term
@@ -21,15 +24,16 @@ signature constructors
 rules
 
   editor-analyze:
-    (ast, path, project-path) -> (errors, [], [])
+    (ast, path, project-path) -> ([], warnings, [])
     with
-      errors := [] // TODO
-      // errors := <alltd(context-free-syntax(collect-all(context-free-syntax-error)))> ast
+      warnings := <collect(?context-free-syntax(<filter(context-free-syntax-warning)>))> ast
   
   context-free-syntax-warning:
-    prod(s*, s, a*) -> (s, "Production should contain a {cons(\"Label\")} attribute for the abstract syntax or a {bracket} attribute")
+    prod(p, s, attrs(a*)) -> (<id>, $[Production should contain a {cons("Label")} attribute to label the abstract syntax])
     where
-      not(!s* => [sort(x)])
+      not(<collect(?sort(_))> p => [_])
+    ; not(<one(?term(default(appl(unquoted("cons"), [_]))))> a*)
+    ; not(<one(?term(default(appl(unquoted("bracket"), []))))> a*)
 
 rules
 
@@ -40,7 +44,8 @@ rules
       selected' := <add-context; sdf-desugar> (selected, ast, project-path);
       result    := <ppgenerate; pp-pp-table> selected'
     <+
-      fatal-err(|"Could not generate pretty printer rules for this selection.\n Only productions with {cons()} attributes are supported.")
+      fatal-err(|$[Could not generate pretty printer rules for this selection.
+                   Only productions with {cons()} attributes are supported.])
   
   generate-rtg:
     (selected, position, ast, path, project-path) -> (filename, result)
