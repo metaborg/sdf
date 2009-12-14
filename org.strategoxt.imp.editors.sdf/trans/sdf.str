@@ -7,6 +7,7 @@ imports
 
 signature constructors
 
+  reject              : Term
   context-free-syntax : Term -> Term
   sort                : Term -> Term
   term                : Term -> Term
@@ -23,17 +24,27 @@ signature constructors
 
 rules
 
+  // TODO: Report actual SDF errors
+  // TODO: Warn for A ( "," A )* instead of { A "," }*  
+
   editor-analyze:
     (ast, path, project-path) -> ([], warnings, [])
     with
       warnings := <collect(?context-free-syntax(<filter(context-free-syntax-warning)>))> ast
   
   context-free-syntax-warning:
-    prod(p, s, attrs(a*)) -> (<id>, $[Production should contain a {cons("Label")} attribute to label the abstract syntax])
+    prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
       not(<collect(?sort(_))> p => [_])
-    ; not(<one(?term(default(appl(unquoted("cons"), [_]))))> a*)
-    ; not(<one(?term(default(appl(unquoted("bracket"), []))))> a*)
+    ; if !a* => attrs(a'*) then
+        not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*)
+      ; not(<one(term(default(appl(unquoted("bracket" + "reject"), []))))> a'*)
+      ; not(<one(reject())> a'*)
+      ; not(!s => sort("Keyword")) 
+      ; target := a*
+      else
+        target := s
+      end
 
 rules
 
