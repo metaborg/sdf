@@ -10,7 +10,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/SDF build.xml.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/SDF build.main.xml.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
