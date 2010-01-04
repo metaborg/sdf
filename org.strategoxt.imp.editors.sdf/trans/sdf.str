@@ -52,7 +52,7 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     where
       filename  := <guarantee-extension(|"pp")> path;
-      selected' := <add-context; sdf-desugar> (selected, ast, project-path);
+      selected' := <add-context; sdf-desugar> selected;
       result    := <ppgenerate; pp-pp-table> selected'
     <+
       fatal-err(|$[Could not generate pretty printer rules for this selection.
@@ -61,11 +61,12 @@ rules
   generate-rtg:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      filename  := <guarantee-extension(|"pp")> path;
-      selected' := <add-context; sdf-desugar> (selected, ast, project-path);
+      filename  := <guarantee-extension(|"rtg")> path;
+      selected' := <add-context; sdf-desugar> selected;
       result    := <core-rtg2sig; pp-stratego-string> selected'
     <+
-      fatal-err(|"Could not generate abstract syntax signatures for this selection.\n Only productions with {cons()} attributes are supported.")
+      fatal-err(|$[Could not generate abstract syntax signatures for this selection.
+                   Only productions with {cons()} attributes are supported.])
   
   add-context =
     if not(oncetd(?context-free-syntax(_))) then
