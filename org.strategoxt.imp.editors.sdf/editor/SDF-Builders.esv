@@ -17,3 +17,6 @@ builders
 
   builder : "Show abstract syntax signature (for selection)" =
     generate-rtg (realtime) (openeditor)
+
+  builder : "Show abstract syntax (for selection)" =
+    generate-aterm (realtime) (openeditor) (meta)

@@ -68,6 +68,11 @@ rules
       fatal-err(|$[Could not generate abstract syntax signatures for this selection.
                    Only productions with {cons()} attributes are supported.])
   
+  generate-aterm:
+    (selected, position, ast, path, project-path) -> (filename, selected)
+    where
+      filename  := <guarantee-extension(|"aterm")> path
+  
   add-context =
     if not(oncetd(?context-free-syntax(_))) then
       if is-list then
