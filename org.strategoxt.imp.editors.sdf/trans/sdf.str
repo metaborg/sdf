@@ -3,24 +3,8 @@ module sdf
 imports
   libstratego-lib
   libstratego-sdf
+  libstratego-sglr
   libstrc
-
-signature constructors
-
-  reject              : Term
-  context-free-syntax : Term -> Term
-  sort                : Term -> Term
-  term                : Term -> Term
-  default             : Term -> Term
-  iter-star           : Term -> Term
-  iter-plus           : Term -> Term
-  unquoted            : Term -> Term
-  attrs               : Term -> Term
-  appl                : Term * Term -> Term
-  iter-star-sep       : Term * Term -> Term
-  iter-plus-sep       : Term * Term -> Term
-  prod                : Term * Term * Term -> Term
-  
 
 rules
 
