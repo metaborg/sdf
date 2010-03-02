@@ -24,7 +24,7 @@ rules
         not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*)
       ; not(<one(term(default(appl(unquoted("bracket" + "reject"), []))))> a'*)
       ; not(<one(reject())> a'*)
-      ; not(!s => sort("Keyword")) 
+      ; not(!s; (sort("Keyword") + sort("\"Keyword\""))) 
       ; target := a*
       else
         target := s

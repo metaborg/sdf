@@ -5,9 +5,16 @@ imports
 
 language
   
-
-
-
-// This file can be used for custom syntax rules.
-
-// See the imported file for a brief introduction and examples.
+  indent after:
+    imports
+    exports
+    syntax
+    sorts
+    restrictions
+    priorities
+  	
+  fences : ( ) { }
+  
+  line comment: "%%"
+  
+  block comment: % % %

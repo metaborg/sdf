@@ -7,6 +7,7 @@ imports
   SDF-Outliner
   SDF-References
   SDF-Syntax
+  SDF-Completions
 
 language General properties
                   

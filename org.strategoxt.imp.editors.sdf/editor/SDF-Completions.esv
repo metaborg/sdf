@@ -1,0 +1,56 @@
+module SDF-Completions
+
+imports SDF-Completions.generated
+
+completions
+
+  completion template:
+  	"context-free syntax" "\n\t"
+
+  completion template:
+  	"lexical syntax" "\n\t"
+
+  completion template:
+  	"syntax" "\n\t"
+
+  completion template:
+  	"imports" "\n\t"
+
+  completion template:
+  	"exports" "\n\t"
+
+  completion template:
+  	"context-free restrictions" "\n\t"
+
+  completion template:
+  	"lexical restrictions" "\n\t"
+
+  completion template:
+  	"restrictions" "\n\t"
+
+  completion template:
+  	"context-free start-symbols" "\n\t" "Start"
+
+  completion template:
+  	"lexical start-symbols" "\n\t" "Start"
+
+  completion template:
+  	"start-symbols" "\n\t" "Start"
+
+  completion template:
+  	"sorts" "\n\t"
+
+  completion template:
+  	"variables" "\n\t"
+
+  completion template:
+  	"aliases" "\n\t"
+
+  completion template:
+  	"priorities" "\n\t"
+
+  completion template:
+  	"module" "x\n\t\nexports\n\t"
+
+  completion template:
+  	"lexical variables" "\n\t"
