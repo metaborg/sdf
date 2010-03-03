@@ -5,52 +5,52 @@ imports SDF-Completions.generated
 completions
 
   completion template:
-  	"context-free syntax" "\n\t"
+  	"context-free syntax" "\n\t" (blank)
 
   completion template:
-  	"lexical syntax" "\n\t"
+  	"lexical syntax" "\n\t" (blank)
 
   completion template:
-  	"syntax" "\n\t"
+  	"syntax" "\n\t" (blank)
 
   completion template:
-  	"imports" "\n\t"
+  	"imports" "\n\t" (blank)
 
   completion template:
-  	"exports" "\n\t"
+  	"exports" "\n\t" (blank)
 
   completion template:
-  	"context-free restrictions" "\n\t"
+  	"context-free restrictions" "\n\t" (blank)
 
   completion template:
-  	"lexical restrictions" "\n\t"
+  	"lexical restrictions" "\n\t" (blank)
 
   completion template:
-  	"restrictions" "\n\t"
+  	"restrictions" "\n\t" (blank)
 
   completion template:
-  	"context-free start-symbols" "\n\t" "Start"
+  	"context-free start-symbols" "\n\t" <Start> (blank)
 
   completion template:
-  	"lexical start-symbols" "\n\t" "Start"
+  	"lexical start-symbols" "\n\t" <Start> (blank)
 
   completion template:
-  	"start-symbols" "\n\t" "Start"
+  	"start-symbols" "\n\t" <Start> (blank)
 
   completion template:
-  	"sorts" "\n\t"
+  	"sorts" "\n\t" (blank)
 
   completion template:
-  	"variables" "\n\t"
+  	"variables" "\n\t" (blank)
 
   completion template:
-  	"aliases" "\n\t"
+  	"aliases" "\n\t" (blank)
 
   completion template:
-  	"priorities" "\n\t"
+  	"priorities" "\n\t" (blank)
 
   completion template:
-  	"module" "x\n\t\nexports\n\t"
+  	"module" <x> "\n\t\nexports\n\t" (blank)
 
   completion template:
-  	"lexical variables" "\n\t"
+  	"lexical variables" "\n\t" (blank)
