@@ -4,6 +4,9 @@ imports SDF-Completions.generated
 
 completions
 
+  completion proposer:
+    editor-complete
+
   completion template:
   	"context-free syntax" "\n\t" (blank)
 

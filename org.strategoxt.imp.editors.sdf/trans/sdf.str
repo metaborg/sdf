@@ -5,6 +5,7 @@ imports
   libstratego-sdf
   libstratego-sglr
   libstrc
+  analysis
 
 rules
 
@@ -14,7 +15,20 @@ rules
   editor-analyze:
     (ast, path, project-path) -> ([], warnings, [])
     with
+      analyze-ast;
       warnings := <collect(?context-free-syntax(<filter(context-free-syntax-warning)>))> ast
+
+  editor-complete:
+    (node, position, ast, path, project-path) -> proposals
+    where
+      proposals := <propose-completion> node
+ 
+  editor-resolve:
+    (sort(x), position, ast, path, project-path) -> target
+    where
+      target := <Declaration> x
+
+rules
   
   context-free-syntax-warning:
     prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])

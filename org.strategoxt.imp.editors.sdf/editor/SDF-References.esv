@@ -5,7 +5,7 @@ imports
 
 references
   
-
+  reference _ : editor-resolve
 
 
 // This file can be used for custom reference resolving rules.
