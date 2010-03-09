@@ -1,7 +1,5 @@
 module SDF-Completions
 
-imports SDF-Completions.generated
-
 completions
 
   completion proposer:
@@ -21,6 +19,9 @@ completions
 
   completion template:
   	"exports" "\n\t" (blank)
+
+  completion template:
+    "hiddens" "\n\t" (blank)
 
   completion template:
   	"context-free restrictions" "\n\t" (blank)
@@ -53,7 +54,67 @@ completions
   	"priorities" "\n\t" (blank)
 
   completion template:
-  	"module" <x> "\n\t\nexports\n\t" (blank)
+  	"module" " " <x> "\n\t\nexports\n\t" (blank)
 
   completion template:
   	"lexical variables" "\n\t" (blank)
+
+  completion template:
+    "{cons" "(\"" <x> "\")"
+
+  completion template:
+    "{deprecated" "(\"" <explanation> "\")"
+
+  completion keyword:
+    "{reject"
+
+  completion keyword:
+    "{left"
+
+  completion keyword:
+    "{right"
+
+  completion keyword:
+    "{non-assoc"
+
+  completion keyword:
+    "{avoid"
+
+  completion keyword:
+    "{prefer"
+
+  completion keyword:
+    "{bracket"
+
+  completion keyword:
+    "{recover"
+
+  completion template:
+    ", cons" "(\"" <x> "\")"
+
+  completion template:
+    ", deprecated" "(\"" <explanation> "\")"
+
+  completion keyword:
+    ", reject"
+
+  completion keyword:
+    ", left"
+
+  completion keyword:
+    ", right"
+
+  completion keyword:
+    ", non-assoc"
+
+  completion keyword:
+    ", avoid"
+
+  completion keyword:
+    ", prefer"
+
+  completion keyword:
+    ", bracket"
+
+  completion keyword:
+    ", recover"

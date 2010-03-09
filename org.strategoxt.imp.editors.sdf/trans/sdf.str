@@ -21,7 +21,7 @@ rules
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-      proposals := <propose-completion> node
+      proposals := <propose-completion <+ ![]> node
  
   editor-resolve:
     (sort(x), position, ast, path, project-path) -> target
