@@ -1,0 +1,69 @@
+module analysis
+
+imports
+  libstratego-lib
+  libstratego-sdf
+  libstratego-sglr
+  lib/editor-common.generated
+
+strategies
+
+  analyze-ast:
+    (ast, path, project-path) -> ast'
+    with
+      current-file := $[[project-path]/[path]];
+      rules(
+        CurrentDir  := <dirname> $[[project-path]/[path]]
+        CurrentFile := <base-filename> path
+        IsImported  :  current-file
+        ProjectDir  := project-path
+      )
+    with
+      // TODO: sdf-desugar?
+      ast' := <declare-globals-top> ast
+  
+rules
+
+  declare-globals-top =
+    alltd(declare-globals)
+
+  declare-globals:
+    unparameterized(x) -> unparameterized(x)
+    where
+      <open-import(
+        resolve-import
+      , parse-file
+      , declare-globals-top
+      )> x
+
+  declare-globals:
+    parameterized(x, y) -> parameterized(x, y)
+    where
+      <declare-globals> unparameterized(x)
+  
+  resolve-import =
+    // TODO: better import handling
+    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/syntax/[x].sdf]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
+  
+  declare-globals:
+    prod @ prod(_, sort, _) -> <id>
+    where
+      !sort => sort(x) <+ !sort => parametrized-sort(x, _)
+    with
+      <Declaration> x
+    <+
+      file := <CurrentFile>;
+      rules(
+        Declaration: x -> prod
+        DeclarationFile: x -> file
+      )
+  
+  propose-completion:
+    sort(COMPLETION(x)) -> <all-keys-Declaration> x
+  
+  propose-completion:
+    NOCONTEXT(COMPLETION(x)) -> <all-keys-Declaration> x
