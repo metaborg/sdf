@@ -5,7 +5,7 @@ imports
 
 builders
   
-  provider : include/sdf.ctree
+  provider : include/sdf.jar
   
   observer : editor-analyze
   

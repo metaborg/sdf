@@ -31,9 +31,9 @@ rules
     unparameterized(x) -> unparameterized(x)
     where
       <open-import(
-        resolve-import
-      , parse-file
-      , declare-globals-top
+        debug(!1); resolve-import; debug(!2)
+      , debug(!3); parse-file; debug(!4)
+      , debug(!5); declare-globals-top
       )> x
 
   declare-globals:

@@ -15,6 +15,10 @@ rules
   editor-analyze:
     (ast, path, project-path) -> ([], warnings, [])
     with
+      // Ensure all dynamic rules are properly scoped
+      try(dr-scope-all-end);
+      dr-scope-all-start
+    with
       analyze-ast;
       warnings := <collect(?context-free-syntax(<filter(context-free-syntax-warning)>))> ast
 
