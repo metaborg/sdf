@@ -51,6 +51,7 @@
                 <targetfile/>
                 <arg value="-m"/>
                 <arg value="${sdfmodule}"/>
+                <arg value="-t"/>
                 
                 <fileset file="${include}/${sdfmodule}-Permissive.def"/>
                 <mapper type="glob" from="*-Permissive.def" to="*.tbl"/>
