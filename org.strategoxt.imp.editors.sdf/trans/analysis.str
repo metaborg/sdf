@@ -29,14 +29,12 @@ rules
 
   declare-globals:
     unparameterized(x) -> unparameterized(x)
-    /* DISABLED for now because of Spoofax/106 
     where
       <open-import(
         resolve-import
-      , parse-file
+      , parse-file // TODO: parse-sdf-file
       , declare-globals-top
       )> x
-    */
 
   declare-globals:
     parameterized(x, y) -> parameterized(x, y)

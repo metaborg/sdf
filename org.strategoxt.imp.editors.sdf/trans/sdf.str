@@ -47,6 +47,9 @@ rules
       else
         target := s
       end
+   
+  context-free-syntax-warning:
+    alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
 
 rules
 

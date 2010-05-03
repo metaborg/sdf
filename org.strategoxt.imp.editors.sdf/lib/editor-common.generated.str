@@ -3,26 +3,35 @@ module lib/editor-common.generated
 imports
   libstratego-lib
   libstratego-sglr
+  libstratego-gpp
 
 strategies
 
-  parse-file =
+  parse-file = parse-sdf-file
+  parse-sdf-file =
     parse-file(
       strsglr-perror, strsglr-report-parse-error
     | <import-term(include/SDF.tbl)>
     )
 
-  parse-string =
+  parse-string = parse-sdf-string
+  parse-sdf-string =
     parse-string(
       strsglr-report-parse-error
     | <import-term(include/SDF.tbl)>
     )
   
-  parse-stream =
+  parse-stream = parse-sdf-stream
+  parse-sdf-stream =
     parse-stream(
       strsglr-report-parse-error
     | <import-term(include/SDF.tbl)>
     )
+
+  pp-sdf-string =
+    ast2abox(|[<import-term(include/SDF.generated.pp.af)>,
+               <import-term(include/SDF.pp.af)>]);
+    box2text-string(|100)
 
 strategies
   
