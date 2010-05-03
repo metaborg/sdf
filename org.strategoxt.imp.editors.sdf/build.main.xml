@@ -20,7 +20,8 @@
         <property name="build.sdf.imports" value=""/>
         <property name="build.stratego.args" value="--library
                         -I &quot;${trans}&quot; -I &quot;${basedir}&quot;
-                        -la strc -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm"/>
+                        -la strc -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
+                        -la stratego-sdf"/>
         
         <property name="externaldef" location="syntax/SDF.def"/>
         <!-- External .def and .jar locations
