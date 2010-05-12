@@ -9,17 +9,17 @@ imports
 
 rules
 
-  // TODO: Report actual SDF errors
-  // TODO: Warn for A ( "," A )* instead of { A "," }*  
+  // TODO: Report proper SDF errors  
 
   editor-analyze:
-    (ast, path, project-path) -> ([], warnings, [])
+    (ast, path, project-path) -> (errors, warnings, [])
     with
       // Ensure all dynamic rules are properly scoped
       try(dr-scope-all-end);
       dr-scope-all-start
     with
       analyze-ast;
+      errors   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
       // We only collect-om since we don't want inner warning dupes
       warnings := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast
 
@@ -55,14 +55,21 @@ rules
     alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
 
   context-free-syntax-warning:
-    seq(_ ,_) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
+    seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
     where
       occurrences(sort(id)) => 1
 
   context-free-syntax-warning:
-    seq(_ ,_) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
+    seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
     where
       occurrences(sort(id)) => 1
+
+  // StrategoXT/817
+  context-free-syntax-error:
+    < ?iter-star(s) + ?iter(s) + ?iter-star-sep(s,_) + ?iter-sep(s,_)> ->
+    (s, $[At least one non-terminal expected])
+    where
+      occurrences(sort(id)) => 0
 
   context-free-syntax-warning:
     [sort(x), bad @ iter-star(seq(lit(sep), [sort(x)])) | _] ->
