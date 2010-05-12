@@ -57,22 +57,30 @@ rules
   context-free-syntax-warning:
     seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
     where
-      occurrences(sort(id)) => 1
+      occurrences(is-non-terminal) => 1
 
   context-free-syntax-warning:
     seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
     where
-      occurrences(sort(id)) => 1
+      occurrences(is-non-terminal) => 1
 
   // StrategoXT/817
   context-free-syntax-error:
-    < ?iter-star(s) + ?iter(s) + ?iter-star-sep(s,_) + ?iter-sep(s,_)> ->
+    <?iter-star(s) + ?iter(s) + ?iter-star-sep(s,_) + ?iter-sep(s,_)> ->
     (s, $[At least one non-terminal expected])
     where
-      occurrences(sort(id)) => 0
+      <occurrences(is-non-terminal)> s => 0
+  
+  /**
+   * Tests if something is a non-terminal in terms of the AST produced.
+   */
+  is-non-terminal =
+    ?sort(_) + ?opt(_) + ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
+  
+  // Instruct users to use { X "," }*
 
   context-free-syntax-warning:
-    [sort(x), bad @ iter-star(seq(lit(sep), [sort(x)])) | _] ->
+    [sort(x), iter-star(seq(lit(sep), [sort(x)])) | _] ->
     (<id>, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
 
   context-free-syntax-warning:
@@ -86,10 +94,24 @@ rules
   context-free-syntax-warning:
     [iter-star(seq(sort(x), [lit(sep)])), opt(sort(x)) | _] ->
     (<id>, $[Use {[x] [sep]}* instead for [sep]-separated lists])
+       
+  // Instruct users to use { X ","? }* (seen in MDSD 2010)
 
   context-free-syntax-warning:
-    [iter-star(seq(sort(x), [lit(sep)])), opt(sort(x)) | _] ->
-    (<id>, $[Use {[x] [sep]}* instead for [sep]-separated lists])
+    [sort(x), iter-star(seq(opt(lit(sep)), [sort(x)])) | _] ->
+    (<id>, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
+
+  context-free-syntax-warning:
+    [iter-star(seq(sort(x), [opt(lit(sep))])), sort(x) | _] ->
+    (<id>, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
+
+  context-free-syntax-warning:
+    [opt(sort(x)), iter-star(seq(opt(lit(sep)), [sort(x)])) | _] ->
+    (<id>, $[Use {[x] [sep]?}* instead for [sep]?-separated lists])
+
+  context-free-syntax-warning:
+    [iter-star(seq(sort(x), [opt(lit(sep))])), opt(sort(x)) | _] ->
+    (<id>, $[Use {[x] [sep]?}* instead for [sep]?-separated lists])
   
   context-free-syntax-warning:
     iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
