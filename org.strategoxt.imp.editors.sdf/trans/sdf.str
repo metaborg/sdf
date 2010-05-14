@@ -55,14 +55,9 @@ rules
     alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
 
   context-free-syntax-warning:
-    seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
+    opt(s @ seq(_, _)) -> (s, $[Extract sequence in optional to separate productions to ensure acceptable abstract syntax])
     where
-      occurrences(is-non-terminal) => 1
-
-  context-free-syntax-warning:
-    seq(_, _) -> (<id>, $[Extract sequences of patterns to separate productions to ensure acceptable abstract syntax])
-    where
-      occurrences(is-non-terminal) => 1
+      <occurrences(is-non-terminal)> s => 1
 
   // StrategoXT/817
   context-free-syntax-error:
