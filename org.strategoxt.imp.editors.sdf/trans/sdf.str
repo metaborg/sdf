@@ -58,13 +58,6 @@ rules
     opt(s @ seq(_, _)) -> (s, $[Extract sequence in optional to separate productions to ensure acceptable abstract syntax])
     where
       <occurrences(is-non-terminal)> s => 1
-
-  // StrategoXT/817
-  context-free-syntax-error:
-    <?iter-star(s) + ?iter(s) + ?iter-star-sep(s,_) + ?iter-sep(s,_)> ->
-    (s, $[At least one non-terminal expected])
-    where
-      <occurrences(is-non-terminal)> s => 0
   
   /**
    * Tests if something is a non-terminal in terms of the AST produced.
