@@ -19,7 +19,7 @@ rules
       dr-scope-all-start
     with
       analyze-ast;
-      errors   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
+      errors   := [];
       // We only collect-om since we don't want inner warning dupes
       warnings := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast
 
@@ -82,6 +82,10 @@ rules
   context-free-syntax-warning:
     [iter-star(seq(sort(x), [lit(sep)])), opt(sort(x)) | _] ->
     (<id>, $[Use {[x] [sep]}* instead for [sep]-separated lists])
+
+  context-free-syntax-warning:
+    prod(lhs @ [sort(x), opt(seq(lit(sep), [sort(xs)]))], sort(xs), _) ->
+    (lhs, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
        
   // Instruct users to use { X ","? }* (seen in MDSD 2010)
 
@@ -100,6 +104,10 @@ rules
   context-free-syntax-warning:
     [iter-star(seq(sort(x), [opt(lit(sep))])), opt(sort(x)) | _] ->
     (<id>, $[Use {[x] [sep]?}* instead for [sep]?-separated lists])
+
+  context-free-syntax-warning:
+    prod(lhs @ [sort(x), opt(seq(opt(lit(sep)), [sort(xs)]))], sort(xs), _) ->
+    (lhs, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
   
   context-free-syntax-warning:
     iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
@@ -123,8 +131,8 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     where
       filename  := <guarantee-extension(|"rtg")> path;
-      selected' := <add-context; sdf-desugar> selected;
-      result    := <core-rtg2sig; pp-stratego-string> selected'
+      selected' := <debug(!2); add-context; debug(!3); sdf-desugar> selected;
+      result    := <debug(!4); core-rtg2sig; debug(!5); pp-stratego-string> selected'
     <+
       fatal-err(|$[Could not generate abstract syntax signatures for this selection.
                    Only productions with {cons()} attributes are supported.])
@@ -155,4 +163,4 @@ rules // External tools not included in the standard libraries
     <call> ("org.strategoxt.tools.pp-pp-table", [<id>])
   
   sdf-desugar =
-    <call> ("org.strategoxt.tools.sdf-desugar", [<id>])
+    <call> ("org.strategoxt.tools.sdf-desugar", [<id>]) => [_, <id>]
