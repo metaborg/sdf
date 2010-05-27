@@ -124,8 +124,7 @@ rules
       selected' := <add-context; sdf-desugar> selected;
       result    := <ppgenerate; pp-pp-table> selected'
     <+
-      fatal-err(|$[Could not generate pretty printer rules for this selection.
-                   Only productions with {cons()} attributes are supported.])
+      fatal-err-msg(|$[Could not generate pretty printer rules for this selection.])
   
   generate-rtg:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -134,8 +133,7 @@ rules
       selected' := <debug(!2); add-context; debug(!3); sdf-desugar> selected;
       result    := <debug(!4); core-rtg2sig; debug(!5); pp-stratego-string> selected'
     <+
-      fatal-err(|$[Could not generate abstract syntax signatures for this selection.
-                   Only productions with {cons()} attributes are supported.])
+      fatal-err-msg(|$[Could not generate abstract syntax signatures for this selection.])
   
   generate-aterm:
     (selected, position, ast, path, project-path) -> (filename, selected)
@@ -149,6 +147,7 @@ rules
       else
         !context-free-syntax([<id>])
       end
+      // !'module(unparameterized("Module"), [], [exports(<id>)])
     end
 
 rules // External tools not included in the standard libraries
