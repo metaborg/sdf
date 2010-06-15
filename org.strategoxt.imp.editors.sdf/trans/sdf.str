@@ -19,7 +19,7 @@ rules
       dr-scope-all-start
     with
       analyze-ast;
-      errors   := [];
+      errors   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
       // We only collect-om since we don't want inner warning dupes
       warnings := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast
 
@@ -43,13 +43,17 @@ rules
       not(<collect(?sort(_))> p => [_])
     ; if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*)
-      ; not(<one(term(default(appl(unquoted("bracket" + "reject"), []))))> a'*)
-      ; not(<one(reject())> a'*)
+      ; not(<one(bracket() + reject())> a'*)
       ; not(!s; (sort("Keyword") + sort("\"Keyword\""))) 
       ; target := a*
       else
         target := s
       end
+   
+  context-free-syntax-error:
+    prod([x], s, attrs(a*)) -> (a*, $[Illegal use of {bracket} attribute])
+    where
+      <one(bracket())> a*
    
   context-free-syntax-warning:
     alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
