@@ -6,22 +6,30 @@ imports
   libstratego-sglr
   libstrc
   analysis
+  lib/editor-common.generated
 
 rules
 
-  // TODO: Report proper SDF errors  
-
   editor-analyze:
-    (ast, path, project-path) -> (errors, warnings, [])
+    (ast, path, project-path) -> (error'*, warning'*, [])
     with
-      // Ensure all dynamic rules are properly scoped
-      try(dr-scope-all-end);
-      dr-scope-all-start
-    with
+      editor-init;
       analyze-ast;
-      errors   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
       // We only collect-om since we don't want inner warning dupes
-      warnings := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast
+      error*   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
+      warning* := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast;
+      if <file-exists> $[[project-path]/.disable-global-analysis] then
+        serror* := []
+      else
+        serror* := <collect-om(context-free-syntax-sort-error)> ast
+      end;
+      if IsImportFailed then
+        error'*   := error*;
+        warning'* := <conc> (serror*, warning*)
+      else
+        error'*   := <conc> (serror*, warning*);
+        warning'* := error*
+      end 
 
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
@@ -35,7 +43,20 @@ rules
 
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 
-rules
+rules // Limited exisiting sort checking
+    
+  context-free-syntax-sort-error:
+    sort(x) -> (x, $[No definition for [x]])
+    where
+      not(<Declaration> x)
+  
+  context-free-syntax-sort-error:
+    parameterized-sort(_, _) -> [] // not supported
+  
+  context-free-syntax-sort-error:
+    'sorts(_) -> [] // ignored
+
+rules // Local checks
   
   context-free-syntax-warning:
     prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])

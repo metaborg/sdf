@@ -35,11 +35,14 @@ rules
       , parse-file // TODO: parse-sdf-file
       , declare-globals-top
       )> x
+    <+
+      rules(IsImportFailed: _)
 
   declare-globals:
     parameterized(x, y) -> parameterized(x, y)
     where
-      <declare-globals> unparameterized(x)
+      <declare-globals> unparameterized(x);
+      <alltd(declare-simple-global)> y
   
   resolve-import =
     // TODO: better import handling
@@ -50,7 +53,7 @@ rules
     \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
   
   declare-globals:
-    prod @ prod(_, sort, _) -> <id>
+    prod @ prod(lhs, sort, _) -> <id>
     where
       !sort => sort(x) <+ !sort => parametrized-sort(x, _)
     with
@@ -61,9 +64,40 @@ rules
         Declaration: x -> prod
         DeclarationFile: x -> file
       )
+    with
+      <alltd(declare-use)> lhs
+  
+  declare-globals:
+    'sorts(_) -> <id>
+    with
+      alltd(declare-use)
+  
+  declare-simple-global:
+    sort(x) -> <id>
+    with
+      rules(Declaration: x -> x)
+  
+  declare-use:
+    sort(x) -> <id>
+    with
+      rules(Usage: x -> x)
+  
+  declare-use:
+    parameterized-sort(x, y) -> <id>
+    where
+      if !y => [sort(y')]; <is-string> x; <is-string> y' then
+        text := ${{x}[[{y'}]]};
+        rules(Usage: text -> text)
+      end
   
   propose-completion:
-    sort(COMPLETION(x)) -> <all-keys-Declaration> x
+    sort(COMPLETION(x)) -> [decl*, use*]
+    with
+      decl* := <all-keys-Declaration> x;
+      use*  := <all-keys-Usage> x
   
   propose-completion:
-    NOCONTEXT(COMPLETION(x)) -> <all-keys-Declaration> x
+    NOCONTEXT(COMPLETION(x)) -> [decl*, use*]
+    with
+      decl* := <all-keys-Declaration> x;
+      use*  := <all-keys-Usage> x
