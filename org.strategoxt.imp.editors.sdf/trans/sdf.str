@@ -16,12 +16,12 @@ rules
       editor-init;
       analyze-ast;
       // We only collect-om since we don't want inner warning dupes
-      error*   := <collect(?context-free-syntax(<collect-om(context-free-syntax-error)>))> ast;
-      warning* := <collect(?context-free-syntax(<collect-om(context-free-syntax-warning)>))> ast;
+      error*   := <collect-om(?context-free-syntax(<collect-om(context-free-syntax-error)>), conc)> ast;
+      warning* := <collect-om(?context-free-syntax(<collect-om(context-free-syntax-warning)>), conc)> ast;
       if <file-exists> $[[project-path]/.disable-global-analysis] then
         serror* := []
       else
-        serror* := <collect-om(context-free-syntax-sort-error)> ast
+        serror* := <collect-om(context-free-syntax-sort-error, conc)> ast
       end;
       if IsImportFailed then
         error'*   := error*;
