@@ -61,12 +61,12 @@ rules // Local checks
   context-free-syntax-warning:
     prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
-      not(<collect(?sort(_))> p => [_])
-    ; if !a* => attrs(a'*) then
-        not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*)
-      ; not(<one(bracket() + reject())> a'*)
-      ; not(!s; (sort("Keyword") + sort("\"Keyword\""))) 
-      ; target := a*
+      not(<occurrences(?sort(_))> p => 1);
+      if !a* => attrs(a'*) then
+        not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*);
+        not(<one(bracket() + reject())> a'*);
+        not(!s; (sort("Keyword") + sort("\"Keyword\""))); 
+        target := a*
       else
         target := s
       end
