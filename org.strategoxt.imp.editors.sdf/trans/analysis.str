@@ -54,7 +54,9 @@ rules
   declare-globals:
     prod @ prod(lhs, sort, _) -> <id>
     where
-      !sort => sort(x) <+ !sort => parametrized-sort(x, _)
+      !sort;
+      try(?cf(<id>) + ?lex(<id>));
+      (?sort(x) + ?parameterized-sort(x, _))
     with
       <Declaration> x
     <+
