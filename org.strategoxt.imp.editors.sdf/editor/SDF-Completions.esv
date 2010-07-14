@@ -2,6 +2,12 @@ module SDF-Completions
 
 completions
 
+  completion trigger:
+    "->\s*[A-Za-z0-9]+\s*\{"
+
+  completion trigger:
+    "->[\ \t]"
+
   completion proposer:
     editor-complete
 

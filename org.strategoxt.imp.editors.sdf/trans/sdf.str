@@ -61,7 +61,7 @@ rules // Local checks
   context-free-syntax-warning:
     prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
-      not(<occurrences(?sort(_))> p => 1);
+      not(<occurrences(?sort(_))> p => 1; occurrences(?lit(_)) => 0);
       if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons"), [id]))))> a'*);
         not(<one(bracket() + reject())> a'*);
@@ -133,6 +133,9 @@ rules // Local checks
   context-free-syntax-warning:
     prod(lhs @ [sort(x), opt(seq(opt(lit(sep)), [sort(xs)]))], sort(xs), _) ->
     (lhs, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
+
+  context-free-syntax-warning:
+    [_ | t*] -> <context-free-syntax-warning> t*
   
   context-free-syntax-warning:
     iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
@@ -145,7 +148,7 @@ rules
   generate-pp-rules:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      filename  := <guarantee-extension(|"pp")> path;
+      filename  := <guarantee-extension(|"selection.pp")> path;
       selected' := <add-context; sdf-desugar> selected;
       result    := <ppgenerate; pp-pp-table> selected'
     <+
