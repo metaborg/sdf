@@ -56,6 +56,7 @@ rules
     where
       !sort;
       try(?cf(<id>) + ?lex(<id>));
+      repeat(?label(_, <id>));
       (?sort(x) + ?parameterized-sort(x, _))
     with
       <Declaration> x
@@ -70,6 +71,21 @@ rules
   
   declare-globals:
     'sorts(_) -> <id>
+    with
+      alltd(declare-use)
+  
+  declare-globals:
+    context-free-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+  
+  declare-globals:
+    lexical-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+  
+  declare-globals:
+    kernel-start-symbols(_) -> <id>
     with
       alltd(declare-use)
   
