@@ -40,6 +40,11 @@ rules
     (sort(x), position, ast, path, project-path) -> target
     where
       target := <Declaration> x
+ 
+  editor-resolve:
+    (unparameterized(x), position, ast, path, project-path) -> target
+    where
+      target := <parse-sdf-file> <resolve-import> x
 
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 

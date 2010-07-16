@@ -6,7 +6,7 @@ completions
     "->\s*[A-Za-z0-9]+\s*\{"
 
   completion trigger:
-    "->[\ \t]"
+    "->[\ \t]+"
 
   completion proposer:
     editor-complete
