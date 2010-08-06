@@ -6,6 +6,9 @@ completions
     "->\s*[A-Za-z0-9]+\s*\{"
 
   completion trigger:
+    "->\s*[A-Za-z0-9]+\s*\{[^}]+, "
+
+  completion trigger:
     "->[\ \t]+"
 
   completion proposer:
