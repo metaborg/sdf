@@ -66,7 +66,7 @@ rules // Local checks
   context-free-syntax-warning:
     prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
-      not(<occurrences(?sort(_))> p => 1; occurrences(?lit(_)) => 0);
+      not(<occurrences(?sort(_))> p => 1; <occurrences(?lit(_))> p => 0);
       if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons" + "ast"), [id]))))> a'*);
         not(<one(bracket() + reject())> a'*);
@@ -75,7 +75,15 @@ rules // Local checks
       else
         target := s
       end
-   
+  
+  context-free-syntax-warning:
+    t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Single argument expected for {cons("Name")} attribute])
+    where
+      not(<length> a* => 1)
+  
+  context-free-syntax-warning:
+    t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
+  
   context-free-syntax-error:
     prod([x], s, attrs(a*)) -> (a*, $[Illegal use of {bracket} attribute])
     where
