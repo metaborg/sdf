@@ -27,8 +27,8 @@ rules
         error'*   := error*;
         warning'* := <conc> (serror*, warning*)
       else
-        error'*   := <conc> (serror*, warning*);
-        warning'* := error*
+        error'*   := <conc> (serror*, error*);
+        warning'* := warning*
       end 
 
   editor-complete:
@@ -149,7 +149,17 @@ rules // Local checks
 
   context-free-syntax-warning:
     [_ | t*] -> <context-free-syntax-warning> t*
-  
+
+  context-free-syntax-warning:
+    iter-star(cs) -> (<id>, $[Character class iteration should be in lexical syntax section])
+    where
+      <oncetd(?range(_, _))> cs
+
+  context-free-syntax-warning:
+    iter(cs) -> (<id>, $[Character class iteration should be in lexical syntax section])
+    where
+      <oncetd(?range(_, _))> cs
+    
   context-free-syntax-warning:
     iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
   

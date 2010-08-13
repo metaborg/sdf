@@ -62,14 +62,14 @@ completions
   completion template:
   	"priorities" "\n\t" (blank)
 
-  completion template:
+  completion template : Module =
   	"module" " " <x> "\n\t\nexports\n\t" (blank)
 
-  completion template:
+  completion template: 
   	"lexical variables" "\n\t" (blank)
 
   completion template:
-    "{cons" "(\"" <x> "\")"
+    "{cons" "(\"" <Name> "\")"
 
   completion template:
     "{deprecated" "(\"" <explanation> "\")"
@@ -99,7 +99,7 @@ completions
     "{recover"
 
   completion template:
-    ", cons" "(\"" <x> "\")"
+    ", cons" "(\"" <Name> "\")"
 
   completion template:
     ", deprecated" "(\"" <explanation> "\")"
