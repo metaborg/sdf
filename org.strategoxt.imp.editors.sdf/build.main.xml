@@ -4,6 +4,7 @@
         
         <!-- Key input modules -->
         <property name="sdfmodule" value="SDF"/>
+        <property name="metasdfmodule" value="Stratego-SDF"/>
         <property name="esvmodule" value="SDF"/>
         <property name="strmodule" value="sdf"/>
     
@@ -18,13 +19,14 @@
         
         <!-- Imports -->
         <property name="build.sdf.imports" value=""/>
-        <property name="build.stratego.args" value="--library
-                        -I &quot;${trans}&quot; -I &quot;${basedir}&quot;
-                        -la strc -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
-                        -la stratego-sdf"/>
+        <property name="build.stratego.args" value="
+                        --library
+                        -I &quot;${trans}&quot;
+                        -I &quot;${basedir}&quot;
+                        -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm"/>
         
-        <property name="externaldef" location="syntax/SDF.def"/>
         <!-- External .def and .jar locations
+        <property name="externaldef" location="syntax/${sdfmodule}.def"/>
         <property name="externaljar" value="../lib.jar"/>
         <property name="externaljarflags" value="-la org.lib"/>
         -->
@@ -38,5 +40,5 @@
         <import file="build.generated.xml"/>
     
         <!-- Main target -->
-        <target name="all" depends="sdf2table,stratego.jar,sdf2imp,refresh"/>
+        <target name="all" depends="spoofaximp.default.ctree"/>
     </project>
