@@ -89,6 +89,7 @@ rules // Local checks
     where
       <one(bracket())> a*
    
+  // TODO: don't warn for | in {reject} productions
   context-free-syntax-warning:
     alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
 
