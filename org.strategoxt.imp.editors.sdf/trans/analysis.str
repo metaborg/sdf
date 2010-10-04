@@ -45,11 +45,13 @@ rules
   
   resolve-import =
     // TODO: better import handling
-    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
+    \x -> $[[<ProjectDir>]/[x].sdf]\; file-exists
   <+
     \x -> $[[<ProjectDir>]/syntax/[x].sdf]\; file-exists
   <+
     \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
+  <+
+    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
   
   declare-globals:
     prod @ prod(lhs, sort, _) -> <id>
