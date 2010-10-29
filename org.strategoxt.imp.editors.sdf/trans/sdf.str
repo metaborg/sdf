@@ -64,11 +64,15 @@ rules // Limited exisiting sort checking
 rules // Local checks
   
   context-free-syntax-warning:
-    prod(p, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
+    prod(p*, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
-      not(<occurrences(?sort(_))> p => 1; <occurrences(?lit(_))> p => 0);
+      (
+        not(<occurrences(?sort(_))> p* => 1; <occurrences(?lit(_))> p* => 0)
+      <+
+        <oncetd(is-iter + ?opt(_))> p*
+      );
       if !a* => attrs(a'*) then
-        not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(id))]))))> a'*);
+        not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(not("\"\"")))]))))> a'*);
         not(<one(bracket() + reject())> a'*);
         not(!s; (sort("Keyword") + sort("\"Keyword\""))); 
         target := a*
@@ -102,7 +106,10 @@ rules // Local checks
    * Tests if something is a non-terminal in terms of the AST produced.
    */
   is-non-terminal =
-    ?sort(_) + ?opt(_) + ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
+    ?sort(_) + ?opt(_) + is-iter
+  
+  is-iter =
+    ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
   
   // Instruct users to use { X "," }*
 
