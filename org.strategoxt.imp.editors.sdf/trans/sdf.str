@@ -101,7 +101,12 @@ rules // Local checks
     opt(s @ seq(_, _)) -> (s, $[Extract sequence in optional to separate productions to ensure acceptable abstract syntax])
     where
       <occurrences(is-non-terminal)> s => 1
-  
+
+  context-free-syntax-warning:
+    opt(lit) -> (lit, $[Extract literal in optional to separate productions to ensure consistent abstract syntax])
+    where
+      oncetd(?lit(_))
+   
   /**
    * Tests if something is a non-terminal in terms of the AST produced.
    */
