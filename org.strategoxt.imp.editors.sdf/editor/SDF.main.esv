@@ -18,6 +18,6 @@ language General properties
   description   : "Spoofax/IMP-generated editor for the SDF language"
   url           : http://strategoxt.org
                   
-  extensions    : sdf
+  extensions    : sdf, def
   table         : include/SDF.tbl
   start symbols : Module
