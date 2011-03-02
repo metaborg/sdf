@@ -3,7 +3,7 @@
 
 <plugin>
        <extension point="org.eclipse.imp.runtime.languageDescription">
-          <language extensions="sdf" description="SDF" language="SDF" derivedFrom="DynamicRoot"></language>
+          <language extensions="sdf,def" description="SDF" language="SDF" derivedFrom="DynamicRoot"></language>
        </extension>
        <extension id="org.strategoxt.imp.editors.sdf.parser" name="SDF Parser" point="org.eclipse.imp.runtime.parser">
           <parser class="org.strategoxt.imp.editors.sdf.SDFParseController" language="SDF">
