@@ -29,18 +29,18 @@ rules
       else
         error'*   := <conc> (serror*, error*);
         warning'* := warning*
-      end 
+      end
 
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
       proposals := <propose-completion <+ ![]> node
- 
+
   editor-resolve:
     (sort(x), position, ast, path, project-path) -> target
     where
       target := <Declaration> x
- 
+
   editor-resolve:
     (unparameterized(x), position, ast, path, project-path) -> target
     where
@@ -49,20 +49,23 @@ rules
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 
 rules // Limited exisiting sort checking
-    
+
+  context-free-syntax-sort-error:
+    renamed-module(x, renamings(y)) -> [] // not supported
+
   context-free-syntax-sort-error:
     sort(x) -> (x, $[No definition for [x]])
     where
       not(<Declaration> x)
-  
+
   context-free-syntax-sort-error:
     parameterized-sort(_, _) -> [] // not supported
-  
+
   context-free-syntax-sort-error:
     'sorts(_) -> [] // ignored
 
 rules // Local checks
-  
+
   context-free-syntax-warning:
     prod(p*, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
     where
@@ -74,25 +77,25 @@ rules // Local checks
       if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(not("\"\"")))]))))> a'*);
         not(<one(bracket() + reject())> a'*);
-        not(!s; (sort("Keyword") + sort("\"Keyword\""))); 
+        not(!s; (sort("Keyword") + sort("\"Keyword\"")));
         target := a*
       else
         target := s
       end
-  
+
   context-free-syntax-warning:
     t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Single argument expected for {cons("Name")} attribute])
     where
       not(<length> a* => 1)
-  
+
   context-free-syntax-warning:
     t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
-  
+
   context-free-syntax-error:
     prod([x], s, attrs(a*)) -> (a*, $[Illegal use of {bracket} attribute])
     where
       <one(bracket())> a*
-   
+
   // TODO: don't warn for | in {reject} productions
   context-free-syntax-warning:
     alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
@@ -106,16 +109,16 @@ rules // Local checks
     opt(lit) -> (lit, $[Extract literal in optional to separate productions to ensure consistent abstract syntax])
     where
       oncetd(?lit(_))
-   
+
   /**
    * Tests if something is a non-terminal in terms of the AST produced.
    */
   is-non-terminal =
     ?sort(_) + ?opt(_) + is-iter
-  
+
   is-iter =
     ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
-  
+
   // Instruct users to use { X "," }*
 
   context-free-syntax-warning:
@@ -137,7 +140,7 @@ rules // Local checks
   context-free-syntax-warning:
     prod(lhs @ [sort(x), opt(seq(lit(sep), [sort(xs)]))], sort(xs), _) ->
     (lhs, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
-       
+
   // Instruct users to use { X ","? }* (seen in MDSD 2010)
 
   context-free-syntax-warning:
@@ -172,12 +175,12 @@ rules // Local checks
     iter(cs) -> (<id>, $[Character class iteration should be in lexical syntax section])
     where
       <oncetd(?range(_, _))> cs
-    
+
   context-free-syntax-warning:
-    iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
-  
+    iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)")
+
   context-free-syntax-warning:
-    iter-star-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)") 
+    iter-star-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)")
 
 rules
 
@@ -189,7 +192,7 @@ rules
       result    := <ppgenerate; pp-pp-table> selected'
     <+
       fatal-err-msg(|$[Could not generate pretty printer rules for this selection.])
-  
+
   generate-rtg:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
@@ -198,12 +201,12 @@ rules
       result    := <debug(!4); core-rtg2sig; debug(!5); pp-stratego-string> selected'
     <+
       fatal-err-msg(|$[Could not generate abstract syntax signatures for this selection.])
-  
+
   generate-aterm:
     (selected, position, ast, path, project-path) -> (filename, selected)
     where
       filename  := <guarantee-extension(|"aterm")> path
-  
+
   add-context =
     if not(oncetd(?context-free-syntax(_))) then
       if is-list then
@@ -224,6 +227,6 @@ rules // External tools not included in the standard libraries
 
   pp-pp-table =
     <call> ("org.strategoxt.tools.pp-pp-table", [<id>])
-  
+
   sdf-desugar =
     <call> ("org.strategoxt.tools.sdf-desugar", [<id>]) => [_, <id>]

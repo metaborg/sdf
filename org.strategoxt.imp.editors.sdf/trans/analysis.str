@@ -20,11 +20,16 @@ strategies
       )
     with
       ast' := <declare-globals-top> ast
-  
+
 rules
 
   declare-globals-top =
     alltd(declare-globals)
+
+  declare-globals:
+    renamed-module(x, renamings(y)) -> <id>
+    where
+      <all(try(?symbol(_, <id>); declare-simple-global))> y
 
   declare-globals:
     unparameterized(x) -> unparameterized(x)
@@ -42,7 +47,7 @@ rules
     where
       <declare-globals> unparameterized(x);
       <alltd(declare-simple-global)> y
-  
+
   resolve-import =
     // TODO: better import handling
     \x -> $[[<ProjectDir>]/[x].sdf]\; file-exists
@@ -52,7 +57,7 @@ rules
     \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
   <+
     \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
-  
+
   declare-globals:
     prod @ prod(lhs, sort, _) -> <id>
     where
@@ -70,37 +75,37 @@ rules
       )
     with
       <alltd(declare-use)> lhs
-  
+
   declare-globals:
     'sorts(_) -> <id>
     with
       alltd(declare-use)
-  
+
   declare-globals:
     context-free-start-symbols(_) -> <id>
     with
       alltd(declare-use)
-  
+
   declare-globals:
     lexical-start-symbols(_) -> <id>
     with
       alltd(declare-use)
-  
+
   declare-globals:
     kernel-start-symbols(_) -> <id>
     with
       alltd(declare-use)
-  
+
   declare-simple-global:
     sort(x) -> <id>
     with
       rules(Declaration: x -> x)
-  
+
   declare-use:
     sort(x) -> <id>
     with
       rules(Usage: x -> x)
-  
+
   declare-use:
     parameterized-sort(x, y) -> <id>
     where
@@ -108,13 +113,13 @@ rules
         text := ${{x}[[{y'}]]};
         rules(Usage: text -> text)
       end
-  
+
   propose-completion:
     sort(COMPLETION(x)) -> [decl*, use*]
     with
       decl* := <all-keys-Declaration> x;
       use*  := <all-keys-Usage> x
-  
+
   propose-completion:
     NOCONTEXT(COMPLETION(x)) -> [decl*, use*]
     with
