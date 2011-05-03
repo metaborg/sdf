@@ -18,9 +18,10 @@ builders
 
   // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
   builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
-  builder  : "Generate SDF (for selection)" = generate-sdf (openeditor) (source)
-  builder  : "Generate ESV (for selection)" = generate-esv (openeditor) (source)
-  builder  : "Generate STR (for selection)" = generate-str (openeditor) (source)
+  builder  : "Generate ESV" = generate-esv (openeditor) (source)
+  builder  : "Generate SDF" = generate-sdf (openeditor) (source)
+  builder  : "Generate STR" = generate-str (openeditor) (source)
+  builder  : "Generate everything" = generate-all
 
 refactorings
 
@@ -28,4 +29,4 @@ refactorings
 
   // refactoring ID            : "Rename Entity" = rename-entity (source) (cursor)
 
-  // on save: generate-java
+  // on save: generate-all
