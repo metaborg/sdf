@@ -11,19 +11,54 @@ imports
   generate-esv
   generate-sdf
   generate-str
+  sdf
 
 rules // Main editor interface (defined by editor/Template-Builders and -References.esv)
 
   // Analyzes the current program, returning a tuple with errors, warnings, and notes;
   // each a list of (term, message) tuples or simply (message) terms.
   editor-analyze:
-    (ast, path, project-path) -> (ast', errors, warnings, notes)
+    (ast, path, project-path) -> (ast', error*, warning*, [])
     with
       editor-init;
-      ast'     := <analyze>;
-      errors   := [];
-      warnings := [];
-      notes    := []
+      ast' := <analyze>
+    with
+      (sdf-error*, warning*) := <sdf-editor-analyze>;
+      tmpl-error* := <collect-om(?Templates(<collect-om(templates-error)>), conc)> ast;
+      error*   := [sdf-error*, tmpl-error*]
+
+  editor-resolve:
+    (x, position, ast, path, project-path) -> target
+    where
+      target := <Declaration> x
+
+  editor-resolve:
+    (Import(x), position, ast, path, project-path) -> target
+    where
+      target := <parse-template-file> <resolve-import> x
+
+rules // Limited existing sort checking (plugs into sdf.str)
+
+  context-free-syntax-sort-error:
+    Placeholder(_, Sort(x), _, _) -> (x, $[No definition for [x]])
+    where
+      not(<Declaration> x)
+
+rules // Local checks
+
+  templates-error:
+    TemplateProductionWithCons(_, _, _, attrs(attr*)) ->
+      (x, $[Constructor already specified at start of production. Please remove this cons attribute.])
+    where
+      <collect-one(?sdf-cons(x))> attr*
+
+  context-free-syntax-error:
+    SdfProductionWithCons(_, _, _, attrs(attr*)) ->
+      (x, $[Constructor already specified at start of production. Please remove this cons attribute.])
+    where
+      <collect-one(?sdf-cons(x))> attr*
+
+rules // Code generation
 
   generate(s|ext):
     (selected, position, ast, path, project-path) -> (filename, result)

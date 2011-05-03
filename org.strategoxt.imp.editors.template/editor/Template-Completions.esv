@@ -1,6 +1,6 @@
 module Template-Completions
 
-imports Template-Completions.generated
+// imports Template-Completions.generated
 
 completions
 
@@ -8,10 +8,15 @@ completions
   //
   // See the imported file for a brief introduction and examples.
 
+  completion template TemplateProduction : "template" =
+    <Sort> "." <Cons> " = <<\n\t" (cursor) "\n>>" (blank)
+
+  completion template TemplatePart1 : "placeholder" = "<" <text> ":" <Sort> ">"
+  completion template TemplatePart2 : "placeholder" = "[" <text> ":" <Sort> "]"
 
 completions
   // Semantic (identifier) completion:
 
-  // completion proposer                  : editor-complete
+  completion proposer                  : editor-complete
 
   // completion trigger                   : ":"

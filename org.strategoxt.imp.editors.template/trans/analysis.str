@@ -72,7 +72,11 @@ strategies
         <+ <debug(!"Declare-globals-top failed: ")> x
       )> x
    <+
-      <debug(!"Import failed: ")> x
+      <debug(!"Import failed: ")> x;
+      rules(IsImportFailed: _)
+
+strategies
+  // This part has mostly been copied from the SDF editor!
 
   resolve-import =
     // TODO: better import handling
@@ -89,3 +93,82 @@ strategies
     \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
   <+
     \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
+
+  declare-globals:
+    prod @ prod(lhs, sort, _) -> <id>
+    where
+      !sort;
+      try(?cf(<id>) + ?lex(<id>));
+      repeat(?label(_, <id>));
+      (?sort(x) + ?parameterized-sort(x, _))
+    with
+      <Declaration> x
+    <+
+      // file := <CurrentFile>;
+      rules(
+        Declaration: x -> prod
+        // DeclarationFile: x -> file
+      )
+    with
+      <alltd(declare-use)> lhs
+
+  declare-globals:
+    'sorts(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    context-free-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    lexical-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    kernel-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-simple-global:
+    sort(x) -> <id>
+    with
+      rules(Declaration: x -> x)
+
+  declare-use:
+    sort(x) -> <id>
+    with
+      rules(Usage: x -> x)
+
+  declare-use:
+    parameterized-sort(x, y) -> <id>
+    where
+      if !y => [sort(y')]; <is-string> x; <is-string> y' then
+        text := ${{x}[[{y'}]]};
+        rules(Usage: text -> text)
+      end
+
+  declare-use:
+    Placeholder(_, Sort(x), _, _) -> <id>
+    with
+      rules(Usage: x -> x)
+
+  propose-completion:
+    sort(COMPLETION(x)) -> [decl*, use*]
+    with
+      decl* := <all-keys-Declaration> x;
+      use*  := <all-keys-Usage> x
+
+  propose-completion:
+    NOCONTEXT(COMPLETION(x)) -> [decl*, use*]
+    with
+      decl* := <all-keys-Declaration> x;
+      use*  := <all-keys-Usage> x
+
+  propose-completion:
+    Sort(COMPLETION(x)) -> [decl*, use*]
+    with
+      decl* := <all-keys-Declaration> x;
+      use*  := <all-keys-Usage> x
