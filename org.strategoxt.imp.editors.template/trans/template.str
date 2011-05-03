@@ -11,6 +11,7 @@ imports
   generate-esv
   generate-sdf
   generate-str
+  generation-utils
   sdf
 
 rules // Main editor interface (defined by editor/Template-Builders and -References.esv)
@@ -94,23 +95,19 @@ rules // Code generation
   generate-all:
     (selected, position, ast, path, project-path) -> None()
     with
-      <debug> "Generating ESV...";
-      esv := <to-esv> ast;
-      esv-filename := $[[project-path]/[<guarantee-extension(|"esv")> path]];
-      <write-string-to-file> (esv-filename, esv);
-      <refresh-workspace-file> esv-filename
-    with
-      <debug> "Generating SDF...";
-      sdf := <to-sdf> ast;
-      sdf-filename := $[[project-path]/[<guarantee-extension(|"def")> path]];
-      <write-string-to-file> (sdf-filename, sdf);
-      <refresh-workspace-file> sdf-filename
-    with
-      <debug> "Generating STR...";
-      str := <to-str> ast;
-      str-filename := $[[project-path]/[<guarantee-extension(|"str")> path]];
-      <write-string-to-file> (str-filename, str);
-      <refresh-workspace-file> str-filename
+      let gen(generate, get-output-path | name, ext) =
+        {output-ast, filename, full-path:
+          <debug> $[Generating [name]...];
+          output-ast := <generate> ast;
+          filename := <get-output-path>; debug;
+          <write-string-to-file> (filename, output-ast);
+          <refresh-workspace-file> filename
+        }
+      in
+        gen(to-esv, get-esv-output-path | "ESV", "esv");
+        gen(to-sdf, get-sdf-output-path | "SDF", "def");
+        gen(to-str, get-str-output-path | "STR", "str")
+      end
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =

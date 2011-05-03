@@ -13,8 +13,12 @@ exports
     "leading"  -> NewlineOptionValue {cons("Leading")}
     "trailing" -> NewlineOptionValue {cons("Trailing")}
 
-    "import" "path" ":" ImportPath -> Option {cons("ImportPath")}
+    "import" "path" ":" PathOptionValue -> Option {cons("ImportPath")}
+
+    "esv" "output" ":" PathOptionValue -> Option {cons("EsvOutput")}
+    "sdf" "output" ":" PathOptionValue -> Option {cons("SdfOutput")}
+    "str" "output" ":" PathOptionValue -> Option {cons("StrOutput")}
 
   lexical syntax
-        ModuleName -> ImportPath  %% relative path
-    "/" ModuleName -> ImportPath  %% absolute path (relative to project root)
+        ModuleName -> PathOptionValue  %% relative path
+    "/" ModuleName -> PathOptionValue  %% absolute path (relative to project root)

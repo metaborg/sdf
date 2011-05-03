@@ -23,6 +23,8 @@ strategies
         Options :+ ImportPath() -> "."
       )
     with
+      <debug(!"Analyzing: ")> current-file
+    with
       ast' := <desugar-top; declare-options-top; declare-globals-top> ast;
       rules(Module : current-file -> ast')
 
@@ -39,6 +41,33 @@ strategies
     ImportPath(t) -> <id>
     with
       rules(Options :+ ImportPath() -> t)
+
+  declare-options:
+    EsvOutput(path) -> <id>
+    with
+      path' := <norm-output-path> path;
+      rules(Options :+ EsvOutput() -> path')
+
+  declare-options:
+    SdfOutput(path) -> <id>
+    with
+      path' := <norm-output-path> path;
+      rules(Options :+ SdfOutput() -> path')
+
+  declare-options:
+    StrOutput(path) -> <id>
+    with
+      path' := <norm-output-path> path;
+      rules(Options :+ StrOutput() -> path')
+
+  norm-output-path:
+    path -> path'
+    with
+      if is-abspath then
+        path' := $[[<ProjectDir>][path]]
+      else
+        path' := $[[<dirname> <CurrentFile>]/[path]]
+      end
 
   declare-globals:
     template@ TemplateProduction(sort, Template(part*), attrs) ->

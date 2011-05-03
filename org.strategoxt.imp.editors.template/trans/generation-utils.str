@@ -9,8 +9,11 @@ signature
   constructors
     Newlines : X
     ImportPath : X
+    EsvOutput : X
+    SdfOutput : X
+    StrOutput : X
 
-strategies
+strategies // Utility strategies
 
   add-anno(|anno):
     x{a*} -> x{anno, a*}
@@ -70,17 +73,6 @@ strategies
       re-indent(|is)
     end
 
-  use-no-newlines       = <Options> Newlines() => None()
-  use-leading-newlines  = <Options> Newlines() => Leading()
-  use-trailing-newlines = <Options> Newlines() => Trailing()
-
-  newlines-switch(none, leading, trailing) =
-    switch <Options> Newlines()
-      case ?None(): none
-      case ?Leading(): leading
-      case ?Trailing(): trailing
-    end
-
   normpath =
     ?original;
     string-tokenize(|['/', '\']);
@@ -92,3 +84,20 @@ strategies
       !["/" | <id>]
     end;
     concat-strings
+
+strategies // Options
+
+  use-no-newlines       = <Options> Newlines() => None()
+  use-leading-newlines  = <Options> Newlines() => Leading()
+  use-trailing-newlines = <Options> Newlines() => Trailing()
+
+  newlines-switch(none, leading, trailing) =
+    switch <Options> Newlines()
+      case ?None(): none
+      case ?Leading(): leading
+      case ?Trailing(): trailing
+    end
+
+  get-esv-output-path = <Options> EsvOutput()
+  get-sdf-output-path = <Options> SdfOutput()
+  get-str-output-path = <Options> StrOutput()
