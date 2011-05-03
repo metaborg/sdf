@@ -31,11 +31,29 @@ strategies
     trim-leading-layout;
     trim-trailing-layout
 
+  // origin-column (obviously) doesn't work in an imported file...
+  // get-indent-string =
+  //   filter(not(?Layout(_) + ?Newline(_)); origin-column); list-min => size;
+  //   // Build string from right to left, as list.
+  //   ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
+  //   implode-string
+
+  // This doesn't take the indentation due to everything up to
+  // the open brackets of the template into account.
   get-indent-string =
-    filter(not(?Layout(_) + ?Newline(_)); origin-column); list-min => size;
-    // Build string from right to left, as list.
-    ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
-    implode-string
+    let get-indent =
+             \[Newline(_), Layout(y), _ | tail] -> [<string-length> y | <get-indent> tail]\
+          <+ \[Newline(_), Layout(_)] -> []\
+          <+ \[Newline(_), Newline(_)] -> []\
+          <+ \[Newline(_), y | tail] -> [0 | <get-indent> tail]\
+          <+ \[_ | tail] -> <get-indent> tail\
+          <+ []
+    in
+      get-indent; list-min => size;
+      // Build string from right to left, as list.
+      ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
+      implode-string
+    end
 
   re-indent(|indent-string) =
     \[Newline(x), Layout(y) | tail] -> [Layout(z) | tail']

@@ -23,9 +23,11 @@ rules // Main editor interface (defined by editor/Template-Builders and -Referen
       editor-init;
       ast' := <analyze>
     with
-      (sdf-error*, warning*) := <sdf-editor-analyze>;
-      tmpl-error* := <collect-om(?Templates(<collect-om(templates-error)>), conc)> ast;
-      error*   := [sdf-error*, tmpl-error*]
+      (sdf-error*, sdf-warning*) := <sdf-editor-analyze>;
+      tmpl-error*   := <collect-om(?Templates(<collect-om(templates-error)>), conc)> ast;
+      tmpl-warning* := <collect-om(?Templates(<collect-om(templates-warning)>), conc)> ast;
+      error*   := [sdf-error*, tmpl-error*];
+      warning* := [sdf-warning*, tmpl-warning*]
 
   editor-resolve:
     (x, position, ast, path, project-path) -> target
@@ -57,6 +59,13 @@ rules // Local checks
       (x, $[Constructor already specified at start of production. Please remove this cons attribute.])
     where
       <collect-one(?sdf-cons(x))> attr*
+
+  templates-warning:
+    Template([head | tail]) ->
+      (head, $[It is recommended to insert a linebreak between the start of a multiline template and its first element.])
+    where
+      <not(?Newline(_))> head; // doesn't start with newline
+      <one(?Newline(_))> tail  // does contain a newline
 
 rules // Code generation
 
