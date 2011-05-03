@@ -17,6 +17,8 @@ strategies
       strategies
 
         pp-option(s) = \None() -> ""\ + \Some(t) -> <s> t\
+        pp-list(s|t) = map(s); separate-by(|t); concat-strings
+        pp-list(s)   = map(s); concat-strings
 
       [section*]
 
@@ -57,39 +59,38 @@ strategies
   sort-used-in-prettyprinting:
     Placeholder(_, Sort(sort), _, _) -> sort
 
+  // Optimization for single-string-element templates
   template-to-prettyprint-strategy:
-    TemplateProduction(sort, Template(e*), attr*) ->
+    TemplateProduction(sort, Template([String(t)]), attr*) ->
+    $[prettyprint-[sort]:
+        [cons]() -> [result]]
+    with
+      cons   := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
+      result := <escape-and-double-quote> t
+
+  template-to-prettyprint-strategy:
+    TemplateProduction(sort, Template(elem*), attr*) ->
     <trim-chars(' ' + '\t' + '\r' + '\n')> // Workaround Stratego/856
     $[prettyprint-[sort]:
-        [cons]([arg*]) ->
-        [w857]
-        [with']]
+        [cons]([arg*]) -> t
+        with
+          [let'*]]
+    where
+      not(!elem* => [String(_)])
     with
-      (open, close) := <choose-braces> e*;
-      e'*   := <try-re-indent;
-                map(try(rename-template-element))> e*;
-      cons  := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
-      arg*  := <filter(template-element-to-cons-arg);
-                separate-by(|", ")> e'*;
-      part* := <trim-layout;
-                filter(template-element-to-stratego(|open, close))> e'*;
-      let*  := <filter(template-element-to-assignment);
-                separate-by(|";\n")> e'*;
-      with' := <if !let* => [] then !"" else !$[with
-                                                  [let*]] end>;
-      // Workaround Stratego/857
-      w857  := <string-replace(|"\n", "\n  ")>
-                <concat-strings>["$", open, part*, close]
-
-  choose-braces =
-    chars := <filter(?String(<id>)); concat-strings; explode-string>;
-    block := <length> <filter('[' + ']')> chars;
-    curly := <length> <filter('{' + '}')> chars;
-    round := <length> <filter('(' + ')')> chars;
-    ( where(!block => 0) < !("[", "]")
-    + where(!curly => 0) < !("{", "}")
-    + where(!round => 0) < !("(", ")")
-    + <debug> "no suitable braces found"; fail)
+      cons    := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
+      elem'*  := <try-re-indent;
+                  map(try(rename-template-element))> elem*;
+      arg*    := <filter(template-element-to-cons-arg);
+                  separate-by(|", ")> elem'*;
+      part*   := <newlines-switch(trim-layout, trim-trailing-layout, trim-leading-layout);
+                  listtd(template-element-to-stratego);
+                  concatenate-consecutive-strings;
+                  map(try(?String(<escape-and-double-quote>)));
+                  separate-by(|", ")> elem'*;
+      result  := <concat-strings>["t := <concat-strings> [", part*, "]"];
+      let*    := <filter(template-element-to-assignment)> elem'*;
+      let'*   := <separate-by(|";\n")> [let*, result]
 
   rename-template-element:
     Placeholder(_, Sort(x), _, _) -> <id>{<newname> x}
@@ -97,10 +98,18 @@ strategies
   template-element-to-cons-arg:
     Placeholder(_, _, _, _){name} -> name
 
-  template-element-to-stratego(|open, close) =
-      \Placeholder(_, _, _, _){name} -> $[[open][name]'[close]]\
-    + \String(t) -> t\
-    + \Layout(t) -> t\
+  template-element-to-stratego =
+       \[Newline(_), Indent(indent), Placeholder(_, _, _, _){name} | tail] ->
+         [$[<string-replace(|"\n", "\n[indent]")> [name]'] | tail]\
+    <+ [template-element-to-stratego' | id]
+    <+ []
+
+  template-element-to-stratego' =
+      \Placeholder(_, _, _, _){name} -> $[[name]']\
+    + \String(t) -> String(t)\
+    + \Layout(t) -> String(t)\
+    + \Indent(t) -> String(t)\
+    + \Newline(t) -> String(t)\
 
   template-element-to-assignment:
     Placeholder(_, Sort(x), None(), _){name} -> $[[name]' := <prettyprint-[x]> [name]]
@@ -109,9 +118,9 @@ strategies
     Placeholder(_, Sort(x), <Star() + Plus()>, Options(opt*)){name} -> t
     with
       if sep := <collect-one(?Separator(<id>))> opt* then
-        t := $[[name]' := <map(prettyprint-[x]); separate-by(|"[<escape> sep]")> [name]]
+        t := $[[name]' := <pp-list(prettyprint-[x]|"[<escape> sep]")> [name]]
       else
-        t := $[[name]' := <map(prettyprint-[x])> [name]]
+        t := $[[name]' := <pp-list(prettyprint-[x])> [name]]
       end
 
   template-element-to-assignment:

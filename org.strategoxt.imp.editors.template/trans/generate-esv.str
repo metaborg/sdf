@@ -53,7 +53,7 @@ strategies
     trim-layout;
     map(try(text-to-completion-part));
     concatenate-consecutive-strings;
-    map(try(escape-and-quote))
+    map(try(String(escape-and-double-quote)))
 
   template-sort-to-anno =
     CanNotBeBlank < !None() + !Blank()
@@ -101,45 +101,28 @@ strategies
     Newline(_) -> String("\n")
 
   text-to-completion-part:
-    Layout(t) -> String(t')
-    with
-      t' := <string-replace(|"\n  ", "\n\t");
-             repeat(where(is-substring(!"\t  ")); string-replace(|"\t  ", "\t\t"))> t
+    Layout(t) -> String(t)
+
+  text-to-completion-part:
+    Indent(t) -> String(<string-replace(|"  ", "\t")> t)
 
 // removing cursors (including layout before and newline after, if present)
 
   remove-cursor-except-first =
-       [Layout(id), Cursor(), Newline(id) | remove-cursor]
+       [Layout(id) + Indent(id), Cursor(), Newline(id) | remove-cursor]
     <+ [Cursor(), Newline(id) | remove-cursor]
-    <+ [Layout(id), Cursor() | remove-cursor]
+    <+ [Layout(id) + Indent(id), Cursor() | remove-cursor]
     <+ [Cursor() | remove-cursor]
     <+ [id | remove-cursor-except-first]
     <+ []
 
   remove-cursor =
-  	   \[Layout(_), Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
-  	<+ \[Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
-  	<+ \[Layout(_), Cursor() | tail] -> <remove-cursor> tail\
+       \[<?Layout(_) + ?Indent(_)>, Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
+    <+ \[Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
+    <+ \[<?Layout(_) + ?Indent(_)>, Cursor() | tail] -> <remove-cursor> tail\
     <+ \[Cursor() | tail] -> <remove-cursor> tail\
     <+ [id | remove-cursor]
     <+ []
-
-// concatenate consecutive parts
-
-  concatenate-consecutive-strings =
-       \[String(a), String(b) | tail] -> <concatenate-consecutive-strings> [String(<conc-strings> (a, b)) | tail]\
-    <+ [id | concatenate-consecutive-strings]
-    <+ []
-
-  escape-and-quote =
-    String(
-      string-replace(|"\t", "\\t");
-      string-replace(|"\r", "\\r");
-      string-replace(|"\n", "\\n");
-      string-replace(|"'", "\\'");
-      string-replace(|"\"", "\\\"");
-      double-quote
-	  )
 
 strategies
 

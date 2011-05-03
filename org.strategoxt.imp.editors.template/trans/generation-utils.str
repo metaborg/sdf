@@ -7,11 +7,14 @@ imports
 
 signature
   constructors
+    // Options
     Newlines : X
     ImportPath : X
     EsvOutput : X
     SdfOutput : X
     StrOutput : X
+    // Other
+    Indent : String -> Indent
 
 strategies // Utility strategies
 
@@ -24,10 +27,12 @@ strategies // Utility strategies
 
   trim-leading-layout =
     repeat(  \[Layout(_)  | tail] -> tail\
+           + \[Indent(_)  | tail] -> tail\
            + \[Newline(_) | tail] -> tail\ )
 
   trim-trailing-layout =
-    listbu(   \[Layout(_)] -> []\
+    listbu(   \[Layout(_)]  -> []\
+           <+ \[Indent(_)]  -> []\
            <+ \[Newline(_)] -> []\ <+ id)
 
   trim-layout =
@@ -59,10 +64,16 @@ strategies // Utility strategies
     end
 
   re-indent(|indent-string) =
-    \[Newline(x), Layout(y) | tail] -> [Layout(z) | tail']
+    \[Newline(_), Layout(indent) | tail] -> result
     with
-      z := <string-replace(|indent-string, "\n")> <conc-strings>(x, y);
-      tail' := <re-indent(|indent-string)> tail\
+      // Add a newline because indent-string contains a newline as anchor.
+      indent' := <string-replace(|indent-string, "")> <conc-strings>("\n", indent);
+      tail' := <re-indent(|indent-string)> tail;
+      if !indent' => "" then
+        result := [Newline("\n") | tail']
+      else
+        result := [Newline("\n"), Indent(indent') | tail']
+      end\
   <+
     \[head | tail] -> [head | <re-indent(|indent-string)> tail]\
   <+
@@ -84,6 +95,19 @@ strategies // Utility strategies
       !["/" | <id>]
     end;
     concat-strings
+
+  concatenate-consecutive-strings =
+       \[String(a), String(b) | tail] -> <concatenate-consecutive-strings> [String(<conc-strings> (a, b)) | tail]\
+    <+ [id | concatenate-consecutive-strings]
+    <+ []
+
+  escape-and-double-quote =
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"'", "\\'");
+    string-replace(|"\"", "\\\"");
+    double-quote
 
 strategies // Options
 
