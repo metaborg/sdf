@@ -1,0 +1,17 @@
+%% Grammar for the Template language
+%% By default, based on an example "entities" syntax
+module Template
+
+imports Common
+
+exports
+
+  context-free start-symbols
+    Start
+
+  context-free syntax
+  
+    "module" ID Definition*       -> Start {cons("Module")}
+    "entity" ID "{" Property* "}" -> Definition {cons("Entity")}
+    ID ":" Type                   -> Property {cons("Property")}
+    ID                            -> Type {cons("Type")}

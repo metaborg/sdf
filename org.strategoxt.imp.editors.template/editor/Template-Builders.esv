@@ -1,0 +1,29 @@
+
+module Template-Builders
+
+imports Template-Builders.generated
+
+builders
+
+  // This file can be used for custom analysis and builder rules.
+  //
+  // See the imported file for a brief introduction and examples.
+
+builders
+
+  provider : include/template.jar
+  provider : include/template-java.jar
+
+  observer : editor-analyze
+
+  // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
+  builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
+
+
+refactorings
+
+  pp-table                  : get-pp-table
+
+  // refactoring ID            : "Rename Entity" = rename-entity (source) (cursor)
+
+  // on save: generate-java
