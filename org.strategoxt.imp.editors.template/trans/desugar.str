@@ -3,17 +3,39 @@ imports
   libstratego-lib
   include/Template
 
+overlays
+
+  sdf-cons(name) = term(default(appl(unquoted("cons"), [fun(quoted(name))])))
+
 strategies
 
-  desugar-top = alltd(desugar)
+  desugar-top = downup(try(desugar))
 
 rules
+
+  desugar:
+    NoImports() -> Imports([])
 
   desugar:
     NoOptions() -> Options([])
 
   desugar:
+    no-attrs() -> attrs([])
+
+  desugar:
     SdfProduction(sort, symbol*, attr*) -> prod(symbol*, sort(sort), attr*)
+
+  desugar:
+    SdfProductionWithCons(sort, cons, symbol*, attrs(attr*)) ->
+      prod(symbol*, sort(sort), attrs(attr'*))
+    with
+      attr'* := [sdf-cons(<double-quote> cons)|attr*]
+
+  desugar:
+    TemplateProductionWithCons(sort, cons, tmpl, attrs(attr*)) ->
+      TemplateProduction(sort, tmpl, attrs(attr'*))
+    with
+      attr'* := [sdf-cons(<double-quote> cons)|attr*]
 
   desugar:
     Separator(x) -> Separator(<un-double-quote; unescape> x)

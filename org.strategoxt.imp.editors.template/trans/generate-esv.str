@@ -6,7 +6,7 @@ imports
   include/Template
   lib/pp
   analysis
-  generate-str
+  desugar
 
 strategies
 

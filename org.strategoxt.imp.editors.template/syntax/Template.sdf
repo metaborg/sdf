@@ -18,6 +18,10 @@ exports
     ID "=" SDF-Symbols SDF-Attributes -> SDF-Production {cons("SdfProduction")}
     ID "=" Template SDF-Attributes -> TemplateProduction {cons("TemplateProduction")}
 
+    %% template productions `sort.cons = ...'
+    ID "." ID "=" SDF-Symbols SDF-Attributes -> SDF-Production {cons("SdfProductionWithCons")}
+    ID "." ID "=" Template SDF-Attributes -> TemplateProduction {cons("TemplateProductionWithCons")}
+
     %% placeholders
     "<" PlaceholderPrefix1 PlaceholderSort PlaceholderSuffix PlaceholderOptions ">" -> TemplatePart1 {cons("Placeholder")}
     "[" PlaceholderPrefix2 PlaceholderSort PlaceholderSuffix PlaceholderOptions "]" -> TemplatePart2 {cons("Placeholder")}

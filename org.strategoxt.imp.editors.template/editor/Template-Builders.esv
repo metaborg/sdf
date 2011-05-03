@@ -18,6 +18,7 @@ builders
 
   // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
   builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
+  builder  : "Show desugared AST (for selection)" = generate-desugared-aterm (openeditor) (realtime) (meta) (source)
   builder  : "Generate ESV" = generate-esv (openeditor) (source)
   builder  : "Generate SDF" = generate-sdf (openeditor) (source)
   builder  : "Generate STR" = generate-str (openeditor) (source)

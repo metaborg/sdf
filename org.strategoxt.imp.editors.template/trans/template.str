@@ -39,6 +39,8 @@ rules // Main editor interface (defined by editor/Template-Builders and -Referen
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm = generate-aterm(id)
 
+  generate-desugared-aterm = generate-aterm(desugar-top)
+
   generate-esv = generate-esv(to-esv)
 
   generate-sdf = generate-sdf(to-sdf)

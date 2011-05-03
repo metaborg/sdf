@@ -3,11 +3,8 @@ imports
   libstratego-lib
   include/Template
   analysis
+  desugar
   generate-esv // for remove-first-and-last-layout, get-indent-string, re-indent
-
-overlays
-
-  sdf-cons(name) = term(default(appl(unquoted("cons"), [fun(quoted(name))])))
 
 strategies
 
