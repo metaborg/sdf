@@ -3,14 +3,14 @@ module Template.main
 imports Template-Builders Template-Colorer Template-Completions Template-Folding Template-Outliner Template-References Template-Syntax
 
 language General properties
-                  
+
   name          : Template
   id            : org.strategoxt.imp.editors.template
   extends       : Root
-                  
+
   description   : "Spoofax/IMP-generated editor for the Template language"
   url           : http://strategoxt.org
-                  
+
   extensions    : tmpl
   table         : include/Template.tbl
-  start symbols : Start
+  start symbols : Module

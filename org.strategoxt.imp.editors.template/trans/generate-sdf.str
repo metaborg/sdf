@@ -1,0 +1,196 @@
+module generate-sdf
+imports
+  libstratego-lib
+  libstratego-sglr
+  include/Template
+  lib/sdf-desugar
+  lib/sdf-parenthesize
+  lib/sdf-pretty-print
+  analysis
+
+strategies
+
+  to-sdf:
+    x -> <try(sdf-to-string)> d|[
+      definition
+      m*
+      module Completion-Support
+      exports
+        lexical syntax
+          [A-Za-z0-9]* "CONTENTCOMPLETE" [0-9]+ -> CONTENTCOMPLETE {avoid}
+        context-free syntax
+          p*
+    ]|
+    with
+      // all imported modules
+      m* := <all-keys-IsImported; map(Module; to-sdf-module);
+             // prepend Completion-Support include to first module
+             (  ["module"#([id, [imports(![ i|[ Completion-Support ]| |<id>]) | id], id]) |id]
+             <+ ["module"#([id, \[] -> [imports([ i|[ Completion-Support ]| ])]\, id]) |id])>;
+      // CONTENTCOMPLETE injections
+      p* := <all-keys-Declaration; map(sort-to-contentcomplete)>
+      // INSERTIONs
+      // FIXME: do not generate an insertion when one already exists
+      //p2* := <all-keys-Declaration; map(sort-to-insertion)> p1*;
+
+  to-sdf-module:
+    x -> m|[
+      module M
+      is*
+      exports
+        context-free syntax
+          p*
+      s*
+    ]|
+    with
+      // module name and imports
+      if <collect-one(?Module(M, import*, section*))> x then
+        is* := <   \Imports([]) -> []\
+                <+ \Imports(t) -> [imports(<map(\Import(M) -> i|[ M ]|\)> t)]\> import*
+      else
+        (M, is) := ("example", [])
+      end;
+      // main productions
+      p* := <collect-om(template-to-sdf)> x;
+      // lexical restrictions
+      let ends-with-identifier-char =
+        where(explode-string; un-double-quote-chars; last; (is-alphanum + '_'))
+      in
+        A* := <collect-om(?lit(<ends-with-identifier-char>));
+               nub; string-sort-ex> p*;
+        if !A* => [] then
+          restriction* := []
+        else
+          restriction* := [|[ lexical restrictions
+                                A* -/- [A-Za-z0-9\_] ]|]
+        end
+      end;
+      // SDF grammars
+      // (each one is put in a separate `exports' section because SDF doesn't
+      //  use a flat list for the grammars within a section, but a tree...)
+      section'* := <filter(\SDF-Grammar(t) -> exports(t)\)> section*;
+      s* := [restriction*, section'*]
+
+  sdf-to-string =
+    bottomup(try(
+        \conc-grammars(x, context-free-syntax([])) -> x\
+      + \conc-grammars(x, lexical-syntax([])) -> x\
+      + \conc-grammars(x, lexical-restrictions([])) -> x\
+    ));
+    sdf-desugar;
+    sdf-parenthesize;
+    pp-sdf-string
+
+  template-to-sdf:
+    TemplateProduction(S', Template(e* @[_|_]), attrs')
+      -> p|[ A* -> S' attrs' ]|
+    with
+      A* := <filter(template-element-to-sdf)> e*
+
+  template-to-sdf:
+    TemplateProduction(S', Template([]), attrs')
+      -> p|[ -> S' attrs' ]|
+
+  template-element-to-sdf:
+    Text(x) -> <string-to-sdf> x
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S'), None(), _) -> A|[ S' ]|
+
+  // TODO: this needs improvement, too much duplication and not readable enough
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S), Star(), Options(option*)) -> A|[ S* ]|
+    where <not(one(Separator(not(all-whitespace))))> option*
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S), Star(), Options(option*)) -> A|[ { S L }* ]|
+    where <one(Separator(not(all-whitespace)))> option*
+    with L := <separator-to-literal> option*
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S), Plus(), Options(option*)) -> A|[ S+ ]|
+    where <not(one(Separator(not(all-whitespace))))> option*
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S), Plus(), Options(option*)) -> A|[ { S L }+ ]|
+    where <one(Separator(not(all-whitespace)))> option*
+    with L := <separator-to-literal> option*
+
+  all-whitespace = string-as-chars(all(' ' + '\t' + '\r' + '\n'))
+  remove-whitespace = string-as-chars(filter(not(' ' + '\t' + '\r' + '\n')))
+  separator-to-literal = !lit(<collect-one(?Separator(<remove-whitespace>)); escape; double-quote>)
+
+  template-element-to-sdf:
+    Placeholder(_, Sort(S'), Option(), _) -> A|[ S'? ]|
+
+  sort-to-contentcomplete:
+    S' -> p|[ CONTENTCOMPLETE -> S' {cons("WATER"), avoid} ]|
+
+  sort-to-insertion:
+    S'@sort(x) -> p|[ -> S' {cons("INSERTION"), recover} ]|
+
+strategies
+
+  /**
+   * Sorts a list of terms on the outermost string within each term.
+   */
+  string-sort-ex =
+    qsort(
+      \(a, b) -> (<collect-one(is-string)> a, <collect-one(is-string)> b)\;
+      string-lt
+    )
+
+  string-to-sdf =
+    string-identifier-tokenize;
+    // FIXME: Case insensitive literals need ci-lit/single-quote.
+    map({raw, sdf:
+      ?raw; escape; !lit(<double-quote>); ?sdf;
+      if <explode-string; last; (is-alphanum + '_')> raw then
+        rules(Restrictions :+= sdf)
+      end
+    })
+
+  /**
+   * Split on the edges delimiting identifiers and then strip layout
+   * from the resulting tokens and remove empty tokens.
+   * E.g. " func ( x y )" => ["func", "(", "x", "y", ")"]
+   */
+  string-identifier-tokenize =
+    // FIXME: Use layout defined by the language.
+    let is-layout = ' ' + '\t' + '\n' + '\r'
+        strip-layout = string-as-chars(filter(not(is-layout)))
+    in
+      // FIXME: Use identifier lexical defined by the language.
+      string-edge-tokenize(is-alphanum + '_');
+      filter(strip-layout; not(""))
+    end
+
+  /**
+   * @see edge-tokenize
+   */
+  string-edge-tokenize(s) =
+    explode-string;
+    edge-tokenize(s);
+    map(implode-string)
+
+  /**
+   * Edge-triggered tokenizer; a new token starts whenever s starts
+   * succeeding or starts failing, i.e. when for two consecutive list items
+   * s succeeds on the first item but s fails on the second item or
+   * s fails on the first item and s succeeds on the second item.
+   */
+  edge-tokenize(s) =
+    ?[first | tail];
+    if second := <Hd> tail then
+      tokens := <edge-tokenize(s)> tail;
+      if (<s> first; <not(s)> second) +
+         (<not(s)> first; <s> second) then
+        ![[first] | tokens]
+      else
+        [firstToken | restTokens] := tokens;
+        ![[first | firstToken] | restTokens]
+      end
+    else
+      ![[first]]
+    end

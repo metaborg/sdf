@@ -8,6 +8,7 @@ imports
   lib/editor-common.generated
   analysis
   desugar
+  generate-sdf
 
 rules // Main editor interface (defined by editor/Template-Builders and -References.esv)
 
@@ -22,9 +23,16 @@ rules // Main editor interface (defined by editor/Template-Builders and -Referen
       warnings := [];
       notes    := []
 
-  // Prints the abstract syntax ATerm of a selection.
-  generate-aterm:
+  generate(s|ext):
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"aterm")> path;
-      result   := selected // we just return the input term
+      filename := <guarantee-extension(|ext)> path;
+      result   := <s> selected
+
+  generate-aterm(s) = generate(s|"aterm")
+  generate-sdf(s) = generate(s|"def")
+
+  // Prints the abstract syntax ATerm of a selection.
+  generate-aterm = generate-aterm(id)
+
+  generate-sdf = generate-sdf(to-sdf)
