@@ -1,0 +1,91 @@
+module analysis
+imports
+  libstratego-lib
+  include/Template
+  lib/editor-common.generated
+
+strategies
+
+  analyze:
+    (ast, path, project-path) -> ast'
+    with
+      current-file := $[[project-path]/[path]];
+      rules(
+        CurrentDir  := <dirname> $[[project-path]/[path]]
+        CurrentFile := <base-filename> path
+        IsImported  :  current-file
+        ProjectDir  := project-path
+      )
+    with
+      ast' := <declare-globals-top> ast;
+      rules(Module : current-file -> ast')
+
+  declare-globals-top = alltd(declare-globals)
+
+  declare-globals:
+    T@ Template-Production(S, Template(e*), _) -> <id>
+    with
+      rules(Template :+ S -> T);
+      <declare-can-not-be-blank> e*
+
+  declare-globals:
+    template@ TemplateProduction(sort, Template(part*), attrs) ->
+      TemplateProduction(sort, Template(part'*), attrs)
+    with
+      rules(Template :+ sort -> template);
+      part'* := <declare-can-not-be-blank> part*
+    with
+      <Declaration> sort
+    <+
+      // file := <CurrentFile>;
+      rules(
+        Declaration: sort -> template
+        // DeclarationFile: sort -> file
+      )
+    with
+      <alltd(declare-use)> part*
+
+  declare-can-not-be-blank =
+       ?[Newline(_), Layout(_), Placeholder(_, _, _, _), Newline(_) | _];
+       // debug(!"match 1: ");
+       [id, id, id | declare-can-not-be-blank]
+    <+ ?[Newline(_), Placeholder(_, _, _, _), Newline(_) | _];
+       // debug(!"match 2: ");
+       [id, id | declare-can-not-be-blank]
+    <+ ?[Placeholder(_, Sort(x), _, _) | _];
+       // debug(!"match 3: ");
+       [id | declare-can-not-be-blank];
+       rules(CanNotBeBlank :+ x -> x)
+    <+ ?[_ | _];
+       // debug(!"match 4: ");
+       [id | declare-can-not-be-blank]
+    <+ ?[]
+       // debug(!"match 5: ")
+
+  declare-globals:
+    Import(x) -> <id>
+    with
+      <open-import(
+        resolve-import => current-file
+      , parse-template-file <+ <debug(!"Parsing failed: ")> x
+      , declare-globals-top; ?ast; rules(Module : current-file -> ast)
+        <+ <debug(!"Declare-globals-top failed: ")> x
+      )> x
+   <+
+      <debug(!"Import failed: ")> x
+
+  resolve-import =
+    // TODO: better import handling
+    \x -> $[[<CurrentDir>]/[x].tmpl]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/[x].tmpl]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/syntax/[x].tmpl]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/[x].sdf]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/syntax/[x].sdf]\; file-exists
+  <+
+    \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
+  <+
+    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
