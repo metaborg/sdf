@@ -104,9 +104,11 @@ rules // Code generation
           <refresh-workspace-file> filename
         }
       in
-        gen(to-esv, get-esv-output-path | "ESV", "esv");
-        gen(to-sdf, get-sdf-output-path | "SDF", "def");
-        gen(to-str, get-str-output-path | "STR", "str")
+        esv-modulename := <get-esv-output-path; base-filename; remove-extension>;
+        str-modulename := <get-str-output-path; base-filename; remove-extension>;
+        gen(to-esv(|esv-modulename), get-esv-output-path | "ESV", "esv");
+        gen(to-sdf                 , get-sdf-output-path | "SDF", "def");
+        gen(to-str(|str-modulename), get-str-output-path | "STR", "str")
       end
 
   // When given a tuple (path, string) this writes string into path.

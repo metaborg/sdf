@@ -18,9 +18,15 @@ strategies
         ProjectDir  := project-path
       )
     with // default options
+      esv-output-path := <guarantee-extension(|"esv")> current-file;
+      sdf-output-path := <guarantee-extension(|"def")> current-file;
+      str-output-path := <guarantee-extension(|"str")> current-file;
       rules(
         Options :+ Newlines() -> None()
         Options :+ ImportPath() -> "."
+        Options :+ EsvOutput() -> esv-output-path
+        Options :+ SdfOutput() -> sdf-output-path
+        Options :+ StrOutput() -> str-output-path
       )
     with
       <debug(!"Analyzing: ")> current-file

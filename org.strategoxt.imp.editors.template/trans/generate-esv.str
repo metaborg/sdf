@@ -11,14 +11,17 @@ imports
 
 strategies
 
-  to-esv:
-    Module(modulename, _, _) -> <try(pp-descriptor-to-string)> |[
+  to-esv(|modulename):
+    Module(_, _, _) -> <try(pp-descriptor-to-string)> |[
       module ~modulename
       ~sections
     ]|
     with
       // all imported modules
       sections := <all-keys-IsImported; map(Module; to-esv-module)>
+
+  to-esv:
+    Module(modulename, _, _) -> <to-esv(|modulename)>
 
   to-esv-module:
     Module(modulename, _, _) -> |[

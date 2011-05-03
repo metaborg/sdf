@@ -8,8 +8,8 @@ imports
 
 strategies
 
-  to-str:
-    Module(modulename, _, _) ->
+  to-str(|modulename):
+    Module(_, _, _) ->
     $[module [modulename]
       imports
         libstratego-lib
@@ -34,6 +34,9 @@ strategies
       sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> module*;
       sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
       strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
+
+  to-str:
+    Module(modulename, _, _) -> <to-str(|modulename)>
 
   to-str-module:
     m@ Module(modulename, _, _) ->
