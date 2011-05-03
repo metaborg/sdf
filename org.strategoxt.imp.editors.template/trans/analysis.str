@@ -3,6 +3,7 @@ imports
   libstratego-lib
   include/Template
   lib/editor-common.generated
+  desugar
 
 strategies
 
@@ -17,7 +18,7 @@ strategies
         ProjectDir  := project-path
       )
     with
-      ast' := <declare-globals-top> ast;
+      ast' := <desugar-top; declare-globals-top> ast;
       rules(Module : current-file -> ast')
 
   declare-globals-top = alltd(declare-globals)
@@ -47,20 +48,15 @@ strategies
 
   declare-can-not-be-blank =
        ?[Newline(_), Layout(_), Placeholder(_, _, _, _), Newline(_) | _];
-       // debug(!"match 1: ");
        [id, id, id | declare-can-not-be-blank]
     <+ ?[Newline(_), Placeholder(_, _, _, _), Newline(_) | _];
-       // debug(!"match 2: ");
        [id, id | declare-can-not-be-blank]
     <+ ?[Placeholder(_, Sort(x), _, _) | _];
-       // debug(!"match 3: ");
        [id | declare-can-not-be-blank];
        rules(CanNotBeBlank :+ x -> x)
     <+ ?[_ | _];
-       // debug(!"match 4: ");
        [id | declare-can-not-be-blank]
     <+ ?[]
-       // debug(!"match 5: ")
 
   declare-globals:
     Import(x) -> <id>
@@ -68,7 +64,7 @@ strategies
       <open-import(
         resolve-import => current-file
       , parse-template-file <+ <debug(!"Parsing failed: ")> x
-      , declare-globals-top; ?ast; rules(Module : current-file -> ast)
+      , desugar-top; declare-globals-top; ?ast; rules(Module : current-file -> ast)
         <+ <debug(!"Declare-globals-top failed: ")> x
       )> x
    <+

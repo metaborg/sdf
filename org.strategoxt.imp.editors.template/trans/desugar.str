@@ -1,0 +1,19 @@
+module desugar
+imports
+  libstratego-lib
+  include/Template
+
+strategies
+
+  desugar-top = alltd(desugar)
+
+rules
+
+  desugar:
+    NoOptions() -> Options([])
+
+  desugar:
+    SdfProduction(sort, symbol*, attr*) -> prod(symbol*, sort(sort), attr*)
+
+  desugar:
+    Separator(x) -> Separator(<un-double-quote; unescape> x)
