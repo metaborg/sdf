@@ -1,0 +1,119 @@
+module generate-str
+imports
+  libstratego-lib
+  include/Template
+  analysis
+  generate-esv // for remove-first-and-last-layout, get-indent-string, re-indent
+
+overlays
+
+  sdf-cons(name) = term(default(appl(unquoted("cons"), [fun(quoted(name))])))
+
+strategies
+
+  to-str:
+    Module(modulename, _, _) ->
+    $[module [modulename]
+      imports
+        libstratego-lib
+
+      strategies
+
+        pp-option(s) = \None() -> ""\ + \Some(t) -> <s> t\
+
+      [section*]
+
+      strategies // all other sorts used in placeholders
+
+        [strategy*]]
+    with
+      // all imported modules
+      module*  := <all-keys-IsImported; map(Module)>;
+      section* := <map(to-str-module); separate-by(|"\n\n")>
+    with
+      // All sorts used in pp minus all sorts for which a pp strategy has been
+      // created will get a `prettyprint-sort = is-string' default strategy.
+      sorts-used-in-pp := <collect-om(sort-used-in-prettyprinting); nub> module*;
+      sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> module*;
+      sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
+      strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
+
+  to-str-module:
+    m@ Module(modulename, _, _) ->
+    $[strategies // [modulename]
+
+        [strategy*]]
+    with
+      strategy* := <collect-om(template-to-prettyprint-strategy); separate-by(|"\n\n")>
+
+strategies
+
+  sort-to-prettyprint-strategy:
+    sort -> $[prettyprint-[sort] = is-string]
+
+  sort-decl-in-prettyprinting:
+    TemplateProduction(sort, Template(_), _) -> sort
+
+  sort-used-in-prettyprinting:
+    Placeholder(_, Sort(sort), _, _) -> sort
+
+  template-to-prettyprint-strategy:
+    TemplateProduction(sort, Template(e*), attr*) ->
+    <trim-chars(' ' + '\t' + '\r' + '\n')> // Workaround Stratego/856
+    $[prettyprint-[sort]:
+        [cons]([arg*]) ->
+        [w857]
+        [with']]
+    with
+      (open, close) := <choose-braces> e*;
+      is    := <get-indent-string> e*;
+      e'*   := <re-indent(|is);
+                map(try(rename-template-element))> e*;
+      cons  := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
+      arg*  := <filter(template-element-to-cons-arg);
+                separate-by(|", ")> e'*;
+      part* := <remove-first-and-last-layout;
+                filter(template-element-to-stratego(|open, close))> e'*;
+      let*  := <filter(template-element-to-assignment);
+                separate-by(|";\n")> e'*;
+      with' := <if !let* => [] then !"" else !$[with
+                                                  [let*]] end>;
+      // Workaround Stratego/857
+      w857  := <string-replace(|"\n", "\n  ")>
+                <concat-strings>["$", open, part*, close]
+
+  choose-braces =
+    chars := <filter(?String(<id>)); concat-strings; explode-string>;
+    block := <length> <filter('[' + ']')> chars;
+    curly := <length> <filter('{' + '}')> chars;
+    round := <length> <filter('(' + ')')> chars;
+    ( where(!block => 0) < !("[", "]")
+    + where(!curly => 0) < !("{", "}")
+    + where(!round => 0) < !("(", ")")
+    + <debug> "no suitable braces found"; fail)
+
+  rename-template-element:
+    Placeholder(_, Sort(x), _, _) -> <id>{<newname> x}
+
+  template-element-to-cons-arg:
+    Placeholder(_, _, _, _){name} -> name
+
+  template-element-to-stratego(|open, close) =
+      \Placeholder(_, _, _, _){name} -> $[[open][name]'[close]]\
+    + \String(t) -> t\
+    + \Layout(t) -> t\
+
+  template-element-to-assignment:
+    Placeholder(_, Sort(x), None(), _){name} -> $[[name]' := <prettyprint-[x]> [name]]
+
+  template-element-to-assignment:
+    Placeholder(_, Sort(x), <Star() + Plus()>, Options(opt*)){name} -> t
+    with
+      if sep := <collect-one(?Separator(<id>))> opt* then
+        t := $[[name]' := <map(prettyprint-[x]); separate-by(|"[<escape> sep]")> [name]]
+      else
+        t := $[[name]' := <map(prettyprint-[x])> [name]]
+      end
+
+  template-element-to-assignment:
+    Placeholder(_, Sort(x), Option(), _){name} -> $[[name]' := <pp-option(prettyprint-[x])> [name]]
