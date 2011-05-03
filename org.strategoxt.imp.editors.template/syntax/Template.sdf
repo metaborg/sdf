@@ -1,17 +1,78 @@
-%% Grammar for the Template language
-%% By default, based on an example "entities" syntax
 module Template
-
-imports Common
+imports
+  Common
+  Module
+  SdfKeywords
+  SdfRenamed
 
 exports
-
   context-free start-symbols
-    Start
+    Module
 
   context-free syntax
-  
-    "module" ID Definition*       -> Start {cons("Module")}
-    "entity" ID "{" Property* "}" -> Definition {cons("Entity")}
-    ID ":" Type                   -> Property {cons("Property")}
-    ID                            -> Type {cons("Type")}
+    %% "grammars"
+    "templates" TemplateProduction* -> Grammar {cons("Templates")}
+    %% "completion" "templates" CompletionTemplate* -> Grammar {cons("Templates")}
+
+    %% template productions
+    ID "=" SDF-Symbols SDF-Attributes -> SDF-Production {cons("SdfProduction")}
+    ID "=" Template SDF-Attributes -> TemplateProduction {cons("TemplateProduction")}
+
+    %% placeholders
+    "<" PlaceholderPrefix1 PlaceholderSort PlaceholderSuffix PlaceholderOptions ">" -> TemplatePart1 {cons("Placeholder")}
+    "[" PlaceholderPrefix2 PlaceholderSort PlaceholderSuffix PlaceholderOptions "]" -> TemplatePart2 {cons("Placeholder")}
+
+    -> PlaceholderPrefix1 {cons("None")}
+    -> PlaceholderPrefix2 {cons("None")}
+    PlaceholderText1 ":" -> PlaceholderPrefix1 {cons("Text")}
+    PlaceholderText2 ":" -> PlaceholderPrefix2 {cons("Text")}
+
+    ID -> PlaceholderSort {cons("Sort")}
+
+        -> PlaceholderSuffix {cons("None")}
+    "*" -> PlaceholderSuffix {cons("Star")}
+    "+" -> PlaceholderSuffix {cons("Plus")}
+    "?" -> PlaceholderSuffix {cons("Option")}
+
+                                 -> PlaceholderOptions {cons("NoOptions")}
+    ";" {PlaceholderOption ","}+ -> PlaceholderOptions {cons("Options")}
+
+    "wrap"                 -> PlaceholderOption {cons("Wrap")}
+    "anchor"               -> PlaceholderOption {cons("Anchor")}
+    "separator" "=" STRING -> PlaceholderOption {cons("Separator")}
+
+  syntax
+    %% templates
+    "<<" <TemplatePart1-CF>* ">>" -> <Template-CF> {cons("Template")}
+    <TemplatePart1-LEX>   -> <TemplatePart1-CF> {cons("String")}
+    <TemplateLayout-LEX>  -> <TemplatePart1-CF> {cons("Layout")}
+    <TemplateNewline-LEX> -> <TemplatePart1-CF> {cons("Newline")}
+
+    "[[" <TemplatePart2-CF>* "]]" -> <Template-CF> {cons("Template")}
+    <TemplatePart2-LEX>   -> <TemplatePart2-CF> {cons("String")}
+    <TemplateLayout-LEX>  -> <TemplatePart2-CF> {cons("Layout")}
+    <TemplateNewline-LEX> -> <TemplatePart2-CF> {cons("Newline")}
+
+    "\"" <TemplatePart3-CF>* "\"" -> <Template-CF> {cons("Template")}
+    <TemplatePart3-LEX>   -> <TemplatePart3-CF> {cons("String")}
+    <TemplateLayout-LEX>  -> <TemplatePart3-CF> {cons("Layout")}
+    <TemplateNewline-LEX> -> <TemplatePart3-CF> {cons("Newline")}
+
+  lexical syntax
+    [\ \t\r]* [\n]   -> TemplateNewline
+    [\ \t\r]+        -> TemplateLayout
+    ~[\<\>\ \t\r\n]+ -> TemplatePart1
+    ~[\[\]\ \t\r\n]+ -> TemplatePart2
+    ~[\"\ \t\r\n]+   -> TemplatePart3
+
+    ~[\<\>\:]+ -> PlaceholderText1
+    ~[\[\]\:]+ -> PlaceholderText2
+
+  lexical restrictions
+    TemplateLayout -/- [\ \t\r\n]
+    TemplatePart1  -/- ~[\<\>\ \t\r\n]
+    TemplatePart2  -/- ~[\[\]\ \t\r\n]
+    TemplatePart3  -/- ~[\"\ \t\r\n]
+
+    PlaceholderText1 -/- ~[\:]
+    PlaceholderText2 -/- ~[\:]

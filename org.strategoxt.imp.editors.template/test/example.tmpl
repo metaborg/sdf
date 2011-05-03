@@ -1,18 +1,27 @@
 module example
 
-// Example "Template" program (see syntax/Template.sdf for the grammar)
+templates
 
-entity User {
-  name     : String
-  password : String
-  homepage : URL
-}
+  Start = <<
+    module <modulename : ID>
+    <Definition* ; separator="\n">
+  >> {cons("Module")}
 
-entity BlogPosting {
-  poster : User
-  body   : String
-}
+  Definition = <<
+    entity <ID> {
+      <Property* ; separator="\n">
+    }
+  >> {cons("Entity"), blank}
 
-entity URL {
-  location : String
-}
+  Property = [[
+    [x : ID] : [T : Type]
+  ]] {cons("Property"), blank}
+
+context-free syntax
+
+  Type = ID {cons("Type")}
+
+lexical syntax
+
+  [A-Za-z][A-Za-z0-9]* -> ID
+  CONTENTCOMPLETE = [A-Za-z0-9]* "CONTENTCOMPLETE" [0-9]+ {cons("CONTENTCOMPLETE")}
