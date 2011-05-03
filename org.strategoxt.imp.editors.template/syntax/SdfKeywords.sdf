@@ -25,4 +25,5 @@ exports
 
   %% non-SDF keywords
   context-free syntax
+    "options"           -> ModuleName {reject}
     "templates"         -> ModuleName {reject}

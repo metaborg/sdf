@@ -7,6 +7,7 @@ imports
   lib/sdf-parenthesize
   lib/sdf-pretty-print
   analysis
+  generation-utils
 
 strategies
 
@@ -85,14 +86,29 @@ strategies
     TemplateProduction(S', Template(e* @[_|_]), attrs')
       -> p|[ A* -> S' attrs' ]|
     with
-      A* := <filter(template-element-to-sdf)> e*
+      A* := <newlines-switch(id, trim-trailing-layout, trim-leading-layout);
+             filter(template-element-to-sdf)> e*
 
   template-to-sdf:
     TemplateProduction(S', Template([]), attrs')
       -> p|[ -> S' attrs' ]|
 
   template-element-to-sdf:
-    Text(x) -> <string-to-sdf> x
+    Newline(_){ /* neither Leading() nor Trailing() */ } -> A|[ "\\n" ]|
+    where not(use-no-newlines)
+
+  template-element-to-sdf:
+    Newline(_) -> A|[ "\\n" ]|
+    where use-leading-newlines
+    where not(has-anno(|Leading()))
+
+  template-element-to-sdf:
+    Newline(_) -> A|[ "\\n" ]|
+    where use-trailing-newlines
+    where not(has-anno(|Trailing()))
+
+  template-element-to-sdf:
+    String(x) -> <string-to-sdf> x
 
   template-element-to-sdf:
     Placeholder(_, Sort(S'), None(), _) -> A|[ S' ]|

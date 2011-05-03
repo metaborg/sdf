@@ -4,6 +4,7 @@ imports
   include/Template
   lib/editor-common.generated
   desugar
+  generation-utils
 
 strategies
 
@@ -17,6 +18,8 @@ strategies
         IsImported  :  current-file
         ProjectDir  := project-path
       )
+    with // default options
+      rules(Option :+ Newlines() -> None())
     with
       ast' := <desugar-top; declare-globals-top> ast;
       rules(Module : current-file -> ast')
@@ -24,17 +27,16 @@ strategies
   declare-globals-top = alltd(declare-globals)
 
   declare-globals:
-    T@ Template-Production(S, Template(e*), _) -> <id>
+    Newlines(t) -> <id>
     with
-      rules(Template :+ S -> T);
-      <declare-can-not-be-blank> e*
+      rules(Option :+ Newlines() -> t)
 
   declare-globals:
     template@ TemplateProduction(sort, Template(part*), attrs) ->
       TemplateProduction(sort, Template(part'*), attrs)
     with
       rules(Template :+ sort -> template);
-      part'* := <declare-can-not-be-blank> part*
+      part'* := <declare-placeholders> part*
     with
       <Declaration> sort
     <+
@@ -46,16 +48,18 @@ strategies
     with
       <alltd(declare-use)> part*
 
-  declare-can-not-be-blank =
+  declare-placeholders =
        ?[Newline(_), Layout(_), Placeholder(_, _, _, _), Newline(_) | _];
-       [id, id, id | declare-can-not-be-blank]
+       [add-anno(|Leading()), id, id, add-anno(|Trailing()) | id];
+       [id, id, id | declare-placeholders]
     <+ ?[Newline(_), Placeholder(_, _, _, _), Newline(_) | _];
-       [id, id | declare-can-not-be-blank]
+       [add-anno(|Leading()), id, add-anno(|Trailing()) | id];
+       [id, id | declare-placeholders]
     <+ ?[Placeholder(_, Sort(x), _, _) | _];
-       [id | declare-can-not-be-blank];
+       [id | declare-placeholders];
        rules(CanNotBeBlank :+ x -> x)
     <+ ?[_ | _];
-       [id | declare-can-not-be-blank]
+       [id | declare-placeholders]
     <+ ?[]
 
   declare-globals:

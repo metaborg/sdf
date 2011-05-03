@@ -4,7 +4,7 @@ imports
   include/Template
   analysis
   desugar
-  generate-esv // for remove-first-and-last-layout, get-indent-string, re-indent
+  generation-utils
 
 strategies
 
@@ -69,7 +69,7 @@ strategies
       cons  := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
       arg*  := <filter(template-element-to-cons-arg);
                 separate-by(|", ")> e'*;
-      part* := <remove-first-and-last-layout;
+      part* := <trim-layout;
                 filter(template-element-to-stratego(|open, close))> e'*;
       let*  := <filter(template-element-to-assignment);
                 separate-by(|";\n")> e'*;

@@ -7,6 +7,7 @@ imports
   lib/pp
   analysis
   desugar
+  generation-utils
 
 strategies
 
@@ -44,7 +45,7 @@ strategies
 
   template-elements-to-completion-parts =
     ?e*;
-    remove-first-and-last-layout;
+    trim-layout;
     map(try(placeholder-to-completion-part));
     remove-cursor-except-first;
 	  if indent := <get-indent-string> e* then
@@ -56,15 +57,6 @@ strategies
 
   template-sort-to-anno =
     CanNotBeBlank < !None() + !Blank()
-
-  remove-first-and-last-layout =
-    repeat(  \[Layout(_)  | tail] -> tail\
-           + \[Newline(_) | tail] -> tail\ );
-    // FIXME: This part only needs to run if the template will get a (blank) anno!
-    listbu(   \[Layout(_)] -> []\
-           <+ \[Newline(_)] -> []\ <+ id)
-
-// first pass
 
   placeholder-to-completion-part:
     Placeholder(Text(name), Sort(sort), None(), _) -> PlaceholderWithSort($[<[name]:], sort)
@@ -87,7 +79,7 @@ strategies
     <divr> (<length> <filter(?String(_))> e*, <length> e*)
 
   template-elements-to-string =
-    remove-first-and-last-layout;
+    trim-layout;
     filter(
          \Placeholder(Text(x), _, _, _) -> x\
       <+ \Placeholder(None(), Sort(x), _, _) -> x\
@@ -104,26 +96,6 @@ strategies
 
   placeholder-to-completion-part:
     Placeholder(_, _, Star(), _) -> Cursor()
-
-// second (re-indent) pass
-
-  get-indent-string =
-    filter(not(?Layout(_) + ?Newline(_)); origin-column); list-min => size;
-    // Build string from right to left, as list.
-    ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
-    implode-string
-
-  re-indent(|indent-string) =
-    \[Newline(x), Layout(y) | tail] -> [Layout(z) | tail']
-    with
-      z := <string-replace(|indent-string, "\n")> <conc-strings>(x, y);
-      tail' := <re-indent(|indent-string)> tail\
-  <+
-    \[head | tail] -> [head | <re-indent(|indent-string)> tail]\
-  <+
-    []
-
-// third pass
 
   text-to-completion-part:
     Newline(_) -> String("\n")

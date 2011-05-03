@@ -1,0 +1,13 @@
+module Options
+imports
+  Common
+
+exports
+  context-free syntax
+    "options" Option* -> Grammar {cons("Options")}
+
+    "newlines" ":" NewlineOptionValue -> Option {cons("Newlines")}
+
+    "none"     -> NewlineOptionValue {cons("None")}
+    "leading"  -> NewlineOptionValue {cons("Leading")}
+    "trailing" -> NewlineOptionValue {cons("Trailing")}

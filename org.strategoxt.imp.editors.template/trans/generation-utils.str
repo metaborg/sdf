@@ -1,0 +1,57 @@
+module generation-utils
+imports
+  libstratego-lib
+  lib/editor-common.generated
+  include/Template
+
+signature
+  constructors
+    Newlines : X
+
+strategies
+
+  add-anno(|anno):
+    x{a*} -> x{anno, a*}
+
+  has-anno(|anno):
+    x{a*} -> <id>
+    where <one(?anno)> a*
+
+  trim-leading-layout =
+    repeat(  \[Layout(_)  | tail] -> tail\
+           + \[Newline(_) | tail] -> tail\ )
+
+  trim-trailing-layout =
+    listbu(   \[Layout(_)] -> []\
+           <+ \[Newline(_)] -> []\ <+ id)
+
+  trim-layout =
+    trim-leading-layout;
+    trim-trailing-layout
+
+  get-indent-string =
+    filter(not(?Layout(_) + ?Newline(_)); origin-column); list-min => size;
+    // Build string from right to left, as list.
+    ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
+    implode-string
+
+  re-indent(|indent-string) =
+    \[Newline(x), Layout(y) | tail] -> [Layout(z) | tail']
+    with
+      z := <string-replace(|indent-string, "\n")> <conc-strings>(x, y);
+      tail' := <re-indent(|indent-string)> tail\
+  <+
+    \[head | tail] -> [head | <re-indent(|indent-string)> tail]\
+  <+
+    []
+
+  use-no-newlines       = <Option> Newlines() => None()
+  use-leading-newlines  = <Option> Newlines() => Leading()
+  use-trailing-newlines = <Option> Newlines() => Trailing()
+
+  newlines-switch(none, leading, trailing) =
+    switch <Option> Newlines()
+      case ?None(): none
+      case ?Leading(): leading
+      case ?Trailing(): trailing
+    end
