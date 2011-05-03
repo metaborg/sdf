@@ -19,6 +19,7 @@ builders
   // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
   builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
   builder  : "Generate SDF (for selection)" = generate-sdf (openeditor) (source)
+  builder  : "Generate ESV (for selection)" = generate-esv (openeditor) (source)
 
 refactorings
 

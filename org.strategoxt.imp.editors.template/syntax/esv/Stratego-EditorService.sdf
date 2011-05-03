@@ -31,6 +31,9 @@ exports
                  "|[" FoldingRule  "]|" -> Term[[StrategoHost]] {cons("ToMetaExpr"), avoid}
                  "|[" SemanticRule "]|" -> Term[[StrategoHost]] {cons("ToMetaExpr")}
 
+    "descriptor" "|[" Section "]|" -> Term[[StrategoHost]] {cons("ToMetaExpr")}
+                 "|[" Section "]|" -> Term[[StrategoHost]] {cons("ToMetaExpr")}
+
     QuotedTerm -> Id {cons("FromMetaExpr"), avoid}
     QuotedTerm -> PropertyValue {cons("FromMetaExpr"), avoid}
     QuotedTerm -> URL {cons("FromMetaExpr"), avoid}
@@ -40,6 +43,8 @@ exports
     QuotedTerm -> SectionName {cons("FromMetaExpr")}
     QuotedTerm -> SemanticRule {cons("FromMetaExpr"), avoid}
     QuotedTerm -> CompletionPart {cons("FromMetaExpr")}
+    QuotedTerm -> Section {cons("FromMetaExpr")}
+    QuotedTerm -> String {cons("FromMetaExpr")}
 
     QuotedTerms -> OutlineRule*   {cons("FromMetaExpr")}
     QuotedTerms -> ColorRule*     {cons("FromMetaExpr")}
@@ -47,6 +52,7 @@ exports
     QuotedTerms -> PropertyValues {cons("FromMetaExpr")}
     QuotedTerms -> SemanticRule*  {cons("FromMetaExpr")}
     QuotedTerms -> CompletionPart* {cons("FromMetaExpr")}
+    QuotedTerms -> Section*        {cons("FromMetaExpr")}
 
     "~"  Term[[StrategoHost]] -> QuotedTerm  {bracket}
     "~*" Term[[StrategoHost]] -> QuotedTerms {bracket}

@@ -14,13 +14,17 @@ signature
     Persistent                 : BuilderOption
     RealTime                   : BuilderOption
     OpenEditor                 : BuilderOption
+    Linked                     : CompletionAnno
     Blank                      : CompletionAnno
     Disable                    : CompletionAnno
-    None                       : CompletionAnno
-    Placeholder                : PlaceholderWithSortPrefix * Id -> CompletionPart
+                               : CompletionAnno -> OptCompletionAnno
+    None                       : OptCompletionAnno
+    PlaceholderWithSort        : PlaceholderWithSortPrefix * Id -> CompletionPart
     Cursor                     : CompletionPart
     Placeholder                : Placeholder -> CompletionPart
                                : String -> CompletionPart
+    CompletionPrefix           : String -> CompletionPrefix
+    NoCompletionPrefix         : CompletionPrefix
                                : String -> Placeholder
                                : String -> PlaceholderWithSortPrefix
                                : String -> AttributeId
@@ -102,13 +106,12 @@ signature
     BuilderCaption             : PropertyValue -> SemanticRule
     Builder                    : String * StrategoCall * List(BuilderOption) -> SemanticRule
     SemanticObserver           : StrategoCall -> SemanticRule
-    CompletionTrigger          : PropertyValue * CompletionAnno -> SemanticRule
-    CompletionTemplateWithSort : Sort * PropertyValue * List(CompletionPart) * CompletionAnno -> SemanticRule
-    CompletionTemplate         : PropertyValue * List(CompletionPart) * CompletionAnno -> SemanticRule
-    CompletionTemplateWithSort : Sort * CompletionPart * List(CompletionPart) * CompletionAnno -> SemanticRule
-    CompletionTemplate         : Id * List(CompletionPart) * CompletionAnno -> SemanticRule
-    CompletionTemplate         : CompletionPart * List(CompletionPart) * CompletionAnno -> SemanticRule
-    CompletionKeyword          : PropertyValue * CompletionAnno -> SemanticRule
+    CompletionTemplateEx       : List(Sort) * CompletionPrefix * List(CompletionPart) * List(CompletionAnno) -> SemanticRule
+    CompletionTrigger          : PropertyValue * OptCompletionAnno -> SemanticRule
+    CompletionTemplateEx       : List(Sort) * PropertyValue * List(CompletionPart) * List(CompletionAnno) -> SemanticRule
+    CompletionTemplateWithSort : Sort * CompletionPart * List(CompletionPart) * OptCompletionAnno -> SemanticRule
+    CompletionTemplate         : Id * List(CompletionPart) * OptCompletionAnno -> SemanticRule
+    CompletionKeyword          : PropertyValue * OptCompletionAnno -> SemanticRule
     IdentifierLexical          : PropertyValue -> SemanticRule
     CompletionProposer         : StrategoCall -> SemanticRule
     OccurrenceRule             : SemanticNode * StrategoCall -> SemanticRule

@@ -9,6 +9,7 @@ imports
   analysis
   desugar
   generate-sdf
+  generate-esv
 
 rules // Main editor interface (defined by editor/Template-Builders and -References.esv)
 
@@ -31,8 +32,11 @@ rules // Main editor interface (defined by editor/Template-Builders and -Referen
 
   generate-aterm(s) = generate(s|"aterm")
   generate-sdf(s) = generate(s|"def")
+  generate-esv(s) = generate(s|"esv")
 
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm = generate-aterm(id)
 
   generate-sdf = generate-sdf(to-sdf)
+
+  generate-esv = generate-esv(to-esv)

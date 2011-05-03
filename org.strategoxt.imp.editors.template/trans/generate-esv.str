@@ -1,0 +1,181 @@
+module generate-esv
+imports
+  libstratego-lib
+  lib/editor-common.generated
+  include/EditorService
+  include/Template
+  lib/pp
+  analysis
+  generate-str
+
+strategies
+
+  to-esv:
+    Module(modulename, _, _) -> <try(pp-descriptor-to-string)> |[
+      module ~modulename
+      ~sections
+    ]|
+    with
+      // all imported modules
+      sections := <all-keys-IsImported; map(Module; to-esv-module)>
+
+  to-esv-module:
+    Module(modulename, _, _) -> |[
+      //~modulename doesn't work here (kernel syntax...)
+      completions
+        ~*completions
+    ]|
+    with
+      completions := <collect-om(template-to-completion-template)>
+
+strategies
+
+  template-to-completion-template:
+    TemplateProduction(sort, Template(e* @[_|_]), attr*) -> t
+    with
+      part*  := <template-elements-to-completion-parts> e*;
+      anno   := <template-sort-to-anno> sort;
+      if !part* => [PlaceholderWithSort(_, _) | _] then
+        prefix := <collect-one(?sdf-cons(<id>))> attr*;
+        t := |[ completion template ~sort : ~prefix = ~*part* ~anno ]|
+      else
+        t := |[ completion template ~sort : ~*part* ~anno ]|
+      end
+
+  template-elements-to-completion-parts =
+    ?e*;
+    remove-first-and-last-layout;
+    map(try(placeholder-to-completion-part));
+    remove-cursor-except-first;
+	  if indent := <get-indent-string> e* then
+	    re-indent(|indent)
+	  end;
+    map(try(text-to-completion-part));
+    concatenate-consecutive-strings;
+    map(try(escape-and-quote))
+
+  template-sort-to-anno =
+    CanNotBeBlank < !None() + !Blank()
+
+  remove-first-and-last-layout =
+    repeat(  \[Layout(_)  | tail] -> tail\
+           + \[Newline(_) | tail] -> tail\ );
+    // FIXME: This part only needs to run if the template will get a (blank) anno!
+    listbu(   \[Layout(_)] -> []\
+           <+ \[Newline(_)] -> []\ <+ id)
+
+// first pass
+
+  placeholder-to-completion-part:
+    Placeholder(Text(name), Sort(sort), None(), _) -> PlaceholderWithSort($[<[name]:], sort)
+
+  placeholder-to-completion-part:
+    Placeholder(None(), Sort(sort), None(), _)
+      -> PlaceholderWithSort($[<[<generate-placeholder <+ newname> sort]:], sort)
+
+  // FIXME: does this make sense?
+  generate-placeholder =
+    bagof-Template;
+    map(\TemplateProduction(_, Template(e*), _) -> e*\);
+    filter(not([])); // is this desired?
+    qsort((percentage-string-elements, percentage-string-elements); gt);
+    Hd;
+    template-elements-to-string
+
+  percentage-string-elements =
+    ?e*;
+    <divr> (<length> <filter(?String(_))> e*, <length> e*)
+
+  template-elements-to-string =
+    remove-first-and-last-layout;
+    filter(
+         \Placeholder(Text(x), _, _, _) -> x\
+      <+ \Placeholder(None(), Sort(x), _, _) -> x\
+      <+ \String(x) -> x\
+      <+ \Layout(x) -> <string-replace(|"\t", " ")> x\
+    );
+    concat-strings
+
+  placeholder-to-completion-part:
+    Placeholder(_, _, Option(), _) -> Cursor()
+
+  placeholder-to-completion-part:
+    Placeholder(_, _, Plus(), _) -> Cursor()
+
+  placeholder-to-completion-part:
+    Placeholder(_, _, Star(), _) -> Cursor()
+
+// second (re-indent) pass
+
+  get-indent-string =
+    filter(not(?Layout(_) + ?Newline(_)); origin-column); list-min => size;
+    // Build string from right to left, as list.
+    ![]; repeat(![' ' | <id>] | size); !['\n' | <id>];
+    implode-string
+
+  re-indent(|indent-string) =
+    \[Newline(x), Layout(y) | tail] -> [Layout(z) | tail']
+    with
+      z := <string-replace(|indent-string, "\n")> <conc-strings>(x, y);
+      tail' := <re-indent(|indent-string)> tail\
+  <+
+    \[head | tail] -> [head | <re-indent(|indent-string)> tail]\
+  <+
+    []
+
+// third pass
+
+  text-to-completion-part:
+    Newline(_) -> String("\n")
+
+  text-to-completion-part:
+    Layout(t) -> String(t')
+    with
+      t' := <string-replace(|"\n  ", "\n\t");
+             repeat(where(is-substring(!"\t  ")); string-replace(|"\t  ", "\t\t"))> t
+
+// removing cursors (including layout before and newline after, if present)
+
+  remove-cursor-except-first =
+       [Layout(id), Cursor(), Newline(id) | remove-cursor]
+    <+ [Cursor(), Newline(id) | remove-cursor]
+    <+ [Layout(id), Cursor() | remove-cursor]
+    <+ [Cursor() | remove-cursor]
+    <+ [id | remove-cursor-except-first]
+    <+ []
+
+  remove-cursor =
+  	   \[Layout(_), Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
+  	<+ \[Cursor(), Newline(_) | tail] -> <remove-cursor> tail\
+  	<+ \[Layout(_), Cursor() | tail] -> <remove-cursor> tail\
+    <+ \[Cursor() | tail] -> <remove-cursor> tail\
+    <+ [id | remove-cursor]
+    <+ []
+
+// concatenate consecutive parts
+
+  concatenate-consecutive-strings =
+       \[String(a), String(b) | tail] -> <concatenate-consecutive-strings> [String(<conc-strings> (a, b)) | tail]\
+    <+ [id | concatenate-consecutive-strings]
+    <+ []
+
+  escape-and-quote =
+    String(
+      string-replace(|"\t", "\\t");
+      string-replace(|"\r", "\\r");
+      string-replace(|"\n", "\\n");
+      string-replace(|"'", "\\'");
+      string-replace(|"\"", "\\\"");
+      double-quote
+	  )
+
+strategies
+
+  nonempty-substring-from-last-occurence-of(|t) =
+    substring-after-last-occurence-of(|t);
+    not("");
+    <conc-strings> (t, <id>)
+
+  substring-after-last-occurence-of(|t) =
+    where(is-substring(!t));
+    repeat(is-substring(!t); implode-string)
