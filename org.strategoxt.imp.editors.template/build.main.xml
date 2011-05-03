@@ -18,7 +18,7 @@
   <property name="dist" location="bin/dist"/>
 
   <!-- Imports -->
-  <property name="build.sdf.imports" value="-Idef &quot;${basedir}/syntax/sdf2/SDF.def&quot;"/>
+  <property name="build.sdf.imports" value="-Idef &quot;${basedir}/syntax/sdf2/SDF.def&quot; -Idef &quot;${basedir}/syntax/esv/EditorService.def&quot;"/>
   <property name="build.stratego.args" value="
                         --library
                         -I &quot;${trans}&quot;
@@ -40,7 +40,7 @@
   <import file="build.generated.xml"/>
 
   <!-- Main target -->
-  <target name="all" depends="meta-sdf2table-stratego-sdf2,spoofaximp.default.jar" />
+  <target name="all" depends="meta-sdf2table-stratego-esv,meta-sdf2table-stratego-sdf2,spoofaximp.default.jar" />
 
   <!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
   <target name="meta-sdf2table-stratego-sdf2">
@@ -52,6 +52,21 @@
     </antcall>
     <antcall target="sdf2table">
       <param name="sdfmodule" value="Stratego-Sdf2" />
+      <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+    </antcall>
+    <antcall target="meta-sdf2table.helper" />
+  </target>
+
+  <!-- Target to create -Permissive grammar and parse table for Stratego-EditorService.def -->
+  <target name="meta-sdf2table-stratego-esv">
+    <fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+    <antcall target="pack-sdf.helper">
+      <param name="syntax" value="${syntax}/esv" />
+      <param name="sdfmodule" value="Stratego-EditorService" />
+      <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+    </antcall>
+    <antcall target="sdf2table">
+      <param name="sdfmodule" value="Stratego-EditorService" />
       <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
     </antcall>
     <antcall target="meta-sdf2table.helper" />
