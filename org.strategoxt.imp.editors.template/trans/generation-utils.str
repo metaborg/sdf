@@ -3,10 +3,12 @@ imports
   libstratego-lib
   lib/editor-common.generated
   include/Template
+  analysis
 
 signature
   constructors
     Newlines : X
+    ImportPath : X
 
 strategies
 
@@ -45,13 +47,30 @@ strategies
   <+
     []
 
-  use-no-newlines       = <Option> Newlines() => None()
-  use-leading-newlines  = <Option> Newlines() => Leading()
-  use-trailing-newlines = <Option> Newlines() => Trailing()
+  try-re-indent =
+    if get-indent-string => is then
+      re-indent(|is)
+    end
+
+  use-no-newlines       = <Options> Newlines() => None()
+  use-leading-newlines  = <Options> Newlines() => Leading()
+  use-trailing-newlines = <Options> Newlines() => Trailing()
 
   newlines-switch(none, leading, trailing) =
-    switch <Option> Newlines()
+    switch <Options> Newlines()
       case ?None(): none
       case ?Leading(): leading
       case ?Trailing(): trailing
     end
+
+  normpath =
+    ?original;
+    string-tokenize(|['/', '\']);
+    filter(not("."));
+    repeat(   rec x( \[_, ".." | t] -> t\ <+ [id | x] ) // remove one "dir/.." pair
+           <+ \[".." | t] -> t\ );                      // remove leading ".."
+    separate-by(|"/");
+    if <is-abspath> original then  // FIXME: is-abspath may be POSIX-only?
+      !["/" | <id>]
+    end;
+    concat-strings

@@ -1,6 +1,7 @@
 module Options
 imports
   Common
+  Module
 
 exports
   context-free syntax
@@ -11,3 +12,9 @@ exports
     "none"     -> NewlineOptionValue {cons("None")}
     "leading"  -> NewlineOptionValue {cons("Leading")}
     "trailing" -> NewlineOptionValue {cons("Trailing")}
+
+    "import" "path" ":" ImportPath -> Option {cons("ImportPath")}
+
+  lexical syntax
+        ModuleName -> ImportPath  %% relative path
+    "/" ModuleName -> ImportPath  %% absolute path (relative to project root)

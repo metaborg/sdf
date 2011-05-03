@@ -63,8 +63,7 @@ strategies
         [with']]
     with
       (open, close) := <choose-braces> e*;
-      is    := <get-indent-string> e*;
-      e'*   := <re-indent(|is);
+      e'*   := <try-re-indent;
                 map(try(rename-template-element))> e*;
       cons  := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
       arg*  := <filter(template-element-to-cons-arg);

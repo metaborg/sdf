@@ -44,13 +44,10 @@ strategies
       end
 
   template-elements-to-completion-parts =
-    ?e*;
-    trim-layout;
     map(try(placeholder-to-completion-part));
     remove-cursor-except-first;
-	  if indent := <get-indent-string> e* then
-	    re-indent(|indent)
-	  end;
+    try-re-indent;
+    trim-layout;
     map(try(text-to-completion-part));
     concatenate-consecutive-strings;
     map(try(escape-and-quote))

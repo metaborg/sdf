@@ -13,23 +13,32 @@ strategies
     with
       current-file := $[[project-path]/[path]];
       rules(
-        CurrentDir  := <dirname> $[[project-path]/[path]]
-        CurrentFile := <base-filename> path
+        CurrentFile := current-file
         IsImported  :  current-file
         ProjectDir  := project-path
       )
     with // default options
-      rules(Option :+ Newlines() -> None())
+      rules(
+        Options :+ Newlines() -> None()
+        Options :+ ImportPath() -> "."
+      )
     with
-      ast' := <desugar-top; declare-globals-top> ast;
+      ast' := <desugar-top; declare-options-top; declare-globals-top> ast;
       rules(Module : current-file -> ast')
+
+  declare-options-top = Module(id, id, all(try(Options(alltd(declare-options)))))
 
   declare-globals-top = alltd(declare-globals)
 
-  declare-globals:
+  declare-options:
     Newlines(t) -> <id>
     with
-      rules(Option :+ Newlines() -> t)
+      rules(Options :+ Newlines() -> t)
+
+  declare-options:
+    ImportPath(t) -> <id>
+    with
+      rules(Options :+ ImportPath() -> t)
 
   declare-globals:
     template@ TemplateProduction(sort, Template(part*), attrs) ->
@@ -75,24 +84,24 @@ strategies
       <debug(!"Import failed: ")> x;
       rules(IsImportFailed: _)
 
+  resolve-import =
+    try(
+      ?import;
+      project-dir := <ProjectDir>;
+      current-dir := <dirname> <CurrentFile>;
+	    <bagof-Options> ImportPath();
+	    fetch-elem(
+	      if string-starts-with(|"/") then
+          \path -> $[[project-dir][path]/[import].tmpl]\; file-exists
+	      else
+	        \path -> $[[current-dir]/[path]/[import].tmpl]\; file-exists
+	      end
+	    );
+	    normpath
+    )
+
 strategies
   // This part has mostly been copied from the SDF editor!
-
-  resolve-import =
-    // TODO: better import handling
-    \x -> $[[<CurrentDir>]/[x].tmpl]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/[x].tmpl]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/syntax/[x].tmpl]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/[x].sdf]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/syntax/[x].sdf]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
-  <+
-    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
 
   declare-globals:
     prod @ prod(lhs, sort, _) -> <id>
