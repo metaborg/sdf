@@ -1,0 +1,21 @@
+module sdf-pretty-print
+imports
+   libstratego-gpp
+   lib/sdf-ensugar
+
+strategies
+
+  pp-sdf-box =
+    sdf-ensugar
+    ; ast2box(| [ <pp-table-sdf> ] )
+
+  pp-sdf-string =
+    pp-sdf-box
+    ; box2text-string(|80)
+
+  pp-sdf-stream(|stream) =
+    pp-sdf-box
+    ; box2text-stream(|80, stream)
+
+  pp-table-sdf =
+    import-term(Sdf2.pp.af)

@@ -1,44 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <project name="Template" default="all">
-        
-        <!-- Key input modules -->
-        <property name="sdfmodule" value="Template"/>
-        <property name="metasdfmodule" value="Stratego-Template"/>
-        <property name="esvmodule" value="Template"/>
-        <property name="strmodule" value="template"/>
-    
-        <!-- Project directories -->
-        <property name="trans" location="trans"/>
-        <property name="src-gen" location="editor/java"/>
-        <property name="syntax" location="syntax"/>
-        <property name="include" location="include"/>
-        <property name="lib" location="lib"/>
-        <property name="build" location="bin"/>
-        <property name="dist" location="bin/dist"/>
-        
-        <!-- Imports -->
-        <property name="build.sdf.imports" value=""/>
-        <property name="build.stratego.args" value="
+
+  <!-- Key input modules -->
+  <property name="sdfmodule" value="Template"/>
+  <property name="metasdfmodule" value="Stratego-Template"/>
+  <property name="esvmodule" value="Template"/>
+  <property name="strmodule" value="template"/>
+
+  <!-- Project directories -->
+  <property name="trans" location="trans"/>
+  <property name="src-gen" location="editor/java"/>
+  <property name="syntax" location="syntax"/>
+  <property name="include" location="include"/>
+  <property name="lib" location="lib"/>
+  <property name="build" location="bin"/>
+  <property name="dist" location="bin/dist"/>
+
+  <!-- Imports -->
+  <property name="build.sdf.imports" value="-Idef &quot;${basedir}/syntax/sdf2/SDF.def&quot;"/>
+  <property name="build.stratego.args" value="
                         --library
                         -I &quot;${trans}&quot;
                         -I &quot;${basedir}&quot;
                         -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm"/>
-        
-        <!-- Optional: external .def and .jar locations
+
+  <!-- Optional: external .def and .jar locations
         <property name="externaldef" location="syntax/${sdfmodule}.def"/>
         <property name="externaljar" value="../lib.jar"/>
         <property name="externaljarflags" value="-la org.lib"/>
         -->
-    
-        <!-- Environment configuration for command-line builds -->
-        <condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
-            <isset property="eclipse.spoofaximp.nativeprefix"/>
-        </condition>
-        <property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin"/>
-    
-        <import file="build.generated.xml"/>
-    
-        <!-- Main target -->
-        <target name="all" depends="spoofaximp.default.jar"/>
-    </project>
+
+  <!-- Environment configuration for command-line builds -->
+  <condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
+    <isset property="eclipse.spoofaximp.nativeprefix"/>
+  </condition>
+  <property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin"/>
+
+  <import file="build.generated.xml"/>
+
+  <!-- Main target -->
+  <target name="all" depends="meta-sdf2table-stratego-sdf2,spoofaximp.default.jar" />
+
+  <!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
+  <target name="meta-sdf2table-stratego-sdf2">
+    <fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+    <antcall target="pack-sdf.helper">
+      <param name="syntax" value="${syntax}/sdf2" />
+      <param name="sdfmodule" value="Stratego-Sdf2" />
+      <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+    </antcall>
+    <antcall target="sdf2table">
+      <param name="sdfmodule" value="Stratego-Sdf2" />
+      <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+    </antcall>
+    <antcall target="meta-sdf2table.helper" />
+  </target>
+</project>
