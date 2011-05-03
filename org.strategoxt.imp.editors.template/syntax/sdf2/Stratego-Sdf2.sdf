@@ -79,7 +79,7 @@ exports
  %%%
 
   lexical syntax
-    MetaVar -> Sort {reject}
+    %% MetaVar -> Sort {reject}
     MetaVar -> IdCon  {reject}
     MetaVar -> StrCon {reject}
 
