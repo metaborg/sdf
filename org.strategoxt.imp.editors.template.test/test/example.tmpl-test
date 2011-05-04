@@ -1,0 +1,22 @@
+// Example "TemplateTest" program (see syntax/TemplateTest.sdf for the grammar)
+
+module example
+
+entity User {
+  name     : String
+  password : String
+  homepage : URL
+}
+
+entity BlogPosting {
+  poster : User
+  body   : String
+}
+
+entity URL {
+  location : String
+}
+
+entity Empty {
+
+}

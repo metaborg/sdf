@@ -40,7 +40,7 @@
   <import file="build.generated.xml"/>
 
   <!-- Main target -->
-  <target name="all" depends="meta-sdf2table-stratego-esv,meta-sdf2table-stratego-sdf2,spoofaximp.default.jar" />
+  <target name="all" depends="spoofaximp.default.jar" />
 
   <!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
   <target name="meta-sdf2table-stratego-sdf2">

@@ -1,0 +1,29 @@
+
+module TemplateTest-Builders
+
+imports TemplateTest-Builders.generated
+
+builders
+
+  // This file can be used for custom analysis and builder rules.
+  //
+  // See the imported file for a brief introduction and examples.
+
+builders
+
+  provider : include/templatetest.ctree
+  provider : include/templatetest-java.jar
+
+  observer : editor-analyze
+
+  builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
+  builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
+  builder  : "Prettyprint (selection)"              = generate-pretty (openeditor) (realtime)
+
+refactorings
+
+  pp-table                  : get-pp-table
+
+  refactoring ID            : "Rename Entity" = rename-entity (source) (cursor)
+
+  // on save: generate-java
