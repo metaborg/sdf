@@ -87,6 +87,7 @@ strategies
       -> p|[ A* -> S' attrs' ]|
     with
       A* := <newlines-switch(id, trim-trailing-layout, trim-leading-layout);
+             combine-consecutive-newlines;
              filter(template-element-to-sdf)> e*
 
   template-to-sdf:

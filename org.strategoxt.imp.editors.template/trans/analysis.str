@@ -6,6 +6,10 @@ imports
   desugar
   generation-utils
 
+signature
+  constructors
+  	Blank : Blank
+
 strategies
 
   analyze:
@@ -94,10 +98,10 @@ strategies
 
   declare-placeholders =
        ?[Newline(_), Layout(_), Placeholder(_, _, _, _), Newline(_) | _];
-       [add-anno(|Leading()), id, id, add-anno(|Trailing()) | id];
+       [add-anno(|Leading()), id, add-anno(|Blank()), add-anno(|Trailing()) | id];
        [id, id, id | declare-placeholders]
     <+ ?[Newline(_), Placeholder(_, _, _, _), Newline(_) | _];
-       [add-anno(|Leading()), id, add-anno(|Trailing()) | id];
+       [add-anno(|Leading()), add-anno(|Blank()), add-anno(|Trailing()) | id];
        [id, id | declare-placeholders]
     <+ ?[Placeholder(_, Sort(x), _, _) | _];
        [id | declare-placeholders];

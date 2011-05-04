@@ -35,6 +35,9 @@ strategies // Utility strategies
            <+ \[Indent(_)]  -> []\
            <+ \[Newline(_)] -> []\ <+ id)
 
+  trim-trailing-indent =
+    listbu(\[Indent(_)]  -> []\ <+ id)
+
   trim-layout =
     trim-leading-layout;
     trim-trailing-layout
@@ -52,7 +55,7 @@ strategies // Utility strategies
     let get-indent =
              \[Newline(_), Layout(y), _ | tail] -> [<string-length> y | <get-indent> tail]\
           <+ \[Newline(_), Layout(_)] -> []\
-          <+ \[Newline(_), Newline(_)] -> []\
+          <+ \[Newline(_), Newline(_) | tail] -> <get-indent> tail\
           <+ \[Newline(_), y | tail] -> [0 | <get-indent> tail]\
           <+ \[_ | tail] -> <get-indent> tail\
           <+ []
@@ -99,6 +102,11 @@ strategies // Utility strategies
   concatenate-consecutive-strings =
        \[String(a), String(b) | tail] -> <concatenate-consecutive-strings> [String(<conc-strings> (a, b)) | tail]\
     <+ [id | concatenate-consecutive-strings]
+    <+ []
+
+  combine-consecutive-newlines =
+       \[Newline(x){a*}, Newline(_){b*} | tail] -> <combine-consecutive-newlines> [Newline(x){a*, b*} | tail]\
+    <+ [id | combine-consecutive-newlines]
     <+ []
 
   escape-and-double-quote =

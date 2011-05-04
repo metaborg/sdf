@@ -20,6 +20,8 @@ strategies
         pp-list(s|t) = map(s); separate-by(|t); concat-strings
         pp-list(s)   = map(s); concat-strings
 
+        [ih]
+
       [section*]
 
       strategies // all other sorts used in placeholders
@@ -36,6 +38,20 @@ strategies
       sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> module*;
       sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
       strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
+    with
+      ih := <newlines-switch(
+        // No newlines: need to prepend a newline+indent if the string is non-empty.
+        // pp-blank is used when there is no indent before the placeholder.
+        !$[// ih = indent helper, t = indent string (including "\n")
+           pp-ih(|t) = "" <+ string-replace(|"\n", t); <conc-strings> (t, <id>)
+           pp-blank  = "" <+ <conc-strings> ("\n", <id>)],
+        // Leading newlines: easy, since indent is (per definition) also leading.
+        !$[// ih = indent helper, t = indent string (including "\n")
+           pp-ih(|t) = string-replace(|"\n", t)],
+        // Trailing newlines: harder, since indent and newline are separated.
+        !$[// ih = indent helper, t = indent string (excluding "\n")
+           pp-ih(|t) = "" <+ all-lines(<conc-strings>(t, <id>))]
+      )>
 
   to-str:
     Module(modulename, _, _) -> <to-str(|modulename)>
@@ -83,7 +99,8 @@ strategies
                   map(try(rename-template-element))> elem*;
       arg*    := <filter(template-element-to-cons-arg);
                   separate-by(|", ")> elem'*;
-      part*   := <newlines-switch(trim-layout, trim-trailing-layout, trim-leading-layout);
+      part*   := <newlines-switch(trim-layout, trim-trailing-layout,
+                                  trim-leading-layout ; trim-trailing-indent);
                   listtd(template-element-to-stratego);
                   concatenate-consecutive-strings;
                   map(try(?String(<escape-and-double-quote>)));
@@ -93,29 +110,46 @@ strategies
       let'*   := <separate-by(|";\n")> [let*, result]
 
   rename-template-element:
-    Placeholder(_, Sort(x), _, _) -> <id>{<newname> x}
+    Placeholder(a, b@ Sort(x), c, d){a*} -> Placeholder(a, b{<newname> x}, c, d){a*}
 
   template-element-to-cons-arg:
-    Placeholder(_, _, _, _){name} -> name
+    Placeholder(_, Sort(_){name}, _, _) -> name
 
   template-element-to-stratego =
-       \[Newline(_), Indent(indent), Placeholder(_, _, _, _){name} | tail] ->
-         [$[<string-replace(|"\n", "\n[indent]")> [name]'] | tail]\
-    <+ [template-element-to-stratego' | id]
-    <+ []
+    // No/leading newlines.
+      \[Newline(_), Indent(indent), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
+        [$[<pp-ih(|"\n[indent]")> [name]'] | tail] where not(use-trailing-newlines)\
+    <+
+      \[Newline(_), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
+        [$[<pp-blank> [name]'] | tail] where use-no-newlines\
+    <+
+      \[Newline(_), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
+        [$[[name]'] | tail] where use-leading-newlines\
+    // Trailing newlines.
+    <+
+      \[Indent(indent), Placeholder(_, Sort(_){name}, _, _){Blank()}, Newline(_) | tail] ->
+        [$[<pp-ih(|"[indent]")> [name]'] | tail] where use-trailing-newlines\
+    <+
+      \[Placeholder(_, Sort(_){name}, _, _){Blank()}, Newline(_) | tail] ->
+        [$[[name]'] | tail] where use-trailing-newlines\
+    // Anything else.
+    <+
+      [template-element-to-stratego' | id]
+    <+
+      []
 
   template-element-to-stratego' =
-      \Placeholder(_, _, _, _){name} -> $[[name]']\
+      \Placeholder(_, Sort(_){name}, _, _) -> $[[name]']\
     + \String(t) -> String(t)\
     + \Layout(t) -> String(t)\
     + \Indent(t) -> String(t)\
     + \Newline(t) -> String(t)\
 
   template-element-to-assignment:
-    Placeholder(_, Sort(x), None(), _){name} -> $[[name]' := <prettyprint-[x]> [name]]
+    Placeholder(_, Sort(x){name}, None(), _) -> $[[name]' := <prettyprint-[x]> [name]]
 
   template-element-to-assignment:
-    Placeholder(_, Sort(x), <Star() + Plus()>, Options(opt*)){name} -> t
+    Placeholder(_, Sort(x){name}, <Star() + Plus()>, Options(opt*)) -> t
     with
       if sep := <collect-one(?Separator(<id>))> opt* then
         t := $[[name]' := <pp-list(prettyprint-[x]|"[<escape> sep]")> [name]]
@@ -124,4 +158,4 @@ strategies
       end
 
   template-element-to-assignment:
-    Placeholder(_, Sort(x), Option(), _){name} -> $[[name]' := <pp-option(prettyprint-[x])> [name]]
+    Placeholder(_, Sort(x){name}, Option(), _) -> $[[name]' := <pp-option(prettyprint-[x])> [name]]
