@@ -66,6 +66,20 @@ strategies
                                 A* -/- [A-Za-z0-9\_] ]|]
         end
       end;
+      // rejections
+      // let is-identifier-ish =
+      //       where(explode-string; un-double-quote-chars; all(is-alphanum))
+      //     to-rejection =
+      //       \L -> p|[ L -> ID {reject} ]|\
+      // in
+      //   p2* := <collect-om(?lit(<is-identifier-ish>));
+      //           nub; string-sort-ex; map(to-rejection)> p*;
+      //   if !p2* => [] then
+      //     rejection* := []
+      //   else
+      //     rejection* := [|[ context-free syntax p2* ]|]
+      //   end
+      // end;
       // SDF grammars
       // (each one is put in a separate `exports' section because SDF doesn't
       //  use a flat list for the grammars within a section, but a tree...)
@@ -111,34 +125,79 @@ strategies
   template-element-to-sdf:
     String(x) -> <string-to-sdf> x
 
+  // Insert "\n" into generated grammar whenever
+  // 1) leading or trailing newlines is enabled
+  // 2) the sort itself does not contain a leading resp. trailing newline
+  // 3) the placeholder is on its own on the line
   template-element-to-sdf:
+    p@ Placeholder(_, Sort(sort), None(), _){Blank()} -> t'
+    with
+      t := <placeholder-to-sdf> p;
+      t' := <newlines-switch(id,
+        if not(<sort-has-leading-newline> sort) then
+          ?A; !A|[ ("\\n" A) ]|
+        end,
+        if not(<sort-has-trailing-newline> sort) then
+          ?A; !A|[ (A "\\n") ]|
+        end
+      )> t
+
+  // FIXME: generates suboptimal SDF (bad AST)
+  template-element-to-sdf:
+    p@ Placeholder(_, Sort(sort), <?Plus() + ?Star() + ?Option()>, _){Blank()} -> t'
+    with
+      t := <placeholder-to-sdf> p;
+      t' := <newlines-switch(id,
+        if not(<sort-has-leading-newline> sort) then
+          ?A; !A|[ ("\\n" A)? ]|
+        end,
+        if not(<sort-has-trailing-newline> sort) then
+          ?A; !A|[ (A "\\n")? ]|
+        end
+      )> t
+
+  template-element-to-sdf:
+    Placeholder(_, _, _, _){} -> <placeholder-to-sdf>
+
+  placeholder-to-sdf:
     Placeholder(_, Sort(S'), None(), _) -> A|[ S' ]|
 
   // TODO: this needs improvement, too much duplication and not readable enough
 
-  template-element-to-sdf:
+  placeholder-to-sdf:
     Placeholder(_, Sort(S), Star(), Options(option*)) -> A|[ S* ]|
     where <not(one(Separator(not(all-whitespace))))> option*
 
-  template-element-to-sdf:
+  placeholder-to-sdf:
     Placeholder(_, Sort(S), Star(), Options(option*)) -> A|[ { S L }* ]|
     where <one(Separator(not(all-whitespace)))> option*
     with L := <separator-to-literal> option*
 
-  template-element-to-sdf:
+  placeholder-to-sdf:
     Placeholder(_, Sort(S), Plus(), Options(option*)) -> A|[ S+ ]|
     where <not(one(Separator(not(all-whitespace))))> option*
 
-  template-element-to-sdf:
+  placeholder-to-sdf:
     Placeholder(_, Sort(S), Plus(), Options(option*)) -> A|[ { S L }+ ]|
     where <one(Separator(not(all-whitespace)))> option*
     with L := <separator-to-literal> option*
 
-  all-whitespace = string-as-chars(all(' ' + '\t' + '\r' + '\n'))
-  remove-whitespace = string-as-chars(filter(not(' ' + '\t' + '\r' + '\n')))
-  separator-to-literal = !lit(<collect-one(?Separator(<remove-whitespace>)); escape; double-quote>)
+  // name conflicts with is-whitespace from the library
+  xxx-is-whitespace =
+    // if use-no-newlines then
+      ' ' + '\t' + '\r' + '\n'
+    // else
+    //   ' ' + '\t' + '\r'
+    // end
 
-  template-element-to-sdf:
+  all-whitespace = string-as-chars(all(xxx-is-whitespace))
+
+  remove-whitespace = string-as-chars(filter(not(xxx-is-whitespace)))
+
+  separator-to-literal =
+    !lit(<collect-one(?Separator(<remove-whitespace>)); escape; double-quote>)
+
+  placeholder-to-sdf:
     Placeholder(_, Sort(S'), Option(), _) -> A|[ S'? ]|
 
   sort-to-contentcomplete:

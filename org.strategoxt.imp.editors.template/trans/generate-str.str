@@ -18,7 +18,6 @@ strategies
 
         pp-option(s) = \None() -> ""\ + \Some(t) -> <s> t\
         pp-list(s|t) = map(s); separate-by(|t); concat-strings
-        pp-list(s)   = map(s); concat-strings
 
         [ih]
 
@@ -41,13 +40,15 @@ strategies
     with
       ih := <newlines-switch(
         // No newlines: need to prepend a newline+indent if the string is non-empty.
-        // pp-blank is used when there is no indent before the placeholder.
         !$[// ih = indent helper, t = indent string (including "\n")
-           pp-ih(|t) = "" <+ string-replace(|"\n", t); <conc-strings> (t, <id>)
-           pp-blank  = "" <+ <conc-strings> ("\n", <id>)],
+           pp-ih(|t) = "" <+ string-replace(|"\n", t); <conc-strings> (t, <id>)],
         // Leading newlines: easy, since indent is (per definition) also leading.
         !$[// ih = indent helper, t = indent string (including "\n")
-           pp-ih(|t) = string-replace(|"\n", t)],
+           pp-ih(|t) = "" <+
+             string-replace(|"\n", t);
+             if not(string-starts-with(|t)) then
+               <conc-strings> (t, <id>)
+             end],
         // Trailing newlines: harder, since indent and newline are separated.
         !$[// ih = indent helper, t = indent string (excluding "\n")
            pp-ih(|t) = "" <+ all-lines(<conc-strings>(t, <id>))]
@@ -116,22 +117,17 @@ strategies
     Placeholder(_, Sort(_){name}, _, _) -> name
 
   template-element-to-stratego =
-    // No/leading newlines.
+    newlines-switch(
+      // No newlines
       \[Newline(_), Indent(indent), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
-        [$[<pp-ih(|"\n[indent]")> [name]'] | tail] where not(use-trailing-newlines)\
-    <+
-      \[Newline(_), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
-        [$[<pp-blank> [name]'] | tail] where use-no-newlines\
-    <+
-      \[Newline(_), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
-        [$[[name]'] | tail] where use-leading-newlines\
-    // Trailing newlines.
-    <+
+        [$[<pp-ih(|"\n[indent]")> [name]'] | tail]\,
+      // Leading newlines
+      \[Newline(_), Indent(indent), Placeholder(_, Sort(_){name}, _, _){Blank()} | tail] ->
+        [$[<pp-ih(|"\n[indent]")> [name]'] | tail]\,
+      // Trailing newlines
       \[Indent(indent), Placeholder(_, Sort(_){name}, _, _){Blank()}, Newline(_) | tail] ->
-        [$[<pp-ih(|"[indent]")> [name]'] | tail] where use-trailing-newlines\
-    <+
-      \[Placeholder(_, Sort(_){name}, _, _){Blank()}, Newline(_) | tail] ->
-        [$[[name]'] | tail] where use-trailing-newlines\
+        [$[<pp-ih(|"[indent]")> [name]'] | tail]\
+    )
     // Anything else.
     <+
       [template-element-to-stratego' | id]
@@ -154,7 +150,7 @@ strategies
       if sep := <collect-one(?Separator(<id>))> opt* then
         t := $[[name]' := <pp-list(prettyprint-[x]|"[<escape> sep]")> [name]]
       else
-        t := $[[name]' := <pp-list(prettyprint-[x])> [name]]
+        t := $[[name]' := <pp-list(prettyprint-[x]|" ")> [name]]
       end
 
   template-element-to-assignment:

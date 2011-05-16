@@ -25,18 +25,17 @@ strategies // Utility strategies
     x{a*} -> <id>
     where <one(?anno)> a*
 
+  // is-layout is already defined somewhere else
+  xxx-is-layout = ?Layout(_) + ?Indent(_) + ?Newline(_)
+
   trim-leading-layout =
-    repeat(  \[Layout(_)  | tail] -> tail\
-           + \[Indent(_)  | tail] -> tail\
-           + \[Newline(_) | tail] -> tail\ )
+    ltrim(xxx-is-layout)
 
   trim-trailing-layout =
-    listbu(   \[Layout(_)]  -> []\
-           <+ \[Indent(_)]  -> []\
-           <+ \[Newline(_)] -> []\ <+ id)
+    rtrim(xxx-is-layout)
 
   trim-trailing-indent =
-    listbu(\[Indent(_)]  -> []\ <+ id)
+    rtrim(?Indent(_))
 
   trim-layout =
     trim-leading-layout;
@@ -72,11 +71,7 @@ strategies // Utility strategies
       // Add a newline because indent-string contains a newline as anchor.
       indent' := <string-replace(|indent-string, "")> <conc-strings>("\n", indent);
       tail' := <re-indent(|indent-string)> tail;
-      if !indent' => "" then
-        result := [Newline("\n") | tail']
-      else
-        result := [Newline("\n"), Indent(indent') | tail']
-      end\
+      result := [Newline("\n"), Indent(indent') | tail']\
   <+
     \[head | tail] -> [head | <re-indent(|indent-string)> tail]\
   <+

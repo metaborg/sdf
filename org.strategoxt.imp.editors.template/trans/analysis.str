@@ -96,14 +96,28 @@ strategies
     with
       <alltd(declare-use)> part*
 
+  sort-has-leading-newline =
+    bagof-Template;
+    ?[_|_];
+    all(?TemplateProduction(_, Template([Newline(_)| _]), _))
+
+  sort-has-trailing-newline =
+    bagof-Template;
+    ?[_|_];
+    let trailing-newline =
+          at-suffix([Newline(id), ?Layout(_) + ?Indent(_)] <+ [Newline(id)])
+    in
+      all(?TemplateProduction(_, Template(<trailing-newline>), _))
+    end
+
   declare-placeholders =
-       ?[Newline(_), Layout(_), Placeholder(_, _, _, _), Newline(_) | _];
+       ?[Newline(_), Layout(_), Placeholder(_, _, _, _){}, Newline(_) | _];
        [add-anno(|Leading()), id, add-anno(|Blank()), add-anno(|Trailing()) | id];
        [id, id, id | declare-placeholders]
-    <+ ?[Newline(_), Placeholder(_, _, _, _), Newline(_) | _];
+    <+ ?[Newline(_), Placeholder(_, _, _, _){}, Newline(_) | _];
        [add-anno(|Leading()), add-anno(|Blank()), add-anno(|Trailing()) | id];
        [id, id | declare-placeholders]
-    <+ ?[Placeholder(_, Sort(x), _, _) | _];
+    <+ ?[Placeholder(_, Sort(x), _, _){} | _];
        [id | declare-placeholders];
        rules(CanNotBeBlank :+ x -> x)
     <+ ?[_ | _];
