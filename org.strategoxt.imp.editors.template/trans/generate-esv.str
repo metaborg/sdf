@@ -39,8 +39,7 @@ strategies
     with
       part*  := <template-elements-to-completion-parts> e*;
       anno   := <template-sort-to-anno> sort;
-      if !part* => [PlaceholderWithSort(_, _) | _] then
-        prefix := <collect-one(?sdf-cons(<id>))> attr*;
+      if prefix := <collect-one(?sdf-cons(<id>))> attr* then
         t := |[ completion template ~sort : ~prefix = ~*part* ~anno ]|
       else
         t := |[ completion template ~sort : ~*part* ~anno ]|

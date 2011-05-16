@@ -63,7 +63,7 @@ strategies
           restriction* := []
         else
           restriction* := [|[ lexical restrictions
-                                A* -/- [A-Za-z0-9\_] ]|]
+                                A* -/- [A-Za-z0-9\_\-] ]|]
         end
       end;
       // rejections
