@@ -89,7 +89,7 @@ strategies
     TemplateProduction(sort, Template(elem*), attr*) ->
     <trim-chars(' ' + '\t' + '\r' + '\n')> // Workaround Stratego/856
     $[prettyprint-[sort]:
-        [cons]([arg*]) -> t
+        [cons]([arg*]) -> zz
         with
           [let'*]]
     where
@@ -97,7 +97,9 @@ strategies
     with
       cons    := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
       elem'*  := <try-re-indent;
-                  map(try(rename-template-element))> elem*;
+                  !(<id>, 0);
+                  thread-map(try(rename-template-element));
+                  ?(<id>, _)> elem*;
       arg*    := <filter(template-element-to-cons-arg);
                   separate-by(|", ")> elem'*;
       part*   := <newlines-switch(trim-layout, trim-trailing-layout,
@@ -106,12 +108,15 @@ strategies
                   concatenate-consecutive-strings;
                   map(try(?String(<escape-and-double-quote>)));
                   separate-by(|", ")> elem'*;
-      result  := <concat-strings>["t := <concat-strings> [", part*, "]"];
+      result  := <concat-strings>["zz := <concat-strings> [", part*, "]"];
       let*    := <filter(template-element-to-assignment)> elem'*;
       let'*   := <separate-by(|";\n")> [let*, result]
 
   rename-template-element:
-    Placeholder(a, b@ Sort(x), c, d){a*} -> Placeholder(a, b{<newname> x}, c, d){a*}
+    (Placeholder(a, b@ Sort(x), c, d){a*}, index) -> (Placeholder(a, b{newname}, c, d){a*}, newindex)
+    with
+      newname  := <implode-string> [<addi> ('a', index)];
+      newindex := <inc> index
 
   template-element-to-cons-arg:
     Placeholder(_, Sort(_){name}, _, _) -> name

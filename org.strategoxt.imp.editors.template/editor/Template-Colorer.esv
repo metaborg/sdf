@@ -17,4 +17,5 @@ colorer
   PlaceholderText2        : template
   _.Placeholder           : _ bold
 
-  template = 0 0 255 240 240 240
+  template = 0 0 255
+  // 240 240 240
