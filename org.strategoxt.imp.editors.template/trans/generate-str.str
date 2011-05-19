@@ -2,6 +2,7 @@ module generate-str
 imports
   libstratego-lib
   include/Template
+  include/Template-Signatures
   analysis
   desugar
   generation-utils
@@ -94,8 +95,9 @@ strategies
           [let'*]]
     where
       not(!elem* => [String(_)])
+    where
+      cons    := <collect-one(?sdf-cons(<un-double-quote>))> attr*
     with
-      cons    := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
       elem'*  := <try-re-indent;
                   !(<id>, 0);
                   thread-map(try(rename-template-element));

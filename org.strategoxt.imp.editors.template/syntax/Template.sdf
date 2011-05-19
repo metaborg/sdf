@@ -9,6 +9,7 @@ imports
 exports
   context-free start-symbols
     Module
+    Template %% Workaround StrategoXT/862
 
   context-free syntax
     %% "grammars"
@@ -16,12 +17,12 @@ exports
     %% "completion" "templates" CompletionTemplate* -> Grammar {cons("Templates")}
 
     %% template productions
-    ID "=" SDF-Symbols SDF-Attributes -> SDF-Production {cons("SdfProduction")}
-    ID "=" Template SDF-Attributes -> TemplateProduction {cons("TemplateProduction")}
+    ID "=" Symbols[[SDF]] Attributes[[SDF]] -> Production[[SDF]] {cons("SdfProduction")}
+    ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
 
     %% template productions `sort.cons = ...'
-    ID "." ID "=" SDF-Symbols SDF-Attributes -> SDF-Production {cons("SdfProductionWithCons")}
-    ID "." ID "=" Template SDF-Attributes -> TemplateProduction {cons("TemplateProductionWithCons")}
+    ID "." ID "=" Symbols[[SDF]] Attributes[[SDF]] -> Production[[SDF]] {cons("SdfProductionWithCons")}
+    ID "." ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProductionWithCons")}
 
     %% placeholders
     "<" PlaceholderPrefix1 PlaceholderSort PlaceholderSuffix PlaceholderOptions ">" -> TemplatePart1 {cons("Placeholder")}

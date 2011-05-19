@@ -1,7 +1,7 @@
 module Module
 imports
-	Common
-	SdfKeywords
+  Common
+  SdfKeywords
   SdfRenamed
 
 exports
@@ -21,4 +21,4 @@ exports
     ModuleName -> Import {cons("Import")}
 
   context-free syntax
-    SDF-Grammar -> Grammar {cons("SDF-Grammar")}
+    Grammar[[SDF]] -> Grammar {cons("SdfGrammar")}

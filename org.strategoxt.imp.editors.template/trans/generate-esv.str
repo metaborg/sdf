@@ -4,6 +4,7 @@ imports
   lib/editor-common.generated
   include/EditorService
   include/Template
+  include/Template-Signatures
   lib/pp
   analysis
   desugar

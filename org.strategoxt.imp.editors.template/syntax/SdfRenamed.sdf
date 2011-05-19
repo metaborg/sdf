@@ -4,67 +4,10 @@ imports
 
   languages/sdf2/syntax/Sdf2 [
 
-    %% LAYOUT => SDF-DISABLED
+    %% LAYOUT => IGNORED
 
-    "left":Grammar "right":Grammar -> Grammar => -> SDF-DISABLED
-    "module" ModuleName list:ImpSection* Sections -> Module => -> SDF-DISABLED
-    ImpSection -> Grammar => -> SDF-DISABLED
+    "left":Grammar "right":Grammar -> Grammar => -> IGNORED
+    "module" ModuleName list:ImpSection* Sections -> Module => -> IGNORED
+    ImpSection -> Grammar => -> IGNORED
 
-%% parse-sdf-definition -i SDF.def |
-%%   grep -E -o 'sort\("[^"]+"\)' | sort | uniq |
-%%   sed -r 's/sort\("([^"]+)"\)/\1 => SDF-\1/g'
-    AFun => SDF-AFun
-    Alias => SDF-Alias
-    Aliases => SDF-Aliases
-    Annotation => SDF-Annotation
-    ArgumentIndicator => SDF-ArgumentIndicator
-    Associativity => SDF-Associativity
-    ATerm => SDF-ATerm
-    ATermAttribute => SDF-ATermAttribute
-    Attribute => SDF-Attribute
-    Attributes => SDF-Attributes
-    Character => SDF-Character
-    CharClass => SDF-CharClass
-    CharRange => SDF-CharRange
-    CharRanges => SDF-CharRanges
-    Definition => SDF-Definition
-    FunctionName => SDF-FunctionName
-    Grammar => SDF-Grammar
-    Group => SDF-Group
-    IdCon => SDF-IdCon
-    Import => SDF-Import
-    Imports => SDF-Imports
-    ImpSection => SDF-ImpSection
-    IntCon => SDF-IntCon
-    Label => SDF-Label
-    Lookahead => SDF-Lookahead
-    Lookaheads => SDF-Lookaheads
-    Module => SDF-Module
-    ModuleId => SDF-ModuleId
-    ModuleName => SDF-ModuleName
-    ModuleWord => SDF-ModuleWord
-    NatCon => SDF-NatCon
-    NumChar => SDF-NumChar
-    OptCharRanges => SDF-OptCharRanges
-    OptExp => SDF-OptExp
-    Priorities => SDF-Priorities
-    Priority => SDF-Priority
-    Production => SDF-Production
-    Productions => SDF-Productions
-    RealCon => SDF-RealCon
-    Renaming => SDF-Renaming
-    Renamings => SDF-Renamings
-    Restriction => SDF-Restriction
-    Restrictions => SDF-Restrictions
-    SDF => SDF-SDF
-    Section => SDF-Section
-    Sections => SDF-Sections
-    ShortChar => SDF-ShortChar
-    SingleQuotedStrChar => SDF-SingleQuotedStrChar
-    SingleQuotedStrCon => SDF-SingleQuotedStrCon
-    Sort => SDF-Sort
-    StrChar => SDF-StrChar
-    StrCon => SDF-StrCon
-    Symbol => SDF-Symbol
-    Symbols => SDF-Symbols
   ]

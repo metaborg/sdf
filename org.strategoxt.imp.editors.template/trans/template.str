@@ -5,6 +5,7 @@ imports
   libstratego-gpp
   libstratego-aterm
   include/Template
+  include/Template-Signatures
   lib/editor-common.generated
   analysis
   desugar

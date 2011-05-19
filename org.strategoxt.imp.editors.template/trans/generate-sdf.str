@@ -3,6 +3,7 @@ imports
   libstratego-lib
   libstratego-sglr
   include/Template
+  include/Template-Signatures
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/sdf-pretty-print
@@ -83,7 +84,7 @@ strategies
       // SDF grammars
       // (each one is put in a separate `exports' section because SDF doesn't
       //  use a flat list for the grammars within a section, but a tree...)
-      section'* := <filter(\SDF-Grammar(t) -> exports(t)\)> section*;
+      section'* := <filter(\SdfGrammar(t) -> exports(t)\)> section*;
       s* := [restriction*, section'*]
 
   sdf-to-string =

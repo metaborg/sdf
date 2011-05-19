@@ -2,6 +2,7 @@ module analysis
 imports
   libstratego-lib
   include/Template
+  include/Template-Signatures
   lib/editor-common.generated
   desugar
   generation-utils
