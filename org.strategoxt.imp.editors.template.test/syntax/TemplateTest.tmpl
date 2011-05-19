@@ -27,7 +27,10 @@ templates
 
   Definition.Entity = <<
     entity <ID> {
-      <Property*; separator="\n">
+      <Property*
+        ; separator="\n" // (no newlines)
+        // ; separator=""   // (leading/trailing newlines)
+        >
     }
   >>
 
@@ -37,6 +40,20 @@ templates
 
   Type.Type = <<<Type:ID>>>
 
-lexical syntax
+  Definition.Expression = <<
+    expression <ID> {
+      <Expression>
+    }
+  >>
 
-  [A-Za-z][A-Za-z0-9]* -> ID
+  Expression.Plus  = <<<Expression> + <Expression>>> {left}
+  Expression.Minus = <<<Expression> - <Expression>>> {left}
+  Expression.Times = <<<Expression> * <Expression>>> {left}
+  Expression.Over  = <<<Expression> / <Expression>>> {left}
+  Expression.Value = <<<INT>>>
+  Expression = <<(<Expression>)>> {bracket}
+
+context-free priorities
+
+  {left: Expression.Times Expression.Over } >
+  {left: Expression.Plus  Expression.Minus}

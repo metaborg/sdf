@@ -2,7 +2,6 @@ module analysis
 imports
   libstratego-lib
   include/Template
-  include/Template-Signatures
   lib/editor-common.generated
   desugar
   generation-utils
@@ -85,6 +84,9 @@ strategies
       TemplateProduction(sort, Template(part'*), attrs)
     with
       rules(Template :+ sort -> template);
+      if cons := <collect-one(?sdf-cons(<un-double-quote>))> attrs then
+        rules(Template :+ (sort, cons) -> template)
+      end;
       part'* := <declare-placeholders> part*
     with
       <Declaration> sort

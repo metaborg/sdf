@@ -2,7 +2,6 @@ module generate-str
 imports
   libstratego-lib
   include/Template
-  include/Template-Signatures
   analysis
   desugar
   generation-utils

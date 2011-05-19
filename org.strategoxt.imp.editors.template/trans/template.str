@@ -5,7 +5,6 @@ imports
   libstratego-gpp
   libstratego-aterm
   include/Template
-  include/Template-Signatures
   lib/editor-common.generated
   analysis
   desugar
@@ -51,13 +50,13 @@ rules // Limited existing sort checking (plugs into sdf.str)
 rules // Local checks
 
   templates-error:
-    TemplateProductionWithCons(_, _, _, attrs(attr*)) ->
+    TemplateProductionWithCons(_, _, attrs(attr*)) ->
       (x, $[Constructor already specified at start of production. Please remove this cons attribute.])
     where
       <collect-one(?sdf-cons(x))> attr*
 
   context-free-syntax-error:
-    SdfProductionWithCons(_, _, _, attrs(attr*)) ->
+    SdfProductionWithCons(_, _, attrs(attr*)) ->
       (x, $[Constructor already specified at start of production. Please remove this cons attribute.])
     where
       <collect-one(?sdf-cons(x))> attr*

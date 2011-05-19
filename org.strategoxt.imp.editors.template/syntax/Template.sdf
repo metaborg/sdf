@@ -12,6 +12,12 @@ exports
     Template %% Workaround StrategoXT/862
 
   context-free syntax
+    %% references to productions using sort.cons notation in priority specification
+    SortCons                                   -> Group[[SDF]]  {cons("simple-ref-group")}
+    "{" SortCons+ "}"                          -> Group[[SDF]]  {cons("prods-ref-group")}
+    "{" Associativity[[SDF]] ":" SortCons+ "}" -> Group[[SDF]]  {cons("assoc-ref-group")}
+
+  context-free syntax
     %% "grammars"
     "templates" TemplateProduction* -> Grammar {cons("Templates")}
     %% "completion" "templates" CompletionTemplate* -> Grammar {cons("Templates")}
@@ -21,8 +27,10 @@ exports
     ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
 
     %% template productions `sort.cons = ...'
-    ID "." ID "=" Symbols[[SDF]] Attributes[[SDF]] -> Production[[SDF]] {cons("SdfProductionWithCons")}
-    ID "." ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProductionWithCons")}
+    SortCons "=" Symbols[[SDF]] Attributes[[SDF]] -> Production[[SDF]] {cons("SdfProductionWithCons")}
+    SortCons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProductionWithCons")}
+
+    ID "." ID -> SortCons {cons("SortCons")}
 
     %% placeholders
     "<" PlaceholderPrefix1 PlaceholderSort PlaceholderSuffix PlaceholderOptions ">" -> TemplatePart1 {cons("Placeholder")}

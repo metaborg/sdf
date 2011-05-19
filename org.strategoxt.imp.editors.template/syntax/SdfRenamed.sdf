@@ -2,7 +2,7 @@ module SdfRenamed
 
 imports
 
-  languages/sdf2/syntax/Sdf2 [
+  SDFMix[SDF] [
 
     %% LAYOUT => IGNORED
 

@@ -3,7 +3,6 @@ imports
   libstratego-lib
   libstratego-sglr
   include/Template
-  include/Template-Signatures
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/sdf-pretty-print
@@ -51,9 +50,11 @@ strategies
                 <+ \Imports(t) -> [imports(<map(\Import(M) -> i|[ M ]|\)> t)]\> import*
       else
         (M, is) := ("example", [])
-      end;
+      end
+    with
       // main productions
-      p* := <collect-om(template-to-sdf)> x;
+      p* := <collect-om(template-production-to-sdf)> x
+    with
       // lexical restrictions
       let ends-with-identifier-char =
         where(explode-string; un-double-quote-chars; last; (is-alphanum + '_'))
@@ -66,7 +67,7 @@ strategies
           restriction* := [|[ lexical restrictions
                                 A* -/- [A-Za-z0-9\_\-] ]|]
         end
-      end;
+      end
       // rejections
       // let is-identifier-ish =
       //       where(explode-string; un-double-quote-chars; all(is-alphanum))
@@ -84,8 +85,24 @@ strategies
       // SDF grammars
       // (each one is put in a separate `exports' section because SDF doesn't
       //  use a flat list for the grammars within a section, but a tree...)
-      section'* := <filter(\SdfGrammar(t) -> exports(t)\)> section*;
+    with
+      section'* := <filter(\SdfGrammar(t) -> exports(<try(rewrite-sortcons-references)> t)\)> section*
+    with
       s* := [restriction*, section'*]
+
+  rewrite-sortcons-references:
+    context-free-priorities(t) -> context-free-priorities(t')
+    with
+      let rewrite =
+            \SortCons(sort, cons) ->
+              <Template; template-production-to-sdf-no-attrs> (sort, cons)\
+      in
+        t' := <alltd(
+                  \simple-ref-group(ref) -> simple-group(<rewrite> ref)\
+                + \prods-ref-group(ref*) -> prods-group(<map(rewrite)> ref*)\
+                + \assoc-ref-group(a, ref*) -> assoc-group(a, <map(rewrite)> ref*)\
+              )> t
+      end
 
   sdf-to-string =
     bottomup(try(
@@ -97,17 +114,33 @@ strategies
     sdf-parenthesize;
     pp-sdf-string
 
-  template-to-sdf:
-    TemplateProduction(S', Template(e* @[_|_]), attrs')
+  template-production-to-sdf-no-attrs:
+    TemplateProduction(S', t /*@ Template([_|_])*/, _)
+      -> p|[ A* -> S' ]|
+    with
+      A* := <template-to-sdf> t
+
+  template-production-to-sdf:
+    TemplateProduction(S', t /*@ Template([_|_])*/, attrs')
       -> p|[ A* -> S' attrs' ]|
+    with
+      A* := <template-to-sdf> t
+
+/*
+  template-production-to-sdf:
+    TemplateProduction(S', Template([]), attrs')
+      -> p|[ -> S' attrs' ]|
+*/
+
+  template-to-sdf:
+    Template(e* @[_|_]) -> A*
     with
       A* := <newlines-switch(id, trim-trailing-layout, trim-leading-layout);
              combine-consecutive-newlines;
              filter(template-element-to-sdf)> e*
 
   template-to-sdf:
-    TemplateProduction(S', Template([]), attrs')
-      -> p|[ -> S' attrs' ]|
+    Template([]) -> []
 
   template-element-to-sdf:
     Newline(_){ /* neither Leading() nor Trailing() */ } -> A|[ "\\n" ]|

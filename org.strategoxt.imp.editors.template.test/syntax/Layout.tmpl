@@ -34,17 +34,23 @@ lexical syntax
   [\ \t\r] -> LayoutChar
   LayoutChar -> LAYOUT
 
-  "\n" ("\n" | LayoutChar)* -> LineBreak
+  [\n] ([\n] | LayoutChar)* -> LineBreak
   LineBreak -> LAYOUT
 
   "//" ~[\n]* -> Comment
   Comment -> LayoutChar
 
+  "/*" (~[\*] | Asterisk)* "*/" -> Comment
+  "*" -> Asterisk
+
 lexical restrictions
   LineBreak -/- [\ \t\n\r]
   LineBreak -/- [\/].[\/]
+  LineBreak -/- [\/].[\*]
   Comment   -/- ~[\n]
+  Asterisk  -/- [\/]
 
 context-free restrictions
   LAYOUT? -/- [\ \t\r]
   LAYOUT? -/- [\/].[\/]
+  LAYOUT? -/- [\/].[\*]

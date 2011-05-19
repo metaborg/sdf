@@ -2,7 +2,6 @@ module desugar
 imports
   libstratego-lib
   include/Template
-  include/Template-Signatures
 
 overlays
 
@@ -27,13 +26,13 @@ rules
     SdfProduction(sort, symbol*, attr*) -> prod(symbol*, sort(sort), attr*)
 
   desugar:
-    SdfProductionWithCons(sort, cons, symbol*, attrs(attr*)) ->
+    SdfProductionWithCons(SortCons(sort, cons), symbol*, attrs(attr*)) ->
       prod(symbol*, sort(sort), attrs(attr'*))
     with
       attr'* := [sdf-cons(<double-quote> cons)|attr*]
 
   desugar:
-    TemplateProductionWithCons(sort, cons, tmpl, attrs(attr*)) ->
+    TemplateProductionWithCons(SortCons(sort, cons), tmpl, attrs(attr*)) ->
       TemplateProduction(sort, tmpl, attrs(attr'*))
     with
       attr'* := [sdf-cons(<double-quote> cons)|attr*]

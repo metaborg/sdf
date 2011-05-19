@@ -3,7 +3,6 @@ imports
   libstratego-lib
   lib/editor-common.generated
   include/Template
-  include/Template-Signatures
   analysis
 
 signature
