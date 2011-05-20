@@ -176,15 +176,18 @@ strategies
 
           add-non-transitives = chaintd(add-group(?non-transitive(_)))
 
-          // associativity within a group
+          // Associativity within a group
+          // (does not make group members self-associative)
+          // Note: In SDF if there is only one group member it does
+          //       make it self-associative. (StrategoXT/863)
           add-associativity = {associativity, prod*:
             fetch-group;
             if ?assoc-group(associativity, prod*) then
               if <?left() + ?assoc() + ?non-assoc()> associativity then
-                <for-each-pair(add-left-assoc)> (prod*, prod*)
+                <for-each-pair(eq <+ add-left-assoc)> (prod*, prod*)
               end;
               if <?right() + ?non-assoc()> associativity then
-                <for-each-pair(add-right-assoc)> (prod*, prod*)
+                <for-each-pair(eq <+ add-right-assoc)> (prod*, prod*)
               end
             end
           }
