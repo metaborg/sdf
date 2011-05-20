@@ -5,6 +5,7 @@ imports
   analysis
   desugar
   generation-utils
+  sdf2conflicts
 
 strategies
 
@@ -81,15 +82,16 @@ strategies
     TemplateProduction(sort, Template([String(t)]), attr*) ->
     $[prettyprint-[sort]:
         [cons]() -> [result]]
+    where
+      cons   := <collect-one(?sdf-cons(<un-double-quote>))> attr*
     with
-      cons   := <collect-one(?sdf-cons(<un-double-quote>))> attr*;
       result := <escape-and-double-quote> t
 
   template-to-prettyprint-strategy:
     TemplateProduction(sort, Template(elem*), attr*) ->
     <trim-chars(' ' + '\t' + '\r' + '\n')> // Workaround Stratego/856
     $[prettyprint-[sort]:
-        [cons]([arg*]) -> zz
+        [cons]([arg'*]) -> zz
         with
           [let'*]]
     where
@@ -101,8 +103,8 @@ strategies
                   !(<id>, 0);
                   thread-map(try(rename-template-element));
                   ?(<id>, _)> elem*;
-      arg*    := <filter(template-element-to-cons-arg);
-                  separate-by(|", ")> elem'*;
+      arg*    := <filter(template-element-to-cons-arg)> elem'*;
+      arg'*   := <separate-by(|", ")> arg*;
       part*   := <newlines-switch(trim-layout, trim-trailing-layout,
                                   trim-leading-layout ; trim-trailing-indent);
                   listtd(template-element-to-stratego);
@@ -110,8 +112,38 @@ strategies
                   map(try(?String(<escape-and-double-quote>)));
                   separate-by(|", ")> elem'*;
       result  := <concat-strings>["zz := <concat-strings> [", part*, "]"];
-      let*    := <filter(template-element-to-assignment)> elem'*;
+      confl*  := <bagof-SubtermConflicts> Symbol(cons, <length> arg*);
+      if !confl* => [] then
+        let*  := <filter(template-element-to-assignment)> elem'*
+      else
+        let*  := <filter(?Placeholder(_, _, _, _));
+                  add-indices;
+                  filter(template-element-to-parenthesize(|confl*))> elem'*
+      end;
       let'*   := <separate-by(|";\n")> [let*, result]
+
+  // Production without cons but with bracket annotation
+  // (cons + bracket -> no need to parenthesize)
+  template-to-prettyprint-strategy:
+    TemplateProduction(sort, Template(elem*), attr*) ->
+    ${parenthesize-{sort}(not-allowed) =
+        if not-allowed then
+          <concat-strings> ["{open}", <prettyprint-{sort}>, "{close}"]
+        else
+          prettyprint-{sort}
+        end}
+    where
+      not(<collect-one(?sdf-cons(<un-double-quote>))> attr*);
+      <collect-one(?bracket())> attr*
+    where
+      <length> <filter(?Placeholder(_, _, _, _))> elem* => 1
+      <+ debug(!"Bracket production must have exactly one placeholder: "); fail
+    with
+      (before, placeholder, after) := <split-fetch-keep(?Placeholder(_, _, _, _))> elem*
+    where
+      [String(open)]  := <map(template-element-to-stratego'); concatenate-consecutive-strings> before;
+      [String(close)] := <map(template-element-to-stratego'); concatenate-consecutive-strings> after
+      <+ debug(!"Bracket production must have text before and after the placeholder: "); fail
 
   rename-template-element:
     (Placeholder(a, b@ Sort(x), c, d){a*}, index) -> (Placeholder(a, b{newname}, c, d){a*}, newindex)
@@ -161,3 +193,17 @@ strategies
 
   template-element-to-assignment:
     Placeholder(_, Sort(x){name}, Option(), _) -> $[[name]' := <pp-option(prettyprint-[x])> [name]]
+
+  template-element-to-parenthesize(|conflicts):
+    (i1, Placeholder(_, Sort(x){name}, None(), _)) -> $[[name]' := <parenthesize-[x]([na])> [name]]
+    with
+      i0 := <dec> i1;
+      let subterm-conflict-to-match = {x, n, a*:
+            ( (i0, Symbol(x, n)) -> <concat-strings> ["?", x, "(", a*, ")"]
+              with a* := <range; map(!"_"); separate-by(|", ")> (0, n) )
+          }
+      in
+        na := <filter(subterm-conflict-to-match);
+               separate-by(|" + ");
+               try(\ [] -> ["fail"] \)> conflicts
+      end

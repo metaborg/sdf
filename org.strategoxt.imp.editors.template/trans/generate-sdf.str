@@ -8,11 +8,12 @@ imports
   lib/sdf-pretty-print
   analysis
   generation-utils
+  sdf2conflicts
 
 strategies
 
   to-sdf:
-    x -> <try(sdf-to-string)> d|[
+    x -> <sdf2conflicts; try(sdf-to-string)> d|[
       definition
       m*
       module Completion-Support
@@ -115,29 +116,22 @@ strategies
     pp-sdf-string
 
   template-production-to-sdf-no-attrs:
-    TemplateProduction(S', t /*@ Template([_|_])*/, _)
-      -> p|[ A* -> S' ]|
+    TemplateProduction(S', t, _) -> p|[ A* -> S' ]|
     with
       A* := <template-to-sdf> t
 
   template-production-to-sdf:
-    TemplateProduction(S', t /*@ Template([_|_])*/, attrs')
-      -> p|[ A* -> S' attrs' ]|
+    TemplateProduction(S', t, attrs') -> p|[ A* -> S' attrs' ]|
     with
       A* := <template-to-sdf> t
-
-/*
-  template-production-to-sdf:
-    TemplateProduction(S', Template([]), attrs')
-      -> p|[ -> S' attrs' ]|
-*/
 
   template-to-sdf:
     Template(e* @[_|_]) -> A*
     with
       A* := <newlines-switch(id, trim-trailing-layout, trim-leading-layout);
              combine-consecutive-newlines;
-             filter(template-element-to-sdf)> e*
+             filter(template-element-to-sdf);
+             flatten-list> e*
 
   template-to-sdf:
     Template([]) -> []

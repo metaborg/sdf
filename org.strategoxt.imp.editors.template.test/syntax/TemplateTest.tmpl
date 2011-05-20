@@ -50,10 +50,12 @@ templates
   Expression.Minus = <<<Expression> - <Expression>>> {left}
   Expression.Times = <<<Expression> * <Expression>>> {left}
   Expression.Over  = <<<Expression> / <Expression>>> {left}
+  Expression.Power = <<<Expression>^<Expression>>> {right}
   Expression.Value = <<<INT>>>
   Expression = <<(<Expression>)>> {bracket}
 
 context-free priorities
 
+  Expression.Power >
   {left: Expression.Times Expression.Over } >
   {left: Expression.Plus  Expression.Minus}

@@ -21,6 +21,22 @@ entity Empty {
 
 }
 
-expression Exp {
-  1 + 2 - 3 * 12
+expression LeftAssociative {
+  1 * (2 * 3)
+}
+
+expression RightAssociative {
+  2^2^2
+}
+
+expression Priorities {
+  1 - 2 / 3
+}
+
+expression Priorities {
+  1 / 2 * 3
+}
+
+expression Parentheses {
+  (7 - 5)^((1 + 1) * (2 + 2))
 }
