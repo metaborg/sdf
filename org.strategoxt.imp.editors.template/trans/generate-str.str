@@ -114,10 +114,10 @@ strategies
       result  := <concat-strings>["zz := <concat-strings> [", part*, "]"];
       confl*  := <bagof-SubtermConflicts> Symbol(cons, <length> arg*);
       if !confl* => [] then
-        let*  := <filter(template-element-to-assignment)> elem'*
+        let*  := <filter(template-element-to-prettyprint)> elem'*
       else
         let*  := <filter(?Placeholder(_, _, _, _));
-                  add-indices;
+                  add-indices; map((dec, id));
                   filter(template-element-to-parenthesize(|confl*))> elem'*
       end;
       let'*   := <separate-by(|";\n")> [let*, result]
@@ -179,10 +179,10 @@ strategies
     + \Indent(t) -> String(t)\
     + \Newline(t) -> String(t)\
 
-  template-element-to-assignment:
+  template-element-to-prettyprint:
     Placeholder(_, Sort(x){name}, None(), _) -> $[[name]' := <prettyprint-[x]> [name]]
 
-  template-element-to-assignment:
+  template-element-to-prettyprint:
     Placeholder(_, Sort(x){name}, <Star() + Plus()>, Options(opt*)) -> t
     with
       if sep := <collect-one(?Separator(<id>))> opt* then
@@ -191,19 +191,25 @@ strategies
         t := $[[name]' := <pp-list(prettyprint-[x]|" ")> [name]]
       end
 
-  template-element-to-assignment:
+  template-element-to-prettyprint:
     Placeholder(_, Sort(x){name}, Option(), _) -> $[[name]' := <pp-option(prettyprint-[x])> [name]]
 
   template-element-to-parenthesize(|conflicts):
-    (i1, Placeholder(_, Sort(x){name}, None(), _)) -> $[[name]' := <parenthesize-[x]([na])> [name]]
+    (i0, Placeholder(_, Sort(x){name}, None(), _)) -> $[[name]' := <parenthesize-[x]([na])> [name]]
+    where
+      not(<filter(?(i0, <id>))> conflicts => conflicts' => [])
     with
-      i0 := <dec> i1;
-      let subterm-conflict-to-match = {x, n, a*:
-            ( (i0, Symbol(x, n)) -> <concat-strings> ["?", x, "(", a*, ")"]
-              with a* := <range; map(!"_"); separate-by(|", ")> (0, n) )
-          }
+      let to-match =
+            {a*: \ Symbol(x, n) -> <concat-strings> ["?", x, "(", a*, ")"]
+                   with a* := <range; map(!"_"); separate-by(|", ")> (0, n) \}
       in
-        na := <filter(subterm-conflict-to-match);
-               separate-by(|" + ");
-               try(\ [] -> ["fail"] \)> conflicts
+        na := <filter(to-match); separate-by(|" + ")> conflicts'
       end
+
+  template-element-to-parenthesize(|conflicts):
+    (i0, p@ Placeholder(_, Sort(x){name}, None(), _)) -> <template-element-to-prettyprint> p
+    where
+      <filter(?(i0, _))> conflicts => []
+
+  template-element-to-parenthesize(|conflicts):
+    (i0, p@ Placeholder(_, Sort(x){name}, <not(?None())>, _)) -> <template-element-to-prettyprint> p

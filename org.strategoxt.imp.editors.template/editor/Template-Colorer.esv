@@ -11,6 +11,7 @@ colorer
   SDF-StrCon._            : blue
 
   _.String                : template
+  _.Escape                : 127 0 85 bold
   _.Layout                : template
   _.Newline               : template //0 0 255 255 0 0  (highlight trailing whitespace)
   PlaceholderText1        : template

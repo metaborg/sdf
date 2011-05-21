@@ -9,7 +9,7 @@ overlays
 
 strategies
 
-  desugar-top = downup(try(desugar))
+  desugar-top = innermost(desugar)
 
 rules
 
@@ -39,3 +39,33 @@ rules
 
   desugar:
     Separator(x) -> Separator(<un-double-quote; unescape> x)
+
+  desugar:
+    Escape(t) -> String(t')
+    with
+      let parse-unicode = {before*, mid, after*:
+             split-fetch-keep(not(is-hexnum)) => (before*, mid, after*);
+             ![<hex-chars-to-int> before*, mid | after*]
+          <+ ![<hex-chars-to-int>]
+          }
+          unescape =
+            string-as-chars(rec x(
+               \['\', ' ' | tail] -> [' '  | <x> tail]\
+            <+ \['\', '"' | tail] -> ['"'  | <x> tail]\
+            <+ \['\', '\' | tail] -> ['\'  | <x> tail]\
+            <+ \['\', 't' | tail] -> ['\t' | <x> tail]\
+            <+ \['\', 'r' | tail] -> ['\r' | <x> tail]\
+            <+ \['\', 'n' | tail] -> ['\n' | <x> tail]\
+            <+ \['\', '<' | tail] -> ['<'  | <x> tail]\
+            <+ \['\', '>' | tail] -> ['>'  | <x> tail]\
+            <+ \['\', '[' | tail] -> ['['  | <x> tail]\
+            <+ \['\', ']' | tail] -> [']'  | <x> tail]\
+            <+ \['\', 'u' | tail] -> <parse-unicode; [id | x]> tail\
+            <+ \['<', '\', '\', '>' | tail] -> <x> tail\
+            <+ \['[', '\', '\', ']' | tail] -> <x> tail\
+            <+ \[_ | tail] -> <x> tail\
+            <+ []
+            ))
+      in
+        t' := <unescape> t
+      end

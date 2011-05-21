@@ -58,35 +58,88 @@ exports
   syntax
     %% templates
     "<<" <TemplatePart1-CF>* ">>" -> <Template-CF> {cons("Template")}
-    <TemplatePart1-LEX>   -> <TemplatePart1-CF> {cons("String")}
+    <TemplateString1-LEX> -> <TemplatePart1-CF> {cons("String")}
+    <TemplateEscape1-LEX> -> <TemplatePart1-CF> {cons("Escape")}
     <TemplateLayout-LEX>  -> <TemplatePart1-CF> {cons("Layout")}
     <TemplateNewline-LEX> -> <TemplatePart1-CF> {cons("Newline")}
 
     "[[" <TemplatePart2-CF>* "]]" -> <Template-CF> {cons("Template")}
-    <TemplatePart2-LEX>   -> <TemplatePart2-CF> {cons("String")}
+    <TemplateString2-LEX> -> <TemplatePart2-CF> {cons("String")}
+    <TemplateEscape2-LEX> -> <TemplatePart2-CF> {cons("Escape")}
     <TemplateLayout-LEX>  -> <TemplatePart2-CF> {cons("Layout")}
     <TemplateNewline-LEX> -> <TemplatePart2-CF> {cons("Newline")}
 
-    "\"" <TemplatePart3-CF>* "\"" -> <Template-CF> {cons("Template")}
-    <TemplatePart3-LEX>   -> <TemplatePart3-CF> {cons("String")}
-    <TemplateLayout-LEX>  -> <TemplatePart3-CF> {cons("Layout")}
-    <TemplateNewline-LEX> -> <TemplatePart3-CF> {cons("Newline")}
+    %% special: no placeholders, no newlines
+    "\"" <TemplatePartQ-CF>* "\"" -> <Template-CF> {cons("Template")}
+    <TemplateStringQ-LEX> -> <TemplatePartQ-CF> {cons("String")}
+    <TemplateEscapeQ-LEX> -> <TemplatePartQ-CF> {cons("Escape")}
+    <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    [\ \t\r]* [\n]   -> TemplateNewline
-    [\ \t\r]+        -> TemplateLayout
-    ~[\<\>\ \t\r\n]+ -> TemplatePart1
-    ~[\[\]\ \t\r\n]+ -> TemplatePart2
-    ~[\"\ \t\r\n]+   -> TemplatePart3
-
     ~[\<\>\:]+ -> PlaceholderText1
     ~[\[\]\:]+ -> PlaceholderText2
 
   lexical restrictions
-    TemplateLayout -/- [\ \t\r\n]
-    TemplatePart1  -/- ~[\<\>\ \t\r\n]
-    TemplatePart2  -/- ~[\[\]\ \t\r\n]
-    TemplatePart3  -/- ~[\"\ \t\r\n]
-
     PlaceholderText1 -/- ~[\:]
     PlaceholderText2 -/- ~[\:]
+
+  lexical syntax
+    [\ \t\r]* [\n] -> TemplateNewline
+    [\ \t\r]+      -> TemplateLayout
+
+    (~[\\\<\>\ \t\r\n] | Backslash1)+ -> TemplateString1
+    (~[\\\[\]\ \t\r\n] | Backslash2)+ -> TemplateString2
+    ~[\\\"\ \t]+                      -> TemplateStringQ
+
+    [\\] -> Backslash1
+    [\\] -> Backslash2
+
+  lexical restrictions
+    TemplateLayout -/- [\ \t\r\n]
+
+    %% must be followed by:
+    TemplateString1 -/- ~[\\\<\>\ \t\r\n]
+    TemplateString2 -/- ~[\\\[\]\ \t\r\n]
+    TemplateStringQ -/- ~[\\\"\ \t]
+
+    %% if followed by a backslash, then the backslash must be followed by:
+    TemplateString1 -/- [\\].~[\<\>\\]
+    TemplateString2 -/- [\\].~[\[\]\\]
+
+    Backslash1 -/- [\<\>\\]
+    Backslash2 -/- [\[\]\\]
+
+  lexical syntax
+    %% this are the escapes which StringTemplate has
+    "\\<"  -> TemplateEscape1
+    "\\>"  -> TemplateEscape1
+    "\\\\" -> TemplateEscape1
+    "\\["  -> TemplateEscape2
+    "\\]"  -> TemplateEscape2
+    "\\\\" -> TemplateEscape2
+
+    "<" EscapedChar* ">"    -> TemplateEscape1
+    "<\\\\>" [\ \t\r]* [\n] -> TemplateEscape1
+    "[" EscapedChar* "]"    -> TemplateEscape2
+    "[\\\\]" [\ \t\r]* [\n] -> TemplateEscape2
+
+    %% double-backslash isn't allowed in <<>> / [[]] templates
+    %% (would clash with <\\> / [\\] line continuation construct)
+    ("\\\\" | EscapedChar)+ -> TemplateEscapeQ
+
+    %% escapes allowed in a placeholder-like construct
+    "\\ "  -> EscapedChar
+    "\\\"" -> EscapedChar
+    "\\t"  -> EscapedChar
+    "\\r"  -> EscapedChar
+    "\\n"  -> EscapedChar
+    "\\u" [0-9A-Fa-f]+ -> UnicodeEscapedChar
+    UnicodeEscapedChar -> EscapedChar
+
+    "\\" ~[] -> EscapedChar {recover, cons("WATER")}
+    "<" ~[\>]+ ">" -> TemplateEscape1 {recover, cons("WATER")}
+    "[" ~[\]]+ "]" -> TemplateEscape2 {recover, cons("WATER")}
+
+  lexical restrictions
+    TemplateEscapeQ    -/- [\\]
+    UnicodeEscapedChar -/- [0-9A-Fa-f]

@@ -105,6 +105,7 @@ strategies // Utility strategies
     <+ []
 
   escape-and-double-quote =
+    string-replace(|"\\", "\\\\");
     string-replace(|"\t", "\\t");
     string-replace(|"\r", "\\r");
     string-replace(|"\n", "\\n");
