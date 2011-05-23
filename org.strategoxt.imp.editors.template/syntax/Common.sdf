@@ -4,6 +4,8 @@ exports
 
   lexical syntax
 
+    [a-zA-Z]* "CONTENTCOMPLETE" [0-9]+ -> CONTENTCOMPLETE {avoid}
+
     [a-zA-Z]                          -> ID
     [a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9] -> ID
 

@@ -8,11 +8,18 @@ completions
   //
   // See the imported file for a brief introduction and examples.
 
+  // TemplateLang completions
   completion template TemplateProduction : "template" =
+    <Sort> "." <Cons> " = <<" (cursor) ">>" (blank)
+
+  completion template TemplateProduction : "multiline template" =
     <Sort> "." <Cons> " = <<\n\t" (cursor) "\n>>" (blank)
 
   completion template TemplatePart1 : "placeholder" = "<" <text> ":" <Sort> ">"
   completion template TemplatePart2 : "placeholder" = "[" <text> ":" <Sort> "]"
+
+  completion template PlaceholderOption : "separator" "=\"" (cursor) "\""
+  completion template PlaceholderOptions : "separator" = "; separator=\"" (cursor) "\""
 
 completions
   // Semantic (identifier) completion:

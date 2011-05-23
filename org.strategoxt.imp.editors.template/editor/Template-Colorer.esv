@@ -8,8 +8,6 @@ colorer
   //
   // See the imported file for a brief introduction and examples.
 
-  SDF-StrCon._            : blue
-
   _.String                : template
   _.Escape                : 127 0 85 bold
   _.Layout                : template
@@ -17,6 +15,7 @@ colorer
   PlaceholderText1        : template
   PlaceholderText2        : template
   _.Placeholder           : _ bold
+  PlaceholderSort.Sort    : _ bold
+  PlaceholderSuffix._     : _ bold
 
-  template = 0 0 255
-  // 240 240 240
+  template = 0 0 255 // 240 240 240

@@ -9,7 +9,12 @@ imports
 exports
   context-free start-symbols
     Module
-    Template %% Workaround StrategoXT/862
+
+  context-free syntax
+    %% tweaks for content completion
+    CONTENTCOMPLETE -> TemplateProduction {recover, cons("WATER")}
+    CONTENTCOMPLETE -> PlaceholderOption  {recover, cons("WATER")}
+    CONTENTCOMPLETE -> PlaceholderOptions {recover, cons("WATER")}
 
   context-free syntax
     %% references to productions using sort.cons notation in priority specification
