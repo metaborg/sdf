@@ -4,11 +4,14 @@ imports
   SDF-Builders.generated
 
 builders
-  
+
   provider : include/sdf.jar
-  
+
   observer : editor-analyze
-  
+
+  builder : "Show abstract syntax (for selection)" =
+    generate-aterm (realtime) (openeditor) (meta)
+
   // builder : "Show current term (for selection)" =
   //   generate-ast (realtime) (openeditor)
 
@@ -18,5 +21,5 @@ builders
   // builder : "Show abstract syntax signature (for selection)" =
   //  generate-rtg (realtime) (openeditor)
 
-  builder : "Show abstract syntax (for selection)" =
-    generate-aterm (realtime) (openeditor) (meta)
+  builder : "Show syntax templates (for selection)" =
+    generate-syntax-templates (realtime) (openeditor)

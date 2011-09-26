@@ -6,6 +6,7 @@ imports
   libstratego-sglr
   libstrc
   analysis
+  generate-syntax-templates
   lib/editor-common.generated
 
 rules
