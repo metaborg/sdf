@@ -17,8 +17,8 @@ rules
       editor-init;
       analyze-ast;
       // We only collect-om since we don't want inner warning dupes
-      error*   := <collect-om(?context-free-syntax(<collect-om(context-free-syntax-error)>), conc)> ast;
-      warning* := <collect-om(?context-free-syntax(<collect-om(context-free-syntax-warning)>), conc)> ast;
+      error*   := <collect-om(fetch-sdf-errors, conc)> ast;
+      warning* := <collect-om(fetch-sdf-warnings, conc)> ast;
       if <file-exists> $[[project-path]/.disable-global-analysis] then
         serror* := []
       else
@@ -31,6 +31,14 @@ rules
         error'*   := <conc> (serror*, error*);
         warning'* := warning*
       end
+
+  fetch-sdf-errors =
+    ?context-free-syntax(<collect-om(context-free-syntax-error)>)
+  + ?lexical-syntax(<collect-om(lexical-syntax-error)>)
+  
+  fetch-sdf-warnings =
+    ?context-free-syntax(<collect-om(context-free-syntax-warning)>)
+  + ?lexical-syntax(<collect-om(lexical-syntax-warning)>)
 
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
@@ -65,6 +73,8 @@ rules // Limited exisiting sort checking
   context-free-syntax-sort-error:
     'sorts(_) -> [] // ignored
 
+  lexical-syntax-error = fail
+
 rules // Local checks
 
   context-free-syntax-warning:
@@ -88,6 +98,9 @@ rules // Local checks
     t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Single argument expected for {cons("Name")} attribute])
     where
       not(<length> a* => 1)
+  
+  lexical-syntax-warning:
+    t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Constructor only expected in context-free syntax])
 
   context-free-syntax-warning:
     t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
