@@ -24,6 +24,8 @@ exports
     
     %%[A][A-Z]* -> Bar {cons("X")}
     
+    "nil" -> Nil {cons("Nil")}
+    
     Start Start -> Z
     %%X Y Z -> Bar
   syntax

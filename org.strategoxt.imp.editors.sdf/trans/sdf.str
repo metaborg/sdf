@@ -98,7 +98,11 @@ rules // Local checks
     t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Single argument expected for {cons("Name")} attribute])
     where
       not(<length> a* => 1)
-  
+
+  context-free-syntax-warning:
+    term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Nil\""))])))
+      -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
+
   lexical-syntax-warning:
     t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Constructor only expected in context-free syntax])
 
