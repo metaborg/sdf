@@ -122,13 +122,11 @@ rules // Local checks
   context-free-syntax-warning:
     opt(s @ seq(_, _)) -> (s, $[Extract sequence in optional to separate productions to ensure acceptable abstract syntax])
     where
-      <occurrences(is-non-terminal)> s => 1
+      not(<occurrences(is-non-terminal)> s => 1)
 
   // TODO: don't warn for ? in {ast("...")} productions
   context-free-syntax-warning:
-    opt(lit) -> (lit, $[Extract literal in optional to separate productions to ensure consistent abstract syntax])
-    where
-      oncetd(?lit(_))
+    opt(lit(_)) -> (<id>, $[Extract literal in optional to separate productions to ensure consistent abstract syntax])
 
   /**
    * Tests if something is a non-terminal in terms of the AST produced.

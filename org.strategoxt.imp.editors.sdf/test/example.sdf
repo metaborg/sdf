@@ -28,6 +28,12 @@ exports
     
     Start Start -> Z
     %%X Y Z -> Bar
+
+    ","? -> X {cons("X")}
+    ("," ",")? -> X {cons("X")}
+    ("," X ",")? -> X {cons("X")} %% this is ok
+    ("," X X ",")? -> X {cons("X")}
+
   syntax
     
     "X" [A-Z]* -> <FOO-CF>
