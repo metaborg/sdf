@@ -5,10 +5,12 @@ imports
   libstratego-gpp
   libstratego-aterm
   include/TemplateLang
+  lib/EditorService
   lib/editor-common.generated
   analyze
   templatelang/expand
   templatelang/to-esv
+  utils/pp
 
 rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
 
@@ -32,14 +34,30 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Only the builder options are different.
   generate-desugared-aterm = generate-aterm
 
+  // Expanded templates (input to completion template generator)
   generate-expanded =
     generate-aterm(
       collect-om(?TemplateProduction(_, _, _));
       map(expand-multi-line-template-production)
     )
 
+  // Generate completion templates
   generate-esv =
-    generate-aterm(
-      collect-om(?TemplateProduction(_, _, _));
-      filter(template-to-completion-template)
-    )
+    collect-om(?TemplateProduction(_, _, _));
+    filter(template-to-completion-template)
+
+  generate-esv-abstract =
+    generate-aterm(generate-esv)
+
+  generate-esv-concrete:
+    (selected, position, ast, path, project-path) ->
+      (filename,
+        $[module example
+          [result]])
+    with
+      filename := <guarantee-extension(|"generated.esv")> path;
+      result   := <generate-esv;
+                   // R boxes are formatted incorrectly outside an A box.
+                   // Completions is the A box ...
+                   !Completions("", <id>);
+                   pp-descriptor-to-string> selected

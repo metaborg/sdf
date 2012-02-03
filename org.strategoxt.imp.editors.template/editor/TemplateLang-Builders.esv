@@ -19,7 +19,8 @@ builders
   builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (source)
   builder  : "Show desugared AST (for selection)" = generate-desugared-aterm (openeditor) (realtime)
   builder  : "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
-  builder  : "Generate ESV (for selection)" = generate-esv (openeditor) (realtime)
+  builder  : "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
+  builder  : "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
 
 refactorings
 
