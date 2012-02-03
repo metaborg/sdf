@@ -1,0 +1,17 @@
+module TemplateLang-Completions
+
+imports TemplateLang-Completions.generated
+
+completions
+
+  // This file is used to define content completion.
+  //
+  // See the imported file for a brief introduction and examples.
+
+
+completions
+  // Semantic (identifier) completion:
+
+//   completion proposer                  : editor-complete
+// 
+//   completion trigger                   : ":"

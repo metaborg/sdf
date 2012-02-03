@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?eclipse version="3.0"?>
+
+<plugin>
+       <extension point="org.eclipse.imp.runtime.languageDescription">
+          <language extensions="tmpl" description="TemplateLang" language="TemplateLang" derivedFrom="DynamicRoot" validator="org.strategoxt.imp.editors.template.TemplateLangValidator" validatorClass="org.strategoxt.imp.editors.template.TemplateLangValidator"></language>
+       </extension>
+       <extension id="org.strategoxt.imp.editors.template.parser" name="TemplateLang Parser" point="org.eclipse.imp.runtime.parser">
+          <parser class="org.strategoxt.imp.editors.template.TemplateLangParseController" language="TemplateLang">
+          </parser>
+       </extension>    
+    </plugin>

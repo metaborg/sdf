@@ -1,0 +1,28 @@
+module analyze
+
+imports
+  include/TemplateLang
+  templatelang/utils/attributes
+  templatelang/desugar
+
+strategies
+
+  analyze =
+    templatelang-desugar-top;
+    templatelang-desugar-sdf-top;
+    declare-top
+
+  declare-top = alltd(declare)
+
+  declare:
+    prod @ TemplateProduction(sort, _, attrs) -> <id>
+    where
+      rules( Declaration :+ sort -> prod );
+      if cons := <fetch-cons-name> attrs then
+        sortcons := (sort, cons);
+        rules( Declaration :+ sortcons -> prod )
+      end
+
+  // hook into templatelang/expand-template
+  get-declarations =
+    bagof-Declaration

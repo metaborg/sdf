@@ -1,0 +1,24 @@
+module templatelang/utils/misc
+
+imports
+  include/TemplateLang
+
+strategies
+
+  with-spxverify(s) = with(s)
+
+  concatenate-consecutive-strings =
+    rec r(
+         ?[String("") | <r>]
+      <+ \[String(a), String(b) | tail] -> <r> [String(<conc-strings> (a, b)) | tail]\
+      <+ [id | r]
+      <+ []
+    )
+
+  templatelang-escape =
+    string-replace(|"\\", "\\\\");
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"'", "\\'");
+    string-replace(|"\"", "\\\"")

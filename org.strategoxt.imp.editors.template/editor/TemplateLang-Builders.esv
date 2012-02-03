@@ -1,0 +1,33 @@
+module TemplateLang-Builders
+
+imports TemplateLang-Builders.generated
+
+builders
+
+  // This file can be used for custom analysis, builder and refactoring rules.
+  //
+  // See the imported file for a brief introduction and examples.
+
+builders
+
+  provider : include/templatelang.ctree
+  // provider : include/templatelang-java.jar
+
+  observer : editor-analyze
+
+  // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
+  builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (source)
+  builder  : "Show desugared AST (for selection)" = generate-desugared-aterm (openeditor) (realtime)
+  builder  : "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
+  builder  : "Generate ESV (for selection)" = generate-esv (openeditor) (realtime)
+
+refactorings
+
+  pretty-print : pp-templatelang-string
+
+  // refactoring ID : "Rename Entity" = rename-entity (source) (cursor)
+  //   shortcut : "org.eclipse.jdt.ui.edit.text.java.rename.element"
+  //   input
+  //     identifier : "new name" = ""
+
+  // on save: generate-java

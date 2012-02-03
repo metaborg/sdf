@@ -1,0 +1,45 @@
+module templatelang
+
+imports
+  libstratego-lib
+  libstratego-gpp
+  libstratego-aterm
+  include/TemplateLang
+  lib/editor-common.generated
+  analyze
+  templatelang/expand
+  templatelang/to-esv
+
+rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
+
+  // Analyzes the current program, returning a tuple with errors, warnings, and notes;
+  // each a list of (term, message) tuples or simply (message) terms.
+  editor-analyze:
+    (ast, path, project-path) -> (ast', [], [], [])
+    with
+      editor-init;
+      ast' := <analyze> ast
+
+  // Prints the abstract syntax ATerm of a selection.
+  generate-aterm(s):
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result   := <s> selected
+
+  generate-aterm = generate-aterm(id)
+
+  // Only the builder options are different.
+  generate-desugared-aterm = generate-aterm
+
+  generate-expanded =
+    generate-aterm(
+      collect-om(?TemplateProduction(_, _, _));
+      map(expand-multi-line-template-production)
+    )
+
+  generate-esv =
+    generate-aterm(
+      collect-om(?TemplateProduction(_, _, _));
+      filter(template-to-completion-template)
+    )

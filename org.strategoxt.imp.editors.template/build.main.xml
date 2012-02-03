@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="TemplateLang" default="all">
+
+	<!-- Key input modules -->
+	<property name="sdfmodule" value="TemplateLang" />
+	<property name="metasdfmodule" value="Stratego-TemplateLang" />
+	<property name="esvmodule" value="TemplateLang" />
+	<property name="strmodule" value="templatelang" />
+
+	<!-- Project directories -->
+	<property name="trans" location="trans" />
+	<property name="src-gen" location="editor/java" />
+	<property name="syntax" location="syntax" />
+	<property name="include" location="include" />
+	<property name="lib" location="lib" />
+	<property name="build" location="bin" />
+	<property name="dist" location="bin/dist" />
+
+	<!-- Imports -->
+	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
+	<property name="build.stratego.args" value="
+    --library
+    -I &quot;${trans}&quot;
+    -I &quot;${basedir}&quot;
+    -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm" />
+
+	<!-- Optional: external .def and .jar locations
+  <property name="externaldef" location="syntax/${sdfmodule}.def"/>
+  <property name="externaljar" value="../lib.jar"/>
+  <property name="externaljarflags" value="-la org.lib"/>
+  -->
+
+	<!-- Environment configuration for command-line builds -->
+	<condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
+		<isset property="eclipse.spoofaximp.nativeprefix" />
+	</condition>
+	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
+
+	<import file="build.generated.xml" />
+
+	<!-- Main target -->
+	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,spoofaximp.default.ctree" />
+
+	<!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
+	<available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
+	<target name="meta-sdf2table-stratego-sdf2" unless="stratego-sdf2.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="Stratego-Sdf2" />
+			<param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="Stratego-Sdf2" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
+
+	<!-- Target to create -Permissive grammar and parse table for Stratego-EditorService.def -->
+	<available file="include/Stratego-EditorService.tbl" property="stratego-esv.available" />
+	<target name="meta-sdf2table-stratego-esv" unless="stratego-esv.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="Stratego-EditorService" />
+			<param name="build.sdf.imports" value="-Idef &quot;${lib}/EditorService.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="Stratego-EditorService" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
+
+	<!-- Target to create -Permissive grammar and parse table for StrategoStratego.def -->
+	<available file="include/StrategoStratego.tbl" property="strategostratego.available" />
+	<target name="meta-sdf2table-strategostratego" unless="strategostratego.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="StrategoStratego" />
+			<param name="build.sdf.imports" value="-Idef &quot;${lib}/Stratego-Attributes.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="StrategoStratego" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
+</project>
