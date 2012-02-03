@@ -21,6 +21,8 @@ builders
   builder  : "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
   builder  : "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
   builder  : "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
+  builder  : "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
+  builder  : "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime)
 
 refactorings
 

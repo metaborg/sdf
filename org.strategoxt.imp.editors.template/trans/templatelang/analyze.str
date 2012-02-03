@@ -1,0 +1,90 @@
+module templatelang/analyze
+
+imports
+  include/TemplateLang
+  templatelang/utils/attributes
+  templatelang/utils/contract
+
+signature
+  constructors
+    TemplateBySort     : SymbolType
+    TemplateBySortCons : SymbolType
+    TemplateOption     : SymbolType 
+
+signature
+  constructors
+    Newlines                 : TemplateOption
+    KeywordFollowRestriction : TemplateOption
+
+strategies
+
+  index-symbol-definition = fail
+  resolve-symbol-definition = fail
+  resolve-symbol-definitions = fail
+
+strategies
+
+  declare-template-section:
+    TemplateSection(prod*) -> <id>
+    where
+      with-spxverify(
+          <map(declare-template)> prod*
+      )
+
+  declare-template:
+    prod @ TemplateProduction(sort, _, attrs) -> <id>
+    where
+      with-spxverify(
+          <index-symbol-definition> (sort, TemplateBySort(), prod)
+        ; if cons := <fetch-cons-name> attrs then
+              sortcons := (sort, cons)
+            ; <index-symbol-definition> (sortcons, TemplateBySortCons(), prod)
+          end
+      )
+
+strategies
+
+  //resolve templatelang options 
+  get-template-option =
+    ? key
+    ; with-spxverify( 
+        result := <resolve-symbol-definition> (key, TemplateOption()) 
+        , !"Failed to get template option"
+      )
+    ; !result 
+
+  index-template-option = 
+    ? (key, value)
+    ; with-spxverify(  
+        <index-symbol-definition> (key, TemplateOption() ,  value) 
+        , !"Failed to index template option"
+      )
+
+  init-template-options =
+    with-spxverify(
+      if not(<resolve-symbol-definition> (Newlines(), TemplateOption())) then
+          <index-template-option> (Newlines(), None())
+        ; <index-template-option> (KeywordFollowRestriction(), None())
+      end
+    )
+
+  declare-template-section:
+    TemplateOptions(opt*) -> <id>
+    where
+      with-spxverify(
+          <map(declare-template-option)> opt*
+      )
+
+  declare-template-option:
+    Newlines(t) -> <id>
+    where
+      with-spxverify(
+          <index-template-option> (Newlines(), t)
+      )
+
+  declare-template-option:
+    KeywordFollowRestriction(t) -> <id>
+    where
+      with-spxverify(
+          <index-template-option> (KeywordFollowRestriction(), t)
+      )

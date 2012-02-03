@@ -3,6 +3,7 @@ module analyze
 imports
   include/TemplateLang
   templatelang/utils/attributes
+  templatelang/analyze
   templatelang/desugar
 
 strategies
@@ -10,19 +11,23 @@ strategies
   analyze =
     templatelang-desugar-top;
     templatelang-desugar-sdf-top;
+    init-template-options;
     declare-top
 
-  declare-top = alltd(declare)
+  declare-top =
+    alltd(declare-template-section)
 
-  declare:
-    prod @ TemplateProduction(sort, _, attrs) -> <id>
-    where
-      rules( Declaration :+ sort -> prod );
-      if cons := <fetch-cons-name> attrs then
-        sortcons := (sort, cons);
-        rules( Declaration :+ sortcons -> prod )
-      end
+  // hooks
 
-  // hook into templatelang/expand-template
-  get-declarations =
-    bagof-Declaration
+  index-symbol-definition =
+    ?(key, type, value);
+    rules( Declaration :+ (key, type) -> value )
+
+  resolve-symbol-definition =
+    ?(key, type);
+    Declaration
+
+  resolve-symbol-definitions =
+    ?(key, type);
+    bagof-Declaration;
+    nub

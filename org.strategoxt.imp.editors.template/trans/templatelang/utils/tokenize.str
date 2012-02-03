@@ -1,0 +1,39 @@
+module tokenize
+
+imports
+  libstratego-lib
+
+strategies
+
+  /**
+   * @see edge-tokenize
+   * @type String -> List(String)
+   */
+  string-edge-tokenize(s) =
+    explode-string;
+    edge-tokenize(s);
+    map(implode-string)
+
+  /**
+   * Edge-triggered tokenizer; a new token starts whenever s starts
+   * succeeding or starts failing, i.e. when for two consecutive list items
+   * s succeeds on the first item but s fails on the second item or
+   * s fails on the first item and s succeeds on the second item.
+   *
+   * @type List(a) -> List(List(a))
+   */
+  edge-tokenize(s) =
+    ?[first | tail];
+    if second := <Hd> tail then
+      tokens := <edge-tokenize(s)> tail;
+      if (<s> first) < (<not(s)> second) + (<s> second) then
+        ![[first] | tokens]
+      else
+        [firstToken | restTokens] := tokens;
+        ![[first | firstToken] | restTokens]
+      end
+    else
+      ![[first]]
+    end
+  <+
+    []

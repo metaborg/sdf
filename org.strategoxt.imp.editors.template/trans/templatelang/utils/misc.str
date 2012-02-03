@@ -5,8 +5,6 @@ imports
 
 strategies
 
-  with-spxverify(s) = with(s)
-
   concatenate-consecutive-strings =
     rec r(
          ?[String("") | <r>]

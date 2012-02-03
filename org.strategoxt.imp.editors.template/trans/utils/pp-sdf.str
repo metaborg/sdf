@@ -1,0 +1,18 @@
+module utils/pp-sdf
+
+imports
+	libstratego-sdf
+	libstratego-gpp
+	lib/sdf-desugar
+	lib/sdf-parenthesize
+
+strategies
+
+  // override pp-sdf-string = fail // ensure compiler doesn't blow up
+
+  pp-sdf-to-string =
+    sdf-desugar;
+    parenthesize-Sdf2;
+    sdf-ppfix;
+    ast2box(|[<pp-table-sdf>]);
+    box2text-string(|80)

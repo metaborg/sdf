@@ -1,6 +1,6 @@
 /* Copied from org.strategoxt.imp.generator/src/sdf2imp/util/pp.str */
 
-module sdf2imp/util/pp
+module utils/pp-esv
 
 imports
   libstratego-gpp

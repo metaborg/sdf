@@ -4,6 +4,7 @@ imports
   include/TemplateLang
   lib/EditorService
   templatelang/utils/attributes
+  templatelang/utils/contract
   templatelang/utils/misc
   templatelang/expand
   templatelang/to-string
@@ -114,4 +115,3 @@ rules
 
   remove-cursor =
     ?[[_, Cursor()] | <remove-cursor>] <+ [id | remove-cursor] <+ []
-

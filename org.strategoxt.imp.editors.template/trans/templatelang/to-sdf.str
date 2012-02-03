@@ -1,0 +1,235 @@
+module to-sdf
+imports
+  libstratego-lib
+  libstratego-sglr
+  include/TemplateLang
+  templatelang/analyze
+  templatelang/utils/attributes
+  templatelang/utils/contract
+  templatelang/utils/misc
+  templatelang/utils/tokenize
+
+strategies
+
+  /** @type List(TemplateSection) -> List(grammar) */
+  template-sections-to-sdf:
+    section* -> sdf-section'*
+    where
+      with-spxverify(
+        verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::template-sections-to-sdf")
+      )
+    where with-spxverify (
+      sdf-section*  := <map(template-section-to-sdf)> section*;
+      sdf-section'* := <add-contentcomplete; add-lexical-restrictions> sdf-section*
+    )
+    where with-spxverify (
+      verify(ListOf(?context-free-syntax(_) + ?lexical-restrictions(_)) | sdf-section'* , "ListOf(?context-free-syntax(_) + ?lexical-restrictions(_)) ::template-sections-to-sdf")
+    )
+
+  /** @type TemplateSection -> grammar */
+  template-section-to-sdf:
+    TemplateSection(prod*) -> G|[
+      context-free syntax
+        p*
+    ]|
+    where with-spxverify (
+      // main productions
+      p* := <map(template-production-to-sdf)> prod*
+    )
+
+  /** @type List(grammar) -> List(grammar) */
+  add-contentcomplete:
+    sdf-section* -> [sdf-section*, injections*]
+    where with-spxverify (
+      A* := <collect-om(?sort(_)); nub; string-sort-ex> sdf-section*;
+      p* := <map(sort-to-contentcomplete)> A*;
+      if !p* => [] then
+        injections* := []
+      else
+        injections* := [context-free-syntax(p*)]
+      end
+    )
+
+  /** @type List(grammar) -> List(grammar) */
+  add-lexical-restrictions:
+    sdf-section* -> [sdf-section*, restrictions*]
+    where with-spxverify(
+      let ends-with-identifier-char =
+            where(
+              explode-string;
+              un-double-quote-chars;
+              // Must end with idenfifier character, may not be preceded by backslash.
+              reverse; ?[<is-alphanum + '_' + '-'> | <not(?['\' | _])>]
+            )
+      in
+        A* := <collect-om(lit(ends-with-identifier-char)); nub; string-sort-ex> sdf-section*;
+        r  := <get-template-option> KeywordFollowRestriction();
+        if (!A* => []) + (!r => None()) then
+          restrictions* := []
+        else
+          restrictions* := [lexical-restrictions([follow(A*, r)])]
+        end
+      end
+     )
+
+  // Used when rewriting `Sort.Cons' in priority sections to a production.
+  template-production-to-sdf-no-attrs:
+    TemplateProduction(S', t, _) -> p|[ A* -> S' ]|
+    where with-spxverify (
+      A* := <template-to-sdf> t
+    )
+
+  template-production-to-sdf:
+    TemplateProduction(S', t, attrs) -> p|[ A* -> S' attrs' ]|
+    where with-spxverify (
+      A* := <template-to-sdf> t;
+      attrs' := <attrs(filter(not(?sdf-completion(_)))) <+ no-attrs()> attrs
+    )
+
+  // Single line template.
+  //  -OR-
+  // Template with only a placeholder. (i.e., injection)
+  // The placeholder is at the start AND at the end of the template!
+  template-to-sdf:
+    < ?SingleLineTemplate(elem*)
+    + ?Template([Line(elem* @ [Layout(_), Placeholder(_, _, _)])]) > -> A*
+    where with-spxverify (
+      A* := <maybe-separating(
+               filter(template-element-to-sdf-sep <+ template-element-to-sdf),
+               filter(template-element-to-sdf)
+             );
+             flatten-list> elem*
+    )
+
+  // Multi line template.
+  template-to-sdf:
+    Template(line*) -> A*
+    where with-spxverify (
+      A* := <filter(?Line([Layout(_), _ | _]));
+             maybe-separating(
+                !(<id>, 0); thread-map(template-line-to-sdf-sep); ?(<id>, _),
+                map(template-line-to-sdf)
+             );
+             flatten-list> line*
+    )
+  maybe-separating(yes, no) =
+    if <get-template-option> Newlines() => Separating() then yes else no end
+
+rules
+
+  template-line-to-sdf-sep:
+    (Line([Layout(_), p @ Placeholder(sort(S), mult, option*)]), state) ->
+      (result, state)
+    where
+      <one(Separator("\n"))> option*
+    where
+      L := "\"\\n\"";
+      switch !(mult, state)
+        case ?(None()  , 0) : result := A|[ (S L)  ]|
+        case ?(Option(), 0) : result := A|[ (S L)? ]|
+        case ?(Star()  , 0) : result := A|[ (S L)* ]|
+        case ?(Plus()  , 0) : result := A|[ (S L)+ ]|
+        case ?(None()  , 1) : result := A|[ (L S)  ]|
+        case ?(Option(), 1) : result := A|[ (L S)? ]|
+        case ?(Star()  , 1) : result := A|[ (L S)* ]|
+        case ?(Plus()  , 1) : result := A|[ (L S)+ ]|
+      end
+
+  template-line-to-sdf-sep:
+    (Line(elem*), 0) -> (<template-line-to-sdf-sep-helper> elem*, 1)
+
+  template-line-to-sdf-sep:
+    (Line(elem*), 1) ->
+      ([ A|[ "\"\\n\"" ]| | <template-line-to-sdf-sep-helper> elem*], 1)
+
+  template-line-to-sdf-sep-helper =
+    not(?[Layout(_), Placeholder(_, _, <one(Separator("\n"))>)]);
+    filter(template-element-to-sdf-sep <+ template-element-to-sdf)
+
+  template-element-to-sdf-sep:
+    Placeholder(sort(S), Star(), option*) -> A|[ {S "\"\\n\""}* ]|
+    where <one(Separator("\n"))> option*
+
+  template-element-to-sdf-sep:
+    Placeholder(sort(S), Plus(), option*) -> A|[ {S "\"\\n\""}+ ]|
+    where <one(Separator("\n"))> option*
+
+rules
+
+  template-line-to-sdf =
+    ?Line(<id>);
+    if not(?[Layout(_), Placeholder(_, _, _)]) then
+      switch <get-template-option> Newlines()
+        case ?None()     : id
+        case ?Leading()  : ![String("\n") | <id>]
+        case ?Trailing() : (elem* -> [elem*, String("\n")])
+      end
+    end;
+    filter(template-element-to-sdf)
+
+  template-element-to-sdf:
+    String(x) -> <string-to-sdf> x
+
+  template-element-to-sdf:
+    Placeholder(sort(S), None(), _) -> A|[ S ]|
+
+  template-element-to-sdf:
+    Placeholder(sort(S), Option(), _) -> A|[ S? ]|
+
+  template-element-to-sdf:
+    Placeholder(sort(S), Star(), option*) -> A|[ S* ]|
+    where <not(one(Separator(not(string-is-layout))))> option*
+
+  template-element-to-sdf:
+    Placeholder(sort(S), Star(), option*) -> A|[ { S L }* ]|
+    where <one(Separator(not(string-is-layout)))> option*
+    where with-spxverify ( L := <separator-to-literal> option*)
+
+  template-element-to-sdf:
+    Placeholder(sort(S), Plus(), option*) -> A|[ S+ ]|
+    where <not(one(Separator(not(string-is-layout))))> option*
+
+  template-element-to-sdf:
+    Placeholder(sort(S), Plus(), option*) -> A|[ { S L }+ ]|
+    where <one(Separator(not(string-is-layout)))> option*
+    where with-spxverify( L := <separator-to-literal> option*  )
+
+  char-is-layout =
+    ' ' + '\t' + '\r' + '\n'
+
+  string-is-layout =
+    string-as-chars(all(char-is-layout))
+
+  remove-layout =
+    string-as-chars(filter(not(char-is-layout)))
+
+  separator-to-literal =
+    getfirst(?Separator(<remove-layout; templatelang-escape; double-quote>))
+
+  sort-to-contentcomplete:
+    sort(S) -> p|[ CONTENTCOMPLETE -> S {cons(L)} ]|
+    where
+      L := $["COMPLETION-[S]"]
+
+strategies
+
+  /**
+   * Sorts a list of terms on the outermost string within each term.
+   */
+  string-sort-ex =
+    qsort(<string-lt> (<collect-one(is-string)>, <collect-one(is-string)>))
+
+  /**
+   * Split on the edges delimiting identifiers.
+   * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
+   */
+  string-to-sdf =
+    // FIXME: Use identifier lexical (or keyword follow restriction?) defined by the language.
+    string-edge-tokenize(is-alphanum + '_');
+    // FIXME: Case insensitive literals need ci-lit/single-quote.
+    map({raw, sdf:
+      ?raw; !lit(<templatelang-escape; double-quote>); ?sdf;
+      if <explode-string; at-last(is-alphanum + '_')> raw then
+        rules(Restrictions :+= sdf)
+      end
+    })

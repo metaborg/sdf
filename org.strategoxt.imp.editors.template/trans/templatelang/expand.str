@@ -3,12 +3,8 @@ module expand
 imports
   include/TemplateLang
   templatelang/utils/attributes
+  templatelang/analyze
   templatelang/to-string
-
-strategies
-
-  // Must be extended by other code to map a sort to its declarations.
-  get-declarations = fail
 
 strategies
 
@@ -91,7 +87,8 @@ strategies
   is-template-placeholder:
     Placeholder(sort(x), _, _) -> <id>
     where
-      <get-declarations; one(?TemplateProduction(_, _, _))> x
+      <<resolve-symbol-definitions> (<id>, TemplateBySort());
+       one(?TemplateProduction(_, _, _))> x
 
   /**
    * @type List(template-line) ->? List(template-line)
@@ -184,7 +181,7 @@ strategies  // helpers
    * @type String -> List(template-line)
    */
   get-template-lines(|indent) =
-    get-declarations;
+    <resolve-symbol-definitions> (<id>, TemplateBySort());
     not(?[]);
     filter(expand-multi-line-template-production);
     choose-one-expansion;
@@ -194,7 +191,7 @@ strategies  // helpers
    * @type String -> List(template-element)
    */
   get-template-elements =
-    get-declarations;
+    <resolve-symbol-definitions> (<id>, TemplateBySort());
     not(?[]);
     filter(expand-single-line-template-production);
     choose-one-expansion

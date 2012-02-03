@@ -4,13 +4,16 @@ imports
   libstratego-lib
   libstratego-gpp
   libstratego-aterm
+  libstratego-sglr
   include/TemplateLang
   lib/EditorService
   lib/editor-common.generated
   analyze
   templatelang/expand
   templatelang/to-esv
-  utils/pp
+  templatelang/to-sdf
+  utils/pp-esv
+  utils/pp-sdf
 
 rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
 
@@ -61,3 +64,19 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
                    // Completions is the A box ...
                    !Completions("", <id>);
                    pp-descriptor-to-string> selected
+
+  // Generate SDF
+  generate-sdf =
+    collect-om(?TemplateProduction(_, _, _));
+    <template-sections-to-sdf> [TemplateSection(<id>)]
+
+  generate-sdf-abstract =
+    generate-aterm(generate-sdf)
+
+  generate-sdf-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.sdf")> path;
+      result   := <generate-sdf;
+                   !'module(unparameterized("example"), [], [exports(<id>)]);
+                   pp-sdf-to-string> selected
