@@ -1,0 +1,367 @@
+module to-str
+
+imports
+  libstratego-lib
+  libstrc
+  include/TemplateLang
+  templatelang/utils/attributes
+  templatelang/utils/contract
+  templatelang/utils/misc
+
+strategies
+
+  // FIXME: find parse-stratego-string, then uncomment
+
+  // template-sections-to-stratego =
+  //   template-sections-to-stratego-string;
+  //   parse-stratego-string;
+  //   alltd(try(un-double-quote); unescape)
+
+  template-sections-to-stratego-string:
+    section* ->
+    ${module prettyprinter
+      imports
+        libstratego-gpp
+        libstratego-lib
+
+      signature constructors
+        HZ : S-OPTIONS * BOX-LIST -> BOX
+        Z  : S-OPTIONS * BOX-LIST -> BOX
+        I  : S-OPTIONS * BOX -> BOX
+
+      strategies
+
+        box2text-string'(|width) =
+          abox2text'(|width)
+          ; (is-string <+ flatten-list; concat-strings)
+
+        abox2text'(|width) =
+            rules( GppIndent := 0 )
+          ; let local-abox2text(|pos) =
+                  abox2text'(local-abox2text | pos, width)
+
+             in local-abox2text(|0)
+            end
+          ; Fst
+
+        abox2text'(rec : t * t -> t | xpos, width) =
+          abox2text-HV(rec | xpos, width)
+          + abox2text-HZ(rec | xpos, width)
+          + abox2text-H(rec | xpos, width)
+          + abox2text-V(rec | xpos, width)
+          + abox2text-Z(rec | xpos, width)
+          + abox2text-I(rec | xpos, width)
+          + abox2text-A(rec | xpos, width)
+          + abox2text-R(rec | xpos, width)
+          + abox2text-S(rec | xpos, width)
+          + abox2text-C(rec | xpos, width)
+          + abox2text-FBOX(rec | xpos, width)
+          + abox2text-R(rec | xpos, width)
+          + abox2text-ALT(rec | xpos, width)
+          + abox2text-list(rec | xpos, width)
+
+        // `I is=N b' is equivalent to `H hs=N [S(""), b]'
+        // NOTE: this I box is not context sensitive!
+        // NOTE: this I box takes a single box as argument, not a list of boxes!
+        abox2text-I(rec : t * t -> t | xpos, width) =
+          ?I(sopt, bs)
+
+          ; {"{|"}GppIndent:
+                <add> (xpos, <gpp-is-length> sopt) => left-xpos
+              ; rules( GppIndent := left-xpos )
+              ; <fetch-elem(?SOpt(IS(), <id>)) <+ !"0"> sopt => value
+              ; <rec(|xpos)> H([SOpt(HS(), value)], [S(""), bs])
+            {"|}"}
+
+        abox2text-Z(rec : t * t -> t | xpos, width) =
+          ?Z(sopt, bs)
+
+          ; GppIndent => indent
+          ; <add> (indent, <gpp-is-length> sopt) => left-xpos
+          ; <filter(gpp-is-real-vbox)> bs
+          ; if ?[] then
+              !([], xpos)
+            else
+              gpp-do-vbox-children(rec | xpos, left-xpos)
+              ; gpp-format-vbox(|sopt, indent)
+            end
+
+        abox2text-HZ(rec : t * t -> t | xpos, width) =
+          ?HZ(sopt, bs)
+
+          ; <gpp-hs-chars> sopt => hs-chars
+          ; <implode-string> hs-chars => hs
+          ; <gpp-vs-text> sopt => vs
+          ; <length> hs-chars => hsl
+          ; GppIndent => indent
+          ; <add> (indent, <gpp-is-length> sopt) => left-xpos
+          ; <filter(gpp-is-real-vbox)> bs
+          ; if ?[] then
+              !([], xpos)
+            else
+              !(<id>, [([], xpos)])
+              ; foldl(
+                  gpp-hv-add-to-hbox(rec | hsl, width)
+                  <+ gpp-hv-in-new-vbox(rec | hsl, left-xpos, width)
+                )
+                // Substract last hspace from xpos
+              ; [(id, <subt> (<id>, hsl)) | id]
+              ; reverse; map((reverse, id))
+              ; map((<separate-by> (hs, <id>), id))
+              ; gpp-format-vbox(|sopt, indent)
+            end
+
+      overlays
+        Line(xs) = H([SOpt(HS(), "0")], xs)
+
+      strategies
+
+        pp-one-V(s) = !V([], <s>)
+        pp-one-Z(s) = !Z([], <s>)
+
+        pp-option(s) = \None() -> []\ + \Some(t) -> <s> t\
+
+        pp-v-list(s)   = ?[] <+ !V([], <map(pp-one-V(s))>)
+        pp-v-list(s|t) = ?[] <+ !V([SOpt(VS(), t)], <map(pp-one-V(s))>)
+
+        pp-indent(|t) = ?[] <+ !I([SOpt(IS(), t)], Line(<id>))
+
+        pp-h-list(s)   = ?[] <+ !H([], <map(pp-one-Z(s))>)
+        pp-h-list(s|t) = ?[] <+ !Line(<map(pp-one-Z(s)); separate-by(|S(t))>)
+
+        pp-hv-list(s)   = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s))>)
+        pp-hv-list(s|t) = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
+
+        pp-hz-list(s)   = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(s))>)
+        pp-hz-list(s|t) = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
+
+      {section'*}
+
+      strategies // all other sorts used in placeholders
+
+        {strategy*}}
+    where
+      with-spxverify(
+        section'* := <filter(template-section-to-stratego-string);
+                      separate-by(|"\n\n")> section*
+         , !"Failed to desugar "
+       );
+      with-spxverify(
+        // All sorts used in pp minus all sorts for which a pp strategy has been
+        // created will get a `prettyprint-sort = is-string' default strategy.
+        sorts-used-in-pp := <collect-om(sort-used-in-prettyprinting); nub> section*; // FIXME: global data
+        sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> section*; // FIXME: global data
+        sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
+        strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
+        , !"Failed to generate sort-to-pretty-print strategy"
+      )
+
+  template-section-to-stratego-string:
+    TemplateSection(prod*) ->
+    $[strategies
+
+        [strategy*]]
+    where
+      with-spxverify(
+        strategy* := <map(template-to-prettyprint-strategy);
+                      separate-by(|"\n\n")> prod*
+        , !"Failed to pretty-print template to strategy"
+      )
+
+/*internal*/ strategies
+
+  sort-to-prettyprint-strategy:
+    sort -> ${prettyprint-{sort} = ![S(<is-string>)]}
+
+  sort-decl-in-prettyprinting:
+    TemplateProduction(sort, _, _) -> sort
+
+  sort-used-in-prettyprinting:
+    Placeholder(sort(sort), _, _) -> sort
+
+rules
+
+  template-to-prettyprint-strategy:
+    TemplateProduction(sort, SingleLineTemplate(elem*), attrs) ->
+      <template-to-prettyprint-strategy> TemplateProduction(sort, Template([Line(elem*)]), attrs)
+
+  template-to-prettyprint-strategy:
+    TemplateProduction(sort, Template(line*), attrs) ->
+    ${prettyprint-{sort}:
+        {input} -> [{output}]}
+    where with-spxverify(
+      (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
+      line''*        := <map(template-line-to-stratego <+ fail)> line'*;
+      arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+      output         := <separate-by(|",\n")> line''*;
+      if cons := <fetch-cons-name> attrs then
+        input := $[[cons]([<separate-by(|",")> arg*])]
+      else
+        if !arg* => [_] then
+          input := "a"
+        else
+          input := $[([<separate-by(|",")> arg*])]
+        end
+      end,
+      !"Failed to pretty-print template"
+    )
+
+rules
+
+  rename-template-line:
+    (Line(elem*), index) -> (Line(elem'*), index')
+    where with-spxverify(
+      (elem'*, index') := <thread-map(try(rename-template-element))> (elem*, index),
+      !"Failed to rename template elements"
+    )
+
+  rename-template-element:
+    (Placeholder(a, b, c), index) -> (Placeholder(a, b, c){name'}, index')
+    where with-spxverify(
+      name'  := <implode-string> [<addi> ('a', index)];
+      index' := <inc> index,
+      !"Failed to rename template element"
+    )
+
+rules
+
+  template-line-to-cons-arg:
+    Line(elem*) -> <filter(template-element-to-cons-arg)> elem*
+
+  template-element-to-cons-arg:
+    Placeholder(_, _, _){name} -> name
+
+rules
+
+  template-line-to-stratego:
+    Line([Layout(indent) | elem*]) ->
+      ${<pp-indent(|"{<string-length> indent}")> [{elem'*}]}
+    where
+      not(!indent => "");
+      elem'* := <template-line-elements-to-stratego> elem*
+
+  template-line-to-stratego:
+    Line(elem*) -> ${Line([{elem'*}])}
+    where
+      not(!elem* => [Layout(<not("")>) | _]);
+      elem'* := <template-line-elements-to-stratego> elem*
+
+  template-line-elements-to-stratego =
+    // 1. Map template elements to strings of Stratego code and String cons.
+    map(template-element-to-stratego);
+    // 2. Collapse consecutive String cons into one String cons.
+    // (Optional, improves readability and performance of generated code.)
+    concatenate-consecutive-strings;
+    // 3. Convert String cons to Stratego code, while removing empty strings.
+    // (The latter is necessary to prevent spurious blank lines:
+    // BOX removes empty lists, but not empty string elements.)
+    filter(
+      \String(t) -> $[S([<templatelang-escape; double-quote> t])]\
+      <+ not(?String(""))
+    );
+    // 4. Insert commas.
+    separate-by(|",")
+
+  template-element-to-stratego:
+    String(t) -> <id>
+
+  template-element-to-stratego:
+    Layout(t) -> String(t)
+
+  template-element-to-stratego:
+    Placeholder(sort(x), None(), _){name}
+      -> $[<[s]> [name]]
+    where with-spxverify(
+      placeholder-to-pp-one => s,
+      !"Failed to determine placeholder type"
+    )
+
+  template-element-to-stratego:
+    Placeholder(sort(x), Option(), _){name} ->
+      $[<pp-option([s])> [name]]
+    where with-spxverify(
+      placeholder-to-pp-one => s,
+      !"Failed to determine placeholder type (option)"
+    )
+
+  placeholder-to-pp-one:
+    Placeholder(sort(x), _, option*) ->
+      $[pp-one-[v-or-z](prettyprint-[x])]
+    where with-spxverify(
+      <one(?Anchor()) < !"V" + !"Z"> option* => v-or-z,
+      !"Failed to determine placeholder box type (V or Z)"
+    )
+
+  template-element-to-stratego:
+    Placeholder(sort(x), <Star() + Plus()>, option*){name}
+      -> $[<[s]> [name]]
+    where with-spxverify(
+      h-or-hv-or-hz := <one(?Wrap()) <
+             (one(?Anchor()) < !"hv" + !"hz") + !"h"> option*;
+      if <getfirst(?Separator(<id>))> option* => sep then
+        <explode-string; filter(?'\n'); length; dec> sep => vs;
+        if !vs => -1 then
+          // separator without line breaks => horizontal box
+          s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x]|"[<templatelang-escape> sep]")]
+        else
+          // TODO: Support separators with mixed line breaks and literals.
+          if !vs => 0 then
+            // separator with one line break => vertical box
+            s := $[pp-v-list(prettyprint-[x])]
+          else
+            // separator with multiple line breaks => vertical box with vs option
+            s := $[pp-v-list(prettyprint-[x]|"[vs]")]
+          end
+        end
+      else
+        // no separator => horizontal box
+        s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x])]
+      end,
+      !"Failed to convert list placeholder"
+   )
+
+rules
+
+  // FIXME
+  // Production without cons but with bracket annotation
+  // (cons + bracket -> no need to parenthesize)
+  // template-to-prettyprint-strategy:
+  //   TemplateProduction(sort, Template(elem*), attrs) ->
+  //   ${parenthesize-{sort}(not-allowed) =
+  //       if not-allowed then
+  //         <concat-strings> ["{open}", <prettyprint-{sort}>, "{close}"]
+  //       else
+  //         prettyprint-{sort}
+  //       end}
+  //   where
+  //     not(<fetch-cons-name> attrs);
+  //     FIXME <getfirst(?bracket())> attr*
+  //   where
+  //     <length> <filter(?Placeholder(_, _, _))> elem* => 1
+  //     <+ debug(!"Bracket production must have exactly one placeholder: "); fail
+  //   with
+  //     (before, placeholder, after) := <split-fetch-keep(?Placeholder(_, _, _))> elem*
+  //   where
+  //     [String(open)]  := <map(template-element-to-stratego'); concatenate-consecutive-strings> before;
+  //     [String(close)] := <map(template-element-to-stratego'); concatenate-consecutive-strings> after
+  //     <+ debug(!"Bracket production must have text before and after the placeholder: "); fail
+
+//   template-element-to-parenthesize(|conflicts):
+//     (i0, Placeholder(sort(x), None(), _){name}) -> $[[name]' := <parenthesize-[x]([na])> [name]]
+//     where
+//       not(<filter(?(i0, <id>))> conflicts => conflicts' => [])
+//     with
+//       let to-match =
+//             {a*: \ Symbol(x, n) -> <concat-strings> ["?", x, "(", a*, ")"]
+//                    with a* := <range; map(!"_"); separate-by(|", ")> (0, n) \}
+//       in
+//         na := <filter(to-match); separate-by(|" + ")> conflicts'
+//       end
+//
+//   template-element-to-parenthesize(|conflicts):
+//     (i0, p@ Placeholder(sort(x), None(), _){name}) -> <template-element-to-prettyprint> p
+//     where
+//       <filter(?(i0, _))> conflicts => []
+//
+//   template-element-to-parenthesize(|conflicts):
+//     (i0, p@ Placeholder(sort(x), <not(?None())>, _){name}) -> <template-element-to-prettyprint> p

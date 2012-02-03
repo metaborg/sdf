@@ -23,6 +23,7 @@ builders
   builder  : "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
   builder  : "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
   builder  : "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime)
+  builder  : "Generate BOX-based PP (for selection)" = generate-box-pp (openeditor) (realtime)
 
 refactorings
 

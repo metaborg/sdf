@@ -12,6 +12,7 @@ imports
   templatelang/expand
   templatelang/to-esv
   templatelang/to-sdf
+  templatelang/to-str
   utils/pp-esv
   utils/pp-sdf
 
@@ -80,3 +81,14 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
       result   := <generate-sdf;
                    !'module(unparameterized("example"), [], [exports(<id>)]);
                    pp-sdf-to-string> selected
+
+  // Generate pretty printer (BOX-based)
+  generate-box-pp-string =
+    collect-om(?TemplateProduction(_, _, _));
+    <template-sections-to-stratego-string> [TemplateSection(<id>)]
+
+  generate-box-pp:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.str")> path;
+      result   := <generate-box-pp-string> selected
