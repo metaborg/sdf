@@ -10,12 +10,10 @@ imports
 
 strategies
 
-  // FIXME: find parse-stratego-string, then uncomment
-
-  // template-sections-to-stratego =
-  //   template-sections-to-stratego-string;
-  //   parse-stratego-string;
-  //   alltd(try(un-double-quote); unescape)
+  template-sections-to-stratego =
+    template-sections-to-stratego-string;
+    parse-stratego-string;
+    alltd(try(un-double-quote); unescape)
 
   template-sections-to-stratego-string:
     section* ->

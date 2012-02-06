@@ -4,6 +4,9 @@ module templatelang/utils/stubs
 // (i.e., SpoofaxLang or non-public org.strategoxt.imp.editors.template code)
 
 strategies
+  parse-stratego-string = fail
+
+strategies
   index-symbol-definition = fail
   resolve-symbol-definition = fail
   resolve-symbol-definitions = fail
