@@ -24,4 +24,4 @@ exports
 
   context-free syntax
     Section* -> Start {cons("CompilationUnit")}
-    Grammar[[SDF]] -> Section
+    Grammar[[SDF]] -> Section {cons("SDFSection")}
