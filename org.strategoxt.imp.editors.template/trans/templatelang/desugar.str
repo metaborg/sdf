@@ -4,6 +4,7 @@ imports
   lib/editor-common.generated
   include/TemplateLang
   templatelang/utils/attributes
+  templatelang/utils/contract
   templatelang/utils/misc
 
 strategies

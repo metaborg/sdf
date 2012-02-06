@@ -1,0 +1,17 @@
+/* Copied from org.strategoxt.imp.spoofax/trans/codegen/sdf/to-sdf.str */
+
+module utils/sdf
+
+imports
+  libstratego-sglr
+
+rules
+
+  list-to-conc-grammars:
+    [g1, g2 | gs] -> conc-grammars(g1, <list-to-conc-grammars> [g2 | gs])
+
+  list-to-conc-grammars:
+    [g1] -> g1
+
+  list-to-conc-grammars:
+    [] -> []

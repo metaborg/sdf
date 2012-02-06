@@ -1,0 +1,59 @@
+module templatelang-to-esv-3
+
+language TemplateLang
+target language EditorService
+
+setup [[
+  templates
+]]
+
+target setup [[
+  module example
+  completions
+]]
+
+test stuff [[
+  Statement.IfThen = <
+    <MetaAnno*; separator="\n", hide>
+    if <Exp> then
+      <Statement*; separator="\n">
+    end
+  >
+  Statement.For = <
+    <MetaAnno*; separator="\n", hide>
+    for (<Exp>; <Exp>; <Exp>) do
+      <Statement*; separator="\n">
+    end
+  >
+
+  Exp = <<Term>>
+
+  Term = <<Factor>>
+  Term.BinOp = <<Term> <TermOp> <Factor>>
+
+  Factor = <<Var>>
+  Factor.BinOp = <<Factor> <FactorOp> <Var>>
+
+  Var.Var = <$<ID>$>
+
+  TermOp.Plus = "+"
+  TermOp.Minus = "-"
+
+  FactorOp.Times = "*"
+  FactorOp.Over = "/"
+]]
+build generate-esv-abstract to [[
+  completion template Statement: "if $ID$ then end" =
+    "if " <$ID$:Exp> " then\n\t" (cursor) "\nend" (blank)
+  completion template Statement: "for ($ID$; $ID$; $ID$) do end" =
+    "for (" <$ID$:Exp> "; " <$ID$:Exp> "; " <$ID$:Exp> ") do\n\t" (cursor) "\nend" (blank)
+  completion template Term: "$ID$ + $ID$" =
+    <$ID$:Term> " " <+:TermOp> " " <$ID$:Factor>
+  completion template Factor: "$ID$ * $ID$" =
+    <$ID$:Factor> " " <*:FactorOp> " " <$ID$:Var>
+  completion template Var: "$ID$" = "$" <ID:ID> "$"
+  completion template TermOp: "+" = "+"
+  completion template TermOp: "-" = "-"
+  completion template FactorOp: "*" = "*"
+  completion template FactorOp: "/" = "/"
+]]

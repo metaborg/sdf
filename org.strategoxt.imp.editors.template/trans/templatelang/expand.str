@@ -43,13 +43,10 @@ strategies
   expand-template-production:
     TemplateProduction(sort, template, attrs) -> result{score}
     where
-      <not(is-reject)> attrs;
-      <not(Expanded)> sort
-    where {|Expanded:
-      rules( Expanded: sort -> sort );
+      <not(is-reject)> attrs
+    where
       result := <expand-template> template;
       score := <determine-score> attrs
-    |}
 
   // FIXME
   // expand-template-production:
@@ -85,7 +82,9 @@ strategies
    * @type Placeholder ->? Placeholder
    */
   is-template-placeholder:
-    Placeholder(sort(x), _, _) -> <id>
+    Placeholder(sort(x), _, option*) -> <id>
+    where
+      not(<one(?Text(_))> option*)
     where
       <<resolve-symbol-definitions> (<id>, TemplateBySort());
        one(?TemplateProduction(_, _, _))> x
@@ -177,24 +176,32 @@ strategies
 
 strategies  // helpers
 
+  get-templates =
+    ?sort;
+    rules( Expanded : sort -> sort );
+    <resolve-symbol-definitions> (sort, TemplateBySort());
+    not(?[])
+
   /**
    * @type String -> List(template-line)
    */
   get-template-lines(|indent) =
-    <resolve-symbol-definitions> (<id>, TemplateBySort());
-    not(?[]);
-    filter(expand-multi-line-template-production);
-    choose-one-expansion;
-    map(Line(![indent | <id>]))
+    {|Expanded:
+      get-templates;
+      filter(expand-multi-line-template-production);
+      choose-one-expansion;
+      map(Line(![indent | <id>]))
+    |}
 
   /**
    * @type String -> List(template-element)
    */
   get-template-elements =
-    <resolve-symbol-definitions> (<id>, TemplateBySort());
-    not(?[]);
-    filter(expand-single-line-template-production);
-    choose-one-expansion
+    {|Expanded:
+      get-templates;
+      filter(expand-single-line-template-production);
+      choose-one-expansion
+    |}
 
   choose-one-expansion =
        filter(not(oncetd(is-template-placeholder)));

@@ -15,6 +15,7 @@ imports
   templatelang/to-str
   utils/pp-esv
   utils/pp-sdf
+  utils/sdf
 
 rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
 
@@ -48,28 +49,24 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Generate completion templates
   generate-esv =
     collect-om(?TemplateProduction(_, _, _));
-    filter(template-to-completion-template)
+    filter(template-to-completion-template);
+    !Module("example", NoImports(), [Completions("", <id>)]);
+    topdown(try(pp-fix-string-quotes))
 
   generate-esv-abstract =
     generate-aterm(generate-esv)
 
   generate-esv-concrete:
-    (selected, position, ast, path, project-path) ->
-      (filename,
-        $[module example
-          [result]])
+    (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"generated.esv")> path;
-      result   := <generate-esv;
-                   // R boxes are formatted incorrectly outside an A box.
-                   // Completions is the A box ...
-                   !Completions("", <id>);
-                   pp-descriptor-to-string> selected
+      result   := <generate-esv; pp-descriptor-to-string> selected
 
   // Generate SDF
   generate-sdf =
     collect-om(?TemplateProduction(_, _, _));
-    <template-sections-to-sdf> [TemplateSection(<id>)]
+    <template-sections-to-sdf> [TemplateSection(<id>)];
+    !'module(unparameterized("example"), [], [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract =
     generate-aterm(generate-sdf)
@@ -78,9 +75,7 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"generated.sdf")> path;
-      result   := <generate-sdf;
-                   !'module(unparameterized("example"), [], [exports(<id>)]);
-                   pp-sdf-to-string> selected
+      result   := <generate-sdf; pp-sdf-to-string> selected
 
   // Generate pretty printer (BOX-based)
   generate-box-pp-string =
