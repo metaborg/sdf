@@ -10,7 +10,7 @@ builders
 
 builders
 
-  provider : include/templatelang.ctree
+  provider : include/private/templatelang.ctree
   // provider : include/templatelang-java.jar
 
   observer : editor-analyze

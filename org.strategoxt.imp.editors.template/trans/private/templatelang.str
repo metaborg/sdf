@@ -8,11 +8,13 @@ imports
   include/TemplateLang
   lib/EditorService
   lib/editor-common.generated
-  analyze
+imports
   templatelang/expand
   templatelang/to-esv
   templatelang/to-sdf
   templatelang/to-str
+imports
+  analyze
   utils/contract
   utils/pp-esv
   utils/pp-sdf
