@@ -1,0 +1,283 @@
+// Author: Tobi Vollebregt
+
+// Calculates SubtermConflicts from an SDF definition.
+// (instead of calculating them from a parse table as sdf2parenthesize does)
+
+// This is slightly inspired by sdftools/trans/sdf2ast-conflicts.str
+
+//TODO : Calculate SubTerm Conflicts incrementally. Currently, it is getting  
+// SDF definitions of the whole package and calculating it while it is highly 
+// probable that only few modules has been changed during current session.  
+
+module sdf2conflicts
+imports
+  libstratego-lib
+  libstratego-sglr
+	common
+	utils/debug
+	
+signature
+  constructors
+    Symbol : String * Int -> Symbol
+
+overlays
+  sdf-cons(name) = term(default(appl(unquoted("cons"), [fun(quoted(name))])))
+
+strategies
+
+  sdf2conflicts-store-sdf:
+    ast -> ast
+    where with-spxverify(
+    	rules(
+    		Sdf2Conflicts-SdfSection :+= ast
+    	)
+    )	
+
+  /*
+   * sdf2conflicts: Calculate set of conflicts that are filtered out using
+   * priorities, i.e. that need parenthesis when prettyprinting.
+   *
+   * The input term is an SDF AST. It is not modified. The main side-effect
+   * is the initialization of the SubtermConflicts dynamic rule:
+   *
+   *  SubtermConflicts: Symbol => (Int, Symbol)
+   *
+   * This maps each symbol (cons + arity) X to a list of pairs (arg, Y)
+   * which mean that Y is not allowed as child of X at position arg.
+   * (To get to the list use `<bagof-SubtermConflicts> symbol'!)
+   */
+  sdf2conflicts:
+    ast -> ast
+    where with-spxverify(
+      prod-hash := <new-hashtable> // (sym*, sort) => attr*
+    )
+    where with-spxverify(
+      let err(|msg) = debug(!<conc-strings> (msg, ": ")); fail
+
+          // push the attributes of a production into prod-hash
+          declare-prod =
+            \ p@ prod(sym*, sort, attrs(attr*)) -> p
+              where with-spxverify(<hashtable-pushlist(|(sym*, sort), attr*)> prod-hash) \
+
+          // add all attributes defined anywhere to a production
+          lookup-prod = {attr*:
+            \ p@ prod(sym*, sort, _) -> prod(sym*, sort, attrs(attr*))
+              where with-spxverify(attr* := <hashtable-get(|(sym*, sort)) <+ ![]> prod-hash) \
+          }
+
+          priority-section =
+            ?context-free-priorities(<id>)
+          + ?lexical-priorities(<id>)
+          + ?priorities(<id>)
+
+          // get rid of simple-group ; add attributes to productions
+          normalize-group-and-add-attributes =
+            assoc-group(id, map(lookup-prod))
+          + prods-group(map(lookup-prod))
+          + \ simple-group(p) -> prods-group([<lookup-prod> p]) \
+
+          // from core-sdf-grammar2rtg.str
+          /**
+           * @type  Symbol -> Symbol
+           */
+          is-empty-sym = ?lit(_)
+          is-empty-sym = ?ci-lit(_)
+          is-empty-sym = ?layout()
+          is-empty-sym = opt(is-empty-sym)
+          is-empty-sym = cf(is-empty-sym)
+          is-empty-sym = lex(is-empty-sym)
+          is-empty-sym = label(id, is-empty-sym)
+
+          cons-of-prod =
+            ?prod(_, _, attrs(<id>));
+            fetch-elem(?sdf-cons(<un-double-quote>))
+
+          assoc-of-prod =
+            ?prod(_, _, attrs(<id>));
+            fetch-elem(?assoc(<id>))
+
+          // from sdf2ast-conflicts.str
+          Prod2Symbol = {x, n:
+            \ p@prod(syms, _, _) -> Symbol(x, n)
+              where
+                n := <filter(not(is-empty-sym)); length> syms
+              ; x := <cons-of-prod <+ err(|"production does not have a cons")> p \
+          }
+
+          // from sdf2ast-conflicts.str
+          /**
+           * @type Int -> Int
+           */
+          arg-for-symbol(|p) = {arg, syms, syms':
+            ?arg
+            ; prod(syms, _, _) := p
+            ; syms' := <add-indices; retain-all((id, not(is-empty-sym)); ?(<id>, _))> syms
+            ; (<get-index; dec> (<inc> arg, syms') <+ !())
+          }
+
+          chaintd(s) = list-loop(chain(listtd(where(s))))
+
+          chainloop(s) = list-loop(chain(list-loop(s)))
+
+          fetch-group =
+            try(?non-transitive(<id>));
+            try(?with-arguments(<id>, _))
+
+          fetch-prods =
+            fetch-group;
+            (?assoc-group(_, <id>) + ?prods-group(<id>))
+
+          for-each-prod-pair(s) =
+            (fetch-prods, fetch-prods);
+            for-each-pair(s)
+
+          add-subterm-conflict(|lhs, arg, rhs) =
+            if not(<bagof-SubtermConflicts; fetch(?(arg, rhs))> lhs) then
+              {lhs', arg', rhs':
+                <debug(!"adding subterm conflict: ")> (lhs, (arg, rhs));
+                lhs' := lhs;
+                arg' := arg;
+                rhs' := rhs;
+                rules(SubtermConflicts :+ lhs' -> (arg', rhs'))
+              }
+            end
+
+          add-prio(|arg) = {lhs, rhs, lhs', rhs':
+            ?(lhs, rhs);
+            lhs' := <Prod2Symbol> lhs;
+            rhs' := <Prod2Symbol> rhs;
+            add-subterm-conflict(|lhs', arg, rhs')
+          }
+
+          add-gtr-prio = {lhs, rhs, n:
+            ?(lhs, rhs);
+            Symbol(_, n) := <Prod2Symbol> lhs;
+            <range> (0, n);
+            map(\ arg -> arg where with-spxverify( <add-prio(|arg)> (lhs, rhs) )\)
+          }
+
+          add-arg-gtr-prio(|indices) = {lhs, rhs:
+            ?(lhs, rhs);
+            !indices;
+            map(\ arg -> arg where with-spxverify (<add-prio(|<arg-for-symbol(|lhs)> arg)> (lhs, rhs)) \)
+          }
+
+          add-left-assoc = {lhs, rhs, n:
+            ?(lhs, rhs);
+            Symbol(_, n) := <Prod2Symbol> lhs;
+            <add-prio(|<dec> n)> (lhs, rhs)
+          }
+
+          add-right-assoc = {lhs, rhs:
+            ?(lhs, rhs);
+            <add-prio(|0)> (lhs, rhs)
+          }
+
+          add-group(match) = {first, second, indices, indices':
+            ?[]
+          + ?[_]
+          + ?[first, second | _];
+            if <match> first then
+              if <?with-arguments(_, default(indices))> first then
+                indices' := <map(string-to-int)> indices;
+                <for-each-prod-pair(add-arg-gtr-prio(|indices'))> (first, second)
+              else
+                <for-each-prod-pair(add-gtr-prio)> (first, second)
+              end
+            end
+          }
+
+          add-transitives = chaintd(add-group(not(?non-transitive(_))))
+
+          add-non-transitives = chaintd(add-group(?non-transitive(_)))
+
+          // Associativity within a group
+          // (does not make group members self-associative)
+          // Note: In SDF if there is only one group member it does
+          //       make it self-associative. (StrategoXT/863)
+          add-associativity = {associativity, prod*:
+            fetch-group;
+            if ?assoc-group(associativity, prod*) then
+              if <?left() + ?assoc() + ?non-assoc()> associativity then
+                <for-each-pair(eq <+ add-left-assoc)> (prod*, prod*)
+              end;
+              if <?right() + ?non-assoc()> associativity then
+                <for-each-pair(eq <+ add-right-assoc)> (prod*, prod*)
+              end
+            end
+          }
+
+          add-associativities = chainloop(add-associativity)
+
+          add-self-associativity = {associativity, p:
+            ?p@ prod(_, _, _);
+            if assoc-of-prod => associativity then
+              if <?left() + ?assoc() + ?non-assoc()> associativity then
+                <add-left-assoc> (p, p)
+              end;
+              if <?right() + ?non-assoc()> associativity then
+                <add-right-assoc> (p, p)
+              end
+            end
+          }
+
+          add-self-associativities =
+            with-spxverify(
+              <hashtable-getlist> prod-hash;
+              list-loop(
+                \ ((sym*, sort), attr*) -> prod(sym*, sort, attrs(attr*)) \;
+                add-self-associativity
+              )
+            )
+
+          make-transitive-step =
+            all-keys-SubtermConflicts; nub; // List(Symbol)
+            // For each symbol X
+            list-loop({lhs:
+              ?lhs;
+              bagof-SubtermConflicts; // List((Int, Symbol))
+              // For each symbol Y with X > Y
+              list-loop({arg:
+                ?(arg, <bagof-SubtermConflicts>); // List((Int, Symbol))
+                // For each symbol Z with Y > Z
+                list-loop({rhs:
+                  ?(_, rhs);
+                  // Add X > Z if it doesn't exist
+                  add-subterm-conflict(|lhs, arg, rhs)
+                })
+              })
+            })
+
+          make-transitive =
+            with-spxverify( \SubtermConflicts/* make-transitive-step )
+
+          // Debug
+          print-SubtermConflicts(|msg) =
+            with-spxverify(
+            	dbg-compiler(!$[msg [<print-as-string>]]);
+            	all-keys-SubtermConflicts;
+              list-loop(
+              	dbg-compiler(!$[keys: [<print-as-string>]])
+              	; bagof-SubtermConflicts
+            	  ; dbg-compiler(! $[values: [<print-as-string>]])
+        	    )
+            )
+
+      in
+      	![ast, <bagof-Sdf2Conflicts-SdfSection>];
+        alltd(declare-prod);
+        collect-om(priority-section); concat; // List(chain(_))
+        alltd(normalize-group-and-add-attributes);
+
+        add-transitives;
+        // print-SubtermConflicts(|"=== before applying transitivity relation ===");
+        make-transitive;
+        add-non-transitives;
+        add-associativities;
+        add-self-associativities
+        ;print-SubtermConflicts(|"=== FINAL ===")
+      end
+    )
+    where with-spxverify(
+      <hashtable-destroy> prod-hash
+	  )
