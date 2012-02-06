@@ -5,8 +5,8 @@ imports
   include/TemplateLang
   templatelang/analyze
   templatelang/utils/attributes
-  templatelang/utils/contract
   templatelang/utils/misc
+  templatelang/utils/stubs
   templatelang/utils/tokenize
 
 strategies

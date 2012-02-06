@@ -3,7 +3,7 @@ module templatelang/analyze
 imports
   include/TemplateLang
   templatelang/utils/attributes
-  templatelang/utils/contract
+  templatelang/utils/stubs
 
 signature
   constructors
@@ -15,12 +15,6 @@ signature
   constructors
     Newlines                 : TemplateOption
     KeywordFollowRestriction : TemplateOption
-
-strategies
-
-  index-symbol-definition = fail
-  resolve-symbol-definition = fail
-  resolve-symbol-definitions = fail
 
 strategies
 
