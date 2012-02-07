@@ -102,7 +102,7 @@
 
   <!-- Targets to create libtemplatelang.{jar,rtree} -->
   <!-- Stratego to Java compiler -->
-  <target name="libtemplatelang.stratego.jar" depends="utils-files">
+  <target name="libtemplatelang.stratego.jar" depends="rtg2sig,utils-files">
       <dependset>
           <srcfileset dir="${basedir}/trans/templatelang">
               <include name="**/*.str"/>
