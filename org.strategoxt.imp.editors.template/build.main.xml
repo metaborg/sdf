@@ -24,7 +24,7 @@
 	    -I &quot;${trans}/private/&quot;
 	    -I &quot;${trans}/public/&quot;
 	    -I &quot;${basedir}&quot;
-	    -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm" />
+	    -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm -la stratego-sdf" />
 
 	<!-- Optional: external .def and .jar locations
 	<property name="externaldef" location="syntax/${sdfmodule}.def"/>
@@ -41,7 +41,7 @@
 	<import file="build.generated.xml" />
 
 	<!-- Main target -->
-	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.default.ctree" />
+	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.default.jar" />
 
 	<!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
 	<available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
