@@ -1,7 +1,6 @@
 module desugar
 imports
   libstratego-lib
-  lib/editor-common.generated
   include/TemplateLang
   templatelang/utils/attributes
   templatelang/utils/stubs
@@ -9,11 +8,18 @@ imports
 
 strategies
 
+  // copied & renamed to prevent clashes with editor-common.generated.str
+  // templatelang-origin-track-forced, which is present in all editors ...
+  templatelang-origin-track-forced(s) =
+    ![<id>]; all(s); ?[<id>]
+
+strategies
+
   templatelang-desugar-sdf-top =
-    alltd(origin-track-forced(templatelang-desugar-sdf))
+    alltd(templatelang-origin-track-forced(templatelang-desugar-sdf))
 
   templatelang-desugar-top =
-    alltd(origin-track-forced(templatelang-desugar))
+    alltd(templatelang-origin-track-forced(templatelang-desugar))
 
 rules
 
@@ -41,7 +47,7 @@ rules
       TemplateProduction(sort, template', attrs(attr*))
     where
       with-spxverify(
-          template' := <origin-track-forced(templatelang-template-desugar)> template;
+          template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
           attr*     := <templatelang-get-attrs> a
       )
 
@@ -50,7 +56,7 @@ rules
       TemplateProduction(sort, template', attrs(attr*))
     where
       with-spxverify(
-        template' := <origin-track-forced(templatelang-template-desugar)> template;
+        template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
         attr*     := [sdf-cons(<double-quote> cons) | <templatelang-get-attrs> a]
       )
 
@@ -96,10 +102,10 @@ rules
             list-min
 
           string-unindent(|n) =
-            ?"" <+ origin-track-forced(string-as-chars(drop(|n)))
+            ?"" <+ templatelang-origin-track-forced(string-as-chars(drop(|n)))
 
           line-unindent(|n) =
-            Line([origin-track-forced(Layout(string-unindent(|n))) | id])
+            Line([templatelang-origin-track-forced(Layout(string-unindent(|n))) | id])
 
           unindent =
             if get-indent => n then
@@ -116,19 +122,19 @@ rules
       end )
 
   templatelang-element-desugar-top =
-    alltd(origin-track-forced(templatelang-element-desugar))
+    alltd(templatelang-origin-track-forced(templatelang-element-desugar))
 
   templatelang-element-desugar:
     NoOptions() -> []
 
   templatelang-element-desugar:
-    Options(x) -> <alltd(origin-track-forced(templatelang-option-desugar))> x
+    Options(x) -> <alltd(templatelang-origin-track-forced(templatelang-option-desugar))> x
 
   templatelang-option-desugar:
-    Separator(x) -> Separator(<origin-track-forced(un-double-quote; unescape)> x)
+    Separator(x) -> Separator(<templatelang-origin-track-forced(un-double-quote; unescape)> x)
 
   templatelang-option-desugar:
-    Text(x) -> Text(<origin-track-forced(un-double-quote; unescape)> x)
+    Text(x) -> Text(<templatelang-origin-track-forced(un-double-quote; unescape)> x)
 
   templatelang-element-desugar:
     Escape(t) -> String(t')
@@ -160,12 +166,12 @@ rules
             <+ []
             ))
       in
-        t' := <origin-track-forced(unescape)> t
+        t' := <templatelang-origin-track-forced(unescape)> t
       end
       )
 
   templatelang-element-desugar:
     Layout(t) -> Layout(t')
     where with-spxverify(
-      t' := <origin-track-forced(string-replace(|"\t", "  "))> t
+      t' := <templatelang-origin-track-forced(string-replace(|"\t", "  "))> t
      )

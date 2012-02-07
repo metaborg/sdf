@@ -1,0 +1,29 @@
+module templatelang/utils/parse-sdf
+
+imports
+  libstratego-lib
+  libstratego-sglr
+  libstratego-gpp
+
+strategies
+
+
+  parse-sdf-file =
+    parse-file(
+      strsglr-perror, strsglr-report-parse-error
+    | <import-term(lib/SDF.tbl)>
+    )
+
+
+  parse-sdf-string =
+    parse-string(
+      strsglr-report-parse-error
+    | <import-term(lib/SDF.tbl)>
+    )
+
+
+  parse-sdf-stream =
+    parse-stream(
+      strsglr-report-parse-error
+    | <import-term(lib/SDF.tbl)>
+    )

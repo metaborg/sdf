@@ -3,6 +3,7 @@ module expand
 imports
   include/TemplateLang
   templatelang/utils/attributes
+  templatelang/utils/stubs
   templatelang/analyze
   templatelang/to-string
 
@@ -86,7 +87,7 @@ strategies
     where
       not(<one(?Text(_))> option*)
     where
-      <<resolve-symbol-definitions> (<id>, TemplateBySort());
+      <<resolve-all-symbol-definitions> (<id>, TemplateBySort());
        one(?TemplateProduction(_, _, _))> x
 
   /**
@@ -179,7 +180,7 @@ strategies  // helpers
   get-templates =
     ?sort;
     rules( Expanded : sort -> sort );
-    <resolve-symbol-definitions> (sort, TemplateBySort());
+    <resolve-all-symbol-definitions> (sort, TemplateBySort());
     not(?[])
 
   /**

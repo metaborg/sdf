@@ -9,7 +9,7 @@ strategies
 strategies
   index-symbol-definition = fail
   resolve-symbol-definition = fail
-  resolve-symbol-definitions = fail
+  resolve-all-symbol-definitions = fail
 
 // contract.str
 

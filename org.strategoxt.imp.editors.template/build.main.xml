@@ -141,6 +141,7 @@
           <arg value="${build.stratego.outputfile}"/>
           <arg value="-p"/>
           <arg value="org.strategoxt.imp.editors.template.generated"/>
+          <arg value="--library"/>
           <arg value="--clean"/>
           <arg line="${build.stratego.args}"/>
           <arg line="${build.stratego.extraargs}"/>
