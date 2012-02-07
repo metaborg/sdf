@@ -3,6 +3,7 @@ module templatelang/analyze
 imports
   include/TemplateLang
   templatelang/utils/attributes
+  templatelang/utils/contract
   templatelang/utils/stubs
 
 signature

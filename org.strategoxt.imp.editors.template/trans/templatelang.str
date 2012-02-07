@@ -6,19 +6,11 @@ imports
   libstratego-aterm
   libstratego-sglr
   include/TemplateLang
+  include/libtemplatelang
   lib/EditorService
   lib/editor-common.generated
 imports
-  templatelang/utils/pp-esv
-  templatelang/utils/pp-sdf
-  templatelang/utils/sdf
-  templatelang/expand
-  templatelang/to-esv
-  templatelang/to-sdf
-  templatelang/to-str
-imports
   analyze
-  utils/contract
 
 rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
 

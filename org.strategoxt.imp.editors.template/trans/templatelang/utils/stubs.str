@@ -4,42 +4,6 @@ module templatelang/utils/stubs
 // (i.e., SpoofaxLang or non-public org.strategoxt.imp.editors.template code)
 
 strategies
-  parse-stratego-string = fail
-
-strategies
   index-symbol-definition = fail
   resolve-symbol-definition = fail
   resolve-all-symbol-definitions = fail
-
-// contract.str
-
-strategies
-  with-spxverify(s, msg) = fail
-  with-spxverify(s) = fail
-  with-verify(s, on-fail-exec , msg) = fail
-  with-verify(s, on-fail-exec) = fail
-  verify-stratego(s,on-fail-exec,message) = fail
-  as-string(s) = fail
-  as-string = fail
-
-strategies
-  verify(s | arg , expected) = fail
-  verify(s | arg) = fail
-  verify(s) = fail
-
-strategies
-  contract-requires ( s , on-fail | arg , expected) = fail
-  contract-requires ( s | arg , expected) = fail
-  contract-requires ( s | arg ) = fail
-  contract-requires (s) = fail
-  contracts ( s ) = fail
-  with-verification (preconditions, s ) = fail
-  with-verification (preconditions, s , postconditions) = fail
-
-strategies
-  run-strategy(  s  , on-fail | msg) = fail
-
-strategies
-  String = is-string
-  List = is-list
-  ListOf(s) = list-loop(s)

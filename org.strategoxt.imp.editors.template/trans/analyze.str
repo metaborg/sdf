@@ -2,9 +2,7 @@ module analyze
 
 imports
   include/TemplateLang
-  templatelang/utils/attributes
-  templatelang/analyze
-  templatelang/desugar
+  include/libtemplatelang
 
 strategies
 
@@ -19,15 +17,15 @@ strategies
 
   // hooks
 
-  index-symbol-definition =
+  override index-symbol-definition =
     ?(key, type, value);
     rules( Declaration :+ (key, type) -> value )
 
-  resolve-symbol-definition =
+  override resolve-symbol-definition =
     ?(key, type);
     Declaration
 
-  resolve-all-symbol-definitions =
+  override resolve-all-symbol-definitions =
     ?(key, type);
     bagof-Declaration;
     nub
