@@ -1,6 +1,6 @@
 /* Copied from org.strategoxt.imp.spoofax/trans/codegen/sdf/to-sdf.str */
 
-module utils/sdf
+module templatelang/utils/sdf
 
 imports
   libstratego-sglr

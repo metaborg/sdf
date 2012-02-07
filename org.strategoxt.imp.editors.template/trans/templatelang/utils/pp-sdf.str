@@ -1,4 +1,4 @@
-module utils/pp-sdf
+module templatelang/utils/pp-sdf
 
 imports
 	libstratego-sdf
@@ -7,8 +7,6 @@ imports
 	lib/sdf-parenthesize
 
 strategies
-
-  // override pp-sdf-string = fail // ensure compiler doesn't blow up
 
   pp-sdf-to-string =
     sdf-desugar;

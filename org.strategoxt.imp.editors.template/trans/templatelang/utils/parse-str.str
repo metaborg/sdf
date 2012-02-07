@@ -1,6 +1,6 @@
 /* Copied from org.strategoxt.imp.editors.spoofax/trans/context/str/parse.str */
 
-module utils/parse-str
+module templatelang/utils/parse-str
 
 imports
   libstratego-lib
