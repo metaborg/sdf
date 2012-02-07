@@ -22,6 +22,7 @@
 	<property name="build.stratego.args" value="
 	    --library
 	    -I &quot;${basedir}&quot;
+	    -I &quot;${trans}&quot;
 	    -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm -la stratego-sdf" />
 
 	<!-- Optional: external .def and .jar locations
@@ -36,10 +37,11 @@
 	</condition>
 	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
 
-	<import file="build.modified.xml" />
+	<import file="build.generated.xml" />
 
 	<!-- Main target -->
-	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.default.jar" />
+	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.edited.jar" />
+	<target name="spoofaximp.edited.jar" depends="check-classpath,init,sdf2table,meta-sdf2table,ppgen,pppack,libtemplatelang.stratego.jar,stratego.jar.helper,sdf2imp,refresh"/>
 
 	<!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
 	<available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
@@ -97,4 +99,55 @@
 			<arg value="${include}/EditorService-pretty.pp.af"/>
 		</java>
 	</target>
+
+	<!-- Targets to create libtemplatelang.{jar,rtree} -->
+  <!-- Stratego to Java compiler -->
+  <target name="libtemplatelang.stratego.jar" depends="utils-files">
+      <dependset>
+          <srcfileset dir="${basedir}/trans/templatelang">
+              <include name="**/*.str"/>
+          </srcfileset>
+          <targetfileset file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java"/>
+      </dependset>
+      <available file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java" property="libtemplatelang.strc-java.available"/>
+      <antcall target="libtemplatelang.stratego.jar.deletehelper"/>
+      <antcall target="libtemplatelang.stratego.jvm.helper">
+          <param name="build.stratego.outputfile" value="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java"/>
+          <param name="build.stratego.extraargs" value="-la java-front ${java.jar.import}"/>
+      </antcall>
+      <javac classpath="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" srcdir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" destdir="${build}" source="1.5" target="1.5" debug="on"/>
+      <copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.rtree" tofile="${include}/lib${strmodule}.rtree"/>
+      <!-- copy imported terms -->
+      <copy todir="${build}/org/strategoxt/imp/editors/template/generated">
+          <fileset dir="${src-gen}/org/strategoxt/imp/editors/template/generated" excludes="**/*.java"/>
+      </copy>
+      <jar basedir="${build}" includes="org/strategoxt/imp/editors/template/generated/**" destfile="${include}/lib${strmodule}.tmp.jar"/>
+      <move file="${include}/lib${strmodule}.tmp.jar" tofile="${include}/lib${strmodule}.jar"/>
+      <delete><fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**"/></delete>
+  </target>
+
+  <target name="libtemplatelang.stratego.jar.deletehelper" unless="libtemplatelang.strc-java.available">
+      <delete>
+          <fileset dir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**"/>
+          <fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**"/>
+      </delete>
+  </target>
+
+  <target name="libtemplatelang.stratego.jvm.helper" unless="strc-java.available" if="build.stratego.enabled">
+      <java classname="org.strategoxt.strj.Main" failonerror="true">
+          <arg value="-i"/>
+          <arg value="${trans}/templatelang/main.str"/>
+          <arg value="-o"/>
+          <arg value="${build.stratego.outputfile}"/>
+          <arg value="-p"/>
+          <arg value="org.strategoxt.imp.editors.template.generated"/>
+          <arg value="--clean"/>
+          <arg line="${build.stratego.args}"/>
+          <arg line="${build.stratego.extraargs}"/>
+          <arg line="${externaljarflags}"/>
+          <arg line="${externaldefimport}"/>
+          <arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
+      </java>
+      <mkdir dir="${build}/org/strategoxt/imp/editors/template/generated"/>
+  </target>
 </project>
