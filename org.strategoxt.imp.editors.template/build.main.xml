@@ -36,7 +36,7 @@
 	</condition>
 	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
 
-	<import file="build.generated.xml" />
+	<import file="build.modified.xml" />
 
 	<!-- Main target -->
 	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.default.jar" />
