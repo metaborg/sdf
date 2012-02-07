@@ -419,6 +419,7 @@
                 <param name="build.stratego.extraargs" value="-la java-front ${java.jar.import}"/>
             </antcall>
             <javac classpath="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" srcdir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" destdir="${build}" source="1.5" target="1.5" debug="on"/>
+            <copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.rtree" tofile="${include}/lib${strmodule}.rtree"/>
             <!-- copy imported terms -->
             <copy todir="${build}/org/strategoxt/imp/editors/template/generated">
                 <fileset dir="${src-gen}/org/strategoxt/imp/editors/template/generated" excludes="**/*.java"/>
@@ -436,7 +437,6 @@
         </target>
 
         <target name="stratego.jvm.helper" unless="strc-java.available" if="build.stratego.enabled">
-            <delete file="${include}/${strmodule}.rtree" failonerror="false"/>
             <java classname="org.strategoxt.strj.Main" failonerror="true">
                 <arg value="-i"/>
                 <arg value="${trans}/${strmodule}.str"/>
@@ -451,7 +451,6 @@
                 <arg line="${externaldefimport}"/>
                 <arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
             </java>
-            <delete file="${include}/${strmodule}.rtree" failonerror="false"/>
             <mkdir dir="${build}/org/strategoxt/imp/editors/template/generated"/>
         </target>
 
@@ -574,7 +573,6 @@
                   <!-- <arg value="-output-rtree"/> -->
             </java>
             <!-- now compile instrumented stratego to java -->
-            <delete file="${include}/${strmodule}.rtree" failonerror="false"/>
             <java classname="org.strategoxt.strj.Main" failonerror="true">
                 <arg value="-i"/>
                 <arg value="${trans-debug}/trans/${strmodule}.${strj.input.file.type}"/>
@@ -593,7 +591,6 @@
                 <arg line="-I &quot;${eclipse.spoofaximp.strategodebuglib-folder}&quot;"/>
                 <arg line="-la org.strategoxt.imp.debug.stratego.runtime.trans"/>
             </java>
-            <delete file="${include}/${strmodule}.rtree" failonerror="false"/>
             <mkdir dir="${build}/org/strategoxt/imp/editors/template/generated"/>
         </target>
 
