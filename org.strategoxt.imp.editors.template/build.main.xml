@@ -134,7 +134,7 @@
       </delete>
   </target>
 
-  <target name="libtemplatelang.stratego.jvm.helper" unless="strc-java.available" if="build.stratego.enabled">
+  <target name="libtemplatelang.stratego.jvm.helper" unless="libtemplatelang.strc-java.available" if="build.stratego.enabled">
       <java classname="org.strategoxt.strj.Main" failonerror="true">
           <arg value="-i"/>
           <arg value="${trans}/templatelang/main.str"/>
