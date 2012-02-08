@@ -77,7 +77,13 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
     collect-om(?TemplateProduction(_, _, _));
     <template-sections-to-stratego-string> [TemplateSection(<id>)]
 
-  generate-box-pp:
+  generate-box-pp-abstract =
+    generate-aterm(
+      collect-om(?TemplateProduction(_, _, _));
+      <template-sections-to-stratego> [TemplateSection(<id>)]
+    )
+
+  generate-box-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"generated.str")> path;
