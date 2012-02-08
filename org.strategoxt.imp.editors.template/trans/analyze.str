@@ -9,11 +9,11 @@ strategies
   analyze =
     templatelang-desugar-top;
     templatelang-desugar-sdf-top;
-    init-template-options;
+    templatelang-init-options;
     declare-top
 
   declare-top =
-    alltd(declare-template-section)
+    alltd(templatelang-declare-section)
 
   // hooks
 
