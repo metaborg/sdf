@@ -108,16 +108,16 @@
           <srcfileset dir="${basedir}/trans/templatelang">
               <include name="**/*.str"/>
           </srcfileset>
-          <targetfileset file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java"/>
+          <targetfileset file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java"/>
       </dependset>
-      <available file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java" property="libtemplatelang.strc-java.available"/>
+      <available file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java" property="libtemplatelang.strc-java.available"/>
       <antcall target="libtemplatelang.stratego.jar.deletehelper"/>
       <antcall target="libtemplatelang.stratego.jvm.helper">
-          <param name="build.stratego.outputfile" value="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.java"/>
+          <param name="build.stratego.outputfile" value="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java"/>
           <param name="build.stratego.extraargs" value="-la java-front ${java.jar.import}"/>
       </antcall>
       <javac classpath="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" srcdir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" destdir="${build}" source="1.5" target="1.5" debug="on"/>
-      <copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/TemplateLang.rtree" tofile="${include}/lib${strmodule}.rtree"/>
+      <copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.rtree" tofile="${include}/lib${strmodule}.rtree"/>
       <!-- copy imported terms -->
       <copy todir="${build}/org/strategoxt/imp/editors/template/generated">
           <fileset dir="${src-gen}/org/strategoxt/imp/editors/template/generated" excludes="**/*.java"/>
