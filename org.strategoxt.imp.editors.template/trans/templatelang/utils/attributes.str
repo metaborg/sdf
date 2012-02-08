@@ -21,7 +21,7 @@ overlays
 strategies
 
   fetch-cons =
-    ?sdf-cons(_) //FIXME: + ?Constructor(_)
+    ?sdf-cons(_) + ?Constructor(_)
 
   fetch-cons:
     attrs(attr*) -> <getfirst(fetch-cons)> attr*
@@ -29,9 +29,8 @@ strategies
   fetch-cons-name:
     sdf-cons(cons) -> <un-double-quote> cons
 
-  // FIXME
-  // fetch-cons-name:
-  //   Constructor(cons) -> <un-double-quote> cons
+  fetch-cons-name:
+    Constructor(cons) -> <un-double-quote> cons
 
   fetch-cons-name:
     attrs(attr*) -> <getfirst(fetch-cons-name)> attr*

@@ -23,5 +23,9 @@ exports
     Start
 
   context-free syntax
-    Section* -> Start {cons("CompilationUnit")}
-    Grammar[[SDF]] -> Section {cons("SDFSection")}
+    Section*                    -> Start {cons("CompilationUnit")}
+    Grammar[[SDF]]              -> Section {cons("SDFSection")}
+
+  context-free syntax
+    Constructor                 -> Attribute[[SDF]] {prefer, cons("Constructor")}
+    StrCon[[SDF]]               -> Constructor
