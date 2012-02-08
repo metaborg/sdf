@@ -60,7 +60,7 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Generate SDF
   generate-sdf =
     collect-om(?TemplateProduction(_, _, _));
-    <template-sections-to-sdf> [TemplateSection(<id>)];
+    <template-sections-to-sdf> [TemplateSection(<id>){"desugared"}];
     !'module(unparameterized("example"), [], [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract =
@@ -75,12 +75,12 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Generate pretty printer (BOX-based)
   generate-box-pp-string =
     collect-om(?TemplateProduction(_, _, _));
-    <template-sections-to-stratego-string> [TemplateSection(<id>)]
+    <template-sections-to-stratego-string> [TemplateSection(<id>){"desugared"}]
 
   generate-box-pp-abstract =
     generate-aterm(
       collect-om(?TemplateProduction(_, _, _));
-      <template-sections-to-stratego> [TemplateSection(<id>)]
+      <template-sections-to-stratego> [TemplateSection(<id>){"desugared"}]
     )
 
   generate-box-pp-concrete:

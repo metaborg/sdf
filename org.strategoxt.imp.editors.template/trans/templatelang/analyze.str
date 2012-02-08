@@ -5,12 +5,13 @@ imports
   templatelang/utils/attributes
   templatelang/utils/contract
   templatelang/utils/stubs
+  templatelang/desugar
 
 signature
   constructors
     TemplateBySort     : SymbolType
     TemplateBySortCons : SymbolType
-    TemplateOption     : SymbolType 
+    TemplateOption     : SymbolType
 
 signature
   constructors
@@ -19,67 +20,75 @@ signature
 
 strategies
 
-  declare-template-section:
-    TemplateSection(prod*) -> <id>
+  templatelang-declare-section:
+    section @ TemplateSection(prod*) -> <id>
     where
       with-spxverify(
-          <map(declare-template)> prod*
+        verify(templatelang-is-desugared-section | section, "templatelang-is-desugared-section ::templatelang-declare-section")
+      )
+    where
+      with-spxverify(
+        <list-loop(templatelang-declare-template)> prod*
       )
 
-  declare-template:
+  templatelang-declare-template:
     prod @ TemplateProduction(sort, _, attrs) -> <id>
     where
       with-spxverify(
-          <index-symbol-definition> (sort, TemplateBySort(), prod)
-        ; if cons := <fetch-cons-name> attrs then
-              sortcons := (sort, cons)
-            ; <index-symbol-definition> (sortcons, TemplateBySortCons(), prod)
-          end
+        verify(templatelang-is-desugared-production | prod, "templatelang-is-desugared-production ::templatelang-declare-template")
+      )
+    where
+      with-spxverify(
+        <index-symbol-definition> (sort, TemplateBySort(), prod);
+        if cons := <fetch-cons-name> attrs then
+          sortcons := (sort, cons);
+          <index-symbol-definition> (sortcons, TemplateBySortCons(), prod)
+        end
       )
 
 strategies
 
-  //resolve templatelang options 
-  get-template-option =
+  //resolve templatelang options
+  templatelang-get-option =
     ? key
-    ; with-spxverify( 
-        result := <resolve-symbol-definition> (key, TemplateOption()) 
+    ; with-spxverify(
+        result := <resolve-symbol-definition> (key, TemplateOption())
         , !"Failed to get template option"
       )
-    ; !result 
+    ; !result
 
-  index-template-option = 
+  templatelang-index-option =
     ? (key, value)
-    ; with-spxverify(  
-        <index-symbol-definition> (key, TemplateOption() ,  value) 
+    ; with-spxverify(
+        <index-symbol-definition> (key, TemplateOption(), value)
         , !"Failed to index template option"
       )
 
-  init-template-options =
+  templatelang-init-options =
     with-spxverify(
       if not(<resolve-symbol-definition> (Newlines(), TemplateOption())) then
-          <index-template-option> (Newlines(), None())
-        ; <index-template-option> (KeywordFollowRestriction(), None())
+          <templatelang-index-option> (Newlines(), None())
+        ; <templatelang-index-option> (KeywordFollowRestriction(), None())
       end
     )
 
-  declare-template-section:
+  templatelang-declare-section:
     TemplateOptions(opt*) -> <id>
     where
       with-spxverify(
-          <map(declare-template-option)> opt*
+        <list-loop(templatelang-declare-option)> opt*
       )
 
-  declare-template-option:
+  templatelang-declare-option:
     Newlines(t) -> <id>
     where
       with-spxverify(
-          <index-template-option> (Newlines(), t)
+        <templatelang-index-option> (Newlines(), t)
       )
 
-  declare-template-option:
+  templatelang-declare-option:
     KeywordFollowRestriction(t) -> <id>
     where
       with-spxverify(
-          <index-template-option> (KeywordFollowRestriction(), t)
+        <templatelang-index-option> (KeywordFollowRestriction(), t)
       )

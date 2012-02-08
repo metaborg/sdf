@@ -4,6 +4,7 @@ imports
   libstratego-sglr
   include/TemplateLang
   templatelang/analyze
+  templatelang/desugar
   templatelang/utils/attributes
   templatelang/utils/contract
   templatelang/utils/misc
@@ -16,7 +17,7 @@ strategies
     section* -> sdf-section'*
     where
       with-spxverify(
-        verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::template-sections-to-sdf")
+        verify(ListOf(templatelang-is-desugared-section) | section* , "ListOf(templatelang-is-desugared-section) ::template-sections-to-sdf")
       )
     where with-spxverify (
       sdf-section*  := <map(template-section-to-sdf)> section*;
@@ -63,7 +64,7 @@ strategies
             )
       in
         A* := <collect-om(lit(ends-with-identifier-char)); nub; string-sort-ex> sdf-section*;
-        r  := <get-template-option> KeywordFollowRestriction();
+        r  := <templatelang-get-option> KeywordFollowRestriction();
         if (!A* => []) + (!r => None()) then
           restrictions* := []
         else
@@ -113,7 +114,7 @@ strategies
              flatten-list> line*
     )
   maybe-separating(yes, no) =
-    if <get-template-option> Newlines() => Separating() then yes else no end
+    if <templatelang-get-option> Newlines() => Separating() then yes else no end
 
 rules
 
@@ -159,7 +160,7 @@ rules
   template-line-to-sdf =
     ?Line(<id>);
     if not(?[Layout(_), Placeholder(_, _, _)]) then
-      switch <get-template-option> Newlines()
+      switch <templatelang-get-option> Newlines()
         case ?None()     : id
         case ?Leading()  : ![String("\n") | <id>]
         case ?Trailing() : (elem* -> [elem*, String("\n")])

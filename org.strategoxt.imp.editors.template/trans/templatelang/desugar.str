@@ -8,7 +8,7 @@ imports
 
 strategies
 
-  // copied & renamed to prevent clashes with editor-common.generated.str
+  // Copied & renamed to prevent clashes with editor-common.generated.str
   // templatelang-origin-track-forced, which is present in all editors ...
   templatelang-origin-track-forced(s) =
     ![<id>]; all(s); ?[<id>]
@@ -42,18 +42,30 @@ rules
 
 rules
 
+  // Add special marker to sections and productions to make it easier
+  // to bail out early in strategies that expect desugared input.
+
+  templatelang-desugar:
+    TemplateSection(t) -> TemplateSection(<templatelang-desugar-top> t){"desugared"}
+
+  templatelang-is-desugared-section:
+    TemplateSection(_){"desugared"} -> <id>
+
+  templatelang-is-desugared-production:
+    TemplateProduction(_, _, _){"desugared"} -> <id>
+
   templatelang-desugar:
     TemplateProduction(sort, template, a) ->
-      TemplateProduction(sort, template', attrs(attr*))
+      TemplateProduction(sort, template', attrs(attr*)){"desugared"}
     where
       with-spxverify(
-          template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
-          attr*     := <templatelang-get-attrs> a
+        template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
+        attr*     := <templatelang-get-attrs> a
       )
 
   templatelang-desugar:
     TemplateProductionWithCons(SortCons(sort, cons), template, a) ->
-      TemplateProduction(sort, template', attrs(attr*))
+      TemplateProduction(sort, template', attrs(attr*)){"desugared"}
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;

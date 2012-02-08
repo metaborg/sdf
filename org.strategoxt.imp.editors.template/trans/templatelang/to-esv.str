@@ -6,6 +6,7 @@ imports
   templatelang/utils/attributes
   templatelang/utils/contract
   templatelang/utils/misc
+  templatelang/desugar
   templatelang/expand
   templatelang/to-string
 
@@ -21,7 +22,7 @@ strategies
   template-sections-to-esv:
     section* -> completion*
     where with-spxverify(
-      verify(List | section* , "List ::template-sections-to-esv")
+      verify(ListOf(templatelang-is-desugared-section) | section* , "ListOf(templatelang-is-desugared-section) ::")
     )
     where with-spxverify(
       completion* := <filter(template-section-to-esv); concat> section*
