@@ -1,0 +1,13 @@
+module esv
+language TemplateLang
+
+test pp-descriptor-to-string
+  <pp-descriptor-to-string> Completions("", [
+    CompletionTemplateEx(
+      [Sort("MetaAnno")]
+    , CompletionPrefix(String("\"@Exp\""))
+    , [String("\"@\""), PlaceholderWithSort("<Exp:", "Exp")]
+    , []
+    )
+  ])
+    => "completions\n  completion template MetaAnno : \"@Exp\" =\n    \"@\" <Exp:Exp>  "

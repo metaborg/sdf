@@ -1,0 +1,14 @@
+module tokenize
+language TemplateLang
+
+test string-edge-tokenize (1)
+  <string-edge-tokenize(is-alpha)> "aa133bbb;c"
+    => ["aa", "133", "bbb", ";", "c"]
+
+test string-edge-tokenize (2)
+  <string-edge-tokenize(is-alpha)> "a"
+    => ["a"]
+
+test string-edge-tokenize (3)
+  <string-edge-tokenize(is-alpha)> ""
+    => []
