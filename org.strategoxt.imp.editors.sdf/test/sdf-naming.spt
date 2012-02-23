@@ -30,3 +30,7 @@ test Namespace definition annotation 2 warning [[
   
     @StartSpace -> Start 
 ]] 1 warning /missing/ /abstract syntax/
+
+test Nested namespace [[
+  Foo@Bar@Start -> Start
+]]
