@@ -6,23 +6,14 @@ imports
   libstratego-lib
   libstratego-sglr
   libstratego-gpp
+  libstrc
 
 strategies
-
-  parse-stratego =
-    parse-file(
-      strsglr-perror, strsglr-report-parse-error
-    | <import-term(lib/Stratego-Sugar.tbl)>
-    )
 
   parse-stratego-string =
     parse-string(
       strsglr-report-parse-error
-    | <import-term(lib/Stratego-Sugar.tbl)>
+    | <get-parse-table-from-ast> 
     )
 
-  parse-stratego-stream =
-    parse-stream(
-      strsglr-report-parse-error
-    | <import-term(lib/Stratego-Sugar.tbl)>
-    )
+  get-parse-table-from-ast = <ps-get-parse-table>"Stratego"

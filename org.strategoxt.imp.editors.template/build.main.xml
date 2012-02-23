@@ -23,8 +23,8 @@
       --library
       -I &quot;${basedir}&quot;
       -I &quot;${trans}&quot;
-      -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
-      -la stratego-sdf -la org.strategoxt.imp.editors.template.generated" />
+      -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm   
+      -la stratego-sdf -la strc -la org.strategoxt.imp.editors.template.generated" />
 
   <!-- Optional: external .def and .jar locations
   <property name="externaldef" location="syntax/${sdfmodule}.def"/>
