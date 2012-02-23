@@ -142,7 +142,7 @@ strategies
         {strategy*}}
     where
       with-spxverify(
-        verify(ListOf(templatelang-is-desugared-section) | "ListOf(templatelang-is-desugared-section) ::template-sections-to-stratego-string")
+        verify(ListOf(?TemplateSection(_)) | "ListOf(?TemplateSection(_)) ::template-sections-to-stratego-string")
       )
     where
       with-spxverify(

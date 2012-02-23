@@ -42,14 +42,8 @@ rules
 
 rules
 
-  // Add special marker to sections and productions to make it easier
+  // Add special marker to productions to make it easier
   // to bail out early in strategies that expect desugared input.
-
-  templatelang-desugar:
-    TemplateSection(t) -> TemplateSection(<templatelang-desugar-top> t){"desugared"}
-
-  templatelang-is-desugared-section:
-    TemplateSection(_){"desugared"} -> <id>
 
   templatelang-is-desugared-production:
     TemplateProduction(_, _, _){"desugared"} -> <id>

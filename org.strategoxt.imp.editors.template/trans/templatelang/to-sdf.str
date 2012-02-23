@@ -17,7 +17,7 @@ strategies
     section* -> sdf-section'*
     where
       with-spxverify(
-        verify(ListOf(templatelang-is-desugared-section) | section* , "ListOf(templatelang-is-desugared-section) ::template-sections-to-sdf")
+        verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::template-sections-to-sdf")
       )
     where with-spxverify (
       sdf-section*  := <map(template-section-to-sdf)> section*;

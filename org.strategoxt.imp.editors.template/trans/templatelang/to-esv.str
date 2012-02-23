@@ -22,7 +22,7 @@ strategies
   template-sections-to-esv:
     section* -> completion*
     where with-spxverify(
-      verify(ListOf(templatelang-is-desugared-section) | section* , "ListOf(templatelang-is-desugared-section) ::")
+      verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::")
     )
     where with-spxverify(
       completion* := <filter(template-section-to-esv); concat> section*

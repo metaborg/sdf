@@ -24,10 +24,6 @@ strategies
     section @ TemplateSection(prod*) -> <id>
     where
       with-spxverify(
-        verify(templatelang-is-desugared-section | section, "templatelang-is-desugared-section ::templatelang-declare-section")
-      )
-    where
-      with-spxverify(
         <list-loop(templatelang-declare-template)> prod*
       )
 
