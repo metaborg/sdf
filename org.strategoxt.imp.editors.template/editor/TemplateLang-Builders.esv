@@ -36,4 +36,4 @@ refactorings
   //   input
   //     identifier : "new name" = ""
 
-  // on save: generate-java
+  on save: generate-all

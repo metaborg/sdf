@@ -140,10 +140,11 @@ strategies
       strategies // all other sorts used in placeholders
 
         {strategy*}}
-    where
-      with-spxverify(
-        verify(ListOf(?TemplateSection(_)) | "ListOf(?TemplateSection(_)) ::template-sections-to-stratego-string")
-      )
+    // FIXME
+    // where
+    //   with-spxverify(
+    //     verify(ListOf(?TemplateSection(_)) | "ListOf(?TemplateSection(_)) ::template-sections-to-stratego-string")
+    //   )
     where
       with-spxverify(
         section'* := <filter(template-section-to-stratego-string);

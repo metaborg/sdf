@@ -88,3 +88,23 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
     with
       filename := <guarantee-extension(|"generated.str")> path;
       result   := <generate-box-pp-string> selected
+
+  // On-save handler
+  generate-all:
+    (selected, position, ast, path, project-path) -> None()
+    with
+      generate-esv-concrete; write-string-to-file
+    with
+      generate-sdf-concrete; write-string-to-file
+    with
+      generate-box-pp-concrete; write-string-to-file
+
+  // When given a tuple (path, string) this writes string into path.
+  write-string-to-file =
+    with(
+      ?(filename, string);
+      handle := <fopen> (filename, "w");
+      <fputs> (string, handle);
+      <fclose> handle;
+      <refresh-workspace-file> filename
+    )
