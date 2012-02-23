@@ -4,12 +4,13 @@ imports
   SDF-Colorer.generated
 
 colorer
-  
-
-
-
-// This file can be used for custom colorer rules.
-
-// See the imported file for a brief introduction and examples.
 
   Label : gray
+    
+  _.Constructor : 64 64 255 bold
+  Namespace     : darkgreen 
+  Label         : gray
+  
+  _.namespaceref  : 0   96  96 italic
+  _.namespaceref2 : 0   96  96 italic
+  _.namespacedef  : 0   96  96 italic

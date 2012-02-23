@@ -1,17 +1,17 @@
 module SDF-Folding
 
-imports
-  SDF-Folding.generated
+// imports
+//  SDF-Folding.generated
 
 folding
 
-  context-free-syntax
+  _.context-free-syntax
   
-  lexical-syntax
+  _.lexical-syntax
   
-  kernel-syntax
+  _.kernel-syntax
   
-  sorts
+  _.sorts
 
 // This file can be used for custom folding rules.
 
