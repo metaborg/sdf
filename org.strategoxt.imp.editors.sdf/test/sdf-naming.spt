@@ -37,6 +37,10 @@ test Nested namespace [[
   Foo@Bar@Start -> Start {cons("Start")}
 ]]
 
+test Simplified constructor annotation [[
+  @Start -> Start {"Cons"}
+]]
+
 test Abstract syntax [[
   Start -> Start
 ]] parse to module(_, _, _)

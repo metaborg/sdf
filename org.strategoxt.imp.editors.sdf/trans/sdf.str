@@ -91,6 +91,7 @@ rules // Local checks
       );
       if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(not("\"\"")))]))))> a'*);
+        not(<one(Constructor(not("\"\"")))> a'*);
         not(<one(bracket() + reject())> a'*);
         not(!s; (sort("Keyword") + sort("\"Keyword\"")));
         target := a*
