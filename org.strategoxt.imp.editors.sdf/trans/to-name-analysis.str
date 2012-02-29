@@ -6,25 +6,86 @@ imports
   sdf
   analysis
   lib/attributes
+  lib/index-library-core
+
+overlays
+  
+  ANALYSIS_GENERATED = "lib/analysis-auto.generated"
+
+signature constructors
+  
+  Signatures : List(UriPart) * List(Term) -> IndexEntry
+  Rules      : List(UriPart) * List(Term) -> IndexEntry
+  SDFNaming  : UriPart
 
 rules
-
+  
+  // TODO: backport changes to generate-name-analyis (imports)
+  // TODO: backport changes to fetch-annotate-names-rule
+  
+  // TODO: write str to disk first to ensure proper timestamp
   generate-name-analysis:
-    (selected, position, ast, path, project-path) -> (filename, result)
+    (selected, position, ast, path, project-path) -> (filename', result')
     with
-      filename := <guarantee-extension(|"name-analysis.str")> path;
-      result   := <generate-name-analysis; pp-stratego-string> selected
+      index-setup(|"SDF", [<project-path>], path);
+      filename  := $[[project-path]/lib/[ANALYSIS_GENERATED].rtree];
+      filename' := $[[project-path]/lib/[ANALYSIS_GENERATED].str];
+      result    := <generate-name-analysis> ast;
+      result'   := <pp-stratego-string> result
+      // <WriteToBinaryFile> (filename, result)
 
   generate-name-analysis:
     sdf ->
-    Module("analysis-generated", [
-      Signature([Constructors(namespace-sigs)])
+    Module(ANALYSIS_GENERATED, [
+      Signature([Constructors(all-sigs)])
+    , <language-imports>
     , Rules(<flatten-list> [
+        all-rules
+      , ExtSDef("nam-get-def", [], [DefaultVarDec("n")])
+      , ExtSDef("nam-annotate-use", [], [DefaultVarDec("n")])
+      ])
+    ])
+    with
+      file := <index-get-current-file>;
+      uri  := [SDFNaming()]
+    with
+      (my-sigs, my-rules) := <generate-name-analysis-entries> sdf
+    with
+      // Store generated signatures and rules in under uri
+      <index-clear-file> file;
+      <index-add-all(|file)> [Signatures(uri, my-sigs)];
+      <index-add-all(|file)> [Rules(uri, my-rules)]
+    with
+      // Load generated entries for entire project
+      all-sigs  := <flatten-stored-data> <indexlib-get-all> Signatures(uri, ());
+      all-rules := <flatten-stored-data> <indexlib-get-all> Rules(uri, ())
+  
+  language-imports =
+    if lang := <spt-get-default-language> then
+      !Imports([Import($[include/[lang]])])
+    else
+      !Imports([])
+    end
+  
+  spt-get-default-language =
+    <readdir> $[[<project-path>]/include]
+    ; fetch-elem(has-extension(|"esv")) 
+    ; esv := <ReadFromFile>$[./include/[<id>]]
+    ; collect-one(?"LanguageName"#([<id>]))
+
+  flatten-stored-data =
+    alltd(\Signatures(uri, contents) -> contents\ + \Rules(uri, contents) -> contents\);
+    flatten-list
+
+  generate-name-analysis-entries:
+    sdf ->
+    ( namespace-sigs
+    , <flatten-list> [
         scope-rules
       , get-def-rules
       , annotate-names-rules
-      ])
-    ])
+      ]
+    )
     with
       namespaces           := <collect-all(fetch-namespace); flatten-list> sdf
       ; namespace-sigs       := <map(namespace-to-signature)> namespaces
@@ -107,7 +168,10 @@ rules
     with
 	      p'*            := <filter(is-non-terminal)> p*;
 	      vars           := <map(non-terminal-to-new-var)> p'*;
-	      annotated-vars := <zip(add-namespace-anno-1 <+ add-namespace-anno-2)> (p'*, vars)
+	      annotated-vars := <zip(add-namespace-anno-1; try(?at-least-one)
+	                             <+ add-namespace-anno-2)> (p'*, vars)
+	  where
+	    !at-least-one
 
 rules
 
