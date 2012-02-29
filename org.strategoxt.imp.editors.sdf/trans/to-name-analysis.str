@@ -25,8 +25,8 @@ rules
     (selected, position, ast, path, project-path) -> (filename', result')
     with
       index-setup(|"SDF", [<project-path>], path);
-      filename  := $[[project-path]/lib/[ANALYSIS_GENERATED].rtree];
-      filename' := $[[project-path]/lib/[ANALYSIS_GENERATED].str];
+      filename  := $[[project-path]/[ANALYSIS_GENERATED].rtree];
+      filename' := $[[project-path]/[ANALYSIS_GENERATED].str];
       result    := <generate-name-analysis> ast;
       result'   := <pp-stratego-string> result
       // <WriteToBinaryFile> (filename, result)
