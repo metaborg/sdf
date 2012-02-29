@@ -20,9 +20,6 @@ signature constructors
 
 rules
   
-  // TODO: backport changes to generate-name-analyis (imports)
-  // TODO: backport changes to fetch-annotate-names-rule
-  
   // TODO: write str to disk first to ensure proper timestamp
   generate-name-analysis:
     (selected, position, ast, path, project-path) -> (filename', result')
@@ -41,8 +38,8 @@ rules
     , <language-imports>
     , Rules(<flatten-list> [
         all-rules
-      , ExtSDef("nam-get-def", [], [DefaultVarDec("n")])
-      , ExtSDef("nam-annotate-use", [], [DefaultVarDec("n")])
+      , SDefT("nam-get-def", [], [DefaultVarDec("n")], Fail())
+      , SDefT("nam-annotate-use", [], [DefaultVarDec("n")], Fail())
       ])
     ])
     with
