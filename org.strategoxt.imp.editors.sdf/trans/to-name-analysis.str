@@ -51,7 +51,8 @@ rules
       // Store generated signatures and rules in under uri
       <index-clear-file> file;
       <index-add-all(|file)> [Signatures(uri, my-sigs)];
-      <index-add-all(|file)> [Rules(uri, my-rules)]
+      <index-add-all(|file)> [Rules(uri, my-rules)];
+      prim("LANG_index_commit")
     with
       // Load generated entries for entire project
       all-sigs  := <flatten-stored-data> <indexlib-get-all> Signatures(uri, ());
