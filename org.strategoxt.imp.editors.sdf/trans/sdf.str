@@ -138,6 +138,8 @@ rules // Local checks
    */
   is-non-terminal =
     ?sort(_) + ?opt(_) + is-iter
+  + namespacedef(id, is-non-terminal) + namespaceref(is-non-terminal)
+  + namespaceref2(id, is-non-terminal)
 
   is-iter =
     ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
