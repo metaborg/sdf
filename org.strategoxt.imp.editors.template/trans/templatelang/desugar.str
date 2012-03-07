@@ -19,26 +19,23 @@ strategies
 
 strategies
 
-  templatelang-desugar-sdf-top =
-    alltd(templatelang-origin-track-forced(templatelang-desugar-sdf))
-
   templatelang-desugar-top =
     alltd(templatelang-origin-track-forced(templatelang-desugar))
 
 rules
 
-  templatelang-desugar-sdf:
+  templatelang-desugar:
     SdfProduction(sort, symbol*, attr*) ->
       prod(symbol*, sort(sort), attr*)
 
-  templatelang-desugar-sdf:
+  templatelang-desugar:
     SdfProductionWithCons(SortCons(sort, cons), symbol*, attrs(attr*)) ->
       prod(symbol*, sort(sort), attrs(attr'*))
     where with-spxverify(
       attr'* := [sdf-cons(<double-quote> cons) | attr*]
     )
 
-  templatelang-desugar-sdf:
+  templatelang-desugar:
     SdfProductionWithCons(SortCons(sort, cons), symbol*, no-attrs()) ->
       prod(symbol*, sort(sort), attrs(attr'*))
     where with-spxverify(

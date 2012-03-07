@@ -8,7 +8,6 @@ strategies
 
   analyze =
     templatelang-desugar-top;
-    templatelang-desugar-sdf-top;
     templatelang-init-options;
     declare-top
 
