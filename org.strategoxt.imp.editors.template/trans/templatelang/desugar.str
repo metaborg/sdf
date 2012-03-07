@@ -202,3 +202,14 @@ rules
       + ?SdfProductionWithCons(_, _, _) );
     <debug> $[Error: Attempt to [verb] sugared template production!];
     fail
+
+rules
+
+  templatelang-prod-to-sort:
+    prod(_, sort(x), _) -> x
+
+  templatelang-prod-to-sort:
+    Desugared(TemplateProduction(x, _, _)) -> x
+
+  templatelang-prod-to-sort =
+    templatelang-not-desugared(|"fetch sort from")

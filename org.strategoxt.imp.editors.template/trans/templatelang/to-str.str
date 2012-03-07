@@ -70,15 +70,6 @@ strategies
           , Strategy |[ ![S(<is-string>)] ]| 
       )
 
-  templatelang-prod-to-sort:
-    prod(_, sort(x), _) -> x
-
-  templatelang-prod-to-sort:
-    Desugared(TemplateProduction(x, _, _)) -> x
-
-  templatelang-prod-to-sort =
-    templatelang-not-desugared(|"generate BOX-based pretty printer from")
-
 rules
 
   template-to-prettyprint-strategy:

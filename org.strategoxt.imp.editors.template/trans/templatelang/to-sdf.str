@@ -14,55 +14,47 @@ rules
 
   /** @type List(TemplateSection | ...) -> List(grammar) */
   template-sections-to-sdf =
-    filter(template-section-to-sdf)
+    filter(template-section-to-sdf);
+    concat
 
   /** @type TemplateSection -> grammar */
   template-section-to-sdf:
-    TemplateSection(x) -> context-free-syntax(x')
+    TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
     where with-spxverify(
-      x' := <map(template-production-to-sdf)> x
+      p* := <map(template-production-to-sdf)> x;
+
+      // content complete productions
+      p'* := <map(templatelang-prod-to-sort); nub;
+              map(sort-to-contentcomplete)> x;
+      if !p'* => [] then
+        inj* := []
+      else
+        inj* := [context-free-syntax(p'*)]
+      end;
+
+      // lexical restrictions
+      let chars-end-with-identifier-char =
+            where(reverse; ?[<is-alphanum + '_'> | _])
+
+          string-ends-with-identifier-char =
+            where(explode-string; chars-end-with-identifier-char)
+      in
+        r* := <collect-om(?String(<string-ends-with-identifier-char>));
+               filter(string-to-sdf; last)> x;
+        r  := <templatelang-get-option <+ debug(!"Failed: "); fail> KeywordFollowRestriction();
+        if !r* => [] + !r => None() then
+          restr* := []
+        else
+          restr* := [lexical-restrictions([follow(r*, r)])]
+        end
+      end
       , !"Failed to convert TemplateSection to SDF"
     )
 
   template-section-to-sdf:
-    SDFSection(x) -> x
+    SDFSection(x) -> [x]
 
 rules
-
-  /** @type List(grammar) -> List(grammar) */
-  add-contentcomplete:
-    sdf-section* -> [sdf-section*, injections*]
-    where with-spxverify (
-      A* := <collect-om(?sort(_)); nub; string-sort-ex> sdf-section*;
-      p* := <map(sort-to-contentcomplete)> A*;
-      if !p* => [] then
-        injections* := []
-      else
-        injections* := [context-free-syntax(p*)]
-      end
-    )
-
-  /** @type List(grammar) -> List(grammar) */
-  add-lexical-restrictions:
-    sdf-section* -> [sdf-section*, restrictions*]
-    where with-spxverify(
-      let ends-with-identifier-char =
-            where(
-              explode-string;
-              un-double-quote-chars;
-              // Must end with idenfifier character, may not be preceded by backslash.
-              reverse; ?[<is-alphanum + '_' + '-'> | <not(?['\' | _])>]
-            )
-      in
-        A* := <collect-om(lit(ends-with-identifier-char)); nub; string-sort-ex> sdf-section*;
-        r  := <templatelang-get-option> KeywordFollowRestriction();
-        if (!A* => []) + (!r => None()) then
-          restrictions* := []
-        else
-          restrictions* := [lexical-restrictions([follow(A*, r)])]
-        end
-      end
-     )
 
   // Used when rewriting `Sort.Cons' in priority sections to a production.
   template-production-to-sdf-no-attrs:
@@ -205,7 +197,7 @@ rules
     getfirst(?Separator(<remove-layout; templatelang-escape; double-quote>))
 
   sort-to-contentcomplete:
-    sort(S) -> p|[ CONTENTCOMPLETE -> S {cons(L)} ]|
+    S -> p|[ CONTENTCOMPLETE -> S {cons(L)} ]|
     where
       L := $["COMPLETION-[S]"]
 
@@ -225,9 +217,4 @@ strategies
     // FIXME: Use identifier lexical (or keyword follow restriction?) defined by the language.
     string-edge-tokenize(is-alphanum + '_');
     // FIXME: Case insensitive literals need ci-lit/single-quote.
-    map({raw, sdf:
-      ?raw; !lit(<templatelang-escape; double-quote>); ?sdf;
-      if <explode-string; at-last(is-alphanum + '_')> raw then
-        rules(Restrictions :+= sdf)
-      end
-    })
+    map(!lit(<templatelang-escape; double-quote>))
