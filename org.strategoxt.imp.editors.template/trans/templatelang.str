@@ -5,6 +5,7 @@ imports
   libstratego-gpp
   libstratego-aterm
   libstratego-sglr
+  libstrc
   include/TemplateLang
   include/libtemplatelang
   lib/EditorService
@@ -96,6 +97,20 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
     with
       filename := <guarantee-extension(|"generated.str")> path;
       result   := <generate-box-pp-string> selected
+
+  generate-signature =
+    collect-om(?Desugared(_));
+    map(templatelang-production-to-signature);
+    !Specification([Signature([Constructors(<id>)])])
+
+  generate-signature-abstract =
+    generate-aterm(generate-signature)
+
+  generate-signature-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.str")> path;
+      result   := <generate-signature; pp-stratego-string> selected
 
   // On-save handler
   generate-all:
