@@ -1,5 +1,3 @@
-/* Copied from org.strategoxt.imp.spoofax/trans/codegen/sdf/to-sdf.str */
-
 module templatelang/utils/sdf
 
 imports
@@ -7,11 +5,19 @@ imports
 
 rules
 
-  list-to-conc-grammars:
-    [g1, g2 | gs] -> conc-grammars(g1, <list-to-conc-grammars> [g2 | gs])
+  // Reverse & conc-grammars in reverse to:
+  //  1) generate correct conc-grammars associativity,
+  //  2) maintain section order
 
-  list-to-conc-grammars:
+  list-to-conc-grammars =
+    reverse;
+    list-to-conc-grammars'
+
+  list-to-conc-grammars':
+    [g1, g2 | gs] -> conc-grammars(<list-to-conc-grammars'> [g2 | gs], g1)
+
+  list-to-conc-grammars':
     [g1] -> g1
 
-  list-to-conc-grammars:
+  list-to-conc-grammars':
     [] -> []

@@ -35,4 +35,4 @@ test list-to-conc-grammars (3)
   <list-to-conc-grammars> [1, 2] => conc-grammars(1, 2)
 
 test list-to-conc-grammars (4)
-  <list-to-conc-grammars> [1, 2, 3] => conc-grammars(1, conc-grammars(2, 3))
+  <list-to-conc-grammars> [1, 2, 3] => conc-grammars(conc-grammars(1, 2), 3)
