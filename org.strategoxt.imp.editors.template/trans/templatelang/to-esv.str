@@ -11,70 +11,9 @@ imports
   templatelang/to-string
 
 strategies
-	
-	// this block is mostly necessary by SpoofaxLang ???
-
-  /** @type Module -> List(Completions) */
-  template-module-to-esv:
-    Module(_, _, section*) -> <template-sections-to-esv> section*
-
-  /** @type List(TemplateSection) -> List(Completions) */
-  template-sections-to-esv:
-    section* -> completion*
-    where with-spxverify(
-      verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::")
-    )
-    where with-spxverify(
-      completion* := <filter(template-section-to-esv); concat> section*
-    )
-    where with-spxverify(
-      verify(ListOf(?CompletionTemplateEx(_, _, _, _)) | completion* , "ListOf(?CompletionTemplateEx(_, _, _, _))  ::template-module-to-esv")
-    )
-
-  /** @type TemplateSection -> List(CompletionTemplate) */
-  template-section-to-esv:
-    TemplateSection(prod*) -> completion*
-    where
-      with-spxverify(
-        verify( ListOf(?TemplateProduction(_, _, _) + ?TemplateProductionWithCons(_, _, _)) | prod* , "ListOf(?TemplateProduction(_, _, _) + ?TemplateProductionWithCons(_, _, _))  ::template-section-to-esv")
-      )
-    where with-spxverify(
-      completion* := <filter(template-to-completion-template)> prod*
-    )
-    where with-spxverify(
-      verify(ListOf(?CompletionTemplateEx(_, _, _, _)) | completion* , "ListOf(?CompletionTemplateEx(_, _, _, _))  ::template-section-to-esv")
-     )
-
-  template-section-to-esv:
-    SDFSection(lexical-syntax(prod*)) ->
-      <sdf-productions-to-completion-templates> prod*
-
-  template-section-to-esv:
-    SDFSection(context-free-syntax(prod*)) ->
-      <sdf-productions-to-completion-templates> prod*
-
-  sdf-productions-to-completion-templates:
-    prod* -> completion*
-    where with-spxverify(
-        verify(ListOf(?prod(_, _, _) + ?SdfProduction(_, _, _) + ?SdfProductionWithCons(_, _, _)) | prod* , "ListOf(?prod(_, _, _) + ?SdfProduction(_, _, _) + ?SdfProductionWithCons(_, _, _))  ::sdf-productions-to-completion-templates")
-    )
-   where
-     with-spxverify(
-      completion* := <filter(sdf-production-to-template;
-                             template-to-completion-template)> prod*
-     )
-    where with-spxverify(
-      verify(ListOf(?CompletionTemplateEx(_, _, _, _)) | completion* , "ListOf(?CompletionTemplateEx(_, _, _, _))  ::sdf-productions-to-completion-templates " )
-    )
-
-strategies
-
-  sdf-production-to-template:
-    prod([lit(text)], sort(sort), attrs) ->
-      TemplateProduction(sort, SingleLineTemplate([String(<un-double-quote> text)]), attrs)
 
   template-to-completion-template:
-    prod @ TemplateProduction(sort, SingleLineTemplate(_), attrs) ->
+    Desugared(prod @ TemplateProduction(sort, SingleLineTemplate(_), attrs)) ->
       |[ completion template ~sort : ~prefix = ~*part* ]|
     where
       not(<is-deprecated + is-reject> attrs)
@@ -88,7 +27,7 @@ strategies
       <accept-template-parts(|sort)> part*
 
   template-to-completion-template:
-    prod @ TemplateProduction(sort, Template(_), attrs) ->
+    Desugared(prod @ TemplateProduction(sort, Template(_), attrs)) ->
       |[ completion template ~sort : ~prefix = ~*part* (blank) ]|
     where
       not(<is-deprecated + is-reject> attrs)
@@ -102,6 +41,9 @@ strategies
     )
     where
       <accept-template-parts(|sort)> part*
+
+  template-to-completion-template =
+    templatelang-not-desugared(|"generate completion templates from")
 
   template-to-completion-template-helper =
     flatten-list;

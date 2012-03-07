@@ -28,11 +28,7 @@ strategies
       )
 
   templatelang-declare-template:
-    prod @ TemplateProduction(sort, _, attrs) -> <id>
-    where
-      with-spxverify(
-        verify(templatelang-is-desugared-production | prod, "templatelang-is-desugared-production ::templatelang-declare-template")
-      )
+    Desugared(prod @ TemplateProduction(sort, _, attrs)) -> <id>
     where
       with-spxverify(
         <index-symbol-definition> (sort, TemplateBySort(), prod);
@@ -41,6 +37,9 @@ strategies
           <index-symbol-definition> (sortcons, TemplateBySortCons(), prod)
         end
       )
+
+  templatelang-declare-template =
+    templatelang-not-desugared(|"analyze")
 
 strategies
 

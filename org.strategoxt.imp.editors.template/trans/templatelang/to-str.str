@@ -187,11 +187,11 @@ strategies
 rules
 
   template-to-prettyprint-strategy:
-    TemplateProduction(sort, SingleLineTemplate(elem*), attrs) ->
-      <template-to-prettyprint-strategy> TemplateProduction(sort, Template([Line(elem*)]), attrs)
+    Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
+      <template-to-prettyprint-strategy> Desugared(TemplateProduction(sort, Template([Line(elem*)]), attrs))
 
   template-to-prettyprint-strategy:
-    TemplateProduction(sort, Template(line*), attrs) ->
+    Desugared(TemplateProduction(sort, Template(line*), attrs)) ->
     ${prettyprint-{sort}:
         {input} -> [{output}]}
     where with-spxverify(
@@ -210,6 +210,9 @@ rules
       end,
       !"Failed to pretty-print template"
     )
+
+  template-to-prettyprint-strategy =
+    templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
 rules
 

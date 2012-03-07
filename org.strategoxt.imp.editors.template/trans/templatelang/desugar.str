@@ -6,6 +6,10 @@ imports
   templatelang/utils/contract
   templatelang/utils/misc
 
+signature
+  constructors
+    Desugared : Term -> Term
+
 strategies
 
   // Copied & renamed to prevent clashes with editor-common.generated.str
@@ -42,15 +46,9 @@ rules
 
 rules
 
-  // Add special marker to productions to make it easier
-  // to bail out early in strategies that expect desugared input.
-
-  templatelang-is-desugared-production:
-    TemplateProduction(_, _, _){"desugared"} -> <id>
-
   templatelang-desugar:
     TemplateProduction(sort, template, a) ->
-      TemplateProduction(sort, template', attrs(attr*)){"desugared"}
+      Desugared(TemplateProduction(sort, template', attrs(attr*)))
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
@@ -59,7 +57,7 @@ rules
 
   templatelang-desugar:
     TemplateProductionWithCons(SortCons(sort, cons), template, a) ->
-      TemplateProduction(sort, template', attrs(attr*)){"desugared"}
+      Desugared(TemplateProduction(sort, template', attrs(attr*)))
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
@@ -181,3 +179,25 @@ rules
     where with-spxverify(
       t' := <templatelang-origin-track-forced(string-replace(|"\t", "  "))> t
      )
+
+
+rules
+
+  templatelang-desugar:
+    Desugared(_) -> <id>
+    where
+      <debug> "Warning: Attempt to desugar already desugared template production!"
+
+  // We add a special marker to productions to make it easier
+  // to bail out early in strategies that expect desugared input.
+
+  templatelang-is-desugared-production:
+    Desugared(TemplateProduction(_, _, _)) -> <id>
+
+  templatelang-not-desugared(|verb) =
+    ( ?TemplateProduction(_, _, _)
+      + ?TemplateProductionWithCons(_, _, _)
+      + ?SdfProduction(_, _, _)
+      + ?SdfProductionWithCons(_, _, _) );
+    <debug> $[Error: Attempt to [verb] sugared template production!];
+    fail

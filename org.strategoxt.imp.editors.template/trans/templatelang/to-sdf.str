@@ -12,32 +12,6 @@ imports
 
 strategies
 
-  /** @type List(TemplateSection) -> List(grammar) */
-  template-sections-to-sdf:
-    section* -> sdf-section'*
-    where
-      with-spxverify(
-        verify(ListOf(?TemplateSection(_)) | section* , "ListOf(?TemplateSection(_)) ::template-sections-to-sdf")
-      )
-    where with-spxverify (
-      sdf-section*  := <map(template-section-to-sdf)> section*;
-      sdf-section'* := <add-contentcomplete; add-lexical-restrictions> sdf-section*
-    )
-    where with-spxverify (
-      verify(ListOf(?context-free-syntax(_) + ?lexical-restrictions(_)) | sdf-section'* , "ListOf(?context-free-syntax(_) + ?lexical-restrictions(_)) ::template-sections-to-sdf")
-    )
-
-  /** @type TemplateSection -> grammar */
-  template-section-to-sdf:
-    TemplateSection(prod*) -> G|[
-      context-free syntax
-        p*
-    ]|
-    where with-spxverify (
-      // main productions
-      p* := <map(template-production-to-sdf)> prod*
-    )
-
   /** @type List(grammar) -> List(grammar) */
   add-contentcomplete:
     sdf-section* -> [sdf-section*, injections*]
@@ -75,17 +49,23 @@ strategies
 
   // Used when rewriting `Sort.Cons' in priority sections to a production.
   template-production-to-sdf-no-attrs:
-    TemplateProduction(S', t, _) -> p|[ A* -> S' ]|
+    Desugared(TemplateProduction(S', t, _)) -> p|[ A* -> S' ]|
     where with-spxverify (
       A* := <template-to-sdf> t
     )
 
+  template-production-to-sdf-no-attrs =
+    templatelang-not-desugared(|"generate SDF (no attrs) from")
+
   template-production-to-sdf:
-    TemplateProduction(S', t, attrs) -> p|[ A* -> S' attrs' ]|
+    Desugared(TemplateProduction(S', t, attrs)) -> p|[ A* -> S' attrs' ]|
     where with-spxverify (
       A* := <template-to-sdf> t;
       attrs' := <attrs(filter(not(?sdf-completion(_)))) <+ no-attrs()> attrs
     )
+
+  template-production-to-sdf =
+    templatelang-not-desugared(|"generate SDF from")
 
   // Single line template.
   //  -OR-

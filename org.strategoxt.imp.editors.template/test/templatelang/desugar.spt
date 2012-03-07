@@ -4,17 +4,17 @@ language TemplateLang
 start symbol TemplateProduction
 
 test transform no-attrs() into attrs(...) (1) [[ X = "" ]]
-run templatelang-desugar-top to TemplateProduction(_, _, attrs(_))
+run templatelang-desugar-top to Desugared(TemplateProduction(_, _, attrs(_)))
 
 test transform no-attrs() into attrs(...) (2) [[ X.Y = "" ]]
-run templatelang-desugar-top to TemplateProduction(_, _, attrs(_))
+run templatelang-desugar-top to Desugared(TemplateProduction(_, _, attrs(_)))
 
 test transform TemplateProductionWithCons without attrs into TemplateProduction [[
 	X.Y = <<a>>
 ]]
-run templatelang-desugar-top to TemplateProduction(_, _, _)
+run templatelang-desugar-top to Desugared(TemplateProduction(_, _, _))
 
 test transform TemplateProductionWithCons with attrs into TemplateProduction [[
   X.Y = <<a>> {left}
 ]]
-run templatelang-desugar-top to TemplateProduction(_, _, _)
+run templatelang-desugar-top to Desugared(TemplateProduction(_, _, _))

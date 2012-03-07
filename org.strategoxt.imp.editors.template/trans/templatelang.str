@@ -37,13 +37,13 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Expanded templates (input to completion template generator)
   generate-expanded =
     generate-aterm(
-      collect-om(?TemplateProduction(_, _, _));
+      collect-om(?Desugared(_));
       map(expand-multi-line-template-production)
     )
 
   // Generate completion templates
   generate-esv =
-    collect-om(?TemplateProduction(_, _, _));
+    collect-om(?Desugared(_));
     filter(template-to-completion-template);
     !Module("example", NoImports(), [Completions("", <id>)]);
     topdown(try(pp-fix-string-quotes))
@@ -59,8 +59,11 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 
   // Generate SDF
   generate-sdf =
-    collect-om(?TemplateProduction(_, _, _));
-    <template-sections-to-sdf> [TemplateSection(<id>)];
+    collect-om(?Desugared(_));
+    map(template-production-to-sdf);
+    ![context-free-syntax(<id>)];
+    add-contentcomplete;
+    add-lexical-restrictions;
     !'module(unparameterized("example"), [], [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract =
@@ -74,12 +77,12 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 
   // Generate pretty printer (BOX-based)
   generate-box-pp-string =
-    collect-om(?TemplateProduction(_, _, _));
+    collect-om(?Desugared(_));
     <template-sections-to-stratego-string> [TemplateSection(<id>)]
 
   generate-box-pp-abstract =
     generate-aterm(
-      collect-om(?TemplateProduction(_, _, _));
+      collect-om(?Desugared(_));
       <template-sections-to-stratego> [TemplateSection(<id>)]
     )
 
