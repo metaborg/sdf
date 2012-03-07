@@ -20,7 +20,12 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
     (ast, path, project-path) -> (ast', [], [], [])
     with
       editor-init;
-      ast' := <analyze> ast
+      if <string-ends-with(|"-source.spt")> path then
+        ast' := ast;
+        <analyze> ast
+      else
+        ast' := <analyze> ast
+      end
 
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm(s):
