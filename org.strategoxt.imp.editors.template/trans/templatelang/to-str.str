@@ -111,9 +111,6 @@ strategies
               ; gpp-format-vbox(|sopt, indent)
             end
 
-      overlays
-        Line(xs) = H([SOpt(HS(), "0")], xs)
-
       strategies
 
         pp-one-V(s) = !V([], <s>)
@@ -124,10 +121,10 @@ strategies
         pp-v-list(s)   = ?[] <+ !V([], <map(pp-one-V(s))>)
         pp-v-list(s|t) = ?[] <+ !V([SOpt(VS(), t)], <map(pp-one-V(s))>)
 
-        pp-indent(|t) = ?[] <+ !I([SOpt(IS(), t)], Line(<id>))
+        pp-indent(|t) = ?[] <+ !I([SOpt(IS(), t)], H([SOpt(HS(), "0")], <id>))
 
         pp-h-list(s)   = ?[] <+ !H([], <map(pp-one-Z(s))>)
-        pp-h-list(s|t) = ?[] <+ !Line(<map(pp-one-Z(s)); separate-by(|S(t))>)
+        pp-h-list(s|t) = ?[] <+ !H([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
 
         pp-hv-list(s)   = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s))>)
         pp-hv-list(s|t) = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
