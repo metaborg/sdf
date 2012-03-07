@@ -76,9 +76,7 @@ target setup footer [[
     Comment -> Statement {}
     Comment -> Statement {cons("Comment")}
   context-free syntax
-    CONTENTCOMPLETE -> MetaAnno   {cons("COMPLETION-MetaAnno")}
     CONTENTCOMPLETE -> Statements {cons("COMPLETION-Statements")}
     CONTENTCOMPLETE -> Exp        {cons("COMPLETION-Exp")}
-    CONTENTCOMPLETE -> Comment    {cons("COMPLETION-Comment")}
     CONTENTCOMPLETE -> Statement  {cons("COMPLETION-Statement")}
 ]]

@@ -14,11 +14,9 @@ target setup header [[
 ]]
 
 test empty [[
-  Z.Y = <<>>  // double test to be able to re-use the footer for this test
   X.Y = <<>>
 ]]
 build generate-sdf-abstract to [[
-  -> Z {cons("Y")}
   -> X {cons("Y")}
 ]]
 
@@ -51,6 +49,5 @@ build generate-sdf-abstract to [[ Z -> X {cons("Y")} ]]
 
 target setup footer [[
   context-free syntax
-    CONTENTCOMPLETE -> Z {cons("COMPLETION-Z")}
     CONTENTCOMPLETE -> X {cons("COMPLETION-X")}
 ]]
