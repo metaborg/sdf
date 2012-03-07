@@ -12,6 +12,7 @@ module sdf2imp/lib/sdf-desugar
 
 imports
   libstratego-aterm
+  libstratego-sglr
 
 strategies
   
