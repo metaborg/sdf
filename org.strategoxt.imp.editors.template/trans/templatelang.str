@@ -40,6 +40,30 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
   // Only the builder options are different.
   generate-desugared-aterm = generate-aterm
 
+rules
+
+  collect-sections =
+    collect-sections-1
+    <+ collect-sections-2
+
+  collect-sections-1:
+    selection -> section*
+    where
+      section* := <collect-om(?TemplateSection(_) + ?SDFSection(_))> selection;
+      ?[_ | _]
+
+  collect-sections-2:
+    selection ->
+      [ TemplateSection(tp*)
+        , SDFSection(context-free-syntax(cp*))
+        , SDFSection(lexical-syntax(lp*)) ]
+    with
+      tp* := <collect-om(?Desugared(_))> selection;
+      p*  := <collect-om(?prod(_, _, _))> selection;
+      (cp*, lp*) := <partition(where(?prod(_, _, <fetch-cons + is-bracket>)))> p*
+
+rules
+
   // Expanded templates (input to completion template generator)
   generate-expanded =
     generate-aterm(
@@ -49,9 +73,9 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 
   // Generate completion templates
   generate-esv =
-    collect-om(?Desugared(_));
-    filter(template-to-completion-template);
-    !Module("example", NoImports(), [Completions("", <id>)]);
+    collect-sections;
+    template-sections-to-esv;
+    !Module("example", NoImports(), <id>);
     topdown(try(pp-fix-string-quotes))
 
   generate-esv-abstract =
@@ -65,11 +89,8 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 
   // Generate SDF
   generate-sdf =
-    collect-om(?Desugared(_));
-    map(template-production-to-sdf);
-    ![context-free-syntax(<id>)];
-    add-contentcomplete;
-    add-lexical-restrictions;
+    collect-sections;
+    template-sections-to-sdf;
     !'module(unparameterized("example"), [], [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract =
@@ -83,8 +104,9 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 
   // Generate pretty printer (BOX-based)
   generate-box-pp =
-    collect-om(?Desugared(_));
-    <template-sections-to-stratego> [TemplateSection(<id>)]
+    collect-sections;
+    template-sections-to-stratego;
+    !Specification(<id>)
 
   generate-box-pp-abstract =
     generate-aterm(generate-box-pp)
