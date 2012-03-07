@@ -2,6 +2,7 @@ module to-str
 
 imports
   libstratego-lib
+  libstratego-sglr
   libstrc
   include/TemplateLang
   templatelang/utils/attributes
@@ -10,7 +11,27 @@ imports
   templatelang/utils/parse-str
   templatelang/desugar
 
-strategies
+rules
+
+  template-sections-to-stratego =
+    filter(template-section-to-stratego)
+
+  template-section-to-stratego:
+    TemplateSection(x) -> Strategies(x')
+    where with-spxverify(
+      x' := <map(template-to-prettyprint-strategy)> x
+      , !"Failed to convert TemplateSection to stratego pretty printer"
+    )
+
+  template-section-to-stratego:
+    SDFSection(lexical-syntax(x)) -> Strategies(x')
+    where with-spxverify(
+      x' := <filter(templatelang-prod-to-sort); nub;
+             map(templatelang-sort-to-strategy)> x
+      , !"Failed to convert lexical-syntax to stratego pretty printer"
+    )
+
+rules
 
   templatelang-prepare-pretty-printer =
     !|[ module prettyprinter
@@ -40,50 +61,23 @@ strategies
           pp-HZ-list(pp|sep) = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(pp)); separate-by(|S(sep))>)
     ]|
 
-  template-sections-to-stratego:
-    section* -> mod
-    // FIXME
-    // where
-    //   with-spxverify(
-    //     verify(ListOf(?TemplateSection(_)) | "ListOf(?TemplateSection(_)) ::template-sections-to-stratego-string")
-    //   )
-    where
-      with-spxverify(
-        section'* := <filter(template-section-to-stratego-string);
-                      separate-by(|"\n\n")> section*
-         , !"Failed to desugar "
-       );
-       //FIXME
-      // with-spxverify(
-      //   // All sorts used in pp minus all sorts for which a pp strategy has been
-      //   // created will get a `prettyprint-sort = is-string' default strategy.
-      //   sorts-used-in-pp := <collect-om(sort-used-in-prettyprinting); nub> section*; // FIXME: global data
-      //   sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> section*; // FIXME: global data
-      //   sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
-      //   strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
-      //   , !"Failed to generate sort-to-pretty-print strategy"
-      // );
-      templatelang-prepare-pretty-printer;
-      Module(id, \x -> <conc> (x, section'*)\) => mod
+strategies
 
-  template-section-to-stratego-string:
-    TemplateSection(prod*) -> Strategies(strategy*)
-    where
-      with-spxverify(
-        strategy* := <map(template-to-prettyprint-strategy)> prod*
-        , !"Failed to pretty-print template to strategy"
+  templatelang-sort-to-strategy:
+    x ->
+      SDefNoArgs(
+          $[prettyprint-[x]]
+          , Strategy |[ ![S(<is-string>)] ]| 
       )
 
-/*internal*/ strategies
+  templatelang-prod-to-sort:
+    prod(_, sort(x), _) -> x
 
-  sort-to-prettyprint-strategy:
-    sort -> ${prettyprint-{sort} = ![S(<is-string>)]}
+  templatelang-prod-to-sort:
+    Desugared(TemplateProduction(x, _, _)) -> x
 
-  sort-decl-in-prettyprinting:
-    TemplateProduction(sort, _, _) -> sort
-
-  sort-used-in-prettyprinting:
-    Placeholder(sort(sort), _, _) -> sort
+  templatelang-prod-to-sort =
+    templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
 rules
 
@@ -92,12 +86,12 @@ rules
       <template-to-prettyprint-strategy> Desugared(TemplateProduction(sort, Template([Line(elem*)]), attrs))
 
   template-to-prettyprint-strategy:
-    Desugared(TemplateProduction(sort, Template(line*), attrs)) ->
+    Desugared(TemplateProduction(x, Template(line*), attrs)) ->
     // ${prettyprint-{sort}:
     //     {input} -> [{output}]}
       //RDefNoArgs(
       SDefNoArgs(
-          $[prettyprint-[sort]]
+          $[prettyprint-[x]]
         // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
           , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
       )

@@ -10,7 +10,24 @@ imports
   templatelang/utils/misc
   templatelang/utils/tokenize
 
-strategies
+rules
+
+  /** @type List(TemplateSection | ...) -> List(grammar) */
+  template-sections-to-sdf =
+    filter(template-section-to-sdf)
+
+  /** @type TemplateSection -> grammar */
+  template-section-to-sdf:
+    TemplateSection(x) -> context-free-syntax(x')
+    where with-spxverify(
+      x' := <map(template-production-to-sdf)> x
+      , !"Failed to convert TemplateSection to SDF"
+    )
+
+  template-section-to-sdf:
+    SDFSection(x) -> x
+
+rules
 
   /** @type List(grammar) -> List(grammar) */
   add-contentcomplete:

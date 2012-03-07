@@ -8,9 +8,26 @@ imports
   templatelang/utils/misc
   templatelang/desugar
   templatelang/expand
+  templatelang/sdf-to-template
   templatelang/to-string
 
-strategies
+rules
+
+  template-sections-to-esv =
+    filter(template-section-to-esv)
+
+  template-section-to-esv:
+    TemplateSection(x) -> Completions("", x')
+    where
+      x' := <filter(template-to-completion-template)> x
+
+  template-section-to-esv:
+    SDFSection(context-free-syntax(x)) -> Completions("", x')
+    where
+      x' := <filter(templatelang-sdf-prod-to-template-prod;
+                    template-to-completion-template)> x
+
+rules
 
   template-to-completion-template:
     Desugared(prod @ TemplateProduction(sort, SingleLineTemplate(_), attrs)) ->
