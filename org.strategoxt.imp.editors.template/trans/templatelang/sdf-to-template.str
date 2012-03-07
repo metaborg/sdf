@@ -1,0 +1,49 @@
+module sdf-to-template
+
+imports
+  libstratego-sglr
+  include/TemplateLang
+  templatelang/desugar
+
+rules // Convert SDF productions to desugared syntax templates
+
+  templatelang-sdf-prod-to-template-prod:
+    prod(sym*, sort(sort), a) ->
+      Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), a'))
+    where
+      elem* := <map(templatelang-sdf-sym-to-template-elem);
+                separate-by(|Layout(" "))> sym*;
+      a' := attrs(<templatelang-get-attrs> a)
+
+  templatelang-sdf-prod-to-template-prod =
+    debug(!"Warning: Could not generate template from production: "); fail
+
+rules // Convert SDF symbols to syntax template elements
+
+  templatelang-sdf-sym-to-template-elem:
+    lit(t) -> String(<un-double-quote; unescape> t)
+
+  templatelang-sdf-sym-to-template-elem:
+    t @ sort(_) -> Placeholder(t, None(), [])
+
+  templatelang-sdf-sym-to-template-elem:
+    opt(t @ sort(_)) -> Placeholder(t, Option(), [])
+
+  templatelang-sdf-sym-to-template-elem:
+    iter-star(t @ sort(_)) -> Placeholder(t, Star(), [])
+
+  templatelang-sdf-sym-to-template-elem:
+    iter(t @ sort(_)) -> Placeholder(t, Plus(), [])
+
+  templatelang-sdf-sym-to-template-elem:
+    iter-star-sep(t @ sort(_), lit(s)) -> Placeholder(t, Star(), [Separator(s')])
+    where
+      s' := <un-double-quote; unescape> s
+
+  templatelang-sdf-sym-to-template-elem:
+    iter-sep(t @ sort(_), lit(s)) -> Placeholder(t, Plus(), [Separator(s')])
+    where
+      s' := <un-double-quote; unescape> s
+
+  templatelang-sdf-sym-to-template-elem =
+    debug(!"Warning: Could not generate template element from symbol: "); fail

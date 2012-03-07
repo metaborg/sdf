@@ -26,17 +26,11 @@ strategies
   expand-multi-line-template-production:
     TemplateProduction(_, Template(_), _) -> <memo(expand-template-production)>
 
-  expand-multi-line-template-production:
-    prod(_, _, _) -> <memo(expand-template-production)>
-
   /**
    * @type TemplateProduction ->? List(template-element)
    */
   expand-single-line-template-production:
     TemplateProduction(_, SingleLineTemplate(_), _) -> <memo(expand-template-production)>
-
-  expand-single-line-template-production:
-    prod(_, _, _) -> <memo(expand-template-production)>
 
   /**
    * @type TemplateProduction ->? List(template-line) | List(template-element)
@@ -48,10 +42,6 @@ strategies
     where
       result := <expand-template> template;
       score := <determine-score> attrs
-
-  // FIXME
-  // expand-template-production:
-  //   prod(_, _, _) -> <sdf-production-to-template; expand-template-production>
 
   /**
    * @type template-attributes -> Int

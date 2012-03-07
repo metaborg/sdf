@@ -28,7 +28,8 @@ strategies
 rules
 
   templatelang-desugar-sdf:
-    SdfProduction(sort, symbol*, attr*) -> prod(symbol*, sort(sort), attr*)
+    SdfProduction(sort, symbol*, attr*) ->
+      prod(symbol*, sort(sort), attr*)
 
   templatelang-desugar-sdf:
     SdfProductionWithCons(SortCons(sort, cons), symbol*, attrs(attr*)) ->
