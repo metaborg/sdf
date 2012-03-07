@@ -12,44 +12,36 @@ imports
 
 strategies
 
-  template-sections-to-stratego =
-    template-sections-to-stratego-string;
-    parse-stratego-string;
-    alltd(try(un-double-quote); unescape)
+  templatelang-prepare-pretty-printer =
+    !|[ module prettyprinter
+        imports
+          libstratego-gpp
+          libstratego-lib
 
-  template-sections-to-stratego-string:
-    section* ->
-    ${module prettyprinter
-      imports
-        libstratego-gpp
-        libstratego-lib
+        strategies
 
-      strategies
+          pp-one-V(pp) = !V([], <pp>)
+          pp-one-Z(pp) = !Z([], <pp>)
 
-        pp-one-V(s) = !V([], <s>)
-        pp-one-Z(s) = !Z([], <s>)
+          pp-option(pp) = \None() -> []\ + ?Some(<pp>)
 
-        pp-option(s) = \None() -> []\ + \Some(t) -> <s> t\
+          pp-V-list(pp)    = ?[] <+ !V([], <map(pp-one-V(pp))>)
+          pp-V-list(pp|vs) = ?[] <+ !V([SOpt(VS(), vs)], <map(pp-one-V(pp))>)
 
-        pp-v-list(s)   = ?[] <+ !V([], <map(pp-one-V(s))>)
-        pp-v-list(s|t) = ?[] <+ !V([SOpt(VS(), t)], <map(pp-one-V(s))>)
+          pp-indent(|is) = ?[] <+ !I([SOpt(IS(), is)], H([SOpt(HS(), "0")], <id>))
 
-        pp-indent(|t) = ?[] <+ !I([SOpt(IS(), t)], H([SOpt(HS(), "0")], <id>))
+          pp-H-list(pp)     = ?[] <+ !H([], <map(pp-one-Z(pp))>)
+          pp-H-list(pp|sep) = ?[] <+ !H([SOpt(HS(), "0")], <map(pp-one-Z(pp)); separate-by(|S(sep))>)
 
-        pp-h-list(s)   = ?[] <+ !H([], <map(pp-one-Z(s))>)
-        pp-h-list(s|t) = ?[] <+ !H([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
+          pp-HV-list(pp)     = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(pp))>)
+          pp-HV-list(pp|sep) = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(pp)); separate-by(|S(sep))>)
 
-        pp-hv-list(s)   = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s))>)
-        pp-hv-list(s|t) = ?[] <+ !HV([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
+          pp-HZ-list(pp)     = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(pp))>)
+          pp-HZ-list(pp|sep) = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(pp)); separate-by(|S(sep))>)
+    ]|
 
-        pp-hz-list(s)   = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(s))>)
-        pp-hz-list(s|t) = ?[] <+ !HZ([SOpt(HS(), "0")], <map(pp-one-Z(s)); separate-by(|S(t))>)
-
-      {section'*}
-
-      strategies // all other sorts used in placeholders
-
-        {strategy*}}
+  template-sections-to-stratego:
+    section* -> mod
     // FIXME
     // where
     //   with-spxverify(
@@ -61,25 +53,24 @@ strategies
                       separate-by(|"\n\n")> section*
          , !"Failed to desugar "
        );
-      with-spxverify(
-        // All sorts used in pp minus all sorts for which a pp strategy has been
-        // created will get a `prettyprint-sort = is-string' default strategy.
-        sorts-used-in-pp := <collect-om(sort-used-in-prettyprinting); nub> section*; // FIXME: global data
-        sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> section*; // FIXME: global data
-        sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
-        strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
-        , !"Failed to generate sort-to-pretty-print strategy"
-      )
+       //FIXME
+      // with-spxverify(
+      //   // All sorts used in pp minus all sorts for which a pp strategy has been
+      //   // created will get a `prettyprint-sort = is-string' default strategy.
+      //   sorts-used-in-pp := <collect-om(sort-used-in-prettyprinting); nub> section*; // FIXME: global data
+      //   sorts-decl-in-pp := <collect-om(sort-decl-in-prettyprinting); nub> section*; // FIXME: global data
+      //   sorts-without-pp := <diff> (sorts-used-in-pp, sorts-decl-in-pp);
+      //   strategy* := <map(sort-to-prettyprint-strategy); separate-by(|"\n\n")> sorts-without-pp
+      //   , !"Failed to generate sort-to-pretty-print strategy"
+      // );
+      templatelang-prepare-pretty-printer;
+      Module(id, \x -> <conc> (x, section'*)\) => mod
 
   template-section-to-stratego-string:
-    TemplateSection(prod*) ->
-    $[strategies
-
-        [strategy*]]
+    TemplateSection(prod*) -> Strategies(strategy*)
     where
       with-spxverify(
-        strategy* := <map(template-to-prettyprint-strategy);
-                      separate-by(|"\n\n")> prod*
+        strategy* := <map(template-to-prettyprint-strategy)> prod*
         , !"Failed to pretty-print template to strategy"
       )
 
@@ -102,20 +93,26 @@ rules
 
   template-to-prettyprint-strategy:
     Desugared(TemplateProduction(sort, Template(line*), attrs)) ->
-    ${prettyprint-{sort}:
-        {input} -> [{output}]}
+    // ${prettyprint-{sort}:
+    //     {input} -> [{output}]}
+      //RDefNoArgs(
+      SDefNoArgs(
+          $[prettyprint-[sort]]
+        // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
+          , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+      )
     where with-spxverify(
       (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
-      line''*        := <map(template-line-to-stratego <+ fail)> line'*;
+      output         := <map(template-line-to-stratego)> line'*;
       arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
-      output         := <separate-by(|",\n")> line''*;
       if cons := <fetch-cons-name> attrs then
-        input := $[[cons]([<separate-by(|",")> arg*])]
+        //input := $[[cons]([<separate-by(|",")> arg*])]
+        input := Op(cons, arg*)
       else
         if !arg* => [_] then
-          input := "a"
+          input := Var("a")
         else
-          input := $[([<separate-by(|",")> arg*])]
+          input := Tuple(arg*)
         end
       end,
       !"Failed to pretty-print template"
@@ -147,95 +144,117 @@ rules
     Line(elem*) -> <filter(template-element-to-cons-arg)> elem*
 
   template-element-to-cons-arg:
-    Placeholder(_, _, _){name} -> name
+    Placeholder(_, _, _){name} -> Var(name)
 
 rules
 
   template-line-to-stratego:
     Line([Layout(indent) | elem*]) ->
-      ${<pp-indent(|"{<string-length> indent}")> [{elem'*}]}
+      // ${<pp-indent(|"{<string-length> indent}")> [{elem'*}]}
+      App(
+          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])
+        , NoAnnoList(List(elem'*))
+      )
+      // Term |[ I([SOpt(IS(), t1)], H([SOpt(HS(), "0")], [t*])) ]|
     where
       not(!indent => "");
+      is := <string-length; int-to-string; double-quote> indent;
       elem'* := <template-line-elements-to-stratego> elem*
 
   template-line-to-stratego:
-    Line(elem*) -> ${Line([{elem'*}])}
+    Line(elem*) -> Term |[ H([SOpt(HS(), "0")], [t*]) ]|
     where
       not(!elem* => [Layout(<not("")>) | _]);
-      elem'* := <template-line-elements-to-stratego> elem*
+      t* := <template-line-elements-to-stratego> elem*
 
   template-line-elements-to-stratego =
-    // 1. Map template elements to strings of Stratego code and String cons.
-    map(template-element-to-stratego);
-    // 2. Collapse consecutive String cons into one String cons.
+    // 1. Convert Layout to String.
+    map(try(\Layout(t) -> String(t)\));
+    // 2. Collapse consecutive Strings into single String.
     // (Optional, improves readability and performance of generated code.)
     concatenate-consecutive-strings;
-    // 3. Convert String cons to Stratego code, while removing empty strings.
+    // 3. Map template elements to strings of Stratego code and String cons,
+    //    while removing empty strings.
     // (The latter is necessary to prevent spurious blank lines:
     // BOX removes empty lists, but not empty string elements.)
-    filter(
-      \String(t) -> $[S([<templatelang-escape; double-quote> t])]\
-      <+ not(?String(""))
-    );
-    // 4. Insert commas.
-    separate-by(|",")
+    filter(template-element-to-stratego)
 
   template-element-to-stratego:
-    String(t) -> <id>
+    String(t) -> Op("S", [NoAnnoList(Str(t'))])
+    where
+      not(!t => "");
+      t' := <templatelang-escape; double-quote> t
 
   template-element-to-stratego:
-    Layout(t) -> String(t)
-
-  template-element-to-stratego:
-    Placeholder(sort(x), None(), _){name}
-      -> $[<[s]> [name]]
+    Placeholder(sort(x), None(), _){name} ->
+      // $[<[s]> [name]]
+      App(s, Var(name))
     where with-spxverify(
-      placeholder-to-pp-one => s,
-      !"Failed to determine placeholder type"
+      placeholder-to-pp-one => s
+      , !"Failed to determine placeholder type"
     )
 
   template-element-to-stratego:
     Placeholder(sort(x), Option(), _){name} ->
-      $[<pp-option([s])> [name]]
+      // $[<pp-option([s])> [name]]
+      App(Call(SVar("pp-option"), [s]), Var(name))
     where with-spxverify(
-      placeholder-to-pp-one => s,
-      !"Failed to determine placeholder type (option)"
+      placeholder-to-pp-one => s
+      , !"Failed to determine placeholder type (option)"
     )
 
   placeholder-to-pp-one:
     Placeholder(sort(x), _, option*) ->
-      $[pp-one-[v-or-z](prettyprint-[x])]
+      // $[pp-one-[v-or-z](prettyprint-[x])]
+      Call(ppo, [ppx])
     where with-spxverify(
-      <one(?Anchor()) < !"V" + !"Z"> option* => v-or-z,
-      !"Failed to determine placeholder box type (V or Z)"
+      let anchor    = <one(?Anchor())> option*
+          vbox-type = anchor < !"V" + !"Z"
+      in
+        ppo := SVar($[pp-one-[<vbox-type>]]);
+        ppx := CallNoArgs(SVar($[prettyprint-[x]]))
+      end
+      , !"Failed to determine placeholder box type (V or Z)"
     )
 
   template-element-to-stratego:
-    Placeholder(sort(x), <Star() + Plus()>, option*){name}
-      -> $[<[s]> [name]]
+    Placeholder(sort(x), <Star() + Plus()>, option*){name} ->
+      // $[<[s]> [name]]
+      // <pp-[h|v]-list(prettyprint-x)> name
+      App(s, Var(name))
     where with-spxverify(
-      h-or-hv-or-hz := <one(?Wrap()) <
-             (one(?Anchor()) < !"hv" + !"hz") + !"h"> option*;
-      if <getfirst(?Separator(<id>))> option* => sep then
-        <explode-string; filter(?'\n'); length; dec> sep => vs;
-        if !vs => -1 then
-          // separator without line breaks => horizontal box
-          s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x]|"[<templatelang-escape> sep]")]
-        else
-          // TODO: Support separators with mixed line breaks and literals.
-          if !vs => 0 then
-            // separator with one line break => vertical box
-            s := $[pp-v-list(prettyprint-[x])]
-          else
-            // separator with multiple line breaks => vertical box with vs option
-            s := $[pp-v-list(prettyprint-[x]|"[vs]")]
+      let wrap      = <one(?Wrap())> option*
+          anchor    = <one(?Anchor())> option*
+          hbox-type = wrap < (anchor < !"HV" + !"HZ") + !"H"
+          separator = <getfirst(?Separator(<id>))> option*
+          ppl       = !SVar($[pp-[<hbox-type>]-list])
+          ppx       = !CallNoArgs(SVar($[prettyprint-[x]]))
+      in
+        if separator => sep then
+          switch <explode-string; occurrences(?'\n'); dec> sep => vs
+            case ?-1:
+              // separator without line breaks => horizontal box
+              // s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x]|"[<templatelang-escape> sep]")]
+              sep' := <templatelang-escape; double-quote> sep;
+              s    := CallT(<ppl>, [<ppx>], [NoAnnoList(Str(sep'))])
+            case ?0:
+              // TODO: Support separators with mixed line breaks and literals.
+              // separator with one line break => vertical box
+              // s := $[pp-v-list(prettyprint-[x])]
+              s := Call(SVar("pp-V-list"), [<ppx>])
+            otherwise:
+              // separator with multiple line breaks => vertical box with vs option
+              // s := $[pp-v-list(prettyprint-[x]|"[vs]")]
+              vs' := <int-to-string; double-quote> vs;
+              s   := CallT(SVar("pp-V-list"), [<ppx>], [NoAnnoList(Str(vs'))])
           end
+        else
+          // no separator => horizontal box
+          // s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x])]
+          s := Call(<ppl>, [<ppx>])
         end
-      else
-        // no separator => horizontal box
-        s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x])]
-      end,
-      !"Failed to convert list placeholder"
+      end
+      , !"Failed to convert list placeholder"
    )
 
 rules

@@ -82,21 +82,18 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
       result   := <generate-sdf; pp-sdf-to-string> selected
 
   // Generate pretty printer (BOX-based)
-  generate-box-pp-string =
+  generate-box-pp =
     collect-om(?Desugared(_));
-    <template-sections-to-stratego-string> [TemplateSection(<id>)]
+    <template-sections-to-stratego> [TemplateSection(<id>)]
 
   generate-box-pp-abstract =
-    generate-aterm(
-      collect-om(?Desugared(_));
-      <template-sections-to-stratego> [TemplateSection(<id>)]
-    )
+    generate-aterm(generate-box-pp)
 
   generate-box-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"generated.str")> path;
-      result   := <generate-box-pp-string> selected
+      result   := <generate-box-pp; pp-stratego-string> selected
 
   generate-signature =
     collect-om(?Desugared(_));
