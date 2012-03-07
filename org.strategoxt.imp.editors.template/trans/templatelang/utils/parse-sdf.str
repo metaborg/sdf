@@ -7,6 +7,13 @@ imports
   libstratego-sdf
 
 strategies
+
+  parse-sdf-string =
+    parse-string(
+      strsglr-report-parse-error
+    | <get-sdf-parse-table>
+    )
+
   parse-sdf-file =
     parse-file(
       strsglr-perror, strsglr-report-parse-error
