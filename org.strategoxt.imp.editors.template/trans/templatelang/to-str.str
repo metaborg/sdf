@@ -13,21 +13,21 @@ imports
 
 rules
 
-  template-sections-to-stratego =
-    filter(template-section-to-stratego)
+  template-sections-to-stratego(|languagename) =
+    filter(template-section-to-stratego(|languagename))
 
-  template-section-to-stratego:
+  template-section-to-stratego(|languagename):
     TemplateSection(x) -> Strategies(x')
     where with-spxverify(
-      x' := <map(template-to-prettyprint-strategy)> x
+      x' := <mapconcat(template-to-prettyprint-strategy(|languagename))> x
       , !"Failed to convert TemplateSection to stratego pretty printer"
     )
 
-  template-section-to-stratego:
+  template-section-to-stratego(|languagename):
     SDFSection(lexical-syntax(x)) -> Strategies(x')
     where with-spxverify(
       x' := <filter(templatelang-prod-to-sort); nub;
-             map(templatelang-sort-to-strategy)> x
+             mapconcat(templatelang-sort-to-strategy(|languagename))> x
       , !"Failed to convert lexical-syntax to stratego pretty printer"
     )
 
@@ -63,21 +63,26 @@ rules
 
 strategies
 
-  templatelang-sort-to-strategy:
-    x ->
+  templatelang-sort-to-strategy(|languagename):
+    x -> [
       SDefNoArgs(
           $[prettyprint-[x]]
-          , Strategy |[ ![S(<is-string>)] ]| 
+          , Strategy |[ ![S(<is-string>)] ]|
+      ),
+      SDefNoArgs(
+          $[prettyprint-[languagename]]
+          , CallNoArgs(SVar($[prettyprint-[x]]))
       )
+    ]
 
 rules
 
-  template-to-prettyprint-strategy:
+  template-to-prettyprint-strategy(|languagename):
     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
-      <template-to-prettyprint-strategy> Desugared(TemplateProduction(sort, Template([Line(elem*)]), attrs))
+      <template-to-prettyprint-strategy(|languagename)> Desugared(TemplateProduction(sort, Template([Line(elem*)]), attrs))
 
-  template-to-prettyprint-strategy:
-    Desugared(TemplateProduction(x, Template(line*), attrs)) ->
+  template-to-prettyprint-strategy(|languagename):
+    Desugared(TemplateProduction(x, Template(line*), attrs)) -> [
     // ${prettyprint-{sort}:
     //     {input} -> [{output}]}
       //RDefNoArgs(
@@ -85,7 +90,12 @@ rules
           $[prettyprint-[x]]
         // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
           , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+      ),
+      SDefNoArgs(
+          $[prettyprint-[languagename]]
+          , CallNoArgs(SVar($[prettyprint-[x]]))
       )
+    ]
     where with-spxverify(
       (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
       output         := <map(template-line-to-stratego)> line'*;
@@ -103,7 +113,7 @@ rules
       !"Failed to pretty-print template"
     )
 
-  template-to-prettyprint-strategy =
+  template-to-prettyprint-strategy(|languagename) =
     templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
 rules
