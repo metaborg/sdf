@@ -33,16 +33,16 @@ rules
 
 rules
 
-  templatelang-prepare-pretty-printer =
-    !|[ module prettyprinter
+  templatelang-stratego-runtime-support(|module-name) =
+    !|[ module ~module-name
         imports
-          libstratego-gpp
           libstratego-lib
+          libstratego-gpp
 
         strategies
 
-          pp-one-V(pp) = !V([], <pp>)
-          pp-one-Z(pp) = !Z([], <pp>)
+          pp-one-V(pp) = pp; filter(gpp-is-real-vbox); (?[] <+ !V([], <id>))
+          pp-one-Z(pp) = pp; filter(gpp-is-real-vbox); (?[] <+ !Z([], <id>))
 
           pp-option(pp) = \None() -> []\ + ?Some(<pp>)
 
