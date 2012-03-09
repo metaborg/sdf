@@ -79,7 +79,7 @@ rules
 
   template-to-prettyprint-strategy(|languagename):
     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
-      <template-to-prettyprint-strategy(|languagename)> Desugared(TemplateProduction(sort, Template([Line(elem*)]), attrs))
+      <template-to-prettyprint-strategy(|languagename)> Desugared(TemplateProduction(sort, Template([Line([Layout("") | elem*])]), attrs))
 
   template-to-prettyprint-strategy(|languagename):
     Desugared(TemplateProduction(x, Template(line*), attrs)) -> [
@@ -153,14 +153,19 @@ rules
       // Term |[ I([SOpt(IS(), t1)], H([SOpt(HS(), "0")], [t*])) ]|
     where
       not(!indent => "");
+      not(!elem* => []);
       is := <string-length; int-to-string; double-quote> indent;
       elem'* := <template-line-elements-to-stratego> elem*
 
   template-line-to-stratego:
-    Line(elem*) -> Term |[ H([SOpt(HS(), "0")], [t*]) ]|
+    Line([Layout("") | elem*]) -> Term |[ H([SOpt(HS(), "0")], [t*]) ]|
     where
-      not(!elem* => [Layout(<not("")>) | _]);
+      not(!elem* => []);
       t* := <template-line-elements-to-stratego> elem*
+
+  template-line-to-stratego:
+    // Include empty string element to prevent BOX from removing the empty H box!
+    Line([Layout(_)]) -> Term |[ H([], [S("")]) ]|
 
   template-line-elements-to-stratego =
     // 1. Convert Layout to String.
