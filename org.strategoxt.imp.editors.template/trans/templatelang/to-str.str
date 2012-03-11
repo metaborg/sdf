@@ -39,10 +39,18 @@ rules
           libstratego-lib
           libstratego-gpp
 
+        signature
+          constructors
+            Parenthetical : Unknown -> Unknown
+
         strategies
 
-          pp-one-V(pp) = pp; filter(gpp-is-real-vbox); (?[] <+ !V([], <id>))
-          pp-one-Z(pp) = pp; filter(gpp-is-real-vbox); (?[] <+ !Z([], <id>))
+          // Unwrap Parenthetical/1 if pp fails, in case the user is using
+          // parenthesize, but grammar does not contain {bracket} production.
+          pp-one(pp) = (pp <+ ?Parenthetical(<pp>)); filter(gpp-is-real-vbox)
+
+          pp-one-V(pp) = pp-one(pp); (?[] <+ !V([], <id>))
+          pp-one-Z(pp) = pp-one(pp); (?[] <+ !Z([], <id>))
 
           pp-option(pp) = \None() -> []\ + ?Some(<pp>)
 
@@ -105,7 +113,15 @@ rules
         input := Op(cons, arg*)
       else
         if !arg* => [_] then
-          input := Var("a")
+          if <is-bracket> attrs then
+            // bracket / parentheses
+            input := Op("Parenthetical", arg*)
+          else
+            // injection
+            // FIXME: this may result in infinite loop in pretty printer
+            //        if there is a cycle of injections in the grammar!
+            input := Var("a")
+          end
         else
           input := Tuple(arg*)
         end
