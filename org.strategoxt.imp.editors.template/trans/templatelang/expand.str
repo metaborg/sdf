@@ -72,6 +72,7 @@ strategies
   /**
    * @type Placeholder ->? Placeholder
    */
+/* FIXME this is extremely slow
   is-template-placeholder:
     Placeholder(sort(x), _, option*) -> <id>
     where
@@ -79,6 +80,7 @@ strategies
     where
       <<resolve-all-symbol-definitions> (<id>, TemplateBySort());
        one(?TemplateProduction(_, _, _))> x
+*/
 
   /**
    * @type List(template-line) ->? List(template-line)
@@ -195,7 +197,7 @@ strategies  // helpers
     |}
 
   choose-one-expansion =
-       filter(not(oncetd(is-template-placeholder)));
+       //filter(not(oncetd(is-template-placeholder)));
        qsort(template-compare);
        Hd
     <+
