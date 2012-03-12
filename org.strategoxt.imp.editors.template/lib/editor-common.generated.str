@@ -129,8 +129,12 @@ strategies
   origin-location  = prim("SSL_EXT_origin_location", <id>)
   origin-line      = origin-location => (<id>, _, _, _)
   origin-column    = origin-location => (_, <id>, _, _)
+  origin-file      = prim("SSL_EXT_origin_file", <id>)
   origin-strip     = prim("SSL_EXT_origin_strip", <id>)
   origin-equal(|t) = prim("SSL_EXT_origin_equal", <id>, t)
+
+  origin-language =
+    prim("SSL_EXT_origin_language", <id>)
   
   origin-surrounding-comments =
     prim("SSL_EXT_origin_surrounding_comments", "TemplateLang", <id>)
@@ -210,6 +214,7 @@ signature constructors
   COMPLETION : String -> Term
   NOCONTEXT  : Term   -> Term
   MARKER     : Term
+  True       : Term
 
   // Below are copies of the signatures of the terms used in example
   // trans/templatelang.str file. These definitions should also be automatically 
@@ -234,6 +239,10 @@ strategies
   queue-analysis = 
        (is-list; list-loop(queue-analysis))
     <+ prim("SSL_EXT_queue_analysis")
+    
+  // Gets the number of background analyses for currenct project and language.
+  // Current term: ignored
+  analysis-count = prim("SSL_EXT_queue_analysis_count")
 
   // Set the total number of work units to complete. Can be called multiple times. 
   // Current term: number of work units (int).
