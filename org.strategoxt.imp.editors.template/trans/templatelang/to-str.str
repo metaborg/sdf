@@ -77,7 +77,7 @@ rules
           pp-V-list(pp)    = ?[] <+ !V([], <map(pp-one-V(pp))>)
           pp-V-list(pp|vs) = ?[] <+ !V([SOpt(VS(), vs)], <map(pp-one-V(pp))>)
 
-          pp-indent(|is) = ?[] <+ !I([SOpt(IS(), is)], H([SOpt(HS(), "0")], <id>))
+          pp-indent(|is) = filter(gpp-is-real-vbox); (?[] <+ !I([SOpt(IS(), is)], H([SOpt(HS(), "0")], <id>)))
 
           pp-H-list(pp)     = ?[] <+ !H([], <map(pp-one-Z(pp))>)
           pp-H-list(pp|sep) = ?[] <+ !H([SOpt(HS(), "0")], <map(pp-one-Z(pp)); separate-by(|S(sep))>)
