@@ -3,8 +3,11 @@ module templatelang-parse
 language TemplateLang
 start symbol Template
 
-test empty [[ <> ]]
+test empty (1) [[ <> ]]
 parse to Template([Line([])])
+
+test empty (2) [[ <<>> ]]
+parse to Template([Line([Escape("<>")])])
 
 test parse common escape chars [[ <<\ \'\"\t\r\n>> ]]
 parse to Template([Line([Escape("<\\ \\'\\\"\\t\\r\\n>")])])
@@ -40,6 +43,12 @@ parse to Template([Line([Placeholder(_, _, Options([Wrap()]))])])
 
 test parse text option [[ <<X; text="x y">> ]]
 parse to Template([Line([Placeholder(_, _, Options([Text("\"x y\"")]))])])
+
+test parse single backslash (1) [[ < \ <Exp> \ > ]]
+parse succeeds
+
+test parse single backslash (2) [[ <\r> ]]
+parse succeeds
 
 test ambiguity (1) [[ <\\<>> ]]
 parse succeeds

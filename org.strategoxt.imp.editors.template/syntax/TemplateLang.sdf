@@ -101,7 +101,7 @@ exports
     <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-  	[\r][\n] -> "\n"
+    [\r][\n] -> "\n"
     [\ \t]+  -> TemplateLayout
 
     (~[\\\<\>\ \t\r\n] | Backslash1)+ -> TemplateString1
@@ -127,7 +127,7 @@ exports
     Backslash2 -/- [\[\]\\]
 
   lexical syntax
-    %% combine sequences of escaped chars 
+    %% combine sequences of escaped chars
     EscapedChar1+ -> TemplateEscape1
     EscapedChar2+ -> TemplateEscape2
 
@@ -139,13 +139,17 @@ exports
     "\\]"  -> EscapedChar2
     "\\\\" -> EscapedChar2
 
-    "<" EscapedChar* ">"    -> EscapedChar1
+    "<" (EscapedBackslashChar1 | EscapedChar)* ">" -> EscapedChar1
     "<\\\\>" [\ \t\r]* [\n] -> EscapedChar1
-    "[" EscapedChar* "]"    -> EscapedChar2
+    "[" (EscapedBackslashChar2 | EscapedChar)* "]" -> EscapedChar2
     "[\\\\]" [\ \t\r]* [\n] -> EscapedChar2
 
-    %% double-backslash isn't allowed in <<>> / [[]] templates
+    %% double-backslash isn't allowed as sole member of escape placeholder
     %% (would clash with <\\> / [\\] line continuation construct)
+    %% so we add follow restrictions to the following symbols:
+    "\\\\" -> EscapedBackslashChar1
+    "\\\\" -> EscapedBackslashChar2
+
     ("\\\\" | EscapedChar)+ -> TemplateEscapeQ
 
     %% escapes allowed in a placeholder-like construct
@@ -169,4 +173,6 @@ exports
     TemplateEscape2 -/- [\\]
     TemplateEscape2 -/- [\[].[\\\]]
     TemplateEscapeQ -/- [\\]
+    EscapedBackslashChar1 -/- [\>]
+    EscapedBackslashChar2 -/- [\]]
     EscapedUnicodeChar -/- [0-9A-Fa-f]
