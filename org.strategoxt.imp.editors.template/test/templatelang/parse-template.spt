@@ -40,3 +40,6 @@ parse to Template([Line([Placeholder(_, _, Options([Wrap()]))])])
 
 test parse text option [[ <<X; text="x y">> ]]
 parse to Template([Line([Placeholder(_, _, Options([Text("\"x y\"")]))])])
+
+test ambiguity (1) [[ <\\<>> ]]
+parse succeeds

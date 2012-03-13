@@ -165,8 +165,8 @@ exports
 
   lexical restrictions
     TemplateEscape1 -/- [\\]
-    TemplateEscape1 -/- [\<].[\\]
+    TemplateEscape1 -/- [\<].[\\\>]
     TemplateEscape2 -/- [\\]
-    TemplateEscape2 -/- [\[].[\\]
+    TemplateEscape2 -/- [\[].[\\\]]
     TemplateEscapeQ -/- [\\]
     EscapedUnicodeChar -/- [0-9A-Fa-f]
