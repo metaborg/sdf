@@ -27,6 +27,8 @@ exports
 
     "keyword" "-/-" Lookaheads[[SDF]] -> TemplateOption {cons("KeywordFollowRestriction")}
 
+    "tokenize" ":" STRING -> TemplateOption {cons("Tokenize")}
+
   context-free syntax
     %% references to productions using sort.cons notation in priority specification
     SortCons                                   -> Group[[SDF]]  {cons("simple-ref-group")}

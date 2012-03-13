@@ -214,7 +214,7 @@ strategies
    * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
    */
   string-to-sdf =
-    // FIXME: Use identifier lexical (or keyword follow restriction?) defined by the language.
-    string-edge-tokenize(is-alphanum + '_');
+    where( chars := <templatelang-get-option> Tokenize() );
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<templatelang-escape; double-quote>))

@@ -17,6 +17,7 @@ signature
   constructors
     Newlines                 : TemplateOption
     KeywordFollowRestriction : TemplateOption
+    Tokenize                 : TemplateOption
 
 strategies
 
@@ -45,11 +46,14 @@ strategies
 
   //resolve templatelang options
   templatelang-get-option =
-    ? key
-    ; with-spxverify(
-        result := <resolve-symbol-definition> (key, TemplateOption())
-        , !"Failed to get template option"
-      )
+    if not(TemplateLangCachedOption => result) then
+      ? key
+      ; with-spxverify(
+          result := <resolve-symbol-definition> (key, TemplateOption())
+          , !"Failed to get template option"
+        )
+      ; rules( TemplateLangCachedOption : key -> result )
+    end
     ; !result
 
   templatelang-index-option =
@@ -64,6 +68,7 @@ strategies
       if not(<resolve-symbol-definition> (Newlines(), TemplateOption())) then
           <templatelang-index-option> (Newlines(), None())
         ; <templatelang-index-option> (KeywordFollowRestriction(), None())
+        ; <templatelang-index-option> (Tokenize(), ['(', ')'])
       end
     )
 
@@ -86,4 +91,12 @@ strategies
     where
       with-spxverify(
         <templatelang-index-option> (KeywordFollowRestriction(), t)
+      )
+
+  templatelang-declare-option:
+    Tokenize(t) -> <id>
+    where
+      with-spxverify(
+        t' := <explode-string; un-double-quote-chars> t;
+        <templatelang-index-option> (Tokenize(), t')
       )

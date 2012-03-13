@@ -12,3 +12,14 @@ test string-edge-tokenize (2)
 test string-edge-tokenize (3)
   <string-edge-tokenize(is-alpha)> ""
     => []
+
+test string-edge-tokenize (4)
+  chars := <explode-string> "()";
+  <map(string-edge-tokenize(where({x: ?x; <one(?x)> chars})))>
+  ["abc()", "$foo", "@doc"]
+    => [["abc", "()"], ["$foo"], ["@doc"]]
+
+test string-to-sdf
+  templatelang-init-options;
+  <string-to-sdf> "abc(x)"
+    => [lit(_), lit(_), lit("\"x\""), lit(_)]
