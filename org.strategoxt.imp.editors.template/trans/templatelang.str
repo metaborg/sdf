@@ -67,7 +67,7 @@ rules
   // Expanded templates (input to completion template generator)
   generate-expanded =
     generate-aterm(
-      collect-om(?Desugared(_));
+      collect-om(?Desugared(<id>));
       map(expand-multi-line-template-production)
     )
 

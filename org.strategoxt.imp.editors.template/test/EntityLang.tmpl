@@ -34,6 +34,30 @@ templates
 
   Type.Type = <<ID>>
 
+  Type.IntegerType = "Int"    {prefer}
+  Type.StringType  = "String" {prefer}
+
+  Definition.Expression = <
+    expression <ID> {
+      <Expression>
+    }
+  >
+
+  Expression.Plus  = <<Expression> + <Expression>> {left}
+  Expression.Minus = <<Expression> - <Expression>> {left}
+  Expression.Times = <<Expression> * <Expression>> {left}
+  Expression.Over  = <<Expression> / <Expression>> {left}
+  Expression.Power = <<Expression>^<Expression>> {right}
+  Expression.Value = <<INT>>
+  Expression.Var   = <<ID>>
+  Expression = <(<Expression>)> {bracket}
+
+// context-free priorities
+//
+//   Expression.Power >
+//   {left: Expression.Times Expression.Over } >
+//   {left: Expression.Plus  Expression.Minus}
+
 lexical syntax
 
   [a-zA-Z][a-zA-Z0-9]* -> ID

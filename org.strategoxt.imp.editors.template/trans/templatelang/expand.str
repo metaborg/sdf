@@ -70,37 +70,31 @@ strategies
       line'* := <listbu(expand-template-line)> line*
 
   /**
-   * @type Placeholder ->? Placeholder
-   */
-/* FIXME this is extremely slow
-  is-template-placeholder:
-    Placeholder(sort(x), _, option*) -> <id>
-    where
-      not(<one(?Text(_))> option*)
-    where
-      <<resolve-all-symbol-definitions> (<id>, TemplateBySort());
-       one(?TemplateProduction(_, _, _))> x
-*/
-
-  /**
    * @type List(template-line) ->? List(template-line)
    *
    * expand-template-line covers exactly all valid input terms except:
    *  Line([indent @ Layout(_), Placeholder(sort(x), <None() + Plus()>, _)]) where <Expanded> x
    */
   expand-template-line:
-    [t @ Line([indent @ Layout(_), Placeholder(sort(x), <None() + Plus()>, option*)]) | tail] -> [line* | tail]
+    [t @ Line([indent @ Layout(_), Placeholder(sort(x), m @ <None() + Plus()>, option*)]) | tail] -> [line'* | tail]
     where
       <not(Expanded)> x;
-      <not(one(?Hide()))> option*
+      <not(one(?Hide() + ?Text(_)))> option*
     where
-      line* := <get-template-lines(|indent) <+ ![t]> x
+      line* := <get-template-lines(|indent) <+ ![t]> x;
+      if ?[Line([indent, p @ Placeholder(_, _, _)])] then
+        text := <template-element-to-string> p;
+        line'* := [Line([indent, Placeholder(sort(x), m, [Text(text) | option*])])]
+      else
+        line'* := line*
+      end
 
   // Do not touch already expanded placeholders.
   expand-template-line:
-    [t @ Line([Layout(_), Placeholder(sort(x), <None() + Plus()>, _)]) | tail] -> [t | tail]
+    [t @ Line([Layout(_), Placeholder(sort(x), <None() + Plus()>, option*)]) | tail] -> [t | tail]
     where
       <Expanded> x
+      + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-line:
@@ -136,16 +130,17 @@ strategies
       [Placeholder(sort(x), m, [Text(text) | option*]) | tail]
     where
       <not(Expanded)> x;
-      <not(one(?Hide()))> option*
+      <not(one(?Hide() + ?Text(_)))> option*
     where
       elem* := <get-template-elements <+ ![t]> x;
       text := <map(template-element-to-string); concat-strings> elem*
 
   // Do not touch already expanded placeholders.
   expand-template-element:
-    [t @ Placeholder(sort(x), <None() + Plus()>, _) | tail] -> [t | tail]
+    [t @ Placeholder(sort(x), <None() + Plus()>, option*) | tail] -> [t | tail]
     where
       <Expanded> x
+      + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-element:
@@ -197,7 +192,6 @@ strategies  // helpers
     |}
 
   choose-one-expansion =
-       //filter(not(oncetd(is-template-placeholder)));
        qsort(template-compare);
        Hd
     <+
@@ -220,6 +214,8 @@ strategies  // helpers
     ?String(<string-length>)
     <+ ?Layout(<string-length>)
     <+ ?Text(<string-length>)
+       // Penalty for unexpanded placeholders
+    <+ \Placeholder(sort(x), _, <not(one(?Text(_)))>) -> <string-length> x\
     <+ crush(!0, addi, template-character-count)
 
   // lower than (does not exist in library)
