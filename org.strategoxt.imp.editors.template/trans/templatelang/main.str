@@ -1,5 +1,0 @@
-module templatelang/main
-
-imports
-  templatelang/utils/-
-  templatelang/-
