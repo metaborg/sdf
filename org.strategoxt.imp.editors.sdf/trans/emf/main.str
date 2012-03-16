@@ -1,0 +1,33 @@
+module emf/main
+
+imports
+	trans/emf/sdf-to-ecore
+	trans/emf/ecore-to-xml
+	trans/emf/pp-xml
+	trans/emf/map
+
+rules
+	spx-to-xml-stage1 = map-all; sdf-to-ecore
+	spx-to-xml-stage2 = map-all; sdf-to-ecore; ecore-to-xml
+	spx-to-xml-stage3 = map-all; sdf-to-ecore; ecore-to-xml; pp-xml
+
+
+      
+	generate-ecore-stage1:
+		(selected, position, ast, path, project-path) -> (filename, result)
+		with
+	      filename := <guarantee-extension(|"ecore.aterm")> path;
+	      result   := <spx-to-xml-stage1> ast
+
+	generate-ecore-stage2:
+	    (selected, position, ast, path, project-path) -> (filename, result)
+	    with
+	      filename := <guarantee-extension(|"ecore.xml.aterm")> path;
+	      result   := <spx-to-xml-stage2> ast
+ 
+	generate-ecore-stage3:
+	    (selected, position, ast, path, project-path) -> (filename, result)
+	    with
+	      filename := <guarantee-extension(|"ecore")> path;
+	      result   := <spx-to-xml-stage3> ast
+	      

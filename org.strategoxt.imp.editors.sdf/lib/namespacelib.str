@@ -1,0 +1,234 @@
+module lib/namespacelib
+
+imports
+	libstratego-gpp
+	libstratego-aterm
+
+rules
+
+	pp-aterm = pp-aterm-box ; box2text-string(|100)
+
+rules // scoped renaming
+
+	/**
+	* executes the renaming strategy s in a new scope
+	*
+	* declarations inside the new scope will hide existing declarations outside the new scope
+	* multiple declarations with the same name inside the new scope will be renamed to the same name
+	*
+	* @param renaming strategy s: a -> b
+	* @type a -> b
+	*/
+	new-scope(s) :
+		x -> y
+		where
+			<debug-namespace> $[Entering scope [<pp-aterm> x].]
+		where
+			<newname> x => scope ;
+			{| Renamed, RenamedInScope, CurrentScope:
+				rules (CurrentScope: _ -> scope) ;
+				<s> x => y
+			|}
+		where
+			<debug-namespace> $[Leaving scope [<pp-aterm> x].]
+
+	/**
+	* annotates the current term with a fresh name
+	* can distinguish different namespaces
+	* remembers the renaming by storing two dynamic rules
+	*
+	* multiple calls on the same term inside the same scope will give identical results
+	* calls inside a new scope will hide the results of calls to the same term from outer scopes
+	*
+	* @param namespace
+	* @type a -> a
+	*/
+	rename-declaration(|namespace) :
+		x -> x'
+		where
+			CurrentScope => scope ;
+			(
+				<RenamedInScope> (namespace, scope, x) => x' <+
+				x' := x{<newname> x}
+				//x' := <newname> x
+			)
+		where rules(
+			RenamedInScope: (namespace, scope, x) -> x'
+			Renamed: (namespace, x) -> x'
+		)
+		where
+			<debug-namespace> $[Renamed declaration [<pp-aterm> x] to [<pp-aterm> x'] in namespace [<pp-aterm> namespace].]
+
+	/**
+	* annotates the current term with a new name
+	* succeeds only if rename-declaration was called before on the same term
+	* will use the same name as rename-declaration (by calling the dynamic rule stored by rename-declaration)
+	*
+	* @param namespace
+	* @type a -> b
+	*/
+	rename-reference(|namespace) :
+		x -> x'
+		where
+			<Renamed> (namespace, x) => x'
+		where
+			<debug-namespace> $[Renamed reference [<pp-aterm> x] to [<pp-aterm> x'] in namespace [<pp-aterm> namespace].]
+
+rules // store declarations and references
+
+	new-analysis(s) = {| Declared, Referred: s |}
+
+	/**
+	* stores a mapping from a name to a declaration
+	* can distinguish different namespaces
+	* remembers the mapping by storing a dynamic rule
+	*
+	* @param namespace
+	* @type (a, b) -> b
+	*/
+	store-declaration(|namespace) :
+		(x, d) -> d
+		where rules(
+			Declared:+ (namespace, x) -> d
+		)
+		where
+			<debug-namespace> $[Stored declaration [<pp-aterm> x] -> [<pp-aterm> d] in namespace [<pp-aterm> namespace].]
+
+	/**
+	* stores the usage of a reference
+	* can distinguish different namespaces
+	* remembers the reference by storing a dynamic rule
+	*
+	* @param namespace
+	* @type a -> a
+	*/
+	store-reference(|namespace) :
+		x -> x
+		where rules (
+			Referred:+ (namespace, x) -> x
+		)
+		where
+			<debug-namespace> $[Stored reference [<pp-aterm> x] in namespace [<pp-aterm> namespace].]
+
+strategies // access declarations
+
+	/**
+	* maps a name to its declarations
+	* can distinguish different namespaces
+	* remembers the mapping by calling a dynamic rule
+	*
+	* @param namespace
+	*
+	* @type a -> List(b)
+	*/
+	get-declarations(|namespace) = !(namespace, <id>) ; bagof-Declared
+
+	/**
+	* succeeds if the current term can be mapped to a declaration
+	* can distinguish different namespaces
+	*
+	* @param namespace
+	*
+	* @type a -> a
+	*/
+	is-declared(|namespace) = get-declarations(|namespace) ; ?[_|_]
+
+	/**
+	* maps a name to its only declaration
+	* can distinguish different namespaces
+	*
+	* @param namespace
+	*/
+	get-unique-declaration(|namespace) = get-declarations(|namespace) ; ?[<id>]
+
+	/**
+	* maps a name to its first declaration
+	* can distinguish different namespaces
+	*
+	* @param namespace
+	*/
+	get-declaration(|namespace) = project-declaration(id|namespace)
+
+	/**
+	* maps a name to its first declaration for which strategy s holds
+	* can distinguish different namespaces
+	*
+	* @param s: b -> c
+	* @param namespace
+	*
+	* @type a -> b
+	*/
+	get-declaration(s|namespace) = project-declaration(where(s)|namespace)
+
+	/**
+	* maps a name to its declarations for which strategy s holds
+	* can distinguish different namespaces
+	*
+	* @param s: b -> c
+	* @param namespace
+	*
+	* @type a -> List(b)
+	*/
+	get-declarations(s|namespace) = project-declarations(where(s)|namespace)
+
+strategies // project declarations
+
+	/**
+	* maps a name to the first projection of its declarations
+	* can distinguish different namespaces
+	*
+	* @param s: b -> c
+	* @param namespace
+	*
+	* @type a -> c
+	*/
+	project-declaration(s|namespace) = get-declarations(|namespace) ; fetch-elem(s)
+
+	/**
+	* maps a name to the projections of its declarations
+	* can distinguish different namespaces
+	*
+	* @param s: b -> c
+	* @param namespace
+	*
+	* @type a -> List(c)
+	*/
+	project-declarations(s|namespace) = get-declarations(|namespace) ; filter(s)
+
+strategies // access all declarations
+
+	get-all-declarations(|namespace) = all-keys-Declared ; filter(?(namespace, _)); mapconcat(bagof-Declared)
+
+	get-all-declarations(s|namespace) = get-all-declarations(|namespace) ; filter(where(s))
+
+	project-all-declarations(s|namespace) = get-all-declarations(|namespace) ; filter(s)
+
+strategies // access references
+
+	get-references(|namespace) = !(namespace, <id>) ; bagof-Referred
+
+	is-referred(|namespace) = get-references(|namespace) ; ?[_|_]
+
+strategies
+
+	get-proposal-candidates(|namespace) = all-keys-Renamed ; filter(?(namespace, _) ; Renamed)
+
+	store-proposal-candidates(|namespace) = get-proposal-candidates(|namespace) ; store-proposals
+
+	store-proposals = ?x ; where (rules ( Propose : () -> x ))
+
+	get-proposals = ( <Propose> () ; map(rm-annotations) ) <+ ![]
+
+	get-proposals(s|namespace) =
+		(
+			<Propose> () ;
+			filter(where( get-declaration(s|namespace) )) ;
+			map(rm-annotations)
+		) <+ ![]
+
+strategies
+
+	enable-namespace-debugging  = rules(DebugNS: x -> x)
+	disable-namespace-debugging = rules(DebugNS:- _ )
+
+	debug-namespace = not(DebugNS) <+ debug

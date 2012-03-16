@@ -1,0 +1,22 @@
+module emf/projections
+
+imports
+	include/SDF
+
+rules
+	
+	get-constr:
+		prod(lhs, sort(x), attrs(attributes)) -> constr
+		where
+			constructor := <getfirst(?Constructor(consName))> attributes;
+			constr := <un-double-quote> consName
+			
+	get-sort:
+		prod(lhs, sort(x), attrs(attributes)) -> x
+		
+	get-sort:
+		sort(s) -> s
+		
+	get-label: quoted(label) -> <un-double-quote> label
+	
+	get-label: unquoted(label) -> label

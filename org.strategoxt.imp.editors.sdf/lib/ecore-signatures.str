@@ -1,0 +1,50 @@
+module lib/ecore-signatures
+
+signature
+  constructors
+    ESuperType : Type -> ESuperType
+    LowerBound : INT -> LowerBound
+    UpperBound : INT -> UpperBound
+    EInt       : Type
+    EString    : Type
+               : ID -> Type
+    Type       : Type -> Type
+    Name       : ID -> Name
+    Id         : ID -> Id
+               : LowerBound -> EReferenceProperty
+               : UpperBound -> EReferenceProperty
+               : Type -> EReferenceProperty
+               : Name -> EReferenceProperty
+               : Id -> EReferenceProperty
+               : LowerBound -> EAttributeProperty
+               : UpperBound -> EAttributeProperty
+               : Type -> EAttributeProperty
+               : Name -> EAttributeProperty
+               : Id -> EAttributeProperty
+               : ESuperType -> EClassProperty
+               : Name -> EClassProperty
+               : Id -> EClassProperty
+               : Name -> EPackageProperty
+               : Id -> EPackageProperty
+               : EReference -> EClassChild
+               : EAttribute -> EClassChild
+               : EClass -> EPackageChild
+    EReference : List(EReferenceProperty) -> EReference
+    EAttribute : List(EAttributeProperty) -> EAttribute
+    EClass     : List(EClassProperty) * List(EClassChild) -> EClass
+    EPackage   : List(EPackageProperty) * List(EPackageChild) -> Start
+               : String -> INT
+               : String -> ID
+
+
+signature
+  constructors
+    Some : a -> Option(a)
+    None : Option(a)
+
+
+signature
+  constructors
+    Cons : a * List(a) -> List(a)
+    Nil  : List(a)
+    Conc : List(a) * List(a) -> List(a)

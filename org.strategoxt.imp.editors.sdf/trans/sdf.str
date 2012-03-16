@@ -10,6 +10,7 @@ imports
   to-name-analysis
   lib/editor-common.generated
   include/SDF
+  trans/emf/main
 
 rules
 

@@ -1,0 +1,8 @@
+module emf/pp-xml
+
+	imports
+		lib/xml/xml-doc2abox
+		libstratego-gpp
+	
+	strategies
+		pp-xml = xml-doc2abox; box2text-string(|100)

@@ -1,0 +1,16 @@
+module emf/map
+
+imports
+	include/SDF
+	trans/emf/namespaces
+	lib/namespacelib
+
+strategies
+	map-all = alltd(map)
+	
+rules
+		
+	map:
+		p@prod(lhs, sort(x), attrs(attributes)) -> p
+		where 
+			<store-declaration(|Production())> (x, p)

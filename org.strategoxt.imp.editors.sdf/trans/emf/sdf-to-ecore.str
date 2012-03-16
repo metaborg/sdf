@@ -1,0 +1,162 @@
+module emf/sdf-to-ecore
+	
+imports
+	include/SDF
+	lib/ecore-signatures
+	lib/namespacelib
+	emf/namespaces
+	emf/projections
+	
+strategies
+	sdf-to-ecore = topdown(try(to-ecore)); create-superclasses
+
+rules
+	to-ecore:
+		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, children)
+	where
+		properties := [Id(moduleName), Name(moduleName)];
+		children := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*
+
+	to-ecore:
+		prod(lhs, sort, attrs(attributes)) -> EClass(properties, children)
+		where 
+			constructor := <getfirst(?Constructor(_))> attributes;
+			classname := <to-unique-classname> (sort, constructor);
+			name := Name(classname);
+			identifier := Id(classname);
+			properties := <try(add-super-type(|sort))> [identifier, name];
+			children := <remove-all(?lit(_))> lhs	
+			
+	to-ecore:
+		sort(primitiveType) -> EAttribute(properties)
+		where 
+			name := Name(primitiveType);
+			identifier := Id(<new>);
+			type := Type(<type-to-ecore> primitiveType);
+			properties := [identifier, name, type]
+			
+	to-ecore:
+		label(l, sort(primitiveType)) -> EAttribute(properties)
+		where 
+			label := <get-label> l;
+			name := Name(label);
+			identifier := Id(<new>);
+			type := Type(<type-to-ecore> primitiveType);
+			properties := [identifier, name, type]
+
+	to-ecore:
+		label(l, x) -> EReference(properties')
+		where 
+			properties := <get-properties> x;
+			name := <get-label> l;
+			properties' := <map((Name(_) -> Name(name)) <+ id)> properties
+		
+	to-ecore:
+		x -> EReference(properties)
+		where
+			properties := <get-properties> x
+
+	type-to-ecore:
+		"ID" -> EString()
+		
+	type-to-ecore:
+		"INT" -> EInt()
+
+
+rules
+	
+	add-super-type(|sort):
+		properties -> properties'
+		where
+			s := <get-sort> sort;
+			not ( <get-unique-declaration(|Production())> s );
+			properties' := <conc> (properties, [ESuperType(s)])
+			
+	to-unique-classname:
+		(sort(s), Constructor(c)) -> constructor
+		where
+			constructor := <un-double-quote> c
+		where
+			<get-unique-declaration(|Production())> s
+			+ not ( <equal> (s, constructor) )
+			
+	to-unique-classname:
+		(sort(s), Constructor(c)) -> <concat-strings> [constructor, "_", <new>]
+		where
+			constructor := <un-double-quote> c;
+			not ( <get-unique-declaration(|Production())> s );
+			<equal> (s, constructor)
+
+	get-properties:
+		sort(s) -> [Id(<new> name), Name(name), Type(type), LowerBound(1), UpperBound(1)]
+		where
+			name := <first-char-to-lowercase> s;
+			type := <get-type> s
+	get-properties:
+		iter(sort(s)) -> [Id(<new> name), Name(name), Type(type), LowerBound(0), UpperBound(1)]
+		where
+			name := <first-char-to-lowercase> s;
+			type := <get-type> s
+	get-properties:
+		iter-star(sort(s)) -> [Id(<new> name), Name(name), Type(type), LowerBound(0), UpperBound(-1)]
+		where
+			name := <make-plural> <first-char-to-lowercase> s;
+			type := <get-type> s
+			
+	get-type:
+		s -> type
+		where 
+			<get-unique-declaration(|Production())> s;
+			type := <project-declaration(get-constr|Production())> s		
+
+	get-type:
+		s -> s
+		where 
+			not ( <get-unique-declaration(|Production())> s )
+
+
+rules
+
+	first-char-to-lowercase:
+		string -> string'	
+		where
+			(head, tail) := <split-Cons> <explode-string> string;
+			head' := <to-lower> head;
+			string' := <implode-string> <conc> ([head'], tail)
+	
+	make-plural:
+		string -> string'
+		where
+			not ( <string-ends-with(|"y")> string );
+			string' := <conc-strings> (string, "s")
+			
+	make-plural:
+		string -> string'
+		where
+			<string-ends-with(|"y")> string;
+			init := <implode-string> <init> <explode-string> string;
+			string' := <conc-strings> (init, "ies")
+
+	add-dot:
+		string -> <conc-strings> (string, ".")
+
+
+
+rules
+
+	create-superclasses:
+		EPackage(properties, classes) -> EPackage(properties, classes')
+		where
+			non-unique-sorts := <make-set> <remove-all(get-unique-declaration(|Production()))> <project-all-declarations(get-sort|Production())>;
+			super-classes := <map(create-superclass)> non-unique-sorts;
+			classes' := <conc> (classes, super-classes)
+			
+	create-superclass:
+		sort ->  EClass(properties, children)
+		where
+			identifier := Id(sort);
+			name := Name(sort);
+			properties := [identifier, name];
+			children := []			
+			
+			

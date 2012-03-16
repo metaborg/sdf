@@ -1,0 +1,5 @@
+module emf/namespaces
+
+signature constructors
+
+	Production		: NameSpace

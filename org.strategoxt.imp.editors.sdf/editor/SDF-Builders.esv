@@ -29,3 +29,9 @@ builders
 
   on save :
     generate-name-analysis
+    
+  // Graphical editor:
+  builder : "Show Ecore term" = generate-ecore-stage1 (openeditor) (realtime) (meta) (source)
+  builder : "Show Ecore term (XML)" = generate-ecore-stage2 (openeditor) (realtime) (meta) (source)
+  builder : "Generate Ecore" = generate-ecore-stage3 (openeditor) (realtime) (meta) (source)  
+    

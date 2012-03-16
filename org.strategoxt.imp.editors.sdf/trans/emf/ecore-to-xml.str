@@ -1,0 +1,85 @@
+module ecore-to-xml
+	
+imports
+	lib/ecore-signatures
+	lib/xml/xml-doc
+	
+overlays 
+	
+	XMLAttribute(name, literal) = 
+		Attribute(QName(None(), name), DoubleQuoted([Literal(literal)]))
+	XMLAttribute(prefix, name, literal) = 
+		Attribute(QName(Some(Prefix(prefix)), name), DoubleQuoted([Literal(literal)]))
+		
+strategies
+	
+	ecore-to-xml = topdown(try(to-xml))
+		
+rules
+	
+	to-xml:
+		EPackage(properties, children) -> Document(prologue, element, epilogue)
+		where 
+			xMLDecl := XMLDecl(VersionDecl(Version("1.0")), Some(EncodingDecl(Encoding("UTF-8"))), None());
+			prologue := Prologue(Some(xMLDecl), [], None());
+	
+			qName := QName(Some(Prefix("ecore")), "EPackage");
+			fixedAttributes := [
+				XMLAttribute("xmi", "version", "2.0"),
+				XMLAttribute("xmlns", "xmi", "http://www.omg.org/XMI"),
+				XMLAttribute("xmlns", "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
+				XMLAttribute("xmlns", "ecore", "http://www.eclipse.org/emf/2002/Ecore"),
+				XMLAttribute("nsURI", "uri")		
+			];
+			attributes := <conc> (fixedAttributes, properties);
+			element := Element(qName, attributes, children, None()); 
+					
+			epilogue := Epilogue([])		
+		
+	to-xml:
+		EClass(properties, children) ->  Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eClassifiers");
+			fixedAttributes := [
+				XMLAttribute("xsi", "type", "ecore:EClass")
+			];
+			attributes := <conc> (fixedAttributes, properties)
+	
+	to-xml:
+		EAttribute(properties) -> Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eStructuralFeatures");
+			fixedAttributes := [
+				XMLAttribute("xsi", "type", "ecore:EAttribute")
+			];
+			attributes := <conc> (fixedAttributes, properties);
+			children := []
+	
+	to-xml:
+		EReference(properties) -> Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eStructuralFeatures");
+			fixedAttributes := [
+				XMLAttribute("xsi", "type", "ecore:EReference"),
+				XMLAttribute("containment", "true")
+			];
+			attributes := <conc> (fixedAttributes, properties);
+			children := []
+
+	to-xml:
+		EString() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+
+	to-xml:
+		EInt() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+			
+	
+	// Properties:
+
+	to-xml:	Name(name) 			-> XMLAttribute("name", name)
+	to-xml: Id(identifier) 		-> XMLAttribute("xmi", "id", identifier)	
+	to-xml: Type(type)			-> XMLAttribute("eType", type)		
+	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
+	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
+	to-xml:	UpperBound(value) 	->  XMLAttribute("upperBound", <int-to-string> value)
+	
+			
