@@ -14,7 +14,7 @@ rules
 	to-ecore:
 		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, children)
 	where
-		properties := [Id(moduleName), Name(moduleName)];
+		properties := [Name(moduleName)];
 		children := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*
 
 	to-ecore:
@@ -23,26 +23,23 @@ rules
 			constructor := <getfirst(?Constructor(_))> attributes;
 			classname := <to-unique-classname> (sort, constructor);
 			name := Name(classname);
-			identifier := Id(classname);
-			properties := <try(add-super-type(|sort))> [identifier, name];
+			properties := <try(add-super-type(|sort))> [name];
 			children := <remove-all(?lit(_))> lhs	
 			
 	to-ecore:
 		sort(primitiveType) -> EAttribute(properties)
 		where 
 			name := Name(primitiveType);
-			identifier := Id(<new>);
 			type := Type(<type-to-ecore> primitiveType);
-			properties := [identifier, name, type]
+			properties := [name, type]
 			
 	to-ecore:
 		label(l, sort(primitiveType)) -> EAttribute(properties)
 		where 
 			label := <get-label> l;
 			name := Name(label);
-			identifier := Id(<new>);
 			type := Type(<type-to-ecore> primitiveType);
-			properties := [identifier, name, type]
+			properties := [name, type]
 
 	to-ecore:
 		label(l, x) -> EReference(properties')
@@ -88,31 +85,33 @@ rules
 			<equal> (s, constructor)
 
 	get-properties:
-		sort(s) -> [Id(<new> name), Name(name), Type(type), LowerBound(1), UpperBound(1)]
+		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1)]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
 	get-properties:
-		iter(sort(s)) -> [Id(<new> name), Name(name), Type(type), LowerBound(0), UpperBound(1)]
+		iter(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(1)]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
 	get-properties:
-		iter-star(sort(s)) -> [Id(<new> name), Name(name), Type(type), LowerBound(0), UpperBound(-1)]
+		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1)]
 		where
 			name := <make-plural> <first-char-to-lowercase> s;
 			type := <get-type> s
 			
 	get-type:
-		s -> type
+		s -> type'
 		where 
 			<get-unique-declaration(|Production())> s;
-			type := <project-declaration(get-constr|Production())> s		
+			type := <project-declaration(get-constr|Production())> s;
+			type' := <conc-strings> ("#//", type)	
 
 	get-type:
-		s -> s
+		s -> type
 		where 
-			not ( <get-unique-declaration(|Production())> s )
+			not ( <get-unique-declaration(|Production())> s );
+			type := <conc-strings> ("#//", s)
 
 
 rules
@@ -154,9 +153,8 @@ rules
 	create-superclass:
 		sort ->  EClass(properties, children)
 		where
-			identifier := Id(sort);
 			name := Name(sort);
-			properties := [identifier, name];
+			properties := [name];
 			children := []			
 			
 			

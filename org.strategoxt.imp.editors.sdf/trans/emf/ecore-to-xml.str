@@ -76,7 +76,6 @@ rules
 	// Properties:
 
 	to-xml:	Name(name) 			-> XMLAttribute("name", name)
-	to-xml: Id(identifier) 		-> XMLAttribute("xmi", "id", identifier)	
 	to-xml: Type(type)			-> XMLAttribute("eType", type)		
 	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
 	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
