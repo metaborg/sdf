@@ -24,7 +24,7 @@ rules
 			classname := <to-unique-classname> (sort, constructor);
 			name := Name(classname);
 			properties := <try(add-super-type(|sort))> [name];
-			children := <remove-all(?lit(_))> lhs	
+			children := <remove-all(?lit(_) + ?ci-lit(_))> lhs	
 			
 	to-ecore:
 		sort(primitiveType) -> EAttribute(properties)
@@ -32,26 +32,32 @@ rules
 			name := Name(primitiveType);
 			type := Type(<type-to-ecore> primitiveType);
 			properties := [name, type]
-			
+	
 	to-ecore:
-		label(l, sort(primitiveType)) -> EAttribute(properties)
+		namespacedef(_, sort(primitiveType)) -> EAttribute(properties)
 		where 
-			label := <get-label> l;
-			name := Name(label);
+			name := Name("name");
 			type := Type(<type-to-ecore> primitiveType);
 			properties := [name, type]
 
 	to-ecore:
-		label(l, x) -> EReference(properties')
+		namespacedef(_, x) -> EReference(properties')
 		where 
 			properties := <get-properties> x;
-			name := <get-label> l;
-			properties' := <map((Name(_) -> Name(name)) <+ id)> properties
-		
+			properties' := <map((Name(_) -> Name("name")) <+ id)> properties
+			
 	to-ecore:
 		x -> EReference(properties)
 		where
 			properties := <get-properties> x
+
+	to-ecore:
+		namespaceref2(namespace, _) ->  EReference(properties)
+		where
+			type := <project-declaration(get-constr|NameSpace())> namespace;
+			name := Name(<first-char-to-lowercase> namespace);
+			type' := Type(<conc-strings> ("#//", type));
+			properties := [name, type']
 
 	type-to-ecore:
 		"ID" -> EString()

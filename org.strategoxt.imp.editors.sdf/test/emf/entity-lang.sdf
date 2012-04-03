@@ -3,9 +3,9 @@ module example
 exports
 
 	context-free syntax    
-		"module" ID Definition*       		-> Start      {"Module"} 
-		"entity" ID "{" Property* "}" 		-> Definition {"Entity"}
-		ID  ":" Type               			-> Property   {"Property"}
+		"module" Module@=ID Definition*					-> Start      {"Module"} 
+		"entity" Type@=ID "{" Property* "}" 			-> Definition {"Entity"}
+		Property@=ID  ":" Type@Type               		-> Property   {"Property"}
     
     	
 	context-free syntax

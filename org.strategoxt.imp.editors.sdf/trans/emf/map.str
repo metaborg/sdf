@@ -4,13 +4,20 @@ imports
 	include/SDF
 	trans/emf/namespaces
 	lib/namespacelib
+	trans/emf/projections
 
 strategies
-	map-all = alltd(map)
+	map-all = alltd(productions); alltd(namespacerefs)
 	
 rules
 		
-	map:
-		p@prod(lhs, sort(x), attrs(attributes)) -> p
+	productions:
+		p@prod(_, sort(x), attrs(attributes)) -> p
 		where 
 			<store-declaration(|Production())> (x, p)
+			
+	namespacerefs:
+		p@prod(lhs, _, _) -> p
+		where
+			namespace := <get-namespace> p; // here we assume (for now) that one production has at most one namespacedef
+			<store-declaration(|NameSpace())> (namespace, p)

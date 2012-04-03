@@ -6,17 +6,18 @@ imports
 rules
 	
 	get-constr:
-		prod(lhs, sort(x), attrs(attributes)) -> constr
+		prod(_, _, attrs(attributes)) -> constr
 		where
 			constructor := <getfirst(?Constructor(consName))> attributes;
 			constr := <un-double-quote> consName
+	
+	get-namespace:
+		prod(lhs, _, _) -> namespace	
+		where
+			namespacedef(namespace, _) := <getfirst(?namespacedef(_, _))> lhs
 			
 	get-sort:
 		prod(lhs, sort(x), attrs(attributes)) -> x
 		
 	get-sort:
 		sort(s) -> s
-		
-	get-label: quoted(label) -> <un-double-quote> label
-	
-	get-label: unquoted(label) -> label
