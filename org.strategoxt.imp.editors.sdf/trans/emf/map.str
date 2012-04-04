@@ -7,7 +7,12 @@ imports
 	trans/emf/projections
 
 strategies
-	map-all = alltd(productions); alltd(namespacerefs)
+	map-all: 
+		term -> term
+		where
+			term' := <collect-om(?context-free-syntax(_))> term;
+			<alltd(productions)> term';
+			<alltd(namespacerefs)> term'
 	
 rules
 		

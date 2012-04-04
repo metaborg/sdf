@@ -65,9 +65,6 @@ rules
 	type-to-ecore:
 		"INT" -> EInt()
 
-	to-ecore:
-		opt(x) -> x
-
 
 rules
 	
