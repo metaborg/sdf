@@ -65,7 +65,6 @@ rules
 	type-to-ecore:
 		"INT" -> EInt()
 
-
 rules
 	
 	add-super-type(|sort):
@@ -115,15 +114,15 @@ rules
 	get-type:
 		s -> type'
 		where 
-			<get-unique-declaration(|Production())> s;
+			<get-declaration(|Production())> s;
 			type := <project-declaration(get-constr|Production())> s;
 			type' := <conc-strings> ("#//", type)	
 
-	get-type:
+	get-type: // super type
 		s -> type
 		where 
-			not ( <get-unique-declaration(|Production())> s );
-			type := <conc-strings> ("#//", s)
+			not ( <get-declaration(|Production())> s );
+			type := EString() //TODO make EInt, EFloat or EString of this depending on the lexical syntax
 
 
 rules
