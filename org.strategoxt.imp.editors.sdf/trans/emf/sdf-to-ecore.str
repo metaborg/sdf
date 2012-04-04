@@ -65,6 +65,9 @@ rules
 	type-to-ecore:
 		"INT" -> EInt()
 
+	to-ecore:
+		opt(x) -> x
+
 
 rules
 	
@@ -91,12 +94,18 @@ rules
 			<equal> (s, constructor)
 
 	get-properties:
+		opt(sort) -> properties'
+		where
+			properties := <get-properties> sort;
+			properties' := <map((LowerBound(1) -> LowerBound(0)) <+ id)> properties
+
+	get-properties:
 		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1)]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
 	get-properties:
-		iter(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(1)]
+		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1)]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
