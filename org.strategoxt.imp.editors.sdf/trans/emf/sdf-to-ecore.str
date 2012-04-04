@@ -114,11 +114,18 @@ rules
 	get-type:
 		s -> type'
 		where 
-			<get-declaration(|Production())> s;
+			<get-unique-declaration(|Production())> s;
 			type := <project-declaration(get-constr|Production())> s;
 			type' := <conc-strings> ("#//", type)	
 
-	get-type: // super type
+	get-type:  // super type
+		s -> type
+		where 
+			<get-declaration(|Production())> s;
+			not ( <get-unique-declaration(|Production())> s );
+			type := <conc-strings> ("#//", s)
+
+	get-type:
 		s -> type
 		where 
 			not ( <get-declaration(|Production())> s );
