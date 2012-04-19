@@ -60,8 +60,7 @@ rules
 		where
 			qName := QName(None(), "eStructuralFeatures");
 			fixedAttributes := [
-				XMLAttribute("xsi", "type", "ecore:EReference"),
-				XMLAttribute("containment", "true")
+				XMLAttribute("xsi", "type", "ecore:EReference")
 			];
 			attributes := <conc> (fixedAttributes, properties);
 			children := []
@@ -79,6 +78,8 @@ rules
 	to-xml: Type(type)			-> XMLAttribute("eType", type)		
 	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
 	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
-	to-xml:	UpperBound(value) 	->  XMLAttribute("upperBound", <int-to-string> value)
+	to-xml:	UpperBound(value) 	-> XMLAttribute("upperBound", <int-to-string> value)
+	to-xml: Containment(True()) -> XMLAttribute("containment", "true")
+	to-xml: Containment(False()) -> XMLAttribute("containment", "false")
 	
 			

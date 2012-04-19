@@ -57,7 +57,8 @@ rules
 			type := <project-declaration(get-constr|NameSpace())> namespace;
 			name := Name(<first-char-to-lowercase> namespace);
 			type' := Type(<conc-strings> ("#//", type));
-			properties := [name, type']
+			containment := Containment(False());
+			properties := [name, type', containment]
 
 	type-to-ecore:
 		"ID" -> EString()
@@ -96,17 +97,17 @@ rules
 			properties' := <map((LowerBound(1) -> LowerBound(0)) <+ id)> properties
 
 	get-properties:
-		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1)]
+		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1), Containment(True())]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
 	get-properties:
-		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1)]
+		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1), Containment(True())]
 		where
 			name := <first-char-to-lowercase> s;
 			type := <get-type> s
 	get-properties:
-		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1)]
+		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1), Containment(True())]
 		where
 			name := <make-plural> <first-char-to-lowercase> s;
 			type := <get-type> s
