@@ -79,7 +79,9 @@ rules
 	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
 	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
 	to-xml:	UpperBound(value) 	-> XMLAttribute("upperBound", <int-to-string> value)
-	to-xml: Containment(True()) -> XMLAttribute("containment", "true")
-	to-xml: Containment(False()) -> XMLAttribute("containment", "false")
+	to-xml: Containment(True())	-> XMLAttribute("containment", "true")
+	to-xml: Containment(False())-> XMLAttribute("containment", "false")
+	to-xml: Abstract(True())	-> XMLAttribute("abstract", "true")
+	to-xml: Abstract(False())	-> XMLAttribute("abstract", "false")
 	
 			

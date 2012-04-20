@@ -202,7 +202,8 @@ rules
 		sort ->  EClass(properties, children)
 		where
 			name := Name(sort);
-			properties := [name];
+			abstract := Abstract(True());
+			properties := [name, abstract];
 			children := []			
 			
 rules
