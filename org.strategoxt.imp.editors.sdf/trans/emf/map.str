@@ -10,19 +10,30 @@ strategies
 	map-all: 
 		term -> term
 		where
+			//<enable-namespace-debugging> "";
 			term' := <collect-om(?context-free-syntax(_))> term;
 			<alltd(productions)> term';
-			<alltd(namespacerefs)> term'
+			<alltd(namespacedefs)> term';
+			<alltd(constrctors)> term'
 	
 rules
 		
 	productions:
-		p@prod(_, sort(x), attrs(attributes)) -> p
+		p@prod(_, sort(x), _) -> p
 		where 
 			<store-declaration(|Production())> (x, p)
 			
-	namespacerefs:
+	namespacedefs:
 		p@prod(lhs, _, _) -> p
 		where
-			namespace := <get-namespace> p; // here we assume (for now) that one production has at most one namespacedef
-			<store-declaration(|NameSpace())> (namespace, p)
+			namespacedef := <get-namespacedef> p; // here we assume (for now) that one production has at most one namespacedef
+			<store-declaration(|Namespacedef())> (namespacedef, p)
+			
+	constrctors:
+		p@prod(_, _, attrs(attributes)) -> p
+		where
+			<fetch(?Constructor(constructor))> attributes;
+			<store-declaration(|Constructor())> (<un-double-quote> constructor, p)
+	
+	
+	

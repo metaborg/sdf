@@ -8,7 +8,7 @@ imports
 	emf/projections
 	
 strategies
-	sdf-to-ecore = topdown(try(to-ecore)); create-superclasses
+	sdf-to-ecore = topdown(try(to-ecore)); create-superclasses; collapse-classes
 
 rules
 	to-ecore:
@@ -29,42 +29,53 @@ rules
 	to-ecore:
 		sort(primitiveType) -> EAttribute(properties)
 		where 
-			name := Name(primitiveType);
-			type := Type(<type-to-ecore> primitiveType);
-			properties := [name, type]
-	
-	to-ecore:
-		namespacedef(_, sort(primitiveType)) -> EAttribute(properties)
-		where 
-			name := Name("name");
+			name := Name(<first-char-to-lowercase> primitiveType);
 			type := Type(<type-to-ecore> primitiveType);
 			properties := [name, type]
 
 	to-ecore:
-		namespacedef(_, x) -> EReference(properties')
+		namespacedef(_, sort(primitiveType)) -> EAttribute(properties)
 		where 
-			properties := <get-properties> x;
-			properties' := <map((Name(_) -> Name("name")) <+ id)> properties
-			
+			name := Name("identifier");
+			type := Type(<type-to-ecore> primitiveType);
+			properties := [name, type]
+
+	// to-ecore:
+	// 	namespacedef(_, x) -> EReference(properties')
+	// 	where 
+	// 		properties := <get-properties> x;
+	// 		properties' := <map((Name(_) -> Name("name2")) <+ id)> properties
+	
+	// containment = true 
 	to-ecore:
 		x -> EReference(properties)
 		where
 			properties := <get-properties> x
 
+	containment = false
 	to-ecore:
 		namespaceref2(namespace, _) ->  EReference(properties)
 		where
-			type := <project-declaration(get-constr|NameSpace())> namespace;
+			type := <project-declaration(get-constr|Namespacedef())> namespace;
 			name := Name(<first-char-to-lowercase> namespace);
 			type' := Type(<conc-strings> ("#//", type));
 			containment := Containment(False());
 			properties := [name, type', containment]
 
+	//TODO: extract these from lexical syntax
 	type-to-ecore:
 		"ID" -> EString()
 		
 	type-to-ecore:
 		"INT" -> EInt()
+
+
+	type-to-ecore:
+		"StateID" -> EString()
+	type-to-ecore:
+		"OpLabel" -> EString()
+	type-to-ecore:
+		"Value" -> EString()
 
 rules
 	
@@ -91,26 +102,29 @@ rules
 			<equal> (s, constructor)
 
 	get-properties:
-		opt(sort) -> properties'
+		opt(x) -> properties'
 		where
-			properties := <get-properties> sort;
+			properties := <get-properties> x;
 			properties' := <map((LowerBound(1) -> LowerBound(0)) <+ id)> properties
 
 	get-properties:
-		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1), Containment(True())]
+		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1), Containment(containment)]
 		where
 			name := <first-char-to-lowercase> s;
-			type := <get-type> s
+			type := <get-type> s;
+			containment := <containment> s
 	get-properties:
-		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1), Containment(True())]
+		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1), Containment(containment)]
 		where
 			name := <first-char-to-lowercase> s;
-			type := <get-type> s
+			type := <get-type> s;
+			containment := <containment> s
 	get-properties:
-		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1), Containment(True())]
+		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1), Containment(containment)]
 		where
 			name := <make-plural> <first-char-to-lowercase> s;
-			type := <get-type> s
+			type := <get-type> s;
+			containment := <containment> s
 			
 	get-type:
 		s -> type'
@@ -159,6 +173,21 @@ rules
 		string -> <conc-strings> (string, ".")
 
 
+rules
+	
+	containment:
+		namespaceref2(_, _) -> False()
+	
+	containment:
+		sort -> True()
+		where
+			lhs := <project-declaration(get-lhs|Production())> sort; // what if the sort is not unique? And what if there is a whole sequence of productions that needs to be followed to determine containment?
+			<fetch(?namespacedef(_, _))> lhs
+
+	containment:
+		sort -> False()
+		where not (lhs := <project-declaration(get-lhs|Production())> sort;
+			 <fetch(?namespacedef(_, _))> lhs )
 
 rules
 
@@ -176,4 +205,29 @@ rules
 			properties := [name];
 			children := []			
 			
+rules
+	
+	collapse-classes:
+		EPackage(properties, classes) -> EPackage(properties, classes'')
+		where
+			classes-with-one-ref := <filter(?EClass(_, [EReference(_)]))> classes; //TODO: only take classes that extend another class
+			classes' := <diff> (classes, classes-with-one-ref);			
+			classes'' := <map(collapse-class(|classes-with-one-ref) <+ id)> classes'
+		
+	collapse-class(|classes-with-one-ref):
+		e@EClass(properties, children) -> EClass(properties', children)
+		where
+			<fetch(?Name(constructor))> properties;
+			namespacedef := <project-declaration(get-namespacedef|Constructor())> constructor;
+			class := <fetch-elem(collapse-class(|constructor))> classes-with-one-ref;
+			eSuperType := <get-eSuperType> class;
+			properties' := <conc> (properties, [ESuperType(eSuperType)])
+	
+	collapse-class(|sort):
+		e@EClass(_, [eReference]) -> e
+		where
+			namespaceref := <get-reference-type> eReference;
+			<equal> (sort, namespaceref)
+		
+		
 			

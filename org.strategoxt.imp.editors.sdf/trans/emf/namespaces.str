@@ -3,4 +3,5 @@ module emf/namespaces
 signature constructors
 
 	Production		: NameSpace
-	NameSpace		: NameSpace
+	Namespacedef	: NameSpace
+	Constructor		: NameSpace
