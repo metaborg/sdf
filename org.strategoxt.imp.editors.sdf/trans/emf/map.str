@@ -12,24 +12,24 @@ strategies
 		where
 			//<enable-namespace-debugging> "";
 			term' := <collect-om(?context-free-syntax(_))> term;
-			<alltd(productions)> term';
-			<alltd(namespacedefs)> term';
-			<alltd(constrctors)> term'
+			<alltd(sort)> term';
+			<alltd(namespacedef)> term';
+			<alltd(constructor)> term'
 	
 rules
 		
-	productions:
+	sort:
 		p@prod(_, sort(x), _) -> p
 		where 
-			<store-declaration(|Production())> (x, p)
+			<store-declaration(|Sort())> (x, p)
 			
-	namespacedefs:
+	namespacedef:
 		p@prod(lhs, _, _) -> p
 		where
 			namespacedef := <get-namespacedef> p; // here we assume (for now) that one production has at most one namespacedef
 			<store-declaration(|Namespacedef())> (namespacedef, p)
 			
-	constrctors:
+	constructor:
 		p@prod(_, _, attrs(attributes)) -> p
 		where
 			<fetch(?Constructor(constructor))> attributes;

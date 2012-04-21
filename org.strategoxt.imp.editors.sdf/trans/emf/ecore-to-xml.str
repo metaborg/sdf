@@ -24,12 +24,14 @@ rules
 			prologue := Prologue(Some(xMLDecl), [], None());
 	
 			qName := QName(Some(Prefix("ecore")), "EPackage");
+			<fetch-elem(?Name(moduleName))> properties;
 			fixedAttributes := [
 				XMLAttribute("xmi", "version", "2.0"),
 				XMLAttribute("xmlns", "xmi", "http://www.omg.org/XMI"),
 				XMLAttribute("xmlns", "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
 				XMLAttribute("xmlns", "ecore", "http://www.eclipse.org/emf/2002/Ecore"),
-				XMLAttribute("nsURI", "uri")		
+				XMLAttribute("nsURI", moduleName),
+				XMLAttribute("nsPrefix", moduleName)
 			];
 			attributes := <conc> (fixedAttributes, properties);
 			element := Element(qName, attributes, children, None()); 

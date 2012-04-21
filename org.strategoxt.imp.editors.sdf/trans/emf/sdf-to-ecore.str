@@ -8,7 +8,7 @@ imports
 	emf/projections
 	
 strategies
-	sdf-to-ecore = topdown(try(to-ecore)); create-superclasses; collapse-classes
+	sdf-to-ecore = topdown(try(remove-textual-sugar)); topdown(try(to-ecore)); create-superclasses; collapse-classes; topdown(try(remove-textual-sugar))
 
 rules
 	to-ecore:
@@ -83,7 +83,7 @@ rules
 		properties -> properties'
 		where
 			s := <get-sort> sort;
-			not ( <get-unique-declaration(|Production())> s );
+			not ( <get-unique-declaration(|Sort())> s );
 			properties' := <conc> (properties, [ESuperType(s)])
 			
 	to-unique-classname:
@@ -91,14 +91,14 @@ rules
 		where
 			constructor := <un-double-quote> c
 		where
-			<get-unique-declaration(|Production())> s
+			<get-unique-declaration(|Sort())> s
 			+ not ( <equal> (s, constructor) )
 			
 	to-unique-classname:
 		(sort(s), Constructor(c)) -> <concat-strings> [constructor, "_", <new>]
 		where
 			constructor := <un-double-quote> c;
-			not ( <get-unique-declaration(|Production())> s );
+			not ( <get-unique-declaration(|Sort())> s );
 			<equal> (s, constructor)
 
 	get-properties:
@@ -129,21 +129,21 @@ rules
 	get-type:
 		s -> type'
 		where 
-			<get-unique-declaration(|Production())> s;
-			type := <project-declaration(get-constr|Production())> s;
+			<get-unique-declaration(|Sort())> s;
+			type := <project-declaration(get-constr|Sort())> s;
 			type' := <conc-strings> ("#//", type)	
 
 	get-type:  // super type
 		s -> type
 		where 
-			<get-declaration(|Production())> s;
-			not ( <get-unique-declaration(|Production())> s );
+			<get-declaration(|Sort())> s;
+			not ( <get-unique-declaration(|Sort())> s );
 			type := <conc-strings> ("#//", s)
 
 	get-type:
 		s -> type
 		where 
-			not ( <get-declaration(|Production())> s );
+			not ( <get-declaration(|Sort())> s );
 			type := EString() //TODO make EInt, EFloat or EString of this depending on the lexical syntax
 
 
@@ -181,12 +181,12 @@ rules
 	containment:
 		sort -> True()
 		where
-			lhs := <project-declaration(get-lhs|Production())> sort; // what if the sort is not unique? And what if there is a whole sequence of productions that needs to be followed to determine containment?
+			lhs := <project-declaration(get-lhs|Sort())> sort; // what if the sort is not unique? And what if there is a whole sequence of productions that needs to be followed to determine containment?
 			<fetch(?namespacedef(_, _))> lhs
 
 	containment:
 		sort -> False()
-		where not (lhs := <project-declaration(get-lhs|Production())> sort;
+		where not (lhs := <project-declaration(get-lhs|Sort())> sort;
 			 <fetch(?namespacedef(_, _))> lhs )
 
 rules
@@ -194,7 +194,7 @@ rules
 	create-superclasses:
 		EPackage(properties, classes) -> EPackage(properties, classes')
 		where
-			non-unique-sorts := <make-set> <remove-all(get-unique-declaration(|Production()))> <project-all-declarations(get-sort|Production())>;
+			non-unique-sorts := <make-set> <remove-all(get-unique-declaration(|Sort()))> <project-all-declarations(get-sort|Sort())>;
 			super-classes := <map(create-superclass)> non-unique-sorts;
 			classes' := <conc> (classes, super-classes)
 			
@@ -216,7 +216,7 @@ rules
 			classes'' := <map(collapse-class(|classes-with-one-ref) <+ id)> classes'
 		
 	collapse-class(|classes-with-one-ref):
-		e@EClass(properties, children) -> EClass(properties', children)
+		EClass(properties, children) -> EClass(properties', children)
 		where
 			<fetch(?Name(constructor))> properties;
 			namespacedef := <project-declaration(get-namespacedef|Constructor())> constructor;
@@ -225,10 +225,27 @@ rules
 			properties' := <conc> (properties, [ESuperType(eSuperType)])
 	
 	collapse-class(|sort):
-		e@EClass(_, [eReference]) -> e
+		c@EClass(_, [eReference]) -> c
 		where
 			namespaceref := <get-reference-type> eReference;
 			<equal> (sort, namespaceref)
 		
-		
+rules
+	
+	remove-textual-sugar:
+		context-free-syntax(productions)	-> context-free-syntax(productions')
+		where
+			productions' := <remove-all(?prod([sort(x)], _, _))> productions;
+			<type-to-ecore> x
+	
+	remove-textual-sugar:
+		r@EReference(properties) -> EReference(properties')
+		where
+			refType := <get-reference-type> r;
+			prod([sort(type)], _, _) := <get-declaration(|Sort())> refType;
+			primType := <type-to-ecore> type;
+			properties' := <map(replace-type(|primType) <+ id)> properties			
+			
+	replace-type(|y):
+		Type(x) -> Type(y)
 			
