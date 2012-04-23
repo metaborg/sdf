@@ -37,6 +37,9 @@ rules
 		where
 			<fetch-elem(?ESuperType(type))> properties
 		
-		
+	get-class-name:
+		EClass(properties, children) -> type
+		where
+			<fetch-elem(?Name(type))> properties			
 		
 		

@@ -58,7 +58,7 @@ rules
 		where
 			type := <project-declaration(get-constr|Namespacedef())> namespace;
 			name := Name(<first-char-to-lowercase> namespace);
-			type' := Type(<conc-strings> ("#//", type));
+			type' := Type(type);
 			containment := Containment(False());
 			properties := [name, type', containment]
 
@@ -127,18 +127,16 @@ rules
 			containment := <containment> s
 			
 	get-type:
-		s -> type'
-		where 
-			<get-unique-declaration(|Sort())> s;
-			type := <project-declaration(get-constr|Sort())> s;
-			type' := <conc-strings> ("#//", type)	
-
-	get-type:  // super type
 		s -> type
 		where 
+			<get-unique-declaration(|Sort())> s;
+			type := <project-declaration(get-constr|Sort())> s
+
+	get-type:  // super type
+		s -> s
+		where 
 			<get-declaration(|Sort())> s;
-			not ( <get-unique-declaration(|Sort())> s );
-			type := <conc-strings> ("#//", s)
+			not ( <get-unique-declaration(|Sort())> s )
 
 	get-type:
 		s -> type
@@ -177,17 +175,31 @@ rules
 	
 	containment:
 		namespaceref2(_, _) -> False()
-	
-	containment:
-		sort -> True()
-		where
-			lhs := <project-declaration(get-lhs|Sort())> sort; // what if the sort is not unique? And what if there is a whole sequence of productions that needs to be followed to determine containment?
-			<fetch(?namespacedef(_, _))> lhs
-
+			
 	containment:
 		sort -> False()
-		where not (lhs := <project-declaration(get-lhs|Sort())> sort;
-			 <fetch(?namespacedef(_, _))> lhs )
+		where
+			<sort-has-refs> sort;
+			not ( <sort-has-defs> sort )
+			
+	containment:
+		sort -> True()
+		where not ( 
+			<sort-has-refs> sort;
+			not ( <sort-has-defs> sort )
+		 )
+		
+	sort-has-refs:
+		sort -> sort
+		where
+			productions := <get-declarations(|Sort())> sort;
+			<oncetd(?namespaceref2(_, _))> productions
+
+	sort-has-defs:
+		sort -> sort
+		where
+			productions := <get-declarations(|Sort())> sort;
+			<oncetd(?namespacedef(_, _))> productions
 
 rules
 
@@ -248,4 +260,24 @@ rules
 			
 	replace-type(|y):
 		Type(x) -> Type(y)
+		
+// rules
+// 	
+// 	collapse-classes2:
+// 		EPackage(name, classes) -> EPackage(name, classes')
+// 		where
+// 			to-be-collapsed := <map(get-reference-type)> <collect-om(collapse-class2)> classes;
+// 			classes' :=
+// 			
+// 	collapse-classes2:		
+// 		EClass(attributes, children) -> EClass(attributes, children')
+// 		where
+// 			children' := <remove-all(collapse-class2 <+ id)> children
+// 	
+// 	collapse-class2:
+// 		e@EReference(properties) -> e
+// 		where
+// 			<oncetd(?LowerBound(1))> properties;
+// 			<oncetd(?UpperBound(1))> properties;
+// 			<oncetd(?Containment(True()))> properties
 			
