@@ -60,9 +60,9 @@ rules
   
   language-imports =
     if lang := <spt-get-default-language> then
-      !Imports([Import($[include/[lang]])])
+      !Imports([Import("lib/editor-common.generated"), Import($[include/[lang]])])
     else
-      !Imports([])
+      !Imports([Import("lib/editor-common.generated")])
     end
   
   spt-get-default-language =
