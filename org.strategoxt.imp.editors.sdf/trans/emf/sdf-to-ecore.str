@@ -24,7 +24,7 @@ rules
 		where
 			cons := <get-constr> attributes;
 			name := Name(cons);
-			if <eq> (s, cons) then eSuperType := [] else eSuperType := ESuperType(s) end;
+			if <eq> (s, cons) + <eq> (s, "Start") then eSuperType := [] else eSuperType := ESuperType(s) end;
 			properties := <remove-all(?[])> [name, eSuperType];
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
 			structuralFeatures' := <map(set-containment; set-bounds; set-structuralFeature)> structuralFeatures
@@ -89,7 +89,8 @@ rules
 		prod(_, sort(s), attributes) -> EClass([Name(s)], [])
 		where
 			cons := <get-constr> attributes;
-			not ( <eq> (s, cons) )
+			not ( <eq> (s, cons) );
+			not ( <eq> (s, "Start" ))
 			
 	
 rules // Utils
