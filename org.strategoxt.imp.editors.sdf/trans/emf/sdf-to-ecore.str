@@ -27,18 +27,31 @@ rules
 			if <eq> (s, cons) + <eq> (s, "Start") then eSuperType := [] else eSuperType := ESuperType(s) end;
 			properties := <remove-all(?[])> [name, eSuperType];
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
-			structuralFeatures' := <map(set-containment; set-bounds; set-structuralFeature)> structuralFeatures
+			structuralFeatures' := <map(set-name; set-containment; set-bounds; set-structuralFeature)> structuralFeatures
+
+	set-name:
+		label(unquoted(name), x) -> (x, [Name(name)])
+		
+	set-name:
+		x -> (x, [])
+		where
+			not ( <?label(_, _)> x )
 
 	set-containment:
-		namespacedef(_, sort) -> (sort, [Containment(True())])
+		(namespacedef(_, sort), properties) -> (sort, properties')
+		where
+			properties' := <remove-all(?[])> <conc> (properties, [Containment(True())])
 
 	set-containment:
-		namespaceref2(_, sort) -> (sort, [Containment(False())])
+		(namespaceref2(_, sort), properties) -> (sort, properties')
+		where
+			properties' := <remove-all(?[])> <conc> (properties, [Containment(False())])
 		
 	set-containment:
-		sort -> (sort, [Containment(True())])
-			where
-				not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort)
+		(sort, properties) -> (sort, properties')
+		where
+			not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort);
+			properties' := <remove-all(?[])> <conc> (properties, [Containment(False())])
 
 	set-bounds:
 		(sort(s), properties) -> (s, properties')
@@ -58,18 +71,32 @@ rules
 	set-structuralFeature:
 		(s, properties) -> eStructuralFeature
 		where
-			name := Name(<first-char-to-lowercase> s);
+			properties' := <add-name> (s, properties);
+			
 			if
 				<int-or-string> s
 			then
 				type := Type(<int-or-string> s);
-				properties' := <conc> (properties, [name, type]);
-				properties'' := <remove-all(?Containment(_))> properties';
-				eStructuralFeature := EAttribute(properties'')
+				properties'' := <conc> (properties', [type]);
+				properties''' := <remove-all(?Containment(_))> properties';
+				eStructuralFeature := EAttribute(properties''')
 			else
 				type := Type(s);
-				properties'' := <conc> (properties, [name, type]);
+				properties'' := <conc> (properties', [type]);
 				eStructuralFeature := EReference(properties'')
+			end
+
+	add-name:
+		(s, properties) -> properties'
+		where
+			if <fetch(?Name(_))> properties
+			then properties' := properties
+			else
+				if <fetch(?UpperBound(-1))> properties
+				then name := Name(<lower-case; make-plural> s)
+				else name := Name(<lower-case> s)
+				end;
+				properties' := <conc> (properties, [name])
 			end
 
 	int-or-string:
@@ -95,13 +122,6 @@ rules
 	
 rules // Utils
 
-	first-char-to-lowercase:
-		string -> string'	
-		where
-			(head, tail) := <split-Cons> <explode-string> string;
-			head' := <to-lower> head;
-			string' := <implode-string> <conc> ([head'], tail)
-	
 	make-plural:
 		string -> string'
 		where

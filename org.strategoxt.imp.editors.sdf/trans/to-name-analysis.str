@@ -27,7 +27,8 @@ rules
       index-setup(|"SDF", [<project-path>], path);
       filename  := $[[project-path]/[ANALYSIS_GENERATED].rtree];
       filename' := $[[project-path]/[ANALYSIS_GENERATED].str];
-      result    := <generate-name-analysis> ast;
+      ast'		:= <alltd(remove-labels)> ast;
+      result    := <generate-name-analysis> ast';
       result'   := <pp-stratego-string> result
       // <WriteToBinaryFile> (filename, result)
 
@@ -203,3 +204,9 @@ rules
 
   fetch-scope-names:
     term(default(appl(unquoted("scope"), [fun(quoted(scopes))]))) -> scopes
+
+rules
+	
+	remove-labels:
+		label(_, x) -> x
+		
