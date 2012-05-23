@@ -1,0 +1,17 @@
+%% Grammar for the EntityLang language
+%% By default, based on an example "entities" syntax
+module EntityLang
+
+imports Common
+
+exports
+
+  context-free start-symbols
+  
+    Start
+
+  context-free syntax
+
+    "module" Module@=ID Type*				-> Start {"Module", scope(Type)}
+    "entity" Type@=ID "{" Property* "}"		-> Type {"Entity", scope(Property)}
+    Property@=ID ":" Type@Type				-> Property {"Property"}

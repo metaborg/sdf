@@ -3,149 +3,96 @@ module emf/sdf-to-ecore
 imports
 	include/SDF
 	lib/ecore-signatures
-	lib/namespacelib
-	emf/namespaces
-	emf/projections
 	
 strategies
-	sdf-to-ecore = topdown(try(remove-textual-sugar)); topdown(try(to-ecore)); create-superclasses; collapse-classes; topdown(try(remove-textual-sugar))
+	
+	sdf-to-ecore = to-ecore
 
 rules
+	
 	to-ecore:
-		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, children)
+		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, classes')
 	where
 		properties := [Name(moduleName)];
-		children := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*
+		productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
+		classes := <map(to-ecore)> productions;
+		superclasses := <create-superclasses> productions;
+		classes' := <remove-all(?[])> <conc>(classes, superclasses)
 
 	to-ecore:
-		prod(lhs, sort, attrs(attributes)) -> EClass(properties, children)
-		where 
-			constructor := <getfirst(?Constructor(_))> attributes;
-			classname := <to-unique-classname> (sort, constructor);
-			name := Name(classname);
-			properties := <try(add-super-type(|sort))> [name];
-			children := <remove-all(?lit(_) + ?ci-lit(_))> lhs	
-			
-	to-ecore:
-		sort(primitiveType) -> EAttribute(properties)
-		where 
-			name := Name(<first-char-to-lowercase> primitiveType);
-			type := Type(<type-to-ecore> primitiveType);
-			properties := [name, type]
-
-	to-ecore:
-		namespacedef(_, sort(primitiveType)) -> EAttribute(properties)
-		where 
-			name := Name("identifier");
-			type := Type(<type-to-ecore> primitiveType);
-			properties := [name, type]
-
-	// to-ecore:
-	// 	namespacedef(_, x) -> EReference(properties')
-	// 	where 
-	// 		properties := <get-properties> x;
-	// 		properties' := <map((Name(_) -> Name("name2")) <+ id)> properties
-	
-	// containment = true 
-	to-ecore:
-		x -> EReference(properties)
+		prod(lhs, sort(s), attributes) -> EClass(properties, structuralFeatures')
 		where
-			properties := <get-properties> x
+			cons := <get-constr> attributes;
+			name := Name(cons);
+			if <eq> (s, cons) then eSuperType := [] else eSuperType := ESuperType(s) end;
+			properties := <remove-all(?[])> [name, eSuperType];
+			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
+			structuralFeatures' := <map(set-containment; set-bounds; set-structuralFeature)> structuralFeatures
 
-	containment = false
-	to-ecore:
-		namespaceref2(namespace, _) ->  EReference(properties)
-		where
-			type := <project-declaration(get-constr|Namespacedef())> namespace;
-			name := Name(<first-char-to-lowercase> namespace);
-			type' := Type(type);
-			containment := Containment(False());
-			properties := [name, type', containment]
+	set-containment:
+		namespacedef(_, sort) -> (sort, [Containment(True())])
 
-	//TODO: extract these from lexical syntax
-	type-to-ecore:
-		"ID" -> EString()
+	set-containment:
+		namespaceref2(_, sort) -> (sort, [Containment(False())])
 		
-	type-to-ecore:
+	set-containment:
+		sort -> (sort, [Containment(True())])
+			where
+				not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort)
+
+	set-bounds:
+		(sort(s), properties) -> (s, properties')
+		where
+			properties' := <conc> (properties, [LowerBound(1), UpperBound(1)])
+
+	set-bounds:
+		(iter(sort(s)), properties) -> (s, properties')
+		where
+			properties' := <conc> (properties, [LowerBound(1), UpperBound(-1)])
+	
+	set-bounds:
+		(iter-star(sort(s)), properties) -> (s, properties')
+		where
+			properties' := <conc> (properties, [LowerBound(0), UpperBound(-1)])
+	
+	set-structuralFeature:
+		(s, properties) -> eStructuralFeature
+		where
+			name := Name(<first-char-to-lowercase> s);
+			if
+				<int-or-string> s
+			then
+				type := Type(<int-or-string> s);
+				properties' := <conc> (properties, [name, type]);
+				properties'' := <remove-all(?Containment(_))> properties';
+				eStructuralFeature := EAttribute(properties'')
+			else
+				type := Type(s);
+				properties'' := <conc> (properties, [name, type]);
+				eStructuralFeature := EReference(properties'')
+			end
+
+	int-or-string:
 		"INT" -> EInt()
-
-
-	type-to-ecore:
-		"StateID" -> EString()
-	type-to-ecore:
-		"OpLabel" -> EString()
-	type-to-ecore:
-		"Value" -> EString()
+		
+	int-or-string:
+		"ID" -> EString()
 
 rules
 	
-	add-super-type(|sort):
-		properties -> properties'
+	create-superclasses:
+		productions -> classes
 		where
-			s := <get-sort> sort;
-			not ( <get-unique-declaration(|Sort())> s );
-			properties' := <conc> (properties, [ESuperType(s)])
+			classes := <make-set> <filter(create-superclass)> productions
 			
-	to-unique-classname:
-		(sort(s), Constructor(c)) -> constructor
+	create-superclass:
+		prod(_, sort(s), attributes) -> EClass([Name(s)], [])
 		where
-			constructor := <un-double-quote> c
-		where
-			<get-unique-declaration(|Sort())> s
-			+ not ( <equal> (s, constructor) )
+			cons := <get-constr> attributes;
+			not ( <eq> (s, cons) )
 			
-	to-unique-classname:
-		(sort(s), Constructor(c)) -> <concat-strings> [constructor, "_", <new>]
-		where
-			constructor := <un-double-quote> c;
-			not ( <get-unique-declaration(|Sort())> s );
-			<equal> (s, constructor)
-
-	get-properties:
-		opt(x) -> properties'
-		where
-			properties := <get-properties> x;
-			properties' := <map((LowerBound(1) -> LowerBound(0)) <+ id)> properties
-
-	get-properties:
-		sort(s) -> [Name(name), Type(type), LowerBound(1), UpperBound(1), Containment(containment)]
-		where
-			name := <first-char-to-lowercase> s;
-			type := <get-type> s;
-			containment := <containment> s
-	get-properties:
-		iter(sort(s)) -> [Name(name), Type(type), LowerBound(1), UpperBound(-1), Containment(containment)]
-		where
-			name := <first-char-to-lowercase> s;
-			type := <get-type> s;
-			containment := <containment> s
-	get-properties:
-		iter-star(sort(s)) -> [Name(name), Type(type), LowerBound(0), UpperBound(-1), Containment(containment)]
-		where
-			name := <make-plural> <first-char-to-lowercase> s;
-			type := <get-type> s;
-			containment := <containment> s
-			
-	get-type:
-		s -> type
-		where 
-			<get-unique-declaration(|Sort())> s;
-			type := <project-declaration(get-constr|Sort())> s
-
-	get-type:  // super type
-		s -> s
-		where 
-			<get-declaration(|Sort())> s;
-			not ( <get-unique-declaration(|Sort())> s )
-
-	get-type:
-		s -> type
-		where 
-			not ( <get-declaration(|Sort())> s );
-			type := EString() //TODO make EInt, EFloat or EString of this depending on the lexical syntax
-
-
-rules
+	
+rules // Utils
 
 	first-char-to-lowercase:
 		string -> string'	
@@ -157,127 +104,17 @@ rules
 	make-plural:
 		string -> string'
 		where
-			not ( <string-ends-with(|"y")> string );
-			string' := <conc-strings> (string, "s")
+			if
+				<string-ends-with(|"y")> string
+			then 
+				init := <implode-string> <init> <explode-string> string;
+				string' := <conc-strings> (init, "ies")
+			else
+				string' := <conc-strings> (string, "s")
+			end
 			
-	make-plural:
-		string -> string'
+	get-constr:
+		attrs(attributes) -> cons
 		where
-			<string-ends-with(|"y")> string;
-			init := <implode-string> <init> <explode-string> string;
-			string' := <conc-strings> (init, "ies")
-
-	add-dot:
-		string -> <conc-strings> (string, ".")
-
-
-rules
-	
-	containment:
-		namespaceref2(_, _) -> False()
-			
-	containment:
-		sort -> False()
-		where
-			<sort-has-refs> sort;
-			not ( <sort-has-defs> sort )
-			
-	containment:
-		sort -> True()
-		where not ( 
-			<sort-has-refs> sort;
-			not ( <sort-has-defs> sort )
-		 )
-		
-	sort-has-refs:
-		sort -> sort
-		where
-			productions := <get-declarations(|Sort())> sort;
-			<oncetd(?namespaceref2(_, _))> productions
-
-	sort-has-defs:
-		sort -> sort
-		where
-			productions := <get-declarations(|Sort())> sort;
-			<oncetd(?namespacedef(_, _))> productions
-
-rules
-
-	create-superclasses:
-		EPackage(properties, classes) -> EPackage(properties, classes')
-		where
-			non-unique-sorts := <make-set> <remove-all(get-unique-declaration(|Sort()))> <project-all-declarations(get-sort|Sort())>;
-			super-classes := <map(create-superclass)> non-unique-sorts;
-			classes' := <conc> (classes, super-classes)
-			
-	create-superclass:
-		sort ->  EClass(properties, children)
-		where
-			name := Name(sort);
-			abstract := Abstract(True());
-			properties := [name, abstract];
-			children := []			
-			
-rules
-	
-	collapse-classes:
-		EPackage(properties, classes) -> EPackage(properties, classes'')
-		where
-			classes-with-one-ref := <filter(?EClass(_, [EReference(_)]))> classes; //TODO: only take classes that extend another class
-			classes' := <diff> (classes, classes-with-one-ref);			
-			classes'' := <map(collapse-class(|classes-with-one-ref) <+ id)> classes'
-		
-	collapse-class(|classes-with-one-ref):
-		EClass(properties, children) -> EClass(properties', children)
-		where
-			<fetch(?Name(constructor))> properties;
-			namespacedef := <project-declaration(get-namespacedef|Constructor())> constructor;
-			class := <fetch-elem(collapse-class(|constructor))> classes-with-one-ref;
-			eSuperType := <get-eSuperType> class;
-			properties' := <conc> (properties, [ESuperType(eSuperType)])
-	
-	collapse-class(|sort):
-		c@EClass(_, [eReference]) -> c
-		where
-			namespaceref := <get-reference-type> eReference;
-			<equal> (sort, namespaceref)
-		
-rules
-	
-	remove-textual-sugar:
-		context-free-syntax(productions)	-> context-free-syntax(productions')
-		where
-			productions' := <remove-all(?prod([sort(x)], _, _))> productions;
-			<type-to-ecore> x
-	
-	remove-textual-sugar:
-		r@EReference(properties) -> EReference(properties')
-		where
-			refType := <get-reference-type> r;
-			prod([sort(type)], _, _) := <get-declaration(|Sort())> refType;
-			primType := <type-to-ecore> type;
-			properties' := <map(replace-type(|primType) <+ id)> properties			
-			
-	replace-type(|y):
-		Type(x) -> Type(y)
-		
-// rules
-// 	
-// 	collapse-classes2:
-// 		EPackage(name, classes) -> EPackage(name, classes')
-// 		where
-// 			to-be-collapsed := <map(get-reference-type)> <collect-om(collapse-class2)> classes;
-// 			classes' :=
-// 			
-// 	collapse-classes2:		
-// 		EClass(attributes, children) -> EClass(attributes, children')
-// 		where
-// 			children' := <remove-all(collapse-class2 <+ id)> children
-// 	
-// 	collapse-class2:
-// 		e@EReference(properties) -> e
-// 		where
-// 			<oncetd(?LowerBound(1))> properties;
-// 			<oncetd(?UpperBound(1))> properties;
-// 			<oncetd(?Containment(True()))> properties
-			
+			Constructor(c) := <getfirst(?Constructor(_))> attributes;
+			cons := <un-double-quote> c
