@@ -22,7 +22,7 @@ signature constructors
 rules
   
   // Cleans all data from the index.
-  index-cleanall:
+  index-cleanall: 
     (selected, position, ast, path, project-path)  -> None()
     with
       index-setup(|<language>, [project-path], $[[project-path]/[path]]);
