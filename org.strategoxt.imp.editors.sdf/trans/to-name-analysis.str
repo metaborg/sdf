@@ -6,7 +6,8 @@ imports
   sdf
   analysis
   lib/attributes
-  lib/index-library-core
+  lib/index-library.generated
+  lib/analysis-library.generated
 
 overlays
   
@@ -20,11 +21,18 @@ signature constructors
 
 rules
   
+  // Cleans all data from the index.
+  index-cleanall:
+    (selected, position, ast, path, project-path)  -> None()
+    with
+      index-setup(|<language>, [project-path], $[[project-path]/[path]]);
+      index-clear
+  
   // TODO: write str to disk first to ensure proper timestamp
   generate-name-analysis:
     (selected, position, ast, path, project-path) -> (filename', result')
     with
-      index-setup(|"SDF", [<project-path>], path);
+      index-setup(|<language>, [project-path], $[[project-path]/[path]]);
       filename  := $[[project-path]/[ANALYSIS_GENERATED].rtree];
       filename' := $[[project-path]/[ANALYSIS_GENERATED].str];
       result    := <generate-name-analysis> ast;

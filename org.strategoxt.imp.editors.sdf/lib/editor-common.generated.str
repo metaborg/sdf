@@ -32,6 +32,8 @@ strategies
     ast2abox(|[<import-term(include/SDF.generated.pp.af)>,
                <import-term(include/SDF.pp.af)>]);
     box2text-string(|100)
+    
+  language = !"SDF"
 
 strategies
   
@@ -214,6 +216,7 @@ signature constructors
   COMPLETION : String -> Term
   NOCONTEXT  : Term   -> Term
   MARKER     : Term
+  True       : Term
 
   // Below are copies of the signatures of the terms used in example
   // trans/sdf.str file. These definitions should also be automatically 
@@ -225,6 +228,9 @@ signature constructors
   Entity   : ID * List(Property) -> Entity
   Property : ID * Type           -> Property
   Type     : ID                  -> Type
+  
+  Type     : Namespace
+  Property : Namespace
 
 strategies
   
