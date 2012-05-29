@@ -3,6 +3,7 @@ module emf/sdf-to-ecore
 imports
 	include/SDF
 	lib/ecore-signatures
+	lib/attributes
 	
 strategies
 	
@@ -22,7 +23,7 @@ rules
 	to-ecore:
 		prod(lhs, sort(s), attributes) -> EClass(properties, structuralFeatures')
 		where
-			cons := <get-constr> attributes;
+			cons := <fetch-cons-name> attributes;
 			name := Name(cons);
 			if <eq> (s, cons) + <eq> (s, "Start") then eSuperType := [] else eSuperType := ESuperType(s) end;
 			properties := <remove-all(?[])> [name, eSuperType];
@@ -115,7 +116,7 @@ rules
 	create-superclass:
 		prod(_, sort(s), attributes) -> EClass([Name(s)], [])
 		where
-			cons := <get-constr> attributes;
+			cons := <fetch-cons-name> attributes;
 			not ( <eq> (s, cons) );
 			not ( <eq> (s, "Start" ))
 			
@@ -134,8 +135,3 @@ rules // Utils
 				string' := <conc-strings> (string, "s")
 			end
 			
-	get-constr:
-		attrs(attributes) -> cons
-		where
-			Constructor(c) := <getfirst(?Constructor(_))> attributes;
-			cons := <un-double-quote> c
