@@ -37,11 +37,14 @@ rules
 		x -> (x, [])
 		where
 			not ( <?label(_, _)> x )
-
+	
+	// for namespacedef, also set identifier
 	set-containment:
 		(namespacedef(_, sort), properties) -> (sort, properties')
 		where
-			properties' := <add-property> (Containment(True()), properties)
+			containment := Containment(True());
+			ID := ID(True());
+			properties' := <add-properties> ([containment, ID], properties)
 	
 	// for namespaceref2, also set name and type
 	set-containment:

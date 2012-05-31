@@ -89,5 +89,5 @@ rules
 	to-xml: Containment(False())-> XMLAttribute("containment", "false")
 	to-xml: Abstract(True())	-> XMLAttribute("abstract", "true")
 	to-xml: Abstract(False())	-> XMLAttribute("abstract", "false")
-	
-			
+	to-xml: ID(True())			-> XMLAttribute("iD", "true")
+	to-xml: ID(False())			-> XMLAttribute("iD", "false")			

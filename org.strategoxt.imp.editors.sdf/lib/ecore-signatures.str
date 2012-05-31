@@ -14,24 +14,21 @@ signature
                 : ID -> Type
     Type        : Type -> Type
     Name        : ID -> Name
-    Id          : ID -> Id
+                : ID -> EReferenceProperty
                 : Containment -> EReferenceProperty
                 : LowerBound -> EReferenceProperty
                 : UpperBound -> EReferenceProperty
                 : Type -> EReferenceProperty
                 : Name -> EReferenceProperty
-                : Id -> EReferenceProperty
+                : ID -> EAttributeProperty
                 : LowerBound -> EAttributeProperty
                 : UpperBound -> EAttributeProperty
                 : Type -> EAttributeProperty
                 : Name -> EAttributeProperty
-                : Id -> EAttributeProperty
                 : Abstract -> EClassProperty
                 : ESuperType -> EClassProperty
                 : Name -> EClassProperty
-                : Id -> EClassProperty
                 : Name -> EPackageProperty
-                : Id -> EPackageProperty
                 : EReference -> EClassChild
                 : EAttribute -> EClassChild
                 : EClass -> EPackageChild
@@ -40,6 +37,7 @@ signature
     EClass      : List(EClassProperty) * List(EClassChild) -> EClass
     EPackage    : List(EPackageProperty) * List(EPackageChild) -> Start
                 : String -> INT
+    ID          : Boolean -> ID
                 : String -> ID
 
 
