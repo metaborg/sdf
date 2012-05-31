@@ -18,7 +18,7 @@ rules
 		productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
 		classes := <map(to-ecore)> productions;
 		superclasses := <create-superclasses> productions;
-		classes' := <remove-all(?[])> <conc>(classes, superclasses)
+		classes' := <conc>(classes, superclasses)
 
 	to-ecore:
 		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
@@ -56,7 +56,7 @@ rules
 		(sort, properties) -> (sort, properties')
 		where
 			not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort);
-			properties' := <add-property> (Containment(False()), properties)
+			properties' := <add-property> (Containment(True()), properties)
 
 	set-bounds:
 		(opt(sort(s)), properties) -> (s, properties')
@@ -88,7 +88,7 @@ rules
 			properties' := <add-property> (name, properties);
 			
 			if
-				<int-or-string> s
+				not ( <fetch(?Containment(False()))> properties ); <int-or-string> s
 			then
 				type := Type(<int-or-string> s);
 				properties'' := <add-property> (type, properties');
