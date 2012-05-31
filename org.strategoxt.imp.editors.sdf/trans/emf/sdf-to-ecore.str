@@ -21,12 +21,12 @@ rules
 		classes' := <remove-all(?[])> <conc>(classes, superclasses)
 
 	to-ecore:
-		prod(lhs, sort(s), attributes) -> EClass(properties, structuralFeatures')
+		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
 		where
 			cons := <fetch-cons-name> attributes;
 			name := Name(cons);
-			if <eq> (s, cons) + <eq> (s, "Start") then eSuperType := [] else eSuperType := ESuperType(s) end;
-			properties := <remove-all(?[])> [name, eSuperType];
+			if <eq> (s, cons) + <eq> (s, "Start") then properties := [] else properties := [ESuperType(s)] end;
+			properties' := <add-property> (name, properties);
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
 			structuralFeatures' := <map(set-name; set-containment; set-bounds; set-structuralFeature)> structuralFeatures
 
@@ -41,63 +41,63 @@ rules
 	set-containment:
 		(namespacedef(_, sort), properties) -> (sort, properties')
 		where
-			properties' := <remove-all(?[])> <conc> (properties, [Containment(True())])
-
+			properties' := <add-property> (Containment(True()), properties)
+	
+	// for namespaceref2, also set name and type
 	set-containment:
-		(namespaceref2(_, sort), properties) -> (sort, properties')
+		(namespaceref2(namespace, sort), properties) -> (sort, properties')
 		where
-			properties' := <remove-all(?[])> <conc> (properties, [Containment(False())])
+			name := Name(<lower-case> namespace);
+			type := Type(namespace);
+			containment := Containment(False());
+			properties' := <add-properties> ([name, type, containment], properties)
 		
 	set-containment:
 		(sort, properties) -> (sort, properties')
 		where
 			not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort);
-			properties' := <remove-all(?[])> <conc> (properties, [Containment(False())])
+			properties' := <add-property> (Containment(False()), properties)
+
+	set-bounds:
+		(opt(sort(s)), properties) -> (s, properties')
+		where
+			properties' := <add-properties> ([LowerBound(0), UpperBound(1)], properties)
 
 	set-bounds:
 		(sort(s), properties) -> (s, properties')
 		where
-			properties' := <conc> (properties, [LowerBound(1), UpperBound(1)])
+			properties' := <add-properties> ([LowerBound(1), UpperBound(1)], properties)
 
 	set-bounds:
 		(iter(sort(s)), properties) -> (s, properties')
 		where
-			properties' := <conc> (properties, [LowerBound(1), UpperBound(-1)])
+			properties' := <add-properties> ([LowerBound(1), UpperBound(-1)], properties)
 	
 	set-bounds:
 		(iter-star(sort(s)), properties) -> (s, properties')
 		where
-			properties' := <conc> (properties, [LowerBound(0), UpperBound(-1)])
+			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
 	
 	set-structuralFeature:
 		(s, properties) -> eStructuralFeature
-		where
-			properties' := <add-name> (s, properties);
+		where			
+			if <fetch(?UpperBound(-1))> properties
+			then name := Name(<lower-case; make-plural> s)
+			else name := Name(<lower-case> s)
+			end;
+			properties' := <add-property> (name, properties);
 			
 			if
 				<int-or-string> s
 			then
 				type := Type(<int-or-string> s);
-				properties'' := <conc> (properties', [type]);
-				properties''' := <remove-all(?Containment(_))> properties';
+				properties'' := <add-property> (type, properties');
+				properties''' := <remove-all(?Containment(_))> properties'';
 				eStructuralFeature := EAttribute(properties''')
 			else
 				type := Type(s);
-				properties'' := <conc> (properties', [type]);
+				properties'' := <add-property> (type, properties');
 				eStructuralFeature := EReference(properties'')
-			end
-
-	add-name:
-		(s, properties) -> properties'
-		where
-			if <fetch(?Name(_))> properties
-			then properties' := properties
-			else
-				if <fetch(?UpperBound(-1))> properties
-				then name := Name(<lower-case; make-plural> s)
-				else name := Name(<lower-case> s)
-				end;
-				properties' := <conc> (properties, [name])
 			end
 
 	int-or-string:
@@ -121,7 +121,22 @@ rules
 			not ( <eq> (s, "Start" ))
 			
 	
-rules // Utils
+rules // utils
+
+	// add property with constructor cons to list if list doesn't contain a property with constructor cons yet 
+	add-property:
+		(property, list) -> list'
+		where
+			cons := <get-constructor> property;
+			if 	<fetch(<eq> (cons, <get-constructor>))> list
+			then list' := list
+			else list' := <conc> (list, [property])
+			end
+			
+	add-properties:
+		(properties, list) -> list'
+		where
+			list' := <foldl(add-property)> (properties, list)
 
 	make-plural:
 		string -> string'

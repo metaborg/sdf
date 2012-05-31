@@ -15,4 +15,4 @@ exports
     "module" Module@=ID Type*				-> Start {"Module", scope(Type)}
     "entity" Type@=ID "{" Property* "}"		-> Type {"Entity", scope(Property)}
 	"primitive" Type @=ID					-> Type {"Primitive"}
-    Property@=ID ":" Type@Type				-> Property {"Property"}
+    Property@=ID ":" Type@ID				-> Property {"Property"}
