@@ -28,7 +28,7 @@ rules
 			if <eq> (s, cons) + <eq> (s, "Start") then properties := [] else properties := [ESuperType(s)] end;
 			properties' := <add-property> (name, properties);
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
-			structuralFeatures' := <map(set-name; set-containment; set-bounds; set-structuralFeature)> structuralFeatures
+			structuralFeatures' := <map(set-name; def-ref-containment; set-bounds; set-structuralFeature)> structuralFeatures
 
 	set-name:
 		label(unquoted(name), x) -> (x, [Name(name)])
@@ -38,16 +38,14 @@ rules
 		where
 			not ( <?label(_, _)> x )
 	
-	// for namespacedef, also set identifier
-	set-containment:
+	def-ref-containment:
 		(namespacedef(_, sort), properties) -> (sort, properties')
 		where
 			containment := Containment(True());
 			ID := ID(True());
 			properties' := <add-properties> ([containment, ID], properties)
 	
-	// for namespaceref2, also set name and type
-	set-containment:
+	def-ref-containment:
 		(namespaceref2(namespace, sort), properties) -> (sort, properties')
 		where
 			name := Name(<lower-case> namespace);
@@ -55,7 +53,7 @@ rules
 			containment := Containment(False());
 			properties' := <add-properties> ([name, type, containment], properties)
 		
-	set-containment:
+	def-ref-containment:
 		(sort, properties) -> (sort, properties')
 		where
 			not ( <?namespacedef(_, _)> sort + <?namespaceref2(_, _)> sort);
@@ -81,6 +79,16 @@ rules
 		where
 			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
 	
+	set-bounds:
+		(iter-sep(sort(s), _), properties) -> (s, properties')
+		where
+			properties' := <add-properties> ([LowerBound(1), UpperBound(-1)], properties)
+
+	set-bounds:
+		(iter-star-sep(sort(s), _), properties) -> (s, properties')
+		where
+			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
+		
 	set-structuralFeature:
 		(s, properties) -> eStructuralFeature
 		where			
