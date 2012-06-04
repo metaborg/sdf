@@ -16,8 +16,9 @@ rules
 	where
 		properties := [Name(moduleName)];
 		productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
-		classes := <map(to-ecore)> productions;
-		superclasses := <create-superclasses> productions;
+		productions' := <alltd(rewrite-seq)> productions;
+		classes := <map(to-ecore)> productions';
+		superclasses := <create-superclasses> productions';
 		classes' := <conc>(classes, superclasses)
 
 	to-ecore:
@@ -131,6 +132,43 @@ rules
 			not ( <eq> (s, cons) );
 			not ( <eq> (s, "Start" ))
 			
+rules // extract non-terminal from a sequence
+	
+	rewrite-seq:
+		seq(a, b) -> non-terminal
+		where
+			non-terminal := <fetch-non-terminal> (a, b)
+			
+	rewrite-seq:
+		opt(seq(a, b)) -> result	
+		where
+			non-terminal := <fetch-non-terminal> (a, b);
+			result := <alltd(make-opt)> non-terminal
+			
+	rewrite-seq:
+		iter(seq(a, b)) -> result
+		where
+			non-terminal := <fetch-non-terminal> (a, b);
+			result := <alltd(make-iter)> non-terminal		
+
+	rewrite-seq:
+		iter-star(seq(a, b)) -> result
+		where
+			non-terminal := <fetch-non-terminal> (a, b);
+			result := <alltd(make-iter-star)> non-terminal
+
+	// fetch non-terminal (including possible label, namespacedef/namespaceref2) from sequence
+	fetch-non-terminal:
+		(a, b) -> non-terminal
+		where
+			if not ( <?lit(_)> a )
+			then non-terminal := a
+			else non-terminal := <fetch-elem(id)> b
+			end
+	
+	make-opt: sort(s) -> opt(sort(s))
+	make-iter: sort(s) -> iter(sort(s))
+	make-iter-star: sort(s) -> iter-star(sort(s))
 	
 rules // utils
 
