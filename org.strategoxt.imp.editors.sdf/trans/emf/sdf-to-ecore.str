@@ -79,16 +79,6 @@ rules
 		(iter-star(sort(s)), properties) -> (s, properties')
 		where
 			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
-	
-	set-bounds:
-		(iter-sep(sort(s), _), properties) -> (s, properties')
-		where
-			properties' := <add-properties> ([LowerBound(1), UpperBound(-1)], properties)
-
-	set-bounds:
-		(iter-star-sep(sort(s), _), properties) -> (s, properties')
-		where
-			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
 		
 	set-structuralFeature:
 		(s, properties) -> eStructuralFeature
@@ -163,7 +153,7 @@ rules // extract non-terminal from a sequence
 		where
 			if not ( <?lit(_)> a )
 			then non-terminal := a
-			else non-terminal := <fetch-elem(id)> b
+			else non-terminal := <fetch-elem(not(?lit(_)))> b
 			end
 	
 	make-opt: sort(s) -> opt(sort(s))
@@ -177,12 +167,11 @@ rules //extract non-terminal from a seperator
 		where
 			result := <alltd(make-iter)> non-terminal
 	
-	rewrite-iter-sep:
+	rewrite-sep:
 		iter-star-sep(non-terminal, _) -> result
 		where
 			result := <alltd(make-iter-star)> non-terminal
-		
-	
+			
 rules // utils
 
 	// add property with constructor cons to list if list doesn't contain a property with constructor cons yet 
