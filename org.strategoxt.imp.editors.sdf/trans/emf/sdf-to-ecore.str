@@ -16,7 +16,7 @@ rules
 	where
 		properties := [Name(moduleName)];
 		productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
-		productions' := <alltd(rewrite-seq)> productions;
+		productions' := <alltd(rewrite-seq + rewrite-sep)> productions;
 		classes := <map(to-ecore)> productions';
 		superclasses := <create-superclasses> productions';
 		classes' := <conc>(classes, superclasses)
@@ -169,6 +169,19 @@ rules // extract non-terminal from a sequence
 	make-opt: sort(s) -> opt(sort(s))
 	make-iter: sort(s) -> iter(sort(s))
 	make-iter-star: sort(s) -> iter-star(sort(s))
+
+rules //extract non-terminal from a seperator
+	
+	rewrite-sep:
+		iter-sep(non-terminal, _) -> result
+		where
+			result := <alltd(make-iter)> non-terminal
+	
+	rewrite-iter-sep:
+		iter-star-sep(non-terminal, _) -> result
+		where
+			result := <alltd(make-iter-star)> non-terminal
+		
 	
 rules // utils
 
