@@ -43,8 +43,8 @@ rules
 		(namespacedef(_, sort), properties) -> (sort, properties')
 		where
 			containment := Containment(True());
-			ID := ID(True());
-			properties' := <add-properties> ([containment, ID], properties)
+			//ID := ID(True());
+			properties' := <add-properties> ([containment], properties)
 	
 	def-ref-containment:
 		(namespaceref2(namespace, sort), properties) -> (sort, properties')
