@@ -1,7 +1,7 @@
 module ecore-to-xml
 	
 imports
-	lib/ecore-signatures
+	trans/emf/ecore-signatures
 	lib/xml/xml-doc
 	
 overlays 
@@ -13,7 +13,7 @@ overlays
 		
 strategies
 	
-	ecore-to-xml = topdown(try(to-xml))
+	ecore-to-xml = topdown(try(to-xml)); topdown(try(xml-escape))
 		
 rules
 	
@@ -48,12 +48,16 @@ rules
 			attributes := <conc> (fixedAttributes, properties)
 	
 	to-xml:
+		EEnum(name, children) -> Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eClassifiers");
+			attributes := [XMLAttribute("xsi", "type", "ecore:EEnum"), XMLAttribute("name", name)]
+	
+	to-xml:
 		EAttribute(properties) -> Element(qName, attributes, children, None())
 		where
 			qName := QName(None(), "eStructuralFeatures");
-			fixedAttributes := [
-				XMLAttribute("xsi", "type", "ecore:EAttribute")
-			];
+			fixedAttributes := [XMLAttribute("xsi", "type", "ecore:EAttribute")];
 			attributes := <conc> (fixedAttributes, properties);
 			children := []
 	
@@ -61,12 +65,17 @@ rules
 		EReference(properties) -> Element(qName, attributes, children, None())
 		where
 			qName := QName(None(), "eStructuralFeatures");
-			fixedAttributes := [
-				XMLAttribute("xsi", "type", "ecore:EReference")
-			];
+			fixedAttributes := [XMLAttribute("xsi", "type", "ecore:EReference")];
 			attributes := <conc> (fixedAttributes, properties);
 			children := []
 
+	to-xml:
+		ENumLiteral(literal) -> Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eLiterals");
+			attributes := [XMLAttribute("name", literal), XMLAttribute("literal", literal)];
+			children := []
+			
 	to-xml:
 		EString() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
 
@@ -77,10 +86,8 @@ rules
 	// Properties:
 
 	to-xml:	Name(name) 			-> XMLAttribute("name", name)
-	to-xml: Type(type)			-> XMLAttribute("eType", type)
-		where not ( <is-string> type )
-	to-xml: Type(type)			-> XMLAttribute("eType", type')
-		where type' := <conc-strings> ("#//", type)
+	to-xml: Type(type)			-> XMLAttribute("eType", type)	where not ( <is-string> type )
+	to-xml: Type(type)			-> XMLAttribute("eType", type')	where type' := <conc-strings> ("#//", type)
 	to-xml: Type(type)			-> XMLAttribute("eType", type)		
 	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
 	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
@@ -89,5 +96,11 @@ rules
 	to-xml: Containment(False())-> XMLAttribute("containment", "false")
 	to-xml: Abstract(True())	-> XMLAttribute("abstract", "true")
 	to-xml: Abstract(False())	-> XMLAttribute("abstract", "false")
-	to-xml: ID(True())			-> XMLAttribute("iD", "true")
-	to-xml: ID(False())			-> XMLAttribute("iD", "false")			
+	to-xml: Identifier(True())	-> XMLAttribute("iD", "true")
+	to-xml: Identifier(False())	-> XMLAttribute("iD", "false")
+	
+	xml-escape:
+		x -> y
+		where
+			y := <string-replace(|"&", "&amp;")> <string-replace(|"\"", "&quot;")> x		
+	

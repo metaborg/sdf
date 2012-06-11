@@ -2,7 +2,7 @@ module emf/sdf-to-ecore
 	
 imports
 	include/SDF
-	lib/ecore-signatures
+	trans/emf/ecore-signatures
 	lib/attributes
 	
 strategies
@@ -15,13 +15,15 @@ rules
 		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, classes')
 	where
 		properties := [Name(moduleName)];
-		productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
-		productions' := <alltd(rewrite-seq + rewrite-sep)> productions;
-		classes := <map(to-ecore)> productions';
-		superclasses := <create-superclasses> productions';
-		classes' := <conc>(classes, superclasses)
+		CF-productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
+		CF-productions' := <map(flatten-prod)> <alltd(rewrite-seq + rewrite-sep)> CF-productions;
+		classes := <map(to-class)> CF-productions';
+		superclasses := <create-superclasses> CF-productions';
+		enum-productions := <collect-om(?prod([lit(_)], sort(_), no-attrs()))> <collect-om(?lexical-syntax(_))> exports*;
+		enums := <to-enum> enum-productions;
+		classes' := <concat> [classes, superclasses, enums]
 
-	to-ecore:
+	to-class:
 		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
 		where
 			cons := <fetch-cons-name> attributes;
@@ -43,8 +45,8 @@ rules
 		(namespacedef(_, sort), properties) -> (sort, properties')
 		where
 			containment := Containment(True());
-			ID := ID(True());
-			properties' := <add-properties> ([containment, ID], properties)
+			identifier := Identifier(True());
+			properties' := <add-properties> ([containment, identifier], properties)
 	
 	def-ref-containment:
 		(namespaceref2(namespace, sort), properties) -> (sort, properties')
@@ -122,39 +124,36 @@ rules
 			not ( <eq> (s, cons) );
 			not ( <eq> (s, "Start" ))
 			
-rules // extract non-terminal from a sequence
+rules
 	
 	rewrite-seq:
-		seq(a, b) -> non-terminal
+		s@seq(a, b) -> sequence
 		where
-			non-terminal := <fetch-non-terminal> (a, b)
+			sequence := <remove-literals> s
 			
 	rewrite-seq:
-		opt(seq(a, b)) -> result	
+		opt(s@seq(a, b)) -> result	
 		where
-			non-terminal := <fetch-non-terminal> (a, b);
-			result := <alltd(make-opt)> non-terminal
+			sequence := <remove-literals> s;
+			result := <map(alltd(make-opt))> sequence
 			
 	rewrite-seq:
-		iter(seq(a, b)) -> result
+		iter(s@seq(a, b)) -> result
 		where
-			non-terminal := <fetch-non-terminal> (a, b);
-			result := <alltd(make-iter)> non-terminal		
+			sequence := <remove-literals> s;
+			result := <map(alltd(make-iter))> sequence	
 
 	rewrite-seq:
-		iter-star(seq(a, b)) -> result
+		iter-star(s@seq(a, b)) -> result
 		where
-			non-terminal := <fetch-non-terminal> (a, b);
-			result := <alltd(make-iter-star)> non-terminal
+			sequence := <remove-literals> s;
+			result := <map(alltd(make-iter-star))> sequence
 
-	// fetch non-terminal (including possible label, namespacedef/namespaceref2) from sequence
-	fetch-non-terminal:
-		(a, b) -> non-terminal
+	remove-literals:
+		seq(a, b) -> result
 		where
-			if not ( <?lit(_)> a )
-			then non-terminal := a
-			else non-terminal := <fetch-elem(not(?lit(_)))> b
-			end
+			sequence := <conc> ([a], b);
+			result := <remove-all(?lit(_))> sequence
 	
 	make-opt: sort(s) -> opt(sort(s))
 	make-iter: sort(s) -> iter(sort(s))
@@ -200,4 +199,28 @@ rules // utils
 			else
 				string' := <conc-strings> (string, "s")
 			end
+
+	flatten-prod:
+		prod(lhs, s, attrs) -> prod(lhs', s, attrs)
+		where
+			lhs' := <flatten-list> lhs
+
+rules
+	
+	to-enum:
+		enum-productions -> enums
+		where
+			enum-names := <collect-om(fetch-enum-name)> enum-productions;
+			enums := <map(create-enum(|enum-productions))> enum-names
+	
+	create-enum(|enum-productions):
+		enum-name -> EEnum(enum-name, enum-literals)
+		where
+			enum-literals := <collect-om(fetch-enum-literal(|enum-name))> enum-productions
 			
+	fetch-enum-name:
+		prod(_, sort(enum-name), _) -> enum-name
+		
+	fetch-enum-literal(|enum-name):
+		prod([lit(enum-literal)], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal)
+		

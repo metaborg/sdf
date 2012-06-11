@@ -1,0 +1,27 @@
+module lib/ecore-signatures
+
+signature constructors
+    
+    EPackage    : properties * children -> EPackage
+    
+    EClass      : properties * children -> EClass
+    EEnum		: ID * literals -> EEnum
+    
+    EAttribute  : properties -> EAttribute
+    EReference  : properties -> EReference
+    ENumLiteral	: ID -> ENumLiteral
+    
+    Name        : ID -> Name
+    Type        : Type -> Type
+    ESuperType  : Type -> ESuperType
+    UpperBound  : INT -> UpperBound
+    LowerBound  : INT -> LowerBound
+    Containment : Boolean -> Containment
+    Abstract    : Boolean -> Abstract
+    Identifier	: Boolean -> Identifier
+    
+    EInt        : Type
+    EString     : Type
+    
+    False       : Boolean
+    True        : Boolean
