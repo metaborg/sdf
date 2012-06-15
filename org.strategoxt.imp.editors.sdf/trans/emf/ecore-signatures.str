@@ -9,7 +9,7 @@ signature constructors
     
     EAttribute  : properties -> EAttribute
     EReference  : properties -> EReference
-    ENumLiteral	: ID -> ENumLiteral
+    ENumLiteral	: ID * ID -> ENumLiteral
     
     Name        : ID -> Name
     Type        : Type -> Type

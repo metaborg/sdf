@@ -70,10 +70,10 @@ rules
 			children := []
 
 	to-xml:
-		ENumLiteral(literal) -> Element(qName, attributes, children, None())
+		ENumLiteral(literal, literal-name) -> Element(qName, attributes, children, None())
 		where
 			qName := QName(None(), "eLiterals");
-			attributes := [XMLAttribute("name", literal), XMLAttribute("literal", literal)];
+			attributes := [XMLAttribute("literal", literal), XMLAttribute("name", literal-name)];
 			children := []
 			
 	to-xml:

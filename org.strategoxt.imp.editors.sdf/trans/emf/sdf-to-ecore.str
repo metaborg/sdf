@@ -17,13 +17,13 @@ rules
 		properties := [Name(moduleName)];
 		CF-productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
 		CF-productions' := <map(flatten-prod)> <alltd(rewrite-seq + rewrite-sep)> CF-productions;
-		classes := <map(to-class)> CF-productions';
-		superclasses := <create-superclasses> CF-productions';
-		enum-productions := <collect-om(?prod([lit(_)], sort(_), no-attrs()))> <collect-om(?lexical-syntax(_))> exports*;
+		enum-productions := <collect-om(?prod([lit(_)], sort(_), no-attrs()) + ?prod([label(unquoted(_), lit(_))], sort(_), no-attrs()))> <collect-om(?lexical-syntax(_))> exports*;
 		enums := <to-enum> enum-productions;
+		classes := <map(to-class(|enums))> CF-productions';
+		superclasses := <create-superclasses> CF-productions';
 		classes' := <concat> [classes, superclasses, enums]
 
-	to-class:
+	to-class(|enums):
 		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
 		where
 			cons := <fetch-cons-name> attributes;
@@ -31,7 +31,7 @@ rules
 			if <eq> (s, cons) + <eq> (s, "Start") then properties := [] else properties := [ESuperType(s)] end;
 			properties' := <add-property> (name, properties);
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
-			structuralFeatures' := <map(set-name; def-ref-containment; set-bounds; set-structuralFeature)> structuralFeatures
+			structuralFeatures' := <map(set-name; def-ref-containment; set-bounds; set-structuralFeature(|enums))> structuralFeatures
 
 	set-name:
 		label(unquoted(name), x) -> (x, [Name(name)])
@@ -82,7 +82,7 @@ rules
 		where
 			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
 		
-	set-structuralFeature:
+	set-structuralFeature(|enums):
 		(s, properties) -> eStructuralFeature
 		where			
 			if <fetch(?UpperBound(-1))> properties
@@ -92,9 +92,12 @@ rules
 			properties' := <add-property> (name, properties);
 			
 			if
-				not ( <fetch(?Containment(False()))> properties ); <int-or-string> s
+				not ( <fetch(?Containment(False()))> properties ); <primitive-type> s + <fetch(?EEnum(s, _))> enums
 			then
-				type := Type(<int-or-string> s);
+				if <primitive-type> s
+				then type := Type(<primitive-type> s)
+				else type := Type(s)
+				end;
 				properties'' := <add-property> (type, properties');
 				properties''' := <remove-all(?Containment(_))> properties'';
 				eStructuralFeature := EAttribute(properties''')
@@ -104,10 +107,10 @@ rules
 				eStructuralFeature := EReference(properties'')
 			end
 
-	int-or-string:
+	primitive-type:
 		"INT" -> EInt()
 		
-	int-or-string:
+	primitive-type:
 		"ID" -> EString()
 
 rules
@@ -216,11 +219,14 @@ rules
 	create-enum(|enum-productions):
 		enum-name -> EEnum(enum-name, enum-literals)
 		where
-			enum-literals := <collect-om(fetch-enum-literal(|enum-name))> enum-productions
+			enum-literals := <collect-om(to-enum-literal(|enum-name))> enum-productions
 			
 	fetch-enum-name:
 		prod(_, sort(enum-name), _) -> enum-name
 		
-	fetch-enum-literal(|enum-name):
-		prod([lit(enum-literal)], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal)
+	to-enum-literal(|enum-name):
+		prod([lit(enum-literal)], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal, <un-double-quote> enum-literal)
+
+	to-enum-literal(|enum-name):
+		prod([label(unquoted(enum-literal-name), lit(enum-literal))], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal, enum-literal-name)
 		
