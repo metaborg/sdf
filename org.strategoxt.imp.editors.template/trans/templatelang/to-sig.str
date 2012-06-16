@@ -13,7 +13,7 @@ strategies
   templatelang-production-to-signature:
     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) -> sig
     where with-spxverify(
-      ph* := <filter(?Placeholder(_, _, _))> elem*;
+      ph* := <filter(?Placeholder(_, _, _, _))> elem*;
       sig := <templatelang-to-signature> (sort, ph*, attrs)
       , !"Failed to generate signature from production :: templatelang-production-to-signature (1)"
     )
@@ -21,7 +21,7 @@ strategies
   templatelang-production-to-signature:
     Desugared(TemplateProduction(sort, Template(line*), attrs)) -> sig
     where with-spxverify(
-      ph* := <mapconcat(?Line(<filter(?Placeholder(_, _, _))>))> line*;
+      ph* := <mapconcat(?Line(<filter(?Placeholder(_, _, _, _))>))> line*;
       sig := <templatelang-to-signature> (sort, ph*, attrs)
       , !"Failed to generate signature from production :: templatelang-production-to-signature (2)"
     )
@@ -58,13 +58,13 @@ strategies
       not(<fetch-cons-name> attrs)
 
   templatelang-placeholder-to-signature-arg:
-    Placeholder(sort(t), None(), _) -> ConstType(SortNoArgs(t))
+    Placeholder(_, sort(t), None(), _) -> ConstType(SortNoArgs(t))
 
   templatelang-placeholder-to-signature-arg:
-    Placeholder(sort(t), Option(), _) -> ConstType(Sort("Option", [SortNoArgs(t)]))
+    Placeholder(_, sort(t), Option(), _) -> ConstType(Sort("Option", [SortNoArgs(t)]))
 
   templatelang-placeholder-to-signature-arg:
-    Placeholder(sort(t), Plus(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))
+    Placeholder(_, sort(t), Plus(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))
 
   templatelang-placeholder-to-signature-arg:
-    Placeholder(sort(t), Star(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))
+    Placeholder(_, sort(t), Star(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))

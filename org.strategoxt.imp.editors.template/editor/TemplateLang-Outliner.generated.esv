@@ -1,0 +1,22 @@
+module TemplateLang-Outliner.generated
+
+outliner Default outliner        
+  
+  
+  // Outliner rules indicate which syntactic constructs should be shown in the outline
+  // and quick outline views, and take one of the following forms:
+  //
+  //   <sort>.<constructor>
+  //
+  //   <sort>._
+  //
+  //   _.<constructor>
+  
+  TemplateProduction.TemplateProduction
+  ATerm_SDF.appl
+  ModuleName_SDF.parameterized
+  Symbol_SDF.parameterized-sort
+  SdfProduction.SdfProduction
+  Production_SDF.prod
+  Production_SDF.prefix-fun
+  Restriction_SDF.follow

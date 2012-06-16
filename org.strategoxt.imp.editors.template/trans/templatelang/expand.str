@@ -76,42 +76,42 @@ strategies
    *  Line([indent @ Layout(_), Placeholder(sort(x), <None() + Plus()>, _)]) where <Expanded> x
    */
   expand-template-line:
-    [t @ Line([indent @ Layout(_), Placeholder(sort(x), m @ <None() + Plus()>, option*)]) | tail] -> [line'* | tail]
+    [t @ Line([indent @ Layout(_), Placeholder(label, sort(x), m @ <None() + Plus()>, option*)]) | tail] -> [line'* | tail]
     where
       <not(Expanded)> x;
       <not(one(?Hide() + ?Text(_)))> option*
     where
       line* := <get-template-lines(|indent) <+ ![t]> x;
-      if ?[Line([indent, p @ Placeholder(_, _, _)])] then
+      if ?[Line([indent, p @ Placeholder(_, _, _, _)])] then
         text := <template-element-to-string> p;
-        line'* := [Line([indent, Placeholder(sort(x), m, [Text(text) | option*])])]
+        line'* := [Line([indent, Placeholder(label, sort(x), m, [Text(text) | option*])])]
       else
         line'* := line*
       end
 
   // Do not touch already expanded placeholders.
   expand-template-line:
-    [t @ Line([Layout(_), Placeholder(sort(x), <None() + Plus()>, option*)]) | tail] -> [t | tail]
+    [t @ Line([Layout(_), Placeholder(label, sort(x), <None() + Plus()>, option*)]) | tail] -> [t | tail]
     where
       <Expanded> x
       + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-line:
-    [t @ Line([Layout(_), Placeholder(_, <Option() + Star()>, option*)]) | tail] -> [t | tail]
+    [t @ Line([Layout(_), Placeholder(label, _, <Option() + Star()>, option*)]) | tail] -> [t | tail]
     where
       <not(one(?Hide()))> option*
 
   // Remove line with hidden placeholder.
   expand-template-line:
-    [Line([Layout(_), Placeholder(_, _, option*)]) | tail] -> tail
+    [Line([Layout(_), Placeholder(label, _, _, option*)]) | tail] -> tail
     where
       <one(?Hide())> option*
 
   expand-template-line:
     [t @ Line(elem*) | tail] -> t'
     where
-      not(!elem* => [Layout(_), Placeholder(_, <None() + Plus()>, _)])
+      not(!elem* => [Layout(_), Placeholder(label, _, <None() + Plus()>, _)])
     where
       t' := <![Line(<listbu(expand-template-element); not(?[])>) | tail] <+ !tail> elem*
 
@@ -125,9 +125,9 @@ strategies
    *  Placeholder(sort(x), <None() + Plus()>, _) where <Expanded> x
    */
   expand-template-element:
-    [t @ Placeholder(sort(x), m @ <None() + Plus()>, option*) | tail] ->
+    [t @ Placeholder(label, sort(x), m @ <None() + Plus()>, option*) | tail] ->
       // [elem* | tail]
-      [Placeholder(sort(x), m, [Text(text) | option*]) | tail]
+      [Placeholder(label, sort(x), m, [Text(text) | option*]) | tail]
     where
       <not(Expanded)> x;
       <not(one(?Hide() + ?Text(_)))> option*
@@ -137,27 +137,27 @@ strategies
 
   // Do not touch already expanded placeholders.
   expand-template-element:
-    [t @ Placeholder(sort(x), <None() + Plus()>, option*) | tail] -> [t | tail]
+    [t @ Placeholder(label, sort(x), <None() + Plus()>, option*) | tail] -> [t | tail]
     where
       <Expanded> x
       + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-element:
-    [t @ Placeholder(_, <Option() + Star()>, option*) | tail] -> [t | tail]
+    [t @ Placeholder(label, _, <Option() + Star()>, option*) | tail] -> [t | tail]
     where
       <not(one(?Hide()))> option*
 
   // Remove hidden placeholder.
   expand-template-element:
-    [Placeholder(_, _, option*) | tail] -> tail
+    [Placeholder(label, _, _, option*) | tail] -> tail
     where
       <one(?Hide())> option*
 
   expand-template-element:
     [t | tail] -> [t | tail]
     where
-      not(!t => Placeholder(sort(x), <None() + Plus()>, _))
+      not(!t => Placeholder(label, sort(x), <None() + Plus()>, _))
 
   expand-template-element:
     [] -> <id>
@@ -215,7 +215,7 @@ strategies  // helpers
     <+ ?Layout(<string-length>)
     <+ ?Text(<string-length>)
        // Penalty for unexpanded placeholders
-    <+ \Placeholder(sort(x), _, <not(one(?Text(_)))>) -> <string-length> x\
+    <+ \Placeholder(label, sort(x), _, <not(one(?Text(_)))>) -> <string-length> x\
     <+ crush(!0, addi, template-character-count)
 
   // lower than (does not exist in library)

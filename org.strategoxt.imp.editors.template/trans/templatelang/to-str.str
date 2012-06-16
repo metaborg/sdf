@@ -173,7 +173,7 @@ rules
     )
 
   rename-template-element:
-    (Placeholder(a, b, c), index) -> (Placeholder(a, b, c){name'}, index')
+    (Placeholder(l, a, b, c), index) -> (Placeholder(l, a, b, c){name'}, index')
     where with-spxverify(
       name'  := <implode-string> [<addi> ('a', index)];
       index' := <inc> index,
@@ -186,7 +186,7 @@ rules
     Line(elem*) -> <filter(template-element-to-cons-arg)> elem*
 
   template-element-to-cons-arg:
-    Placeholder(_, _, _){name} -> Var(name)
+    Placeholder(_, _, _, _){name} -> Var(name)
 
 rules
 
@@ -233,7 +233,7 @@ rules
       t' := <templatelang-escape; double-quote> t
 
   template-element-to-stratego:
-    Placeholder(sort(x), None(), _){name} ->
+    Placeholder(_, sort(x), None(), _){name} ->
       // $[<[s]> [name]]
       App(s, Var(name))
     where with-spxverify(
@@ -242,7 +242,7 @@ rules
     )
 
   template-element-to-stratego:
-    Placeholder(sort(x), Option(), _){name} ->
+    Placeholder(_, sort(x), Option(), _){name} ->
       // $[<pp-option([s])> [name]]
       App(Call(SVar("pp-option"), [s]), Var(name))
     where with-spxverify(
@@ -251,7 +251,7 @@ rules
     )
 
   placeholder-to-pp-one:
-    Placeholder(sort(x), _, option*) ->
+    Placeholder(_, sort(x), _, option*) ->
       // $[pp-one-[v-or-z](prettyprint-[x])]
       Call(ppo, [ppx])
     where with-spxverify(
@@ -265,7 +265,7 @@ rules
     )
 
   template-element-to-stratego:
-    Placeholder(sort(x), <Star() + Plus()>, option*){name} ->
+    Placeholder(_, sort(x), <Star() + Plus()>, option*){name} ->
       // $[<[s]> [name]]
       // <pp-[h|v]-list(prettyprint-x)> name
       App(s, Var(name))

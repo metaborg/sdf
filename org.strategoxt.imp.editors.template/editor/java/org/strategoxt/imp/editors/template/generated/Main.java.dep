@@ -1,0 +1,27 @@
+/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/editor/java/org/strategoxt/imp/editors/template/generated/Main.java: \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/to-string.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/to-str.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/include/StrategoStratego.tbl \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/to-sig.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/to-sdf.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/to-esv.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/sdf-to-template.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/main.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/expand.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/desugar.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/analyze.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/tokenize.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/stubs.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/sdf.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/lib/sdf-parenthesize.str \
+	 \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/lib/sdf-desugar.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/pp-sdf.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/lib/EditorService.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/pp-esv.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/parse-str.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/parse-sdf.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/misc.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/contract.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/include/TemplateLang.str \
+	/Users/guwac/Documents/EclipseWorkspaces/Spoofax/org.strategoxt.imp.editors.template/trans/templatelang/utils/attributes.str

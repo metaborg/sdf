@@ -82,7 +82,7 @@ rules
   // The placeholder is at the start AND at the end of the template!
   template-to-sdf:
     < ?SingleLineTemplate(elem*)
-    + ?Template([Line(elem* @ [Layout(_), Placeholder(_, _, _)])]) > -> A*
+    + ?Template([Line(elem* @ [Layout(_), Placeholder(label, _, _, _)])]) > -> A*
     where with-spxverify (
       A* := <maybe-separating(
                filter(template-element-to-sdf-sep <+ template-element-to-sdf),
@@ -108,7 +108,7 @@ rules
 rules
 
   template-line-to-sdf-sep:
-    (Line([Layout(_), p @ Placeholder(sort(S), mult, option*)]), state) ->
+    (Line([Layout(_), p @ Placeholder(label, sort(S), mult, option*)]), state) ->
       (result, state)
     where
       <one(Separator(is-substring(!"\n")))> option*
@@ -133,22 +133,22 @@ rules
       ([ A|[ "\"\\n\"" ]| | <template-line-to-sdf-sep-helper> elem*], 1)
 
   template-line-to-sdf-sep-helper =
-    not(?[Layout(_), Placeholder(_, _, <one(Separator(is-substring(!"\n")))>)]);
+    not(?[Layout(_), Placeholder(label, _, _, <one(Separator(is-substring(!"\n")))>)]);
     filter(template-element-to-sdf-sep <+ template-element-to-sdf)
 
   template-element-to-sdf-sep:
-    Placeholder(sort(S), Star(), option*) -> A|[ {S "\"\\n\""}* ]|
+    Placeholder(label, sort(S), Star(), option*) -> A|[ {S "\"\\n\""}* ]|
     where <one(Separator(is-substring(!"\n")))> option*
 
   template-element-to-sdf-sep:
-    Placeholder(sort(S), Plus(), option*) -> A|[ {S "\"\\n\""}+ ]|
+    Placeholder(label, sort(S), Plus(), option*) -> A|[ {S "\"\\n\""}+ ]|
     where <one(Separator(is-substring(!"\n")))> option*
 
 rules
 
   template-line-to-sdf =
     ?Line(<id>);
-    if not(?[Layout(_), Placeholder(_, _, _)]) then
+    if not(?[Layout(_), Placeholder(label, _, _, _)]) then
       switch <templatelang-get-option> Newlines()
         case ?None()     : id
         case ?Leading()  : ![String("\n") | <id>]
@@ -161,26 +161,26 @@ rules
     String(x) -> <string-to-sdf> x
 
   template-element-to-sdf:
-    Placeholder(sort(S), None(), _) -> A|[ S ]|
+    Placeholder(label, sort(S), None(), _) -> A|[ S ]|
 
   template-element-to-sdf:
-    Placeholder(sort(S), Option(), _) -> A|[ S? ]|
+    Placeholder(label, sort(S), Option(), _) -> A|[ S? ]|
 
   template-element-to-sdf:
-    Placeholder(sort(S), Star(), option*) -> A|[ S* ]|
+    Placeholder(label, sort(S), Star(), option*) -> A|[ S* ]|
     where <not(one(Separator(not(string-is-layout))))> option*
 
   template-element-to-sdf:
-    Placeholder(sort(S), Star(), option*) -> A|[ { S L }* ]|
+    Placeholder(label, sort(S), Star(), option*) -> A|[ { S L }* ]|
     where <one(Separator(not(string-is-layout)))> option*
     where with-spxverify ( L := <separator-to-literal> option*)
 
   template-element-to-sdf:
-    Placeholder(sort(S), Plus(), option*) -> A|[ S+ ]|
+    Placeholder(label, sort(S), Plus(), option*) -> A|[ S+ ]|
     where <not(one(Separator(not(string-is-layout))))> option*
 
   template-element-to-sdf:
-    Placeholder(sort(S), Plus(), option*) -> A|[ { S L }+ ]|
+    Placeholder(label, sort(S), Plus(), option*) -> A|[ { S L }+ ]|
     where <one(Separator(not(string-is-layout)))> option*
     where with-spxverify( L := <separator-to-literal> option*  )
 

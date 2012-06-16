@@ -84,7 +84,7 @@ rules
 rules
 
   template-line-to-esv:
-    Line([Layout(x), Placeholder(_, <Option() + Star()>, option*)]) ->
+    Line([Layout(x), Placeholder(label, _, <Option() + Star()>, option*)]) ->
       <spaces-to-tabs> [String(x), Cursor()]
       where
         <not(one(?Text(_)))> option*
@@ -97,14 +97,14 @@ rules
 
   // Any placeholder with title results in a placeholder with that title.
   template-element-to-esv:
-    Placeholder(sort(sort), _, option*) ->
+    Placeholder(label, sort(sort), _, option*) ->
       PlaceholderWithSort($[<[text]:], sort)
       where
         <one(?Text(text))> option*
 
   // A and A+ result in a placeholder containing the shortest expansion of A.
   template-element-to-esv:
-    placeholder @ Placeholder(sort(sort), <None() + Plus()>, option*) ->
+    placeholder @ Placeholder(label, sort(sort), <None() + Plus()>, option*) ->
       PlaceholderWithSort($[<[text]:], sort)
     where
       <not(one(?Text(_) + ?Hide()))> option*
@@ -116,7 +116,7 @@ rules
 
   // A? and A* result in a 0-length placeholder.
   template-element-to-esv:
-    Placeholder(sort(sort), <Option() + Star()>, option*) ->
+    Placeholder(label, sort(sort), <Option() + Star()>, option*) ->
       PlaceholderWithSort("<:", sort)
     where
       <not(one(?Text(_)))> option*

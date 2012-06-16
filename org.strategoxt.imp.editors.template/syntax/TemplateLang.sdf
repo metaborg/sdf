@@ -59,11 +59,14 @@ exports
     %% placeholders
     "<" Placeholder ">" -> TemplatePart1 {bracket}
     "[" Placeholder "]" -> TemplatePart2 {bracket}
-    PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder {cons("Placeholder")}
+    PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder {cons("Placeholder")}
 
     %% constructor identical to SDF sort to simplify some transformations
     ID -> PlaceholderSort {cons("sort")}
 
+        	-> PlaceholderLabel {cons("None")}
+    ID ":"  -> PlaceholderLabel {cons("Label")}
+    
         -> PlaceholderSuffix {cons("None")}
     "*" -> PlaceholderSuffix {cons("Star")}
     "+" -> PlaceholderSuffix {cons("Plus")}
