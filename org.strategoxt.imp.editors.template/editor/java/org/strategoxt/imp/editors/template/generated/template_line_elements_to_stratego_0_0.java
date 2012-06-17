@@ -24,17 +24,17 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("template_line_elements_to_stratego_0_0");
-    Fail62:
+    Fail881:
     { 
-      term = map_1_0.instance.invoke(context, term, lifted35.instance);
+      term = map_1_0.instance.invoke(context, term, lifted234.instance);
       if(term == null)
-        break Fail62;
+        break Fail881;
       term = concatenate_consecutive_strings_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail62;
+        break Fail881;
       term = filter_1_0.instance.invoke(context, term, template_element_to_stratego_0_0.instance);
       if(term == null)
-        break Fail62;
+        break Fail881;
       context.popOnSuccess();
       if(true)
         return term;

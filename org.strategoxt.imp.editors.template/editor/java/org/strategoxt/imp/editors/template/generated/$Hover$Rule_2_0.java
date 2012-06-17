@@ -21,30 +21,30 @@ import java.lang.ref.WeakReference;
 { 
   public static $Hover$Rule_2_0 instance = new $Hover$Rule_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy j_9755, Strategy k_9755)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy s_32793, Strategy t_32793)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("HoverRule_2_0");
-    Fail504:
+    Fail1324:
     { 
-      IStrategoTerm y_9935 = null;
-      IStrategoTerm w_9935 = null;
-      IStrategoTerm x_9935 = null;
-      IStrategoTerm z_9935 = null;
+      IStrategoTerm h_32974 = null;
+      IStrategoTerm f_32974 = null;
+      IStrategoTerm g_32974 = null;
+      IStrategoTerm i_32974 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consHoverRule_2 != ((IStrategoAppl)term).getConstructor())
-        break Fail504;
-      w_9935 = term.getSubterm(0);
-      x_9935 = term.getSubterm(1);
-      IStrategoList annos77 = term.getAnnotations();
-      y_9935 = annos77;
-      term = j_9755.invoke(context, w_9935);
+        break Fail1324;
+      f_32974 = term.getSubterm(0);
+      g_32974 = term.getSubterm(1);
+      IStrategoList annos95 = term.getAnnotations();
+      h_32974 = annos95;
+      term = s_32793.invoke(context, f_32974);
       if(term == null)
-        break Fail504;
-      z_9935 = term;
-      term = k_9755.invoke(context, x_9935);
+        break Fail1324;
+      i_32974 = term;
+      term = t_32793.invoke(context, g_32974);
       if(term == null)
-        break Fail504;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consHoverRule_2, new IStrategoTerm[]{z_9935, term}), checkListAnnos(termFactory, y_9935));
+        break Fail1324;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consHoverRule_2, new IStrategoTerm[]{i_32974, term}), checkListAnnos(termFactory, h_32974));
       context.popOnSuccess();
       if(true)
         return term;

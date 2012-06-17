@@ -21,50 +21,50 @@ import java.lang.ref.WeakReference;
 { 
   public static verify_stratego_3_0 instance = new verify_stratego_3_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy e_9749, Strategy f_9749, Strategy g_9749)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy n_32787, Strategy o_32787, Strategy p_32787)
   { 
     context.push("verify_stratego_3_0");
-    Fail373:
+    Fail1193:
     { 
-      IStrategoTerm term373 = term;
-      Success260:
+      IStrategoTerm term629 = term;
+      Success516:
       { 
-        Fail374:
+        Fail1194:
         { 
-          term = e_9749.invoke(context, term);
+          term = n_32787.invoke(context, term);
           if(term == null)
-            break Fail374;
+            break Fail1194;
           if(true)
-            break Success260;
+            break Success516;
         }
-        term = term373;
-        IStrategoTerm h_9749 = null;
-        IStrategoTerm i_9749 = null;
-        IStrategoTerm k_9749 = null;
-        IStrategoTerm l_9749 = null;
-        IStrategoTerm o_9749 = null;
-        term = try_1_0.instance.invoke(context, term, f_9749);
+        term = term629;
+        IStrategoTerm q_32787 = null;
+        IStrategoTerm r_32787 = null;
+        IStrategoTerm t_32787 = null;
+        IStrategoTerm u_32787 = null;
+        IStrategoTerm x_32787 = null;
+        term = try_1_0.instance.invoke(context, term, o_32787);
         if(term == null)
-          break Fail373;
-        k_9749 = term;
-        h_9749 = generated.constCritical0;
-        term = k_9749;
-        l_9749 = k_9749;
-        term = as_string_1_0.instance.invoke(context, term, g_9749);
+          break Fail1193;
+        t_32787 = term;
+        q_32787 = generated.constCritical0;
+        term = t_32787;
+        u_32787 = t_32787;
+        term = as_string_1_0.instance.invoke(context, term, p_32787);
         if(term == null)
-          break Fail373;
-        i_9749 = term;
-        term = l_9749;
-        o_9749 = l_9749;
-        term = log_0_3.instance.invoke(context, o_9749, h_9749, i_9749, term);
+          break Fail1193;
+        r_32787 = term;
+        term = u_32787;
+        x_32787 = u_32787;
+        term = log_0_3.instance.invoke(context, x_32787, q_32787, r_32787, term);
         if(term == null)
-          break Fail373;
+          break Fail1193;
         term = context.invokePrimitive("SSL_stacktrace_get_all_frame_names", term, NO_STRATEGIES, NO_TERMS);
         if(term == null)
-          break Fail373;
+          break Fail1193;
         term = report_failure_0_0.instance.invoke(context, term);
         if(term == null)
-          break Fail373;
+          break Fail1193;
       }
       context.popOnSuccess();
       if(true)

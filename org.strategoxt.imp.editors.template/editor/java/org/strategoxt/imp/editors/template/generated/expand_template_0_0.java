@@ -24,37 +24,37 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("expand_template_0_0");
-    Fail200:
+    Fail1020:
     { 
-      IStrategoTerm term196 = term;
-      IStrategoConstructor cons16 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-      Success144:
+      IStrategoTerm term452 = term;
+      IStrategoConstructor cons28 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+      Success400:
       { 
-        if(cons16 == Main._consSingleLineTemplate_1)
+        if(cons28 == Main._consSingleLineTemplate_1)
         { 
-          Fail201:
+          Fail1021:
           { 
-            IStrategoTerm c_9729 = null;
-            c_9729 = term.getSubterm(0);
-            term = listbu_1_0.instance.invoke(context, c_9729, expand_template_element_0_0.instance);
+            IStrategoTerm l_32767 = null;
+            l_32767 = term.getSubterm(0);
+            term = listbu_1_0.instance.invoke(context, l_32767, expand_template_element_0_0.instance);
             if(term == null)
-              break Fail201;
+              break Fail1021;
             if(true)
-              break Success144;
+              break Success400;
           }
-          term = term196;
+          term = term452;
         }
-        if(cons16 == Main._consTemplate_1)
+        if(cons28 == Main._consTemplate_1)
         { 
-          IStrategoTerm y_9728 = null;
-          y_9728 = term.getSubterm(0);
-          term = listbu_1_0.instance.invoke(context, y_9728, expand_template_line_0_0.instance);
+          IStrategoTerm h_32767 = null;
+          h_32767 = term.getSubterm(0);
+          term = listbu_1_0.instance.invoke(context, h_32767, expand_template_line_0_0.instance);
           if(term == null)
-            break Fail200;
+            break Fail1020;
         }
         else
         { 
-          break Fail200;
+          break Fail1020;
         }
       }
       context.popOnSuccess();

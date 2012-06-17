@@ -24,17 +24,17 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("origin_documentation_comment_0_0");
-    Fail56:
+    Fail1897:
     { 
       term = origin_surrounding_comments_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail56;
-      term = filter_1_0.instance.invoke(context, term, lifted10.instance);
+        break Fail1897;
+      term = filter_1_0.instance.invoke(context, term, lifted540.instance);
       if(term == null)
-        break Fail56;
+        break Fail1897;
       term = concat_strings_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail56;
+        break Fail1897;
       context.popOnSuccess();
       if(true)
         return term;

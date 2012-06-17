@@ -25,66 +25,66 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("determine_score_0_0");
-    Fail196:
+    Fail1016:
     { 
-      IStrategoTerm s_9728 = null;
-      IStrategoTerm t_9728 = null;
-      IStrategoTerm u_9728 = null;
-      u_9728 = term;
-      term = u_9728;
-      Success141:
+      IStrategoTerm b_32767 = null;
+      IStrategoTerm c_32767 = null;
+      IStrategoTerm d_32767 = null;
+      d_32767 = term;
+      term = d_32767;
+      Success397:
       { 
-        Fail197:
+        Fail1017:
         { 
           term = is_deprecated_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail197;
+            break Fail1017;
           { 
-            term = generated.const93;
+            term = generated.const214;
             if(true)
-              break Success141;
+              break Success397;
           }
         }
-        term = generated.const45;
+        term = generated.const166;
       }
-      s_9728 = term;
-      term = u_9728;
-      Success142:
+      b_32767 = term;
+      term = d_32767;
+      Success398:
       { 
-        Fail198:
+        Fail1018:
         { 
           term = is_completion_prefer_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail198;
+            break Fail1018;
           { 
-            term = generated.const94;
+            term = generated.const215;
             if(true)
-              break Success142;
+              break Success398;
           }
         }
-        term = generated.const45;
+        term = generated.const166;
       }
-      t_9728 = term;
-      term = u_9728;
-      Success143:
+      c_32767 = term;
+      term = d_32767;
+      Success399:
       { 
-        Fail199:
+        Fail1019:
         { 
           term = is_completion_avoid_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail199;
+            break Fail1019;
           { 
-            term = generated.const95;
+            term = generated.const216;
             if(true)
-              break Success143;
+              break Success399;
           }
         }
-        term = generated.const45;
+        term = generated.const166;
       }
-      term = (IStrategoTerm)termFactory.makeListCons(s_9728, termFactory.makeListCons(t_9728, termFactory.makeListCons(term, (IStrategoList)generated.constNil0)));
+      term = (IStrategoTerm)termFactory.makeListCons(b_32767, termFactory.makeListCons(c_32767, termFactory.makeListCons(term, (IStrategoList)generated.constNil3)));
       term = sum_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail196;
+        break Fail1016;
       context.popOnSuccess();
       if(true)
         return term;

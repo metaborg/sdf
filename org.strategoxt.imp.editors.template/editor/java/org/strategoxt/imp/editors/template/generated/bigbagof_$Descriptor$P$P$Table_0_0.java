@@ -24,37 +24,37 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("bigbagof_DescriptorPPTable_0_0");
-    Fail630:
+    Fail1450:
     { 
-      TermReference r_9768 = new TermReference();
-      if(r_9768.value == null)
-        r_9768.value = term;
+      TermReference a_32807 = new TermReference();
+      if(a_32807.value == null)
+        a_32807.value = term;
       else
-        if(r_9768.value != term && !r_9768.value.match(term))
-          break Fail630;
-      Success291:
+        if(a_32807.value != term && !a_32807.value.match(term))
+          break Fail1450;
+      Success547:
       { 
-        Fail631:
+        Fail1451:
         { 
-          IStrategoTerm u_9768 = null;
-          IStrategoTerm w_9768 = null;
-          IStrategoTerm x_9768 = null;
-          w_9768 = term;
-          u_9768 = generated.const126;
-          x_9768 = w_9768;
-          term = dr_lookup_all_rules_0_2.instance.invoke(context, x_9768, u_9768, generated.constCons70);
+          IStrategoTerm d_32807 = null;
+          IStrategoTerm f_32807 = null;
+          IStrategoTerm g_32807 = null;
+          f_32807 = term;
+          d_32807 = generated.const247;
+          g_32807 = f_32807;
+          term = dr_lookup_all_rules_0_2.instance.invoke(context, g_32807, d_32807, generated.constCons83);
           if(term == null)
-            break Fail631;
+            break Fail1451;
           if(true)
-            break Success291;
+            break Success547;
         }
-        term = generated.constNil0;
+        term = generated.constNil3;
       }
-      lifted326 lifted3260 = new lifted326();
-      lifted3260.r_9768 = r_9768;
-      term = filter_1_0.instance.invoke(context, term, lifted3260);
+      lifted525 lifted5250 = new lifted525();
+      lifted5250.a_32807 = a_32807;
+      term = filter_1_0.instance.invoke(context, term, lifted5250);
       if(term == null)
-        break Fail630;
+        break Fail1450;
       context.popOnSuccess();
       if(true)
         return term;

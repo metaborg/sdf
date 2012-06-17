@@ -25,39 +25,39 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("templatelang_option_desugar_0_0");
-    Fail274:
+    Fail1094:
     { 
-      IStrategoTerm term275 = term;
-      IStrategoConstructor cons22 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-      Success200:
+      IStrategoTerm term531 = term;
+      IStrategoConstructor cons34 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+      Success456:
       { 
-        if(cons22 == Main._consSeparator_1)
+        if(cons34 == Main._consSeparator_1)
         { 
-          Fail275:
+          Fail1095:
           { 
-            IStrategoTerm a_9739 = null;
-            a_9739 = term.getSubterm(0);
-            term = templatelang_origin_track_forced_1_0.instance.invoke(context, a_9739, lifted209.instance);
+            IStrategoTerm j_32777 = null;
+            j_32777 = term.getSubterm(0);
+            term = templatelang_origin_track_forced_1_0.instance.invoke(context, j_32777, lifted408.instance);
             if(term == null)
-              break Fail275;
+              break Fail1095;
             term = termFactory.makeAppl(Main._consSeparator_1, new IStrategoTerm[]{term});
             if(true)
-              break Success200;
+              break Success456;
           }
-          term = term275;
+          term = term531;
         }
-        if(cons22 == Main._consText_1)
+        if(cons34 == Main._consText_1)
         { 
-          IStrategoTerm x_9738 = null;
-          x_9738 = term.getSubterm(0);
-          term = templatelang_origin_track_forced_1_0.instance.invoke(context, x_9738, lifted210.instance);
+          IStrategoTerm g_32777 = null;
+          g_32777 = term.getSubterm(0);
+          term = templatelang_origin_track_forced_1_0.instance.invoke(context, g_32777, lifted409.instance);
           if(term == null)
-            break Fail274;
+            break Fail1094;
           term = termFactory.makeAppl(Main._consText_1, new IStrategoTerm[]{term});
         }
         else
         { 
-          break Fail274;
+          break Fail1094;
         }
       }
       context.popOnSuccess();

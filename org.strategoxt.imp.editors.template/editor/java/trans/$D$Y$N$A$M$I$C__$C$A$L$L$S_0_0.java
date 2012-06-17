@@ -24,41 +24,41 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("DYNAMIC__CALLS_0_0");
-    Fail124:
+    Fail1972:
     { 
-      IStrategoTerm term60 = term;
-      Success44:
+      IStrategoTerm term731 = term;
+      Success715:
       { 
-        Fail125:
+        Fail1973:
         { 
-          IStrategoTerm r_10723 = null;
-          r_10723 = term;
-          term = undefine_$Declaration_0_1.instance.invoke(context, r_10723, trans.const38);
+          IStrategoTerm h_33010 = null;
+          h_33010 = term;
+          term = undefine_$Declaration_0_1.instance.invoke(context, h_33010, trans.const310);
           if(term == null)
-            break Fail125;
+            break Fail1973;
           if(true)
-            break Success44;
+            break Success715;
         }
-        term = term60;
-        IStrategoTerm term61 = term;
-        Success45:
+        term = term731;
+        IStrategoTerm term732 = term;
+        Success716:
         { 
-          Fail126:
+          Fail1974:
           { 
-            IStrategoTerm p_10723 = null;
-            p_10723 = term;
-            term = undefine_$Current$File_0_1.instance.invoke(context, p_10723, trans.const38);
+            IStrategoTerm f_33010 = null;
+            f_33010 = term;
+            term = undefine_$Current$File_0_1.instance.invoke(context, f_33010, trans.const310);
             if(term == null)
-              break Fail126;
+              break Fail1974;
             if(true)
-              break Success45;
+              break Success716;
           }
-          term = term61;
-          IStrategoTerm n_10723 = null;
-          n_10723 = term;
-          term = undefine_$Is$Imported_0_1.instance.invoke(context, n_10723, trans.const38);
+          term = term732;
+          IStrategoTerm d_33010 = null;
+          d_33010 = term;
+          term = undefine_$Is$Imported_0_1.instance.invoke(context, d_33010, trans.const310);
           if(term == null)
-            break Fail124;
+            break Fail1972;
         }
       }
       context.popOnSuccess();

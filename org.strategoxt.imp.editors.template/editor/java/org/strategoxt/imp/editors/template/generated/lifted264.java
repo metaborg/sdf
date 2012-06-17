@@ -19,17 +19,46 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted264 extends Strategy 
 { 
-  Strategy n_9757;
+  public static final lifted264 instance = new lifted264();
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail700:
+    Fail1760:
     { 
-      lifted265 lifted2650 = new lifted265();
-      lifted2650.n_9757 = n_9757;
-      term = $Cons_2_0.instance.invoke(context, term, lifted2650, $Nil_0_0.instance);
+      IStrategoTerm s_32755 = null;
+      IStrategoTerm y_32983 = null;
+      IStrategoTerm a_32984 = null;
+      if(term.getTermType() != IStrategoTerm.APPL || Main._consString_1 != ((IStrategoAppl)term).getConstructor())
+        break Fail1760;
+      s_32755 = term.getSubterm(0);
+      term = s_32755;
+      y_32983 = s_32755;
+      term = explode_string_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail700;
+        break Fail1760;
+      term = reverse_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1760;
+      if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
+        break Fail1760;
+      a_32984 = ((IStrategoList)term).head();
+      term = a_32984;
+      IStrategoTerm term346 = term;
+      Success638:
+      { 
+        Fail1761:
+        { 
+          term = is_alphanum_0_0.instance.invoke(context, term);
+          if(term == null)
+            break Fail1761;
+          if(true)
+            break Success638;
+        }
+        term = term346;
+        if(term.getTermType() != IStrategoTerm.INT || 95 != ((IStrategoInt)term).intValue())
+          break Fail1760;
+      }
+      term = y_32983;
       if(true)
         return term;
     }

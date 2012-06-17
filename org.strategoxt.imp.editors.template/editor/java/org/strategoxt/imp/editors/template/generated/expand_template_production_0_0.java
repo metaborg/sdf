@@ -25,41 +25,41 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("expand_template_production_0_0");
-    Fail194:
+    Fail1014:
     { 
-      IStrategoTerm m_9728 = null;
-      IStrategoTerm n_9728 = null;
-      IStrategoTerm o_9728 = null;
+      IStrategoTerm v_32766 = null;
+      IStrategoTerm w_32766 = null;
+      IStrategoTerm x_32766 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)term).getConstructor())
-        break Fail194;
-      m_9728 = term.getSubterm(1);
-      o_9728 = term.getSubterm(2);
-      term = o_9728;
-      IStrategoTerm term192 = term;
-      Success140:
+        break Fail1014;
+      v_32766 = term.getSubterm(1);
+      x_32766 = term.getSubterm(2);
+      term = x_32766;
+      IStrategoTerm term448 = term;
+      Success396:
       { 
-        Fail195:
+        Fail1015:
         { 
           term = is_reject_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail195;
+            break Fail1015;
           { 
             if(true)
-              break Fail194;
+              break Fail1014;
             if(true)
-              break Success140;
+              break Success396;
           }
         }
-        term = term192;
+        term = term448;
       }
-      term = expand_template_0_0.instance.invoke(context, m_9728);
+      term = expand_template_0_0.instance.invoke(context, v_32766);
       if(term == null)
-        break Fail194;
-      n_9728 = term;
-      term = determine_score_0_0.instance.invoke(context, o_9728);
+        break Fail1014;
+      w_32766 = term;
+      term = determine_score_0_0.instance.invoke(context, x_32766);
       if(term == null)
-        break Fail194;
-      term = termFactory.annotateTerm(n_9728, checkListAnnos(termFactory, (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil0)));
+        break Fail1014;
+      term = termFactory.annotateTerm(w_32766, checkListAnnos(termFactory, (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil3)));
       context.popOnSuccess();
       if(true)
         return term;

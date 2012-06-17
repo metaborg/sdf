@@ -25,15 +25,15 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("generate_signature_0_0");
-    Fail106:
+    Fail1952:
     { 
-      term = collect_om_1_0.instance.invoke(context, term, lifted36.instance);
+      term = collect_om_1_0.instance.invoke(context, term, lifted565.instance);
       if(term == null)
-        break Fail106;
+        break Fail1952;
       term = map_1_0.instance.invoke(context, term, templatelang_production_to_signature_0_0.instance);
       if(term == null)
-        break Fail106;
-      term = termFactory.makeAppl(Main._consSpecification_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consSignature_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consConstructors_1, new IStrategoTerm[]{term}), (IStrategoList)trans.constNil0)}), (IStrategoList)trans.constNil0)});
+        break Fail1952;
+      term = termFactory.makeAppl(Main._consSpecification_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consSignature_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consConstructors_1, new IStrategoTerm[]{term}), (IStrategoList)trans.constNil4)}), (IStrategoList)trans.constNil4)});
       context.popOnSuccess();
       if(true)
         return term;

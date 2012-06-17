@@ -21,23 +21,23 @@ import java.lang.ref.WeakReference;
 { 
   public static $Semantic$Provider_1_0 instance = new $Semantic$Provider_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy s_9755)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy b_32794)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("SemanticProvider_1_0");
-    Fail508:
+    Fail1328:
     { 
-      IStrategoTerm t_9936 = null;
-      IStrategoTerm s_9936 = null;
+      IStrategoTerm c_32975 = null;
+      IStrategoTerm b_32975 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consSemanticProvider_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail508;
-      s_9936 = term.getSubterm(0);
-      IStrategoList annos81 = term.getAnnotations();
-      t_9936 = annos81;
-      term = s_9755.invoke(context, s_9936);
+        break Fail1328;
+      b_32975 = term.getSubterm(0);
+      IStrategoList annos99 = term.getAnnotations();
+      c_32975 = annos99;
+      term = b_32794.invoke(context, b_32975);
       if(term == null)
-        break Fail508;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consSemanticProvider_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, t_9936));
+        break Fail1328;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consSemanticProvider_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, c_32975));
       context.popOnSuccess();
       if(true)
         return term;

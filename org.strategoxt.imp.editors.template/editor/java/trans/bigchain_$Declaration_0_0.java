@@ -25,42 +25,42 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("bigchain_Declaration_0_0");
-    Fail139:
+    Fail1987:
     { 
-      IStrategoTerm s_10725 = null;
-      IStrategoTerm t_10725 = null;
-      IStrategoTerm x_10725 = null;
-      IStrategoTerm z_10725 = null;
+      IStrategoTerm i_33012 = null;
+      IStrategoTerm j_33012 = null;
+      IStrategoTerm n_33012 = null;
+      IStrategoTerm p_33012 = null;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail139;
-      s_10725 = term.getSubterm(0);
-      t_10725 = term.getSubterm(1);
-      z_10725 = term;
-      Success48:
+        break Fail1987;
+      i_33012 = term.getSubterm(0);
+      j_33012 = term.getSubterm(1);
+      p_33012 = term;
+      Success719:
       { 
-        Fail140:
+        Fail1988:
         { 
-          IStrategoTerm a_10726 = null;
-          IStrategoTerm c_10726 = null;
-          IStrategoTerm d_10726 = null;
-          c_10726 = term;
-          a_10726 = trans.const0;
-          d_10726 = c_10726;
-          term = termFactory.annotateTerm(termFactory.makeTuple(s_10725, t_10725), checkListAnnos(termFactory, trans.constCons0));
-          term = dr_lookup_all_rules_0_2.instance.invoke(context, d_10726, a_10726, term);
+          IStrategoTerm q_33012 = null;
+          IStrategoTerm s_33012 = null;
+          IStrategoTerm t_33012 = null;
+          s_33012 = term;
+          q_33012 = trans.const269;
+          t_33012 = s_33012;
+          term = termFactory.annotateTerm(termFactory.makeTuple(i_33012, j_33012), checkListAnnos(termFactory, trans.constCons84));
+          term = dr_lookup_all_rules_0_2.instance.invoke(context, t_33012, q_33012, term);
           if(term == null)
-            break Fail140;
+            break Fail1988;
           if(true)
-            break Success48;
+            break Success719;
         }
-        term = trans.constNil0;
+        term = trans.constNil4;
       }
-      x_10725 = term;
-      term = z_10725;
-      term = termFactory.makeTuple(x_10725, term);
-      term = foldl_1_0.instance.invoke(context, term, lifted42.instance);
+      n_33012 = term;
+      term = p_33012;
+      term = termFactory.makeTuple(n_33012, term);
+      term = foldl_1_0.instance.invoke(context, term, lifted571.instance);
       if(term == null)
-        break Fail139;
+        break Fail1987;
       context.popOnSuccess();
       if(true)
         return term;

@@ -24,37 +24,37 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("bagof_CurrentFile_0_0");
-    Fail174:
+    Fail2022:
     { 
-      TermReference n_10732 = new TermReference();
-      if(n_10732.value == null)
-        n_10732.value = term;
+      TermReference d_33019 = new TermReference();
+      if(d_33019.value == null)
+        d_33019.value = term;
       else
-        if(n_10732.value != term && !n_10732.value.match(term))
-          break Fail174;
-      Success59:
+        if(d_33019.value != term && !d_33019.value.match(term))
+          break Fail2022;
+      Success730:
       { 
-        Fail175:
+        Fail2023:
         { 
-          IStrategoTerm q_10732 = null;
-          IStrategoTerm s_10732 = null;
-          IStrategoTerm t_10732 = null;
-          s_10732 = term;
-          q_10732 = trans.const3;
-          t_10732 = s_10732;
-          term = dr_lookup_rule_0_2.instance.invoke(context, t_10732, q_10732, trans.constCons0);
+          IStrategoTerm g_33019 = null;
+          IStrategoTerm i_33019 = null;
+          IStrategoTerm j_33019 = null;
+          i_33019 = term;
+          g_33019 = trans.const273;
+          j_33019 = i_33019;
+          term = dr_lookup_rule_0_2.instance.invoke(context, j_33019, g_33019, trans.constCons84);
           if(term == null)
-            break Fail175;
+            break Fail2023;
           if(true)
-            break Success59;
+            break Success730;
         }
-        term = trans.constNil0;
+        term = trans.constNil4;
       }
-      lifted56 lifted560 = new lifted56();
-      lifted560.n_10732 = n_10732;
-      term = filter_1_0.instance.invoke(context, term, lifted560);
+      lifted585 lifted5850 = new lifted585();
+      lifted5850.d_33019 = d_33019;
+      term = filter_1_0.instance.invoke(context, term, lifted5850);
       if(term == null)
-        break Fail174;
+        break Fail2022;
       context.popOnSuccess();
       if(true)
         return term;

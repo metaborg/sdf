@@ -21,17 +21,17 @@ import java.lang.ref.WeakReference;
 { 
   public static template_sections_to_stratego_0_1 instance = new template_sections_to_stratego_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm ref_m_9705)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm ref_u_32743)
   { 
-    TermReference m_9705 = new TermReference(ref_m_9705);
+    TermReference u_32743 = new TermReference(ref_u_32743);
     context.push("template_sections_to_stratego_0_1");
-    Fail13:
+    Fail832:
     { 
-      lifted5 lifted510 = new lifted5();
-      lifted510.m_9705 = m_9705;
-      term = filter_1_0.instance.invoke(context, term, lifted510);
+      lifted204 lifted2040 = new lifted204();
+      lifted2040.u_32743 = u_32743;
+      term = filter_1_0.instance.invoke(context, term, lifted2040);
       if(term == null)
-        break Fail13;
+        break Fail832;
       context.popOnSuccess();
       if(true)
         return term;

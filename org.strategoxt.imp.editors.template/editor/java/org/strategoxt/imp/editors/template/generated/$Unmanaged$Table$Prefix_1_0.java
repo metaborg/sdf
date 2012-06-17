@@ -21,23 +21,23 @@ import java.lang.ref.WeakReference;
 { 
   public static $Unmanaged$Table$Prefix_1_0 instance = new $Unmanaged$Table$Prefix_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy c_9753)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy l_32791)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("UnmanagedTablePrefix_1_0");
-    Fail469:
+    Fail1289:
     { 
-      IStrategoTerm a_9930 = null;
-      IStrategoTerm z_9929 = null;
+      IStrategoTerm j_32968 = null;
+      IStrategoTerm i_32968 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consUnmanagedTablePrefix_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail469;
-      z_9929 = term.getSubterm(0);
-      IStrategoList annos42 = term.getAnnotations();
-      a_9930 = annos42;
-      term = c_9753.invoke(context, z_9929);
+        break Fail1289;
+      i_32968 = term.getSubterm(0);
+      IStrategoList annos60 = term.getAnnotations();
+      j_32968 = annos60;
+      term = l_32791.invoke(context, i_32968);
       if(term == null)
-        break Fail469;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consUnmanagedTablePrefix_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, a_9930));
+        break Fail1289;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consUnmanagedTablePrefix_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, j_32968));
       context.popOnSuccess();
       if(true)
         return term;

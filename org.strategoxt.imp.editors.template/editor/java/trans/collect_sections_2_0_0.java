@@ -25,55 +25,55 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("collect_sections_2_0_0");
-    Fail88:
+    Fail1929:
     { 
-      IStrategoTerm k_10718 = null;
-      IStrategoTerm l_10718 = null;
-      IStrategoTerm n_10718 = null;
-      IStrategoTerm o_10718 = null;
-      IStrategoTerm s_10718 = null;
-      l_10718 = term;
-      s_10718 = term;
-      IStrategoTerm term47 = term;
-      Success32:
+      IStrategoTerm x_33003 = null;
+      IStrategoTerm y_33003 = null;
+      IStrategoTerm a_33004 = null;
+      IStrategoTerm b_33004 = null;
+      IStrategoTerm f_33004 = null;
+      y_33003 = term;
+      f_33004 = term;
+      IStrategoTerm term713 = term;
+      Success698:
       { 
-        Fail89:
+        Fail1930:
         { 
-          term = collect_om_1_0.instance.invoke(context, l_10718, lifted25.instance);
+          term = collect_om_1_0.instance.invoke(context, y_33003, lifted555.instance);
           if(term == null)
-            break Fail89;
-          k_10718 = term;
-          term = collect_om_1_0.instance.invoke(context, l_10718, lifted26.instance);
+            break Fail1930;
+          x_33003 = term;
+          term = collect_om_1_0.instance.invoke(context, y_33003, lifted556.instance);
           if(term == null)
-            break Fail89;
-          term = partition_1_0.instance.invoke(context, term, lifted27.instance);
+            break Fail1930;
+          term = partition_1_0.instance.invoke(context, term, lifted557.instance);
           if(term == null)
-            break Fail89;
+            break Fail1930;
           if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-            break Fail89;
-          n_10718 = term.getSubterm(0);
-          o_10718 = term.getSubterm(1);
+            break Fail1930;
+          a_33004 = term.getSubterm(0);
+          b_33004 = term.getSubterm(1);
           if(true)
-            break Success32;
+            break Success698;
         }
-        term = term47;
-        IStrategoTerm q_10718 = null;
-        IStrategoTerm r_10718 = null;
-        IStrategoTerm v_10718 = null;
-        q_10718 = term;
+        term = term713;
+        IStrategoTerm d_33004 = null;
+        IStrategoTerm e_33004 = null;
+        IStrategoTerm i_33004 = null;
+        d_33004 = term;
         term = context.invokePrimitive("SSL_stacktrace_get_all_frame_names", term, NO_STRATEGIES, NO_TERMS);
         if(term == null)
-          break Fail88;
-        r_10718 = term;
-        v_10718 = q_10718;
-        term = report_with_failure_0_2.instance.invoke(context, v_10718, trans.const26, r_10718);
+          break Fail1929;
+        e_33004 = term;
+        i_33004 = d_33004;
+        term = report_with_failure_0_2.instance.invoke(context, i_33004, trans.const295, e_33004);
         if(term == null)
-          break Fail88;
+          break Fail1929;
       }
-      term = s_10718;
-      if(k_10718 == null || (n_10718 == null || o_10718 == null))
-        break Fail88;
-      term = (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consTemplateSection_1, new IStrategoTerm[]{k_10718}), termFactory.makeListCons(termFactory.makeAppl(Main._consSDFSection_1, new IStrategoTerm[]{termFactory.makeAppl(Main._conscontext_free_syntax_1, new IStrategoTerm[]{n_10718})}), termFactory.makeListCons(termFactory.makeAppl(Main._consSDFSection_1, new IStrategoTerm[]{termFactory.makeAppl(Main._conslexical_syntax_1, new IStrategoTerm[]{o_10718})}), (IStrategoList)trans.constNil0)));
+      term = f_33004;
+      if(x_33003 == null || (a_33004 == null || b_33004 == null))
+        break Fail1929;
+      term = (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consTemplateSection_1, new IStrategoTerm[]{x_33003}), termFactory.makeListCons(termFactory.makeAppl(Main._consSDFSection_1, new IStrategoTerm[]{termFactory.makeAppl(Main._conscontext_free_syntax_1, new IStrategoTerm[]{a_33004})}), termFactory.makeListCons(termFactory.makeAppl(Main._consSDFSection_1, new IStrategoTerm[]{termFactory.makeAppl(Main._conslexical_syntax_1, new IStrategoTerm[]{b_33004})}), (IStrategoList)trans.constNil4)));
       context.popOnSuccess();
       if(true)
         return term;

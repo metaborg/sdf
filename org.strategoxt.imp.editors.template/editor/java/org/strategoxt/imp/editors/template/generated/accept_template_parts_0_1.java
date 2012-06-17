@@ -21,29 +21,29 @@ import java.lang.ref.WeakReference;
 { 
   public static accept_template_parts_0_1 instance = new accept_template_parts_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm w_9723)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm f_32762)
   { 
-    Fail149:
+    Fail969:
     { 
-      IStrategoTerm term156 = term;
-      Success105:
+      IStrategoTerm term412 = term;
+      Success361:
       { 
-        Fail150:
+        Fail970:
         { 
           if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-            break Fail150;
-          IStrategoTerm arg207 = ((IStrategoList)term).tail();
-          if(arg207.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg207).isEmpty())
-            break Fail150;
+            break Fail970;
+          IStrategoTerm arg360 = ((IStrategoList)term).tail();
+          if(arg360.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg360).isEmpty())
+            break Fail970;
           if(true)
-            break Success105;
+            break Success361;
         }
-        term = term156;
+        term = term412;
         if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-          break Fail149;
-        IStrategoTerm arg210 = ((IStrategoList)term).head();
-        if(arg210.getTermType() != IStrategoTerm.APPL || Main._consString_1 != ((IStrategoAppl)arg210).getConstructor())
-          break Fail149;
+          break Fail969;
+        IStrategoTerm arg363 = ((IStrategoList)term).head();
+        if(arg363.getTermType() != IStrategoTerm.APPL || Main._consString_1 != ((IStrategoAppl)arg363).getConstructor())
+          break Fail969;
       }
       if(true)
         return term;

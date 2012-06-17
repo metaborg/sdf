@@ -21,23 +21,23 @@ import java.lang.ref.WeakReference;
 { 
   public static $Extends_1_0 instance = new $Extends_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy e_9753)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy n_32791)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("Extends_1_0");
-    Fail471:
+    Fail1291:
     { 
-      IStrategoTerm g_9930 = null;
-      IStrategoTerm f_9930 = null;
+      IStrategoTerm p_32968 = null;
+      IStrategoTerm o_32968 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consExtends_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail471;
-      f_9930 = term.getSubterm(0);
-      IStrategoList annos44 = term.getAnnotations();
-      g_9930 = annos44;
-      term = e_9753.invoke(context, f_9930);
+        break Fail1291;
+      o_32968 = term.getSubterm(0);
+      IStrategoList annos62 = term.getAnnotations();
+      p_32968 = annos62;
+      term = n_32791.invoke(context, o_32968);
       if(term == null)
-        break Fail471;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consExtends_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, g_9930));
+        break Fail1291;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consExtends_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, p_32968));
       context.popOnSuccess();
       if(true)
         return term;

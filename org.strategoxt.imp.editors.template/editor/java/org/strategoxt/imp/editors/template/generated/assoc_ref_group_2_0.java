@@ -21,30 +21,30 @@ import java.lang.ref.WeakReference;
 { 
   public static assoc_ref_group_2_0 instance = new assoc_ref_group_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy s_9756, Strategy t_9756)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy b_32795, Strategy c_32795)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("assoc_ref_group_2_0");
-    Fail528:
+    Fail1348:
     { 
-      IStrategoTerm l_9939 = null;
-      IStrategoTerm j_9939 = null;
-      IStrategoTerm k_9939 = null;
-      IStrategoTerm m_9939 = null;
+      IStrategoTerm u_32977 = null;
+      IStrategoTerm s_32977 = null;
+      IStrategoTerm t_32977 = null;
+      IStrategoTerm v_32977 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consassoc_ref_group_2 != ((IStrategoAppl)term).getConstructor())
-        break Fail528;
-      j_9939 = term.getSubterm(0);
-      k_9939 = term.getSubterm(1);
-      IStrategoList annos98 = term.getAnnotations();
-      l_9939 = annos98;
-      term = s_9756.invoke(context, j_9939);
+        break Fail1348;
+      s_32977 = term.getSubterm(0);
+      t_32977 = term.getSubterm(1);
+      IStrategoList annos116 = term.getAnnotations();
+      u_32977 = annos116;
+      term = b_32795.invoke(context, s_32977);
       if(term == null)
-        break Fail528;
-      m_9939 = term;
-      term = t_9756.invoke(context, k_9939);
+        break Fail1348;
+      v_32977 = term;
+      term = c_32795.invoke(context, t_32977);
       if(term == null)
-        break Fail528;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consassoc_ref_group_2, new IStrategoTerm[]{m_9939, term}), checkListAnnos(termFactory, l_9939));
+        break Fail1348;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consassoc_ref_group_2, new IStrategoTerm[]{v_32977, term}), checkListAnnos(termFactory, u_32977));
       context.popOnSuccess();
       if(true)
         return term;

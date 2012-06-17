@@ -19,18 +19,56 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted210 extends Strategy 
 { 
-  public static final lifted210 instance = new lifted210();
+  TermReference w_32743;
+
+  TermReference x_32743;
+
+  TermReference y_32743;
+
+  TermReference r_32808;
+
+  TermReference z_32743;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail778:
+    Fail1827:
     { 
-      term = un_double_quote_0_0.instance.invoke(context, term);
+      if(w_32743.value == null)
+        break Fail1827;
+      term = filter_1_0.instance.invoke(context, w_32743.value, templatelang_prod_to_sort_0_0.instance);
       if(term == null)
-        break Fail778;
-      term = unescape_0_0.instance.invoke(context, term);
+        break Fail1827;
+      term = nub_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail778;
+        break Fail1827;
+      if(y_32743.value == null)
+        y_32743.value = term;
+      else
+        if(y_32743.value != term && !y_32743.value.match(term))
+          break Fail1827;
+      if(y_32743.value == null)
+        break Fail1827;
+      term = map_1_0.instance.invoke(context, y_32743.value, templatelang_sort_to_strategy_0_0.instance);
+      if(term == null)
+        break Fail1827;
+      if(x_32743.value == null)
+        x_32743.value = term;
+      else
+        if(x_32743.value != term && !x_32743.value.match(term))
+          break Fail1827;
+      if(y_32743.value == null)
+        break Fail1827;
+      term = y_32743.value;
+      lifted213 lifted2130 = new lifted213();
+      lifted2130.r_32808 = r_32808;
+      term = map_1_0.instance.invoke(context, term, lifted2130);
+      if(term == null)
+        break Fail1827;
+      if(z_32743.value == null)
+        z_32743.value = term;
+      else
+        if(z_32743.value != term && !z_32743.value.match(term))
+          break Fail1827;
       if(true)
         return term;
     }

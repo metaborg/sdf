@@ -25,74 +25,74 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("once_Declaration_0_0");
-    Fail145:
+    Fail1993:
     { 
-      IStrategoTerm e_10727 = null;
-      TermReference f_10727 = new TermReference();
-      TermReference g_10727 = new TermReference();
-      TermReference h_10727 = new TermReference();
-      IStrategoTerm i_10727 = null;
-      TermReference j_10727 = new TermReference();
-      IStrategoTerm l_10727 = null;
-      IStrategoTerm m_10727 = null;
-      IStrategoTerm o_10727 = null;
-      IStrategoTerm p_10727 = null;
-      if(g_10727.value == null)
-        g_10727.value = term;
+      IStrategoTerm u_33013 = null;
+      TermReference v_33013 = new TermReference();
+      TermReference w_33013 = new TermReference();
+      TermReference x_33013 = new TermReference();
+      IStrategoTerm y_33013 = null;
+      TermReference z_33013 = new TermReference();
+      IStrategoTerm b_33014 = null;
+      IStrategoTerm c_33014 = null;
+      IStrategoTerm e_33014 = null;
+      IStrategoTerm f_33014 = null;
+      if(w_33013.value == null)
+        w_33013.value = term;
       else
-        if(g_10727.value != term && !g_10727.value.match(term))
-          break Fail145;
+        if(w_33013.value != term && !w_33013.value.match(term))
+          break Fail1993;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail145;
-      if(j_10727.value == null)
-        j_10727.value = term.getSubterm(0);
+        break Fail1993;
+      if(z_33013.value == null)
+        z_33013.value = term.getSubterm(0);
       else
-        if(j_10727.value != term.getSubterm(0) && !j_10727.value.match(term.getSubterm(0)))
-          break Fail145;
-      if(f_10727.value == null)
-        f_10727.value = term.getSubterm(1);
+        if(z_33013.value != term.getSubterm(0) && !z_33013.value.match(term.getSubterm(0)))
+          break Fail1993;
+      if(v_33013.value == null)
+        v_33013.value = term.getSubterm(1);
       else
-        if(f_10727.value != term.getSubterm(1) && !f_10727.value.match(term.getSubterm(1)))
-          break Fail145;
-      l_10727 = term;
-      o_10727 = term;
-      m_10727 = trans.const0;
-      term = o_10727;
-      p_10727 = o_10727;
-      if(j_10727.value == null || f_10727.value == null)
-        break Fail145;
-      term = termFactory.annotateTerm(termFactory.makeTuple(j_10727.value, f_10727.value), checkListAnnos(termFactory, trans.constCons0));
-      term = dr_lookup_rule_pointer_0_2.instance.invoke(context, p_10727, m_10727, term);
+        if(v_33013.value != term.getSubterm(1) && !v_33013.value.match(term.getSubterm(1)))
+          break Fail1993;
+      b_33014 = term;
+      e_33014 = term;
+      c_33014 = trans.const269;
+      term = e_33014;
+      f_33014 = e_33014;
+      if(z_33013.value == null || v_33013.value == null)
+        break Fail1993;
+      term = termFactory.annotateTerm(termFactory.makeTuple(z_33013.value, v_33013.value), checkListAnnos(termFactory, trans.constCons84));
+      term = dr_lookup_rule_pointer_0_2.instance.invoke(context, f_33014, c_33014, term);
       if(term == null)
-        break Fail145;
+        break Fail1993;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 3)
-        break Fail145;
-      e_10727 = term.getSubterm(0);
-      if(j_10727.value == null)
-        j_10727.value = term.getSubterm(1);
+        break Fail1993;
+      u_33013 = term.getSubterm(0);
+      if(z_33013.value == null)
+        z_33013.value = term.getSubterm(1);
       else
-        if(j_10727.value != term.getSubterm(1) && !j_10727.value.match(term.getSubterm(1)))
-          break Fail145;
-      i_10727 = term.getSubterm(2);
-      term = e_10727;
-      lifted45 lifted450 = new lifted45();
-      lifted450.j_10727 = j_10727;
-      lifted450.f_10727 = f_10727;
-      lifted450.g_10727 = g_10727;
-      lifted450.h_10727 = h_10727;
-      term = split_fetch_1_0.instance.invoke(context, term, lifted450);
+        if(z_33013.value != term.getSubterm(1) && !z_33013.value.match(term.getSubterm(1)))
+          break Fail1993;
+      y_33013 = term.getSubterm(2);
+      term = u_33013;
+      lifted574 lifted5740 = new lifted574();
+      lifted5740.z_33013 = z_33013;
+      lifted5740.v_33013 = v_33013;
+      lifted5740.w_33013 = w_33013;
+      lifted5740.x_33013 = x_33013;
+      term = split_fetch_1_0.instance.invoke(context, term, lifted5740);
       if(term == null)
-        break Fail145;
+        break Fail1993;
       term = conc_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail145;
-      term = hashtable_put_0_2.instance.invoke(context, i_10727, j_10727.value, term);
+        break Fail1993;
+      term = hashtable_put_0_2.instance.invoke(context, y_33013, z_33013.value, term);
       if(term == null)
-        break Fail145;
-      term = l_10727;
-      if(h_10727.value == null)
-        break Fail145;
-      term = h_10727.value;
+        break Fail1993;
+      term = b_33014;
+      if(x_33013.value == null)
+        break Fail1993;
+      term = x_33013.value;
       context.popOnSuccess();
       if(true)
         return term;

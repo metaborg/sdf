@@ -25,110 +25,110 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("template_line_to_esv_0_0");
-    Fail151:
+    Fail971:
     { 
-      IStrategoTerm term157 = term;
-      IStrategoConstructor cons11 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-      Success106:
+      IStrategoTerm term413 = term;
+      IStrategoConstructor cons23 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+      Success362:
       { 
-        if(cons11 == Main._consLine_1)
+        if(cons23 == Main._consLine_1)
         { 
-          Fail152:
+          Fail972:
           { 
-            IStrategoTerm z_9723 = null;
-            IStrategoTerm a_9724 = null;
-            IStrategoTerm b_9724 = null;
-            IStrategoTerm arg213 = term.getSubterm(0);
-            if(arg213.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg213).isEmpty())
-              break Fail152;
-            IStrategoTerm arg214 = ((IStrategoList)arg213).head();
-            if(arg214.getTermType() != IStrategoTerm.APPL || Main._consLayout_1 != ((IStrategoAppl)arg214).getConstructor())
-              break Fail152;
-            z_9723 = arg214.getSubterm(0);
-            IStrategoTerm arg215 = ((IStrategoList)arg213).tail();
-            if(arg215.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg215).isEmpty())
-              break Fail152;
-            IStrategoTerm arg216 = ((IStrategoList)arg215).head();
-            if(arg216.getTermType() != IStrategoTerm.APPL || Main._consPlaceholder_4 != ((IStrategoAppl)arg216).getConstructor())
-              break Fail152;
-            b_9724 = arg216.getSubterm(2);
-            a_9724 = arg216.getSubterm(3);
-            IStrategoTerm arg218 = ((IStrategoList)arg215).tail();
-            if(arg218.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg218).isEmpty())
-              break Fail152;
-            term = b_9724;
-            IStrategoTerm term158 = term;
-            Success107:
+            IStrategoTerm i_32762 = null;
+            IStrategoTerm j_32762 = null;
+            IStrategoTerm k_32762 = null;
+            IStrategoTerm arg366 = term.getSubterm(0);
+            if(arg366.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg366).isEmpty())
+              break Fail972;
+            IStrategoTerm arg367 = ((IStrategoList)arg366).head();
+            if(arg367.getTermType() != IStrategoTerm.APPL || Main._consLayout_1 != ((IStrategoAppl)arg367).getConstructor())
+              break Fail972;
+            i_32762 = arg367.getSubterm(0);
+            IStrategoTerm arg368 = ((IStrategoList)arg366).tail();
+            if(arg368.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg368).isEmpty())
+              break Fail972;
+            IStrategoTerm arg369 = ((IStrategoList)arg368).head();
+            if(arg369.getTermType() != IStrategoTerm.APPL || Main._consPlaceholder_4 != ((IStrategoAppl)arg369).getConstructor())
+              break Fail972;
+            k_32762 = arg369.getSubterm(2);
+            j_32762 = arg369.getSubterm(3);
+            IStrategoTerm arg371 = ((IStrategoList)arg368).tail();
+            if(arg371.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg371).isEmpty())
+              break Fail972;
+            term = k_32762;
+            IStrategoTerm term414 = term;
+            Success363:
             { 
-              Fail153:
+              Fail973:
               { 
                 term = $Option_0_0.instance.invoke(context, term);
                 if(term == null)
-                  break Fail153;
+                  break Fail973;
                 if(true)
-                  break Success107;
+                  break Success363;
               }
-              term = $Star_0_0.instance.invoke(context, term158);
+              term = $Star_0_0.instance.invoke(context, term414);
               if(term == null)
-                break Fail152;
+                break Fail972;
             }
-            term = a_9724;
-            IStrategoTerm term159 = term;
-            Success108:
+            term = j_32762;
+            IStrategoTerm term415 = term;
+            Success364:
             { 
-              Fail154:
+              Fail974:
               { 
-                term = SRTS_one.instance.invoke(context, term, lifted135.instance);
+                term = SRTS_one.instance.invoke(context, term, lifted334.instance);
                 if(term == null)
-                  break Fail154;
+                  break Fail974;
                 { 
                   if(true)
-                    break Fail152;
+                    break Fail972;
                   if(true)
-                    break Success108;
+                    break Success364;
                 }
               }
-              term = term159;
+              term = term415;
             }
-            term = (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consString_1, new IStrategoTerm[]{z_9723}), (IStrategoList)generated.constCons65);
+            term = (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consString_1, new IStrategoTerm[]{i_32762}), (IStrategoList)generated.constCons78);
             term = spaces_to_tabs_0_0.instance.invoke(context, term);
             if(term == null)
-              break Fail152;
+              break Fail972;
             if(true)
-              break Success106;
+              break Success362;
           }
-          term = term157;
+          term = term413;
         }
-        if(cons11 == Main._consLine_1)
+        if(cons23 == Main._consLine_1)
         { 
-          IStrategoTerm x_9723 = null;
-          x_9723 = term.getSubterm(0);
-          term = filter_1_0.instance.invoke(context, x_9723, template_element_to_esv_0_0.instance);
+          IStrategoTerm g_32762 = null;
+          g_32762 = term.getSubterm(0);
+          term = filter_1_0.instance.invoke(context, g_32762, template_element_to_esv_0_0.instance);
           if(term == null)
-            break Fail151;
-          IStrategoTerm term160 = term;
-          Success109:
+            break Fail971;
+          IStrategoTerm term416 = term;
+          Success365:
           { 
-            Fail155:
+            Fail975:
             { 
               if(term.getTermType() != IStrategoTerm.LIST || !((IStrategoList)term).isEmpty())
-                break Fail155;
+                break Fail975;
               { 
                 if(true)
-                  break Fail151;
+                  break Fail971;
                 if(true)
-                  break Success109;
+                  break Success365;
               }
             }
-            term = term160;
+            term = term416;
           }
           term = spaces_to_tabs_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail151;
+            break Fail971;
         }
         else
         { 
-          break Fail151;
+          break Fail971;
         }
       }
       context.popOnSuccess();

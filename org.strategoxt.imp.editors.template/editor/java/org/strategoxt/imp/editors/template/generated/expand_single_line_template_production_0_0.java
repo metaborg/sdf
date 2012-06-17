@@ -24,16 +24,16 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("expand_single_line_template_production_0_0");
-    Fail193:
+    Fail1013:
     { 
       if(term.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)term).getConstructor())
-        break Fail193;
-      IStrategoTerm arg254 = term.getSubterm(1);
-      if(arg254.getTermType() != IStrategoTerm.APPL || Main._consSingleLineTemplate_1 != ((IStrategoAppl)arg254).getConstructor())
-        break Fail193;
+        break Fail1013;
+      IStrategoTerm arg407 = term.getSubterm(1);
+      if(arg407.getTermType() != IStrategoTerm.APPL || Main._consSingleLineTemplate_1 != ((IStrategoAppl)arg407).getConstructor())
+        break Fail1013;
       term = memo_1_0.instance.invoke(context, term, expand_template_production_0_0.instance);
       if(term == null)
-        break Fail193;
+        break Fail1013;
       context.popOnSuccess();
       if(true)
         return term;

@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("separator_to_literal_0_0");
-    Fail129:
+    Fail949:
     { 
-      term = getfirst_1_0.instance.invoke(context, term, lifted112.instance);
+      term = getfirst_1_0.instance.invoke(context, term, lifted311.instance);
       if(term == null)
-        break Fail129;
+        break Fail949;
       context.popOnSuccess();
       if(true)
         return term;

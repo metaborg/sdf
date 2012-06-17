@@ -24,44 +24,44 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("template_line_to_sdf_sep_helper_0_0");
-    Fail105:
+    Fail924:
     { 
-      IStrategoTerm term113 = term;
-      Success77:
+      IStrategoTerm term368 = term;
+      Success332:
       { 
-        Fail106:
+        Fail925:
         { 
-          IStrategoTerm q_9719 = null;
+          IStrategoTerm y_32757 = null;
           if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-            break Fail106;
-          IStrategoTerm arg162 = ((IStrategoList)term).head();
-          if(arg162.getTermType() != IStrategoTerm.APPL || Main._consLayout_1 != ((IStrategoAppl)arg162).getConstructor())
-            break Fail106;
-          IStrategoTerm arg164 = ((IStrategoList)term).tail();
-          if(arg164.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg164).isEmpty())
-            break Fail106;
-          IStrategoTerm arg165 = ((IStrategoList)arg164).head();
-          if(arg165.getTermType() != IStrategoTerm.APPL || Main._consPlaceholder_4 != ((IStrategoAppl)arg165).getConstructor())
-            break Fail106;
-          q_9719 = arg165.getSubterm(3);
-          IStrategoTerm arg168 = ((IStrategoList)arg164).tail();
-          if(arg168.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg168).isEmpty())
-            break Fail106;
-          term = SRTS_one.instance.invoke(context, q_9719, lifted87.instance);
+            break Fail925;
+          IStrategoTerm arg310 = ((IStrategoList)term).head();
+          if(arg310.getTermType() != IStrategoTerm.APPL || Main._consLayout_1 != ((IStrategoAppl)arg310).getConstructor())
+            break Fail925;
+          IStrategoTerm arg312 = ((IStrategoList)term).tail();
+          if(arg312.getTermType() != IStrategoTerm.LIST || ((IStrategoList)arg312).isEmpty())
+            break Fail925;
+          IStrategoTerm arg313 = ((IStrategoList)arg312).head();
+          if(arg313.getTermType() != IStrategoTerm.APPL || Main._consPlaceholder_4 != ((IStrategoAppl)arg313).getConstructor())
+            break Fail925;
+          y_32757 = arg313.getSubterm(3);
+          IStrategoTerm arg316 = ((IStrategoList)arg312).tail();
+          if(arg316.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg316).isEmpty())
+            break Fail925;
+          term = SRTS_one.instance.invoke(context, y_32757, lifted286.instance);
           if(term == null)
-            break Fail106;
+            break Fail925;
           { 
             if(true)
-              break Fail105;
+              break Fail924;
             if(true)
-              break Success77;
+              break Success332;
           }
         }
-        term = term113;
+        term = term368;
       }
-      term = filter_1_0.instance.invoke(context, term, lifted90.instance);
+      term = filter_1_0.instance.invoke(context, term, lifted289.instance);
       if(term == null)
-        break Fail105;
+        break Fail924;
       context.popOnSuccess();
       if(true)
         return term;

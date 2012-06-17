@@ -25,32 +25,32 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("EnsureQuotes_0_0");
-    Fail350:
+    Fail1170:
     { 
-      IStrategoTerm j_9744 = null;
+      IStrategoTerm s_32782 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consquoted_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail350;
-      j_9744 = term.getSubterm(0);
-      IStrategoTerm term359 = term;
-      Success253:
+        break Fail1170;
+      s_32782 = term.getSubterm(0);
+      IStrategoTerm term615 = term;
+      Success509:
       { 
-        Fail351:
+        Fail1171:
         { 
-          term = un_double_quote_0_0.instance.invoke(context, j_9744);
+          term = un_double_quote_0_0.instance.invoke(context, s_32782);
           if(term == null)
-            break Fail351;
+            break Fail1171;
           { 
             if(true)
-              break Fail350;
+              break Fail1170;
             if(true)
-              break Success253;
+              break Success509;
           }
         }
-        term = term359;
+        term = term615;
       }
-      term = double_quote_0_0.instance.invoke(context, j_9744);
+      term = double_quote_0_0.instance.invoke(context, s_32782);
       if(term == null)
-        break Fail350;
+        break Fail1170;
       term = termFactory.makeAppl(Main._consquoted_1, new IStrategoTerm[]{term});
       context.popOnSuccess();
       if(true)

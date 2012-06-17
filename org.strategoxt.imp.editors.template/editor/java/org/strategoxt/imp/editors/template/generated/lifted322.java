@@ -23,16 +23,14 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail647:
+    Fail1686:
     { 
-      IStrategoTerm i_9767 = null;
-      if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail647;
-      i_9767 = term.getSubterm(0);
-      IStrategoTerm arg626 = term.getSubterm(1);
-      term = aux_$Descriptor$P$P$Table_0_1.instance.invoke(context, i_9767, arg626);
+      term = templatelang_sdf_prod_to_template_prod_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail647;
+        break Fail1686;
+      term = template_to_completion_template_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1686;
       if(true)
         return term;
     }

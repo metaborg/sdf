@@ -24,41 +24,41 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("DYNAMIC__CALLS_0_0");
-    Fail559:
+    Fail1379:
     { 
-      IStrategoTerm term387 = term;
-      Success271:
+      IStrategoTerm term643 = term;
+      Success527:
       { 
-        Fail560:
+        Fail1380:
         { 
-          IStrategoTerm y_9757 = null;
-          y_9757 = term;
-          term = undefine_$Expanded_0_1.instance.invoke(context, y_9757, generated.const0);
+          IStrategoTerm h_32796 = null;
+          h_32796 = term;
+          term = undefine_$Expanded_0_1.instance.invoke(context, h_32796, generated.const121);
           if(term == null)
-            break Fail560;
+            break Fail1380;
           if(true)
-            break Success271;
+            break Success527;
         }
-        term = term387;
-        IStrategoTerm term388 = term;
-        Success272:
+        term = term643;
+        IStrategoTerm term644 = term;
+        Success528:
         { 
-          Fail561:
+          Fail1381:
           { 
-            IStrategoTerm w_9757 = null;
-            w_9757 = term;
-            term = undefine_$Template$Lang$Cached$Option_0_1.instance.invoke(context, w_9757, generated.const0);
+            IStrategoTerm f_32796 = null;
+            f_32796 = term;
+            term = undefine_$Template$Lang$Cached$Option_0_1.instance.invoke(context, f_32796, generated.const121);
             if(term == null)
-              break Fail561;
+              break Fail1381;
             if(true)
-              break Success272;
+              break Success528;
           }
-          term = term388;
-          IStrategoTerm u_9757 = null;
-          u_9757 = term;
-          term = undefine_$Descriptor$P$P$Table_0_1.instance.invoke(context, u_9757, generated.const0);
+          term = term644;
+          IStrategoTerm d_32796 = null;
+          d_32796 = term;
+          term = undefine_$Descriptor$P$P$Table_0_1.instance.invoke(context, d_32796, generated.const121);
           if(term == null)
-            break Fail559;
+            break Fail1379;
         }
       }
       context.popOnSuccess();

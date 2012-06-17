@@ -21,19 +21,19 @@ import java.lang.ref.WeakReference;
 { 
   public static with_verify_3_0 instance = new with_verify_3_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy u_9748, Strategy v_9748, Strategy w_9748)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy d_32787, Strategy e_32787, Strategy f_32787)
   { 
     context.push("with_verify_3_0");
-    Fail371:
+    Fail1191:
     { 
-      IStrategoTerm j_9748 = null;
-      j_9748 = term;
-      lifted244 lifted2440 = new lifted244();
-      lifted2440.w_9748 = w_9748;
-      term = verify_stratego_3_0.instance.invoke(context, term, u_9748, v_9748, lifted2440);
+      IStrategoTerm s_32786 = null;
+      s_32786 = term;
+      lifted443 lifted4430 = new lifted443();
+      lifted4430.f_32787 = f_32787;
+      term = verify_stratego_3_0.instance.invoke(context, term, d_32787, e_32787, lifted4430);
       if(term == null)
-        break Fail371;
-      term = j_9748;
+        break Fail1191;
+      term = s_32786;
       context.popOnSuccess();
       if(true)
         return term;

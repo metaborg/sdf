@@ -24,37 +24,37 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("bagof_DescriptorPPTable_0_0");
-    Fail635:
+    Fail1455:
     { 
-      TermReference r_9769 = new TermReference();
-      if(r_9769.value == null)
-        r_9769.value = term;
+      TermReference a_32808 = new TermReference();
+      if(a_32808.value == null)
+        a_32808.value = term;
       else
-        if(r_9769.value != term && !r_9769.value.match(term))
-          break Fail635;
-      Success293:
+        if(a_32808.value != term && !a_32808.value.match(term))
+          break Fail1455;
+      Success549:
       { 
-        Fail636:
+        Fail1456:
         { 
-          IStrategoTerm u_9769 = null;
-          IStrategoTerm w_9769 = null;
-          IStrategoTerm x_9769 = null;
-          w_9769 = term;
-          u_9769 = generated.const126;
-          x_9769 = w_9769;
-          term = dr_lookup_rule_0_2.instance.invoke(context, x_9769, u_9769, generated.constCons70);
+          IStrategoTerm d_32808 = null;
+          IStrategoTerm f_32808 = null;
+          IStrategoTerm g_32808 = null;
+          f_32808 = term;
+          d_32808 = generated.const247;
+          g_32808 = f_32808;
+          term = dr_lookup_rule_0_2.instance.invoke(context, g_32808, d_32808, generated.constCons83);
           if(term == null)
-            break Fail636;
+            break Fail1456;
           if(true)
-            break Success293;
+            break Success549;
         }
-        term = generated.constNil0;
+        term = generated.constNil3;
       }
-      lifted329 lifted3290 = new lifted329();
-      lifted3290.r_9769 = r_9769;
-      term = filter_1_0.instance.invoke(context, term, lifted3290);
+      lifted528 lifted5280 = new lifted528();
+      lifted5280.a_32808 = a_32808;
+      term = filter_1_0.instance.invoke(context, term, lifted5280);
       if(term == null)
-        break Fail635;
+        break Fail1455;
       context.popOnSuccess();
       if(true)
         return term;

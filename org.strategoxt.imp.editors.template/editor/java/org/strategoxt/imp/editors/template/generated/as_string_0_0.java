@@ -24,22 +24,22 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("as_string_0_0");
-    Fail377:
+    Fail1197:
     { 
-      IStrategoTerm term375 = term;
-      Success262:
+      IStrategoTerm term631 = term;
+      Success518:
       { 
-        Fail378:
+        Fail1198:
         { 
           term = is_string_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail378;
+            break Fail1198;
           if(true)
-            break Success262;
+            break Success518;
         }
-        term = write_to_string_0_0.instance.invoke(context, term375);
+        term = write_to_string_0_0.instance.invoke(context, term631);
         if(term == null)
-          break Fail377;
+          break Fail1197;
       }
       context.popOnSuccess();
       if(true)

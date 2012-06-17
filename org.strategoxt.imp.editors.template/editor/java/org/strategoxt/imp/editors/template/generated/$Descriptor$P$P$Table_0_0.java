@@ -24,28 +24,28 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("DescriptorPPTable_0_0");
-    Fail637:
+    Fail1457:
     { 
-      TermReference y_9769 = new TermReference();
-      IStrategoTerm b_9770 = null;
-      IStrategoTerm d_9770 = null;
-      IStrategoTerm e_9770 = null;
-      if(y_9769.value == null)
-        y_9769.value = term;
+      TermReference h_32808 = new TermReference();
+      IStrategoTerm k_32808 = null;
+      IStrategoTerm m_32808 = null;
+      IStrategoTerm n_32808 = null;
+      if(h_32808.value == null)
+        h_32808.value = term;
       else
-        if(y_9769.value != term && !y_9769.value.match(term))
-          break Fail637;
-      d_9770 = term;
-      b_9770 = generated.const126;
-      e_9770 = d_9770;
-      term = dr_lookup_rule_0_2.instance.invoke(context, e_9770, b_9770, generated.constCons70);
+        if(h_32808.value != term && !h_32808.value.match(term))
+          break Fail1457;
+      m_32808 = term;
+      k_32808 = generated.const247;
+      n_32808 = m_32808;
+      term = dr_lookup_rule_0_2.instance.invoke(context, n_32808, k_32808, generated.constCons83);
       if(term == null)
-        break Fail637;
-      lifted330 lifted3300 = new lifted330();
-      lifted3300.y_9769 = y_9769;
-      term = fetch_elem_1_0.instance.invoke(context, term, lifted3300);
+        break Fail1457;
+      lifted529 lifted5290 = new lifted529();
+      lifted5290.h_32808 = h_32808;
+      term = fetch_elem_1_0.instance.invoke(context, term, lifted5290);
       if(term == null)
-        break Fail637;
+        break Fail1457;
       context.popOnSuccess();
       if(true)
         return term;

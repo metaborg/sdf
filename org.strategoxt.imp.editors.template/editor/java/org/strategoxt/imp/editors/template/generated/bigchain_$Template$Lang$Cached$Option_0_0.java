@@ -25,33 +25,33 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("bigchain_TemplateLangCachedOption_0_0");
-    Fail600:
+    Fail1420:
     { 
-      IStrategoTerm u_9763 = null;
-      IStrategoTerm x_9763 = null;
-      IStrategoTerm z_9763 = null;
-      u_9763 = term;
-      z_9763 = term;
-      Success282:
+      IStrategoTerm d_32802 = null;
+      IStrategoTerm g_32802 = null;
+      IStrategoTerm i_32802 = null;
+      d_32802 = term;
+      i_32802 = term;
+      Success538:
       { 
-        Fail601:
+        Fail1421:
         { 
-          IStrategoTerm b_9764 = null;
-          b_9764 = term;
-          term = dr_lookup_all_rules_0_2.instance.invoke(context, b_9764, generated.const116, u_9763);
+          IStrategoTerm k_32802 = null;
+          k_32802 = term;
+          term = dr_lookup_all_rules_0_2.instance.invoke(context, k_32802, generated.const237, d_32802);
           if(term == null)
-            break Fail601;
+            break Fail1421;
           if(true)
-            break Success282;
+            break Success538;
         }
-        term = generated.constNil0;
+        term = generated.constNil3;
       }
-      x_9763 = term;
-      term = z_9763;
-      term = termFactory.makeTuple(x_9763, term);
-      term = foldl_1_0.instance.invoke(context, term, lifted315.instance);
+      g_32802 = term;
+      term = i_32802;
+      term = termFactory.makeTuple(g_32802, term);
+      term = foldl_1_0.instance.invoke(context, term, lifted514.instance);
       if(term == null)
-        break Fail600;
+        break Fail1420;
       context.popOnSuccess();
       if(true)
         return term;

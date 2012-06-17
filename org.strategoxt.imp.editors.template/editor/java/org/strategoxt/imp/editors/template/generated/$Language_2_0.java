@@ -21,30 +21,30 @@ import java.lang.ref.WeakReference;
 { 
   public static $Language_2_0 instance = new $Language_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy c_9754, Strategy d_9754)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy l_32792, Strategy m_32792)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("Language_2_0");
-    Fail488:
+    Fail1308:
     { 
-      IStrategoTerm u_9932 = null;
-      IStrategoTerm s_9932 = null;
-      IStrategoTerm t_9932 = null;
-      IStrategoTerm v_9932 = null;
+      IStrategoTerm d_32971 = null;
+      IStrategoTerm b_32971 = null;
+      IStrategoTerm c_32971 = null;
+      IStrategoTerm e_32971 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consLanguage_2 != ((IStrategoAppl)term).getConstructor())
-        break Fail488;
-      s_9932 = term.getSubterm(0);
-      t_9932 = term.getSubterm(1);
-      IStrategoList annos61 = term.getAnnotations();
-      u_9932 = annos61;
-      term = c_9754.invoke(context, s_9932);
+        break Fail1308;
+      b_32971 = term.getSubterm(0);
+      c_32971 = term.getSubterm(1);
+      IStrategoList annos79 = term.getAnnotations();
+      d_32971 = annos79;
+      term = l_32792.invoke(context, b_32971);
       if(term == null)
-        break Fail488;
-      v_9932 = term;
-      term = d_9754.invoke(context, t_9932);
+        break Fail1308;
+      e_32971 = term;
+      term = m_32792.invoke(context, c_32971);
       if(term == null)
-        break Fail488;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consLanguage_2, new IStrategoTerm[]{v_9932, term}), checkListAnnos(termFactory, u_9932));
+        break Fail1308;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consLanguage_2, new IStrategoTerm[]{e_32971, term}), checkListAnnos(termFactory, d_32971));
       context.popOnSuccess();
       if(true)
         return term;

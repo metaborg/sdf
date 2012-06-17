@@ -24,14 +24,14 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("template_sections_to_sdf_0_0");
-    Fail83:
+    Fail902:
     { 
       term = filter_1_0.instance.invoke(context, term, template_section_to_sdf_0_0.instance);
       if(term == null)
-        break Fail83;
+        break Fail902;
       term = concat_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail83;
+        break Fail902;
       context.popOnSuccess();
       if(true)
         return term;

@@ -21,14 +21,14 @@ import java.lang.ref.WeakReference;
 { 
   public static $List$Of_1_0 instance = new $List$Of_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy x_9750)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy g_32789)
   { 
     context.push("ListOf_1_0");
-    Fail396:
+    Fail1216:
     { 
-      term = list_loop_1_0.instance.invoke(context, term, x_9750);
+      term = list_loop_1_0.instance.invoke(context, term, g_32789);
       if(term == null)
-        break Fail396;
+        break Fail1216;
       context.popOnSuccess();
       if(true)
         return term;

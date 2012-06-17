@@ -25,28 +25,28 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("generate_box_pp_0_0");
-    Fail101:
+    Fail1947:
     { 
-      IStrategoTerm i_10720 = null;
-      IStrategoTerm term53 = term;
-      Success37:
+      IStrategoTerm y_33006 = null;
+      IStrategoTerm term724 = term;
+      Success708:
       { 
-        Fail102:
+        Fail1948:
         { 
           term = collect_sections_1_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail102;
+            break Fail1948;
           if(true)
-            break Success37;
+            break Success708;
         }
-        term = collect_sections_2_0_0.instance.invoke(context, term53);
+        term = collect_sections_2_0_0.instance.invoke(context, term724);
         if(term == null)
-          break Fail101;
+          break Fail1947;
       }
-      i_10720 = term;
-      term = template_sections_to_stratego_0_1.instance.invoke(context, i_10720, trans.const27);
+      y_33006 = term;
+      term = template_sections_to_stratego_0_1.instance.invoke(context, y_33006, trans.const296);
       if(term == null)
-        break Fail101;
+        break Fail1947;
       term = termFactory.makeAppl(Main._consSpecification_1, new IStrategoTerm[]{term});
       context.popOnSuccess();
       if(true)

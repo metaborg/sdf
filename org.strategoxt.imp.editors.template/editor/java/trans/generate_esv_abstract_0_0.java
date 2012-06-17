@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("generate_esv_abstract_0_0");
-    Fail93:
+    Fail1934:
     { 
       term = generate_aterm_1_0.instance.invoke(context, term, generate_esv_0_0.instance);
       if(term == null)
-        break Fail93;
+        break Fail1934;
       context.popOnSuccess();
       if(true)
         return term;

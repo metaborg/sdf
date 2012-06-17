@@ -19,29 +19,44 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted206 extends Strategy 
 { 
-  public static final lifted206 instance = new lifted206();
+  TermReference e_32744;
+
+  TermReference f_32744;
+
+  TermReference r_32808;
+
+  TermReference g_32744;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail802:
+    Fail1830:
     { 
-      IStrategoTerm term271 = term;
-      Success351:
-      { 
-        Fail803:
-        { 
-          term = is_hexnum_0_0.instance.invoke(context, term);
-          if(term == null)
-            break Fail803;
-          { 
-            if(true)
-              break Fail802;
-            if(true)
-              break Success351;
-          }
-        }
-        term = term271;
-      }
+      if(f_32744.value == null)
+        break Fail1830;
+      term = map_1_0.instance.invoke(context, f_32744.value, template_to_prettyprint_strategy_0_0.instance);
+      if(term == null)
+        break Fail1830;
+      if(e_32744.value == null)
+        e_32744.value = term;
+      else
+        if(e_32744.value != term && !e_32744.value.match(term))
+          break Fail1830;
+      if(f_32744.value == null)
+        break Fail1830;
+      term = f_32744.value;
+      lifted208 lifted2080 = new lifted208();
+      lifted2080.r_32808 = r_32808;
+      term = map_1_0.instance.invoke(context, term, lifted2080);
+      if(term == null)
+        break Fail1830;
+      term = nub_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1830;
+      if(g_32744.value == null)
+        g_32744.value = term;
+      else
+        if(g_32744.value != term && !g_32744.value.match(term))
+          break Fail1830;
       if(true)
         return term;
     }

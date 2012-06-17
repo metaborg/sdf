@@ -25,43 +25,43 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("descriptor_pp_table_0_0");
-    Fail355:
+    Fail1175:
     { 
-      IStrategoTerm a_9745 = null;
-      Success254:
+      IStrategoTerm j_32783 = null;
+      Success510:
       { 
-        Fail356:
+        Fail1176:
         { 
           term = $Descriptor$P$P$Table_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail356;
+            break Fail1176;
           if(true)
-            break Success254;
+            break Success510;
         }
-        IStrategoTerm e_9745 = null;
-        IStrategoTerm b_9745 = null;
-        IStrategoTerm c_9745 = null;
-        IStrategoTerm g_9745 = null;
-        IStrategoTerm h_9745 = null;
-        IStrategoTerm j_9745 = null;
-        IStrategoTerm k_9745 = null;
-        IStrategoTerm l_9745 = null;
-        e_9745 = generated.constEditorServiceprettyPpAf;
+        IStrategoTerm n_32783 = null;
+        IStrategoTerm k_32783 = null;
+        IStrategoTerm l_32783 = null;
+        IStrategoTerm p_32783 = null;
+        IStrategoTerm q_32783 = null;
+        IStrategoTerm s_32783 = null;
+        IStrategoTerm t_32783 = null;
+        IStrategoTerm u_32783 = null;
+        n_32783 = generated.constEditorServiceprettyPpAf;
         term = generated.constEditorServiceprettyPpAf;
-        a_9745 = e_9745;
-        b_9745 = term;
-        term = a_9745;
-        c_9745 = a_9745;
-        j_9745 = term;
-        g_9745 = generated.const126;
-        k_9745 = j_9745;
-        h_9745 = generated.constCons70;
-        l_9745 = k_9745;
-        term = termFactory.makeTuple(generated.const127, c_9745);
-        term = dr_set_rule_0_3.instance.invoke(context, l_9745, g_9745, h_9745, term);
+        j_32783 = n_32783;
+        k_32783 = term;
+        term = j_32783;
+        l_32783 = j_32783;
+        s_32783 = term;
+        p_32783 = generated.const247;
+        t_32783 = s_32783;
+        q_32783 = generated.constCons83;
+        u_32783 = t_32783;
+        term = termFactory.makeTuple(generated.const248, l_32783);
+        term = dr_set_rule_0_3.instance.invoke(context, u_32783, p_32783, q_32783, term);
         if(term == null)
-          break Fail355;
-        term = b_9745;
+          break Fail1175;
+        term = k_32783;
       }
       context.popOnSuccess();
       if(true)

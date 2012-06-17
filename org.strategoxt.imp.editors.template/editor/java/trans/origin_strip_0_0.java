@@ -23,13 +23,13 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail52:
+    Fail1893:
     { 
-      IStrategoTerm p_10713 = null;
-      p_10713 = term;
-      term = context.invokePrimitive("SSL_EXT_origin_strip", p_10713, NO_STRATEGIES, new IStrategoTerm[]{term});
+      IStrategoTerm c_32999 = null;
+      c_32999 = term;
+      term = context.invokePrimitive("SSL_EXT_origin_strip", c_32999, NO_STRATEGIES, new IStrategoTerm[]{term});
       if(term == null)
-        break Fail52;
+        break Fail1893;
       if(true)
         return term;
     }

@@ -24,59 +24,59 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("templatelang_declare_template_0_0");
-    Fail290:
+    Fail1110:
     { 
-      IStrategoTerm term286 = term;
-      Success211:
+      IStrategoTerm term542 = term;
+      Success467:
       { 
-        Fail291:
+        Fail1111:
         { 
-          TermReference h_9740 = new TermReference();
-          TermReference i_9740 = new TermReference();
-          TermReference j_9740 = new TermReference();
-          TermReference k_9740 = new TermReference();
-          TermReference l_9740 = new TermReference();
-          IStrategoTerm n_9740 = null;
+          TermReference q_32778 = new TermReference();
+          TermReference r_32778 = new TermReference();
+          TermReference s_32778 = new TermReference();
+          TermReference t_32778 = new TermReference();
+          TermReference u_32778 = new TermReference();
+          IStrategoTerm w_32778 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consDesugared_1 != ((IStrategoAppl)term).getConstructor())
-            break Fail291;
-          IStrategoTerm arg445 = term.getSubterm(0);
-          if(l_9740.value == null)
-            l_9740.value = arg445;
+            break Fail1111;
+          IStrategoTerm arg598 = term.getSubterm(0);
+          if(u_32778.value == null)
+            u_32778.value = arg598;
           else
-            if(l_9740.value != arg445 && !l_9740.value.match(arg445))
-              break Fail291;
-          if(arg445.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)arg445).getConstructor())
-            break Fail291;
-          if(i_9740.value == null)
-            i_9740.value = arg445.getSubterm(0);
+            if(u_32778.value != arg598 && !u_32778.value.match(arg598))
+              break Fail1111;
+          if(arg598.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)arg598).getConstructor())
+            break Fail1111;
+          if(r_32778.value == null)
+            r_32778.value = arg598.getSubterm(0);
           else
-            if(i_9740.value != arg445.getSubterm(0) && !i_9740.value.match(arg445.getSubterm(0)))
-              break Fail291;
-          if(h_9740.value == null)
-            h_9740.value = arg445.getSubterm(2);
+            if(r_32778.value != arg598.getSubterm(0) && !r_32778.value.match(arg598.getSubterm(0)))
+              break Fail1111;
+          if(q_32778.value == null)
+            q_32778.value = arg598.getSubterm(2);
           else
-            if(h_9740.value != arg445.getSubterm(2) && !h_9740.value.match(arg445.getSubterm(2)))
-              break Fail291;
-          n_9740 = term;
-          lifted215 lifted2150 = new lifted215();
-          lifted2150.h_9740 = h_9740;
-          lifted2150.i_9740 = i_9740;
-          lifted2150.j_9740 = j_9740;
-          lifted2150.k_9740 = k_9740;
-          lifted2150.l_9740 = l_9740;
-          term = with_spxverify_1_0.instance.invoke(context, term, lifted2150);
+            if(q_32778.value != arg598.getSubterm(2) && !q_32778.value.match(arg598.getSubterm(2)))
+              break Fail1111;
+          w_32778 = term;
+          lifted414 lifted4140 = new lifted414();
+          lifted4140.q_32778 = q_32778;
+          lifted4140.r_32778 = r_32778;
+          lifted4140.s_32778 = s_32778;
+          lifted4140.t_32778 = t_32778;
+          lifted4140.u_32778 = u_32778;
+          term = with_spxverify_1_0.instance.invoke(context, term, lifted4140);
           if(term == null)
-            break Fail291;
-          term = n_9740;
+            break Fail1111;
+          term = w_32778;
           if(true)
-            break Success211;
+            break Success467;
         }
-        term = term286;
-        IStrategoTerm g_9740 = null;
-        g_9740 = term;
-        term = templatelang_not_desugared_0_1.instance.invoke(context, g_9740, generated.const114);
+        term = term542;
+        IStrategoTerm p_32778 = null;
+        p_32778 = term;
+        term = templatelang_not_desugared_0_1.instance.invoke(context, p_32778, generated.const235);
         if(term == null)
-          break Fail290;
+          break Fail1110;
       }
       context.popOnSuccess();
       if(true)

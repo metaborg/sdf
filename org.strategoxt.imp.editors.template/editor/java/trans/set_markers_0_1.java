@@ -21,13 +21,13 @@ import java.lang.ref.WeakReference;
 { 
   public static set_markers_0_1 instance = new set_markers_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm x_10716)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm k_33002)
   { 
-    Fail70:
+    Fail1911:
     { 
-      term = context.invokePrimitive("SSL_EXT_set_markers", term, NO_STRATEGIES, new IStrategoTerm[]{x_10716});
+      term = context.invokePrimitive("SSL_EXT_set_markers", term, NO_STRATEGIES, new IStrategoTerm[]{k_33002});
       if(term == null)
-        break Fail70;
+        break Fail1911;
       if(true)
         return term;
     }

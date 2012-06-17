@@ -21,12 +21,12 @@ import java.lang.ref.WeakReference;
 { 
   public static templatelang_stratego_runtime_support_0_1 instance = new templatelang_stratego_runtime_support_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm j_9706)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm r_32744)
   { 
     ITermFactory termFactory = context.getFactory();
-    Fail19:
+    Fail838:
     { 
-      term = termFactory.makeAppl(Main._consModule_2, new IStrategoTerm[]{j_9706, generated.constCons53});
+      term = termFactory.makeAppl(Main._consModule_2, new IStrategoTerm[]{r_32744, generated.constCons66});
       if(true)
         return term;
     }

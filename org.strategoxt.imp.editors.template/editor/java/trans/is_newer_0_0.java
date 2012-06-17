@@ -25,35 +25,35 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("is_newer_0_0");
-    Fail41:
+    Fail1882:
     { 
-      IStrategoTerm g_10712 = null;
-      IStrategoTerm h_10712 = null;
-      IStrategoTerm i_10712 = null;
-      IStrategoTerm j_10712 = null;
+      IStrategoTerm t_32997 = null;
+      IStrategoTerm u_32997 = null;
+      IStrategoTerm v_32997 = null;
+      IStrategoTerm w_32997 = null;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail41;
-      g_10712 = term.getSubterm(0);
-      h_10712 = term.getSubterm(1);
-      i_10712 = term;
-      term = file_exists_0_0.instance.invoke(context, g_10712);
+        break Fail1882;
+      t_32997 = term.getSubterm(0);
+      u_32997 = term.getSubterm(1);
+      v_32997 = term;
+      term = file_exists_0_0.instance.invoke(context, t_32997);
       if(term == null)
-        break Fail41;
+        break Fail1882;
       term = modification_time_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail41;
-      j_10712 = term;
-      term = file_exists_0_0.instance.invoke(context, h_10712);
+        break Fail1882;
+      w_32997 = term;
+      term = file_exists_0_0.instance.invoke(context, u_32997);
       if(term == null)
-        break Fail41;
+        break Fail1882;
       term = modification_time_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail41;
-      term = termFactory.makeTuple(j_10712, term);
+        break Fail1882;
+      term = termFactory.makeTuple(w_32997, term);
       term = gt_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail41;
-      term = i_10712;
+        break Fail1882;
+      term = v_32997;
       context.popOnSuccess();
       if(true)
         return term;

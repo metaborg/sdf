@@ -24,76 +24,76 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("templatelang_declare_option_0_0");
-    Fail297:
+    Fail1117:
     { 
-      IStrategoTerm term292 = term;
-      Success214:
+      IStrategoTerm term548 = term;
+      Success470:
       { 
-        Fail298:
+        Fail1118:
         { 
-          TermReference l_9741 = new TermReference();
-          IStrategoTerm m_9741 = null;
+          TermReference u_32779 = new TermReference();
+          IStrategoTerm v_32779 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consNewlines_1 != ((IStrategoAppl)term).getConstructor())
-            break Fail298;
-          if(l_9741.value == null)
-            l_9741.value = term.getSubterm(0);
+            break Fail1118;
+          if(u_32779.value == null)
+            u_32779.value = term.getSubterm(0);
           else
-            if(l_9741.value != term.getSubterm(0) && !l_9741.value.match(term.getSubterm(0)))
-              break Fail298;
-          m_9741 = term;
-          lifted221 lifted2210 = new lifted221();
-          lifted2210.l_9741 = l_9741;
-          term = with_spxverify_1_0.instance.invoke(context, term, lifted2210);
+            if(u_32779.value != term.getSubterm(0) && !u_32779.value.match(term.getSubterm(0)))
+              break Fail1118;
+          v_32779 = term;
+          lifted420 lifted4200 = new lifted420();
+          lifted4200.u_32779 = u_32779;
+          term = with_spxverify_1_0.instance.invoke(context, term, lifted4200);
           if(term == null)
-            break Fail298;
-          term = m_9741;
+            break Fail1118;
+          term = v_32779;
           if(true)
-            break Success214;
+            break Success470;
         }
-        term = term292;
-        IStrategoTerm term293 = term;
-        Success215:
+        term = term548;
+        IStrategoTerm term549 = term;
+        Success471:
         { 
-          Fail299:
+          Fail1119:
           { 
-            TermReference h_9741 = new TermReference();
-            IStrategoTerm i_9741 = null;
+            TermReference q_32779 = new TermReference();
+            IStrategoTerm r_32779 = null;
             if(term.getTermType() != IStrategoTerm.APPL || Main._consKeywordFollowRestriction_1 != ((IStrategoAppl)term).getConstructor())
-              break Fail299;
-            if(h_9741.value == null)
-              h_9741.value = term.getSubterm(0);
+              break Fail1119;
+            if(q_32779.value == null)
+              q_32779.value = term.getSubterm(0);
             else
-              if(h_9741.value != term.getSubterm(0) && !h_9741.value.match(term.getSubterm(0)))
-                break Fail299;
-            i_9741 = term;
-            lifted222 lifted2220 = new lifted222();
-            lifted2220.h_9741 = h_9741;
-            term = with_spxverify_1_0.instance.invoke(context, term, lifted2220);
+              if(q_32779.value != term.getSubterm(0) && !q_32779.value.match(term.getSubterm(0)))
+                break Fail1119;
+            r_32779 = term;
+            lifted421 lifted4210 = new lifted421();
+            lifted4210.q_32779 = q_32779;
+            term = with_spxverify_1_0.instance.invoke(context, term, lifted4210);
             if(term == null)
-              break Fail299;
-            term = i_9741;
+              break Fail1119;
+            term = r_32779;
             if(true)
-              break Success215;
+              break Success471;
           }
-          term = term293;
-          TermReference c_9741 = new TermReference();
-          TermReference d_9741 = new TermReference();
-          IStrategoTerm e_9741 = null;
+          term = term549;
+          TermReference l_32779 = new TermReference();
+          TermReference m_32779 = new TermReference();
+          IStrategoTerm n_32779 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consTokenize_1 != ((IStrategoAppl)term).getConstructor())
-            break Fail297;
-          if(c_9741.value == null)
-            c_9741.value = term.getSubterm(0);
+            break Fail1117;
+          if(l_32779.value == null)
+            l_32779.value = term.getSubterm(0);
           else
-            if(c_9741.value != term.getSubterm(0) && !c_9741.value.match(term.getSubterm(0)))
-              break Fail297;
-          e_9741 = term;
-          lifted223 lifted2230 = new lifted223();
-          lifted2230.c_9741 = c_9741;
-          lifted2230.d_9741 = d_9741;
-          term = with_spxverify_1_0.instance.invoke(context, term, lifted2230);
+            if(l_32779.value != term.getSubterm(0) && !l_32779.value.match(term.getSubterm(0)))
+              break Fail1117;
+          n_32779 = term;
+          lifted422 lifted4220 = new lifted422();
+          lifted4220.l_32779 = l_32779;
+          lifted4220.m_32779 = m_32779;
+          term = with_spxverify_1_0.instance.invoke(context, term, lifted4220);
           if(term == null)
-            break Fail297;
-          term = e_9741;
+            break Fail1117;
+          term = n_32779;
         }
       }
       context.popOnSuccess();

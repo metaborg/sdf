@@ -24,16 +24,16 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("parse_sdf_file_0_0");
-    Fail366:
+    Fail1186:
     { 
-      IStrategoTerm t_9746 = null;
-      t_9746 = term;
+      IStrategoTerm c_32785 = null;
+      c_32785 = term;
       term = get_sdf_parse_table_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail366;
-      term = parse_file_2_1.instance.invoke(context, t_9746, strsglr_perror_0_0.instance, strsglr_report_parse_error_0_0.instance, term);
+        break Fail1186;
+      term = parse_file_2_1.instance.invoke(context, c_32785, strsglr_perror_0_0.instance, strsglr_report_parse_error_0_0.instance, term);
       if(term == null)
-        break Fail366;
+        break Fail1186;
       context.popOnSuccess();
       if(true)
         return term;

@@ -23,11 +23,9 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail675:
+    Fail1725:
     { 
-      term = unquoted_1_0.instance.invoke(context, term, lifted296.instance);
-      if(term == null)
-        break Fail675;
+      term = generated.const160;
       if(true)
         return term;
     }

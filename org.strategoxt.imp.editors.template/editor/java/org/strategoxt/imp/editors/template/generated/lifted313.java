@@ -23,18 +23,60 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail656:
+    Fail1693:
     { 
-      IStrategoTerm x_9762 = null;
-      IStrategoTerm g_9763 = null;
-      if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail656;
-      g_9763 = term.getSubterm(0);
-      IStrategoTerm arg621 = term.getSubterm(1);
-      x_9762 = arg621;
-      term = aux_$Template$Lang$Cached$Option_0_2.instance.invoke(context, g_9763, arg621, x_9762);
-      if(term == null)
-        break Fail656;
+      IStrategoTerm term397 = term;
+      Success615:
+      { 
+        Fail1694:
+        { 
+          IStrategoTerm term398 = term;
+          Success616:
+          { 
+            Fail1695:
+            { 
+              if(term.getTermType() != IStrategoTerm.INT || 32 != ((IStrategoInt)term).intValue())
+                break Fail1695;
+              if(true)
+                break Success616;
+            }
+            term = term398;
+            IStrategoTerm term399 = term;
+            Success617:
+            { 
+              Fail1696:
+              { 
+                if(term.getTermType() != IStrategoTerm.INT || 9 != ((IStrategoInt)term).intValue())
+                  break Fail1696;
+                if(true)
+                  break Success617;
+              }
+              term = term399;
+              IStrategoTerm term400 = term;
+              Success618:
+              { 
+                Fail1697:
+                { 
+                  if(term.getTermType() != IStrategoTerm.INT || 13 != ((IStrategoInt)term).intValue())
+                    break Fail1697;
+                  if(true)
+                    break Success618;
+                }
+                term = term400;
+                if(term.getTermType() != IStrategoTerm.INT || 10 != ((IStrategoInt)term).intValue())
+                  break Fail1694;
+              }
+            }
+          }
+          { 
+            if(true)
+              break Fail1693;
+            if(true)
+              break Success615;
+          }
+        }
+        term = term397;
+      }
       if(true)
         return term;
     }

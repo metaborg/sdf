@@ -21,35 +21,35 @@ import java.lang.ref.WeakReference;
 { 
   public static maybe_separating_2_0 instance = new maybe_separating_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy n_9718, Strategy o_9718)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy v_32756, Strategy w_32756)
   { 
     context.push("maybe_separating_2_0");
-    Fail93:
+    Fail912:
     { 
-      IStrategoTerm term102 = term;
-      Success67:
+      IStrategoTerm term357 = term;
+      Success322:
       { 
-        Fail94:
+        Fail913:
         { 
-          IStrategoTerm m_9718 = null;
-          m_9718 = term;
+          IStrategoTerm u_32756 = null;
+          u_32756 = term;
           term = templatelang_get_option_0_0.instance.invoke(context, generated.constNewlines0);
           if(term == null)
-            break Fail94;
+            break Fail913;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consSeparating_0 != ((IStrategoAppl)term).getConstructor())
-            break Fail94;
-          term = m_9718;
+            break Fail913;
+          term = u_32756;
           { 
-            term = n_9718.invoke(context, term);
+            term = v_32756.invoke(context, term);
             if(term == null)
-              break Fail93;
+              break Fail912;
             if(true)
-              break Success67;
+              break Success322;
           }
         }
-        term = o_9718.invoke(context, term102);
+        term = w_32756.invoke(context, term357);
         if(term == null)
-          break Fail93;
+          break Fail912;
       }
       context.popOnSuccess();
       if(true)

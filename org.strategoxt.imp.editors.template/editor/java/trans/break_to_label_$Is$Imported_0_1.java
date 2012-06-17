@@ -21,16 +21,16 @@ import java.lang.ref.WeakReference;
 { 
   public static break_to_label_$Is$Imported_0_1 instance = new break_to_label_$Is$Imported_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm t_10733)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm j_33020)
   { 
     context.push("break_to_label_IsImported_0_1");
-    Fail184:
+    Fail2032:
     { 
-      IStrategoTerm v_10733 = null;
-      v_10733 = term;
-      term = dr_break_0_2.instance.invoke(context, v_10733, trans.const5, t_10733);
+      IStrategoTerm l_33020 = null;
+      l_33020 = term;
+      term = dr_break_0_2.instance.invoke(context, l_33020, trans.const275, j_33020);
       if(term == null)
-        break Fail184;
+        break Fail2032;
       context.popOnSuccess();
       if(true)
         return term;

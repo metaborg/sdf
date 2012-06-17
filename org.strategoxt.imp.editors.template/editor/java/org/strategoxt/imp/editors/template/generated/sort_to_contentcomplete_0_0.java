@@ -25,92 +25,92 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("sort_to_contentcomplete_0_0");
-    Fail130:
+    Fail950:
     { 
-      IStrategoTerm k_9721 = null;
-      IStrategoTerm q_9721 = null;
-      IStrategoTerm s_9721 = null;
-      IStrategoTerm t_9721 = null;
-      k_9721 = term;
-      term = k_9721;
-      IStrategoTerm term145 = term;
-      Success94:
+      IStrategoTerm t_32759 = null;
+      IStrategoTerm z_32759 = null;
+      IStrategoTerm b_32760 = null;
+      IStrategoTerm c_32760 = null;
+      t_32759 = term;
+      term = t_32759;
+      IStrategoTerm term401 = term;
+      Success350:
       { 
-        Fail131:
+        Fail951:
         { 
           term = concat_strings_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail131;
+            break Fail951;
           if(true)
-            break Success94;
+            break Success350;
         }
-        term = term145;
-        IStrategoTerm term146 = term;
-        Success95:
+        term = term401;
+        IStrategoTerm term402 = term;
+        Success351:
         { 
-          Fail132:
+          Fail952:
           { 
             term = is_string_0_0.instance.invoke(context, term);
             if(term == null)
-              break Fail132;
+              break Fail952;
             if(true)
-              break Success95;
+              break Success351;
           }
-          term = term146;
-          IStrategoTerm term147 = term;
-          Success96:
+          term = term402;
+          IStrategoTerm term403 = term;
+          Success352:
           { 
-            Fail133:
+            Fail953:
             { 
               term = int_to_string_0_0.instance.invoke(context, term);
               if(term == null)
-                break Fail133;
+                break Fail953;
               if(true)
-                break Success96;
+                break Success352;
             }
-            term = term147;
-            IStrategoTerm term148 = term;
-            Success97:
+            term = term403;
+            IStrategoTerm term404 = term;
+            Success353:
             { 
-              Fail134:
+              Fail954:
               { 
                 term = real_to_string_0_0.instance.invoke(context, term);
                 if(term == null)
-                  break Fail134;
+                  break Fail954;
                 if(true)
-                  break Success97;
+                  break Success353;
               }
-              term = term148;
-              IStrategoTerm m_9721 = null;
-              IStrategoTerm n_9721 = null;
-              IStrategoTerm p_9721 = null;
-              m_9721 = term;
+              term = term404;
+              IStrategoTerm v_32759 = null;
+              IStrategoTerm w_32759 = null;
+              IStrategoTerm y_32759 = null;
+              v_32759 = term;
               term = context.invokePrimitive("SSL_stacktrace_get_all_frame_names", term, NO_STRATEGIES, NO_TERMS);
               if(term == null)
-                break Fail130;
+                break Fail950;
               if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-                break Fail130;
-              n_9721 = ((IStrategoList)term).tail();
-              p_9721 = n_9721;
-              term = report_failure_0_2.instance.invoke(context, p_9721, generated.const74, m_9721);
+                break Fail950;
+              w_32759 = ((IStrategoList)term).tail();
+              y_32759 = w_32759;
+              term = report_failure_0_2.instance.invoke(context, y_32759, generated.const195, v_32759);
               if(term == null)
-                break Fail130;
+                break Fail950;
             }
           }
         }
       }
-      s_9721 = term;
-      q_9721 = generated.const39;
-      t_9721 = s_9721;
-      term = string_replace_0_2.instance.invoke(context, t_9721, q_9721, generated.const40);
+      b_32760 = term;
+      z_32759 = generated.const160;
+      c_32760 = b_32760;
+      term = string_replace_0_2.instance.invoke(context, c_32760, z_32759, generated.const161);
       if(term == null)
-        break Fail130;
-      term = (IStrategoTerm)termFactory.makeListCons(generated.const76, termFactory.makeListCons(term, (IStrategoList)generated.constCons62));
+        break Fail950;
+      term = (IStrategoTerm)termFactory.makeListCons(generated.const197, termFactory.makeListCons(term, (IStrategoList)generated.constCons75));
       term = concat_strings_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail130;
-      term = termFactory.annotateTerm(term, checkListAnnos(termFactory, generated.constNil0));
-      term = termFactory.makeAppl(Main._consprod_3, new IStrategoTerm[]{generated.constCons63, termFactory.makeAppl(Main._conssort_1, new IStrategoTerm[]{k_9721}), termFactory.makeAppl(Main._consattrs_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consterm_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consdefault_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consappl_2, new IStrategoTerm[]{generated.constunquoted0, (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consfun_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consquoted_1, new IStrategoTerm[]{term})}), (IStrategoList)generated.constNil0)})})}), (IStrategoList)generated.constNil0)})});
+        break Fail950;
+      term = termFactory.annotateTerm(term, checkListAnnos(termFactory, generated.constNil3));
+      term = termFactory.makeAppl(Main._consprod_3, new IStrategoTerm[]{generated.constCons76, termFactory.makeAppl(Main._conssort_1, new IStrategoTerm[]{t_32759}), termFactory.makeAppl(Main._consattrs_1, new IStrategoTerm[]{(IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consterm_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consdefault_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consappl_2, new IStrategoTerm[]{generated.constunquoted0, (IStrategoTerm)termFactory.makeListCons(termFactory.makeAppl(Main._consfun_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consquoted_1, new IStrategoTerm[]{term})}), (IStrategoList)generated.constNil3)})})}), (IStrategoList)generated.constNil3)})});
       context.popOnSuccess();
       if(true)
         return term;

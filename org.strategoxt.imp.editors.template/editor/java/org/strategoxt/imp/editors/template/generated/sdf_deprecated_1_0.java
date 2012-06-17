@@ -21,16 +21,16 @@ import java.lang.ref.WeakReference;
 { 
   public static sdf_deprecated_1_0 instance = new sdf_deprecated_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy o_9757)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy x_32795)
   { 
     context.push("sdf_deprecated_1_0");
-    Fail554:
+    Fail1374:
     { 
-      lifted272 lifted2720 = new lifted272();
-      lifted2720.o_9757 = o_9757;
-      term = term_1_0.instance.invoke(context, term, lifted2720);
+      lifted471 lifted4710 = new lifted471();
+      lifted4710.x_32795 = x_32795;
+      term = term_1_0.instance.invoke(context, term, lifted4710);
       if(term == null)
-        break Fail554;
+        break Fail1374;
       context.popOnSuccess();
       if(true)
         return term;

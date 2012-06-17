@@ -25,57 +25,57 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("bigbagof_Declaration_0_0");
-    Fail143:
+    Fail1991:
     { 
-      TermReference v_10726 = new TermReference();
-      TermReference w_10726 = new TermReference();
-      TermReference x_10726 = new TermReference();
-      if(v_10726.value == null)
-        v_10726.value = term;
+      TermReference l_33013 = new TermReference();
+      TermReference m_33013 = new TermReference();
+      TermReference n_33013 = new TermReference();
+      if(l_33013.value == null)
+        l_33013.value = term;
       else
-        if(v_10726.value != term && !v_10726.value.match(term))
-          break Fail143;
+        if(l_33013.value != term && !l_33013.value.match(term))
+          break Fail1991;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail143;
-      if(w_10726.value == null)
-        w_10726.value = term.getSubterm(0);
+        break Fail1991;
+      if(m_33013.value == null)
+        m_33013.value = term.getSubterm(0);
       else
-        if(w_10726.value != term.getSubterm(0) && !w_10726.value.match(term.getSubterm(0)))
-          break Fail143;
-      if(x_10726.value == null)
-        x_10726.value = term.getSubterm(1);
+        if(m_33013.value != term.getSubterm(0) && !m_33013.value.match(term.getSubterm(0)))
+          break Fail1991;
+      if(n_33013.value == null)
+        n_33013.value = term.getSubterm(1);
       else
-        if(x_10726.value != term.getSubterm(1) && !x_10726.value.match(term.getSubterm(1)))
-          break Fail143;
-      Success50:
+        if(n_33013.value != term.getSubterm(1) && !n_33013.value.match(term.getSubterm(1)))
+          break Fail1991;
+      Success721:
       { 
-        Fail144:
+        Fail1992:
         { 
-          IStrategoTerm a_10727 = null;
-          IStrategoTerm c_10727 = null;
-          IStrategoTerm d_10727 = null;
-          c_10727 = term;
-          a_10727 = trans.const0;
-          term = c_10727;
-          d_10727 = c_10727;
-          if(w_10726.value == null || x_10726.value == null)
-            break Fail144;
-          term = termFactory.annotateTerm(termFactory.makeTuple(w_10726.value, x_10726.value), checkListAnnos(termFactory, trans.constCons0));
-          term = dr_lookup_all_rules_0_2.instance.invoke(context, d_10727, a_10727, term);
+          IStrategoTerm q_33013 = null;
+          IStrategoTerm s_33013 = null;
+          IStrategoTerm t_33013 = null;
+          s_33013 = term;
+          q_33013 = trans.const269;
+          term = s_33013;
+          t_33013 = s_33013;
+          if(m_33013.value == null || n_33013.value == null)
+            break Fail1992;
+          term = termFactory.annotateTerm(termFactory.makeTuple(m_33013.value, n_33013.value), checkListAnnos(termFactory, trans.constCons84));
+          term = dr_lookup_all_rules_0_2.instance.invoke(context, t_33013, q_33013, term);
           if(term == null)
-            break Fail144;
+            break Fail1992;
           if(true)
-            break Success50;
+            break Success721;
         }
-        term = trans.constNil0;
+        term = trans.constNil4;
       }
-      lifted44 lifted440 = new lifted44();
-      lifted440.w_10726 = w_10726;
-      lifted440.x_10726 = x_10726;
-      lifted440.v_10726 = v_10726;
-      term = filter_1_0.instance.invoke(context, term, lifted440);
+      lifted573 lifted5730 = new lifted573();
+      lifted5730.m_33013 = m_33013;
+      lifted5730.n_33013 = n_33013;
+      lifted5730.l_33013 = l_33013;
+      term = filter_1_0.instance.invoke(context, term, lifted5730);
       if(term == null)
-        break Fail143;
+        break Fail1991;
       context.popOnSuccess();
       if(true)
         return term;

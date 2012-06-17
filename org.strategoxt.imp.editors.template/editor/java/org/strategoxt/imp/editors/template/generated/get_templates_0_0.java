@@ -25,39 +25,39 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("get_templates_0_0");
-    Fail237:
+    Fail1057:
     { 
-      IStrategoTerm i_9732 = null;
-      IStrategoTerm k_9732 = null;
-      IStrategoTerm m_9732 = null;
-      IStrategoTerm n_9732 = null;
-      i_9732 = term;
-      m_9732 = term;
-      k_9732 = generated.const96;
-      n_9732 = m_9732;
-      term = termFactory.makeTuple(generated.const97, i_9732);
-      term = dr_set_rule_0_3.instance.invoke(context, n_9732, k_9732, i_9732, term);
+      IStrategoTerm r_32770 = null;
+      IStrategoTerm t_32770 = null;
+      IStrategoTerm v_32770 = null;
+      IStrategoTerm w_32770 = null;
+      r_32770 = term;
+      v_32770 = term;
+      t_32770 = generated.const217;
+      w_32770 = v_32770;
+      term = termFactory.makeTuple(generated.const218, r_32770);
+      term = dr_set_rule_0_3.instance.invoke(context, w_32770, t_32770, r_32770, term);
       if(term == null)
-        break Fail237;
-      term = termFactory.makeTuple(i_9732, generated.constTemplateBySort0);
+        break Fail1057;
+      term = termFactory.makeTuple(r_32770, generated.constTemplateBySort0);
       term = resolve_all_symbol_definitions_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail237;
-      IStrategoTerm term232 = term;
-      Success178:
+        break Fail1057;
+      IStrategoTerm term488 = term;
+      Success434:
       { 
-        Fail238:
+        Fail1058:
         { 
           if(term.getTermType() != IStrategoTerm.LIST || !((IStrategoList)term).isEmpty())
-            break Fail238;
+            break Fail1058;
           { 
             if(true)
-              break Fail237;
+              break Fail1057;
             if(true)
-              break Success178;
+              break Success434;
           }
         }
-        term = term232;
+        term = term488;
       }
       context.popOnSuccess();
       if(true)

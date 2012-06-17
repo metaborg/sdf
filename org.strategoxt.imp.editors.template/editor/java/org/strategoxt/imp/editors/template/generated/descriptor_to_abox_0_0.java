@@ -25,20 +25,20 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("descriptor_to_abox_0_0");
-    Fail354:
+    Fail1174:
     { 
-      IStrategoTerm w_9744 = null;
-      term = topdown_1_0.instance.invoke(context, term, lifted235.instance);
+      IStrategoTerm f_32783 = null;
+      term = topdown_1_0.instance.invoke(context, term, lifted434.instance);
       if(term == null)
-        break Fail354;
-      w_9744 = term;
+        break Fail1174;
+      f_32783 = term;
       term = descriptor_pp_table_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail354;
-      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil0);
-      term = ast2box_0_1.instance.invoke(context, w_9744, term);
+        break Fail1174;
+      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil3);
+      term = ast2box_0_1.instance.invoke(context, f_32783, term);
       if(term == null)
-        break Fail354;
+        break Fail1174;
       context.popOnSuccess();
       if(true)
         return term;

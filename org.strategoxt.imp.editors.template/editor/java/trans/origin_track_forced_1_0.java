@@ -21,24 +21,24 @@ import java.lang.ref.WeakReference;
 { 
   public static origin_track_forced_1_0 instance = new origin_track_forced_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy i_10714)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy v_32999)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("origin_track_forced_1_0");
-    Fail58:
+    Fail1899:
     { 
-      IStrategoTerm l_10714 = null;
-      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)trans.constNil0);
-      term = SRTS_all.instance.invoke(context, term, i_10714);
+      IStrategoTerm y_32999 = null;
+      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)trans.constNil4);
+      term = SRTS_all.instance.invoke(context, term, v_32999);
       if(term == null)
-        break Fail58;
+        break Fail1899;
       if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-        break Fail58;
-      l_10714 = ((IStrategoList)term).head();
-      IStrategoTerm arg14 = ((IStrategoList)term).tail();
-      if(arg14.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg14).isEmpty())
-        break Fail58;
-      term = l_10714;
+        break Fail1899;
+      y_32999 = ((IStrategoList)term).head();
+      IStrategoTerm arg798 = ((IStrategoList)term).tail();
+      if(arg798.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg798).isEmpty())
+        break Fail1899;
+      term = y_32999;
       context.popOnSuccess();
       if(true)
         return term;

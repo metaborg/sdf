@@ -21,61 +21,61 @@ import java.lang.ref.WeakReference;
 { 
   public static reverse_bagof_$Declaration_1_0 instance = new reverse_bagof_$Declaration_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy u_10727)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy k_33014)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("reverse_bagof_Declaration_1_0");
-    Fail146:
+    Fail1994:
     { 
-      TermReference q_10727 = new TermReference();
-      TermReference r_10727 = new TermReference();
-      TermReference s_10727 = new TermReference();
-      if(q_10727.value == null)
-        q_10727.value = term;
+      TermReference g_33014 = new TermReference();
+      TermReference h_33014 = new TermReference();
+      TermReference i_33014 = new TermReference();
+      if(g_33014.value == null)
+        g_33014.value = term;
       else
-        if(q_10727.value != term && !q_10727.value.match(term))
-          break Fail146;
+        if(g_33014.value != term && !g_33014.value.match(term))
+          break Fail1994;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail146;
-      if(r_10727.value == null)
-        r_10727.value = term.getSubterm(0);
+        break Fail1994;
+      if(h_33014.value == null)
+        h_33014.value = term.getSubterm(0);
       else
-        if(r_10727.value != term.getSubterm(0) && !r_10727.value.match(term.getSubterm(0)))
-          break Fail146;
-      if(s_10727.value == null)
-        s_10727.value = term.getSubterm(1);
+        if(h_33014.value != term.getSubterm(0) && !h_33014.value.match(term.getSubterm(0)))
+          break Fail1994;
+      if(i_33014.value == null)
+        i_33014.value = term.getSubterm(1);
       else
-        if(s_10727.value != term.getSubterm(1) && !s_10727.value.match(term.getSubterm(1)))
-          break Fail146;
-      Success51:
+        if(i_33014.value != term.getSubterm(1) && !i_33014.value.match(term.getSubterm(1)))
+          break Fail1994;
+      Success722:
       { 
-        Fail147:
+        Fail1995:
         { 
-          IStrategoTerm w_10727 = null;
-          IStrategoTerm y_10727 = null;
-          IStrategoTerm z_10727 = null;
-          y_10727 = term;
-          w_10727 = trans.const0;
-          term = y_10727;
-          z_10727 = y_10727;
-          if(r_10727.value == null || s_10727.value == null)
-            break Fail147;
-          term = termFactory.annotateTerm(termFactory.makeTuple(r_10727.value, s_10727.value), checkListAnnos(termFactory, trans.constCons0));
-          term = dr_lookup_rule_0_2.instance.invoke(context, z_10727, w_10727, term);
+          IStrategoTerm m_33014 = null;
+          IStrategoTerm o_33014 = null;
+          IStrategoTerm p_33014 = null;
+          o_33014 = term;
+          m_33014 = trans.const269;
+          term = o_33014;
+          p_33014 = o_33014;
+          if(h_33014.value == null || i_33014.value == null)
+            break Fail1995;
+          term = termFactory.annotateTerm(termFactory.makeTuple(h_33014.value, i_33014.value), checkListAnnos(termFactory, trans.constCons84));
+          term = dr_lookup_rule_0_2.instance.invoke(context, p_33014, m_33014, term);
           if(term == null)
-            break Fail147;
+            break Fail1995;
           if(true)
-            break Success51;
+            break Success722;
         }
-        term = trans.constNil0;
+        term = trans.constNil4;
       }
-      lifted46 lifted460 = new lifted46();
-      lifted460.r_10727 = r_10727;
-      lifted460.s_10727 = s_10727;
-      lifted460.q_10727 = q_10727;
-      term = reverse_filter_2_0.instance.invoke(context, term, lifted460, u_10727);
+      lifted575 lifted5750 = new lifted575();
+      lifted5750.h_33014 = h_33014;
+      lifted5750.i_33014 = i_33014;
+      lifted5750.g_33014 = g_33014;
+      term = reverse_filter_2_0.instance.invoke(context, term, lifted5750, k_33014);
       if(term == null)
-        break Fail146;
+        break Fail1994;
       context.popOnSuccess();
       if(true)
         return term;

@@ -25,114 +25,114 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("remove_cursor_except_first_0_0");
-    Fail175:
+    Fail995:
     { 
-      IStrategoTerm term179 = term;
-      Success127:
+      IStrategoTerm term435 = term;
+      Success383:
       { 
-        Fail176:
+        Fail996:
         { 
-          IStrategoTerm f_9726 = null;
-          IStrategoTerm g_9726 = null;
-          IStrategoTerm h_9726 = null;
-          IStrategoTerm i_9726 = null;
-          IStrategoTerm j_9726 = null;
-          IStrategoTerm k_9726 = null;
-          IStrategoTerm l_9726 = null;
-          IStrategoTerm m_9726 = null;
-          IStrategoTerm n_9726 = null;
-          IStrategoTerm o_9726 = null;
-          IStrategoTerm p_9726 = null;
-          IStrategoTerm q_9726 = null;
-          IStrategoTerm r_9726 = null;
-          IStrategoTerm s_9726 = null;
-          IStrategoTerm t_9726 = null;
+          IStrategoTerm o_32764 = null;
+          IStrategoTerm p_32764 = null;
+          IStrategoTerm q_32764 = null;
+          IStrategoTerm r_32764 = null;
+          IStrategoTerm s_32764 = null;
+          IStrategoTerm t_32764 = null;
+          IStrategoTerm u_32764 = null;
+          IStrategoTerm v_32764 = null;
+          IStrategoTerm w_32764 = null;
+          IStrategoTerm x_32764 = null;
+          IStrategoTerm y_32764 = null;
+          IStrategoTerm z_32764 = null;
+          IStrategoTerm a_32765 = null;
+          IStrategoTerm b_32765 = null;
+          IStrategoTerm c_32765 = null;
           if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-            break Fail176;
-          f_9726 = ((IStrategoList)term).head();
-          g_9726 = ((IStrategoList)term).tail();
-          IStrategoList annos5 = term.getAnnotations();
-          j_9726 = annos5;
-          term = f_9726;
+            break Fail996;
+          o_32764 = ((IStrategoList)term).head();
+          p_32764 = ((IStrategoList)term).tail();
+          IStrategoList annos23 = term.getAnnotations();
+          s_32764 = annos23;
+          term = o_32764;
           if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-            break Fail176;
-          k_9726 = ((IStrategoList)term).head();
-          l_9726 = ((IStrategoList)term).tail();
-          IStrategoList annos6 = term.getAnnotations();
-          o_9726 = annos6;
-          m_9726 = k_9726;
-          term = l_9726;
+            break Fail996;
+          t_32764 = ((IStrategoList)term).head();
+          u_32764 = ((IStrategoList)term).tail();
+          IStrategoList annos24 = term.getAnnotations();
+          x_32764 = annos24;
+          v_32764 = t_32764;
+          term = u_32764;
           if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-            break Fail176;
-          p_9726 = ((IStrategoList)term).head();
-          q_9726 = ((IStrategoList)term).tail();
-          IStrategoList annos7 = term.getAnnotations();
-          t_9726 = annos7;
-          term = $Cursor_0_0.instance.invoke(context, p_9726);
+            break Fail996;
+          y_32764 = ((IStrategoList)term).head();
+          z_32764 = ((IStrategoList)term).tail();
+          IStrategoList annos25 = term.getAnnotations();
+          c_32765 = annos25;
+          term = $Cursor_0_0.instance.invoke(context, y_32764);
           if(term == null)
-            break Fail176;
-          r_9726 = term;
-          term = q_9726;
+            break Fail996;
+          a_32765 = term;
+          term = z_32764;
           if(term.getTermType() != IStrategoTerm.LIST || !((IStrategoList)term).isEmpty())
-            break Fail176;
-          s_9726 = term;
-          IStrategoList list7;
-          list7 = checkListTail(s_9726);
-          if(list7 == null)
-            break Fail176;
-          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(r_9726, list7), checkListAnnos(termFactory, t_9726));
-          n_9726 = term;
-          IStrategoList list8;
-          list8 = checkListTail(n_9726);
-          if(list8 == null)
-            break Fail176;
-          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(m_9726, list8), checkListAnnos(termFactory, o_9726));
-          h_9726 = term;
-          term = remove_cursor_0_0.instance.invoke(context, g_9726);
+            break Fail996;
+          b_32765 = term;
+          IStrategoList list10;
+          list10 = checkListTail(b_32765);
+          if(list10 == null)
+            break Fail996;
+          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(a_32765, list10), checkListAnnos(termFactory, c_32765));
+          w_32764 = term;
+          IStrategoList list11;
+          list11 = checkListTail(w_32764);
+          if(list11 == null)
+            break Fail996;
+          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(v_32764, list11), checkListAnnos(termFactory, x_32764));
+          q_32764 = term;
+          term = remove_cursor_0_0.instance.invoke(context, p_32764);
           if(term == null)
-            break Fail176;
-          i_9726 = term;
-          IStrategoList list9;
-          list9 = checkListTail(i_9726);
-          if(list9 == null)
-            break Fail176;
-          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(h_9726, list9), checkListAnnos(termFactory, j_9726));
+            break Fail996;
+          r_32764 = term;
+          IStrategoList list12;
+          list12 = checkListTail(r_32764);
+          if(list12 == null)
+            break Fail996;
+          term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(q_32764, list12), checkListAnnos(termFactory, s_32764));
           if(true)
-            break Success127;
+            break Success383;
         }
-        term = term179;
-        IStrategoTerm term180 = term;
-        Success128:
+        term = term435;
+        IStrategoTerm term436 = term;
+        Success384:
         { 
-          Fail177:
+          Fail997:
           { 
-            IStrategoTerm u_9726 = null;
-            IStrategoTerm v_9726 = null;
-            IStrategoTerm w_9726 = null;
-            IStrategoTerm x_9726 = null;
-            IStrategoTerm y_9726 = null;
+            IStrategoTerm d_32765 = null;
+            IStrategoTerm e_32765 = null;
+            IStrategoTerm f_32765 = null;
+            IStrategoTerm g_32765 = null;
+            IStrategoTerm h_32765 = null;
             if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-              break Fail177;
-            u_9726 = ((IStrategoList)term).head();
-            v_9726 = ((IStrategoList)term).tail();
-            IStrategoList annos8 = term.getAnnotations();
-            y_9726 = annos8;
-            w_9726 = u_9726;
-            term = this.invoke(context, v_9726);
+              break Fail997;
+            d_32765 = ((IStrategoList)term).head();
+            e_32765 = ((IStrategoList)term).tail();
+            IStrategoList annos26 = term.getAnnotations();
+            h_32765 = annos26;
+            f_32765 = d_32765;
+            term = this.invoke(context, e_32765);
             if(term == null)
-              break Fail177;
-            x_9726 = term;
-            IStrategoList list10;
-            list10 = checkListTail(x_9726);
-            if(list10 == null)
-              break Fail177;
-            term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(w_9726, list10), checkListAnnos(termFactory, y_9726));
+              break Fail997;
+            g_32765 = term;
+            IStrategoList list13;
+            list13 = checkListTail(g_32765);
+            if(list13 == null)
+              break Fail997;
+            term = termFactory.annotateTerm((IStrategoTerm)termFactory.makeListCons(f_32765, list13), checkListAnnos(termFactory, h_32765));
             if(true)
-              break Success128;
+              break Success384;
           }
-          term = term180;
+          term = term436;
           if(term.getTermType() != IStrategoTerm.LIST || !((IStrategoList)term).isEmpty())
-            break Fail175;
+            break Fail995;
         }
       }
       context.popOnSuccess();

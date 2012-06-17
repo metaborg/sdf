@@ -21,25 +21,25 @@ import java.lang.ref.WeakReference;
 { 
   public static as_string_1_0 instance = new as_string_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy r_9749)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy a_32788)
   { 
     context.push("as_string_1_0");
-    Fail375:
+    Fail1195:
     { 
-      Success261:
+      Success517:
       { 
-        Fail376:
+        Fail1196:
         { 
-          term = r_9749.invoke(context, term);
+          term = a_32788.invoke(context, term);
           if(term == null)
-            break Fail376;
+            break Fail1196;
           term = as_string_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail376;
+            break Fail1196;
           if(true)
-            break Success261;
+            break Success517;
         }
-        term = generated.const143;
+        term = generated.const264;
       }
       context.popOnSuccess();
       if(true)

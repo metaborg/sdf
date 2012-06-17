@@ -24,16 +24,16 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("resolve_all_symbol_definitions_0_0");
-    Fail4:
+    Fail1844:
     { 
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail4;
+        break Fail1844;
       term = bagof_$Declaration_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail4;
+        break Fail1844;
       term = nub_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail4;
+        break Fail1844;
       context.popOnSuccess();
       if(true)
         return term;

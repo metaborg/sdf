@@ -23,10 +23,11 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail693:
+    Fail1742:
     { 
-      if(term.getTermType() != IStrategoTerm.STRING || !"deprecated".equals(((IStrategoString)term).stringValue()))
-        break Fail693;
+      term = filter_1_0.instance.invoke(context, term, template_element_to_sdf_0_0.instance);
+      if(term == null)
+        break Fail1742;
       if(true)
         return term;
     }

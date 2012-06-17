@@ -24,28 +24,28 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("templatelang_index_option_0_0");
-    Fail295:
+    Fail1115:
     { 
-      TermReference z_9740 = new TermReference();
-      TermReference a_9741 = new TermReference();
+      TermReference i_32779 = new TermReference();
+      TermReference j_32779 = new TermReference();
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail295;
-      if(z_9740.value == null)
-        z_9740.value = term.getSubterm(0);
+        break Fail1115;
+      if(i_32779.value == null)
+        i_32779.value = term.getSubterm(0);
       else
-        if(z_9740.value != term.getSubterm(0) && !z_9740.value.match(term.getSubterm(0)))
-          break Fail295;
-      if(a_9741.value == null)
-        a_9741.value = term.getSubterm(1);
+        if(i_32779.value != term.getSubterm(0) && !i_32779.value.match(term.getSubterm(0)))
+          break Fail1115;
+      if(j_32779.value == null)
+        j_32779.value = term.getSubterm(1);
       else
-        if(a_9741.value != term.getSubterm(1) && !a_9741.value.match(term.getSubterm(1)))
-          break Fail295;
-      lifted218 lifted2180 = new lifted218();
-      lifted2180.z_9740 = z_9740;
-      lifted2180.a_9741 = a_9741;
-      term = with_spxverify_2_0.instance.invoke(context, term, lifted2180, lifted219.instance);
+        if(j_32779.value != term.getSubterm(1) && !j_32779.value.match(term.getSubterm(1)))
+          break Fail1115;
+      lifted417 lifted4170 = new lifted417();
+      lifted4170.i_32779 = i_32779;
+      lifted4170.j_32779 = j_32779;
+      term = with_spxverify_2_0.instance.invoke(context, term, lifted4170, lifted418.instance);
       if(term == null)
-        break Fail295;
+        break Fail1115;
       context.popOnSuccess();
       if(true)
         return term;

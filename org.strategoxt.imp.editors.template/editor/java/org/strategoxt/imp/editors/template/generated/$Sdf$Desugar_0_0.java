@@ -24,34 +24,34 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     ITermFactory termFactory = context.getFactory();
-    Fail345:
+    Fail1165:
     { 
-      IStrategoTerm term356 = term;
-      IStrategoConstructor cons34 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-      Success250:
+      IStrategoTerm term612 = term;
+      IStrategoConstructor cons46 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+      Success506:
       { 
-        if(cons34 == Main._consno_attrs_0)
+        if(cons46 == Main._consno_attrs_0)
         { 
-          Fail346:
+          Fail1166:
           { 
             term = generated.constattrs0;
             if(true)
-              break Success250;
+              break Success506;
           }
-          term = term356;
+          term = term612;
         }
-        if(cons34 == Main._consterm_1)
+        if(cons46 == Main._consterm_1)
         { 
-          IStrategoTerm c_9744 = null;
-          IStrategoTerm arg559 = term.getSubterm(0);
-          if(arg559.getTermType() != IStrategoTerm.APPL || Main._consdefault_1 != ((IStrategoAppl)arg559).getConstructor())
-            break Fail345;
-          c_9744 = arg559.getSubterm(0);
-          term = termFactory.makeAppl(Main._consterm_1, new IStrategoTerm[]{c_9744});
+          IStrategoTerm l_32782 = null;
+          IStrategoTerm arg712 = term.getSubterm(0);
+          if(arg712.getTermType() != IStrategoTerm.APPL || Main._consdefault_1 != ((IStrategoAppl)arg712).getConstructor())
+            break Fail1165;
+          l_32782 = arg712.getSubterm(0);
+          term = termFactory.makeAppl(Main._consterm_1, new IStrategoTerm[]{l_32782});
         }
         else
         { 
-          break Fail345;
+          break Fail1165;
         }
       }
       if(true)

@@ -23,10 +23,11 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail684:
+    Fail1730:
     { 
-      if(term.getTermType() != IStrategoTerm.STRING || !"prefer".equals(((IStrategoString)term).stringValue()))
-        break Fail684;
+      term = is_substring_1_0.instance.invoke(context, term, lifted288.instance);
+      if(term == null)
+        break Fail1730;
       if(true)
         return term;
     }

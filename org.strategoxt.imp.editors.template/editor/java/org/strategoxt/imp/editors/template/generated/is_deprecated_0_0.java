@@ -24,15 +24,15 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("is_deprecated_0_0");
-    Fail404:
+    Fail1224:
     { 
-      IStrategoTerm d_9751 = null;
+      IStrategoTerm m_32789 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consattrs_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail404;
-      d_9751 = term.getSubterm(0);
-      term = SRTS_one.instance.invoke(context, d_9751, lifted256.instance);
+        break Fail1224;
+      m_32789 = term.getSubterm(0);
+      term = SRTS_one.instance.invoke(context, m_32789, lifted455.instance);
       if(term == null)
-        break Fail404;
+        break Fail1224;
       context.popOnSuccess();
       if(true)
         return term;

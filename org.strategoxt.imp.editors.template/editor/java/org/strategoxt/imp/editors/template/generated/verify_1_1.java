@@ -21,18 +21,18 @@ import java.lang.ref.WeakReference;
 { 
   public static verify_1_1 instance = new verify_1_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy w_9749, IStrategoTerm ref_v_9749)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy f_32788, IStrategoTerm ref_e_32788)
   { 
-    TermReference v_9749 = new TermReference(ref_v_9749);
+    TermReference e_32788 = new TermReference(ref_e_32788);
     context.push("verify_1_1");
-    Fail380:
+    Fail1200:
     { 
-      lifted247 lifted2470 = new lifted247();
-      lifted2470.w_9749 = w_9749;
-      lifted2470.v_9749 = v_9749;
-      term = contracts_1_0.instance.invoke(context, term, lifted2470);
+      lifted446 lifted4460 = new lifted446();
+      lifted4460.f_32788 = f_32788;
+      lifted4460.e_32788 = e_32788;
+      term = contracts_1_0.instance.invoke(context, term, lifted4460);
       if(term == null)
-        break Fail380;
+        break Fail1200;
       context.popOnSuccess();
       if(true)
         return term;

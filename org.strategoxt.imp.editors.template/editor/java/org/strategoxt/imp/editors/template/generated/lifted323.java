@@ -19,20 +19,51 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted323 extends Strategy 
 { 
-  public static final lifted323 instance = new lifted323();
+  TermReference m_32761;
+
+  TermReference n_32761;
+
+  TermReference p_32761;
+
+  TermReference o_32761;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail646:
+    Fail1685:
     { 
-      IStrategoTerm u_9767 = null;
-      if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail646;
-      u_9767 = term.getSubterm(0);
-      IStrategoTerm arg627 = term.getSubterm(1);
-      term = aux_$Descriptor$P$P$Table_0_1.instance.invoke(context, u_9767, arg627);
+      if(m_32761.value == null)
+        break Fail1685;
+      term = expand_single_line_template_production_0_0.instance.invoke(context, m_32761.value);
       if(term == null)
-        break Fail646;
+        break Fail1685;
+      if(n_32761.value == null)
+        n_32761.value = term;
+      else
+        if(n_32761.value != term && !n_32761.value.match(term))
+          break Fail1685;
+      if(n_32761.value == null)
+        break Fail1685;
+      term = filter_1_0.instance.invoke(context, n_32761.value, template_element_to_esv_0_0.instance);
+      if(term == null)
+        break Fail1685;
+      term = template_to_completion_template_helper_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1685;
+      if(p_32761.value == null)
+        p_32761.value = term;
+      else
+        if(p_32761.value != term && !p_32761.value.match(term))
+          break Fail1685;
+      if(p_32761.value == null)
+        break Fail1685;
+      term = build_prefix_0_0.instance.invoke(context, p_32761.value);
+      if(term == null)
+        break Fail1685;
+      if(o_32761.value == null)
+        o_32761.value = term;
+      else
+        if(o_32761.value != term && !o_32761.value.match(term))
+          break Fail1685;
       if(true)
         return term;
     }

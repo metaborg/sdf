@@ -25,33 +25,33 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("bigchain_IsImported_0_0");
-    Fail191:
+    Fail2039:
     { 
-      IStrategoTerm z_10734 = null;
-      IStrategoTerm c_10735 = null;
-      IStrategoTerm e_10735 = null;
-      z_10734 = term;
-      e_10735 = term;
-      Success62:
+      IStrategoTerm p_33021 = null;
+      IStrategoTerm s_33021 = null;
+      IStrategoTerm u_33021 = null;
+      p_33021 = term;
+      u_33021 = term;
+      Success733:
       { 
-        Fail192:
+        Fail2040:
         { 
-          IStrategoTerm g_10735 = null;
-          g_10735 = term;
-          term = dr_lookup_all_rules_0_2.instance.invoke(context, g_10735, trans.const5, z_10734);
+          IStrategoTerm w_33021 = null;
+          w_33021 = term;
+          term = dr_lookup_all_rules_0_2.instance.invoke(context, w_33021, trans.const275, p_33021);
           if(term == null)
-            break Fail192;
+            break Fail2040;
           if(true)
-            break Success62;
+            break Success733;
         }
-        term = trans.constNil0;
+        term = trans.constNil4;
       }
-      c_10735 = term;
-      term = e_10735;
-      term = termFactory.makeTuple(c_10735, term);
-      term = foldl_1_0.instance.invoke(context, term, lifted60.instance);
+      s_33021 = term;
+      term = u_33021;
+      term = termFactory.makeTuple(s_33021, term);
+      term = foldl_1_0.instance.invoke(context, term, lifted589.instance);
       if(term == null)
-        break Fail191;
+        break Fail2039;
       context.popOnSuccess();
       if(true)
         return term;

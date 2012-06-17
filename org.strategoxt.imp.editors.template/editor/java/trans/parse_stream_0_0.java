@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("parse_stream_0_0");
-    Fail9:
+    Fail1849:
     { 
       term = parse_templatelang_stream_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail9;
+        break Fail1849;
       context.popOnSuccess();
       if(true)
         return term;

@@ -21,82 +21,82 @@ import java.lang.ref.WeakReference;
 { 
   public static template_section_to_stratego_0_1 instance = new template_section_to_stratego_0_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm ref_i_9770)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm ref_r_32808)
   { 
     ITermFactory termFactory = context.getFactory();
-    TermReference i_9770 = new TermReference(ref_i_9770);
+    TermReference r_32808 = new TermReference(ref_r_32808);
     context.push("template_section_to_stratego_0_1");
-    Fail15:
+    Fail834:
     { 
-      IStrategoTerm term14 = term;
-      Success12:
+      IStrategoTerm term269 = term;
+      Success267:
       { 
-        Fail16:
+        Fail835:
         { 
-          TermReference w_9705 = new TermReference();
-          TermReference x_9705 = new TermReference();
-          TermReference y_9705 = new TermReference();
-          IStrategoTerm z_9705 = null;
+          TermReference e_32744 = new TermReference();
+          TermReference f_32744 = new TermReference();
+          TermReference g_32744 = new TermReference();
+          IStrategoTerm h_32744 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consTemplateSection_1 != ((IStrategoAppl)term).getConstructor())
-            break Fail16;
-          if(x_9705.value == null)
-            x_9705.value = term.getSubterm(0);
+            break Fail835;
+          if(f_32744.value == null)
+            f_32744.value = term.getSubterm(0);
           else
-            if(x_9705.value != term.getSubterm(0) && !x_9705.value.match(term.getSubterm(0)))
-              break Fail16;
-          z_9705 = term;
-          lifted7 lifted710 = new lifted7();
-          lifted710.w_9705 = w_9705;
-          lifted710.x_9705 = x_9705;
-          lifted710.i_9770 = i_9770;
-          lifted710.y_9705 = y_9705;
-          term = with_spxverify_2_0.instance.invoke(context, term, lifted710, lifted10.instance);
+            if(f_32744.value != term.getSubterm(0) && !f_32744.value.match(term.getSubterm(0)))
+              break Fail835;
+          h_32744 = term;
+          lifted206 lifted2060 = new lifted206();
+          lifted2060.e_32744 = e_32744;
+          lifted2060.f_32744 = f_32744;
+          lifted2060.r_32808 = r_32808;
+          lifted2060.g_32744 = g_32744;
+          term = with_spxverify_2_0.instance.invoke(context, term, lifted2060, lifted209.instance);
           if(term == null)
-            break Fail16;
-          term = z_9705;
-          if(w_9705.value == null || y_9705.value == null)
-            break Fail16;
-          term = termFactory.makeTuple(w_9705.value, termFactory.annotateTerm(y_9705.value, checkListAnnos(termFactory, generated.constNil0)));
+            break Fail835;
+          term = h_32744;
+          if(e_32744.value == null || g_32744.value == null)
+            break Fail835;
+          term = termFactory.makeTuple(e_32744.value, termFactory.annotateTerm(g_32744.value, checkListAnnos(termFactory, generated.constNil3)));
           term = make$Conc_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail16;
+            break Fail835;
           term = termFactory.makeAppl(Main._consStrategies_1, new IStrategoTerm[]{term});
           if(true)
-            break Success12;
+            break Success267;
         }
-        term = term14;
-        TermReference o_9705 = new TermReference();
-        TermReference p_9705 = new TermReference();
-        TermReference q_9705 = new TermReference();
-        TermReference r_9705 = new TermReference();
-        IStrategoTerm s_9705 = null;
+        term = term269;
+        TermReference w_32743 = new TermReference();
+        TermReference x_32743 = new TermReference();
+        TermReference y_32743 = new TermReference();
+        TermReference z_32743 = new TermReference();
+        IStrategoTerm a_32744 = null;
         if(term.getTermType() != IStrategoTerm.APPL || Main._consSDFSection_1 != ((IStrategoAppl)term).getConstructor())
-          break Fail15;
-        IStrategoTerm arg13 = term.getSubterm(0);
-        if(arg13.getTermType() != IStrategoTerm.APPL || Main._conslexical_syntax_1 != ((IStrategoAppl)arg13).getConstructor())
-          break Fail15;
-        if(o_9705.value == null)
-          o_9705.value = arg13.getSubterm(0);
+          break Fail834;
+        IStrategoTerm arg161 = term.getSubterm(0);
+        if(arg161.getTermType() != IStrategoTerm.APPL || Main._conslexical_syntax_1 != ((IStrategoAppl)arg161).getConstructor())
+          break Fail834;
+        if(w_32743.value == null)
+          w_32743.value = arg161.getSubterm(0);
         else
-          if(o_9705.value != arg13.getSubterm(0) && !o_9705.value.match(arg13.getSubterm(0)))
-            break Fail15;
-        s_9705 = term;
-        lifted11 lifted1110 = new lifted11();
-        lifted1110.o_9705 = o_9705;
-        lifted1110.p_9705 = p_9705;
-        lifted1110.q_9705 = q_9705;
-        lifted1110.i_9770 = i_9770;
-        lifted1110.r_9705 = r_9705;
-        term = with_spxverify_2_0.instance.invoke(context, term, lifted1110, lifted15.instance);
+          if(w_32743.value != arg161.getSubterm(0) && !w_32743.value.match(arg161.getSubterm(0)))
+            break Fail834;
+        a_32744 = term;
+        lifted210 lifted2100 = new lifted210();
+        lifted2100.w_32743 = w_32743;
+        lifted2100.x_32743 = x_32743;
+        lifted2100.y_32743 = y_32743;
+        lifted2100.r_32808 = r_32808;
+        lifted2100.z_32743 = z_32743;
+        term = with_spxverify_2_0.instance.invoke(context, term, lifted2100, lifted214.instance);
         if(term == null)
-          break Fail15;
-        term = s_9705;
-        if(p_9705.value == null || r_9705.value == null)
-          break Fail15;
-        term = termFactory.makeTuple(p_9705.value, termFactory.annotateTerm(r_9705.value, checkListAnnos(termFactory, generated.constNil0)));
+          break Fail834;
+        term = a_32744;
+        if(x_32743.value == null || z_32743.value == null)
+          break Fail834;
+        term = termFactory.makeTuple(x_32743.value, termFactory.annotateTerm(z_32743.value, checkListAnnos(termFactory, generated.constNil3)));
         term = make$Conc_0_0.instance.invoke(context, term);
         if(term == null)
-          break Fail15;
+          break Fail834;
         term = termFactory.makeAppl(Main._consStrategies_1, new IStrategoTerm[]{term});
       }
       context.popOnSuccess();

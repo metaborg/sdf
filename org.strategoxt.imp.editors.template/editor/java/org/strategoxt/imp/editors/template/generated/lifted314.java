@@ -23,18 +23,24 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail655:
+    ITermFactory termFactory = context.getFactory();
+    Fail1690:
     { 
-      IStrategoTerm j_9763 = null;
-      IStrategoTerm s_9763 = null;
-      if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail655;
-      s_9763 = term.getSubterm(0);
-      IStrategoTerm arg622 = term.getSubterm(1);
-      j_9763 = arg622;
-      term = aux_$Template$Lang$Cached$Option_0_2.instance.invoke(context, s_9763, arg622, j_9763);
+      IStrategoTerm i_32760 = null;
+      IStrategoTerm k_32760 = null;
+      k_32760 = term;
+      term = collect_one_1_0.instance.invoke(context, term, is_string_0_0.instance);
       if(term == null)
-        break Fail655;
+        break Fail1690;
+      i_32760 = term;
+      term = k_32760;
+      term = collect_one_1_0.instance.invoke(context, term, is_string_0_0.instance);
+      if(term == null)
+        break Fail1690;
+      term = termFactory.makeTuple(i_32760, term);
+      term = string_lt_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1690;
       if(true)
         return term;
     }

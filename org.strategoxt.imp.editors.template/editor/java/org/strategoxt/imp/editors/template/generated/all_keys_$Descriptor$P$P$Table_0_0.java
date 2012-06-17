@@ -24,13 +24,13 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("all_keys_DescriptorPPTable_0_0");
-    Fail621:
+    Fail1441:
     { 
-      IStrategoTerm w_9766 = null;
-      w_9766 = term;
-      term = dr_all_keys_0_1.instance.invoke(context, w_9766, generated.const126);
+      IStrategoTerm f_32805 = null;
+      f_32805 = term;
+      term = dr_all_keys_0_1.instance.invoke(context, f_32805, generated.const247);
       if(term == null)
-        break Fail621;
+        break Fail1441;
       context.popOnSuccess();
       if(true)
         return term;

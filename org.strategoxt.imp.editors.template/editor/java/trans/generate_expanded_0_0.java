@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("generate_expanded_0_0");
-    Fail90:
+    Fail1931:
     { 
-      term = generate_aterm_1_0.instance.invoke(context, term, lifted28.instance);
+      term = generate_aterm_1_0.instance.invoke(context, term, lifted558.instance);
       if(term == null)
-        break Fail90;
+        break Fail1931;
       context.popOnSuccess();
       if(true)
         return term;

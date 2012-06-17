@@ -21,43 +21,43 @@ import java.lang.ref.WeakReference;
 { 
   public static reverse_bagof_$Template$Lang$Cached$Option_1_0 instance = new reverse_bagof_$Template$Lang$Cached$Option_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy h_9765)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy q_32803)
   { 
     context.push("reverse_bagof_TemplateLangCachedOption_1_0");
-    Fail607:
+    Fail1427:
     { 
-      TermReference e_9765 = new TermReference();
-      TermReference f_9765 = new TermReference();
-      if(f_9765.value == null)
-        f_9765.value = term;
+      TermReference n_32803 = new TermReference();
+      TermReference o_32803 = new TermReference();
+      if(o_32803.value == null)
+        o_32803.value = term;
       else
-        if(f_9765.value != term && !f_9765.value.match(term))
-          break Fail607;
-      if(e_9765.value == null)
-        e_9765.value = term;
+        if(o_32803.value != term && !o_32803.value.match(term))
+          break Fail1427;
+      if(n_32803.value == null)
+        n_32803.value = term;
       else
-        if(e_9765.value != term && !e_9765.value.match(term))
-          break Fail607;
-      Success285:
+        if(n_32803.value != term && !n_32803.value.match(term))
+          break Fail1427;
+      Success541:
       { 
-        Fail608:
+        Fail1428:
         { 
-          IStrategoTerm k_9765 = null;
-          k_9765 = term;
-          term = dr_lookup_rule_0_2.instance.invoke(context, k_9765, generated.const116, f_9765.value);
+          IStrategoTerm t_32803 = null;
+          t_32803 = term;
+          term = dr_lookup_rule_0_2.instance.invoke(context, t_32803, generated.const237, o_32803.value);
           if(term == null)
-            break Fail608;
+            break Fail1428;
           if(true)
-            break Success285;
+            break Success541;
         }
-        term = generated.constNil0;
+        term = generated.constNil3;
       }
-      lifted319 lifted3190 = new lifted319();
-      lifted3190.e_9765 = e_9765;
-      lifted3190.f_9765 = f_9765;
-      term = reverse_filter_2_0.instance.invoke(context, term, lifted3190, h_9765);
+      lifted518 lifted5180 = new lifted518();
+      lifted5180.n_32803 = n_32803;
+      lifted5180.o_32803 = o_32803;
+      term = reverse_filter_2_0.instance.invoke(context, term, lifted5180, q_32803);
       if(term == null)
-        break Fail607;
+        break Fail1427;
       context.popOnSuccess();
       if(true)
         return term;

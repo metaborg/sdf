@@ -24,28 +24,28 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("string_to_sdf_0_0");
-    Fail136:
+    Fail956:
     { 
-      TermReference d_9722 = new TermReference();
-      IStrategoTerm e_9722 = null;
-      e_9722 = term;
+      TermReference m_32760 = new TermReference();
+      IStrategoTerm n_32760 = null;
+      n_32760 = term;
       term = templatelang_get_option_0_0.instance.invoke(context, generated.constTokenize0);
       if(term == null)
-        break Fail136;
-      if(d_9722.value == null)
-        d_9722.value = term;
+        break Fail956;
+      if(m_32760.value == null)
+        m_32760.value = term;
       else
-        if(d_9722.value != term && !d_9722.value.match(term))
-          break Fail136;
-      term = e_9722;
-      lifted118 lifted1180 = new lifted118();
-      lifted1180.d_9722 = d_9722;
-      term = string_edge_tokenize_1_0.instance.invoke(context, term, lifted1180);
+        if(m_32760.value != term && !m_32760.value.match(term))
+          break Fail956;
+      term = n_32760;
+      lifted317 lifted3170 = new lifted317();
+      lifted3170.m_32760 = m_32760;
+      term = string_edge_tokenize_1_0.instance.invoke(context, term, lifted3170);
       if(term == null)
-        break Fail136;
-      term = map_1_0.instance.invoke(context, term, lifted120.instance);
+        break Fail956;
+      term = map_1_0.instance.invoke(context, term, lifted319.instance);
       if(term == null)
-        break Fail136;
+        break Fail956;
       context.popOnSuccess();
       if(true)
         return term;

@@ -21,14 +21,14 @@ import java.lang.ref.WeakReference;
 { 
   public static with_verification_2_0 instance = new with_verification_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy n_9750, Strategy o_9750)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy w_32788, Strategy x_32788)
   { 
     context.push("with_verification_2_0");
-    Fail390:
+    Fail1210:
     { 
-      term = with_verification_3_0.instance.invoke(context, term, n_9750, o_9750, _Id.instance);
+      term = with_verification_3_0.instance.invoke(context, term, w_32788, x_32788, _Id.instance);
       if(term == null)
-        break Fail390;
+        break Fail1210;
       context.popOnSuccess();
       if(true)
         return term;

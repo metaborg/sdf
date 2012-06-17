@@ -24,25 +24,25 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("choose_one_expansion_0_0");
-    Fail241:
+    Fail1061:
     { 
-      IStrategoTerm term233 = term;
-      Success179:
+      IStrategoTerm term489 = term;
+      Success435:
       { 
-        Fail242:
+        Fail1062:
         { 
           term = qsort_1_0.instance.invoke(context, term, template_compare_0_0.instance);
           if(term == null)
-            break Fail242;
+            break Fail1062;
           term = $Hd_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail242;
+            break Fail1062;
           if(true)
-            break Success179;
+            break Success435;
         }
-        term = $Hd_0_0.instance.invoke(context, term233);
+        term = $Hd_0_0.instance.invoke(context, term489);
         if(term == null)
-          break Fail241;
+          break Fail1061;
       }
       context.popOnSuccess();
       if(true)

@@ -21,27 +21,27 @@ import java.lang.ref.WeakReference;
 { 
   public static run_strategy_2_1 instance = new run_strategy_2_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy v_9750, Strategy w_9750, IStrategoTerm u_9750)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy e_32789, Strategy f_32789, IStrategoTerm d_32789)
   { 
     context.push("run_strategy_2_1");
-    Fail392:
+    Fail1212:
     { 
-      Success266:
+      Success522:
       { 
-        Fail393:
+        Fail1213:
         { 
-          term = v_9750.invoke(context, term);
+          term = e_32789.invoke(context, term);
           if(term == null)
-            break Fail393;
+            break Fail1213;
           if(true)
-            break Success266;
+            break Success522;
         }
-        term = debug_0_0.instance.invoke(context, u_9750);
+        term = debug_0_0.instance.invoke(context, d_32789);
         if(term == null)
-          break Fail392;
-        term = w_9750.invoke(context, term);
+          break Fail1212;
+        term = f_32789.invoke(context, term);
         if(term == null)
-          break Fail392;
+          break Fail1212;
       }
       context.popOnSuccess();
       if(true)

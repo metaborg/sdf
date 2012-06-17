@@ -24,19 +24,19 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     ITermFactory termFactory = context.getFactory();
-    Fail55:
+    Fail874:
     { 
-      IStrategoTerm z_9710 = null;
+      IStrategoTerm h_32749 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consPlaceholder_4 != ((IStrategoAppl)term).getConstructor())
-        break Fail55;
-      IStrategoList annos0 = term.getAnnotations();
-      if(annos0.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos0).isEmpty())
-        break Fail55;
-      z_9710 = ((IStrategoList)annos0).head();
-      IStrategoTerm arg38 = ((IStrategoList)annos0).tail();
-      if(arg38.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg38).isEmpty())
-        break Fail55;
-      term = termFactory.makeAppl(Main._consVar_1, new IStrategoTerm[]{z_9710});
+        break Fail874;
+      IStrategoList annos18 = term.getAnnotations();
+      if(annos18.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos18).isEmpty())
+        break Fail874;
+      h_32749 = ((IStrategoList)annos18).head();
+      IStrategoTerm arg186 = ((IStrategoList)annos18).tail();
+      if(arg186.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg186).isEmpty())
+        break Fail874;
+      term = termFactory.makeAppl(Main._consVar_1, new IStrategoTerm[]{h_32749});
       if(true)
         return term;
     }

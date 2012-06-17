@@ -21,30 +21,30 @@ import java.lang.ref.WeakReference;
 { 
   public static $Color$Rule$All_2_0 instance = new $Color$Rule$All_2_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy k_9752, Strategy l_9752)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy t_32790, Strategy u_32790)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("ColorRuleAll_2_0");
-    Fail455:
+    Fail1275:
     { 
-      IStrategoTerm f_9928 = null;
-      IStrategoTerm d_9928 = null;
-      IStrategoTerm e_9928 = null;
-      IStrategoTerm g_9928 = null;
+      IStrategoTerm o_32966 = null;
+      IStrategoTerm m_32966 = null;
+      IStrategoTerm n_32966 = null;
+      IStrategoTerm p_32966 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consColorRuleAll_2 != ((IStrategoAppl)term).getConstructor())
-        break Fail455;
-      d_9928 = term.getSubterm(0);
-      e_9928 = term.getSubterm(1);
-      IStrategoList annos30 = term.getAnnotations();
-      f_9928 = annos30;
-      term = k_9752.invoke(context, d_9928);
+        break Fail1275;
+      m_32966 = term.getSubterm(0);
+      n_32966 = term.getSubterm(1);
+      IStrategoList annos48 = term.getAnnotations();
+      o_32966 = annos48;
+      term = t_32790.invoke(context, m_32966);
       if(term == null)
-        break Fail455;
-      g_9928 = term;
-      term = l_9752.invoke(context, e_9928);
+        break Fail1275;
+      p_32966 = term;
+      term = u_32790.invoke(context, n_32966);
       if(term == null)
-        break Fail455;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consColorRuleAll_2, new IStrategoTerm[]{g_9928, term}), checkListAnnos(termFactory, f_9928));
+        break Fail1275;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consColorRuleAll_2, new IStrategoTerm[]{p_32966, term}), checkListAnnos(termFactory, o_32966));
       context.popOnSuccess();
       if(true)
         return term;

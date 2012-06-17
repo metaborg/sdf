@@ -19,17 +19,50 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted308 extends Strategy 
 { 
-  TermReference m_9760;
-
-  TermReference n_9760;
+  public static final lifted308 instance = new lifted308();
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail661:
+    Fail1705:
     { 
-      term = aux_$Expanded_0_2.instance.invoke(context, term, m_9760.value, n_9760.value);
-      if(term == null)
-        break Fail661;
+      IStrategoTerm term390 = term;
+      Success623:
+      { 
+        Fail1706:
+        { 
+          if(term.getTermType() != IStrategoTerm.INT || 32 != ((IStrategoInt)term).intValue())
+            break Fail1706;
+          if(true)
+            break Success623;
+        }
+        term = term390;
+        IStrategoTerm term391 = term;
+        Success624:
+        { 
+          Fail1707:
+          { 
+            if(term.getTermType() != IStrategoTerm.INT || 9 != ((IStrategoInt)term).intValue())
+              break Fail1707;
+            if(true)
+              break Success624;
+          }
+          term = term391;
+          IStrategoTerm term392 = term;
+          Success625:
+          { 
+            Fail1708:
+            { 
+              if(term.getTermType() != IStrategoTerm.INT || 13 != ((IStrategoInt)term).intValue())
+                break Fail1708;
+              if(true)
+                break Success625;
+            }
+            term = term392;
+            if(term.getTermType() != IStrategoTerm.INT || 10 != ((IStrategoInt)term).intValue())
+              break Fail1705;
+          }
+        }
+      }
       if(true)
         return term;
     }

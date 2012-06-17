@@ -25,54 +25,54 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("SdfDesugarOnce_0_0");
-    Fail347:
+    Fail1167:
     { 
-      IStrategoTerm term357 = term;
-      Success251:
+      IStrategoTerm term613 = term;
+      Success507:
       { 
-        Fail348:
+        Fail1168:
         { 
           term = alltd_1_0.instance.invoke(context, term, $Ensure$Quotes_0_0.instance);
           if(term == null)
-            break Fail348;
+            break Fail1168;
           term = term_1_0.instance.invoke(context, term, implode_aterm_0_0.instance);
           if(term == null)
-            break Fail348;
+            break Fail1168;
           if(true)
-            break Success251;
+            break Success507;
         }
-        term = term357;
-        IStrategoTerm term358 = term;
-        IStrategoConstructor cons35 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-        Success252:
+        term = term613;
+        IStrategoTerm term614 = term;
+        IStrategoConstructor cons47 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+        Success508:
         { 
-          if(cons35 == Main._conslit_1)
+          if(cons47 == Main._conslit_1)
           { 
-            Fail349:
+            Fail1169:
             { 
-              IStrategoTerm g_9744 = null;
-              g_9744 = term.getSubterm(0);
-              term = un_double_quote_0_0.instance.invoke(context, g_9744);
+              IStrategoTerm p_32782 = null;
+              p_32782 = term.getSubterm(0);
+              term = un_double_quote_0_0.instance.invoke(context, p_32782);
               if(term == null)
-                break Fail349;
+                break Fail1169;
               term = termFactory.makeAppl(Main._conslit_1, new IStrategoTerm[]{term});
               if(true)
-                break Success252;
+                break Success508;
             }
-            term = term358;
+            term = term614;
           }
-          if(cons35 == Main._consci_lit_1)
+          if(cons47 == Main._consci_lit_1)
           { 
-            IStrategoTerm d_9744 = null;
-            d_9744 = term.getSubterm(0);
-            term = un_single_quote_0_0.instance.invoke(context, d_9744);
+            IStrategoTerm m_32782 = null;
+            m_32782 = term.getSubterm(0);
+            term = un_single_quote_0_0.instance.invoke(context, m_32782);
             if(term == null)
-              break Fail347;
+              break Fail1167;
             term = termFactory.makeAppl(Main._consci_lit_1, new IStrategoTerm[]{term});
           }
           else
           { 
-            break Fail347;
+            break Fail1167;
           }
         }
       }

@@ -21,14 +21,14 @@ import java.lang.ref.WeakReference;
 { 
   public static contract_requires_1_1 instance = new contract_requires_1_1();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy h_9750, IStrategoTerm g_9750)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy q_32788, IStrategoTerm p_32788)
   { 
     context.push("contract_requires_1_1");
-    Fail386:
+    Fail1206:
     { 
-      term = contract_requires_1_0.instance.invoke(context, g_9750, h_9750);
+      term = contract_requires_1_0.instance.invoke(context, p_32788, q_32788);
       if(term == null)
-        break Fail386;
+        break Fail1206;
       context.popOnSuccess();
       if(true)
         return term;

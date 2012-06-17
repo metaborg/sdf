@@ -25,63 +25,63 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("template_compare_0_0");
-    Fail243:
+    Fail1063:
     { 
-      IStrategoTerm v_9732 = null;
-      IStrategoTerm w_9732 = null;
-      IStrategoTerm x_9732 = null;
-      IStrategoTerm y_9732 = null;
-      IStrategoTerm z_9732 = null;
+      IStrategoTerm e_32771 = null;
+      IStrategoTerm f_32771 = null;
+      IStrategoTerm g_32771 = null;
+      IStrategoTerm h_32771 = null;
+      IStrategoTerm i_32771 = null;
       if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail243;
-      IStrategoTerm arg329 = term.getSubterm(0);
-      x_9732 = arg329;
-      IStrategoList annos10 = arg329.getAnnotations();
-      if(annos10.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos10).isEmpty())
-        break Fail243;
-      v_9732 = ((IStrategoList)annos10).head();
-      IStrategoTerm arg330 = ((IStrategoList)annos10).tail();
-      if(arg330.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg330).isEmpty())
-        break Fail243;
-      IStrategoTerm arg331 = term.getSubterm(1);
-      y_9732 = arg331;
-      IStrategoList annos11 = arg331.getAnnotations();
-      if(annos11.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos11).isEmpty())
-        break Fail243;
-      w_9732 = ((IStrategoList)annos11).head();
-      IStrategoTerm arg332 = ((IStrategoList)annos11).tail();
-      if(arg332.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg332).isEmpty())
-        break Fail243;
-      z_9732 = term;
-      Success180:
+        break Fail1063;
+      IStrategoTerm arg482 = term.getSubterm(0);
+      g_32771 = arg482;
+      IStrategoList annos28 = arg482.getAnnotations();
+      if(annos28.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos28).isEmpty())
+        break Fail1063;
+      e_32771 = ((IStrategoList)annos28).head();
+      IStrategoTerm arg483 = ((IStrategoList)annos28).tail();
+      if(arg483.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg483).isEmpty())
+        break Fail1063;
+      IStrategoTerm arg484 = term.getSubterm(1);
+      h_32771 = arg484;
+      IStrategoList annos29 = arg484.getAnnotations();
+      if(annos29.getTermType() != IStrategoTerm.LIST || ((IStrategoList)annos29).isEmpty())
+        break Fail1063;
+      f_32771 = ((IStrategoList)annos29).head();
+      IStrategoTerm arg485 = ((IStrategoList)annos29).tail();
+      if(arg485.getTermType() != IStrategoTerm.LIST || !((IStrategoList)arg485).isEmpty())
+        break Fail1063;
+      i_32771 = term;
+      Success436:
       { 
-        Fail244:
+        Fail1064:
         { 
-          term = termFactory.makeTuple(v_9732, w_9732);
+          term = termFactory.makeTuple(e_32771, f_32771);
           term = gti_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail244;
+            break Fail1064;
           if(true)
-            break Success180;
+            break Success436;
         }
-        IStrategoTerm a_9733 = null;
-        term = termFactory.makeTuple(v_9732, w_9732);
+        IStrategoTerm j_32771 = null;
+        term = termFactory.makeTuple(e_32771, f_32771);
         term = eq_0_0.instance.invoke(context, term);
         if(term == null)
-          break Fail243;
-        term = template_character_count_0_0.instance.invoke(context, x_9732);
+          break Fail1063;
+        term = template_character_count_0_0.instance.invoke(context, g_32771);
         if(term == null)
-          break Fail243;
-        a_9733 = term;
-        term = template_character_count_0_0.instance.invoke(context, y_9732);
+          break Fail1063;
+        j_32771 = term;
+        term = template_character_count_0_0.instance.invoke(context, h_32771);
         if(term == null)
-          break Fail243;
-        term = termFactory.makeTuple(a_9733, term);
+          break Fail1063;
+        term = termFactory.makeTuple(j_32771, term);
         term = lti_0_0.instance.invoke(context, term);
         if(term == null)
-          break Fail243;
+          break Fail1063;
       }
-      term = z_9732;
+      term = i_32771;
       context.popOnSuccess();
       if(true)
         return term;

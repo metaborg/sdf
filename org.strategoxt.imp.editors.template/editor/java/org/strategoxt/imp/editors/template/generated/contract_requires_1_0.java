@@ -21,36 +21,36 @@ import java.lang.ref.WeakReference;
 { 
   public static contract_requires_1_0 instance = new contract_requires_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy k_9750)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy t_32788)
   { 
     context.push("contract_requires_1_0");
-    Fail387:
+    Fail1207:
     { 
-      IStrategoTerm term378 = term;
-      Success265:
+      IStrategoTerm term634 = term;
+      Success521:
       { 
-        Fail388:
+        Fail1208:
         { 
-          IStrategoTerm i_9750 = null;
-          i_9750 = term;
-          term = k_9750.invoke(context, term);
+          IStrategoTerm r_32788 = null;
+          r_32788 = term;
+          term = t_32788.invoke(context, term);
           if(term == null)
-            break Fail388;
-          term = i_9750;
+            break Fail1208;
+          term = r_32788;
           if(true)
-            break Success265;
+            break Success521;
         }
-        term = term378;
-        IStrategoTerm j_9750 = null;
-        j_9750 = term;
-        term = debug_0_0.instance.invoke(context, generated.const144);
+        term = term634;
+        IStrategoTerm s_32788 = null;
+        s_32788 = term;
+        term = debug_0_0.instance.invoke(context, generated.const265);
         if(term == null)
-          break Fail387;
-        term = debug_1_0.instance.invoke(context, j_9750, lifted251.instance);
+          break Fail1207;
+        term = debug_1_0.instance.invoke(context, s_32788, lifted450.instance);
         if(term == null)
-          break Fail387;
+          break Fail1207;
         if(true)
-          break Fail387;
+          break Fail1207;
       }
       context.popOnSuccess();
       if(true)

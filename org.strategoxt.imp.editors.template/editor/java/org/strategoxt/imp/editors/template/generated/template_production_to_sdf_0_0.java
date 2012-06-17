@@ -25,57 +25,57 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("template_production_to_sdf_0_0");
-    Fail88:
+    Fail907:
     { 
-      IStrategoTerm term96 = term;
-      Success64:
+      IStrategoTerm term351 = term;
+      Success319:
       { 
-        Fail89:
+        Fail908:
         { 
-          IStrategoTerm v_9717 = null;
-          TermReference w_9717 = new TermReference();
-          TermReference x_9717 = new TermReference();
-          TermReference y_9717 = new TermReference();
-          TermReference z_9717 = new TermReference();
-          IStrategoTerm a_9718 = null;
+          IStrategoTerm d_32756 = null;
+          TermReference e_32756 = new TermReference();
+          TermReference f_32756 = new TermReference();
+          TermReference g_32756 = new TermReference();
+          TermReference h_32756 = new TermReference();
+          IStrategoTerm i_32756 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consDesugared_1 != ((IStrategoAppl)term).getConstructor())
-            break Fail89;
-          IStrategoTerm arg107 = term.getSubterm(0);
-          if(arg107.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)arg107).getConstructor())
-            break Fail89;
-          v_9717 = arg107.getSubterm(0);
-          if(w_9717.value == null)
-            w_9717.value = arg107.getSubterm(1);
+            break Fail908;
+          IStrategoTerm arg255 = term.getSubterm(0);
+          if(arg255.getTermType() != IStrategoTerm.APPL || Main._consTemplateProduction_3 != ((IStrategoAppl)arg255).getConstructor())
+            break Fail908;
+          d_32756 = arg255.getSubterm(0);
+          if(e_32756.value == null)
+            e_32756.value = arg255.getSubterm(1);
           else
-            if(w_9717.value != arg107.getSubterm(1) && !w_9717.value.match(arg107.getSubterm(1)))
-              break Fail89;
-          if(y_9717.value == null)
-            y_9717.value = arg107.getSubterm(2);
+            if(e_32756.value != arg255.getSubterm(1) && !e_32756.value.match(arg255.getSubterm(1)))
+              break Fail908;
+          if(g_32756.value == null)
+            g_32756.value = arg255.getSubterm(2);
           else
-            if(y_9717.value != arg107.getSubterm(2) && !y_9717.value.match(arg107.getSubterm(2)))
-              break Fail89;
-          a_9718 = term;
-          lifted70 lifted700 = new lifted70();
-          lifted700.w_9717 = w_9717;
-          lifted700.x_9717 = x_9717;
-          lifted700.y_9717 = y_9717;
-          lifted700.z_9717 = z_9717;
-          term = with_spxverify_1_0.instance.invoke(context, term, lifted700);
+            if(g_32756.value != arg255.getSubterm(2) && !g_32756.value.match(arg255.getSubterm(2)))
+              break Fail908;
+          i_32756 = term;
+          lifted269 lifted2690 = new lifted269();
+          lifted2690.e_32756 = e_32756;
+          lifted2690.f_32756 = f_32756;
+          lifted2690.g_32756 = g_32756;
+          lifted2690.h_32756 = h_32756;
+          term = with_spxverify_1_0.instance.invoke(context, term, lifted2690);
           if(term == null)
-            break Fail89;
-          term = a_9718;
-          if(x_9717.value == null || z_9717.value == null)
-            break Fail89;
-          term = termFactory.makeAppl(Main._consprod_3, new IStrategoTerm[]{x_9717.value, termFactory.makeAppl(Main._conssort_1, new IStrategoTerm[]{v_9717}), z_9717.value});
+            break Fail908;
+          term = i_32756;
+          if(f_32756.value == null || h_32756.value == null)
+            break Fail908;
+          term = termFactory.makeAppl(Main._consprod_3, new IStrategoTerm[]{f_32756.value, termFactory.makeAppl(Main._conssort_1, new IStrategoTerm[]{d_32756}), h_32756.value});
           if(true)
-            break Success64;
+            break Success319;
         }
-        term = term96;
-        IStrategoTerm u_9717 = null;
-        u_9717 = term;
-        term = templatelang_not_desugared_0_1.instance.invoke(context, u_9717, generated.const71);
+        term = term351;
+        IStrategoTerm c_32756 = null;
+        c_32756 = term;
+        term = templatelang_not_desugared_0_1.instance.invoke(context, c_32756, generated.const192);
         if(term == null)
-          break Fail88;
+          break Fail907;
       }
       context.popOnSuccess();
       if(true)

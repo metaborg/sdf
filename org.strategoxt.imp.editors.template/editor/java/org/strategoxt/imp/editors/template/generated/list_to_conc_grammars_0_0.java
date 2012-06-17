@@ -24,14 +24,14 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("list_to_conc_grammars_0_0");
-    Fail310:
+    Fail1130:
     { 
       term = reverse_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail310;
+        break Fail1130;
       term = list_to_conc_grammars_p__0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail310;
+        break Fail1130;
       context.popOnSuccess();
       if(true)
         return term;

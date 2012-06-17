@@ -25,31 +25,31 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("pp_sdf_to_string_0_0");
-    Fail352:
+    Fail1172:
     { 
-      IStrategoTerm o_9744 = null;
-      IStrategoTerm s_9744 = null;
-      term = topdown_1_0.instance.invoke(context, term, lifted232.instance);
+      IStrategoTerm x_32782 = null;
+      IStrategoTerm b_32783 = null;
+      term = topdown_1_0.instance.invoke(context, term, lifted431.instance);
       if(term == null)
-        break Fail352;
+        break Fail1172;
       term = parenthesize_$Sdf2_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail352;
+        break Fail1172;
       term = sdf_ppfix_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail352;
-      o_9744 = term;
+        break Fail1172;
+      x_32782 = term;
       term = pp_table_sdf_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail352;
-      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil0);
-      term = ast2box_0_1.instance.invoke(context, o_9744, term);
+        break Fail1172;
+      term = (IStrategoTerm)termFactory.makeListCons(term, (IStrategoList)generated.constNil3);
+      term = ast2box_0_1.instance.invoke(context, x_32782, term);
       if(term == null)
-        break Fail352;
-      s_9744 = term;
-      term = box2text_string_0_1.instance.invoke(context, s_9744, generated.const125);
+        break Fail1172;
+      b_32783 = term;
+      term = box2text_string_0_1.instance.invoke(context, b_32783, generated.const246);
       if(term == null)
-        break Fail352;
+        break Fail1172;
       context.popOnSuccess();
       if(true)
         return term;

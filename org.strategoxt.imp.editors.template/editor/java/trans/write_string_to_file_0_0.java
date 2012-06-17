@@ -25,60 +25,60 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("write_string_to_file_0_0");
-    Fail114:
+    Fail1960:
     { 
-      IStrategoTerm t_10722 = null;
-      IStrategoTerm u_10722 = null;
-      IStrategoTerm v_10722 = null;
-      IStrategoTerm w_10722 = null;
-      w_10722 = term;
-      IStrategoTerm term59 = term;
-      Success43:
+      IStrategoTerm j_33009 = null;
+      IStrategoTerm k_33009 = null;
+      IStrategoTerm l_33009 = null;
+      IStrategoTerm m_33009 = null;
+      m_33009 = term;
+      IStrategoTerm term730 = term;
+      Success714:
       { 
-        Fail115:
+        Fail1961:
         { 
-          IStrategoTerm h_10902 = null;
+          IStrategoTerm x_33188 = null;
           if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-            break Fail115;
-          v_10722 = term.getSubterm(0);
-          t_10722 = term.getSubterm(1);
-          term = termFactory.makeTuple(v_10722, trans.const36);
+            break Fail1961;
+          l_33009 = term.getSubterm(0);
+          j_33009 = term.getSubterm(1);
+          term = termFactory.makeTuple(l_33009, trans.const308);
           term = fopen_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail115;
-          u_10722 = term;
-          term = termFactory.makeTuple(t_10722, term);
+            break Fail1961;
+          k_33009 = term;
+          term = termFactory.makeTuple(j_33009, term);
           term = fputs_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail115;
-          term = fclose_0_0.instance.invoke(context, u_10722);
+            break Fail1961;
+          term = fclose_0_0.instance.invoke(context, k_33009);
           if(term == null)
-            break Fail115;
-          term = v_10722;
-          h_10902 = v_10722;
-          term = context.invokePrimitive("SSL_EXT_refreshresource", term, NO_STRATEGIES, new IStrategoTerm[]{h_10902});
+            break Fail1961;
+          term = l_33009;
+          x_33188 = l_33009;
+          term = context.invokePrimitive("SSL_EXT_refreshresource", term, NO_STRATEGIES, new IStrategoTerm[]{x_33188});
           if(term == null)
-            break Fail115;
+            break Fail1961;
           if(true)
-            break Success43;
+            break Success714;
         }
-        term = term59;
-        TermReference x_10722 = new TermReference();
-        if(x_10722.value == null)
-          x_10722.value = term;
+        term = term730;
+        TermReference n_33009 = new TermReference();
+        if(n_33009.value == null)
+          n_33009.value = term;
         else
-          if(x_10722.value != term && !x_10722.value.match(term))
-            break Fail114;
+          if(n_33009.value != term && !n_33009.value.match(term))
+            break Fail1960;
         term = context.invokePrimitive("SSL_stacktrace_get_all_frame_names", term, NO_STRATEGIES, NO_TERMS);
         if(term == null)
-          break Fail114;
-        lifted39 lifted390 = new lifted39();
-        lifted390.x_10722 = x_10722;
-        term = report_failure_1_0.instance.invoke(context, term, lifted390);
+          break Fail1960;
+        lifted568 lifted5680 = new lifted568();
+        lifted5680.n_33009 = n_33009;
+        term = report_failure_1_0.instance.invoke(context, term, lifted5680);
         if(term == null)
-          break Fail114;
+          break Fail1960;
       }
-      term = w_10722;
+      term = m_33009;
       context.popOnSuccess();
       if(true)
         return term;

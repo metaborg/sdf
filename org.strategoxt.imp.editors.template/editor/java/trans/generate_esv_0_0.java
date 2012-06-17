@@ -25,30 +25,30 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("generate_esv_0_0");
-    Fail91:
+    Fail1932:
     { 
-      IStrategoTerm term49 = term;
-      Success33:
+      IStrategoTerm term715 = term;
+      Success699:
       { 
-        Fail92:
+        Fail1933:
         { 
           term = collect_sections_1_0_0.instance.invoke(context, term);
           if(term == null)
-            break Fail92;
+            break Fail1933;
           if(true)
-            break Success33;
+            break Success699;
         }
-        term = collect_sections_2_0_0.instance.invoke(context, term49);
+        term = collect_sections_2_0_0.instance.invoke(context, term715);
         if(term == null)
-          break Fail91;
+          break Fail1932;
       }
       term = template_sections_to_esv_0_0.instance.invoke(context, term);
       if(term == null)
-        break Fail91;
-      term = termFactory.makeAppl(Main._consModule_3, new IStrategoTerm[]{trans.const27, trans.constNoImports0, term});
-      term = topdown_1_0.instance.invoke(context, term, lifted31.instance);
+        break Fail1932;
+      term = termFactory.makeAppl(Main._consModule_3, new IStrategoTerm[]{trans.const296, trans.constNoImports0, term});
+      term = topdown_1_0.instance.invoke(context, term, lifted561.instance);
       if(term == null)
-        break Fail91;
+        break Fail1932;
       context.popOnSuccess();
       if(true)
         return term;

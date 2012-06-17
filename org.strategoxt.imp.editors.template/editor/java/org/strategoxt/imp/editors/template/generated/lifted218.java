@@ -19,21 +19,39 @@ import java.lang.ref.WeakReference;
 
 @SuppressWarnings("all") final class lifted218 extends Strategy 
 { 
-  TermReference z_9740;
+  TermReference k_32744;
 
-  TermReference a_9741;
+  TermReference l_32744;
+
+  TermReference m_32744;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    ITermFactory termFactory = context.getFactory();
-    Fail771:
+    Fail1823:
     { 
-      if(z_9740.value == null || a_9741.value == null)
-        break Fail771;
-      term = termFactory.makeTuple(z_9740.value, generated.constTemplateOption0, a_9741.value);
-      term = index_symbol_definition_0_0.instance.invoke(context, term);
+      if(k_32744.value == null)
+        break Fail1823;
+      term = filter_1_0.instance.invoke(context, k_32744.value, templatelang_prod_to_sort_0_0.instance);
       if(term == null)
-        break Fail771;
+        break Fail1823;
+      term = nub_0_0.instance.invoke(context, term);
+      if(term == null)
+        break Fail1823;
+      if(l_32744.value == null)
+        l_32744.value = term;
+      else
+        if(l_32744.value != term && !l_32744.value.match(term))
+          break Fail1823;
+      if(l_32744.value == null)
+        break Fail1823;
+      term = map_1_0.instance.invoke(context, l_32744.value, templatelang_sort_to_strategy_0_0.instance);
+      if(term == null)
+        break Fail1823;
+      if(m_32744.value == null)
+        m_32744.value = term;
+      else
+        if(m_32744.value != term && !m_32744.value.match(term))
+          break Fail1823;
       if(true)
         return term;
     }

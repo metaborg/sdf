@@ -23,18 +23,11 @@ import java.lang.ref.WeakReference;
 
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
-    Fail662:
+    Fail1704:
     { 
-      IStrategoTerm d_9760 = null;
-      IStrategoTerm l_9760 = null;
-      if(term.getTermType() != IStrategoTerm.TUPLE || term.getSubtermCount() != 2)
-        break Fail662;
-      l_9760 = term.getSubterm(0);
-      IStrategoTerm arg619 = term.getSubterm(1);
-      d_9760 = arg619;
-      term = aux_$Expanded_0_2.instance.invoke(context, l_9760, arg619, d_9760);
+      term = SRTS_all.instance.invoke(context, term, lifted308.instance);
       if(term == null)
-        break Fail662;
+        break Fail1704;
       if(true)
         return term;
     }

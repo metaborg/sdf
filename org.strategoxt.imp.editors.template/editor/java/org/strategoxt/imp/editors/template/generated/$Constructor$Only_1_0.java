@@ -21,23 +21,23 @@ import java.lang.ref.WeakReference;
 { 
   public static $Constructor$Only_1_0 instance = new $Constructor$Only_1_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy w_9755)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy f_32794)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("ConstructorOnly_1_0");
-    Fail511:
+    Fail1331:
     { 
-      IStrategoTerm e_9937 = null;
-      IStrategoTerm d_9937 = null;
+      IStrategoTerm n_32975 = null;
+      IStrategoTerm m_32975 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consConstructorOnly_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail511;
-      d_9937 = term.getSubterm(0);
-      IStrategoList annos84 = term.getAnnotations();
-      e_9937 = annos84;
-      term = w_9755.invoke(context, d_9937);
+        break Fail1331;
+      m_32975 = term.getSubterm(0);
+      IStrategoList annos102 = term.getAnnotations();
+      n_32975 = annos102;
+      term = f_32794.invoke(context, m_32975);
       if(term == null)
-        break Fail511;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consConstructorOnly_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, e_9937));
+        break Fail1331;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consConstructorOnly_1, new IStrategoTerm[]{term}), checkListAnnos(termFactory, n_32975));
       context.popOnSuccess();
       if(true)
         return term;

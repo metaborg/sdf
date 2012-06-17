@@ -161,7 +161,10 @@ rules
     String(x) -> <string-to-sdf> x
 
   template-element-to-sdf:
-    Placeholder(label, sort(S), None(), _) -> A|[ S ]|
+    Placeholder(None(), sort(S), None(), _) -> A|[ S ]|
+
+  template-element-to-sdf:
+    Placeholder(Label(l), sort(s), None(), _) -> label(unquoted(l), sort(s))
 
   template-element-to-sdf:
     Placeholder(label, sort(S), Option(), _) -> A|[ S? ]|

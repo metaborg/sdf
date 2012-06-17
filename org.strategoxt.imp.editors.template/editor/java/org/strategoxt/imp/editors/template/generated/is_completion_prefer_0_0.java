@@ -24,15 +24,15 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("is_completion_prefer_0_0");
-    Fail406:
+    Fail1226:
     { 
-      IStrategoTerm f_9751 = null;
+      IStrategoTerm o_32789 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consattrs_1 != ((IStrategoAppl)term).getConstructor())
-        break Fail406;
-      f_9751 = term.getSubterm(0);
-      term = SRTS_one.instance.invoke(context, f_9751, lifted258.instance);
+        break Fail1226;
+      o_32789 = term.getSubterm(0);
+      term = SRTS_one.instance.invoke(context, o_32789, lifted457.instance);
       if(term == null)
-        break Fail406;
+        break Fail1226;
       context.popOnSuccess();
       if(true)
         return term;

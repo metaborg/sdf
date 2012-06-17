@@ -27,95 +27,101 @@ import java.lang.ref.WeakReference;
 
   private static boolean isIniting;
 
-  protected static IStrategoTerm const38;
+  protected static IStrategoTerm const310;
 
-  protected static IStrategoTerm const37;
+  protected static IStrategoTerm const309;
 
-  protected static IStrategoTerm constCritical0;
+  protected static IStrategoTerm constCritical1;
 
-  protected static IStrategoTerm const36;
+  protected static IStrategoTerm const308;
 
-  protected static IStrategoTerm constNone0;
+  protected static IStrategoTerm constNone1;
 
-  protected static IStrategoTerm const35;
+  protected static IStrategoTerm const307;
 
-  protected static IStrategoTerm const34;
+  protected static IStrategoTerm const306;
 
-  protected static IStrategoTerm const33;
+  protected static IStrategoTerm const305;
 
-  protected static IStrategoTerm const32;
+  protected static IStrategoTerm const304;
 
-  protected static IStrategoTerm const31;
+  protected static IStrategoTerm const303;
 
-  protected static IStrategoTerm const30;
+  protected static IStrategoTerm const302;
 
-  protected static IStrategoTerm constunparameterized0;
+  protected static IStrategoTerm const301;
 
-  protected static IStrategoTerm const29;
+  protected static IStrategoTerm constCons88;
 
-  protected static IStrategoTerm const28;
+  protected static IStrategoTerm const300;
+
+  protected static IStrategoTerm const299;
+
+  protected static IStrategoTerm const298;
+
+  protected static IStrategoTerm const297;
 
   protected static IStrategoTerm constNoImports0;
 
-  protected static IStrategoTerm const27;
+  protected static IStrategoTerm const296;
 
-  protected static IStrategoTerm const26;
+  protected static IStrategoTerm const295;
 
-  protected static IStrategoTerm const25;
+  protected static IStrategoTerm const294;
 
-  protected static IStrategoTerm const24;
+  protected static IStrategoTerm const293;
 
-  protected static IStrategoTerm const23;
+  protected static IStrategoTerm const292;
 
-  protected static IStrategoTerm const22;
+  protected static IStrategoTerm const291;
 
-  protected static IStrategoTerm const21;
+  protected static IStrategoTerm const290;
 
-  protected static IStrategoTerm const20;
+  protected static IStrategoTerm const289;
 
-  protected static IStrategoTerm constCons3;
+  protected static IStrategoTerm constCons87;
 
   protected static IStrategoTerm constMARKER0;
 
-  protected static IStrategoTerm const19;
+  protected static IStrategoTerm const288;
 
-  protected static IStrategoTerm const18;
+  protected static IStrategoTerm constCons86;
 
-  protected static IStrategoTerm constCons2;
+  protected static IStrategoTerm const287;
 
-  protected static IStrategoTerm const17;
+  protected static IStrategoTerm const286;
 
-  protected static IStrategoTerm const16;
+  protected static IStrategoTerm const285;
 
-  protected static IStrategoTerm const15;
+  protected static IStrategoTerm const284;
 
-  protected static IStrategoTerm const14;
+  protected static IStrategoTerm const283;
 
-  protected static IStrategoTerm const13;
+  protected static IStrategoTerm constCons85;
 
-  protected static IStrategoTerm constCons1;
+  protected static IStrategoTerm const282;
 
-  protected static IStrategoTerm const12;
+  protected static IStrategoTerm const281;
 
-  protected static IStrategoTerm const11;
+  protected static IStrategoTerm const280;
 
-  protected static IStrategoTerm const10;
+  protected static IStrategoTerm const279;
 
-  protected static IStrategoTerm const9;
+  protected static IStrategoTerm const278;
 
-  protected static IStrategoTerm const8;
+  protected static IStrategoTerm const277;
 
-  protected static IStrategoTerm const7;
+  protected static IStrategoTerm const276;
 
-  protected static IStrategoTerm const6;
+  protected static IStrategoTerm const275;
 
-  protected static IStrategoTerm const5;
+  protected static IStrategoTerm const274;
 
-  protected static IStrategoTerm const4;
+  protected static IStrategoTerm const273;
 
-  protected static IStrategoTerm const3;
+  protected static IStrategoTerm const272;
 
-  protected static IStrategoTerm const2;
+  protected static IStrategoTerm const271;
 
   public static IStrategoTerm getTemplateLangPpAf()
   { 
@@ -152,15 +158,15 @@ import java.lang.ref.WeakReference;
 
   protected static ImportTerm constTemplateLangTbl;
 
-  protected static IStrategoTerm const1;
+  protected static IStrategoTerm const270;
 
-  protected static IStrategoTerm constCons0;
+  protected static IStrategoTerm constCons84;
 
-  protected static IStrategoTerm constDR_DUMMY0;
+  protected static IStrategoTerm constDR_DUMMY1;
 
-  protected static IStrategoTerm constNil0;
+  protected static IStrategoTerm constNil4;
 
-  protected static IStrategoTerm const0;
+  protected static IStrategoTerm const269;
 
   public static IStrategoConstructor _consConc_2;
 
@@ -271,6 +277,10 @@ import java.lang.ref.WeakReference;
   public static IStrategoConstructor _consString_1;
 
   public static IStrategoConstructor _consConstructor_1;
+
+  public static IStrategoConstructor _consProperty_0;
+
+  public static IStrategoConstructor _consType_0;
 
   public static IStrategoConstructor _consType_1;
 
@@ -396,6 +406,8 @@ import java.lang.ref.WeakReference;
     _consDR_UNDEFINE_1 = termFactory.makeConstructor("DR_UNDEFINE", 1);
     _consString_1 = termFactory.makeConstructor("String", 1);
     _consConstructor_1 = termFactory.makeConstructor("Constructor", 1);
+    _consProperty_0 = termFactory.makeConstructor("Property", 0);
+    _consType_0 = termFactory.makeConstructor("Type", 0);
     _consType_1 = termFactory.makeConstructor("Type", 1);
     _consProperty_2 = termFactory.makeConstructor("Property", 2);
     _consEntity_2 = termFactory.makeConstructor("Entity", 2);
@@ -407,61 +419,64 @@ import java.lang.ref.WeakReference;
 
   public static void initConstants(ITermFactory termFactory)
   { 
-    const0 = termFactory.makeString("Declaration");
-    constNil0 = (IStrategoTerm)termFactory.makeList(Term.NO_TERMS);
-    constDR_DUMMY0 = termFactory.makeAppl(Main._consDR_DUMMY_0, NO_TERMS);
-    constCons0 = (IStrategoTerm)termFactory.makeListCons(trans.constDR_DUMMY0, (IStrategoList)trans.constNil0);
-    const1 = termFactory.makeString("-220620");
+    const269 = termFactory.makeString("Declaration");
+    constNil4 = (IStrategoTerm)termFactory.makeList(Term.NO_TERMS);
+    constDR_DUMMY1 = termFactory.makeAppl(Main._consDR_DUMMY_0, NO_TERMS);
+    constCons84 = (IStrategoTerm)termFactory.makeListCons(trans.constDR_DUMMY1, (IStrategoList)trans.constNil4);
+    const270 = termFactory.makeString("-220620");
     constTemplateLangTbl = new ImportTerm(termFactory, trans.class, "/trans/", "TemplateLang.tbl");
     constTemplateLangTbl0 = new ImportTerm(termFactory, trans.class, "/trans/", "TemplateLang.tbl");
     constTemplateLangTbl1 = new ImportTerm(termFactory, trans.class, "/trans/", "TemplateLang.tbl");
     constTemplateLangGeneratedPpAf = new ImportTerm(termFactory, trans.class, "/trans/", "TemplateLang.generated.pp.af");
     constTemplateLangPpAf = new ImportTerm(termFactory, trans.class, "/trans/", "TemplateLang.pp.af");
-    const2 = termFactory.makeInt(100);
-    const3 = termFactory.makeString("CurrentFile");
-    const4 = termFactory.makeString("99705");
-    const5 = termFactory.makeString("IsImported");
-    const6 = termFactory.makeString("-597601");
-    const7 = termFactory.makeString("Internal error: escaped term in string quotation is not a string in rule 'open-wildcard-import'");
-    const8 = termFactory.makeString("\n");
-    const9 = termFactory.makeString("\n       ");
-    const10 = termFactory.makeString("/");
-    const11 = termFactory.makeString("Internal error: escaped term in string quotation is not a string in rule 'import-cache-path'");
-    const12 = termFactory.makeString("/.cache");
-    constCons1 = (IStrategoTerm)termFactory.makeListCons(trans.const12, (IStrategoList)trans.constNil0);
-    const13 = termFactory.makeString("+");
-    const14 = termFactory.makeString("\\");
-    const15 = termFactory.makeString(":");
-    const16 = termFactory.makeString("\n            ");
-    const17 = termFactory.makeString(".sig");
-    constCons2 = (IStrategoTerm)termFactory.makeListCons(trans.const17, (IStrategoList)trans.constNil0);
-    const18 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'import-cache-path'");
-    const19 = termFactory.makeString("TemplateLang");
+    const271 = termFactory.makeInt(100);
+    const272 = termFactory.makeString("TemplateLang");
+    const273 = termFactory.makeString("CurrentFile");
+    const274 = termFactory.makeString("99705");
+    const275 = termFactory.makeString("IsImported");
+    const276 = termFactory.makeString("-597601");
+    const277 = termFactory.makeString("Internal error: escaped term in string quotation is not a string in rule 'open-wildcard-import'");
+    const278 = termFactory.makeString("\n");
+    const279 = termFactory.makeString("\n       ");
+    const280 = termFactory.makeString("/");
+    const281 = termFactory.makeString("Internal error: escaped term in string quotation is not a string in rule 'import-cache-path'");
+    const282 = termFactory.makeString("/.cache");
+    constCons85 = (IStrategoTerm)termFactory.makeListCons(trans.const282, (IStrategoList)trans.constNil4);
+    const283 = termFactory.makeString("+");
+    const284 = termFactory.makeString("\\");
+    const285 = termFactory.makeString(":");
+    const286 = termFactory.makeString("\n            ");
+    const287 = termFactory.makeString(".sig");
+    constCons86 = (IStrategoTerm)termFactory.makeListCons(trans.const287, (IStrategoList)trans.constNil4);
+    const288 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'import-cache-path'");
     constMARKER0 = termFactory.makeAppl(Main._consMARKER_0, NO_TERMS);
-    constCons3 = (IStrategoTerm)termFactory.makeListCons(trans.constMARKER0, (IStrategoList)trans.constNil0);
-    const20 = termFactory.makeInt(0);
-    const21 = termFactory.makeString("BACKGROUNDED");
-    const22 = termFactory.makeString("-source.spt");
-    const23 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'editor-analyze'");
-    const24 = termFactory.makeString("aterm");
-    const25 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-aterm'");
-    const26 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'collect-sections-2'");
-    const27 = termFactory.makeString("example");
+    constCons87 = (IStrategoTerm)termFactory.makeListCons(trans.constMARKER0, (IStrategoList)trans.constNil4);
+    const289 = termFactory.makeInt(0);
+    const290 = termFactory.makeString("BACKGROUNDED");
+    const291 = termFactory.makeString("-source.spt");
+    const292 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'editor-analyze'");
+    const293 = termFactory.makeString("aterm");
+    const294 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-aterm'");
+    const295 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'collect-sections-2'");
+    const296 = termFactory.makeString("example");
     constNoImports0 = termFactory.makeAppl(Main._consNoImports_0, NO_TERMS);
-    const28 = termFactory.makeString("generated.esv");
-    const29 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-esv-concrete'");
-    constunparameterized0 = termFactory.makeAppl(Main._consunparameterized_1, new IStrategoTerm[]{trans.const27});
-    const30 = termFactory.makeString("generated.sdf");
-    const31 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-sdf-concrete'");
-    const32 = termFactory.makeString("generated.str");
-    const33 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-box-pp-concrete'");
-    const34 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-signature-concrete'");
-    const35 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-all'");
-    constNone0 = termFactory.makeAppl(Main._consNone_0, NO_TERMS);
-    const36 = termFactory.makeString("w");
-    constCritical0 = termFactory.makeAppl(Main._consCritical_0, NO_TERMS);
-    const37 = termFactory.makeString("Internal error: with clause failed unexpectedly in strategy 'write-string-to-file'");
-    const38 = termFactory.makeString("");
+    const297 = termFactory.makeString("generated.esv");
+    const298 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-esv-concrete'");
+    const299 = termFactory.makeString("Internal error: escaped term in string quotation is not a string in strategy 'generate-sdf'");
+    const300 = termFactory.makeString("generated");
+    constCons88 = (IStrategoTerm)termFactory.makeListCons(trans.const300, (IStrategoList)trans.constNil4);
+    const301 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-sdf-abstract'");
+    const302 = termFactory.makeString("generated.sdf");
+    const303 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-sdf-concrete'");
+    const304 = termFactory.makeString("generated.str");
+    const305 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-box-pp-concrete'");
+    const306 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-signature-concrete'");
+    const307 = termFactory.makeString("Internal error: with clause failed unexpectedly in rule 'generate-all'");
+    constNone1 = termFactory.makeAppl(Main._consNone_0, NO_TERMS);
+    const308 = termFactory.makeString("w");
+    constCritical1 = termFactory.makeAppl(Main._consCritical_0, NO_TERMS);
+    const309 = termFactory.makeString("Internal error: with clause failed unexpectedly in strategy 'write-string-to-file'");
+    const310 = termFactory.makeString("");
   }
 
   public static void registerInterop(org.spoofax.interpreter.core.IContext context, Context compiledContext)

@@ -24,18 +24,18 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("documentation_comment_chars_0_0");
-    Fail57:
+    Fail1898:
     { 
-      IStrategoTerm h_10714 = null;
+      IStrategoTerm u_32999 = null;
       if(term.getTermType() != IStrategoTerm.LIST || ((IStrategoList)term).isEmpty())
-        break Fail57;
-      IStrategoTerm arg13 = ((IStrategoList)term).head();
-      if(arg13.getTermType() != IStrategoTerm.INT || 42 != ((IStrategoInt)arg13).intValue())
-        break Fail57;
-      h_10714 = ((IStrategoList)term).tail();
-      term = ltrim_1_0.instance.invoke(context, h_10714, lifted12.instance);
+        break Fail1898;
+      IStrategoTerm arg797 = ((IStrategoList)term).head();
+      if(arg797.getTermType() != IStrategoTerm.INT || 42 != ((IStrategoInt)arg797).intValue())
+        break Fail1898;
+      u_32999 = ((IStrategoList)term).tail();
+      term = ltrim_1_0.instance.invoke(context, u_32999, lifted542.instance);
       if(term == null)
-        break Fail57;
+        break Fail1898;
       context.popOnSuccess();
       if(true)
         return term;

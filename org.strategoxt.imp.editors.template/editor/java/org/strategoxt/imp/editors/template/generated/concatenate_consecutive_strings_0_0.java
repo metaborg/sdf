@@ -24,11 +24,11 @@ import java.lang.ref.WeakReference;
   @Override public IStrategoTerm invoke(Context context, IStrategoTerm term)
   { 
     context.push("concatenate_consecutive_strings_0_0");
-    Fail367:
+    Fail1187:
     { 
-      term = e_9747.instance.invoke(context, term);
+      term = n_32785.instance.invoke(context, term);
       if(term == null)
-        break Fail367;
+        break Fail1187;
       context.popOnSuccess();
       if(true)
         return term;

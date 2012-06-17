@@ -21,13 +21,13 @@ import java.lang.ref.WeakReference;
 { 
   public static queue_strategy_0_2 instance = new queue_strategy_0_2();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm y_10716, IStrategoTerm z_10716)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, IStrategoTerm l_33002, IStrategoTerm m_33002)
   { 
-    Fail76:
+    Fail1917:
     { 
-      term = context.invokePrimitive("SSL_EXT_queue_strategy", term, NO_STRATEGIES, new IStrategoTerm[]{y_10716, z_10716});
+      term = context.invokePrimitive("SSL_EXT_queue_strategy", term, NO_STRATEGIES, new IStrategoTerm[]{l_33002, m_33002});
       if(term == null)
-        break Fail76;
+        break Fail1917;
       if(true)
         return term;
     }

@@ -21,37 +21,37 @@ import java.lang.ref.WeakReference;
 { 
   public static $Color$Rule$All$Named_3_0 instance = new $Color$Rule$All$Named_3_0();
 
-  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy f_9752, Strategy g_9752, Strategy h_9752)
+  @Override public IStrategoTerm invoke(Context context, IStrategoTerm term, Strategy o_32790, Strategy p_32790, Strategy q_32790)
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("ColorRuleAllNamed_3_0");
-    Fail453:
+    Fail1273:
     { 
-      IStrategoTerm u_9927 = null;
-      IStrategoTerm r_9927 = null;
-      IStrategoTerm s_9927 = null;
-      IStrategoTerm t_9927 = null;
-      IStrategoTerm v_9927 = null;
-      IStrategoTerm w_9927 = null;
+      IStrategoTerm d_32966 = null;
+      IStrategoTerm a_32966 = null;
+      IStrategoTerm b_32966 = null;
+      IStrategoTerm c_32966 = null;
+      IStrategoTerm e_32966 = null;
+      IStrategoTerm f_32966 = null;
       if(term.getTermType() != IStrategoTerm.APPL || Main._consColorRuleAllNamed_3 != ((IStrategoAppl)term).getConstructor())
-        break Fail453;
-      r_9927 = term.getSubterm(0);
-      s_9927 = term.getSubterm(1);
-      t_9927 = term.getSubterm(2);
-      IStrategoList annos28 = term.getAnnotations();
-      u_9927 = annos28;
-      term = f_9752.invoke(context, r_9927);
+        break Fail1273;
+      a_32966 = term.getSubterm(0);
+      b_32966 = term.getSubterm(1);
+      c_32966 = term.getSubterm(2);
+      IStrategoList annos46 = term.getAnnotations();
+      d_32966 = annos46;
+      term = o_32790.invoke(context, a_32966);
       if(term == null)
-        break Fail453;
-      v_9927 = term;
-      term = g_9752.invoke(context, s_9927);
+        break Fail1273;
+      e_32966 = term;
+      term = p_32790.invoke(context, b_32966);
       if(term == null)
-        break Fail453;
-      w_9927 = term;
-      term = h_9752.invoke(context, t_9927);
+        break Fail1273;
+      f_32966 = term;
+      term = q_32790.invoke(context, c_32966);
       if(term == null)
-        break Fail453;
-      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consColorRuleAllNamed_3, new IStrategoTerm[]{v_9927, w_9927, term}), checkListAnnos(termFactory, u_9927));
+        break Fail1273;
+      term = termFactory.annotateTerm(termFactory.makeAppl(Main._consColorRuleAllNamed_3, new IStrategoTerm[]{e_32966, f_32966, term}), checkListAnnos(termFactory, d_32966));
       context.popOnSuccess();
       if(true)
         return term;

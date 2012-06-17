@@ -25,47 +25,47 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("templatelang_sdf_prod_to_template_prod_0_0");
-    Fail181:
+    Fail1001:
     { 
-      IStrategoTerm term183 = term;
-      Success131:
+      IStrategoTerm term439 = term;
+      Success387:
       { 
-        Fail182:
+        Fail1002:
         { 
-          IStrategoTerm f_9727 = null;
-          IStrategoTerm g_9727 = null;
-          IStrategoTerm h_9727 = null;
-          IStrategoTerm i_9727 = null;
-          IStrategoTerm m_9727 = null;
+          IStrategoTerm o_32765 = null;
+          IStrategoTerm p_32765 = null;
+          IStrategoTerm q_32765 = null;
+          IStrategoTerm r_32765 = null;
+          IStrategoTerm v_32765 = null;
           if(term.getTermType() != IStrategoTerm.APPL || Main._consprod_3 != ((IStrategoAppl)term).getConstructor())
-            break Fail182;
-          g_9727 = term.getSubterm(0);
-          IStrategoTerm arg234 = term.getSubterm(1);
-          if(arg234.getTermType() != IStrategoTerm.APPL || Main._conssort_1 != ((IStrategoAppl)arg234).getConstructor())
-            break Fail182;
-          f_9727 = arg234.getSubterm(0);
-          i_9727 = term.getSubterm(2);
-          term = map_1_0.instance.invoke(context, g_9727, templatelang_sdf_sym_to_template_elem_0_0.instance);
+            break Fail1002;
+          p_32765 = term.getSubterm(0);
+          IStrategoTerm arg387 = term.getSubterm(1);
+          if(arg387.getTermType() != IStrategoTerm.APPL || Main._conssort_1 != ((IStrategoAppl)arg387).getConstructor())
+            break Fail1002;
+          o_32765 = arg387.getSubterm(0);
+          r_32765 = term.getSubterm(2);
+          term = map_1_0.instance.invoke(context, p_32765, templatelang_sdf_sym_to_template_elem_0_0.instance);
           if(term == null)
-            break Fail182;
-          m_9727 = term;
-          term = separate_by_0_1.instance.invoke(context, m_9727, generated.constLayout1);
+            break Fail1002;
+          v_32765 = term;
+          term = separate_by_0_1.instance.invoke(context, v_32765, generated.constLayout1);
           if(term == null)
-            break Fail182;
-          h_9727 = term;
-          term = templatelang_get_attrs_0_0.instance.invoke(context, i_9727);
+            break Fail1002;
+          q_32765 = term;
+          term = templatelang_get_attrs_0_0.instance.invoke(context, r_32765);
           if(term == null)
-            break Fail182;
+            break Fail1002;
           term = termFactory.makeAppl(Main._consattrs_1, new IStrategoTerm[]{term});
-          term = termFactory.makeAppl(Main._consDesugared_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consTemplateProduction_3, new IStrategoTerm[]{f_9727, termFactory.makeAppl(Main._consSingleLineTemplate_1, new IStrategoTerm[]{h_9727}), term})});
+          term = termFactory.makeAppl(Main._consDesugared_1, new IStrategoTerm[]{termFactory.makeAppl(Main._consTemplateProduction_3, new IStrategoTerm[]{o_32765, termFactory.makeAppl(Main._consSingleLineTemplate_1, new IStrategoTerm[]{q_32765}), term})});
           if(true)
-            break Success131;
+            break Success387;
         }
-        term = debug_1_0.instance.invoke(context, term183, lifted144.instance);
+        term = debug_1_0.instance.invoke(context, term439, lifted343.instance);
         if(term == null)
-          break Fail181;
+          break Fail1001;
         if(true)
-          break Fail181;
+          break Fail1001;
       }
       context.popOnSuccess();
       if(true)

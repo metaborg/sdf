@@ -25,89 +25,89 @@ import java.lang.ref.WeakReference;
   { 
     ITermFactory termFactory = context.getFactory();
     context.push("templatelang_element_desugar_0_0");
-    Fail270:
+    Fail1090:
     { 
-      IStrategoTerm term255 = term;
-      IStrategoConstructor cons21 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
-      Success197:
+      IStrategoTerm term511 = term;
+      IStrategoConstructor cons33 = term.getTermType() == IStrategoTerm.APPL ? ((IStrategoAppl)term).getConstructor() : null;
+      Success453:
       { 
-        if(cons21 == Main._consNoOptions_0)
+        if(cons33 == Main._consNoOptions_0)
         { 
-          Fail271:
+          Fail1091:
           { 
-            term = generated.constNil0;
+            term = generated.constNil3;
             if(true)
-              break Success197;
+              break Success453;
           }
-          term = term255;
+          term = term511;
         }
-        Success198:
+        Success454:
         { 
-          if(cons21 == Main._consOptions_1)
+          if(cons33 == Main._consOptions_1)
           { 
-            Fail272:
+            Fail1092:
             { 
-              IStrategoTerm w_9738 = null;
-              w_9738 = term.getSubterm(0);
-              term = alltd_1_0.instance.invoke(context, w_9738, lifted201.instance);
+              IStrategoTerm f_32777 = null;
+              f_32777 = term.getSubterm(0);
+              term = alltd_1_0.instance.invoke(context, f_32777, lifted400.instance);
               if(term == null)
-                break Fail272;
+                break Fail1092;
               if(true)
-                break Success198;
+                break Success454;
             }
-            term = term255;
+            term = term511;
           }
-          IStrategoTerm term257 = term;
-          Success199:
+          IStrategoTerm term513 = term;
+          Success455:
           { 
-            Fail273:
+            Fail1093:
             { 
-              TermReference t_9736 = new TermReference();
-              TermReference u_9736 = new TermReference();
-              IStrategoTerm v_9737 = null;
+              TermReference c_32775 = new TermReference();
+              TermReference d_32775 = new TermReference();
+              IStrategoTerm e_32776 = null;
               if(term.getTermType() != IStrategoTerm.APPL || Main._consEscape_1 != ((IStrategoAppl)term).getConstructor())
-                break Fail273;
-              if(t_9736.value == null)
-                t_9736.value = term.getSubterm(0);
+                break Fail1093;
+              if(c_32775.value == null)
+                c_32775.value = term.getSubterm(0);
               else
-                if(t_9736.value != term.getSubterm(0) && !t_9736.value.match(term.getSubterm(0)))
-                  break Fail273;
-              v_9737 = term;
-              lifted203 lifted2030 = new lifted203();
-              lifted2030.t_9736 = t_9736;
-              lifted2030.u_9736 = u_9736;
-              term = with_spxverify_1_0.instance.invoke(context, term, lifted2030);
+                if(c_32775.value != term.getSubterm(0) && !c_32775.value.match(term.getSubterm(0)))
+                  break Fail1093;
+              e_32776 = term;
+              lifted402 lifted4020 = new lifted402();
+              lifted4020.c_32775 = c_32775;
+              lifted4020.d_32775 = d_32775;
+              term = with_spxverify_1_0.instance.invoke(context, term, lifted4020);
               if(term == null)
-                break Fail273;
-              term = v_9737;
-              if(u_9736.value == null)
-                break Fail273;
-              term = termFactory.makeAppl(Main._consString_1, new IStrategoTerm[]{u_9736.value});
+                break Fail1093;
+              term = e_32776;
+              if(d_32775.value == null)
+                break Fail1093;
+              term = termFactory.makeAppl(Main._consString_1, new IStrategoTerm[]{d_32775.value});
               if(true)
-                break Success199;
+                break Success455;
             }
-            term = term257;
-            TermReference m_9736 = new TermReference();
-            TermReference n_9736 = new TermReference();
-            IStrategoTerm o_9736 = null;
+            term = term513;
+            TermReference v_32774 = new TermReference();
+            TermReference w_32774 = new TermReference();
+            IStrategoTerm x_32774 = null;
             if(term.getTermType() != IStrategoTerm.APPL || Main._consLayout_1 != ((IStrategoAppl)term).getConstructor())
-              break Fail270;
-            if(m_9736.value == null)
-              m_9736.value = term.getSubterm(0);
+              break Fail1090;
+            if(v_32774.value == null)
+              v_32774.value = term.getSubterm(0);
             else
-              if(m_9736.value != term.getSubterm(0) && !m_9736.value.match(term.getSubterm(0)))
-                break Fail270;
-            o_9736 = term;
-            lifted207 lifted2070 = new lifted207();
-            lifted2070.m_9736 = m_9736;
-            lifted2070.n_9736 = n_9736;
-            term = with_spxverify_1_0.instance.invoke(context, term, lifted2070);
+              if(v_32774.value != term.getSubterm(0) && !v_32774.value.match(term.getSubterm(0)))
+                break Fail1090;
+            x_32774 = term;
+            lifted406 lifted4060 = new lifted406();
+            lifted4060.v_32774 = v_32774;
+            lifted4060.w_32774 = w_32774;
+            term = with_spxverify_1_0.instance.invoke(context, term, lifted4060);
             if(term == null)
-              break Fail270;
-            term = o_9736;
-            if(n_9736.value == null)
-              break Fail270;
-            term = termFactory.makeAppl(Main._consLayout_1, new IStrategoTerm[]{n_9736.value});
+              break Fail1090;
+            term = x_32774;
+            if(w_32774.value == null)
+              break Fail1090;
+            term = termFactory.makeAppl(Main._consLayout_1, new IStrategoTerm[]{w_32774.value});
           }
         }
       }
