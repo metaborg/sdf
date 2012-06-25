@@ -7,7 +7,7 @@ imports
 	
 strategies
 	
-	sdf-to-ecore = to-ecore
+	sdf-to-ecore = to-ecore; annotate; normalize
 
 rules
 	
@@ -20,8 +20,8 @@ rules
 		enum-productions := <collect-om(?prod([lit(_)], sort(_), no-attrs()) + ?prod([label(unquoted(_), lit(_))], sort(_), no-attrs()))> <collect-om(?lexical-syntax(_))> exports*;
 		enums := <to-enum> enum-productions;
 		classes := <map(to-class(|enums))> CF-productions';
-		superclasses := <create-superclasses> CF-productions';
-		classes' := <concat> [classes, superclasses, enums]
+		abstractClasses := <create-abstract-classes> CF-productions';
+		classes' := <concat> [classes, abstractClasses, enums]
 
 	to-class(|enums):
 		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
@@ -115,13 +115,13 @@ rules
 
 rules
 	
-	create-superclasses:
+	create-abstract-classes:
 		productions -> classes
 		where
-			classes := <make-set> <filter(create-superclass)> productions
+			classes := <make-set> <filter(create-abstract-class)> productions
 			
-	create-superclass:
-		prod(_, sort(s), attributes) -> EClass([Name(s)], [])
+	create-abstract-class:
+		prod(_, sort(s), attributes) -> EClass([Name(s), Abstract(True())], [])
 		where
 			cons := <fetch-cons-name> attributes;
 			not ( <eq> (s, cons) );
@@ -229,4 +229,118 @@ rules
 
 	to-enum-literal(|enum-name):
 		prod([label(unquoted(enum-literal-name), lit(enum-literal))], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal, enum-literal-name)
+
+	is-abstract:
+		e@EClass(properties, _) -> e
+		where
+			<fetch(?Abstract(True()))> properties
+	
+	is-subclass:
+		e@EClass(properties, _) -> e
+		where
+			<fetch(?ESuperType(_))> properties
+	
+	fetch-name:
+		EClass(properties, _) -> name
+		where
+			<fetch(?Name(name))> properties
+	
+	fetch-name:
+		EAttribute(properties) -> name
+		where
+			<fetch(?Name(name))> properties
+
+	fetch-name:
+		EReference(properties) -> name
+		where
+			<fetch(?Name(name))> properties	
+	
+	fetch-type:
+		EAttribute(properties) -> type
+		where
+			<fetch(?Type(type))> properties
+
+	fetch-type:
+		EReference(properties) -> type
+		where
+			<fetch(?Type(type))> properties	
+	
+	is-super-type(|abstractClass):
+		e@EClass(properties, _) -> e
+		where
+			<fetch(?ESuperType(superType))> properties;
+			abstractClassname := <fetch-name> abstractClass;
+			<eq> (superType, abstractClassname)
+			
+	fetch-subclasses:
+		(abstractClass, classes) -> subclasses
+		where
+			subclasses := <filter(is-super-type(|abstractClass))> classes
+	
+	has-structural-feature(|sf):
+		e@EClass(_, children) -> e
+		where
+			<?EAttribute(_) + ?EReference(_)> sf;
+			<fetch(?sf)> children
+			
+rules
+	
+	annotate:
+		EPackage(properties, classes) -> EPackage(properties, classes')
+		where
+			classes' := <map(try(annotate))> classes
+	
+	annotate:
+		EClass(properties, structuralFeatures) -> EClass(properties, children)
+		where
+			not ( <fetch(?Abstract(True()))> properties );
+			detailEntries := <map(to-detail-entry(|structuralFeatures))> structuralFeatures;
+			children := <conc> (structuralFeatures, [EAnnotation("StrategoTerm.index", detailEntries)])
+	
+	to-detail-entry(|structuralFeatures):
+		e@EAttribute(properties) -> detailsEntry
+		where
+			detailsEntry := <to-detail-entry(|structuralFeatures)> (e, properties)
+			
+	to-detail-entry(|structuralFeatures):
+		e@EReference(properties) -> detailsEntry
+		where
+			detailsEntry := <to-detail-entry(|structuralFeatures)> (e, properties)
+	
+	to-detail-entry(|structuralFeatures):
+		(e, properties) -> DetailsEntry(index, propertyName)
+		where
+			index := <int-to-string> <get-index> (e, structuralFeatures);
+			<fetch(?Name(propertyName))> properties
+			
+rules
+	
+	normalize:
+		EPackage(properties, children) -> EPackage(properties, children')
+			where
+				enums := <filter(?EEnum(_, _))> children;
+				standardClasses := <remove-all(is-abstract + is-subclass + ?EEnum(_, _))> children;
+				abstractClasses := <filter(is-abstract)> children;
+				normalizedClasses := <flatten-list> <map(normalize(|children))> abstractClasses;
+				children' := <concat> [standardClasses, normalizedClasses, enums]
+	
+	normalize(|classes):
+		e@EClass(properties, _) -> normalizedClasses
+		where
+			subclasses := <fetch-subclasses> (e, classes);
+			EClass(_, features) := <index(|1)> subclasses;
+			commonStructuralFeatures := <filter(isCommonStructuralFeature(|subclasses))> features;
+			normalizedSubclasses := <map(remove-features(|commonStructuralFeatures))> subclasses;
+			normalizedAbstractClass := EClass(properties, commonStructuralFeatures);
+			normalizedClasses := <conc> ([normalizedAbstractClass], normalizedSubclasses)
+	
+	isCommonStructuralFeature(|subclasses):
+		sf -> sf
+		where
+			<map(has-structural-feature(|sf))> subclasses
+
+	remove-features(|commonStructuralFeatures):
+		EClass(properties, features) -> EClass(properties, features')
+		where
+			features' := <diff> (features, commonStructuralFeatures)
 		

@@ -70,12 +70,26 @@ rules
 			children := []
 
 	to-xml:
+		EAnnotation(source, detailsEntries) -> Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "eAnnotations");
+			attributes := [XMLAttribute("source", source)];
+			children := detailsEntries
+
+	to-xml:
 		ENumLiteral(literal, literal-name) -> Element(qName, attributes, children, None())
 		where
 			qName := QName(None(), "eLiterals");
 			attributes := [XMLAttribute("literal", literal), XMLAttribute("name", literal-name)];
 			children := []
 			
+	to-xml:
+		DetailsEntry(key, value) -> 	Element(qName, attributes, children, None())
+		where
+			qName := QName(None(), "details");
+			attributes := [XMLAttribute("key", key), XMLAttribute("value", value)];
+			children := []
+	
 	to-xml:
 		EString() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
 

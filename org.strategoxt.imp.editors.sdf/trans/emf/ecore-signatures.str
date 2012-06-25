@@ -25,3 +25,6 @@ signature constructors
     
     False       : Boolean
     True        : Boolean
+    
+    EAnnotation: source * detailsEntries -> EAnnotation
+    DetailsEntry: key * value -> DetailsEntry
