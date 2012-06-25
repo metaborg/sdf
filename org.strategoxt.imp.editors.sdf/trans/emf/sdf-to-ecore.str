@@ -310,7 +310,7 @@ rules
 	to-detail-entry(|structuralFeatures):
 		(e, properties) -> DetailsEntry(index, propertyName)
 		where
-			index := <int-to-string> <get-index> (e, structuralFeatures);
+			index := <int-to-string> <subti> (<get-index> (e, structuralFeatures), 1);
 			<fetch(?Name(propertyName))> properties
 			
 rules
