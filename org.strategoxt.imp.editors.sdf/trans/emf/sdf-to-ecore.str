@@ -262,9 +262,10 @@ rules
 			enums := <map(create-enum(|enum-productions))> enum-names
 	
 	create-enum(|enum-productions):
-		enum-name -> EEnum(enum-name, enum-literals)
+		enum-name -> EEnum(enum-name, enum-literals')
 		where
-			enum-literals := <collect-om(to-enum-literal(|enum-name))> enum-productions
+			enum-literals := <collect-om(to-enum-literal(|enum-name))> enum-productions;
+			enum-literals' := <map(add-enum-value(|enum-literals))> enum-literals
 			
 	fetch-enum-name:
 		prod(_, sort(enum-name), _) -> enum-name
@@ -274,6 +275,13 @@ rules
 
 	to-enum-literal(|enum-name):
 		prod([label(unquoted(enum-literal-name), lit(enum-literal))], sort(enum-name), _) -> ENumLiteral(<un-double-quote> enum-literal, enum-literal-name)
+
+	add-enum-value(|enums):
+		e@ENumLiteral(literal, name) -> ENumLiteral(literal, name, value)
+		where
+			value:= <subti> (<get-index> (e, enums), 1)
+
+// rules
 
 	is-abstract:
 		e@EClass(properties, _) -> e

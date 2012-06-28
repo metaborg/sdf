@@ -10,7 +10,8 @@ signature constructors
     EStructuralFeature : ID * properties -> EStructuralFeature
     EAttribute  : properties -> EAttribute
     EReference  : properties -> EReference
-    ENumLiteral	: ID * ID -> ENumLiteral
+    ENumLiteral	: literal * name -> ENumLiteral
+    ENumLiteral	: literal * name * value -> ENumLiteral
     
     Name        : ID -> Name
     Type        : Type -> Type
