@@ -106,7 +106,7 @@ rules
 	set-attributes-and-references(|classnames, enumnames):
 		e@EStructuralFeature(s, properties) -> EAttribute(properties'')
 		where
-			<is-attribute(|classnames, enumnames)> e;
+			<is-attribute(|classnames)> e;
 			properties' := <remove-all(?Containment(_))> properties;
 			
 			if <is-primitive-type(|classnames, enumnames)> s
@@ -119,15 +119,15 @@ rules
 	set-attributes-and-references(|classnames, enumnames):
 		e@EStructuralFeature(s, properties) -> EReference(properties')
 		where
-			not ( <is-attribute(|classnames, enumnames)> e );
+			not ( <is-attribute(|classnames)> e );
 			type := Type(s);
 			properties' := <add-property> (type, properties)
 
-	is-attribute(|classnames, enumnames):
+	is-attribute(|classnames):
 		e@EStructuralFeature(s, properties) -> e
 		where
 			not ( <fetch(?Containment(False()))> properties );
-			<is-primitive-type(|classnames, enumnames)> s
+			not ( <fetch(?s)> classnames )
 
 	is-primitive-type(|classnames, enumnames):
 		s -> s
