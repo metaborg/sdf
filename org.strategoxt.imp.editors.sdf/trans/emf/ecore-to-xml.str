@@ -89,20 +89,12 @@ rules
 			qName := QName(None(), "details");
 			attributes := [XMLAttribute("key", key), XMLAttribute("value", value)];
 			children := []
-	
-	to-xml:
-		EString() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
 
-	to-xml:
-		EInt() -> "ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
-
-	
 	// Properties:
 
 	to-xml:	Name(name) 			-> XMLAttribute("name", name)
-	to-xml: Type(type)			-> XMLAttribute("eType", type)	where not ( <is-string> type )
-	to-xml: Type(type)			-> XMLAttribute("eType", type')	where type' := <conc-strings> ("#//", type)
-	to-xml: Type(type)			-> XMLAttribute("eType", type)		
+	to-xml: Type(type)			-> XMLAttribute("eType", <conc-strings> ("#//", type))
+	to-xml:	Primitive(p)		-> XMLAttribute("eType", type) where type := <conc-strings> ("ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//", p)
 	to-xml: ESuperType(type)	-> XMLAttribute("eSuperTypes", <conc-strings> ("#//", type))	
 	to-xml: LowerBound(value) 	-> XMLAttribute("lowerBound", <int-to-string> value)
 	to-xml:	UpperBound(value) 	-> XMLAttribute("upperBound", <int-to-string> value)

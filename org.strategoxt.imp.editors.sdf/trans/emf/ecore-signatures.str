@@ -7,6 +7,7 @@ signature constructors
     EClass      : properties * children -> EClass
     EEnum		: ID * literals -> EEnum
     
+    EStructuralFeature : ID * properties -> EStructuralFeature
     EAttribute  : properties -> EAttribute
     EReference  : properties -> EReference
     ENumLiteral	: ID * ID -> ENumLiteral
@@ -20,8 +21,7 @@ signature constructors
     Abstract    : Boolean -> Abstract
     Identifier	: Boolean -> Identifier
     
-    EInt        : Type
-    EString     : Type
+    Primitive	: ID -> Primitive
     
     False       : Boolean
     True        : Boolean

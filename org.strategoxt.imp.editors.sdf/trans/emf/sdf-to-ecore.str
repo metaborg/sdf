@@ -12,18 +12,20 @@ strategies
 rules
 	
 	to-ecore:
-		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, classes')
+		'module(unparameterized(moduleName), _, exports*)	-> EPackage(properties, children)
 	where
 		properties := [Name(moduleName)];
 		CF-productions := <collect-om(?prod(_, _, _))> <collect-om(?context-free-syntax(_))> exports*;
 		CF-productions' := <map(flatten-prod)> <alltd(rewrite-seq + rewrite-sep)> CF-productions;
 		enum-productions := <collect-om(?prod([lit(_)], sort(_), no-attrs()) + ?prod([label(unquoted(_), lit(_))], sort(_), no-attrs()))> <collect-om(?lexical-syntax(_))> exports*;
 		enums := <to-enum> enum-productions;
-		classes := <map(to-class(|enums))> CF-productions';
+		classes := <map(to-class)> CF-productions';
 		abstractClasses := <create-abstract-classes> CF-productions';
-		classes' := <concat> [classes, abstractClasses, enums]
+		allClasses := <conc> (classes, abstractClasses);
+		allClasses' := <set-attributes-and-references(|enums)> allClasses;
+		children := <conc> (allClasses', enums)
 
-	to-class(|enums):
+	to-class:
 		prod(lhs, sort(s), attributes) -> EClass(properties', structuralFeatures')
 		where
 			cons := <fetch-cons-name> attributes;
@@ -31,12 +33,12 @@ rules
 			if <eq> (s, cons) + <eq> (s, "Start") then properties := [] else properties := [ESuperType(s)] end;
 			properties' := <add-property> (name, properties);
 			structuralFeatures := <remove-all(?lit(_) + ?ci-lit(_))> lhs;
-			structuralFeatures' := <map(set-name; def-ref-containment; set-bounds; set-structuralFeature(|enums))> structuralFeatures
+			structuralFeatures' := <map(set-user-defined-name; def-ref-containment; set-bounds; set-name; set-structuralFeature)> structuralFeatures
 
-	set-name:
+	set-user-defined-name:
 		label(unquoted(name), x) -> (x, [Name(name)])
 		
-	set-name:
+	set-user-defined-name:
 		x -> (x, [])
 		where
 			not ( <?label(_, _)> x )
@@ -81,37 +83,80 @@ rules
 		(iter-star(sort(s)), properties) -> (s, properties')
 		where
 			properties' := <add-properties> ([LowerBound(0), UpperBound(-1)], properties)
-		
-	set-structuralFeature(|enums):
-		(s, properties) -> eStructuralFeature
-		where			
+	
+	set-name:
+		(s, properties) -> (s, properties')
+		where
 			if <fetch(?UpperBound(-1))> properties
 			then name := Name(<lower-case; make-plural> s)
 			else name := Name(<lower-case> s)
 			end;
-			properties' := <add-property> (name, properties);
-			
-			if
-				not ( <fetch(?Containment(False()))> properties ); <primitive-type> s + <fetch(?EEnum(s, _))> enums
-			then
-				if <primitive-type> s
-				then type := Type(<primitive-type> s)
-				else type := Type(s)
-				end;
-				properties'' := <add-property> (type, properties');
-				properties''' := <remove-all(?Containment(_))> properties'';
-				eStructuralFeature := EAttribute(properties''')
-			else
-				type := Type(s);
-				properties'' := <add-property> (type, properties');
-				eStructuralFeature := EReference(properties'')
-			end
+			properties' := <add-property> (name, properties)
 
-	primitive-type:
-		"INT" -> EInt()
-		
-	primitive-type:
-		"ID" -> EString()
+	set-structuralFeature:
+		(s, properties) -> EStructuralFeature(s, properties)
+
+	set-attributes-and-references(|enums):
+		classes -> classes'
+		where
+			classnames := <map(fetch-name)> classes;
+			enumnames := <map(fetch-name)> enums;
+			classes' := <alltd(set-attributes-and-references(|classnames, enumnames))> classes
+
+	set-attributes-and-references(|classnames, enumnames):
+		e@EStructuralFeature(s, properties) -> EAttribute(properties'')
+		where
+			<is-attribute(|classnames, enumnames)> e;
+			properties' := <remove-all(?Containment(_))> properties;
+			
+			if <is-primitive-type(|classnames, enumnames)> s
+			then type := <to-primitive-type> s
+			else type := Type(s)
+			end;
+				
+			properties'' := <add-property> (type, properties')
+			
+	set-attributes-and-references(|classnames, enumnames):
+		e@EStructuralFeature(s, properties) -> EReference(properties')
+		where
+			not ( <is-attribute(|classnames, enumnames)> e );
+			type := Type(s);
+			properties' := <add-property> (type, properties)
+
+	is-attribute(|classnames, enumnames):
+		e@EStructuralFeature(s, properties) -> e
+		where
+			not ( <fetch(?Containment(False()))> properties );
+			<is-primitive-type(|classnames, enumnames)> s
+
+	is-primitive-type(|classnames, enumnames):
+		s -> s
+		where
+			not ( <fetch(?s)> classnames + <fetch(?s)> enumnames )
+
+rules
+
+	to-primitive-type:
+		s -> Primitive(t)
+		where
+			eDataTypes := ["EBigDecimal", "EBigInteger", "EBoolean", "EBooleanObject", "EByte", "EByteArray", "EByteObject", "EChar", "ECharacterObject", "EDate", "EDiagnosticChain", "EDouble", "EDoubleObject", "EEList", "EEnumeration", "EFeaturemap", "EFeaturemapEnty", "EFloat", "EFloatObject", "EInt", "EIntegerObject", "EInvocationTargetException", "EJavaClass", "EJavaObject", "ELong", "ELongObject", "EMap", "EResource", "EResourceSet", "EShort", "EShortObject", "EString", "ETreeIterator"];
+			if not ( t := <known-type> s )
+			then 
+				if not ( t := <fetch-elem(isEDataType(|s))> eDataTypes )
+				then t := "EString" // default
+				end
+			end
+	
+	known-type: "INT"	-> "EInt"
+	known-type: "ID"	-> "EString"
+
+	isEDataType(|s):
+		t -> t
+		where
+			s' := <lower-case> s;
+			t' := <lower-case> t
+		where
+			<eq> ( s', t') + <string-ends-with(|s')> t' // with or wihtout 'E'
 
 rules
 	
@@ -254,6 +299,9 @@ rules
 		EReference(properties) -> name
 		where
 			<fetch(?Name(name))> properties	
+	
+	fetch-name:
+		EEnum(name, _) -> name
 	
 	fetch-type:
 		EAttribute(properties) -> type
