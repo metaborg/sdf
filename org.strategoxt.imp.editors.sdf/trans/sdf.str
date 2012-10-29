@@ -109,7 +109,10 @@ rules // Local checks
       -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
 
   lexical-syntax-warning:
-    t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Constructor only expected in context-free syntax])
+    attrs(lst) -> (t, $[Constructor only expected in context-free syntax])
+    where
+        <fetch(?t@term(default(appl(unquoted("cons"), a*))))> lst;
+        <not(fetch(?term(default(fun(unquoted("recover"))))))> lst
 
   context-free-syntax-warning:
     t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
