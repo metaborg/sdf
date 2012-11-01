@@ -14,88 +14,102 @@ completions
   completion proposer:
     editor-complete
 
-  completion template : ImpSection =
+  completion template ImpSection*:
   	"imports" "\n\t" (blank)
 
-  completion template : Section =
-  	"exports" "\n\t" (blank)
+  completion template Section*:
+  	"exports" "\n\t" <grammar:Grammar> (blank)
 
-  completion template : Section =
-    "hiddens" "\n\t" (blank)
+  completion template Section*:
+    "hiddens" "\n\t" <grammar:Grammar> (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
   	"context-free start-symbols" "\n\t" <Start> (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
   	"lexical start-symbols" "\n\t" <Start> (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
   	"start-symbols" "\n\t" <Start> (blank)
 
-  completion template : Module =
-  	"module" " " <x> "\n\t\nexports\n\t" (blank)
+  completion template Module:
+  	"module" " " <x> "\n\t\nexports\n\t" <grammar:Grammar> (blank)
 
-  completion template : Grammar =
-    "context-free syntax" "\n\t" (blank)
+  completion template Production: "production" = 
+    <symbol*> " -> " <sort> "{" <attr*:Attribute> "}" 
 
-  completion template : Grammar =
-    "lexical syntax" "\n\t" (blank)
+  completion template Production: "production (no attributes)" =
+    <symbol*> " -> " <sort> 
 
-  completion template : Grammar =
-    "syntax" "\n\t" (blank)
+  completion template Attributes: "attributes" =
+    "{" <attr*:Attribute> "}"
 
-  completion template : Grammar =
-    "context-free restrictions" "\n\t" (blank)
+  completion template Grammar:
+    "context-free syntax" "\n\t" <prods:Production> (blank)
 
-  completion template : Grammar =
-    "lexical restrictions" "\n\t" (blank)
+  completion template Grammar:
+    "lexical syntax" "\n\t" <prods:Production> (blank)
 
-  completion template : Grammar =
-    "restrictions" "\n\t" (blank)
+  completion template Grammar:
+    "syntax" "\n\t" <prods:Production> (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
+    "context-free restrictions" "\n\t" <r*:Restriction> (blank)
+
+  completion template Grammar:
+    "lexical restrictions" "\n\t" <r*:Restriction> (blank)
+
+  completion template Grammar:
+    "restrictions" "\n\t" <r*:Restriction> (blank)
+
+  completion template Restriction: "follow restriction" =
+    <Symbols> "-/-" <Lookaheads> 
+
+  completion template Grammar:
     "sorts" "\n\t" (blank)
 
-  completion template : Grammar =
-    "variables" "\n\t" (blank)
+  completion template Grammar:
+    "variables" "\n\t" <prods:Production> (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
     "aliases" "\n\t" (blank)
 
-  completion template : Grammar =
+  completion template Grammar:
     "priorities" "\n\t" (blank)
 
-  completion template : Grammar = 
-    "lexical variables" "\n\t" (blank)
+  completion template Grammar: 
+    "lexical variables" "\n\t" <prods:Production> (blank)
     
-  completion template : Attribute =
+  completion template Attribute:
     "cons" "(\"" <Name> "\")"
 
-  completion template : Attribute =
+  completion template Attribute:
     "deprecated" "(\"" <explanation> "\")"
 
-  completion template : Attribute =
+  completion template Attribute:
     "reject"
 
-  completion template : Attribute =
+  completion template Attribute:
     "left"
 
-  completion template : Attribute =
+  completion template Attribute:
     "right"
 
-  completion template : Attribute =
+  completion template Attribute:
     "non-assoc"
 
-  completion template : Attribute =
+  completion template Attribute:
     "avoid"
 
-  completion template : Attribute =
+  completion template Attribute:
     "prefer"
 
-  completion template : Attribute =
+  completion template Attribute:
     "bracket"
 
-  completion template : Attribute =
+  completion template Attribute:
     "recover"
 
+  completion template Attribute:
+    "completion"
 

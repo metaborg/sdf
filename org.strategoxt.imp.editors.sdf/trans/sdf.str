@@ -112,7 +112,8 @@ rules // Local checks
     attrs(lst) -> (t, $[Constructor only expected in context-free syntax])
     where
         <fetch(?t@term(default(appl(unquoted("cons"), a*))))> lst;
-        <not(fetch(?term(default(fun(unquoted("recover"))))))> lst
+        <not(fetch(?term(default(fun(unquoted("recover"))))))> lst;
+        <not(fetch(?term(default(fun(unquoted("completion"))))))> lst
 
   context-free-syntax-warning:
     t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
