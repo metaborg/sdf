@@ -13,3 +13,7 @@ exports
   %% HACK
   context-free syntax
     Group "." -> Group {non-assoc,cons("non-transitive")}
+    
+  %% Completion Rules
+  lexical syntax
+    "completion123"                          -> Sort %%{cons("Completion")}
