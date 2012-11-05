@@ -22,7 +22,7 @@ completions Semantic completion proposer rule
 
 completions Custom syntactic completion templates
 
-  completion template Module: "sdf-module" =
+  completion template Module: "module (template)" =
     "module" " " <m> "\n\t\nexports\n\t" <grammar:Grammar> (blank)
 
   completion template Module: "module" =
@@ -61,6 +61,8 @@ completions Custom syntactic completion templates
   completion template Priorities Priority: "priority (assoc)" =
     <G:Group> " " <A:Associativity> " " <G:Group>
 
+  completion template Module: "module (parameterized)" =
+    "module " <ModuleName:ModuleId> "[" <Params:Symbols> "]" 
 
 completions Generated Syntactic completion templates (customized)
 
@@ -156,10 +158,6 @@ completions Generated Syntactic completion templates (customized)
     "hiddens\n\t(/)" (blank)      
   completion template Attribute : "id ( left )" =
     "id ( " <left:ModuleName> " )"  
-  completion template Import : "left Renamings" =
-    <left:ModuleName> " " <Renamings:Renamings>  
-  completion template Import : "( left )" =
-    "( " <left:Import> " )"           
   completion template Grammar* : "lexical syntax Productions" =
     "lexical syntax\n\t" <Productions:Productions> (blank)  
   completion template Grammar* : "context-free syntax Productions" =
@@ -190,55 +188,5 @@ completions Generated Syntactic completion templates (customized)
     "context-free restrictions\n\t" <Restrictions:Restrictions> (blank)  
   completion template SDF : "definition Definition" =
     "definition\n\t" <Definition:Definition> "\n\n" (cursor)(blank)  
-  completion template ModuleName : "aliases" =
-    "aliases"                      
-  completion template ModuleName : "lexical" =
-    "lexical"                      
-  completion template ModuleName : "priorities" =
-    "priorities"                
-  completion template ModuleName : "context-free" =
-    "context-free"            
-  completion template ModuleName : "definition" =
-    "definition"                
-  completion template ModuleName : "syntax" =
-    "syntax"                        
-  completion template ModuleName : "variables" =
-    "variables"                  
-  completion template ModuleName : "module" =
-    "module"                        
-  completion template ModuleName : "imports" =
-    "imports"                      
-  completion template ModuleName : "exports" =
-    "exports"                      
-  completion template ModuleName : "hiddens" =
-    "hiddens"                      
-  completion template ModuleName : "left" =
-    "left"                            
-  completion template ModuleName : "right" =
-    "right"                          
-  completion template ModuleName : "assoc" =
-    "assoc"                          
-  completion template ModuleName : "non-assoc" =
-    "non-assoc"                  
-  completion template ModuleName : "bracket" =
-    "bracket"                      
-  completion template ModuleName : "sorts" =
-    "sorts"                          
-  completion template ModuleName : "bracket" =
-    "bracket"                      
-  completion template ModuleName : "sorts" =
-    "sorts"                          
-  completion template ModuleName : "restrictions" =
-    "restrictions"            
-  completion template ATermAttribute : "reject" =
-    "reject"                    
-  completion template ATermAttribute : "prefer" =
-    "prefer"                    
-  completion template ATermAttribute : "avoid" =
-    "avoid"                      
-  completion template ATermAttribute : "bracket" =
-    "bracket"                  
-  completion template ATermAttribute : "id ( left )" =
-    "id ( " <left:ModuleName> " )"  
   completion template Group : "Group . ." =
     <Group .:Group> " ." 
