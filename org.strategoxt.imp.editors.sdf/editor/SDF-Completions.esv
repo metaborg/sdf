@@ -1,6 +1,6 @@
 module SDF-Completions
 
-completions
+completions Completion triggers
 
   completion trigger:
     "->\s*[A-Za-z0-9]+\s*\{"
@@ -11,105 +11,234 @@ completions
   completion trigger:
     "->[\ \t]+"
 
+
+
+completions Semantic completion proposer rule
+
   completion proposer:
     editor-complete
 
-  completion template ImpSection*:
-  	"imports" "\n\t" (blank)
 
-  completion template Section*:
-  	"exports" "\n\t" <grammar:Grammar> (blank)
 
-  completion template Section*:
-    "hiddens" "\n\t" <grammar:Grammar> (blank)
+completions Custom syntactic completion templates
 
-  completion template Grammar:
-  	"context-free start-symbols" "\n\t" <Start> (blank)
+  completion template Module: "sdf-module" =
+    "module" " " <m> "\n\t\nexports\n\t" <grammar:Grammar> (blank)
 
-  completion template Grammar:
-  	"lexical start-symbols" "\n\t" <Start> (blank)
+  completion template Module: "module" =
+    "module" " " <m> "\n\t\nexports\n\t" (cursor) (blank)
 
-  completion template Grammar:
-  	"start-symbols" "\n\t" <Start> (blank)
+  completion template Production* Productions*: "production" = 
+    <lhs:Symbols> " -> " <rhs:Symbol> " " <attrs:Attributes> (blank)
 
-  completion template Module:
-  	"module" " " <x> "\n\t\nexports\n\t" <grammar:Grammar> (blank)
-
-  completion template Production: "production" = 
-    <symbol*> " -> " <sort> "{" <attr*:Attribute> "}" 
-
-  completion template Production: "production (no attributes)" =
-    <symbol*> " -> " <sort> 
+  completion template Attributes: "attribute" =
+    "{" <attr:Attribute> "}"
 
   completion template Attributes: "attributes" =
-    "{" <attr*:Attribute> "}"
+    "{" <attr:Attribute> ", " <attr:Attribute>"}"
 
-  completion template Grammar:
-    "context-free syntax" "\n\t" <prods:Production> (blank)
+  completion template Symbols: "symbols" =
+    <s:Symbol> " " <symbols:Symbols>
 
-  completion template Grammar:
-    "lexical syntax" "\n\t" <prods:Production> (blank)
+  completion template Symbols: "symbol" =
+    <s:Symbol>
 
-  completion template Grammar:
-    "syntax" "\n\t" <prods:Production> (blank)
+  completion template ImpSection*:
+    "imports" "\n\t" (cursor)(blank)
+       
+  completion template Productions*: "productions" =
+    <prod:Production> "\n" <prods:Productions>(blank)
 
-  completion template Grammar:
-    "context-free restrictions" "\n\t" <r*:Restriction> (blank)
+  completion template Priorities:
+    <priority:Priority> ",\n" <priorities:Priorities>
 
-  completion template Grammar:
-    "lexical restrictions" "\n\t" <r*:Restriction> (blank)
+  completion template Priorities Priority: "priority (>)" =
+    <G:Group> " > " <G:Group>
 
-  completion template Grammar:
-    "restrictions" "\n\t" <r*:Restriction> (blank)
+  completion template Priorities Priority: "priority (> chain)" =
+    <G:Group> " > " <G:Group> " > " <G:Group>
 
-  completion template Restriction: "follow restriction" =
-    <Symbols> "-/-" <Lookaheads> 
+  completion template Priorities Priority: "priority (assoc)" =
+    <G:Group> " " <A:Associativity> " " <G:Group>
 
-  completion template Grammar:
-    "sorts" "\n\t" (blank)
 
-  completion template Grammar:
-    "variables" "\n\t" <prods:Production> (blank)
+completions Generated Syntactic completion templates (customized)
 
-  completion template Grammar:
-    "aliases" "\n\t" (blank)
-
-  completion template Grammar:
-    "priorities" "\n\t" (blank)
-
-  completion template Grammar: 
-    "lexical variables" "\n\t" <prods:Production> (blank)
-    
-  completion template Attribute:
-    "cons" "(\"" <Name> "\")"
-
-  completion template Attribute:
-    "deprecated" "(\"" <explanation> "\")"
-
-  completion template Attribute:
-    "reject"
-
-  completion template Attribute:
-    "left"
-
-  completion template Attribute:
-    "right"
-
-  completion template Attribute:
-    "non-assoc"
-
-  completion template Attribute:
-    "avoid"
-
-  completion template Attribute:
-    "prefer"
-
-  completion template Attribute:
-    "bracket"
-
-  completion template Attribute:
-    "recover"
-
-  completion template Attribute:
-    "completion"
-
+  completion template Attribute : "recover" =
+    "recover"                       
+  completion template Attribute : "completion" =
+    "completion"                 
+  completion template Attribute : "incremental" =
+    "incremental"               
+  completion template Attribute : "deprecated" =
+    "deprecated"                 
+  completion template Attribute : "deprecated ( StrCon )" =
+    "deprecated ( " <StrCon:StrCon> " )"  
+  completion template Attribute : "ast ( StrCon )" =
+    "ast(\"" <StrCon:StrCon>"\")"  
+  completion template Attribute : "cons (\"StrCon\")" =
+    "cons(\"" <StrCon:Constructor>"\")"  
+  completion template Symbol : "ns@symbol" =
+    <IdCon:Namespace> "@=" <Symbol>  
+  completion template Attribute : "scope ( IdCon )" =
+    "scope ( " <IdCon:Namespace> " )"  
+  completion template Grammar* : "aliases Aliases" =
+    "aliases\n\t" <Aliases:Aliases> (blank)  
+  completion template Lookaheads : "( [ ] )" =
+    "( " <[  ]:Lookaheads> " )"    
+  completion template Restriction : "Symbols -/- [ ]" =
+    <Symbols:Symbols> " -/- " <[  ]:Lookaheads>  
+  completion template Grammar* : "restrictions Restrictions" =
+    "restrictions\n\t" <Restrictions:Restrictions> (blank)  
+  completion template Attribute : "reject" =
+    "reject"                         
+  completion template Attribute : "prefer" =
+    "prefer"                         
+  completion template Attribute : "avoid" =
+    "avoid"                           
+  completion template Symbol : "left:symbol" =
+    <left:Label> " : " <Symbol>  
+  completion template Grammar* : "start-symbols Symbols" =
+    "start-symbols\n\t" <Symbols:Symbols> (blank)  
+  completion template Grammar* : "lexical start-symbols Symbols" =
+    "lexical start-symbols\n\t" <Symbols:Symbols> (blank)  
+  completion template Grammar* : "context-free start-symbols Symbols" =
+    "context-free start-symbols\n\t" <Symbols:Symbols> (blank)  
+  completion template Grammar* : "sorts Symbols" =
+    "sorts " <Symbols:Symbols>  (blank)
+  completion template Character : "\\TOP" =
+    "\\TOP"                           
+  completion template Character : "\\EOF" =
+    "\\EOF"                           
+  completion template Character : "\\BOT" =
+    "\\BOT"                           
+  completion template Character : "\\LABEL_START" =
+    "\\LABEL_START"           
+  completion template CharRanges : "( \TOP )" =
+    "( " <\TOP:CharRanges> " )"   
+  completion template CharClass : "character-class" =
+    "[ " <:OptCharRanges> " ]"          
+  completion template CharClass : "character-class complement" =
+    "~ " <[  ]:CharClass>
+  completion template Associativity : "left" =
+    "left"                         
+  completion template Associativity : "right" =
+    "right"                       
+  completion template Associativity : "non-assoc" =
+    "non-assoc"               
+  completion template Associativity : "assoc" =
+    "assoc"                       
+  completion template Attribute : "bracket" =
+    "bracket"                       
+  completion template Group : "Group . ArgumentIndicator" =
+    <Group .:Group> " " <ArgumentIndicator:ArgumentIndicator>  
+  completion template Group : "Group . ." =
+    <Group .:Group> " ."              
+  completion template Group : "{ Productions }" =
+    "{ " <Productions:Productions> "\n}" (blank)  
+  completion template Group : "{ left : Productions }" =
+    "{ " <left:Associativity> " :\n\t\t" <Productions:Productions> "\n}" (blank)  
+  completion template Grammar* : "priorities Priorities" =
+    "priorities\n\t" <Priorities:Priorities> (blank)  
+  completion template Symbol : "symbol" =
+    <Symbol>                                  
+  completion template Symbol : "_? (optional)" =
+    <Symbol> "?"                    
+  completion template Symbol : "_+ (non-empty list)" =
+    <Symbol> "+"                    
+  completion template Symbol : "_* (list)" =
+    <Symbol> "*"                    
+  completion template Symbol : "_|_ (alternatives)" =
+    <Symbol> " | " <symbol>
+  completion template Section* : "exports (/)" =
+    "exports\n\t(/)" (blank)      
+  completion template Section* : "hiddens (/)" =
+    "hiddens\n\t(/)" (blank)      
+  completion template Attribute : "id ( left )" =
+    "id ( " <left:ModuleName> " )"  
+  completion template Import : "left Renamings" =
+    <left:ModuleName> " " <Renamings:Renamings>  
+  completion template Import : "( left )" =
+    "( " <left:Import> " )"           
+  completion template Grammar* : "lexical syntax Productions" =
+    "lexical syntax\n\t" <Productions:Productions> (blank)  
+  completion template Grammar* : "context-free syntax Productions" =
+    "context-free syntax\n\t" <Productions:Productions> (blank)  
+  completion template Grammar* : "variables Productions" =
+    "variables\n\t" <Productions:Productions> (blank)  
+  completion template Grammar* : "lexical variables Productions" =
+    "lexical variables\n\t" <Productions:Productions> (blank)  
+  completion template Symbol : "<_-CF>" =
+    "< " <Symbol> "-CF >"     
+  completion template Symbol : "<_-LEX>" =
+    "< " <Symbol> "-LEX >"   
+  completion template Symbol : "<_-VAR>" =
+    "< " <Symbol> "-VAR >"   
+  completion template Symbol : "LAYOUT" =
+    "LAYOUT"                            
+  completion template OptExp : "e NatCon" =
+    "e " <NatCon:IntCon>              
+  completion template Grammar* : "syntax Productions" =
+    "syntax\n\t" <Productions:Productions> (blank)  
+  completion template Grammar* : "lexical priorities Priorities" =
+    "lexical priorities\n\t" <Priorities:Priorities> (blank)  
+  completion template Grammar* : "context-free priorities Priorities" =
+    "context-free priorities\n\t" <Priorities:Priorities> (blank)  
+  completion template Grammar* : "lexical restrictions Restrictions" =
+    "lexical restrictions\n\t" <Restrictions:Restrictions> (blank)  
+  completion template Grammar* : "context-free restrictions Restrictions" =
+    "context-free restrictions\n\t" <Restrictions:Restrictions> (blank)  
+  completion template SDF : "definition Definition" =
+    "definition\n\t" <Definition:Definition> "\n\n" (cursor)(blank)  
+  completion template ModuleName : "aliases" =
+    "aliases"                      
+  completion template ModuleName : "lexical" =
+    "lexical"                      
+  completion template ModuleName : "priorities" =
+    "priorities"                
+  completion template ModuleName : "context-free" =
+    "context-free"            
+  completion template ModuleName : "definition" =
+    "definition"                
+  completion template ModuleName : "syntax" =
+    "syntax"                        
+  completion template ModuleName : "variables" =
+    "variables"                  
+  completion template ModuleName : "module" =
+    "module"                        
+  completion template ModuleName : "imports" =
+    "imports"                      
+  completion template ModuleName : "exports" =
+    "exports"                      
+  completion template ModuleName : "hiddens" =
+    "hiddens"                      
+  completion template ModuleName : "left" =
+    "left"                            
+  completion template ModuleName : "right" =
+    "right"                          
+  completion template ModuleName : "assoc" =
+    "assoc"                          
+  completion template ModuleName : "non-assoc" =
+    "non-assoc"                  
+  completion template ModuleName : "bracket" =
+    "bracket"                      
+  completion template ModuleName : "sorts" =
+    "sorts"                          
+  completion template ModuleName : "bracket" =
+    "bracket"                      
+  completion template ModuleName : "sorts" =
+    "sorts"                          
+  completion template ModuleName : "restrictions" =
+    "restrictions"            
+  completion template ATermAttribute : "reject" =
+    "reject"                    
+  completion template ATermAttribute : "prefer" =
+    "prefer"                    
+  completion template ATermAttribute : "avoid" =
+    "avoid"                      
+  completion template ATermAttribute : "bracket" =
+    "bracket"                  
+  completion template ATermAttribute : "id ( left )" =
+    "id ( " <left:ModuleName> " )"  
+  completion template Group : "Group . ." =
+    <Group .:Group> " ." 
