@@ -14,8 +14,30 @@ rules
 
   /** @type List(TemplateSection | ...) -> List(grammar) */
   template-sections-to-sdf =
+  	alltd(desugar-sdf-redux-tmpl);
     filter(template-section-to-sdf);
     concat
+
+rules // lookup of template production, e.g. Exp.Plus
+
+  desugar-sdf-redux-tmpl:
+    simple-ref-group(ref) -> simple-group(<SortCons-to-prod-tmpl> ref)
+
+  desugar-sdf-redux-tmpl:
+    prods-ref-group(ref*) -> prods-group(<map(SortCons-to-prod-tmpl)> ref*)
+
+  desugar-sdf-redux-tmpl:
+    assoc-ref-group(a, ref*) -> assoc-group(a, <map(SortCons-to-prod-tmpl)> ref*)
+
+  SortCons-to-prod-tmpl:
+    SortCons(sort, cons) -> t
+    with <TemplateProductionDef; template-production-to-sdf-no-attrs> (sort, cons) => t 
+		   
+  create-template-production-dr :
+  	(lhs, rhs) -> <rules( TemplateProductionDef : lhs -> rhs )>
+  	where <debug(!"template production: ")> (lhs, rhs) 
+
+rules
 
   /** @type TemplateSection -> grammar */
   template-section-to-sdf:

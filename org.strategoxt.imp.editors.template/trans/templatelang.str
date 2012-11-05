@@ -43,8 +43,38 @@ rules // Main editor interface (defined by editor/TemplateLang-Builders and -Ref
 rules
 
   collect-sections =
-    collect-sections-1
-    <+ collect-sections-2
+    (collect-sections-1
+    <+ collect-sections-2)
+    ; with(filterconcat(?TemplateSection(<id>)); 
+           map(declare-syntax-template 
+               <+ declare-syntax-template-no-cons 
+               <+ debug(!"declare-syntax-template failed: "); fail))
+
+  declare-syntax-template :
+    d@Desugared(
+	  TemplateProduction(
+	    c#([])
+	  , _
+	  , attrs(
+	      [term(
+	         default(appl(_, [fun(quoted(consstring))]))
+	       ),xs*]
+	    )
+	  )
+	)
+	-> <create-template-production-dr> ((<un-double-quote>c, <un-double-quote> consstring), d)
+	
+  //todo:    figure out if this variant can be referred to and needs to be declared
+  //example: ReturnType   = <: <Type>>
+  declare-syntax-template-no-cons =
+    ?d@Desugared(
+	  TemplateProduction(
+	    c#([])
+	  , _
+	  , _
+	  )
+	)
+	//-> <create-template-production-dr> ((<un-double-quote>c, ?), d) 
 
   collect-sections-1:
     selection -> section*
