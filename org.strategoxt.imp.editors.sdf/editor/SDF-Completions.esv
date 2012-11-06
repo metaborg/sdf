@@ -152,10 +152,10 @@ completions Generated Syntactic completion templates (customized)
     <Symbol> "*"                    
   completion template Symbol : "_|_ (alternatives)" =
     <Symbol> " | " <symbol>
-  completion template Section* : "exports (/)" =
-    "exports\n\t(/)" (blank)      
-  completion template Section* : "hiddens (/)" =
-    "hiddens\n\t(/)" (blank)      
+  completion template Section* : "exports" =
+    "exports\n\t" (blank)      
+  completion template Section* : "hiddens" =
+    "hiddens\n\t" (blank)      
   completion template Attribute : "id ( left )" =
     "id ( " <left:ModuleName> " )"  
   completion template Grammar* : "lexical syntax Productions" =

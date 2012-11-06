@@ -10,6 +10,8 @@ imports
   to-name-analysis
   lib/editor-common.generated
   include/SDF
+  completion
+  check
 
 rules
 
@@ -34,18 +36,6 @@ rules
         warning'* := warning*
       end
 
-  fetch-sdf-errors =
-    ?context-free-syntax(<collect-om(context-free-syntax-error)>)
-  + ?lexical-syntax(<collect-om(lexical-syntax-error)>)
-  
-  fetch-sdf-warnings =
-    ?context-free-syntax(<collect-om(context-free-syntax-warning)>)
-  + ?lexical-syntax(<collect-om(lexical-syntax-warning)>)
-
-  editor-complete:
-    (node, position, ast, path, project-path) -> proposals
-    where
-      proposals := <propose-completion <+ ![]> node
 
   editor-resolve:
     (sort(x), position, ast, path, project-path) -> target
@@ -59,157 +49,6 @@ rules
 
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 
-rules // Limited exisiting sort checking
-
-  context-free-syntax-sort-error:
-    renamed-module(x, renamings(y)) -> [] // not supported
-
-  context-free-syntax-sort-error:
-    sort(x) -> (x, $[No definition for [x]])
-    where
-      not(<Declaration> x)
-
-  context-free-syntax-sort-error:
-    parameterized-sort(_, _) -> [] // not supported
-
-  context-free-syntax-sort-error:
-    'sorts(_) -> [] // ignored
-
-  lexical-syntax-error = fail
-
-rules // Local checks
-
-  context-free-syntax-warning:
-    prod(p*, s, a*) -> (target, $[Missing {cons("Label")} attribute to label the abstract syntax])
-    where
-      (
-        not(<occurrences(?sort(_))> p* => 1; <occurrences(?lit(_))> p* => 0)
-      <+
-        <oncetd(is-iter + ?opt(_))> p*
-      <+
-        <oncetd(?namespaceref(_) + ?namespaceref2(_, _) + ?namespacedef(_, _))> p*
-      );
-      if !a* => attrs(a'*) then
-        not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(not("\"\"")))]))))> a'*);
-        not(<one(Constructor(not("\"\"")))> a'*);
-        not(<one(bracket() + reject())> a'*);
-        not(!s; (sort("Keyword") + sort("\"Keyword\"")));
-        target := a*
-      else
-        target := s
-      end
-
-  context-free-syntax-warning:
-    t @ term(default(appl(unquoted("cons"), a*))) -> (t, $[Single argument expected for {cons("Name")} attribute])
-    where
-      not(<length> a* => 1)
-
-  context-free-syntax-warning:
-    term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Nil\""))])))
-      -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
-
-  lexical-syntax-warning:
-    attrs(lst) -> (t, $[Constructor only expected in context-free syntax])
-    where
-        <fetch(?t@term(default(appl(unquoted("cons"), a*))))> lst;
-        <not(fetch(?term(default(fun(unquoted("recover"))))))> lst;
-        <not(fetch(?term(default(fun(unquoted("completion"))))))> lst
-
-  context-free-syntax-warning:
-    t @ term(default(annotated(_, _))) -> (t, $[Use round parentheses () for attribute arguments])
-
-  context-free-syntax-error:
-    prod([x], s, attrs(a*)) -> (a*, $[Illegal use of {bracket} attribute])
-    where
-      <one(bracket())> a*
-
-  // TODO: don't warn for | in {reject} productions
-  context-free-syntax-warning:
-    alt(x, y) -> (<id>, $[The | construct is deprecated: instead of A|B->C use A->C B->C])
-
-  // TODO: don't warn for ? in {ast("...")} productions
-  context-free-syntax-warning:
-    opt(s @ seq(_, _)) -> (s, $[Extract sequence in optional to separate productions to ensure acceptable abstract syntax])
-    where
-      not(<occurrences(is-non-terminal)> s => 1)
-
-  // TODO: don't warn for ? in {ast("...")} productions
-  context-free-syntax-warning:
-    opt(lit(_)) -> (<id>, $[Extract literal in optional to separate productions to ensure consistent abstract syntax])
-
-  /**
-   * Tests if something is a non-terminal in terms of the AST produced.
-   */
-  is-non-terminal =
-    ?sort(_) + ?opt(_) + is-iter
-  + namespacedef(id, is-non-terminal) + namespaceref(is-non-terminal)
-  + namespaceref2(id, is-non-terminal)
-
-  is-iter =
-    ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
-
-  // Instruct users to use { X "," }*
-
-  context-free-syntax-warning:
-    [sort(x), iter-star(seq(lit(sep), [sort(x)])) | _] ->
-    (<id>, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
-
-  context-free-syntax-warning:
-    [iter-star(seq(sort(x), [lit(sep)])), sort(x) | _] ->
-    (<id>, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
-
-  context-free-syntax-warning:
-    [opt(sort(x)), iter-star(seq(lit(sep), [sort(x)])) | _] ->
-    (<id>, $[Use {[x] [sep]}* instead for [sep]-separated lists])
-
-  context-free-syntax-warning:
-    [iter-star(seq(sort(x), [lit(sep)])), opt(sort(x)) | _] ->
-    (<id>, $[Use {[x] [sep]}* instead for [sep]-separated lists])
-
-  context-free-syntax-warning:
-    prod(lhs @ [sort(x), opt(seq(lit(sep), [sort(xs)]))], sort(xs), _) ->
-    (lhs, $[Use {[x] [sep]}+ instead for [sep]-separated lists])
-
-  // Instruct users to use { X ","? }* (seen in MDSD 2010)
-
-  context-free-syntax-warning:
-    [sort(x), iter-star(seq(opt(lit(sep)), [sort(x)])) | _] ->
-    (<id>, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
-
-  context-free-syntax-warning:
-    [iter-star(seq(sort(x), [opt(lit(sep))])), sort(x) | _] ->
-    (<id>, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
-
-  context-free-syntax-warning:
-    [opt(sort(x)), iter-star(seq(opt(lit(sep)), [sort(x)])) | _] ->
-    (<id>, $[Use {[x] [sep]?}* instead for [sep]?-separated lists])
-
-  context-free-syntax-warning:
-    [iter-star(seq(sort(x), [opt(lit(sep))])), opt(sort(x)) | _] ->
-    (<id>, $[Use {[x] [sep]?}* instead for [sep]?-separated lists])
-
-  context-free-syntax-warning:
-    prod(lhs @ [sort(x), opt(seq(opt(lit(sep)), [sort(xs)]))], sort(xs), _) ->
-    (lhs, $[Use {[x] [sep]?}+ instead for [sep]?-separated lists])
-
-  context-free-syntax-warning:
-    [_ | t*] -> <context-free-syntax-warning> t*
-
-  context-free-syntax-warning:
-    iter-star(cs) -> (<id>, $[Character class iteration should be in lexical syntax section])
-    where
-      <oncetd(?range(_, _))> cs
-
-  context-free-syntax-warning:
-    iter(cs) -> (<id>, $[Character class iteration should be in lexical syntax section])
-    where
-      <oncetd(?range(_, _))> cs
-
-  context-free-syntax-warning:
-    iter-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)")
-
-  context-free-syntax-warning:
-    iter-star-sep(_, bad @ sort(_)) -> (bad, "Non-terminal used as a list separator (use round braces for grouping non-terminals)")
 
 rules
 

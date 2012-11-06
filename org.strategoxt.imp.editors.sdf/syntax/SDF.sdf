@@ -16,4 +16,18 @@ exports
     
   %% Completion Rules
   lexical syntax
-    "completion123"                          -> Sort %%{cons("Completion")}
+    
+                          -> Sort {completion}
+                          -> ModuleWord {completion}
+                          -> IdCon {completion}
+
+    "completion123"       -> Sort {completion}
+    "completion123"       -> ModuleWord {completion}
+    "completion123"       -> IdCon {completion}
+
+  context-free syntax
+                          -> COMPLETIONPREFIX{ast("COMPLETION(\"\")")}
+
+  context-free syntax
+    "module" COMPLETIONPREFIX list:ImpSection* Sections -> Module {cons("Module")}    %%{ast("module(\"\", <1>)")}
+

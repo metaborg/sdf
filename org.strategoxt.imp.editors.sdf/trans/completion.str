@@ -1,0 +1,50 @@
+module completion
+
+imports
+  analysis
+  libstratego-sglr
+  include/SDF
+  lib/editor-common.generated
+
+strategies
+
+  editor-complete:
+    (sort(COMPLETION(_)), position, ast, path, project-path) -> [decl*, use*]
+    where
+      decl* := <all-keys-Declaration>;
+      use*  := <all-keys-Usage>
+
+  editor-complete:
+    (unparameterized(COMPLETION(_)), position, ast, path, project-path) -> proposals
+    where
+      proposals := <
+        new-module-name-proposals(|path) <+ 
+        imported-module-name-proposals
+      > ast
+
+  editor-complete:
+    (parameterized(COMPLETION(_), _), position, ast, path, project-path) -> proposals
+    where
+      proposals := <all-keys-ModuleName>
+
+  new-module-name-proposals(|path):
+    ast -> proposals
+    where
+      <get-module-name; ?COMPLETION(_)> ast;
+      proposals := [
+        <base-filename; remove-extension> path,
+        <remove-extension> path
+      ]
+      
+  imported-module-name-proposals:
+    ast -> proposals'
+    where
+      proposals := <all-keys-ModuleName>;
+      excluded-proposals :=
+        <collect-all(
+          \unparameterized(t) -> t\ <+
+          \parameterized(t, _) -> t\
+        )> ast;
+      proposals':= <diff> (proposals, excluded-proposals)
+
+

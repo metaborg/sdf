@@ -19,7 +19,16 @@ strategies
         ProjectDir  := project-path
       )
     with
-      ast' := <declare-globals-top> ast
+      ast' := <declare-globals-top> ast;
+      if <get-module-name; not(ModuleName)> ast then 
+        record-all-module-names
+      end
+
+  get-module-name:
+    ast -> mname
+    where
+      mname := <get-arguments; Hd; get-arguments; Hd> ast
+
 
 rules
 
@@ -114,14 +123,41 @@ rules
         rules(Usage: text -> text)
       end
 
-  propose-completion:
-    sort(COMPLETION(x)) -> [decl*, use*]
-    with
-      decl* := <all-keys-Declaration> x;
-      use*  := <all-keys-Usage> x
+strategies
+  
+  record-all-module-names =
+    record-all-definitions(
+        alltd(record-module-name)
+      , parse-sdf-string
+      | "sdf"
+    )
+  
+  record-module-name =
+    ?unparameterized(mname);
+    rules(ModuleName : mname -> mname)
 
-  propose-completion:
-    NOCONTEXT(COMPLETION(x)) -> [decl*, use*]
-    with
-      decl* := <all-keys-Declaration> x;
-      use*  := <all-keys-Usage> x
+  record-module-name =
+    ?parameterized(mname, _);
+    rules(ModuleName : mname -> mname)
+  
+  record-all-definitions(record, parse|ext) =
+    <readdir> ".";
+    list-loop(
+      if <isdir> <filemode> then
+        chdir;
+        record-all-definitions(record, parse|ext);
+        <chdir> ".."
+      else
+        try(record-definitions(record, parse|ext))
+      end
+    )
+  
+  record-definitions(record, parse|ext):
+    filename -> filename
+    where
+      <has-extension(|ext)> filename;
+      <open-import(
+        abspath, 
+        parse, 
+        record
+     )> filename
