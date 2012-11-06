@@ -10,7 +10,6 @@ imports
   include/libtemplatelang
   lib/EditorService
   lib/editor-common.generated
-  templatelang/to-sdf
   
 imports
   analyze
