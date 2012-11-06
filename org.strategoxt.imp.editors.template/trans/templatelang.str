@@ -10,6 +10,8 @@ imports
   include/libtemplatelang
   lib/EditorService
   lib/editor-common.generated
+  templatelang/to-sdf
+  
 imports
   analyze
 
@@ -63,9 +65,7 @@ rules
 	  )
 	)
 	-> <create-template-production-dr> ((<un-double-quote>c, <un-double-quote> consstring), d)
-	
-	create-template-production-dr = fail //TODO
-	
+		
   //todo:    figure out if this variant can be referred to and needs to be declared
   //example: ReturnType   = <: <Type>>
   declare-syntax-template-no-cons =
