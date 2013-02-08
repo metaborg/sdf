@@ -1,0 +1,86 @@
+module attributes
+language TemplateLang
+
+test fetch-cons (1)
+  <fetch-cons> attrs([term(default(appl(unquoted("cons"), [fun(quoted("\"lala\""))])))])
+    => term(default(appl(unquoted("cons"), [fun(quoted("\"lala\""))])))
+
+test fetch-cons (2)
+  <fetch-cons> attrs([Constructor("\"lala\"")])
+    => Constructor("\"lala\"")
+
+test fetch-cons (3)
+  <fetch-cons> attrs([])
+    fails
+
+test fetch-cons-name (1)
+  <fetch-cons-name> attrs([term(default(appl(unquoted("cons"), [fun(quoted("\"lala\""))])))])
+    => "lala"
+
+test fetch-cons-name (2)
+  <fetch-cons-name> attrs([Constructor("\"lala\"")])
+    => "lala"
+
+test fetch-cons-name (3)
+  <fetch-cons-name> attrs([])
+    fails
+
+test is-bracket (1)
+  <is-bracket> attrs([bracket()])
+    => _
+
+test is-bracket (2)
+  <is-bracket> attrs([])
+    fails
+
+test is-reject (1)
+  <is-reject> attrs([reject()])
+    => _
+
+test is-reject (2)
+  <is-reject> attrs([])
+    fails
+
+test is-deprecated (1)
+  <is-deprecated> attrs([term(default(fun(unquoted("deprecated"))))])
+    => _
+
+test is-deprectated (2)
+  <is-deprecated> attrs([term(default(appl(unquoted("deprecated"), [fun(quoted("\"message\""))])))])
+    => _
+
+test is-deprecated (3)
+  <is-deprecated> attrs([deprecated()])
+    => _
+
+test is-deprecated (4)
+  <is-deprecated> attrs([deprecated("message")])
+    => _
+
+test is-deprecated (5)
+  <is-deprecated> attrs([])
+    fails
+
+test is-completion-prefer (1)
+  <is-completion-prefer> attrs([term(default(appl(unquoted("completion"), [fun(unquoted("prefer"))])))])
+    => _
+
+test is-completion-prefer (2)
+  <is-completion-prefer> attrs([])
+    fails
+
+test is-completion-prefer (3)
+  <is-completion-prefer> attrs([term(default(appl(unquoted("completion"), [fun(unquoted("avoid"))])))])
+    fails
+
+test is-completion-avoid (1)
+  <is-completion-avoid> attrs([term(default(appl(unquoted("completion"), [fun(unquoted("avoid"))])))])
+    => _
+
+test is-completion-avoid (2)
+  <is-completion-avoid> attrs([])
+    fails
+
+test is-completion-avoid (3)
+  <is-completion-avoid> attrs([term(default(appl(unquoted("completion"), [fun(unquoted("prefer"))])))])
+    fails

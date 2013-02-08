@@ -1,0 +1,6 @@
+module str
+language TemplateLang
+
+test parse-stratego-string
+  <parse-stratego-string> "module example strategies foo = id"
+    => Module("example", _)

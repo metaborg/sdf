@@ -1,0 +1,86 @@
+/* Adapted from org.strategoxt.imp.editors.spoofax/trans/utils/contract.str */
+
+module templatelang/utils/contract
+
+rules
+
+  with-spxverify(s, msg) = with-verify(s, id, msg)
+
+  with-spxverify(s) = with-verify(s, id, !"with-spxverify (no message)")
+
+  with-verify(s, on-fail-exec , msg) = where(verify-stratego(s, on-fail-exec, !$["Internal error: with clause failed unexpectedly. More : [<msg>]]))
+
+  with-verify(s, on-fail-exec) = where(verify-stratego(s, on-fail-exec, !"Internal error: with clause failed unexpectedly"))
+
+  verify-stratego(s,on-fail-exec,message) =
+    s
+  <+
+    try(on-fail-exec);
+    log(|Critical(), <as-string(message)>, <id>);
+    prim("SSL_stacktrace_get_all_frame_names");
+    report-failure
+
+
+  as-string(s) = s; as-string <+ !"<?>"
+
+  as-string = is-string <+ write-to-string
+
+
+
+//Draft of code contracts for stratego
+rules
+  verify(s | arg , expected) = contracts(contract-requires(s| arg , expected))
+
+  verify(s | arg) = contracts(contract-requires(s| arg))
+
+  verify(s) = contracts(contract-requires(s))
+
+rules
+
+  contract-requires ( s , on-fail | arg , expected) =
+      contract-requires ( s | arg , expected)
+    <+
+      on-fail
+
+
+  contract-requires ( s | arg , expected) =
+      where(<s> arg)
+    <+
+      //dbg-analysis(! $[Requires Failed. Reason : actual :[<print-as-string>arg] expected : [expected]] | "Contract" , <debug-level-WARNING> )
+      <debug> "Warning - Contract: Requires Failed. Reason :"
+      ; <debug(!"  actual   : ")> arg
+      ; <debug(!"  expected : ")> expected
+      ; fail
+
+
+  contract-requires ( s | arg ) = <contract-requires (s)> arg
+
+
+  contract-requires (s) =
+      where(s)
+    <+
+      //dbg-analysis(! $[Requires Failed - argument :[<print-as-string>] ]  | "Contact" , <debug-level-WARNING>)
+      where(<debug> "Warning - Contract: Requires Failed. Reason :")
+      ; debug(!"  input : ")
+      ; fail
+
+
+  contracts ( s ) =  where(s) <+ fail
+
+
+  with-verification (preconditions, s ) = with-verification (preconditions, s , id)
+
+
+  with-verification (preconditions, s , postconditions) = where(preconditions) ; s ; where(postconditions) <+ fail
+
+
+rules
+
+  run-strategy(  s  , on-fail | msg) = s <+  <debug> msg ; on-fail
+
+rules
+  String = is-string
+
+  List = is-list
+
+  ListOf(s) = list-loop(s)

@@ -1,0 +1,9 @@
+module templatelang/utils/stubs
+
+// Strategies that must be supplied by client code.
+// (i.e., SpoofaxLang or non-public org.strategoxt.imp.editors.template code)
+
+strategies
+  index-symbol-definition = fail
+  resolve-symbol-definition = fail
+  resolve-all-symbol-definitions = fail

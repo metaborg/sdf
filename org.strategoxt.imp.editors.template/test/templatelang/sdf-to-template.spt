@@ -1,0 +1,36 @@
+module sdf-to-template
+language TemplateLang
+
+start symbol SdfProduction
+
+test transform symbol (1) [[ X = A ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), None(), [])]), attrs([])))
+
+test transform symbol (2) [[ X = A* ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), Star(), [])]), attrs([])))
+
+test transform symbol (3) [[ X = A+ ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), Plus(), [])]), attrs([])))
+
+test transform symbol (4) [[ X = A? ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), Option(), [])]), attrs([])))
+
+test transform symbol (5) [[ X = {A ","}* ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), Star(), [Separator(",")])]), attrs([])))
+
+test transform symbol (6) [[ X = {A "."}+ ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([Placeholder(sort("A"), Plus(), [Separator(".")])]), attrs([])))
+
+test transform symbol (7) [[ X = "foo" ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([String("foo")]), attrs([])))
+
+test transform symbol (8) [[ X = "foo" "bar" ]]
+run templatelang-sdf-prod-to-template-prod to
+  Desugared(TemplateProduction("X", SingleLineTemplate([String("foo"), Layout(" "), String("bar")]), attrs([])))

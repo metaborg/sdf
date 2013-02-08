@@ -1,0 +1,30 @@
+module analyze
+
+imports
+  include/TemplateLang
+  include/libtemplatelang
+
+strategies
+
+  analyze =
+    templatelang-desugar-top;
+    templatelang-init-options;
+    declare-top
+
+  declare-top =
+    alltd(templatelang-declare-section)
+
+  // hooks
+
+  override index-symbol-definition =
+    ?(key, type, value);
+    rules( Declaration :+ (key, type) -> value )
+
+  override resolve-symbol-definition =
+    ?(key, type);
+    Declaration
+
+  override resolve-all-symbol-definitions =
+    ?(key, type);
+    bagof-Declaration;
+    nub

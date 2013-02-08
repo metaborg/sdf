@@ -1,0 +1,32 @@
+module TemplateLang-Builders
+
+imports TemplateLang-Builders.generated
+
+builders
+
+  // This file can be used for custom analysis, builder and refactoring rules.
+  //
+  // See the imported file for a brief introduction and examples.
+
+builders
+
+  provider : include/templatelang.jar
+  provider : include/libtemplatelang.jar
+  // provider : include/templatelang-java.jar
+
+  observer : editor-analyze
+
+  // builder  : "Generate Java code (for selection)"   = generate-java (openeditor) (realtime)
+  builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (source)
+  builder  : "Show desugared AST (for selection)" = generate-desugared-aterm (openeditor) (realtime)
+  builder  : "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
+  builder  : "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
+  builder  : "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
+  builder  : "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
+  builder  : "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime)
+  builder  : "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract (openeditor) (realtime)
+  builder  : "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
+  builder  : "Generate signature (abstract, for selection)" = generate-signature-abstract (openeditor) (realtime)
+  builder  : "Generate signature (concrete, for selection)" = generate-signature-concrete (openeditor) (realtime)
+
+  on save: generate-all

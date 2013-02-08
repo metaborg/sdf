@@ -1,0 +1,54 @@
+module templatelang-parse
+
+language TemplateLang
+start symbol Template
+
+test empty (1) [[ <> ]]
+parse to Template([Line([])])
+
+test empty (2) [[ <<>> ]]
+parse to Template([Line([Escape("<>")])])
+
+test parse common escape chars [[ <<\ \'\"\t\r\n>> ]]
+parse to Template([Line([Escape("<\\ \\'\\\"\\t\\r\\n>")])])
+
+test parse escaped brackets (1) [[ <\<\>\\> ]]
+parse to Template([Line([Escape("\\<\\>\\\\")])])
+
+test parse escaped brackets (2) [[ [\[\]\\] ]]
+parse to Template([Line([Escape("\\[\\]\\\\")])])
+
+test parse line ending (1) [[ <<\\>
+> ]]
+parse to Template([Line([Escape("<\\\\>\n")])])
+
+test parse line ending (2) [[[ [[\\]
+] ]]]
+parse to Template([Line([Escape("[\\\\]\n")])])
+
+test parse separator (1) [[ <<X; separator="\n">> ]]
+parse to Template([Line([Placeholder(_, _, Options([Separator("\"\\n\"")]))])])
+
+test parse separator (2) [[ <<X; separator=",">> ]]
+parse to Template([Line([Placeholder(_, _, Options([Separator("\",\"")]))])])
+
+test parse separator (3) [[ <<X; separator="x y">> ]]
+parse to Template([Line([Placeholder(_, _, Options([Separator("\"x y\"")]))])])
+
+test parse anchor option [[ <<X; anchor>> ]]
+parse to Template([Line([Placeholder(_, _, Options([Anchor()]))])])
+
+test parse wrap option [[ <<X; wrap>> ]]
+parse to Template([Line([Placeholder(_, _, Options([Wrap()]))])])
+
+test parse text option [[ <<X; text="x y">> ]]
+parse to Template([Line([Placeholder(_, _, Options([Text("\"x y\"")]))])])
+
+test parse single backslash (1) [[ < \ <Exp> \ > ]]
+parse succeeds
+
+test parse single backslash (2) [[ <\r> ]]
+parse succeeds
+
+test ambiguity (1) [[ <\\<>> ]]
+parse succeeds

@@ -1,0 +1,31 @@
+%% Fake module that provides just enough of SpoofaxLang
+%% to be able to use the template language.
+
+module SPXFake
+
+imports
+  SPXCommon
+  TemplateLang
+
+  SDFMix[SDF] [
+    "definition" Definition -> SDF {cons("Definition")}
+      => -> IGNORED
+    "module" ModuleName list:ImpSection* Sections -> Module {cons("module")}
+      => -> IGNORED
+    "left":Grammar "right":Grammar -> Grammar {assoc, cons("conc-grammars")}
+      => -> IGNORED
+    ImpSection -> Grammar {cons("imp-section")}
+      => -> IGNORED
+  ]
+
+exports
+  context-free start-symbols
+    Start
+
+  context-free syntax
+    Section*                    -> Start {cons("CompilationUnit")}
+    Grammar[[SDF]]              -> Section {cons("SDFSection")}
+
+  context-free syntax
+    Constructor                 -> Attribute[[SDF]] {prefer, cons("Constructor")}
+    StrCon[[SDF]]               -> Constructor

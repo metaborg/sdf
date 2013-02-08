@@ -1,0 +1,70 @@
+module to-sig
+
+imports
+  libstratego-lib
+  libstrc
+  include/TemplateLang
+  templatelang/utils/attributes
+  templatelang/utils/contract
+  templatelang/desugar
+
+strategies
+
+  templatelang-production-to-signature:
+    Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) -> sig
+    where with-spxverify(
+      ph* := <filter(?Placeholder(_, _, _, _))> elem*;
+      sig := <templatelang-to-signature> (sort, ph*, attrs)
+      , !"Failed to generate signature from production :: templatelang-production-to-signature (1)"
+    )
+
+  templatelang-production-to-signature:
+    Desugared(TemplateProduction(sort, Template(line*), attrs)) -> sig
+    where with-spxverify(
+      ph* := <mapconcat(?Line(<filter(?Placeholder(_, _, _, _))>))> line*;
+      sig := <templatelang-to-signature> (sort, ph*, attrs)
+      , !"Failed to generate signature from production :: templatelang-production-to-signature (2)"
+    )
+
+  templatelang-production-to-signature =
+    templatelang-not-desugared(|"generate signature from")
+
+strategies
+
+  templatelang-to-signature:
+    (sort, ph* @ [_ | _], attrs) ->
+      OpDecl(cons, FunType(arg*, ConstType(SortNoArgs(sort))))
+    where
+      cons := <fetch-cons-name> attrs;
+      arg* := <map(templatelang-placeholder-to-signature-arg)> ph*
+
+  templatelang-to-signature:
+    (sort, ph* @ [_ | _], attrs) ->
+      OpDeclInj(FunType(arg*, ConstType(SortNoArgs(sort))))
+    where
+      not(<fetch-cons-name> attrs);
+      arg* := <map(templatelang-placeholder-to-signature-arg)> ph*
+
+  templatelang-to-signature:
+    (sort, [], attrs) ->
+      OpDecl(cons, ConstType(SortNoArgs(sort)))
+    where
+      cons := <fetch-cons-name> attrs
+
+  templatelang-to-signature:
+    (sort, [], attrs) ->
+      OpDeclInj(ConstType(SortNoArgs(sort)))
+    where
+      not(<fetch-cons-name> attrs)
+
+  templatelang-placeholder-to-signature-arg:
+    Placeholder(_, sort(t), None(), _) -> ConstType(SortNoArgs(t))
+
+  templatelang-placeholder-to-signature-arg:
+    Placeholder(_, sort(t), Option(), _) -> ConstType(Sort("Option", [SortNoArgs(t)]))
+
+  templatelang-placeholder-to-signature-arg:
+    Placeholder(_, sort(t), Plus(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))
+
+  templatelang-placeholder-to-signature-arg:
+    Placeholder(_, sort(t), Star(), _) -> ConstType(Sort("List", [SortNoArgs(t)]))

@@ -1,0 +1,186 @@
+module templatelang
+
+imports
+  libstratego-lib
+  libstratego-gpp
+  libstratego-aterm
+  libstratego-sglr
+  libstrc
+  include/TemplateLang
+  include/libtemplatelang
+  lib/EditorService
+  lib/editor-common.generated
+  
+imports
+  analyze
+
+rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
+
+  // Analyzes the current program, returning a tuple with errors, warnings, and notes;
+  // each a list of (term, message) tuples or simply (message) terms.
+  editor-analyze:
+    (ast, path, project-path) -> (ast', [], [], [])
+    with
+      editor-init;
+      if <string-ends-with(|"-source.spt")> path then
+        ast' := ast;
+        <analyze> ast
+      else
+        ast' := <analyze> ast
+      end
+
+  // Prints the abstract syntax ATerm of a selection.
+  generate-aterm(s):
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result   := <s> selected
+
+  generate-aterm = generate-aterm(id)
+
+  // Only the builder options are different.
+  generate-desugared-aterm = generate-aterm
+
+rules
+
+  collect-sections =
+    (collect-sections-1
+    <+ collect-sections-2)
+    ; with(filterconcat(?TemplateSection(<id>)); 
+           map(declare-syntax-template 
+               <+ declare-syntax-template-no-cons 
+               <+ debug(!"declare-syntax-template failed: "); fail))
+
+  declare-syntax-template :
+    d@Desugared(
+	  TemplateProduction(
+	    c#([])
+	  , _
+	  , attrs(
+	      [term(
+	         default(appl(_, [fun(quoted(consstring))]))
+	       ),xs*]
+	    )
+	  )
+	)
+	-> <create-template-production-dr> ((<un-double-quote>c, <un-double-quote> consstring), d)
+		
+  //todo:    figure out if this variant can be referred to and needs to be declared
+  //example: ReturnType   = <: <Type>>
+  declare-syntax-template-no-cons =
+    ?d@Desugared(
+	  TemplateProduction(
+	    c#([])
+	  , _
+	  , _
+	  )
+	)
+	//-> <create-template-production-dr> ((<un-double-quote>c, ?), d) 
+
+  collect-sections-1:
+    selection -> section*
+    where
+      section* := <collect-om(?TemplateSection(_) + ?SDFSection(_))> selection;
+      ?[_ | _]
+
+  collect-sections-2:
+    selection ->
+      [ TemplateSection(tp*)
+        , SDFSection(context-free-syntax(cp*))
+        , SDFSection(lexical-syntax(lp*)) ]
+    with
+      tp* := <collect-om(?Desugared(_))> selection;
+      p*  := <collect-om(?prod(_, _, _))> selection;
+      (cp*, lp*) := <partition(where(?prod(_, _, <fetch-cons + is-bracket>)))> p*
+
+rules
+
+  // Expanded templates (input to completion template generator)
+  generate-expanded =
+    generate-aterm(
+      collect-om(?Desugared(<id>));
+      map(expand-multi-line-template-production)
+    )
+
+  // Generate completion templates
+  generate-esv =
+    collect-sections;
+    template-sections-to-esv;
+    !Module("example", NoImports(), <id>);
+    topdown(try(pp-fix-string-quotes))
+
+  generate-esv-abstract =
+    generate-aterm(generate-esv)
+
+  generate-esv-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.esv")> path;
+      result   := <generate-esv; pp-descriptor-to-string> selected
+
+  // Generate SDF
+  generate-sdf(|path) =
+    collect-sections;
+    template-sections-to-sdf;
+    !'module(unparameterized($[[<base-filename ; remove-extension> path]generated]), [], [exports(<list-to-conc-grammars>)])
+
+  generate-sdf-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result   := <generate-sdf(|path)> selected
+      
+  generate-sdf-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <conc-strings> (<remove-extension> path, "generated.sdf");
+      result   := <generate-sdf(|path); pp-sdf-to-string> selected
+
+  // Generate pretty printer (BOX-based)
+  generate-box-pp =
+    collect-sections;
+    template-sections-to-stratego(|"example");
+    !Specification(<id>)
+
+  generate-box-pp-abstract =
+    generate-aterm(generate-box-pp)
+
+  generate-box-pp-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.str")> path;
+      result   := <generate-box-pp; pp-stratego-string> selected
+
+  generate-signature =
+    collect-om(?Desugared(_));
+    map(templatelang-production-to-signature);
+    !Specification([Signature([Constructors(<id>)])])
+
+  generate-signature-abstract =
+    generate-aterm(generate-signature)
+
+  generate-signature-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"generated.str")> path;
+      result   := <generate-signature; pp-stratego-string> selected
+
+  // On-save handler
+  generate-all:
+    (selected, position, ast, path, project-path) -> None()
+    with
+      generate-esv-concrete; write-string-to-file
+    with
+      generate-sdf-concrete; write-string-to-file
+    with
+      generate-box-pp-concrete; write-string-to-file
+
+  // When given a tuple (path, string) this writes string into path.
+  write-string-to-file =
+    with(
+      ?(filename, string);
+      handle := <fopen> (filename, "w");
+      <fputs> (string, handle);
+      <fclose> handle;
+      <refresh-workspace-file> filename
+    )

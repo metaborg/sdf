@@ -1,0 +1,74 @@
+module templatelang-to-str-1
+
+language TemplateLang
+target language Stratego-Sugar
+
+// FIXME: This testsuite should really eval the generated stratego code on sample
+//        input, instead of testing the exact form of the generated stratego code.
+//        This is currently not really possible, however ...
+
+setup [[
+  templates
+]]
+
+target setup header [[
+  module prettyprinter
+  imports
+    libstratego-lib
+  strategies
+    pp-option(s) = \None() -> ""\ + \Some(t) -> <s> t\
+    pp-list(s|t) = map(s); separate-by(|t); concat-strings
+    pp-ih-0(|t) = ?"" <+ prefix-lines(|t)
+    pp-ih-1(|t) = ?"" <+ prefix-lines(|t); <conc-strings> (<id>, "\n")
+    pp-ih-2(|t) = ?"" <+ prefix-lines(|t); <conc-strings> ("\n", <id>)
+    pp-ih-3(|t) = ?"" <+ prefix-lines-except-first(|t)
+
+    all-lines-except-first(s) =
+        is-string
+      ; string-tokenize-keep-empty(|['
+'])
+      ; at-last( \ [""] -> [] \  // Do not run s on a final empty line.
+               < where(!["\n"] => laststring) // ... but remember that the second last line was delimited by a newline
+               + where(![] => laststring))    // ... or not.
+      ; ([id | map(s)] + [])
+      ; <separate-by> ("\n", <id>)
+      ; <conc> (<id>, laststring) // Restore the final newline, if there was one.
+      ; concat-strings
+
+    prefix-lines-except-first(|p) =
+      all-lines-except-first(<conc-strings> (p, <id>))
+  strategies
+    prettyprint-X: Y(a) -> a'
+      // The strategies invoked here differ per test
+      // The footer contains a last, common line.
+]]
+
+test placeholder (single line, injection) [[ X.Y = <<Z>> ]]
+run test-templatelang-to-str to [[ where a' := <prettyprint-Z> a ]]
+
+test placeholder (multi line, injection) [[
+  X.Y = <
+    <Z>
+  >
+]]
+run test-templatelang-to-str to [[ where a' := <prettyprint-Z> a ]]
+
+test placeholder (plus) [[ X.Y = <<Z+>> ]]
+run test-templatelang-to-str to [[ where a' := <pp-list(prettyprint-Z|" ")> a ]]
+
+test placeholder (star) [[ X.Y = <<Z*>> ]]
+run test-templatelang-to-str to [[ where a' := <pp-list(prettyprint-Z|" ")> a ]]
+
+test placeholder (plus, separator) [[ X.Y = <<Z+; separator=", ">> ]]
+run test-templatelang-to-str to [[ where a' := <pp-list(prettyprint-Z|", ")> a ]]
+
+test placeholder (star, separator) [[ X.Y = <<Z*; separator=" + ">> ]]
+run test-templatelang-to-str to [[ where a' := <pp-list(prettyprint-Z|" + ")> a ]]
+
+test escaped chars in separator [[ X.Y = <<Z*; separator="\"\t">> ]]
+run test-templatelang-to-str to [[ where a' := <pp-list(prettyprint-Z|"\"\t")> a ]]
+
+target setup footer [[
+  strategies
+    prettyprint-Z = is-string
+]]

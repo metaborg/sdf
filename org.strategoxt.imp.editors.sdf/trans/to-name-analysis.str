@@ -1,0 +1,213 @@
+module codegen/sdf/to-name-analysis
+imports
+  libstrc
+  lib/editor-common.generated
+  include/SDF
+  sdf
+  analysis
+  lib/attributes
+  lib/index-library.generated
+  lib/analysis-library.generated
+
+overlays
+  
+  ANALYSIS_GENERATED = "lib/analysis-auto.generated"
+
+signature constructors
+  
+  Signatures : List(UriPart) * List(Term) -> IndexEntry
+  Rules      : List(UriPart) * List(Term) -> IndexEntry
+  SDFNaming  : UriPart
+
+rules
+  
+  // Cleans all data from the index.
+  index-cleanall: 
+    (selected, position, ast, path, project-path)  -> None()
+    with
+      index-setup(|<language>, [project-path], $[[project-path]/[path]]);
+      index-clear
+  
+  // TODO: write str to disk first to ensure proper timestamp
+  generate-name-analysis:
+    (selected, position, ast, path, project-path) -> (filename', result')
+    with
+      index-setup(|<language>, [project-path], $[[project-path]/[path]]);
+      filename  := $[[project-path]/[ANALYSIS_GENERATED].rtree];
+      filename' := $[[project-path]/[ANALYSIS_GENERATED].str];
+      result    := <generate-name-analysis> ast;
+      result'   := <pp-stratego-string> result
+      // <WriteToBinaryFile> (filename, result)
+
+  generate-name-analysis:
+    sdf ->
+    Module(ANALYSIS_GENERATED, [
+      Signature([Constructors(all-sigs)])
+    , <language-imports>
+    , Rules(<flatten-list> [
+        all-rules
+      , SDefT("nam-get-def", [], [DefaultVarDec("n")], Fail())
+      , SDefT("nam-annotate-use", [], [DefaultVarDec("n")], Fail())
+      ])
+    ])
+    with
+      file := <index-get-current-file>;
+      uri  := [SDFNaming()]
+    with
+      (my-sigs, my-rules) := <generate-name-analysis-entries> sdf
+    with
+      // Store generated signatures and rules in under uri
+      <index-clear-file> file;
+      <index-add-all(|file)> [Signatures(uri, my-sigs)];
+      <index-add-all(|file)> [Rules(uri, my-rules)];
+      prim("LANG_index_commit")
+    with
+      // Load generated entries for entire project
+      all-sigs  := <flatten-stored-data> <indexlib-get-all> Signatures(uri, ());
+      all-rules := <flatten-stored-data> <indexlib-get-all> Rules(uri, ())
+  
+  language-imports =
+    if lang := <spt-get-default-language> then
+      !Imports([Import("lib/editor-common.generated"), Import($[include/[lang]])])
+    else
+      !Imports([Import("lib/editor-common.generated")])
+    end
+  
+  spt-get-default-language =
+    <readdir> $[[<project-path>]/include]
+    ; fetch-elem(has-extension(|"esv")) 
+    ; esv := <ReadFromFile>$[./include/[<id>]]
+    ; collect-one(?"LanguageName"#([<id>]))
+
+  flatten-stored-data =
+    alltd(\Signatures(uri, contents) -> contents\ + \Rules(uri, contents) -> contents\);
+    flatten-list
+
+  generate-name-analysis-entries:
+    sdf ->
+    ( namespace-sigs
+    , <flatten-list> [
+        scope-rules
+      , get-def-rules
+      , annotate-names-rules
+      ]
+    )
+    with
+      namespaces           := <collect-all(fetch-namespace); flatten-list> sdf
+      ; namespace-sigs       := <map(namespace-to-signature)> namespaces
+      ; scope-rules          := <collect-all(fetch-scope-rule)> sdf
+      ; get-def-rules        := <collect-all(fetch-get-def-rules)> sdf
+      ; annotate-names-rules := <collect-all(fetch-annotate-names-rule)> sdf
+
+rules
+
+  fetch-namespace:
+    namespacedef(n, _) -> n
+
+  fetch-namespace:
+    namespaceref(n) -> n
+
+  fetch-namespace:
+    namespaceref2(n, _) -> n
+
+  namespace-to-signature:
+    name -> OpDecl(name, ConstType(SortNoArgs("Namespace")))
+
+rules
+
+  fetch-scope-rule:
+    prod(p*, _, attrs(a*)) ->
+    RDefNoArgs(
+      "nam-get-scope-types"
+    , RuleNoCond(
+        NoAnnoList(Op(cons, p'*))
+      , NoAnnoList(List(scope-terms))
+      )
+    )
+    where
+      scopes := <collect-all(fetch-scope-names)> a*;
+      not(!scopes => []);
+      cons := <getfirst(fetch-cons-name)> a*
+    with
+		      scopes'     := <make-set> <flatten-list> scopes;
+		      p'*         := <filter(non-terminal-to-wld)> p*;
+		      scope-terms := <map(![NoAnnoList(Op(<id>, []))])> scopes'
+
+  fetch-get-def-rules:
+    prod(p*, _, attrs(a*)) ->
+    [ RDefNoArgs(
+        "nam-get-definition-key"
+      , RuleNoCond(
+          NoAnnoList(Op(cons, p'*))
+        , Var("x")
+        )
+      )
+    , RDefNoArgs(
+        "nam-get-definition"
+      , RuleNoCond(
+          NoAnnoList(Op(cons, p'*))
+        , App(
+            CallT(SVar("nam-get-def"), [], [NoAnnoList(Op(namespace, []))])
+          , Var("x")
+          )
+        )
+      )
+    ]
+    where
+      p'*  := <filter(namespace-def-to-x(?namespace) <+ non-terminal-to-wld)> p*;
+      where(!namespace);
+      cons := <getfirst(fetch-cons-name)> a*
+
+  fetch-annotate-names-rule:
+    prod(p*, _, attrs(a*)) ->
+    RDefT(
+      "nam-annotate-names"
+    , []
+    , [DefaultVarDec("def-path")]
+    , RuleNoCond(
+        NoAnnoList(Op(cons, vars))
+      , NoAnnoList(Op(cons, annotated-vars))
+      )
+    )
+    where
+      cons := <getfirst(fetch-cons-name)> a*
+    with
+	      p'*            := <filter(is-non-terminal)> p*;
+	      vars           := <map(non-terminal-to-new-var)> p'*;
+	      annotated-vars := <zip(add-namespace-anno-1; try(?at-least-one)
+	                             <+ add-namespace-anno-2)> (p'*, vars)
+	  where
+	    !at-least-one
+
+rules
+
+  // TODO: what about productions with inner namespaces?
+  //       e.g. Var@=ID?
+
+  namespace-def-to-x(set-namespace):
+    namespacedef(<set-namespace>, _) -> Var("x")
+
+  non-terminal-to-wld:
+    <is-non-terminal> -> Wld()
+
+  non-terminal-to-new-var:
+    <is-non-terminal> -> Var(<new>)
+
+  add-namespace-anno-1:
+    (namespaceref(n), Var(x)) -> <add-namespace-anno-1> (namespaceref2(n, "ID"), Var(x))
+
+  add-namespace-anno-1:
+    (namespaceref2(n, _), Var(x)) ->
+    App(
+      CallT(SVar("nam-annotate-use"), [], [NoAnnoList(Op(n, []))])
+    , Var(x)
+    )
+
+  add-namespace-anno-1:
+    (namespacedef(n, _), Var(x)) -> AnnoList(Var(x), [Var("def-path")])
+
+  add-namespace-anno-2:
+    (_, Var(x)) -> Var(x)
+
+  fetch-scope-names:
+    term(default(appl(unquoted("scope"), [fun(quoted(scopes))]))) -> scopes

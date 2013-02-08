@@ -1,0 +1,51 @@
+module sdf-naming 
+
+language SDF
+
+setup [[
+  module SDF-with-naming
+  
+  exports
+  
+  context-free start-symbols Start
+  
+  exports context-free syntax
+]]
+
+test Namespace definition annotation [[
+    StartSpace@=Start -> Start {cons("Start")}
+]] 
+
+test Namespace reference annotation 1 [[
+    StartSpace@Start -> Start {cons("Start")}
+]] 
+
+test Namespace reference annotation 2 [[
+    @StartSpace -> Start {cons("Start")}
+]] 
+
+test Namespace reference annotation 2 warning [[
+  
+    @StartSpace -> Start
+]] 1 warning /missing/ /abstract syntax/
+
+test Warning for injection [[
+    StartSpace@Start -> Start
+]] 1 warning /missing/ /abstract syntax/
+
+test Nested namespace [[
+  Foo@Bar@Start -> Start {cons("Start")}
+]]
+
+test Simplified constructor annotation [[
+  @Start -> Start {"Cons"}
+]]
+
+test Abstract syntax [[
+  Start -> Start
+]] parse to module(_, _, _)
+
+test Generate code [[
+  StartSpace@=Foo -> Start {cons("CTor")}
+  StartSpace@Foo -> Foo {cons("CTor")}
+]] build generate-name-analysis

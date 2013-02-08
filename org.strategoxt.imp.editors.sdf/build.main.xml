@@ -17,14 +17,14 @@
         <property name="dist" location="bin/dist"/>
         
         <!-- Imports -->
-        <property name="build.sdf.imports" value=""/>
+        <property name="build.sdf.imports" value="-Idef &quot;${basedir}/lib/SDF.def&quot;"/>
         <property name="build.stratego.args" value="--library
                         -I &quot;${trans}&quot; -I &quot;${basedir}&quot;
-                        -la strc -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
+                        -la strc -la stratego-lib -la stratego-parallel -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
                         -la stratego-sdf"/>
         
-        <property name="externaldef" location="syntax/SDF.def"/>
-        <!-- External .def and .jar locations
+	      <!-- External .def and .jar locations
+	      <property name="externaldef" location="syntax/SDF.def"/>
         <property name="externaljar" value="../lib.jar"/>
         <property name="externaljarflags" value="-la org.lib"/>
         -->
@@ -38,5 +38,5 @@
         <import file="build.generated.xml"/>
     
         <!-- Main target -->
-        <target name="all" depends="sdf2table,stratego.jar,sdf2imp,refresh"/>
+        <target name="all" depends="spoofaximp.default.jar"/>
     </project>

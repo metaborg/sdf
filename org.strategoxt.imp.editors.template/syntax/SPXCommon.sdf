@@ -1,0 +1,113 @@
+module SPXCommon
+
+exports
+
+  lexical syntax
+
+    [a-zA-Z]* "CONTENTCOMPLETE" [0-9]+ -> CONTENTCOMPLETE {avoid}
+
+    [a-zA-Z][a-zA-Z0-9\_\-]* -> ID
+    "-"? [0-9]+            -> INT
+
+    "\"" StringChar* "\"" -> STRING
+    ~[\"\n]               -> StringChar
+    "\\\""                -> StringChar
+    BackSlashChar         -> StringChar
+    "\\"                  -> BackSlashChar
+
+    [\ \t\n\r] -> LAYOUT
+
+    [\*]                             -> CommentChar
+    "/*" (~[\*] | CommentChar)* "*/" -> LAYOUT
+    "//" ~[\n\r]* ([\n\r] | EOF)     -> LAYOUT
+
+    -> EOF
+
+  lexical restrictions
+
+    %% Ensure greedy matching for lexicals
+
+    CommentChar   -/- [\/]
+    INT           -/- [0-9]
+    ID            -/- [a-zA-Z0-9\_\-]
+
+    %% EOF may not be followed by any char
+
+    EOF           -/- ~[]
+
+    %% Backslash chars in strings may not be followed by "
+
+    BackSlashChar -/- [\"]
+
+  context-free restrictions
+
+    %% Ensure greedy matching for comments
+
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\/].[\/]
+    LAYOUT? -/- [\/].[\*]
+
+	lexical restrictions
+
+		"main"
+		"module"
+		"package"
+		"imports"
+		"language" -/- [A-Za-z0-9\_]
+
+
+	lexical syntax
+
+    "language"          -> Reserved
+    "project"           -> Reserved
+    "retain"            -> Reserved
+    "with"              -> Reserved
+    "unimports"         -> Reserved
+
+
+
+    "imports"           -> Reserved
+    "overlays"          -> Reserved
+    "rules"             -> Reserved
+    "signature"         -> Reserved
+    "strategies"        -> Reserved
+    "attributes"        -> Reserved
+
+    "aliases"           -> Reserved
+    "lexical"           -> Reserved
+    "priorities"        -> Reserved
+    "context-free"      -> Reserved
+    "definition"        -> Reserved
+    "syntax"            -> Reserved
+    "variables"         -> Reserved
+    "module"            -> Reserved
+    "imports"           -> Reserved
+    "exports"           -> Reserved
+    "hiddens"           -> Reserved
+    "left"              -> Reserved
+    "right"             -> Reserved
+    "assoc"             -> Reserved
+    "non-assoc"         -> Reserved
+    "bracket"           -> Reserved
+    "sorts"             -> Reserved
+    "bracket"           -> Reserved
+    "sorts"             -> Reserved
+    "restrictions"      -> Reserved
+  	"as"								-> Reserved
+ 		"main"							-> Reserved
+ 		"__default"					-> Reserved
+ 		"__internal"				-> Reserved
+ 		"template"          -> Reserved
+ 		"templates"         -> Reserved
+
+ 		Reserved 						-> ReservedName[[ESV]]
+ 		ReservedName[[ESV]]	-> ID {reject}
+
+
+	lexical syntax
+ 		"package"  	-> EnclosingSymbol
+		"assembly"  -> EnclosingSymbol
+		"module"  	-> EnclosingSymbol
+
+	context-free syntax
+		"main"			-> MainID{cons("Main")}

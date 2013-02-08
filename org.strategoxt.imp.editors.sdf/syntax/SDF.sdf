@@ -1,0 +1,33 @@
+module SDF
+
+imports
+  languages/sdf2/syntax/Sdf2
+  Naming
+  Keywords
+  
+exports
+  
+  context-free start-symbols
+    SDF Module
+
+  %% HACK
+  context-free syntax
+    Group "." -> Group {non-assoc,cons("non-transitive")}
+    
+  %% Completion Rules
+  lexical syntax
+    
+                          -> Sort {completion}
+                          -> ModuleWord {completion}
+                          -> IdCon {completion}
+
+    "completion123"       -> Sort {completion}
+    "completion123"       -> ModuleWord {completion}
+    "completion123"       -> IdCon {completion}
+
+  context-free syntax
+                          -> COMPLETIONPREFIX{ast("COMPLETION(\"\")")}
+
+  context-free syntax
+    "module" COMPLETIONPREFIX list:ImpSection* Sections -> Module {cons("Module")}    %%{ast("module(\"\", <1>)")}
+
