@@ -103,20 +103,20 @@ rules
     )
 
   // Generate completion templates
-  generate-esv =
+  generate-esv(|path) =
     collect-sections;
     template-sections-to-esv;
-    !Module("example", NoImports(), <id>);
+    !Module($[[<base-filename ; remove-extension> path].generated], NoImports(), <id>);
     topdown(try(pp-fix-string-quotes))
 
   generate-esv-abstract =
-    generate-aterm(generate-esv)
+    generate-aterm(generate-esv(|""))
 
   generate-esv-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"generated.esv")> path;
-      result   := <generate-esv; pp-descriptor-to-string> selected
+      filename := $[[project-path]/editor/[<guarantee-extension(|"generated.esv"); base-filename> path]];
+      result   := <generate-esv(|path); pp-descriptor-to-string> selected
 
   // Generate SDF
   generate-sdf(|path) =
@@ -137,19 +137,19 @@ rules
       result   := <generate-sdf(|path); pp-sdf-to-string> selected
 
   // Generate pretty printer (BOX-based)
-  generate-box-pp =
+  generate-box-pp(|path) =
     collect-sections;
     template-sections-to-stratego(|"example");
-    !Specification(<id>)
+    !Module($[[<base-filename ; remove-extension> path].pp.generated], <id>)
 
   generate-box-pp-abstract =
-    generate-aterm(generate-box-pp)
+    generate-aterm(generate-box-pp(|""))
 
   generate-box-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"generated.str")> path;
-      result   := <generate-box-pp; pp-stratego-string> selected
+      filename := $[[project-path]/trans/[<guarantee-extension(|"pp.generated.str"); base-filename> path]];
+      result   := <generate-box-pp(|path); pp-stratego-string> selected
 
   generate-signature =
     collect-om(?Desugared(_));
