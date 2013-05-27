@@ -1,9 +1,10 @@
-module typesmart/gen-typesmart-sig
+module typesmart-gen/gen-typesmart-sig
 
 imports
-  include/SDF
+  // include/SDF
+  typesmart-lib/typesmart
   libstrc
-  typesmart/lib
+  typesmart-gen/lib
   libstratego-sglr
 
 signature constructors

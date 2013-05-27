@@ -1,4 +1,4 @@
-module typesmart/lib
+module typesmart-gen/lib
 
 imports
 	libstratego-typesmart

@@ -2,7 +2,8 @@ module codegen/sdf/to-name-analysis
 imports
   libstrc
   lib/editor-common.generated
-  include/SDF
+  // include/SDF
+  typesmart-lib/typesmart
   sdf
   analysis
   lib/attributes

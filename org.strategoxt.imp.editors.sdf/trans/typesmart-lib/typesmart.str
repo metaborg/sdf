@@ -1,0 +1,1700 @@
+module typesmart
+
+imports
+  libstratego-typesmart
+  libstrc
+
+
+signature
+  constructors
+    Constructor                : Constructor -> Attribute
+    namespacedef               : Namespace * Symbol -> Symbol
+    namespaceref               : Namespace -> Symbol
+    namespaceref2              : Namespace * Symbol -> Symbol
+    prod                       : Symbols * Symbol * Attributes -> Production
+    aliases                    : Aliases -> Grammar
+    alias                      : Symbol * Symbol -> Alias
+    char-class                 : CharClass -> Lookahead
+    seq                        : CharClass * Lookaheads -> Lookahead
+    single                     : Lookahead -> Lookaheads
+    alt                        : Lookaheads * Lookaheads -> Lookaheads
+    list                       : List(Lookahead) -> Lookaheads
+    follow                     : Symbols * Lookaheads -> Restriction
+    restrictions               : Restrictions -> Grammar
+    reject                     : Attribute
+    prefer                     : Attribute
+    avoid                      : Attribute
+    quoted                     : StrCon -> Label
+    unquoted                   : IdCon -> Label
+    label                      : Label * Symbol -> Symbol
+    unquoted-fun               : IdCon -> FunctionName
+    quoted-fun                 : StrCon -> FunctionName
+    lit                        : StrCon -> Symbol
+    ci-lit                     : SingleQuotedStrCon -> Symbol
+    prefix-fun                 : FunctionName * List(Symbol) * Symbol * Attributes -> Production
+    kernel-start-symbols       : Symbols -> Grammar
+    lexical-start-symbols      : Symbols -> Grammar
+    context-free-start-symbols : Symbols -> Grammar
+    sort                       : Sort -> Symbol
+    parameterized-sort         : Sort * List(Symbol) -> Symbol
+    'sorts                     : Symbols -> Grammar
+    numeric                    : NumChar -> Character
+    short                      : ShortChar -> Character
+    top                        : Character
+    eof                        : Character
+    bot                        : Character
+    label_start                : Character
+    range                      : Character * Character -> CharRange
+    conc                       : CharRanges * CharRanges -> CharRanges
+    absent                     : OptCharRanges
+    present                    : CharRanges -> OptCharRanges
+    simple-charclass           : OptCharRanges -> CharClass
+    comp                       : CharClass -> CharClass
+    diff                       : CharClass * CharClass -> CharClass
+    isect                      : CharClass * CharClass -> CharClass
+    union                      : CharClass * CharClass -> CharClass
+    char-class                 : CharClass -> Symbol
+    left                       : Associativity
+    right                      : Associativity
+    non-assoc                  : Associativity
+    assoc                      : Associativity
+    bracket                    : Attribute
+    assoc                      : Associativity -> Attribute
+    default                    : List(NatCon) -> ArgumentIndicator
+    with-arguments             : Group * ArgumentIndicator -> Group
+    non-transitive             : Group -> Group
+    simple-group               : Production -> Group
+    prods-group                : Productions -> Group
+    assoc-group                : Associativity * Productions -> Group
+    chain                      : List(Group) -> Priority
+    assoc                      : Group * Associativity * Group -> Priority
+    priorities                 : Priorities -> Grammar
+    lifting                    : Symbol -> Symbol
+    empty                      : Symbol
+    seq                        : Symbol * List(Symbol) -> Symbol
+    opt                        : Symbol -> Symbol
+    iter                       : Symbol -> Symbol
+    iter-star                  : Symbol -> Symbol
+    iter-sep                   : Symbol * Symbol -> Symbol
+    iter-star-sep              : Symbol * Symbol -> Symbol
+    tuple                      : Symbol * List(Symbol) -> Symbol
+    func                       : Symbols * Symbol -> Symbol
+    alt                        : Symbol * Symbol -> Symbol
+    strategy                   : Symbol * Symbol -> Symbol
+    renamings                  : List(Renaming) -> Renamings
+    symbol                     : Symbol * Symbol -> Renaming
+    production                 : Production * Production -> Renaming
+    'module                    : ModuleName * List(ImpSection) * Sections -> Module
+    exports                    : Grammar -> Section
+    hiddens                    : Grammar -> Section
+    unparameterized            : ModuleId -> ModuleName
+    parameterized              : ModuleId * Symbols -> ModuleName
+    'id                        : ModuleName -> Attribute
+    imports                    : Imports -> ImpSection
+    imp-section                : ImpSection -> Grammar
+    'module                    : ModuleName -> Import
+    renamed-module             : ModuleName * Renamings -> Import
+    lexical-syntax             : Productions -> Grammar
+    context-free-syntax        : Productions -> Grammar
+    variables                  : Productions -> Grammar
+    lexical-variables          : Productions -> Grammar
+    cf                         : Symbol -> Symbol
+    lex                        : Symbol -> Symbol
+    varsym                     : Symbol -> Symbol
+    layout                     : Symbol
+    empty-grammar              : Grammar
+    conc-grammars              : Grammar * Grammar -> Grammar
+    present                    : IntCon -> OptExp
+    absent                     : OptExp
+    real-con                   : IntCon * NatCon * OptExp -> RealCon
+    natural                    : NatCon -> IntCon
+    positive                   : NatCon -> IntCon
+    negative                   : NatCon -> IntCon
+    quoted                     : StrCon -> AFun
+    unquoted                   : IdCon -> AFun
+    int                        : IntCon -> ATerm
+    real                       : RealCon -> ATerm
+    fun                        : AFun -> ATerm
+    appl                       : AFun * List(ATerm) -> ATerm
+    placeholder                : ATerm -> ATerm
+    list                       : List(ATerm) -> ATerm
+    annotated                  : ATerm * Annotation -> ATerm
+    default                    : List(ATerm) -> Annotation
+    default                    : ATerm -> ATermAttribute
+    term                       : ATermAttribute -> Attribute
+    attrs                      : List(Attribute) -> Attributes
+    no-attrs                   : Attributes
+    prod                       : Symbols * Symbol * Attributes -> Production
+    syntax                     : Productions -> Grammar
+    start                      : Symbol
+    file-start                 : Symbol
+    lexical-priorities         : Priorities -> Grammar
+    context-free-priorities    : Priorities -> Grammar
+    lexical-restrictions       : Restrictions -> Grammar
+    context-free-restrictions  : Restrictions -> Grammar
+    definition                 : Definition -> SDF
+    non-transitive             : Group -> Group
+    Module                     : COMPLETIONPREFIX * List(ImpSection) * Sections -> Module
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATERTOKENSTART"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATERTOKEN"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATERTOKENSEPARATOR"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATERTOKENSTAR"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATER"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("WATEREOF"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("INSERTSTART5"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("INSERTOPENQUOTE2"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("INSERTSTART4"))
+
+
+rules
+
+
+rules
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("SingleQuotedStrChar"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("SingleQuotedStrCon"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("Sort"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("NumChar"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("ShortChar"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("ModuleWord"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("ModuleId"))
+
+
+rules
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("IdCon"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("StrChar"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("StrCon"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("NatCon"))
+
+
+rules
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("Sort"))
+
+
+rules
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("Sort"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("ModuleWord"))
+
+  extend is-lexical-sort(|) =
+           equal(|SortNoArgs("IdCon"))
+
+
+rules
+
+  smart-Constructor(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"Constructor") ; fail)> (arg1, SortNoArgs("Constructor")))
+        ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "Constructor")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-namespacedef(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"namespacedef") ; fail)> (arg1, SortNoArgs("Namespace")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"namespacedef") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "namespacedef")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-namespaceref(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"namespaceref") ; fail)> (arg1, SortNoArgs("Namespace")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "namespaceref")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-namespaceref2(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"namespaceref2") ; fail)> (arg1, SortNoArgs("Namespace")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"namespaceref2") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "namespaceref2")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-prod(|arg1, arg2, arg3) =
+    ![]
+    ; (try(
+         (where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg1, SortNoArgs("Symbols")))
+          ; where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg2, SortNoArgs("Symbol")))
+          ; where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg3, SortNoArgs("Attributes"))))
+         ; ![SortNoArgs("Production")|<id>]
+       )
+       ; try(
+           (where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg1, SortNoArgs("Symbols")))
+            ; where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg2, SortNoArgs("Symbol")))
+            ; where(<(has-sort <+ log-mismatching-sort-error(|"prod") ; fail)> (arg3, SortNoArgs("Attributes"))))
+           ; ![SortNoArgs("Production")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "prod")> [arg1, arg2, arg3]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-aliases(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"aliases") ; fail)> (arg1, SortNoArgs("Aliases")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "aliases")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-alias(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"alias") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"alias") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Alias")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "alias")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-char-class(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"char-class") ; fail)> (arg1, SortNoArgs("CharClass")))
+         ; ![SortNoArgs("Lookahead")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"char-class") ; fail)> (arg1, SortNoArgs("CharClass")))
+           ; ![SortNoArgs("Symbol")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "char-class")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-seq(|arg1, arg2) =
+    ![]
+    ; (try(
+         (where(<(has-sort <+ log-mismatching-sort-error(|"seq") ; fail)> (arg1, SortNoArgs("CharClass")))
+          ; where(<(has-sort <+ log-mismatching-sort-error(|"seq") ; fail)> (arg2, SortNoArgs("Lookaheads"))))
+         ; ![SortNoArgs("Lookahead")|<id>]
+       )
+       ; try(
+           (where(<(has-sort <+ log-mismatching-sort-error(|"seq") ; fail)> (arg1, SortNoArgs("Symbol")))
+            ; where(<(has-sort <+ log-mismatching-sort-error(|"seq") ; fail)> ( arg2
+                                                                              , Sort(
+                                                                                  "List"
+                                                                                , [SortNoArgs("Symbol")]
+                                                                                )
+                                                                              )))
+           ; ![SortNoArgs("Symbol")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "seq")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-single(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"single") ; fail)> (arg1, SortNoArgs("Lookahead")))
+        ; ![SortNoArgs("Lookaheads")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "single")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-alt(|arg1, arg2) =
+    ![]
+    ; (try(
+         (where(<(has-sort <+ log-mismatching-sort-error(|"alt") ; fail)> (arg1, SortNoArgs("Lookaheads")))
+          ; where(<(has-sort <+ log-mismatching-sort-error(|"alt") ; fail)> (arg2, SortNoArgs("Lookaheads"))))
+         ; ![SortNoArgs("Lookaheads")|<id>]
+       )
+       ; try(
+           (where(<(has-sort <+ log-mismatching-sort-error(|"alt") ; fail)> (arg1, SortNoArgs("Symbol")))
+            ; where(<(has-sort <+ log-mismatching-sort-error(|"alt") ; fail)> (arg2, SortNoArgs("Symbol"))))
+           ; ![SortNoArgs("Symbol")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "alt")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-list(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"list") ; fail)> ( arg1
+                                                                          , Sort(
+                                                                              "List"
+                                                                            , [SortNoArgs("Lookahead")]
+                                                                            )
+                                                                          ))
+         ; ![SortNoArgs("Lookaheads")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"list") ; fail)> ( arg1
+                                                                            , Sort(
+                                                                                "List"
+                                                                              , [SortNoArgs("ATerm")]
+                                                                              )
+                                                                            ))
+           ; ![SortNoArgs("ATerm")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "list")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-follow(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"follow") ; fail)> (arg1, SortNoArgs("Symbols")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"follow") ; fail)> (arg2, SortNoArgs("Lookaheads"))))
+        ; ![SortNoArgs("Restriction")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "follow")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-restrictions(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"restrictions") ; fail)> (arg1, SortNoArgs("Restrictions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "restrictions")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-reject(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "reject")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-prefer(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "prefer")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-avoid(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "avoid")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-quoted(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"quoted") ; fail)> (arg1, SortNoArgs("StrCon")))
+         ; ![SortNoArgs("Label")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"quoted") ; fail)> (arg1, SortNoArgs("StrCon")))
+           ; ![SortNoArgs("AFun")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "quoted")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-unquoted(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"unquoted") ; fail)> (arg1, SortNoArgs("IdCon")))
+         ; ![SortNoArgs("Label")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"unquoted") ; fail)> (arg1, SortNoArgs("IdCon")))
+           ; ![SortNoArgs("AFun")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "unquoted")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-label(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"label") ; fail)> (arg1, SortNoArgs("Label")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"label") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "label")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-unquoted-fun(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"unquoted-fun") ; fail)> (arg1, SortNoArgs("IdCon")))
+        ; ![SortNoArgs("FunctionName")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "unquoted-fun")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-quoted-fun(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"quoted-fun") ; fail)> (arg1, SortNoArgs("StrCon")))
+        ; ![SortNoArgs("FunctionName")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "quoted-fun")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lit(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lit") ; fail)> (arg1, SortNoArgs("StrCon")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lit")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-ci-lit(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"ci-lit") ; fail)> (arg1, SortNoArgs("SingleQuotedStrCon")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "ci-lit")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-prefix-fun(|arg1, arg2, arg3, arg4) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"prefix-fun") ; fail)> (arg1, SortNoArgs("FunctionName")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"prefix-fun") ; fail)> ( arg2
+                                                                                  , Sort(
+                                                                                      "List"
+                                                                                    , [SortNoArgs("Symbol")]
+                                                                                    )
+                                                                                  ))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"prefix-fun") ; fail)> (arg3, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"prefix-fun") ; fail)> (arg4, SortNoArgs("Attributes"))))
+        ; ![SortNoArgs("Production")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "prefix-fun")> [arg1, arg2, arg3, arg4]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-kernel-start-symbols(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"kernel-start-symbols") ; fail)> (arg1, SortNoArgs("Symbols")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "kernel-start-symbols")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lexical-start-symbols(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lexical-start-symbols") ; fail)> (arg1, SortNoArgs("Symbols")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lexical-start-symbols")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-context-free-start-symbols(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"context-free-start-symbols") ; fail)> (arg1, SortNoArgs("Symbols")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "context-free-start-symbols")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-sort(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"sort") ; fail)> (arg1, SortNoArgs("Sort")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "sort")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-parameterized-sort(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"parameterized-sort") ; fail)> (arg1, SortNoArgs("Sort")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"parameterized-sort") ; fail)> ( arg2
+                                                                                          , Sort(
+                                                                                              "List"
+                                                                                            , [SortNoArgs("Symbol")]
+                                                                                            )
+                                                                                          )))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "parameterized-sort")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-sorts(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"sorts") ; fail)> (arg1, SortNoArgs("Symbols")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "sorts")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-numeric(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"numeric") ; fail)> (arg1, SortNoArgs("NumChar")))
+        ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "numeric")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-short(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"short") ; fail)> (arg1, SortNoArgs("ShortChar")))
+        ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "short")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-top(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "top")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-eof(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "eof")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-bot(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "bot")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-label_start(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Character")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "label_start")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-range(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"range") ; fail)> (arg1, SortNoArgs("Character")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"range") ; fail)> (arg2, SortNoArgs("Character"))))
+        ; ![SortNoArgs("CharRange")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "range")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-conc(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"conc") ; fail)> (arg1, SortNoArgs("CharRanges")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"conc") ; fail)> (arg2, SortNoArgs("CharRanges"))))
+        ; ![SortNoArgs("CharRanges")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "conc")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-absent(|) =
+    ![]
+    ; (try(
+         id ; ![SortNoArgs("OptCharRanges")|<id>]
+       )
+       ; try(
+           id ; ![SortNoArgs("OptExp")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "absent")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-present(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"present") ; fail)> (arg1, SortNoArgs("CharRanges")))
+         ; ![SortNoArgs("OptCharRanges")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"present") ; fail)> (arg1, SortNoArgs("IntCon")))
+           ; ![SortNoArgs("OptExp")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "present")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-simple-charclass(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"simple-charclass") ; fail)> (arg1, SortNoArgs("OptCharRanges")))
+        ; ![SortNoArgs("CharClass")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "simple-charclass")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-comp(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"comp") ; fail)> (arg1, SortNoArgs("CharClass")))
+        ; ![SortNoArgs("CharClass")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "comp")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-diff(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"diff") ; fail)> (arg1, SortNoArgs("CharClass")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"diff") ; fail)> (arg2, SortNoArgs("CharClass"))))
+        ; ![SortNoArgs("CharClass")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "diff")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-isect(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"isect") ; fail)> (arg1, SortNoArgs("CharClass")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"isect") ; fail)> (arg2, SortNoArgs("CharClass"))))
+        ; ![SortNoArgs("CharClass")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "isect")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-union(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"union") ; fail)> (arg1, SortNoArgs("CharClass")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"union") ; fail)> (arg2, SortNoArgs("CharClass"))))
+        ; ![SortNoArgs("CharClass")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "union")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-left(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Associativity")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "left")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-right(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Associativity")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "right")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-non-assoc(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Associativity")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "non-assoc")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-assoc(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Associativity")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "assoc")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-bracket(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "bracket")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-assoc(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"assoc") ; fail)> (arg1, SortNoArgs("Associativity")))
+        ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "assoc")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-default(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"default") ; fail)> ( arg1
+                                                                             , Sort(
+                                                                                 "List"
+                                                                               , [SortNoArgs("NatCon")]
+                                                                               )
+                                                                             ))
+         ; ![SortNoArgs("ArgumentIndicator")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"default") ; fail)> ( arg1
+                                                                               , Sort(
+                                                                                   "List"
+                                                                                 , [SortNoArgs("ATerm")]
+                                                                                 )
+                                                                               ))
+           ; ![SortNoArgs("Annotation")|<id>]
+         )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"default") ; fail)> (arg1, SortNoArgs("ATerm")))
+           ; ![SortNoArgs("ATermAttribute")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "default")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-with-arguments(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"with-arguments") ; fail)> (arg1, SortNoArgs("Group")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"with-arguments") ; fail)> (arg2, SortNoArgs("ArgumentIndicator"))))
+        ; ![SortNoArgs("Group")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "with-arguments")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-non-transitive(|arg1) =
+    ![]
+    ; (try(
+         where(<(has-sort <+ log-mismatching-sort-error(|"non-transitive") ; fail)> (arg1, SortNoArgs("Group")))
+         ; ![SortNoArgs("Group")|<id>]
+       )
+       ; try(
+           where(<(has-sort <+ log-mismatching-sort-error(|"non-transitive") ; fail)> (arg1, SortNoArgs("Group")))
+           ; ![SortNoArgs("Group")|<id>]
+         ))
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "non-transitive")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-simple-group(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"simple-group") ; fail)> (arg1, SortNoArgs("Production")))
+        ; ![SortNoArgs("Group")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "simple-group")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-prods-group(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"prods-group") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Group")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "prods-group")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-assoc-group(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"assoc-group") ; fail)> (arg1, SortNoArgs("Associativity")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"assoc-group") ; fail)> (arg2, SortNoArgs("Productions"))))
+        ; ![SortNoArgs("Group")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "assoc-group")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-chain(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"chain") ; fail)> ( arg1
+                                                                          , Sort(
+                                                                              "List"
+                                                                            , [SortNoArgs("Group")]
+                                                                            )
+                                                                          ))
+        ; ![SortNoArgs("Priority")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "chain")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-assoc(|arg1, arg2, arg3) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"assoc") ; fail)> (arg1, SortNoArgs("Group")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"assoc") ; fail)> (arg2, SortNoArgs("Associativity")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"assoc") ; fail)> (arg3, SortNoArgs("Group"))))
+        ; ![SortNoArgs("Priority")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "assoc")> [arg1, arg2, arg3]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-priorities(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"priorities") ; fail)> (arg1, SortNoArgs("Priorities")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "priorities")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lifting(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lifting") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lifting")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-empty(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "empty")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-opt(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"opt") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "opt")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-iter(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"iter") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "iter")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-iter-star(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"iter-star") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "iter-star")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-iter-sep(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"iter-sep") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"iter-sep") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "iter-sep")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-iter-star-sep(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"iter-star-sep") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"iter-star-sep") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "iter-star-sep")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-tuple(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"tuple") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"tuple") ; fail)> ( arg2
+                                                                             , Sort(
+                                                                                 "List"
+                                                                               , [SortNoArgs("Symbol")]
+                                                                               )
+                                                                             )))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "tuple")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-func(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"func") ; fail)> (arg1, SortNoArgs("Symbols")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"func") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "func")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-strategy(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"strategy") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"strategy") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "strategy")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-renamings(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"renamings") ; fail)> ( arg1
+                                                                              , Sort(
+                                                                                  "List"
+                                                                                , [SortNoArgs("Renaming")]
+                                                                                )
+                                                                              ))
+        ; ![SortNoArgs("Renamings")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "renamings")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-symbol(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"symbol") ; fail)> (arg1, SortNoArgs("Symbol")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"symbol") ; fail)> (arg2, SortNoArgs("Symbol"))))
+        ; ![SortNoArgs("Renaming")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "symbol")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-production(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"production") ; fail)> (arg1, SortNoArgs("Production")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"production") ; fail)> (arg2, SortNoArgs("Production"))))
+        ; ![SortNoArgs("Renaming")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "production")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-module(|arg1, arg2, arg3) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"module") ; fail)> (arg1, SortNoArgs("ModuleName")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"module") ; fail)> ( arg2
+                                                                              , Sort(
+                                                                                  "List"
+                                                                                , [SortNoArgs("ImpSection")]
+                                                                                )
+                                                                              ))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"module") ; fail)> (arg3, SortNoArgs("Sections"))))
+        ; ![SortNoArgs("Module")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "module")> [arg1, arg2, arg3]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-exports(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"exports") ; fail)> (arg1, SortNoArgs("Grammar")))
+        ; ![SortNoArgs("Section")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "exports")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-hiddens(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"hiddens") ; fail)> (arg1, SortNoArgs("Grammar")))
+        ; ![SortNoArgs("Section")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "hiddens")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-unparameterized(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"unparameterized") ; fail)> (arg1, SortNoArgs("ModuleId")))
+        ; ![SortNoArgs("ModuleName")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "unparameterized")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-parameterized(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"parameterized") ; fail)> (arg1, SortNoArgs("ModuleId")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"parameterized") ; fail)> (arg2, SortNoArgs("Symbols"))))
+        ; ![SortNoArgs("ModuleName")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "parameterized")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-id(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"id") ; fail)> (arg1, SortNoArgs("ModuleName")))
+        ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "id")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-imports(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"imports") ; fail)> (arg1, SortNoArgs("Imports")))
+        ; ![SortNoArgs("ImpSection")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "imports")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-imp-section(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"imp-section") ; fail)> (arg1, SortNoArgs("ImpSection")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "imp-section")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-module(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"module") ; fail)> (arg1, SortNoArgs("ModuleName")))
+        ; ![SortNoArgs("Import")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "module")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-renamed-module(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"renamed-module") ; fail)> (arg1, SortNoArgs("ModuleName")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"renamed-module") ; fail)> (arg2, SortNoArgs("Renamings"))))
+        ; ![SortNoArgs("Import")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "renamed-module")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lexical-syntax(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lexical-syntax") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lexical-syntax")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-context-free-syntax(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"context-free-syntax") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "context-free-syntax")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-variables(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"variables") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "variables")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lexical-variables(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lexical-variables") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lexical-variables")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-cf(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"cf") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "cf")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lex(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lex") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lex")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-varsym(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"varsym") ; fail)> (arg1, SortNoArgs("Symbol")))
+        ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "varsym")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-layout(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "layout")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-empty-grammar(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "empty-grammar")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-conc-grammars(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"conc-grammars") ; fail)> (arg1, SortNoArgs("Grammar")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"conc-grammars") ; fail)> (arg2, SortNoArgs("Grammar"))))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "conc-grammars")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-real-con(|arg1, arg2, arg3) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"real-con") ; fail)> (arg1, SortNoArgs("IntCon")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"real-con") ; fail)> (arg2, SortNoArgs("NatCon")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"real-con") ; fail)> (arg3, SortNoArgs("OptExp"))))
+        ; ![SortNoArgs("RealCon")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "real-con")> [arg1, arg2, arg3]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-natural(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"natural") ; fail)> (arg1, SortNoArgs("NatCon")))
+        ; ![SortNoArgs("IntCon")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "natural")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-positive(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"positive") ; fail)> (arg1, SortNoArgs("NatCon")))
+        ; ![SortNoArgs("IntCon")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "positive")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-negative(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"negative") ; fail)> (arg1, SortNoArgs("NatCon")))
+        ; ![SortNoArgs("IntCon")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "negative")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-int(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"int") ; fail)> (arg1, SortNoArgs("IntCon")))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "int")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-real(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"real") ; fail)> (arg1, SortNoArgs("RealCon")))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "real")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-fun(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"fun") ; fail)> (arg1, SortNoArgs("AFun")))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "fun")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-appl(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"appl") ; fail)> (arg1, SortNoArgs("AFun")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"appl") ; fail)> ( arg2
+                                                                            , Sort(
+                                                                                "List"
+                                                                              , [SortNoArgs("ATerm")]
+                                                                              )
+                                                                            )))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "appl")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-placeholder(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"placeholder") ; fail)> (arg1, SortNoArgs("ATerm")))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "placeholder")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-annotated(|arg1, arg2) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"annotated") ; fail)> (arg1, SortNoArgs("ATerm")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"annotated") ; fail)> (arg2, SortNoArgs("Annotation"))))
+        ; ![SortNoArgs("ATerm")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "annotated")> [arg1, arg2]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-term(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"term") ; fail)> (arg1, SortNoArgs("ATermAttribute")))
+        ; ![SortNoArgs("Attribute")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "term")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-attrs(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"attrs") ; fail)> ( arg1
+                                                                          , Sort(
+                                                                              "List"
+                                                                            , [SortNoArgs("Attribute")]
+                                                                            )
+                                                                          ))
+        ; ![SortNoArgs("Attributes")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "attrs")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-no-attrs(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Attributes")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "no-attrs")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-syntax(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"syntax") ; fail)> (arg1, SortNoArgs("Productions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "syntax")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-start(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "start")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-file-start(|) =
+    ![]
+    ; try(
+        id ; ![SortNoArgs("Symbol")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "file-start")> []
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lexical-priorities(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lexical-priorities") ; fail)> (arg1, SortNoArgs("Priorities")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lexical-priorities")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-context-free-priorities(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"context-free-priorities") ; fail)> (arg1, SortNoArgs("Priorities")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "context-free-priorities")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-lexical-restrictions(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"lexical-restrictions") ; fail)> (arg1, SortNoArgs("Restrictions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "lexical-restrictions")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-context-free-restrictions(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"context-free-restrictions") ; fail)> (arg1, SortNoArgs("Restrictions")))
+        ; ![SortNoArgs("Grammar")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "context-free-restrictions")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-definition(|arg1) =
+    ![]
+    ; try(
+        where(<(has-sort <+ log-mismatching-sort-error(|"definition") ; fail)> (arg1, SortNoArgs("Definition")))
+        ; ![SortNoArgs("SDF")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "definition")> [arg1]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  smart-Module(|arg1, arg2, arg3) =
+    ![]
+    ; try(
+        (where(<(has-sort <+ log-mismatching-sort-error(|"Module") ; fail)> (arg1, SortNoArgs("COMPLETIONPREFIX")))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"Module") ; fail)> ( arg2
+                                                                              , Sort(
+                                                                                  "List"
+                                                                                , [SortNoArgs("ImpSection")]
+                                                                                )
+                                                                              ))
+         ; where(<(has-sort <+ log-mismatching-sort-error(|"Module") ; fail)> (arg3, SortNoArgs("Sections"))))
+        ; ![SortNoArgs("Module")|<id>]
+      )
+    ; ?res-sorts
+    ; <prim("SUGARJ_unsafe_build", "Module")> [arg1, arg2, arg3]
+    ; put-syntax-sort(|<build-alt-sort-or-fail> res-sorts)
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("StrCon")
+           , SortNoArgs("Attribute")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("StrCon")
+           , SortNoArgs("Attribute")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("Constructor")
+           , SortNoArgs("Attribute")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("StrCon")
+           , SortNoArgs("Constructor")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("IdCon")
+           , SortNoArgs("Namespace")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Namespace")]
+             )
+           , SortNoArgs("Attribute")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Alias")]
+             )
+           , SortNoArgs("Aliases")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Restriction")]
+             )
+           , SortNoArgs("Restrictions")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("Character")
+           , SortNoArgs("CharRange")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("CharRange")
+           , SortNoArgs("CharRanges")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Priority")]
+             )
+           , SortNoArgs("Priorities")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Module")]
+             )
+           , SortNoArgs("Definition")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Section")]
+             )
+           , SortNoArgs("Sections")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Import")]
+             )
+           , SortNoArgs("Imports")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Symbol")]
+             )
+           , SortNoArgs("Symbols")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | Sort(
+               "List"
+             , [SortNoArgs("Production")]
+             )
+           , SortNoArgs("Productions")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("Associativity")
+           , SortNoArgs("Label")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("Associativity")
+           , SortNoArgs("ATermAttribute")
+           )
+
+  extend has-subsort-of-trans(|) =
+           has-subsort-of-inject(
+           | SortNoArgs("ModuleName")
+           , SortNoArgs("ATermAttribute")
+           )

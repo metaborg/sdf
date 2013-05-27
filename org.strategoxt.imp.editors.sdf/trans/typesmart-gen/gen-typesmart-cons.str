@@ -1,12 +1,14 @@
-module typesmart/gen-typesmart-cons
+module typesmart-gen/gen-typesmart-cons
 
 imports
   libstratego-lib
   libstratego-sdf
   libstrc
-  include/SDF
-  typesmart/gen-typesmart-sig
-  typesmart/lib
+  libstratego-typesmart
+  // include/SDF
+  typesmart-lib/typesmart
+  typesmart-gen/gen-typesmart-sig
+  typesmart-gen/lib
 
 rules
   // builder

@@ -3,7 +3,8 @@ module completion
 imports
   analysis
   libstratego-sglr
-  include/SDF
+  // include/SDF
+  typesmart-lib/typesmart
   lib/editor-common.generated
 
 strategies
