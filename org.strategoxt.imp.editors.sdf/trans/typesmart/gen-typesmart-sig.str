@@ -1,0 +1,156 @@
+module typesmart/gen-typesmart-sig
+
+imports
+  include/SDF
+  libstrc
+  typesmart/lib
+  libstratego-sglr
+
+signature constructors
+  SugarBody : A -> B
+  grammar-elem : G -> G
+  transformation-elem : T -> T
+  
+
+rules
+
+  gen-signature :
+    SugarBody(elems) -> SugarBody(res)
+    where <(filter(gen-signature-elem))> elems => res
+        ; <not(contains-all)> (elems, res) 
+
+rules
+
+  gen-signature-elem :
+    grammar-elem(grammar) -> transformation-elem(sig)
+    where <gen-signature-from-grammar> grammar => sig
+
+
+rules
+
+  gen-signature-from-grammar :
+    syntax(productions) -> Signature([Constructors(opdecls)])
+    where <(map(ensure-list(gen-opdecl-from-prod)) ; concat)> productions => opdecls
+
+  gen-signature-from-grammar :
+    context-free-syntax(productions) -> Signature([Constructors(opdecls)])
+    where <(map(ensure-list(gen-opdecl-from-prod)) ; concat)> productions => opdecls
+
+  gen-signature-from-grammar :
+    context-free-priorities(productions) -> Signature([Constructors(opdecls)])
+    where <collect-all(?prod(_,_,_)); map(ensure-list(gen-opdecl-from-prod)) ; concat> productions => opdecls
+
+
+rules
+
+  gen-opdecl-from-prod :
+    prod(arg-symbols, res-symbol, attributes) -> OpDecl(cons, type)
+    where <find-cons-attribute> attributes => cons
+          ; <get-prod-type> (arg-symbols, res-symbol) => type
+
+signature constructors
+  cons : a -> b
+
+rules
+  get-cons-attribute =
+      ?term(default(fun(quoted(<id>)))) 
+    + ?term(default(appl(unquoted("cons"), [fun(quoted(<id>))])))
+    + ?term(cons(<id>))
+    
+  find-cons-attribute =
+    ?attrs(<getfirst(get-cons-attribute; try(unquote(?'"')))>)
+    
+  get-prod-type :
+    ([], res) -> type
+    where <get-symbol-type> res => type
+
+  get-prod-type :
+    (args, res) -> type
+    where <(map(ensure-list(get-symbol-type)) ; concat)> args => arg-types
+          ; <get-symbol-type> res => res-type
+          ; <(?[]
+              < !res-type
+              + !FunType(arg-types, res-type))> arg-types => type
+
+  ensure-list(s) =
+    s
+    ; (is-list < id + ![<id>])
+    <+ ![]
+
+
+rules
+
+  get-symbol-type :
+    sym -> []
+    where <is-layout> sym
+
+  get-symbol-type :
+    sym -> ConstType(sort)
+    where <get-symbol-sort> sym => sort
+
+rules
+  get-symbol-sort :
+    start() -> SortNoArgs("<START>")
+
+  get-symbol-sort :
+    file-start() -> SortNoArgs("<Start>")
+
+  get-symbol-sort :
+    label(_, sym) -> sort
+    where <get-symbol-sort> sym => sort
+
+  get-symbol-sort :
+    sort(name) -> SortNoArgs(name)
+
+  get-symbol-sort :
+    parameterized-sort(name, _) -> SortNoArgs(name)
+
+  get-symbol-sort :
+    lifting(sym) -> name
+    where <get-symbol-sort> sym => SortNoArgs(name)
+
+  get-symbol-sort :
+    seq(x, y) -> Sort("Seq", [<get-symbol-sort> x, <get-symbol-sort> y])
+
+  get-symbol-sort :
+    opt(x) -> Sort("Option", [<get-symbol-sort> x])
+
+  get-symbol-sort :
+    iter(x) -> Sort("List", [<get-symbol-sort> x])
+
+  get-symbol-sort :
+    iter-star(x) -> Sort("List", [<get-symbol-sort> x])
+
+  get-symbol-sort :
+    iter-sep(x, _) -> Sort("List", [<get-symbol-sort> x])
+
+  get-symbol-sort :
+    iter-star-sep(x, _) -> Sort("List", [<get-symbol-sort> x])
+
+  get-symbol-sort :
+    tuple(x, y) -> SortTuple([<get-symbol-sort> x, <get-symbol-sort> y])
+
+  get-symbol-sort :
+    alt(x, y) -> Sort("Alt", [<get-symbol-sort> x, <get-symbol-sort> y])
+
+  get-symbol-sort :
+    cf(sym) -> sort
+    where <get-symbol-sort> sym => sort
+
+  get-symbol-sort :
+    lex(sym) -> sort
+    where <get-symbol-sort> sym => sort
+
+  get-symbol-sort :
+    varsym(sym) -> sort
+    where <get-symbol-sort> sym => sort
+  
+  // TODO: why are there here, instead of being imported from libstratego-sglr ?
+  
+  // is-layout = ?layout()
+  // is-layout = ?cf(<is-layout>)
+  // is-layout = ?lex(<is-layout>)
+  // is-layout = ?opt(<is-layout>)
+  // is-layout = ?iter(<is-layout>)
+  // is-layout = map(is-layout)
+  

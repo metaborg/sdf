@@ -1,0 +1,292 @@
+module typesmart/gen-typesmart-cons
+
+imports
+  libstratego-lib
+  libstratego-sdf
+  libstrc
+  include/SDF
+  typesmart/gen-typesmart-sig
+  typesmart/lib
+
+rules
+  // builder
+  generate-typesmart-constructors:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+    	filename := <guarantee-extension(|"str")> "typesmart";
+    	result := <sdf2typesmart(|"typesmart");pp-stratego-string> ast
+
+ main =
+ 	io-stream-wrap(typesmart-options,
+      ?(inp,out)
+      ; if OutputModule then
+          <parse-sdf-definition-stream> inp
+        ; sdf2typesmart(|<OutputModule>)
+        ; pp-stratego-stream(|out)
+        else
+          !""
+        ; fatal-err(|"Need to specify an output module using the '-m' option.")
+        end
+    )        
+rules
+	
+  sdf2typesmart(|mod) =
+  	gen-syntax-constructors-from-module;
+  	!Module(mod,
+                  [Imports([ Import("libstratego-typesmart")
+                           , Import("libstrc")]) | <id>])
+	
+
+  debug-pp-stratego =
+    bottomup(try( not(is-string)
+                ; not(is-list)
+                ; not(pp-stratego-string)
+                ; debug(!"cannot pp stratego: ")))  
+
+rules
+  typesmart-options = 
+    ArgOption(
+      "-m"
+    , rules(OutputModule := <id>)
+    , !"-m <module>      Module name of the output Stratego module"
+    )
+  
+rules
+  gen-syntax-constructors-from-module =
+          ?mod
+        ; collect-all(?exports(<id>) + ?hiddens(<id>))
+        ; mapconcat(flatten-grammar)
+        ; gen-syntax-constructors => conses
+          
+        ; !mod
+        ; collect-all(?renamings(<id>))
+        ; mapconcat(filter(\ symbol(from,to) -> (from,to) \))
+        ; map(gen-renaming-inject) => renamings
+        
+        ; <conc> (conses, renamings)
+
+  flatten-grammar =
+      try(
+         \ empty-grammar() -> [] \
+      <+ \ conc-grammars(g1,g2) -> <conc> (<flatten-grammar> g1, <flatten-grammar> g2) \
+      <+ \ g -> [g] \
+      )
+
+
+
+rules  
+  gen-syntax-constructors =
+  	?grammar;
+    filter( ?context-free-syntax(<id>)
+          + ?context-free-priorities(<collect-all(?prod(_,_,_))>)
+          + ?syntax(<id>));
+    concat;
+    where( !context-free-syntax(<id>)
+         ; gen-signature-from-grammar
+          => sig-list);
+    // merge-same-cons-prods-list;
+    where(filter(gen-syntax-constructors-prod); make-merged-smart-constructors => smart-conses);
+    where(filter(gen-subsort-of-inject) => subsort-injects); 
+    
+    !Rules(<conc> (smart-conses, subsort-injects)) => rulez;
+    
+    !grammar;
+    filter( ?lexical-syntax(<id>)
+          + ?lexical-priorities(<collect-all(?prod(_,_,_))>)
+          + ?syntax(<filter(?prod(_,lex(_),_))>));
+    map(filter(gen-lexical-sort-prod); nub; !Rules(<id>)) => lexical-sort-list;
+    <conc> ([sig-list], lexical-sort-list, [rulez])
+
+  gen-syntax-constructors-prod :
+    prod(lhs, rhs, attrs) ->
+    smart-data
+  where
+      <find-cons-attribute> attrs => cons
+   
+    ; <filter(get-symbol-sort)> lhs => arg-sorts
+    ; <get-symbol-sort> rhs => res-sort
+    
+    ; <make-arg-list(|1)> arg-sorts => args
+    ; <zip; map(gen-arg-check(|cons))> (args, arg-sorts) => arg-checks
+    ; <myfoldr1(!Id(), id, \ (x,y) -> Seq(x,y) \)> arg-checks => cond
+    
+    ; !(cons, args, cond, res-sort) => smart-data
+  
+  gen-subsort-of-inject :
+    prod ->
+    strat
+  where
+      <?prod(lhs, rhs, attrs)> prod 
+    ; <not(find-cons-attribute)> attrs
+    ; <filter(get-symbol-sort)> lhs => [arg-sort]
+    ; <get-symbol-sort> rhs => res-sort
+    ; <not(structurally-equal)> (arg-sort, res-sort)
+    ; body := CallT(SVar("has-subsort-of-inject"), []
+                  , [ <trm-explode> arg-sort, <trm-explode> res-sort])
+
+    // ; !SDefT("has-subsort-of-trans", [], [], body) => strat
+    ; !AnnoDef([Extend()], SDefT("has-subsort-of-trans", [], [], body)) => strat
+
+  gen-renaming-inject :
+    (from,to) ->
+    strat
+  where
+      <get-symbol-sort> from => arg-sort
+    ; <get-symbol-sort> to => res-sort
+    ; body := 
+        Seq(
+        Seq(
+          Where(Assign(Var("renamed"), <trm-explode> res-sort)),
+          Match(Var("renamed"))),
+          Build(<trm-explode> arg-sort))
+    ; !SDefT("unrename-sort", [], [], body) => strat
+
+  gen-lexical-sort-prod :
+    prod(lhs, rhs, _) ->
+    strat
+  where
+      <get-symbol-sort> rhs => res-sort
+    ; body := CallT(SVar("equal"), [], [<trm-explode> res-sort])
+    // ; !SDefT("is-lexical-sort", [], [], body) => strat
+	; !AnnoDef([Extend()], SDefT("is-lexical-sort", [], [], body)) => strat
+
+  gen-arg-check(|cons) :
+    (arg, arg-sort) -> 
+    Where(BA(LChoice(
+        CallNoArgs(SVar("has-sort"))
+      , Seq(CallT(SVar("log-mismatching-sort-error"), [], [<trm-explode> cons])
+        , Fail()))
+    , NoAnnoList(Tuple([Var(arg), <trm-explode> arg-sort]))))
+
+rules
+  same-smart-constructor-data(|data) =
+  	  ?(cons, args, _, _)
+  	; where(!data; ?(cons, args, _, _))
+  
+  make-merged-smart-constructor =
+  	  ?datas@[(cons, args, _, _) | _]
+    ; <conc-strings> ("smart-", cons) => smart-cons
+
+    ; init := Build(NoAnnoList(List([])))
+
+    ; <map(\(_,_,con,res-sort) ->
+            Call(
+             SVar("try"),
+             [Seq(con,
+                  Build(NoAnnoList(ListTail([<trm-explode> res-sort], RootApp(Id())))))])
+           \)> datas => conds
+    ; <myfoldr1(id, \(x,y) -> Seq(x,y)\)> conds => cond
+    
+    ; <map(!Var(<id>)); !NoAnnoList(List(<id>))> args => args-term
+    ; <map(!DefaultVarDec(<id>))> args => var-decs
+
+    ; !Match(NoAnnoList(Var("res-sorts"))) => match
+  	; !BA(Prim("\"SUGARJ_unsafe_build\"", [NoAnnoList(Str(cons))]), args-term) => build
+    ; !CallT(SVar("put-syntax-sort"), [], [App(CallT(SVar("build-alt-sort-or-fail"), [], []), NoAnnoList(Var("res-sorts")))]) => put-res
+
+    ; body := Seq(init, Seq(cond, Seq(match, Seq(build, put-res))))
+
+  	; !SDefT(smart-cons, [], var-decs, body)
+  
+  make-merged-smart-constructors =
+  	  ?[]
+  make-merged-smart-constructors =
+  	  ?[data|datas]
+  	; <filter-split(same-smart-constructor-data(|data))> datas => (merge-list, rest)
+  	; <![data|<id>]; make-merged-smart-constructor> merge-list => merged
+    ; <make-merged-smart-constructors> rest => rest'
+    ; ![merged | rest']
+  	
+
+rules
+  make-arg-list(|n) :
+    [] -> []
+  make-arg-list(|n) :
+    [_|rest] -> [arg| <make-arg-list(|<inc> n)> rest]
+    where <conc-strings> ("arg", <int-to-string> n) => arg
+
+  merge-same-cons-prods =
+      ?(prod(lhs1, rhs1, attrs1), prod(lhs2, rhs2, attrs2))
+    ; <(find-cons-attribute,find-cons-attribute); structurally-equal> (attrs1, attrs2)
+    ; <(filter(get-symbol-sort),filter(get-symbol-sort)); structurally-equal> (lhs1,lhs2)
+    ; !prod(lhs1, alt(rhs1, rhs2), attrs1)
+   
+  merge-same-cons-prods-list =
+      ?[]
+  merge-same-cons-prods-list =
+      ?[x|xs]
+    ; <filter-split(!(x,<id>); merge-same-cons-prods)> xs => (merge-list, rest)
+    ; <merge-same-cons-prods-list> rest => rest'
+    ; <try(?[]; ![x]); foldl1(merge-same-cons-prods); mk-alt-rhs> merge-list => merged
+    ; ![merged | rest']
+  
+  mk-alt-rhs =
+  	  ?prod(lhs, rhs, attrs)
+  	; <flatten-alt> rhs => rhs-list
+  	; <foldr(![], union(structurally-equal), ![<id>])> rhs-list => nubbed
+  	; <foldl1(\(x,y) -> alt(x,y)\)> nubbed => rhs-res
+  	; !prod(lhs, rhs-res, attrs)
+  
+  flatten-alt =
+  	  ?alt(xs,ys)
+  	; <conc> (<flatten-alt> xs, <flatten-alt> ys)
+  flatten-alt =
+  	  ![<id>]
+  
+  filter-split(s) =
+      ?[]
+    ; !([],[])
+  filter-split(s) =
+      ? [x|xs]
+    ; <filter-split(s)> xs => (ok,nok)
+    ; if <s> x => x'
+        then !([x'|ok],nok)
+        else !(ok,[x|nok])
+      end
+
+rules
+  nosmart-trm-explode =
+      nosmart-TrmAnno
+      <+ ConcAssocR; nosmart-trm-explode
+      <+ ConcCons; nosmart-trm-explode
+      <+ ConcNil; nosmart-trm-explode
+      <+ !NoAnnoList(<
+            TrmInt 
+            <+ TrmStr 
+      <+ nosmart-TrmConc 
+      <+ TrmNil 
+      <+ nosmart-TrmCons 
+      <+ nosmart-TrmOp
+          >)
+  
+    nosmart-pretrm-explode = 
+      TrmInt 
+      <+ TrmStr 
+      <+ nosmart-TrmAnno; fatal-err(|"anno in anno")
+      <+ ConcAssocR; nosmart-pretrm-explode
+      <+ ConcCons; nosmart-pretrm-explode
+      <+ ConcNil; nosmart-pretrm-explode
+      <+ nosmart-TrmConc
+      <+ TrmNil 
+      <+ nosmart-TrmCons 
+      <+ nosmart-TrmOp
+
+    nosmart-TrmAnno : 
+      WithAnno(t1, t2) -> Anno(t1', t2')
+      where <nosmart-trm-explode; try(?NoAnnoList(<id>))> t1 => t1'
+          ; (<is-list>t2 <+ ![t2])
+          ; foldr(!NoAnnoList(Op("Nil",[]))
+           ,!NoAnnoList(Op("Cons", [<Fst>, <Snd>]))
+           , MetaExplode)
+          ; try(?NoAnnoList(<id>)) => t2'
+
+    nosmart-TrmConc :
+      Conc(t1, t2) -> Op("Conc", [<nosmart-trm-explode>t1, <nosmart-trm-explode>t2])
+
+    nosmart-TrmCons :
+      [x | xs] -> 
+      Op("Cons",[<nosmart-trm-explode>x, <nosmart-trm-explode> xs])
+
+    nosmart-TrmOp : 
+      op#(ts) -> 
+      App(Prim("\"SUGARJ_unsafe_build\"", [NoAnnoList(Str(op))]), <nosmart-trm-explode> ts)

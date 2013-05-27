@@ -1,0 +1,43 @@
+module typesmart/lib
+
+imports
+	libstratego-typesmart
+	
+strategies
+	
+  // TODO: this should be replaced by isect(eq)
+
+  intersect = 
+  	?([],_)
+    ;![]
+     
+  intersect =
+      ?(_,[])
+    ; ![]
+  intersect =
+      ?([x|xs],ys)
+    ; <intersect> (xs, ys) => rest
+    ; if <elem> (x, ys)
+        then ![x|rest]
+        else !rest
+      end
+  
+  // TODO: rewrite to use mkset and filter not elem
+  
+  /* (xs:List[a], ys:List[a]) -> true/false
+   * Checks if xs contains all elements of ys.
+   */
+  contains-all =
+      ?(xs, ys)
+    ; Swap
+    ; intersect
+    ; equal(|ys)
+
+  myfoldr1(one1, cons) = myfoldr1(fail, one1, cons)
+  myfoldr1(nil, one1, cons) =
+  	  ?[] 
+  	  < nil
+  	  + ?[<id>]
+  	    < one1
+  	    + ?[x|xs]; <cons> (x, <myfoldr1(nil, one1, cons)> xs)
+  	    

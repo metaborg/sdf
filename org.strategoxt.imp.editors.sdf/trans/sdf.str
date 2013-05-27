@@ -12,6 +12,7 @@ imports
   include/SDF
   completion
   check
+  typesmart/gen-typesmart-cons
 
 rules
 

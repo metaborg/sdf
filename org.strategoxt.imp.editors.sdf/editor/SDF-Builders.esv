@@ -29,6 +29,9 @@ builders
     
   builder : "Clean name analysis index" = 
     index-cleanall (realtime) (openeditor)
+  
+  builder : "Generate typesmart syntax" = 
+    generate-typesmart-constructors (realtime) (openeditor)
 
   on save :
     generate-name-analysis
