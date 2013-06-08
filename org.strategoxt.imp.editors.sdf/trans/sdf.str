@@ -9,8 +9,8 @@ imports
   generate-syntax-templates
   to-name-analysis
   lib/editor-common.generated
-  // include/SDF
-  typesmart-lib/typesmart
+  include/SDF
+  // typesmart-lib/typesmart
   completion
   check
   typesmart-gen/gen-typesmart-cons

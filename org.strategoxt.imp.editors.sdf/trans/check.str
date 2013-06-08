@@ -3,8 +3,8 @@ module check
 imports
   libstratego-sglr
   analysis
-  // include/SDF
-  typesmart-lib/typesmart
+  include/SDF
+  // typesmart-lib/typesmart
 
 strategies
   
