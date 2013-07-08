@@ -2,6 +2,7 @@ module editor/outline
 
 imports
 	include/SDF
+	lib/attributes
 	lib/editor-common.generated
 	lib/outline-library.generated
 
@@ -9,11 +10,13 @@ rules
 	
 	outline-strategy = custom-label-outline(to-outline-label)
 	
-rules // SDF
+rules
 	
-	// Grammar
+	to-outline-label: 'module(unparameterized('id), _, _) -> 'id
+	to-outline-label: 'module(parameterized('id, _), _, _) -> 'id
+
 	to-outline-label:
-		appl -> label'
+		appl -> label
 		where
 			<?lexical-syntax(_) +
 			?context-free-syntax(_) +
@@ -28,9 +31,25 @@ rules // SDF
 			?kernel-start-symbols(_) +
 			?lexical-start-symbols(_) +
 			?context-free-start-symbols(_) +
-			?syntax(_)> appl;
-			label := <get-constructor> appl;
-			label' := <string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> label
+			?syntax(_) +
+			?exports(_) +
+			?imports(_)> appl;
+			label := <get-constructor; string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> appl
 			
-			
+	to-outline-label:
+		p@prod(_, sort, attrs) -> label
+		where
+			sort-name := <fetch-sort-name> sort;
+			if <fetch-cons-name> attrs
+			then 
+				cons-name := <fetch-cons-name> attrs;
+				label := <concat-strings> [sort-name, " {\"", cons-name, "\"}"]
+			else label := sort-name
+			end
+		
+	
+	fetch-sort-name: sort(s) -> s
+	fetch-sort-name: lex(sort(s)) -> <conc-strings> (s, "-LEX")
+	fetch-sort-name: cf(sort(s)) -> <conc-strings> (s, "-CF")
+	
 			
