@@ -12,6 +12,7 @@ imports
   include/SDF
   completion
   check
+  outline
 
 rules
 

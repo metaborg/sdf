@@ -1,0 +1,36 @@
+module editor/outline
+
+imports
+	include/SDF
+	lib/editor-common.generated
+	lib/outline-library.generated
+
+rules
+	
+	outline-strategy = custom-label-outline(to-outline-label)
+	
+rules // SDF
+	
+	// Grammar
+	to-outline-label:
+		appl -> label'
+		where
+			<?lexical-syntax(_) +
+			?context-free-syntax(_) +
+			?variables(_) +
+			?lexical-variables(_) +
+			?lexical-priorities(_) +
+			?context-free-priorities(_) +
+			?lexical-restrictions(_) +
+			?context-free-restrictions(_) + 
+			?aliases(_) + 
+			?restrictions(_) +
+			?kernel-start-symbols(_) +
+			?lexical-start-symbols(_) +
+			?context-free-start-symbols(_) +
+			?syntax(_)> appl;
+			label := <get-constructor> appl;
+			label' := <string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> label
+			
+			
+			
