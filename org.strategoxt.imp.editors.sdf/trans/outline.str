@@ -40,14 +40,13 @@ rules
 			label := <get-constructor; string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> appl
 	
 	to-outline-node:
-		appl -> result
+		appl -> Node(label, children)
 		where
 			<?kernel-start-symbols(_) +
 			?lexical-start-symbols(_) +
 			?context-free-start-symbols(_)> appl;
 			label := <appl-to-outline-label> appl;
-			children := <get-arguments; Hd; map(fetch-sort-name; label-to-outline-node)> appl;
-			result := Node(label, children)
+			children := <get-arguments; Hd; map(fetch-sort-name; label-to-outline-node)> appl
 	
 	label-to-outline-node = ?label; !Node(label, [])
 	
