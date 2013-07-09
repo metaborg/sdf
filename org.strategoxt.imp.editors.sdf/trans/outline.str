@@ -8,12 +8,12 @@ imports
 
 rules
 	
-	outline-strategy = custom-label-outline(to-outline-label)
+	outline-strategy = custom-label-outline(to-outline-label, to-outline-node)
 	
 rules
 	
-	to-outline-label: 'module(unparameterized('id), _, _) -> 'id
-	to-outline-label: 'module(parameterized('id, _), _, _) -> 'id
+	to-outline-label: unparameterized('id) -> 'id
+	to-outline-label: parameterized('id, _) -> 'id
 
 	to-outline-label:
 		appl -> label
@@ -28,14 +28,29 @@ rules
 			?context-free-restrictions(_) + 
 			?aliases(_) + 
 			?restrictions(_) +
-			?kernel-start-symbols(_) +
-			?lexical-start-symbols(_) +
-			?context-free-start-symbols(_) +
 			?syntax(_) +
 			?exports(_) +
 			?imports(_)> appl;
-			label := <get-constructor; string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> appl
+			label := <appl-to-outline-label> appl
 			
+	
+	appl-to-outline-label:
+		appl -> label
+		where
+			label := <get-constructor; string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> appl
+	
+	to-outline-node:
+		appl -> result
+		where
+			<?kernel-start-symbols(_) +
+			?lexical-start-symbols(_) +
+			?context-free-start-symbols(_)> appl;
+			label := <appl-to-outline-label> appl;
+			children := <get-arguments; Hd; map(fetch-sort-name; label-to-outline-node)> appl;
+			result := Node(label, children)
+	
+	label-to-outline-node = ?label; !Node(label, [])
+	
 	to-outline-label:
 		p@prod(_, sort, attrs) -> label
 		where
@@ -52,4 +67,14 @@ rules
 	fetch-sort-name: lex(sort(s)) -> <conc-strings> (s, "-LEX")
 	fetch-sort-name: cf(sort(s)) -> <conc-strings> (s, "-CF")
 	
-			
+	
+  custom-label-outline(s1, s2) = collect-om(origin-track-forced(s2) <+ to-outline-node(s1, s2), conc)
+  
+  to-outline-node(s1, s2):
+    term -> Node(label, children)
+    where
+      label := <origin-track-forced(s1)> term;
+      children := <get-arguments; custom-label-outline(s1, s2)> term
+      
+      
+      
