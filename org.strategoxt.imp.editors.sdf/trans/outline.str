@@ -17,7 +17,7 @@ rules
 	to-outline-label: parameterized('id, _) -> 'id
 
 	to-outline-label:
-		appl -> label
+		appl -> label {icon}
 		where
 			<?lexical-syntax(_) +
 			?context-free-syntax(_) +
@@ -32,8 +32,8 @@ rules
 			?syntax(_) +
 			?exports(_) +
 			?imports(_)> appl;
-			label := <appl-to-outline-label> appl
-			
+			label := <appl-to-outline-label> appl;
+			icon := <conc-strings> (<get-constructor> appl, ".png")
 	
 	appl-to-outline-label:
 		appl -> label
