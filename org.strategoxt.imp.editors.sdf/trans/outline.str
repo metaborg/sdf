@@ -7,17 +7,41 @@ imports
 	lib/outline-library.generated
 
 rules
+ 
+	outline-strategy = simple-label-outline-with-parent
+  
+    simple-label-outline-with-parent = ?ast; simple-label-outline-with-parent(|ast)
+	simple-label-outline-with-parent(|parent) = collect-om(to-outline-node(|parent), conc)
 	
-	outline-strategy = custom-node-to-label-outline(to-outline-label, to-outline-node)
+	to-outline-node(|parent):
+		term -> Node(label, children)
+		where
+			label := <origin-track-forced(to-outline-label <+ to-outline-label(|parent))> term;
+			children := <get-arguments; simple-label-outline-with-parent(|term)> term
+	
 	outline-expand-to-level = !5
+
+overlays
+	
+	Icon(name) = <concat-strings> ["icons/", name, ".png"]
+	
+	Icon-module = Icon("module")
+	Icon-exports = Icon("exports")
+	Icon-start = Icon("start")
+	Icon-prod-lex = Icon("prod-lex")
+	Icon-prod-cf = Icon("prod-cf")
+	Icon-prod-cf-cons = Icon("prod-cf-cons")
+	Icon-layout = Icon("layout")
 	
 rules
 	
-	to-outline-label: unparameterized('id) -> 'id
-	to-outline-label: parameterized('id, _) -> 'id
+	to-outline-label:
+		'module(moduleName, _, _) -> label {Icon-module}
+		where
+			<?unparameterized(label) + ?parameterized(label, _)> := moduleName
 
 	to-outline-label:
-		appl -> label {icon}
+		appl -> label {Icon-exports}
 		where
 			<?lexical-syntax(_) +
 			?context-free-syntax(_) +
@@ -30,41 +54,53 @@ rules
 			?aliases(_) + 
 			?restrictions(_) +
 			?syntax(_) +
-			?exports(_) +
-			?imports(_)> appl;
-			label := <appl-to-outline-label> appl;
-			icon := <conc-strings> (<get-constructor> appl, ".png")
+			start-symbols> appl;
+			label := <appl-to-outline-label> appl
+	
+	to-outline-label(|parent):
+		sort(startSymbol) -> startSymbol {Icon-start}
+		where
+			<start-symbols> parent
+	
+	to-outline-label(|parent):
+		p@prod(_, sort, attrs) -> label {icon}
+		where
+			label' := <sort-to-label> sort;
+			if <?context-free-syntax(_)> parent
+			then
+				if cons-name := <fetch-cons-name> attrs
+				then
+					label := <concat-strings> [label', ".", cons-name];
+					icon := Icon-prod-cf-cons
+				else
+					label := label';
+					icon := Icon-prod-cf
+				end
+			else
+				label := label';
+				if <?layout()> sort
+				then icon := Icon-layout
+				else icon := Icon-prod-lex
+				end
+			end
+	
+rules
+
+	start-symbols = 
+		?kernel-start-symbols(_) + 
+		?lexical-start-symbols(_) + 
+		?context-free-start-symbols(_)
 	
 	appl-to-outline-label:
 		appl -> label
 		where
-			label := <get-constructor; string-replace(|"context-free-", "context-free "); string-replace(|"lexical-", "lexical ")> appl
+			label := <
+				get-constructor; 
+				string-replace(|"context-free-", "context-free "); 
+				string-replace(|"lexical-", "lexical ")
+			> appl	
 	
-	to-outline-node:
-		appl -> Node(label, children)
-		where
-			<?kernel-start-symbols(_) +
-			?lexical-start-symbols(_) +
-			?context-free-start-symbols(_)> appl;
-			label := <appl-to-outline-label> appl;
-			children := <get-arguments; Hd; map(fetch-sort-name; label-to-outline-node)> appl
-	
-	label-to-outline-node = ?label; !Node(label, [])
-	
-	to-outline-label:
-		p@prod(_, sort, attrs) -> label
-		where
-			sort-name := <fetch-sort-name> sort;
-			if <fetch-cons-name> attrs
-			then 
-				cons-name := <fetch-cons-name> attrs;
-				label := <concat-strings> [sort-name, ".", cons-name]
-			else label := sort-name
-			end
-		
-	
-	fetch-sort-name: sort(s) -> s
-	fetch-sort-name: lex(sort(s)) -> <conc-strings> (s, "-LEX")
-	fetch-sort-name: cf(sort(s)) -> <conc-strings> (s, "-CF")
-      
-      
+	sort-to-label: layout() -> "LAYOUT"
+	sort-to-label: sort(s) -> s
+	sort-to-label: lex(sort(s)) -> <conc-strings> (s, "-LEX")
+	sort-to-label: cf(sort(s)) -> <conc-strings> (s, "-CF")
