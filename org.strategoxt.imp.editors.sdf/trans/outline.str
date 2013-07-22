@@ -7,7 +7,7 @@ imports
 	lib/outline-library.generated
 
 rules
- 
+  
 	outline-strategy = simple-label-outline-with-parent
   
     simple-label-outline-with-parent = ?ast; simple-label-outline-with-parent(|ast)
@@ -19,29 +19,31 @@ rules
 			label := <origin-track-forced(to-outline-label <+ to-outline-label(|parent))> term;
 			children := <get-arguments; simple-label-outline-with-parent(|term)> term
 	
-	outline-expand-to-level = !5
-
-overlays
+	outline-expand-to-level = !3
 	
-	Icon(name) = <concat-strings> ["icons/", name, ".png"]
 	
-	Icon-module = Icon("module")
-	Icon-exports = Icon("exports")
-	Icon-start = Icon("start")
-	Icon-prod-lex = Icon("prod-lex")
-	Icon-prod-cf = Icon("prod-cf")
-	Icon-prod-cf-cons = Icon("prod-cf-cons")
-	Icon-layout = Icon("layout")
+rules
+	
+	to-outline-icon(|name) = !["icons/", name, ".png"]; concat-strings
+	
+	icon-module = to-outline-icon(|"module")
+	icon-exports = to-outline-icon(|"exports")
+	icon-start = to-outline-icon(|"start")
+	icon-prod-lex = to-outline-icon(|"prod-lex")
+	icon-prod-cf = to-outline-icon(|"prod-cf")
+	icon-prod-cf-cons = to-outline-icon(|"prod-cf-cons")
+	icon-layout = to-outline-icon(|"layout")	
+	
 	
 rules
 	
 	to-outline-label:
-		'module(moduleName, _, _) -> label {Icon-module}
+		'module(moduleName, _, _) -> label {<icon-module>}
 		where
 			<?unparameterized(label) + ?parameterized(label, _)> := moduleName
 
 	to-outline-label:
-		appl -> label {Icon-exports}
+		appl -> label {<icon-exports>}
 		where
 			<?lexical-syntax(_) +
 			?context-free-syntax(_) +
@@ -58,31 +60,32 @@ rules
 			label := <appl-to-outline-label> appl
 	
 	to-outline-label(|parent):
-		sort(startSymbol) -> startSymbol {Icon-start}
+		sort(startSymbol) -> startSymbol {<icon-start>}
 		where
 			<start-symbols> parent
 	
 	to-outline-label(|parent):
-		p@prod(_, sort, attrs) -> label {icon}
+		p@prod(_, symbol, attrs) -> label {icon}
 		where
-			label' := <sort-to-label> sort;
+			label' := <symbol-to-outline-label> symbol;
 			if <?context-free-syntax(_)> parent
 			then
 				if cons-name := <fetch-cons-name> attrs
 				then
 					label := <concat-strings> [label', ".", cons-name];
-					icon := Icon-prod-cf-cons
+					icon := <icon-prod-cf-cons>
 				else
 					label := label';
-					icon := Icon-prod-cf
+					icon := <icon-prod-cf>
 				end
 			else
 				label := label';
-				if <?layout()> sort
-				then icon := Icon-layout
-				else icon := Icon-prod-lex
+				if <?"LAYOUT"> label'
+				then icon := <icon-layout>
+				else icon := <icon-prod-lex>
 				end
 			end
+	
 	
 rules
 
@@ -100,7 +103,15 @@ rules
 				string-replace(|"lexical-", "lexical ")
 			> appl	
 	
-	sort-to-label: layout() -> "LAYOUT"
-	sort-to-label: sort(s) -> s
-	sort-to-label: lex(sort(s)) -> <conc-strings> (s, "-LEX")
-	sort-to-label: cf(sort(s)) -> <conc-strings> (s, "-CF")
+	symbol-to-outline-label: layout() -> "LAYOUT"
+	symbol-to-outline-label: sort(s) -> s
+	symbol-to-outline-label: lex(sort(s)) -> <conc-strings> (s, "-LEX")
+	symbol-to-outline-label: cf(sort(s)) -> <conc-strings> (s, "-CF")
+	symbol-to-outline-label:
+		label(l, s) -> label
+		where
+			l' := <get-arguments; Hd> l;
+			s' := <symbol-to-outline-label> s;
+			label := <concat-strings> [s, " (", l, ")"]
+							
+	
