@@ -1,0 +1,120 @@
+module outline
+
+imports
+  include/TemplateLang
+  lib/editor-common.generated
+  lib/outline-library.generated
+  // templatelang/utils/attributes
+
+rules
+  
+  outline-strategy = simple-label-outline-with-parent
+  
+    simple-label-outline-with-parent = ?ast; simple-label-outline-with-parent(|ast)
+  simple-label-outline-with-parent(|parent) = collect-om(to-outline-node(|parent), conc)
+  
+  to-outline-node(|parent):
+    term -> Node(label, children)
+    where
+      label := <origin-track-forced(to-outline-label <+ to-outline-label(|parent))> term;
+      children := <get-arguments; simple-label-outline-with-parent(|term)> term
+  
+  outline-expand-to-level = !3
+  
+  
+rules
+  
+  to-outline-icon(|name) = !["icons/", name, ".png"]; concat-strings
+  
+  icon-module = to-outline-icon(|"module")
+  icon-exports = to-outline-icon(|"exports")
+  icon-start = to-outline-icon(|"start")
+  icon-prod-lex = to-outline-icon(|"prod-lex")
+  icon-prod-cf = to-outline-icon(|"prod-cf")
+  icon-prod-cf-cons = to-outline-icon(|"prod-cf-cons")
+  icon-layout = to-outline-icon(|"layout")  
+  
+  
+rules
+  
+  to-outline-label:
+    'module(moduleName, _, _) -> label {<icon-module>}
+    where
+      <?unparameterized(label) + ?parameterized(label, _)> := moduleName
+
+  to-outline-label:
+    appl -> label {<icon-exports>}
+    where
+      <?lexical-syntax(_) +
+      ?context-free-syntax(_) +
+      ?variables(_) +
+      ?lexical-variables(_) +
+      ?lexical-priorities(_) +
+      ?context-free-priorities(_) +
+      ?lexical-restrictions(_) +
+      ?context-free-restrictions(_) + 
+      ?aliases(_) + 
+      ?restrictions(_) +
+      ?syntax(_) +
+      start-symbols> appl;
+      label := <appl-to-outline-label> appl
+  
+  to-outline-label(|parent):
+    sort(startSymbol) -> startSymbol {<icon-start>}
+    where
+      <start-symbols> parent
+  
+  to-outline-label(|parent):
+    p@prod(_, symbol, attrs) -> label {icon}
+    where
+      label' := <symbol-to-outline-label> symbol;
+      if <?context-free-syntax(_)> parent
+      then
+        if cons-name := <fetch-cons-name> attrs
+        then
+          label := <concat-strings> [label', ".", cons-name];
+          icon := <icon-prod-cf-cons>
+        else
+          label := label';
+          icon := <icon-prod-cf>
+        end
+      else
+        label := label';
+        if <?"LAYOUT"> label'
+        then icon := <icon-layout>
+        else icon := <icon-prod-lex>
+        end
+      end
+
+  
+rules
+
+  start-symbols = 
+    ?kernel-start-symbols(_) + 
+    ?lexical-start-symbols(_) + 
+    ?context-free-start-symbols(_)
+  
+  appl-to-outline-label:
+    appl -> label
+    where
+      label := <
+        get-constructor; 
+        string-replace(|"context-free-", "context-free "); 
+        string-replace(|"lexical-", "lexical ")
+      > appl  
+  
+  symbol-to-outline-label: layout() -> "LAYOUT"
+  symbol-to-outline-label: sort(s) -> s
+  symbol-to-outline-label: lex(sort(s)) -> <conc-strings> (s, "-LEX")
+  symbol-to-outline-label: cf(sort(s)) -> <conc-strings> (s, "-CF")
+  symbol-to-outline-label:
+    label(l, s) -> label
+    where
+      l' := <get-arguments; Hd> l;
+      s' := <symbol-to-outline-label> s;
+      label := <concat-strings> [s, " (", l, ")"]
+
+signature constructors
+  
+  'module : ModuleName * List(ImpSection) * Sections -> Module
+  

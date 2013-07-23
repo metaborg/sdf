@@ -10,6 +10,7 @@ imports
   include/libtemplatelang
   lib/EditorService
   lib/editor-common.generated
+  outline
   
 imports
   analyze
