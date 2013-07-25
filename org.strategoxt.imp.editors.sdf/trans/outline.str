@@ -10,4 +10,4 @@ rules
   
   outline-strategy = foreign-call(|"TemplateLang", "outline-strategy")
   
-  foreign-call(|lang,strategy) = prim("SSL_EXT_foreigncall")
+  foreign-call(|lang,strategy) = prim("SSL_EXT_foreigncall", lang, strategy)
