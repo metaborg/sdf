@@ -1,13 +1,13 @@
 module editor/outline
 
 imports
-	include/SDF
-	lib/attributes
-	lib/editor-common.generated
-	lib/outline-library.generated
+  include/SDF
+  lib/attributes
+  lib/editor-common.generated
+  lib/outline-library.generated
 
 rules
   
-	outline-strategy = plugin-strategy-invoke(|"TemplateLang", "outline-strategy"); ?Some(<id>)
-	
-	external plugin-strategy-invoke(|languageName, strategy)
+  outline-strategy = foreign-call(|"TemplateLang", "outline-strategy")
+  
+  foreign-call(|lang,strategy) = prim("SSL_EXT_foreigncall")
