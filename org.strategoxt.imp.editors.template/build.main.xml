@@ -42,7 +42,7 @@
 
   <!-- Main target -->
   <target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.edited.jar" />
-  <target name="spoofaximp.edited.jar" depends="check-classpath,init,sdf2table,meta-sdf2table,ppgen,pppack,libtemplatelang.stratego.jar,stratego.jar.helper,sdf2imp,refresh"/>
+  <target name="spoofaximp.edited.jar" depends="check-classpath,init,sdf2table,meta-sdf2table,ppgen,pppack,sdf2imp,libtemplatelang.stratego.jar,stratego.jar.helper,refresh"/>
 
   <!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
   <available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
