@@ -4,23 +4,12 @@ imports
   include/TemplateLang
   lib/editor-common.generated
   lib/outline-library.generated
-  // templatelang/utils/attributes
 
 rules
   
-  outline-strategy = simple-label-outline-with-parent
-  
-    simple-label-outline-with-parent = ?ast; simple-label-outline-with-parent(|ast)
-  simple-label-outline-with-parent(|parent) = collect-om(to-outline-node(|parent), conc)
-  
-  to-outline-node(|parent):
-    term -> Node(label, children)
-    where
-      label := <origin-track-forced(to-outline-label <+ to-outline-label(|parent))> term;
-      children := <get-arguments; simple-label-outline-with-parent(|term)> term
-  
+  outline-strategy = alltd(label-desugar); custom-label-outline(to-outline-label, to-outline-node)
   outline-expand-to-level = !3
-  
+  label-desugar = ?label(_, <id>)
   
 rules
   
@@ -32,8 +21,8 @@ rules
   icon-prod-lex = to-outline-icon(|"prod-lex")
   icon-prod-cf = to-outline-icon(|"prod-cf")
   icon-prod-cf-cons = to-outline-icon(|"prod-cf-cons")
-  icon-layout = to-outline-icon(|"layout")  
-  
+  icon-layout = to-outline-icon(|"layout")
+  icon-multiple-prods = !["icons/", "multiple-prods", ".gif"]; concat-strings
   
 rules
   
@@ -45,9 +34,7 @@ rules
   to-outline-label:
     appl -> label {<icon-exports>}
     where
-      <?lexical-syntax(_) +
-      ?context-free-syntax(_) +
-      ?variables(_) +
+      <?variables(_) +
       ?lexical-variables(_) +
       ?lexical-priorities(_) +
       ?context-free-priorities(_) +
@@ -55,38 +42,68 @@ rules
       ?context-free-restrictions(_) + 
       ?aliases(_) + 
       ?restrictions(_) +
-      ?syntax(_) +
       start-symbols> appl;
       label := <appl-to-outline-label> appl
+  
+  to-outline-node:
+    syntax-section -> Node(label{icon}, children)
+    where
+    	<?context-free-syntax(prods) + ?lexical-syntax(prods) + ?syntax(_)> syntax-section
+    where
+      label := <appl-to-outline-label> syntax-section;
+      icon := <icon-exports>;
+      'sorts := <reverse; collect-om(fetch-sort); reverse> prods; // reverse: collect-om returns the last element in case of duplicates; we want the first, for its origin
+      children := <map(sort-to-outline-node(|prods))> 'sorts
+ 
+  sort-to-outline-node(|prods):
+    sort -> Node(label{icon}, children)
+    where
+      prods' := <collect-om(prod-has-sort(|sort), conc)> prods;
+      
+      if 1 := <length> prods'
+      then
+        if cons-name := <Hd; prod-to-cons> prods'
+        then
+          label := <concat-strings> [<origin-text> sort, ".", cons-name];
+          icon := <icon-prod-cf-cons>
+        else
+          label := <origin-text> sort;
+          icon := <icon-prod-cf>
+        end;
+        children := []
+        
+      else
+        label := <origin-text> sort;
+        icon := <icon-multiple-prods>;
+        children := <map(prod-to-outline-node(|prods))> prods'
+      end
+  
+  fetch-sort = ?prod(_, sort, _); !sort
+  
+  prod-to-outline-node(|prods):
+  	prod -> Node(label{icon}, [])
+  	where
+      sort := <fetch-sort> prod;
+  		if cons-name := <prod-to-cons> prod
+  		then
+  			label := <concat-strings> [<origin-text> sort, ".", cons-name];
+  			icon := <icon-prod-cf-cons>
+  	  else
+  	  	label := <origin-text> sort;
+  	  	icon := <icon-prod-cf>
+  	  end
+  
+  
+  prod-to-cons:
+    prod(_, _, attrs) -> <fetch-cons-name> attrs
+  
+  prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
   
   to-outline-label(|parent):
     sort(startSymbol) -> startSymbol {<icon-start>}
     where
       <start-symbols> parent
-  
-  to-outline-label(|parent):
-    p@prod(_, symbol, attrs) -> label {icon}
-    where
-      label' := <symbol-to-outline-label> symbol;
-      if <?context-free-syntax(_)> parent
-      then
-        if cons-name := <fetch-cons-name> attrs
-        then
-          label := <concat-strings> [label', ".", cons-name];
-          icon := <icon-prod-cf-cons>
-        else
-          label := label';
-          icon := <icon-prod-cf>
-        end
-      else
-        label := label';
-        if <?"LAYOUT"> label'
-        then icon := <icon-layout>
-        else icon := <icon-prod-lex>
-        end
-      end
-
-  
+ 
 rules
 
   start-symbols = 
@@ -102,17 +119,6 @@ rules
         string-replace(|"context-free-", "context-free "); 
         string-replace(|"lexical-", "lexical ")
       > appl  
-  
-  symbol-to-outline-label: layout() -> "LAYOUT"
-  symbol-to-outline-label: sort(s) -> s
-  symbol-to-outline-label: lex(sort(s)) -> <conc-strings> (s, "-LEX")
-  symbol-to-outline-label: cf(sort(s)) -> <conc-strings> (s, "-CF")
-  symbol-to-outline-label:
-    label(l, s) -> label
-    where
-      l' := <get-arguments; Hd> l;
-      s' := <symbol-to-outline-label> s;
-      label := <concat-strings> [s, " (", l, ")"]
 
 signature constructors
   
