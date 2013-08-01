@@ -1,7 +1,7 @@
 module outline
 
 /*
- * When making changes to this code, do realise that it is used by both the SDF2 and SDF3 editors.
+ * When making changes to this code, do realise that it is being used for both the SDF2 and SDF3 editors.
  */
 
 imports
@@ -93,7 +93,7 @@ rules
   	  	label := <origin-text> sort;
   	  	icon := <icon-prod>
   	  end end;
-  	  label' := <origin-set-relation> (sort, label)
+  	  label' := <origin-track-forced(!label)> sort
   
   prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
   prod-to-cons: SdfProduction(_, _, attrs) -> <fetch-cons-name> attrs
@@ -120,7 +120,7 @@ rules
       label := <section-to-outline-label> appl 
 
   // restrictions
-    to-outline-node:
+  to-outline-node:
     section -> Node(label{icon}, children)
     where
       <?lexical-restrictions(restrictions) + ?context-free-restrictions(restrictions)> section;
@@ -143,7 +143,7 @@ rules
     follow(symbols, _) -> Node(label'{icon}, [])
     where
       label := <origin-text> symbols;
-      label' := <origin-set-relation> (symbols, label);
+      label' := <origin-track-forced(!label)> symbols;
       icon := <icon-follow-restriction>
 
   fetch-symbols = ?follow(<id>, _)
@@ -166,12 +166,6 @@ rules // utils
         string-replace(|"TemplateOptions", "template options");
         string-replace(|"TemplateSection", "templates")
       > section  
-  
-  // should be a primitive?
-  origin-set-relation:
-  (origin-node, new-node) -> origin-tracked-node
-  where
-    origin-tracked-node := <!Some(<id>); all(!new-node); ?Some(<id>)> origin-node
 
 signature constructors
   
