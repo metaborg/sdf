@@ -7,9 +7,14 @@ imports
 
 rules
   
-  outline-strategy = alltd(label-desugar); custom-label-outline(to-outline-label, to-outline-node)
-  outline-expand-to-level = !3
-  label-desugar = ?label(_, <id>)
+  outline-strategy = alltd(outline-desugar); custom-label-outline(to-outline-label, to-outline-node)
+  outline-expand-to-level = !2
+  
+rules
+  
+  outline-desugar = ?label(_, <id>)
+  outline-desugar = ?unparameterized(<id>)
+  outline-desugar = ?parameterized(<id>, _)
   
 rules
   
@@ -20,17 +25,79 @@ rules
   icon-start = to-outline-icon(|"start")
   icon-prod-lex = to-outline-icon(|"prod-lex")
   icon-prod-cf = to-outline-icon(|"prod-cf")
-  icon-prod-cf-cons = to-outline-icon(|"prod-cf-cons")
   icon-layout = to-outline-icon(|"layout")
-  icon-multiple-prods = !["icons/", "multiple-prods", ".gif"]; concat-strings
+  icon-follow-restriction = to-outline-icon(|"follow-restriction")
+  
+  icon-cons-overlay = ?path; get-extension; ?extension; !(<remove-extension> path, "-cons"); conc-strings; !(<id>, extension); add-extension
   
 rules
-  
+	
+  // module
   to-outline-label:
-    'module(moduleName, _, _) -> label {<icon-module>}
+    'module(name, _, _) -> name {<icon-module>}
+  
+  // start symbols
+  to-outline-node:
+    section -> Node(label{icon}, children)
     where
-      <?unparameterized(label) + ?parameterized(label, _)> := moduleName
+      <?kernel-start-symbols(symbols) + ?lexical-start-symbols(symbols) + ?context-free-start-symbols(symbols)> section;
+      label := <appl-to-outline-label> section;
+      icon := <icon-exports>;
+      children := <map(start-symbol-to-outline-label)> symbols
 
+  start-symbol-to-outline-label:
+    sort(symbol) -> Node(symbol {<icon-start>}, [])
+
+  // lexical and context-free productions  
+  to-outline-node:
+    section -> Node(label{icon}, children)
+    where
+    	<?context-free-syntax(prods) + ?lexical-syntax(prods) + ?syntax(_)> section;
+      label := <appl-to-outline-label> section;
+      icon := <icon-exports>
+    where
+    	if context-free-syntax(_) := section
+      then rules ( icon-prod := <icon-prod-cf>)
+      else rules ( icon-prod := <icon-prod-lex>)
+      end;
+      'sorts := <collect-om(fetch-sort)> prods;
+      children := <map(sort-to-outline-node(|prods))> 'sorts
+ 
+  sort-to-outline-node(|prods):
+    sort -> Node(label{icon}, children)
+    where
+      prods' := <collect-om(prod-has-sort(|sort), conc)> prods;
+      Node(label{icon}, _) := <Hd; prod-to-outline-node> prods';
+      if 1 := <length> prods'
+      then children := []
+      else children := <Tl; map(prod-to-outline-node)> prods'
+      end
+  
+  prod-to-outline-node:
+  	prod -> Node(label'{icon}, [])
+  	where
+      sort := <fetch-sort> prod;
+      if layout() := sort
+      then
+        label := <origin-text> sort;
+        icon := <icon-layout>
+  		else if cons-name := <prod-to-cons> prod
+  		then
+  			label := <concat-strings> [<origin-text> sort, ".", cons-name];
+  			icon := <icon-prod; icon-cons-overlay>
+  	  else
+  	  	label := <origin-text> sort;
+  	  	icon := <icon-prod>
+  	  end end;
+  	  label' := <origin-set-relation> (sort, label)
+  
+  prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
+  
+  fetch-sort = ?prod(_, <id>, _)
+  
+  prod-has-sort(|sort) = ?prod(_, sort, _)
+
+  // other sections
   to-outline-label:
     appl -> label {<icon-exports>}
     where
@@ -38,79 +105,44 @@ rules
       ?lexical-variables(_) +
       ?lexical-priorities(_) +
       ?context-free-priorities(_) +
-      ?lexical-restrictions(_) +
-      ?context-free-restrictions(_) + 
-      ?aliases(_) + 
-      ?restrictions(_) +
-      start-symbols> appl;
-      label := <appl-to-outline-label> appl
-  
-  to-outline-node:
-    syntax-section -> Node(label{icon}, children)
-    where
-    	<?context-free-syntax(prods) + ?lexical-syntax(prods) + ?syntax(_)> syntax-section
-    where
-      label := <appl-to-outline-label> syntax-section;
-      icon := <icon-exports>;
-      'sorts := <reverse; collect-om(fetch-sort); reverse> prods; // reverse: collect-om returns the last element in case of duplicates; we want the first, for its origin
-      children := <map(sort-to-outline-node(|prods))> 'sorts
- 
-  sort-to-outline-node(|prods):
-    sort -> Node(label{icon}, children)
-    where
-      prods' := <collect-om(prod-has-sort(|sort), conc)> prods;
       
-      if 1 := <length> prods'
-      then
-        if cons-name := <Hd; prod-to-cons> prods'
-        then
-          label := <concat-strings> [<origin-text> sort, ".", cons-name];
-          icon := <icon-prod-cf-cons>
-        else
-          label := <origin-text> sort;
-          icon := <icon-prod-cf>
-        end;
-        children := []
-        
-      else
-        label := <origin-text> sort;
-        icon := <icon-multiple-prods>;
-        children := <map(prod-to-outline-node(|prods))> prods'
-      end
-  
-  fetch-sort = ?prod(_, sort, _); !sort
-  
-  prod-to-outline-node(|prods):
-  	prod -> Node(label{icon}, [])
-  	where
-      sort := <fetch-sort> prod;
-  		if cons-name := <prod-to-cons> prod
-  		then
-  			label := <concat-strings> [<origin-text> sort, ".", cons-name];
-  			icon := <icon-prod-cf-cons>
-  	  else
-  	  	label := <origin-text> sort;
-  	  	icon := <icon-prod-cf>
-  	  end
-  
-  
-  prod-to-cons:
-    prod(_, _, attrs) -> <fetch-cons-name> attrs
-  
-  prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
-  
-  to-outline-label(|parent):
-    sort(startSymbol) -> startSymbol {<icon-start>}
-    where
-      <start-symbols> parent
- 
-rules
+      ?aliases(_) + 
+      ?restrictions(_)> appl;
+      label := <appl-to-outline-label> appl 
 
-  start-symbols = 
-    ?kernel-start-symbols(_) + 
-    ?lexical-start-symbols(_) + 
-    ?context-free-start-symbols(_)
+  // restrictions
+    to-outline-node:
+    section -> Node(label{icon}, children)
+    where
+      <?lexical-restrictions(restrictions) + ?context-free-restrictions(restrictions)> section;
+      label := <appl-to-outline-label> section;
+      icon := <icon-exports>;
+      symbolss := <collect-om(fetch-symbols)> restrictions;
+      children := <map(restriction-symbols-to-outline-node(|restrictions))> symbolss
+
+  restriction-symbols-to-outline-node(|restrictions):
+    symbols -> Node(label'{icon}, children)
+    where
+      restrictions' := <collect-om(restriction-has-symbols(|symbols), conc)> restrictions;
+      Node(label'{icon}, []) := <Hd; restriction-to-outline-node> restrictions';
+      if 1 := <length> restrictions'
+      then children := []
+      else children := <Tl; map(restriction-to-outline-node)> restrictions'
+      end
+
+  restriction-to-outline-node:
+    follow(symbols, _) -> Node(label'{icon}, [])
+    where
+      label := <origin-text> symbols;
+      label' := <origin-set-relation> (symbols, label);
+      icon := <icon-follow-restriction>
+
+  fetch-symbols = ?follow(<id>, _)
   
+  restriction-has-symbols(|symbols) = ?follow(symbols, _)
+
+rules // utils
+
   appl-to-outline-label:
     appl -> label
     where
@@ -119,8 +151,16 @@ rules
         string-replace(|"context-free-", "context-free "); 
         string-replace(|"lexical-", "lexical ")
       > appl  
+  
+  // should be a primitive?
+  origin-set-relation:
+  (origin-node, new-node) -> origin-tracked-node
+  where
+    origin-tracked-node := <!Some(<id>); all(!new-node); ?Some(<id>)> origin-node
 
 signature constructors
   
   'module : ModuleName * List(ImpSection) * Sections -> Module
+  True: Bool
+  False: Bool
   
