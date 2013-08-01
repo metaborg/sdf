@@ -1,5 +1,9 @@
 module outline
 
+/*
+ * When making changes to this code, do realise that it is used by both the SDF2 and SDF3 editors.
+ */
+
 imports
   include/TemplateLang
   lib/editor-common.generated
@@ -41,7 +45,7 @@ rules
     section -> Node(label{icon}, children)
     where
       <?kernel-start-symbols(symbols) + ?lexical-start-symbols(symbols) + ?context-free-start-symbols(symbols)> section;
-      label := <appl-to-outline-label> section;
+      label := <section-to-outline-label> section;
       icon := <icon-exports>;
       children := <map(start-symbol-to-outline-label)> symbols
 
@@ -52,15 +56,15 @@ rules
   to-outline-node:
     section -> Node(label{icon}, children)
     where
-    	<?context-free-syntax(prods) + ?lexical-syntax(prods) + ?syntax(_)> section;
-      label := <appl-to-outline-label> section;
+    	<?context-free-syntax(prods) + ?lexical-syntax(prods) + ?syntax(prods) + ?TemplateSection(prods)> section;
+      label := <section-to-outline-label> section;
       icon := <icon-exports>
     where
-    	if context-free-syntax(_) := section
+    	if <?context-free-syntax(_) + ?TemplateSection(_)> := section
       then rules ( icon-prod := <icon-prod-cf>)
       else rules ( icon-prod := <icon-prod-lex>)
       end;
-      'sorts := <collect-om(fetch-sort)> prods;
+      'sorts := <reverse; collect-om(fetch-sort); reverse> prods; // why reverse? => collect-om returns the last element in case of duplicates; we want the first, for its origin
       children := <map(sort-to-outline-node(|prods))> 'sorts
  
   sort-to-outline-node(|prods):
@@ -92,10 +96,15 @@ rules
   	  label' := <origin-set-relation> (sort, label)
   
   prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
+  prod-to-cons: SdfProduction(_, _, attrs) -> <fetch-cons-name> attrs
+  prod-to-cons = ?TemplateProductionWithCons(SortCons(_, <id>), _, _)
   
   fetch-sort = ?prod(_, <id>, _)
+  fetch-sort = ?SdfProduction(<id>, _, _)
+  fetch-sort = ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
+  fetch-sort = ?TemplateProduction(<id>, _, _)
   
-  prod-has-sort(|sort) = ?prod(_, sort, _)
+  prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
 
   // other sections
   to-outline-label:
@@ -108,16 +117,16 @@ rules
       
       ?aliases(_) + 
       ?restrictions(_)> appl;
-      label := <appl-to-outline-label> appl 
+      label := <section-to-outline-label> appl 
 
   // restrictions
     to-outline-node:
     section -> Node(label{icon}, children)
     where
       <?lexical-restrictions(restrictions) + ?context-free-restrictions(restrictions)> section;
-      label := <appl-to-outline-label> section;
+      label := <section-to-outline-label> section;
       icon := <icon-exports>;
-      symbolss := <collect-om(fetch-symbols)> restrictions;
+      symbolss := <reverse; collect-om(fetch-symbols); reverse> restrictions; // why reverse? => collect-om returns the last element in case of duplicates; we want the first, for its origin
       children := <map(restriction-symbols-to-outline-node(|restrictions))> symbolss
 
   restriction-symbols-to-outline-node(|restrictions):
@@ -141,16 +150,22 @@ rules
   
   restriction-has-symbols(|symbols) = ?follow(symbols, _)
 
+  // TODO: template options
+  to-outline-label:
+  	TemplateOptions(_) -> "template options" {<icon-exports>}
+
 rules // utils
 
-  appl-to-outline-label:
-    appl -> label
+  section-to-outline-label:
+    section -> label
     where
       label := <
-        get-constructor; 
-        string-replace(|"context-free-", "context-free "); 
-        string-replace(|"lexical-", "lexical ")
-      > appl  
+        get-constructor;
+        string-replace(|"context-free-", "context-free ");
+        string-replace(|"lexical-", "lexical ");
+        string-replace(|"TemplateOptions", "template options");
+        string-replace(|"TemplateSection", "templates")
+      > section  
   
   // should be a primitive?
   origin-set-relation:
