@@ -12,7 +12,7 @@ imports
   include/SDF
   completion
   check
-  outline
+  editor/SDF-Outliner
 
 rules
 

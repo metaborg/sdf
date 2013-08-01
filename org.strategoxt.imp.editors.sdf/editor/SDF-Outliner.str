@@ -1,10 +1,4 @@
-module editor/outline
-
-imports
-  include/SDF
-  lib/attributes
-  lib/editor-common.generated
-  lib/outline-library.generated
+module editor/SDF-Outliner
 
 rules
   

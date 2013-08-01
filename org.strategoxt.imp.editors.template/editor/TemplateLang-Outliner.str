@@ -1,4 +1,4 @@
-module outline
+module editor/TemplateLang-Outliner
 
 /*
  * When making changes to this code, do realise that it is being used for both the SDF2 and SDF3 editors.
