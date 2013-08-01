@@ -51,8 +51,8 @@
 		      sdf2imp.eclipse.load" />
 
     <!-- Initialization -->
-    <available file="${src-gen}/org/strategoxt/imp/editors/template/strategies/Main.java" property="java.jar.enabled"/>
-    <condition property="java.jar.import" value="-la org.strategoxt.imp.editors.template.strategies" else="">
+    <available file="${src-gen}/org/strategoxt/imp/editors/sdf/strategies/Main.java" property="java.jar.enabled"/>
+    <condition property="java.jar.import" value="-la org.strategoxt.imp.editors.sdf.strategies" else="">
         <isset property="java.jar.enabled"/>
     </condition>
     <condition property="java.jar.classpath" value=":${include}/${strmodule}-java.jar" else="">
