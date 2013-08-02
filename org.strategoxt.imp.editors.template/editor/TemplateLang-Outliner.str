@@ -45,11 +45,14 @@ rules
   
 signature constructors
   
+  // outline sections
   Start:           OutlineSection
   Lex:             OutlineSection
   CF:              OutlineSection
   Restriction:     OutlineSection
   Other:           OutlineSection
+  
+  'module : ModuleName * List(ImpSection) * Sections -> Module
   
 rules
   
@@ -59,7 +62,7 @@ rules
       sections' := <collect-om(has-outline-section(|outline-section), conc)> sections;
       label := <Hd; concrete-syntax-at-start> sections';
       icon := <icon-exports>;
-      children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section)); map(label-to-outline-node)> sections'
+      children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section), conc); map(label-to-outline-node)> sections'
   
   label-to-outline-node = ?label; !Node(label, [])
   
@@ -194,10 +197,3 @@ rules // utils
     )
     
   rm-double-space: (' ', l@[' '|xs]) -> l
-  
-signature constructors
-  
-  'module : ModuleName * List(ImpSection) * Sections -> Module
-  True: Bool
-  False: Bool
-  
