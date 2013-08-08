@@ -6,7 +6,6 @@ module editor/TemplateLang-Outliner
 
 imports
   include/TemplateLang
-  lib/runtime/editor/outline-library
   lib/runtime/editor/origins
 
 rules
@@ -53,6 +52,8 @@ signature constructors
   Other:           OutlineSection
   
   'module : ModuleName * List(ImpSection) * Sections -> Module
+  
+  Node: label * children -> Node
   
 rules
   
