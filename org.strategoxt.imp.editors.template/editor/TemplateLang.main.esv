@@ -1,6 +1,6 @@
 module TemplateLang.main
 
-imports TemplateLang-Builders TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-Outliner TemplateLang-References TemplateLang-Syntax
+imports TemplateLang-Builders TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
 
 language General properties
 

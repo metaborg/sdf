@@ -4,7 +4,6 @@ imports
   SDF-Builders
   SDF-Colorer
   SDF-Folding
-  SDF-Outliner
   SDF-References
   SDF-Syntax
   SDF-Completions
