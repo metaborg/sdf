@@ -6,6 +6,7 @@ module editor/TemplateLang-Outliner
 
 imports
   include/TemplateLang
+  lib/runtime/editor/outline-library
   lib/runtime/editor/origins
 
 rules
@@ -53,15 +54,13 @@ signature constructors
   
   'module : ModuleName * List(ImpSection) * Sections -> Module
   
-  Node: label * children -> Node
-  
 rules
   
   outline-section-to-node(|sections):
     outline-section -> Node(label{icon}, children)
     where
       sections' := <collect-om(has-outline-section(|outline-section), conc)> sections;
-      label := <Hd; concrete-syntax-at-start> sections';
+      label := <Hd; origin-text-at-start> sections';
       icon := <icon-exports>;
       children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section), conc); map(label-to-outline-node)> sections'
   
@@ -125,7 +124,7 @@ rules
   			icon := <outline-section-to-icon; icon-overlay-cons> outline-section
   	  else
         lhs := <fetch-lhs> prod;
-        label := <origin-text; outline-rm-excess-whitespace> lhs;
+        label := <origin-text; guarantee-one-space-separation> lhs;
         <origin-location-offset-set(|<origin-location-offset> lhs)> label;
         if layout() := sort
         then icon := <icon-layout>
@@ -161,14 +160,14 @@ rules
     symbols -> Node(label{icon}, children)
     where
       restrictions := <collect-om(restriction-has-symbols(|symbols), conc)> sections;
-      label := <Hd; fetch-symbols; origin-text; outline-rm-excess-whitespace> restrictions;
+      label := <Hd; fetch-symbols; origin-text; guarantee-one-space-separation> restrictions;
       icon := <outline-section-to-icon> Restriction();
       children := <map(restriction-to-outline-node)> restrictions
 
   restriction-to-outline-node:
     follow(_, lookaheads) -> Node(label'{icon}, [])
     where
-      label := <origin-text; outline-rm-excess-whitespace> lookaheads;
+      label := <origin-text; guarantee-one-space-separation> lookaheads;
       label' := <origin-track-forced(!label)> lookaheads;
       icon := <outline-section-to-icon> Restriction()
 
@@ -176,25 +175,3 @@ rules
   
   restriction-has-symbols(|symbols) = ?follow(symbols, _)
 
-rules // utils
-
-  concrete-syntax-at-start:
-  	term -> result'
-  	where
-  		(cons, args) := <explode-term> term;
-  		offset1 := <origin-offset; ?(<id>, _)> term;
-  		offset2 := <Hd; origin-offset; ?(<id>, _)> args;
-  		offset-diff := <subt> (offset2, offset1);
-  		result := <origin-text; explode-string; take(!offset-diff); rtrim(is-whitespace + is-return); implode-string> term;
-   		result' := <outline-rm-excess-whitespace> result;
-  		(a, b, c, d, e) := <origin-location-offset> term;
-  		<origin-location-offset-set(|(a, b, c, d, <add> (d, <string-length; dec> result)))> result'
-  
-  is-return = test('\n')
-  
-  outline-rm-excess-whitespace = string-as-chars(
-      map(try(test('\n' + '\t'); !' '));
-      foldr(![], rm-double-space <+ MkCons)
-    )
-    
-  rm-double-space: (' ', l@[' '|xs]) -> l
