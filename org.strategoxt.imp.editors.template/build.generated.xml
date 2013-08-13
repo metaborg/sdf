@@ -132,6 +132,8 @@
         <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Colorer.generated.esv" depth="infinite" />
         <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Completions.generated.esv" depth="infinite" />
         <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Folding.generated.esv" depth="infinite" />
+        <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Outliner.generated.esv" depth="infinite" />
+        <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Outliner.generated.str" depth="infinite" />
         <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-References.generated.esv" depth="infinite" />
         <eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Syntax.generated.esv" depth="infinite" />
         <eclipse.convertPath fileSystemPath="${src-gen}" property="eclipse.path.src-gen" />
@@ -368,7 +370,7 @@
 
     <target name="ppgen.helper" unless="ppgen.available">
         <!-- Any failures here are ignored; they are only a problem when imported from Stratego -->
-        <java classname="run" failonerror="false">
+        <java classname="run" failonerror="true">
             <arg value="org.strategoxt.tools.main-ppgen"/>
             <arg value="-i"/>
             <arg value="${include}/${sdfmodule}.def"/>
@@ -377,7 +379,7 @@
             <arg value="-o"/>
             <arg value="${include}/${sdfmodule}.generated.pp.af"/>
         </java>
-        <java classname="run" failonerror="false">
+        <java classname="run" failonerror="true">
             <arg value="org.strategoxt.tools.main-pp-pp-table"/>
             <arg value="-i"/>
             <arg value="${include}/${sdfmodule}.generated.pp.af"/>

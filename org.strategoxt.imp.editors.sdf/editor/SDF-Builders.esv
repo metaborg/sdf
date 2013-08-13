@@ -23,12 +23,3 @@ builders
 
   builder : "Show syntax templates (for selection)" =
     generate-syntax-templates (realtime) (openeditor)
-
-  builder : "Generate name analysis" =
-    generate-name-analysis (realtime) (openeditor)
-    
-  builder : "Clean name analysis index" = 
-    index-cleanall (realtime) (openeditor)
-
-  on save :
-    generate-name-analysis

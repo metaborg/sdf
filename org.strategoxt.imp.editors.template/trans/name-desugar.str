@@ -1,0 +1,36 @@
+module name-desugar
+
+imports
+	
+  include/TemplateLang
+  
+signature
+
+	constructors
+		
+		SortRef : ID -> sort
+		SortDef : ID -> sort
+
+strategies
+	
+	name-sugar-all = topdown(try(name-sugar))
+	name-desugar-all = topdown(try(name-desugar))
+	
+rules // Sugar certain sort constructors into SortRef or SortDef constructors for name binding.
+	
+	name-sugar:
+		TemplateProduction(sort, tmpl, attrs) -> TemplateProduction(sort, tmpl', attrs)
+		with
+			tmpl' := <topdown(try(\sort(s) -> SortRef(s)\))> tmpl
+		
+	name-sugar:
+		prod(l, sort(s), attr*) -> prod(l, SortDef(s), attr*)
+		
+rules // Desugar the SortRef and SortDef constructors back into sort constructors to make generation work.
+	
+	name-desugar:
+		SortRef(s) -> sort(s)
+		
+	name-desugar:
+		SortDef(s) -> sort(s)
+		
