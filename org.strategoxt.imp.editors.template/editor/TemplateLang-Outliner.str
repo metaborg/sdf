@@ -11,7 +11,7 @@ imports
 
 rules
   
-  outline-strategy:
+  outline:
     ast -> Node(label{icon}, children)
     where
       desugared := <alltd(outline-desugar)> ast;
