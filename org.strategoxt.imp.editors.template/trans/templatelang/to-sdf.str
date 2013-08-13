@@ -35,7 +35,6 @@ rules // lookup of template production, e.g. Exp.Plus
 		   
   create-template-production-dr :
   	(lhs, rhs) -> <rules( TemplateProductionDef : lhs -> rhs )>
-  	where <debug(!"template production: ")> (lhs, rhs) 
 
 rules
 

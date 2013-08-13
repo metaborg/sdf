@@ -6,29 +6,23 @@ context-free start-symbols
 
 template options
   keyword -/- [A-Za-z0-9]
-
-// context-free syntax
-//
-//   "module" ID Definition*       -> Start {cons("Module")}
-//   "entity" ID "{" Property* "}" -> Definition {cons("Entity")}
-//   ID ":" Type                   -> Property {cons("Property")}
-//   ID                            -> Type {cons("Type")}
+  
 
 templates
 
   Start.Module = <
     module <ID>
 
-    <Definition*; separator="\n">
-  >
+    <Definitionz*; separator="\n">
+  > {avoid}
 
   Definition.Entity = <
     entity <ID> {
       <Property*; separator="\n">
     }
-  >
+  >   
 
-  Property.Property = <
+  Property.Property = < 
     <ID> : <Type>
   >
 
@@ -41,7 +35,7 @@ templates
     expression <ID> {
       <Expression>
     }
-  >
+  > 
 
   Expression.Plus  = <<Expression> + <Expression>> {left}
   Expression.Minus = <<Expression> - <Expression>> {left}
