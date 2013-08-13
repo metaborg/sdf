@@ -7,7 +7,7 @@ imports
 
 strategies
   
-    fetch-sdf-errors =
+  fetch-sdf-errors =
     ?context-free-syntax(<collect-om(context-free-syntax-error)>)
   + ?lexical-syntax(<collect-om(lexical-syntax-error)>)
   
@@ -42,8 +42,6 @@ rules // Local checks
         not(<occurrences(?sort(_))> p* => 1; <occurrences(?lit(_))> p* => 0)
       <+
         <oncetd(is-iter + ?opt(_))> p*
-      <+
-        <oncetd(?namespaceref(_) + ?namespaceref2(_, _) + ?namespacedef(_, _))> p*
       );
       if !a* => attrs(a'*) then
         not(<one(term(default(appl(unquoted("cons" + "ast"), [fun(quoted(not("\"\"")))]))))> a'*);
@@ -61,8 +59,16 @@ rules // Local checks
       not(<length> a* => 1)
 
   context-free-syntax-warning:
-    term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Nil\""))])))
-      -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
+    _ -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
+    where
+    	?term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Nil\""))])))
+  	+ ?t@Constructor("\"Nil\"")
+      
+  context-free-syntax-warning:
+    _ -> (t, $[In Stratego, Cons is the list constructor, and Cons() does not match this constructor (use a different constructor)])
+    where
+    	?term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Cons\""))])))
+  	+ ?t@Constructor("\"Cons\"")
 
   lexical-syntax-warning:
     attrs(lst) -> (t, $[Constructor only expected in context-free syntax])
@@ -98,8 +104,6 @@ rules // Local checks
    */
   is-non-terminal =
     ?sort(_) + ?opt(_) + is-iter
-  + namespacedef(id, is-non-terminal) + namespaceref(is-non-terminal)
-  + namespaceref2(id, is-non-terminal)
 
   is-iter =
     ?iter(_) + ?iter-star(_) + ?iter-sep(_, _) + ?iter-star-sep(_, _)
