@@ -1,0 +1,111 @@
+module names
+
+imports
+  lib/runtime/nbl/-
+  lib/runtime/task/-
+  lib/runtime/types/-
+  lib/runtime/editor/-
+  include/TemplateLang
+  name-desugar
+
+
+signature
+  constructors
+    NablNsSort : Namespace
+
+
+rules
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?TemplateProduction(s, _, _)
+    ; origin-track-forced(
+        TemplateProduction(
+          nabl-def(
+            ?c-uri1__
+          , ?s-uri1__
+          | lang__
+          , partition__
+          , uniques__
+          , uri__
+          , uri__
+          , NablNsSort()
+          , NonUnique()
+          , Current()
+          , []
+          )
+        , id
+        , id
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?SortDef(s)
+    ; origin-track-forced(
+        SortDef(
+          nabl-def(
+            ?c-uri1__
+          , ?s-uri1__
+          | lang__
+          , partition__
+          , uniques__
+          , uri__
+          , uri__
+          , NablNsSort()
+          , NonUnique()
+          , Current()
+          , []
+          )
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?SortRef(s)
+    ; origin-track-forced(
+        SortRef(
+          nabl-use(
+          | lang__
+          , partition__
+          , uniques__
+          , uris__
+          , [ UseCandidate(
+                NablNsSort()
+              , []
+              , Current()
+              , True()
+              , []
+              )
+            ]
+          )
+        )
+      |
+      )
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?sort(s)
+    ; origin-track-forced(
+        sort(
+          nabl-use(
+          | lang__
+          , partition__
+          , uniques__
+          , uris__
+          , [ UseCandidate(
+                NablNsSort()
+              , []
+              , Current()
+              , True()
+              , []
+              )
+            ]
+          )
+        )
+      |
+      )

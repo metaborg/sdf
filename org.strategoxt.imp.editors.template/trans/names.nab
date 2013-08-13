@@ -1,0 +1,24 @@
+module names
+
+imports
+
+  include/TemplateLang
+  name-desugar
+  
+namespaces
+
+	Sort
+	
+binding rules
+
+	TemplateProduction(s, _, _):
+		defines non-unique Sort s
+
+	SortDef(s):
+		defines non-unique Sort s
+		
+	SortRef(s):
+		refers to Sort s
+		
+	sort(s):
+		refers to Sort s

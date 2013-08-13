@@ -1,0 +1,11 @@
+module editor/TemplateLang-Outliner
+
+imports
+  include/TemplateLang
+  lib/runtime/editor/outline-library
+  lib/runtime/editor/origins
+  editor/TemplateLang-Outliner.generated
+
+rules
+  
+  outline-expand-to-level = !3
