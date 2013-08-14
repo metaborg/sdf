@@ -2,7 +2,7 @@ module editor/SDF-Outliner
 
 rules
   
-  outline = foreign-call(|"TemplateLang", "outline-strategy")
+  outline = foreign-call(|"TemplateLang", "outline")
   outline-expand-to-level = !3
   
   foreign-call(|lang,strategy) = prim("SSL_EXT_foreigncall", lang, strategy)
