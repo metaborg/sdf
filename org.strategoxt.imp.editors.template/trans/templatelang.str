@@ -22,6 +22,7 @@ imports
 	names
 	name-desugar
 	name-check
+	check
     
 rules // Analysis
   

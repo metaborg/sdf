@@ -58,16 +58,16 @@ rules // Local checks
     where
       not(<length> a* => 1)
 
-  context-free-syntax-warning:
-    _ -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor)])
+  context-free-syntax-error:
+    _ -> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)])
     where
-    	?term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Nil\""))])))
+    	?term(default(appl(unquoted("cons"), [t@fun(quoted("\"Nil\""))])))
   	+ ?t@Constructor("\"Nil\"")
       
-  context-free-syntax-warning:
-    _ -> (t, $[In Stratego, Cons is the list constructor, and Cons() does not match this constructor (use a different constructor)])
+  context-free-syntax-error:
+    _ -> (t, $[In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)])
     where
-    	?term(default(appl(unquoted("cons"), [t @ fun(quoted("\"Cons\""))])))
+    	?term(default(appl(unquoted("cons"), [t@fun(quoted("\"Cons\""))])))
   	+ ?t@Constructor("\"Cons\"")
 
   lexical-syntax-warning:
