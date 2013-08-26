@@ -60,7 +60,12 @@ rules
     outline-section -> Node(label{icon}, children)
     where
       sections' := <collect-om(has-outline-section(|outline-section), conc)> sections;
-      label := <Hd; origin-text-at-start> sections';
+      label := <literals-to-outline-label(|<Hd> sections')>
+        <Hd; explode-term; ?(<id>, _);
+        string-replace(|"lexical-", "lexical ");
+        string-replace(|"context-free-", "context-free ");
+        string-replace(|"TemplateSection", "templates");
+        string-replace(|"TemplateOptions", "template options")> sections';
       icon := <icon-exports>;
       children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section), conc); map(label-to-outline-node)> sections'
   
