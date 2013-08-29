@@ -157,13 +157,7 @@ rules
   
   prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
 
-  is-injection2:
-    templateProd -> <id>
-    where
-      1 := <collect-om(?sort(_), conc); length> templateProd;
-      not ( <collect-one(?String(_))> templateProd )
-
-  // // restrictions
+ // restrictions
   to-outline-nodes(|outline-section):
     sections -> nodes
     where
