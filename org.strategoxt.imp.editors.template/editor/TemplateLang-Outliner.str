@@ -1,11 +1,13 @@
 module editor/TemplateLang-Outliner
 
 /*
- * When making changes to this code, do realise that it is being used for both the SDF2 and SDF3 editors.
+ * This file defines an outliner that is used by both the SDF2 and SDF3 (Template language) editors.
  */
 
 imports
+  libstratego-sglr
   include/TemplateLang
+  include/libtemplatelang
   lib/runtime/editor/outline-library
   lib/runtime/editor/origins
 
@@ -32,16 +34,18 @@ rules
   
   // icons
   icon-module = !"icons/module.png"
+  icon-start = !"icons/start.png"
   icon-exports = !"icons/exports.png"
   icon-layout = !"icons/layout.png"
+  icon-restriction = !"icons/follow-restriction.png"
   
-  outline-section-to-icon = ?Start(); !"icons/start.png"
-  outline-section-to-icon = ?Lex(); !"icons/prod-lex.png"
-  outline-section-to-icon = ?CF(); !"icons/prod-cf.png"
-  outline-section-to-icon = ?Restriction(); !"icons/follow-restriction.png"
+  icon-prod = ?Lex(); !"icons/prod-lex.png"
+  icon-prod = ?CF(); !"icons/prod-cf.png"
+  icon-prod-cons = ?Lex(); !"icons/prod-lex-cons.png"
+  icon-prod-cons = ?CF(); !"icons/prod-cf-cons.png"
+  icon-prod-injection = ?Lex(); !"icons/prod-lex-injection.png" 
+  icon-prod-injection = ?CF(); !"icons/prod-cf-injection.png" 
   
-  // overlays
-  icon-overlay-cons = ?path; get-extension; ?extension; !(<remove-extension> path, "-cons"); conc-strings; !(<id>, extension); add-extension
   
 signature constructors
   
@@ -94,11 +98,9 @@ rules
   
   // start
   to-outline-label(|outline-section):
-    sort(s) -> label{icon}
+    sort(s) -> s{<icon-start>}
     where
-      Start() := outline-section;
-      label := s;
-      icon := <outline-section-to-icon> outline-section
+      Start() := outline-section
   
   // lexical and context-free productions
   to-outline-nodes(|outline-section):
@@ -115,7 +117,7 @@ rules
       label := <Hd; fetch-sort; origin-text> prods;
       if layout() := sort
       then icon := <icon-layout>
-      else icon := <outline-section-to-icon> outline-section
+      else icon := <icon-prod> outline-section
       end;
       children := <map(prod-to-outline-node(|outline-section))> prods
   
@@ -123,18 +125,20 @@ rules
   	prod -> Node(label{icon}, [])
   	where
       sort := <fetch-sort> prod;
-  		if cons-name := <prod-to-cons> prod
-  		then
-  			label := cons-name;
-  			icon := <outline-section-to-icon; icon-overlay-cons> outline-section
-  	  else
-        lhs := <fetch-lhs> prod;
-        label := <origin-text; guarantee-one-space-separation> lhs;
-        <origin-location-offset-set(|<origin-location-offset> lhs)> label;
-        if layout() := sort
-        then icon := <icon-layout>
-        else icon := <outline-section-to-icon> outline-section
-        end
+      lhs := <fetch-lhs> prod;
+      lhs-as-label := <origin-text; guarantee-one-space-separation> lhs;
+      <origin-location-offset-set(|<origin-location-offset> lhs)> lhs-as-label;
+      switch !prod
+        case prod-to-cons; ?cons-name:
+          label := cons-name;
+          icon := <icon-prod-cons> outline-section
+        // case <is-injection> prod: TODO
+        otherwise:
+        	label := lhs-as-label;
+	        if layout() := sort
+	        then icon := <icon-layout>
+	        else icon := <icon-prod> outline-section
+	        end
   	  end
   
   prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
@@ -153,6 +157,12 @@ rules
   
   prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
 
+  is-injection2:
+    templateProd -> <id>
+    where
+      1 := <collect-om(?sort(_), conc); length> templateProd;
+      not ( <collect-one(?String(_))> templateProd )
+
   // // restrictions
   to-outline-nodes(|outline-section):
     sections -> nodes
@@ -162,19 +172,17 @@ rules
       nodes := <map(restriction-symbols-to-outline-node(|sections))> symbolss
   
   restriction-symbols-to-outline-node(|sections):
-    symbols -> Node(label{icon}, children)
+    symbols -> Node(label{<icon-restriction>}, children)
     where
       restrictions := <collect-om(restriction-has-symbols(|symbols), conc)> sections;
       label := <Hd; fetch-symbols; origin-text; guarantee-one-space-separation> restrictions;
-      icon := <outline-section-to-icon> Restriction();
       children := <map(restriction-to-outline-node)> restrictions
 
   restriction-to-outline-node:
-    follow(_, lookaheads) -> Node(label'{icon}, [])
+    follow(_, lookaheads) -> Node(label'{<icon-restriction>}, [])
     where
       label := <origin-text; guarantee-one-space-separation> lookaheads;
-      label' := <origin-track-forced(!label)> lookaheads;
-      icon := <outline-section-to-icon> Restriction()
+      label' := <origin-track-forced(!label)> lookaheads
 
   fetch-symbols = ?follow(<id>, _)
   
