@@ -11,6 +11,6 @@ language General properties
   description   : "Spoofax/IMP-generated editor for the TemplateLang language"
   url           : http://strategoxt.org
 
-  extensions    : tmpl
+  extensions    : tmpl, sdf3
   table         : include/TemplateLang.tbl
   start symbols : Start
