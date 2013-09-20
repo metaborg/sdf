@@ -13,9 +13,10 @@ binding rules
 
 	'module(unparameterized(m), _, _):
 		defines Module m
+		scopes Sort
 		
 	'module(unparameterized(m)):
-		imports Sort, imported Sort from Module m
+		imports Sort from Module m
 		
 	TemplateProduction(s, _, _):
 		defines non-unique Sort s

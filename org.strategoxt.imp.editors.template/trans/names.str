@@ -33,7 +33,7 @@ rules
             , NablNsModule()
             , Unique()
             , Current()
-            , []
+            , [NablNsSort()]
             )
           )
         , id
@@ -77,9 +77,7 @@ rules
         , partition__
         , uris__
         , [ Wildcard(
-              [ Import(lang__, NablNsSort())
-              , Import(lang__, Imported(NablNsSort()))
-              ]
+              [Import(lang__, NablNsSort())]
             , Context(
                 NablNsModule()
               , m
