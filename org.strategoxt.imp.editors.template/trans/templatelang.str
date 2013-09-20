@@ -166,22 +166,31 @@ rules
       result   := <generate-esv(|path); pp-descriptor-to-string> selected
 
   // Generate SDF
-  generate-sdf(|path) =
+  generate-sdf(|mn, i*) =
     collect-sections;
     template-sections-to-sdf;
-    !'module(unparameterized($[[<base-filename ; remove-extension> path]generated]), [], [exports(<list-to-conc-grammars>)])
+    !'module(unparameterized(mn), i*, [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
+       <?'module(unparameterized(mn), i*, _)> ast 
+    <+ mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
       filename := <guarantee-extension(|"aterm")> path;
-      result   := <generate-sdf(|path)> selected
+      result   := <generate-sdf(|mn, i*)> selected
       
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <conc-strings> (<remove-extension> path, "generated.sdf");
-      result   := <generate-sdf(|path); pp-sdf-to-string> selected
+       <?'module(unparameterized(mn), i*, _)> ast ;
+       filename := <guarantee-extension(|"sdf")> path
+    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdf");
+       mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
+      result   := <generate-sdf(|mn, i*); pp-sdf-to-string> selected
 
   // Generate pretty printer (BOX-based)
   generate-box-pp(|path) =

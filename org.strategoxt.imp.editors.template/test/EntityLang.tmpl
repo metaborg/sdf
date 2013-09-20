@@ -1,6 +1,7 @@
 // Grammar for the EntityLang language
 // By default, based on an example "entities" syntax
-
+module EntityLang
+	
 context-free start-symbols
   Start
 
@@ -13,7 +14,7 @@ templates
   Start.Module = <
     module <ID>
 
-    <Definitionz*; separator="\n">
+    <Definition*; separator="\n">
   > {avoid}
 
   Definition.Entity = <

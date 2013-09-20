@@ -11,10 +11,86 @@ imports
 
 signature
   constructors
-    NablNsSort : Namespace
+    NablNsModule : Namespace
+    NablNsSort   : Namespace
 
 
 rules
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?'module(unparameterized(m), _, _)
+    ; origin-track-forced(
+        'module(
+          unparameterized(
+            nabl-def(
+              ?c-uri1__
+            , ?s-uri1__
+            | lang__
+            , partition__
+            , uniques__
+            , uri__
+            , uri__
+            , NablNsModule()
+            , Unique()
+            , Current()
+            , [NablNsSort()]
+            )
+          )
+        , id
+        , id
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?'module(unparameterized(m))
+    ; origin-track-forced(
+        'module(
+          unparameterized(
+            nabl-use(
+            | lang__
+            , partition__
+            , uniques__
+            , uris__
+            , [ UseCandidate(
+                  NablNsModule()
+                , []
+                , Current()
+                , True()
+                , []
+                )
+              ]
+            )
+          )
+        )
+      |
+      )
+
+  nabl-import-site(|lang__, partition__, uris__, states__) =
+    ?'module(unparameterized(m))
+    ; origin-track-forced(
+        nabl-import(
+        | lang__
+        , partition__
+        , uris__
+        , [ Wildcard(
+              [Import(lang__, NablNsSort())]
+            , Context(
+                NablNsModule()
+              , m
+              , []
+              , Current()
+              )
+            , Current()
+            , []
+            )
+          ]
+        )
+      |
+      )
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?TemplateProduction(s, _, _)

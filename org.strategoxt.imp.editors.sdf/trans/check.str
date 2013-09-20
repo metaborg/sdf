@@ -23,6 +23,7 @@ rules // Limited exisiting sort checking
   context-free-syntax-sort-error:
     sort(x) -> (x, $[No definition for [x]])
     where
+      not(sort("CONTENTCOMPLETE"));
       not(<Declaration> x)
 
   context-free-syntax-sort-error:
