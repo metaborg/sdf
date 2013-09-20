@@ -124,18 +124,15 @@ rules
 
   template-to-prettyprint-strategy:
     Desugared(TemplateProduction(x, Template(line*), attrs)) ->
-    // ${prettyprint-{sort}:
-    //     {input} -> [{output}]}
-      //RDefNoArgs(
-      SDefNoArgs(
-          $[prettyprint-[x]]
-        // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
-          , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+      RDefNoArgs(
+        $[prettyprint-[x]],
+        Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
       )
     where with-spxverify(
       (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
       output         := <map(template-line-to-stratego)> line'*;
       arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+      (with*, output') := <extract-apps> output;
       if cons := <fetch-cons-name> attrs then
         //input := $[[cons]([<separate-by(|",")> arg*])]
         input := Op(cons, arg*)
@@ -156,7 +153,57 @@ rules
       end,
       !"Failed to pretty-print template"
     )
+    
+    
+  extract-apps :
+    t -> (with*, t')
+    where {| Condition 
+           : t' := <alltd(extract-app)> t
+           ; with* := <bagof-Condition; reverse>
+           |}
+    
+  extract-app :
+    t@App(_, _) -> Var(x)
+    where x := <newname> <oncetd(?Var(y)); !y <+ !"a"> t;
+          rules(
+            Condition :+ _ -> WithClause(Assign(Var(x), t))
+          )
 
+  // template-to-prettyprint-strategy:
+  //   Desugared(TemplateProduction(x, Template(line*), attrs)) ->=
+  //   // ${prettyprint-{sort}:
+  //   //     {input} -> [{output}]}
+  //     //RDefNoArgs(
+  //     SDefNoArgs(
+  //         $[prettyprint-[x]]
+  //       // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
+  //        , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+  //     )
+  //   where with-spxverify(
+  //     (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
+  //     output         := <map(template-line-to-stratego)> line'*;
+  //     arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+  //     if cons := <fetch-cons-name> attrs then
+  //       //input := $[[cons]([<separate-by(|",")> arg*])]
+  //       input := Op(cons, arg*)
+  //     else
+  //       if !arg* => [_] then
+  //         if <is-bracket> attrs then
+  //           // bracket / parentheses
+  //           input := Op("Parenthetical", arg*)
+  //         else
+  //           // injection
+  //           // FIXME: this may result in infinite loop in pretty printer
+  //           //        if there is a cycle of injections in the grammar!
+  //           input := Var("a")
+  //         end
+  //       else
+  //         input := Tuple(arg*)
+  //       end
+  //     end,
+  //     !"Failed to pretty-print template"
+  //   )
+    
   template-to-prettyprint-strategy(|languagename) =
     templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
