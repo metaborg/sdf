@@ -16,6 +16,8 @@ imports
       => -> IGNORED
     ImpSection -> Grammar {cons("imp-section")}
       => -> IGNORED
+    ModuleName Renamings  -> Import  {cons("renamed-module")}
+ 	  => -> IGNORED  
   ]
 
 exports
@@ -23,9 +25,13 @@ exports
     Start
 
   context-free syntax
-    Section*                    -> Start {cons("CompilationUnit")}
+    Section*                                -> Start  {cons("CompilationUnit"), deprecated ("Syntax definitions should be part of a module.")}
+  
+    "module" ModuleName[[SDF]] ImpSection[[SDF]]* Section* -> Start      {cons("module")} 
+    
     Grammar[[SDF]]              -> Section {cons("SDFSection")}
 
+	
   context-free syntax
     Constructor                 -> Attribute[[SDF]] {prefer, cons("Constructor")}
     StrCon[[SDF]]               -> Constructor
