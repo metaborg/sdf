@@ -56,8 +56,6 @@ signature constructors
   Restriction:     OutlineSection
   Other:           OutlineSection
   
-  'module : ModuleName * List(ImpSection) * Sections -> Module
-  
 rules
   
   outline-section-to-node(|sections):
