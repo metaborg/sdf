@@ -166,7 +166,7 @@ rules
     t@App(_, _) -> Var(x)
     where x := <newname> <oncetd(?Var(y)); !y <+ !"a"> t;
           rules(
-            Condition :+ _ -> WithClause(Assign(Var(x), t))
+            Condition :+ _ -> WhereClause(Assign(Var(x), t))
           )
 
   // template-to-prettyprint-strategy:
