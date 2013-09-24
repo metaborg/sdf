@@ -13,19 +13,18 @@ signature
 
 strategies
 	
-	name-sugar-all = topdown(try(name-sugar))
+	name-sugar-all = alltd(name-sugar)
 	name-desugar-all = topdown(try(name-desugar))
 	
 rules // Sugar certain sort constructors into SortRef or SortDef constructors for name binding.
 	
-	name-sugar:
-		TemplateProduction(sort, tmpl, attrs) -> TemplateProduction(sort, tmpl', attrs)
-		with
-			tmpl' := <topdown(try(\sort(s) -> SortRef(s)\))> tmpl
-		
-	name-sugar:
-		prod(l, sort(s), attr*) -> prod(l, SortDef(s), attr*)
-		
+	name-sugar =
+		TemplateProduction(id, alltd(sort-to-ref), id) 
+  + prod(alltd(sort-to-ref), alltd(sort-to-def), id)
+	
+	sort-to-def: sort(s) -> SortDef(s)
+	sort-to-ref: sort(s) -> SortRef(s)
+	
 rules // Desugar the SortRef and SortDef constructors back into sort constructors to make generation work.
 	
 	name-desugar:
