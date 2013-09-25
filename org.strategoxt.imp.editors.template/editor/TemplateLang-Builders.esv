@@ -7,7 +7,7 @@ builders
   provider : include/templatelang.jar
   provider : include/libtemplatelang.jar
 
-  observer : editor-analyze
+  observer : editor-analyze (multifile)
 
   builder : "Show abstract syntax"   = debug-show-aterm (openeditor) (realtime) (meta) (source)                     
   builder : "Show desugared syntax"  = debug-show-desugared (openeditor) (realtime) (meta) (source)
