@@ -17,7 +17,9 @@ imports
     ImpSection -> Grammar {cons("imp-section")}
       => -> IGNORED
     ModuleName Renamings  -> Import  {cons("renamed-module")}
- 	  => -> IGNORED  
+ 	    => -> IGNORED
+ 	  list:Section* -> Sections
+ 	    => -> IGNORED
   ]
 
 exports
