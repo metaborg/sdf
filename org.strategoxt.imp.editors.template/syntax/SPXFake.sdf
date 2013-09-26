@@ -32,6 +32,7 @@ exports
     Section*                    -> Sections[[SDF]]
     Grammar[[SDF]]              -> Section {cons("SDFSection")}
 
+    Reserved                    -> ModuleId[[SDF]] {reject}
 	
   context-free syntax
     Constructor                 -> Attribute[[SDF]] {prefer, cons("Constructor")}
