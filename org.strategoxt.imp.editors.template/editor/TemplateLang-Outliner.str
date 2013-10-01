@@ -7,7 +7,7 @@ module editor/TemplateLang-Outliner
 imports
   libstratego-sglr
   include/TemplateLang
-  include/libtemplatelang
+  analysis/attributes
   lib/runtime/editor/outline-library
   lib/runtime/editor/origins
 
@@ -140,18 +140,16 @@ rules
   	  end
   
   prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
-  prod-to-cons: SdfProduction(_, _, attrs) -> <fetch-cons-name> attrs
-  prod-to-cons = ?TemplateProductionWithCons(SortCons(_, <id>), _, _)
+  prod-to-cons = ?SdfProduction(_, <is-string>, _, _)
+  prod-to-cons = ?TemplateProduction(_, <is-string>, _, _)
   
   fetch-sort = ?prod(_, <id>, _)
-  fetch-sort = ?SdfProduction(<id>, _, _)
-  fetch-sort = ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
-  fetch-sort = ?TemplateProduction(<id>, _, _)
+  fetch-sort = ?SdfProduction(<id>, _, _, _)
+  fetch-sort = ?TemplateProduction(<id>, _, _, _)
   
   fetch-lhs = ?prod(<id>, _, _)
-  fetch-lhs = ?SdfProduction(_, <id>, _)
-  fetch-lhs = ?TemplateProductionWithCons(_, <id>, _)
-  fetch-lhs = ?TemplateProduction(_, <id>, _)
+  fetch-lhs = ?SdfProduction(_, _, <id>, _)
+  fetch-lhs = ?TemplateProduction(_, _, <id>, _)
   
   prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
 

@@ -1,0 +1,46 @@
+module analysis/names
+
+imports 
+  include/TemplateLang
+  analysis/types
+  
+namespaces
+  
+  Module Sort Constructor Label
+  
+properties
+
+  body of Constructor      : List(Symbol)
+  attributes of Constructor: List(Attribute)
+  
+binding rules
+
+  'module(unparameterized(m), _, _):
+    defines Module m
+    scopes Sort, Constructor
+    
+  'module(unparameterized(m)):
+    imports Sort, Constructor from Module m
+  
+  SdfProduction(s, c, symbol*, attr*): 
+    defines non-unique Sort s 
+    defines unique Constructor c
+      of type s
+      of body symbol*
+      of attributes attr*
+  
+  TemplateProduction(s, c, symbol*, attr*): 
+    defines non-unique Sort s 
+      of type (c, symbol*)
+    defines unique Constructor c
+      of type s
+      of body symbol*
+      of attributes attr*
+      
+  SortCons(s, c):
+  	refers to Sort s
+  	refers to Constructor c of type s
+    
+  sort(s):
+    refers to Sort s
+    

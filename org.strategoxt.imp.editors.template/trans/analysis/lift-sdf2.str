@@ -1,0 +1,16 @@
+module analysis/lift-sdf2
+
+imports 
+  
+  include/TemplateLang
+  analysis/attributes
+  
+rules
+  
+  lift-sdf2 = topdown(try(lift-sdf2-prod))
+  
+  lift-sdf2-prod: 
+  	prod(sym*, sort(s), attr*) -> SdfProduction(s, cons, sym*, attr*)
+    where
+    	cons := <fetch-cons-name <+ !Tuple()> attr* 
+  

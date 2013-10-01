@@ -45,17 +45,16 @@ exports
     "context-free" "syntax" SdfProduction* -> Grammar[[SDF]] {cons("context-free-syntax"), prefer}
 
     %% syntactic sugar for SDF
-    ID "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProduction")}
-    SortCons "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProductionWithCons")}
-
+    ID Cons "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProduction")}
+   
     %% template productions
-    ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
+    ID Cons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
 
-    %% template productions `sort.cons = ...'
-    SortCons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProductionWithCons")}
+           -> Cons {cons("Inj")}
+    "." ID -> Cons {bracket}
 
     ID "." ID -> SortCons {cons("SortCons")}
-
+    
     %% placeholders
     "<" Placeholder ">" -> TemplatePart1 {bracket}
     "[" Placeholder "]" -> TemplatePart2 {bracket}

@@ -1,0 +1,10 @@
+module analysis/types
+
+imports 
+  include/TemplateLang
+  runtime/types/collect
+  
+rules
+  
+  nabl-property-eq(|kind) = strip-annos; eq <+ debug
+   
