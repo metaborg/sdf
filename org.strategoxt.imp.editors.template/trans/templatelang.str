@@ -233,10 +233,12 @@ rules
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
-    with(
-      ?(filename, string);
-      handle := <fopen> (filename, "w");
-      <fputs> (string, handle);
-      <fclose> handle;
-      <refresh-workspace-file> filename
-    )
+  	?(filename, string);
+  	if <dirname; readdir> filename then
+	    with(
+	      handle := <fopen> (filename, "w");
+	      <fputs> (string, handle);
+	      <fclose> handle;
+	      <refresh-workspace-file> filename
+	    )
+	  end
