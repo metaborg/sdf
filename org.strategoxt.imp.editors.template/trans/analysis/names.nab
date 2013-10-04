@@ -11,14 +11,13 @@ namespaces
   
 properties
 
-  body of Constructor      : List(Symbol)
-  attributes of Constructor: List(Attribute)
-  // value of Option          : Term
+  def of Constructor       : SdfProduction
   
 binding rules
 
-  'module(unparameterized(m), _, _):
-    defines Module m
+  'module(unparameterized(m), i*, s*):
+    defines Module m 
+      of def 'module(unparameterized(m), i*, s*)
     scopes Sort, Constructor //, Option
     
   'module(unparameterized(m)):
@@ -28,16 +27,13 @@ binding rules
     defines non-unique Sort s 
     defines unique Constructor c
       of type s
-      of body symbol*
-      of attributes attr*
+      of def SdfProduction(s, c, symbol*, attr*)
   
   TemplateProduction(s, c, symbol*, attr*): 
     defines non-unique Sort s 
-      of type (c, symbol*)
     defines unique Constructor c
       of type s
-      of body symbol*
-      of attributes attr*
+      of def TemplateProduction(s, c, symbol*, attr*)
       
   SortCons(s, c):
   	refers to Sort s

@@ -19,6 +19,17 @@ imports
   
 rules
 
+  pack-sdf-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      task-setup(|project-path)
+    ; filename := <guarantee-extension(|"aterm")> path
+    ; result   := <pack-sdf> ast
+  
+  pack-sdf-concrete =
+    pack-sdf-abstract
+  ; (guarantee-extension(|"def") , pp-sdf-to-string)
+  
   generate-sdf-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
@@ -29,11 +40,24 @@ rules
   generate-sdf-concrete =
   	generate-sdf-abstract
   ; (guarantee-extension(|"sdf") , pp-sdf-to-string)
-  	    
-  module-to-sdf:
-  	'module(m, i*, t*) -> 'module(m, i*, exports(t'*))
+  
+  pack-sdf = MkSingleton ; !definition(<pack-sdf(|[])>)
+  
+  pack-sdf(|seen) = ?[]
+  
+  pack-sdf(|seen):
+  	[ m @ 'module(mn, i*, _) | m* ] -> result
   	where
-  	t'*   := <template-sections-to-sdf> t*
+  		if <elem> (mn, seen) then
+  			result := <pack-sdf(|seen)> m*
+      else
+      	im*    := <mapconcat(?imports(<map(def-of)>))> i*
+      ;	m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
+      ; result := [<module-to-sdf> m, m'*]
+      end
+  			    
+  module-to-sdf =
+  	'module(id, id, !exports(<template-sections-to-sdf>))
   	
   /** @type List(TemplateSection | ...) -> List(grammar) */
   template-sections-to-sdf =
@@ -111,9 +135,12 @@ rules
 
   sort-cons-to-prods(|chars, kfr, nl) =
      ?SortCons(s, c) 
-   ; body-of
+   ; def-of
    ; try-make-list
-   ; map(try(template-to-sdf(|chars, kfr, nl)))
+   ; map(
+       ?SdfProduction(_, _, <id>, _)
+     + ?TemplateProduction(_, _, <template-to-sdf(|chars, kfr, nl)>, _)
+     )
    ; map(!prod(<id>, sort(s), no-attrs()))
 
 rules
@@ -283,7 +310,8 @@ strategies
     string-replace(|"'", "\\'");
     string-replace(|"\"", "\\\"")
 
-  body-of(|ctx) = ?SortCons(_, <body-lookup(|ctx)>)
+  def-of(|ctx) = ?SortCons(_, <def-lookup(|ctx)>)
+  def-of(|ctx) = ?'module(unparameterized(<def-lookup(|ctx)>))
   
   // property-of(|kind) = 
   //   insert-results

@@ -19,81 +19,49 @@ signature
 
 signature
   constructors
-    NablProp_body       : Property
-    NablProp_attributes : Property
+    NablProp_def : Property
 
 
 rules
 
   custom-properties(add-properties) =
-    ![NablProp_body(), NablProp_attributes()]
-    ; add-properties
+    ![NablProp_def()] ; add-properties
 
-  body-is(|task*) =
+  def-is(|task*) =
     prop-calc(|task*, [])
 
-  body-is(|task*, dep*) =
+  def-is(|task*, dep*) =
     prop-calc(|task*, dep*)
 
-  body-check(|task*) =
-    prop-check(|NablProp_body(), task*, [])
+  def-check(|task*) =
+    prop-check(|NablProp_def(), task*, [])
 
-  body-check(|task*, dep*) =
-    prop-check(|NablProp_body(), task*, dep*)
+  def-check(|task*, dep*) =
+    prop-check(|NablProp_def(), task*, dep*)
 
-  body-lookup(|task*) =
-    prop-lookup(|NablProp_body(), task*, [])
+  def-lookup(|task*) =
+    prop-lookup(|NablProp_def(), task*, [])
 
-  body-lookup(|task*, dep*) =
-    prop-lookup(|NablProp_body(), task*, dep*)
+  def-lookup(|task*, dep*) =
+    prop-lookup(|NablProp_def(), task*, dep*)
 
-  body-match(|task*, relation) =
+  def-match(|task*, relation) =
     prop-match(|task*, relation)
 
-  body-of(|task*) =
+  def-of(|task*) =
     fail
 
-  body-of =
-    property-of(|NablProp_body())
+  def-of =
+    property-of(|NablProp_def())
 
   new-property-task(|task*):
-    (NablProp_body(), term) -> <body-of(|task*)> term
-
-  attributes-is(|task*) =
-    prop-calc(|task*, [])
-
-  attributes-is(|task*, dep*) =
-    prop-calc(|task*, dep*)
-
-  attributes-check(|task*) =
-    prop-check(|NablProp_attributes(), task*, [])
-
-  attributes-check(|task*, dep*) =
-    prop-check(|NablProp_attributes(), task*, dep*)
-
-  attributes-lookup(|task*) =
-    prop-lookup(|NablProp_attributes(), task*, [])
-
-  attributes-lookup(|task*, dep*) =
-    prop-lookup(|NablProp_attributes(), task*, dep*)
-
-  attributes-match(|task*, relation) =
-    prop-match(|task*, relation)
-
-  attributes-of(|task*) =
-    fail
-
-  attributes-of =
-    property-of(|NablProp_attributes())
-
-  new-property-task(|task*):
-    (NablProp_attributes(), term) -> <attributes-of(|task*)> term
+    (NablProp_def(), term) -> <def-of(|task*)> term
 
 
 rules
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
-    ?'module(unparameterized(m), _, _)
+    ?'module(unparameterized(m), i*, s*)
     ; origin-track-forced(
         'module(
           unparameterized(
@@ -117,6 +85,27 @@ rules
         ; match(child-uris__|c-uri1__)
         ; match(sibl-uris__|s-uri1__)
         ; match(implicits__|[])
+      |
+      )
+
+  nabl-prop-site(|lang__, partition__, states__, implicits__) =
+    ?'module(unparameterized(m), i*, s*)
+    ; origin-track-forced(
+        'module(
+          unparameterized(
+            nabl-props(
+            | partition__
+            , [ Prop(
+                  NablProp_def()
+                , 'module(unparameterized(m), i*, s*)
+                , []
+                )
+              ]
+            )
+          )
+        , id
+        , id
+        )
       |
       )
 
@@ -222,8 +211,11 @@ rules
         , nabl-props(
           | partition__
           , [ Prop(Type(), s, [])
-            , Prop(NablProp_body(), symbol*, [])
-            , Prop(NablProp_attributes(), attr*, [])
+            , Prop(
+                NablProp_def()
+              , SdfProduction(s, c, symbol*, attr*)
+              , []
+              )
             ]
           )
         , id
@@ -281,31 +273,20 @@ rules
     ?TemplateProduction(s, c, symbol*, attr*)
     ; origin-track-forced(
         TemplateProduction(
-          nabl-props(
+          id
+        , nabl-props(
           | partition__
-          , [ Prop(
-                Type()
-              , (c, symbol*)
+          , [ Prop(Type(), s, [])
+            , Prop(
+                NablProp_def()
+              , TemplateProduction(s, c, symbol*, attr*)
               , []
               )
             ]
           )
         , id
         , id
-        , id
         )
-        ; TemplateProduction(
-            id
-          , nabl-props(
-            | partition__
-            , [ Prop(Type(), s, [])
-              , Prop(NablProp_body(), symbol*, [])
-              , Prop(NablProp_attributes(), attr*, [])
-              ]
-            )
-          , id
-          , id
-          )
       |
       )
 
