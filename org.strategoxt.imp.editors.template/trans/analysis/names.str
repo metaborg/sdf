@@ -7,6 +7,7 @@ imports
   lib/runtime/editor/-
   include/TemplateLang
   analysis/types
+  libstrc
 
 
 signature

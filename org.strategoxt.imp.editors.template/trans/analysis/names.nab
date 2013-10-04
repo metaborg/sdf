@@ -3,6 +3,7 @@ module analysis/names
 imports 
   include/TemplateLang
   analysis/types
+  libstrc
   
 namespaces
   
