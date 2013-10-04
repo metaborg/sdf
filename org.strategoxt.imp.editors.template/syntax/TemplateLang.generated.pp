@@ -176,7 +176,7 @@
    TemplateProduction                                           -- _1 _2 KW["="] _3 _4,
    TemplateProduction.4:parameterized-sort                      -- _1 _2,
    TemplateProduction.4:parameterized-sort.1:"Attributes"       -- ,
-   Tuple                                                        -- ,
+   Inj                                                          -- ,
    SortCons                                                     -- _1 KW["."] _2,
    Placeholder                                                  -- _1 _2 _3 _4,
    sort                                                         -- _1,

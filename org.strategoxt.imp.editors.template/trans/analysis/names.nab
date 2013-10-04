@@ -6,18 +6,20 @@ imports
   
 namespaces
   
-  Module Sort Constructor Label
+  Module Sort Constructor Label 
+  // Option
   
 properties
 
   body of Constructor      : List(Symbol)
   attributes of Constructor: List(Attribute)
+  // value of Option          : Term
   
 binding rules
 
   'module(unparameterized(m), _, _):
     defines Module m
-    scopes Sort, Constructor
+    scopes Sort, Constructor //, Option
     
   'module(unparameterized(m)):
     imports Sort, Constructor from Module m
@@ -44,3 +46,20 @@ binding rules
   sort(s):
     refers to Sort s
     
+// binding rules
+// 
+//   Newlines(o):
+//     implicitly defines 
+//       non-unique Option Newlines() 
+//       of value o
+//   
+//   KeywordFollowRestriction(lah):
+//     implicitly defines 
+//       non-unique Option KeywordFollowRestriction()
+//       of value lah
+//       
+//   Tokenize(t):
+//     implicitly defines
+//       non-unique Option Tokenize()
+//       of value t
+      

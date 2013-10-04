@@ -19,29 +19,29 @@ strategies
   /**
    * @type TemplateProduction ->? List(template-line)
    */
-  expand-multi-line-template-production:
-    TemplateProduction(sort, SingleLineTemplate(elem*), a) ->
-      <memo(expand-template-production)> TemplateProduction(sort, Template([Line(elem*)]), a)
-
-  expand-multi-line-template-production:
-    TemplateProduction(_, Template(_), _) -> <memo(expand-template-production)>
-
-  /**
-   * @type TemplateProduction ->? List(template-element)
-   */
-  expand-single-line-template-production:
-    TemplateProduction(_, SingleLineTemplate(_), _) -> <memo(expand-template-production)>
-
-  /**
-   * @type TemplateProduction ->? List(template-line) | List(template-element)
-   */
-  expand-template-production:
-    TemplateProduction(sort, template, attrs) -> result{score}
-    where
-      <not(is-reject)> attrs
-    where
-      result := <expand-template> template;
-      score := <determine-score> attrs
+//   expand-multi-line-template-production:
+//     TemplateProduction(sort, SingleLineTemplate(elem*), a) ->
+//       <memo(expand-template-production)> TemplateProduction(sort, Template([Line(elem*)]), a)
+// 
+//   expand-multi-line-template-production:
+//     TemplateProduction(_, Template(_), _) -> <memo(expand-template-production)>
+// 
+//   /**
+//    * @type TemplateProduction ->? List(template-element)
+//    */
+//   expand-single-line-template-production:
+//     TemplateProduction(_, SingleLineTemplate(_), _) -> <memo(expand-template-production)>
+// 
+//   /**
+//    * @type TemplateProduction ->? List(template-line) | List(template-element)
+//    */
+//   expand-template-production:
+//     TemplateProduction(sort, template, attrs) -> result{score}
+//     where
+//       <not(is-reject)> attrs
+//     where
+//       result := <expand-template> template;
+//       score := <determine-score> attrs
 
   /**
    * @type template-attributes -> Int
@@ -75,19 +75,19 @@ strategies
    * expand-template-line covers exactly all valid input terms except:
    *  Line([indent @ Layout(_), Placeholder(sort(x), <None() + Plus()>, _)]) where <Expanded> x
    */
-  expand-template-line:
-    [t @ Line([indent @ Layout(_), Placeholder(label, sort(x), m @ <None() + Plus()>, option*)]) | tail] -> [line'* | tail]
-    where
-      <not(Expanded)> x;
-      <not(one(?Hide() + ?Text(_)))> option*
-    where
-      line* := <get-template-lines(|indent) <+ ![t]> x;
-      if ?[Line([indent, p @ Placeholder(_, _, _, _)])] then
-        text := <template-element-to-string> p;
-        line'* := [Line([indent, Placeholder(label, sort(x), m, [Text(text) | option*])])]
-      else
-        line'* := line*
-      end
+  // expand-template-line:
+  //   [t @ Line([indent @ Layout(_), Placeholder(label, sort(x), m @ <None() + Plus()>, option*)]) | tail] -> [line'* | tail]
+  //   where
+  //     <not(Expanded)> x;
+  //     <not(one(?Hide() + ?Text(_)))> option*
+  //   where
+  //     line* := <get-template-lines(|indent) <+ ![t]> x;
+  //     if ?[Line([indent, p @ Placeholder(_, _, _, _)])] then
+  //       text := <template-element-to-string> p;
+  //       line'* := [Line([indent, Placeholder(label, sort(x), m, [Text(text) | option*])])]
+  //     else
+  //       line'* := line*
+  //     end
 
   // Do not touch already expanded placeholders.
   expand-template-line:
@@ -124,16 +124,16 @@ strategies
    * expand-template-element covers exactly all valid input terms except:
    *  Placeholder(sort(x), <None() + Plus()>, _) where <Expanded> x
    */
-  expand-template-element:
-    [t @ Placeholder(label, sort(x), m @ <None() + Plus()>, option*) | tail] ->
-      // [elem* | tail]
-      [Placeholder(label, sort(x), m, [Text(text) | option*]) | tail]
-    where
-      <not(Expanded)> x;
-      <not(one(?Hide() + ?Text(_)))> option*
-    where
-      elem* := <get-template-elements <+ ![t]> x;
-      text := <map(template-element-to-string); concat-strings> elem*
+  // expand-template-element:
+  //   [t @ Placeholder(label, sort(x), m @ <None() + Plus()>, option*) | tail] ->
+  //     // [elem* | tail]
+  //     [Placeholder(label, sort(x), m, [Text(text) | option*]) | tail]
+  //   where
+  //     <not(Expanded)> x;
+  //     <not(one(?Hide() + ?Text(_)))> option*
+  //   where
+  //     elem* := <get-template-elements <+ ![t]> x;
+  //     text := <map(template-element-to-string); concat-strings> elem*
 
   // Do not touch already expanded placeholders.
   expand-template-element:
@@ -173,23 +173,23 @@ strategies  // helpers
   /**
    * @type String -> List(template-line)
    */
-  get-template-lines(|indent) =
-    {|Expanded:
-      get-templates;
-      filter(expand-multi-line-template-production);
-      choose-one-expansion;
-      map(Line(![indent | <id>]))
-    |}
-
-  /**
-   * @type String -> List(template-element)
-   */
-  get-template-elements =
-    {|Expanded:
-      get-templates;
-      filter(expand-single-line-template-production);
-      choose-one-expansion
-    |}
+//   get-template-lines(|indent) =
+//     {|Expanded:
+//       get-templates;
+//       filter(expand-multi-line-template-production);
+//       choose-one-expansion;
+//       map(Line(![indent | <id>]))
+//     |}
+// 
+//   /**
+//    * @type String -> List(template-element)
+//    */
+//   get-template-elements =
+//     {|Expanded:
+//       get-templates;
+//       filter(expand-single-line-template-production);
+//       choose-one-expansion
+//     |}
 
   choose-one-expansion =
        qsort(template-compare);

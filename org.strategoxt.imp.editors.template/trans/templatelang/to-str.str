@@ -19,13 +19,13 @@ rules
   template-sections-to-stratego =
     filter(template-section-to-stratego)
 
-  template-section-to-stratego(|languagename):
-    TemplateSection(x) -> Strategies([s1*, s2*])
-    where with-spxverify(
-      s1* := <map(template-to-prettyprint-strategy)> x;
-      s2* := <map(template-to-prettyprint-strategy(|languagename)); nub> x
-      , !"Failed to convert TemplateSection to stratego pretty printer"
-    )
+  // template-section-to-stratego(|languagename):
+  //   TemplateSection(x) -> Strategies([s1*, s2*])
+  //   where with-spxverify(
+  //     s1* := <map(template-to-prettyprint-strategy)> x;
+  //     s2* := <map(template-to-prettyprint-strategy(|languagename)); nub> x
+  //     , !"Failed to convert TemplateSection to stratego pretty printer"
+  //   )
 
   template-section-to-stratego(|languagename):
     SDFSection(lexical-syntax(x)) -> Strategies([s1*, s2*])
@@ -36,12 +36,12 @@ rules
       , !"Failed to convert lexical-syntax to stratego pretty printer"
     )
 
-  template-section-to-stratego:
-    TemplateSection(x) -> Strategies(s*)
-    where with-spxverify(
-      s* := <map(template-to-prettyprint-strategy)> x
-      , !"Failed to convert TemplateSection to stratego pretty printer"
-    )
+  // template-section-to-stratego:
+  //   TemplateSection(x) -> Strategies(s*)
+  //   where with-spxverify(
+  //     s* := <map(template-to-prettyprint-strategy)> x
+  //     , !"Failed to convert TemplateSection to stratego pretty printer"
+  //   )
 
   template-section-to-stratego:
     SDFSection(lexical-syntax(x)) -> Strategies(s*)
@@ -107,52 +107,52 @@ strategies
 
 rules
 
-  template-to-prettyprint-strategy(|languagename):
-    Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
-      <template-to-prettyprint-strategy(|languagename)> Desugared(TemplateProduction(sort, Template([Line([Layout("") | elem*])]), attrs))
-
-  template-to-prettyprint-strategy:
-    Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
-      <template-to-prettyprint-strategy> Desugared(TemplateProduction(sort, Template([Line([Layout("") | elem*])]), attrs))
-
-  template-to-prettyprint-strategy(|languagename):
-    Desugared(TemplateProduction(x, Template(line*), attrs)) ->
-      SDefNoArgs(
-          $[prettyprint-[languagename]]
-          , CallNoArgs(SVar($[prettyprint-[x]]))
-      )
-
-  template-to-prettyprint-strategy:
-    Desugared(TemplateProduction(x, Template(line*), attrs)) ->
-      RDefNoArgs(
-        $[prettyprint-[x]],
-        Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
-      )
-    where with-spxverify(
-      (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
-      output         := <map(template-line-to-stratego)> line'*;
-      arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
-      (with*, output') := <extract-apps> output;
-      if cons := <fetch-cons-name> attrs then
-        //input := $[[cons]([<separate-by(|",")> arg*])]
-        input := Op(cons, arg*)
-      else
-        if !arg* => [_] then
-          if <is-bracket> attrs then
-            // bracket / parentheses
-            input := Op("Parenthetical", arg*)
-          else
-            // injection
-            // FIXME: this may result in infinite loop in pretty printer
-            //        if there is a cycle of injections in the grammar!
-            input := Var("a")
-          end
-        else
-          input := Tuple(arg*)
-        end
-      end,
-      !"Failed to pretty-print template"
-    )
+//   template-to-prettyprint-strategy(|languagename):
+//     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
+//       <template-to-prettyprint-strategy(|languagename)> Desugared(TemplateProduction(sort, Template([Line([Layout("") | elem*])]), attrs))
+// 
+//   template-to-prettyprint-strategy:
+//     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), attrs)) ->
+//       <template-to-prettyprint-strategy> Desugared(TemplateProduction(sort, Template([Line([Layout("") | elem*])]), attrs))
+// 
+//   template-to-prettyprint-strategy(|languagename):
+//     Desugared(TemplateProduction(x, Template(line*), attrs)) ->
+//       SDefNoArgs(
+//           $[prettyprint-[languagename]]
+//           , CallNoArgs(SVar($[prettyprint-[x]]))
+//       )
+// 
+//   template-to-prettyprint-strategy:
+//     Desugared(TemplateProduction(x, Template(line*), attrs)) ->
+//       RDefNoArgs(
+//         $[prettyprint-[x]],
+//         Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
+//       )
+//     where with-spxverify(
+//       (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
+//       output         := <map(template-line-to-stratego)> line'*;
+//       arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+//       (with*, output') := <extract-apps> output;
+//       if cons := <fetch-cons-name> attrs then
+//         //input := $[[cons]([<separate-by(|",")> arg*])]
+//         input := Op(cons, arg*)
+//       else
+//         if !arg* => [_] then
+//           if <is-bracket> attrs then
+//             // bracket / parentheses
+//             input := Op("Parenthetical", arg*)
+//           else
+//             // injection
+//             // FIXME: this may result in infinite loop in pretty printer
+//             //        if there is a cycle of injections in the grammar!
+//             input := Var("a")
+//           end
+//         else
+//           input := Tuple(arg*)
+//         end
+//       end,
+//       !"Failed to pretty-print template"
+//     )
     
     
   extract-apps :
@@ -204,11 +204,11 @@ rules
   //     !"Failed to pretty-print template"
   //   )
     
-  template-to-prettyprint-strategy(|languagename) =
-    templatelang-not-desugared(|"generate BOX-based pretty printer from")
-
-  template-to-prettyprint-strategy =
-    templatelang-not-desugared(|"generate BOX-based pretty printer from")
+//   template-to-prettyprint-strategy(|languagename) =
+//     templatelang-not-desugared(|"generate BOX-based pretty printer from")
+// 
+//   template-to-prettyprint-strategy =
+//     templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
 rules
 

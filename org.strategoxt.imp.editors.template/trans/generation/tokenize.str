@@ -1,4 +1,4 @@
-module tokenize
+module generation/tokenize
 
 imports
   libstratego-lib

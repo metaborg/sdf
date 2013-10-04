@@ -1,51 +1,57 @@
-module to-sdf
+module generation/to-sdf
+
 imports
   libstratego-lib
   libstratego-sglr
+  utils/contract
+  
   include/TemplateLang
-  templatelang/analyze
-  templatelang/desugar
-  templatelang/utils/attributes
-  templatelang/utils/contract
-  templatelang/utils/misc
-  templatelang/utils/tokenize
-
+  analysis/attributes
+  analysis/names
+  
+  generation/tokenize
+  generation/pp-sdf
+  runtime/nbl/-
+  runtime/index/-
+  runtime/task/-
+  
+  editor-common.generated
+  
 rules
 
+  generate-sdf-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      task-setup(|project-path)
+    ; filename := <guarantee-extension(|"aterm")> path
+    ; result   := <module-to-sdf> ast
+  
+  generate-sdf-concrete =
+  	generate-sdf-abstract
+  ; (guarantee-extension(|"sdf") , pp-sdf-to-string)
+  	    
+  module-to-sdf:
+  	'module(m, i*, t*) -> 'module(m, i*, exports(t'*))
+  	where
+  	t'*   := <template-sections-to-sdf> t*
+  	
   /** @type List(TemplateSection | ...) -> List(grammar) */
   template-sections-to-sdf =
-  	alltd(desugar-sdf-redux-tmpl);
-    filter(template-section-to-sdf);
-    concat
-
-rules // lookup of template production, e.g. Exp.Plus
-
-  desugar-sdf-redux-tmpl:
-    simple-ref-group(ref) -> simple-group(<SortCons-to-prod-tmpl> ref)
-
-  desugar-sdf-redux-tmpl:
-    prods-ref-group(ref*) -> prods-group(<map(SortCons-to-prod-tmpl)> ref*)
-
-  desugar-sdf-redux-tmpl:
-    assoc-ref-group(a, ref*) -> assoc-group(a, <map(SortCons-to-prod-tmpl)> ref*)
-
-  SortCons-to-prod-tmpl:
-    SortCons(sort, cons) -> t
-    with <TemplateProductionDef; template-production-to-sdf-no-attrs> (sort, cons) => t 
-		   
-  create-template-production-dr :
-  	(lhs, rhs) -> <rules( TemplateProductionDef : lhs -> rhs )>
+    where (chars := <collect-one(?Tokenize(<id>)) <+ !['(', ')']>)
+  ; where (kfr   := <collect-one(?KeywordFollowRestriction(<id>) <+ !None())>)
+  ; where (nl    := <collect-one(?Newlines(<id>) <+ !None())>)
+  ; filter(template-section-to-sdf(|chars, kfr, nl))
+  ; concat
 
 rules
 
   /** @type TemplateSection -> grammar */
-  template-section-to-sdf:
+  template-section-to-sdf(|chars, kfr, nl):
     TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
     where with-spxverify(
-      p* := <map(template-production-to-sdf)> x;
-
+      p* := <map(template-production-to-sdf(|chars, kfr, nl))> x;
       // content complete productions
-      p'* := <map(templatelang-prod-to-sort); nub;
+      p'* := <map(?TemplateProduction(<id>, _, _, _)); nub;
               map(sort-to-contentcomplete)> x;
       if !p'* => [] then
         inj* := []
@@ -61,74 +67,101 @@ rules
             where(explode-string; chars-end-with-identifier-char)
       in
         r* := <collect-om(?String(<string-ends-with-identifier-char>));
-               filter(string-to-sdf; last)> x;
-        r  := <templatelang-get-option <+ debug(!"Failed: "); fail> KeywordFollowRestriction();
-        if !r* => [] + !r => None() then
+               filter(string-to-sdf(|chars); last)> x;
+        if !r* => [] + !kfr => None() then
           restr* := []
         else
-          restr* := [lexical-restrictions([follow(r*, r)])]
+          restr* := [lexical-restrictions([follow(r*, kfr)])]
         end
       end
       , !"Failed to convert TemplateSection to SDF"
     )
 
-  template-section-to-sdf:
-    SDFSection(x) -> [x]
+  template-production-to-sdf(|chars, kfr, nl):
+    TemplateProduction(s, c, t, attrs) -> prod(sym*, s, attrs')
+    where with-spxverify (
+      sym* := <template-to-sdf(|chars, kfr, nl)> t
+    ; attr1* := <cons-to-attrs> c
+    ; attr2* := <get-attrs; remove-all(?sdf-completion(_))> attrs
+    ; attrs' := <set-attrs> [attr1*, attr2*]
+    )
 
 rules
+	
+  template-section-to-sdf(|chars, kfr, nl):
+    SDFSection(x) -> [<alltd(sdf-production-to-sdf + priority-group-to-sdf(|chars, kfr, nl))> x]
 
-  // Used when rewriting `Sort.Cons' in priority sections to a production.
-  template-production-to-sdf-no-attrs:
-    Desugared(TemplateProduction(S', t, _)) -> p|[ A* -> S' ]|
-    where with-spxverify (
-      A* := <template-to-sdf> t
+  sdf-production-to-sdf:
+    SdfProduction(sort, cons, symbol*, attrs) ->
+      prod(symbol*, sort(sort), attrs')
+    where with-spxverify(
+      attr1* := <cons-to-attrs> cons
+    ; attr2* := <get-attrs> attrs
+    ; attrs' := <set-attrs> [attr1*, attr2*] 
     )
 
-  template-production-to-sdf-no-attrs =
-    templatelang-not-desugared(|"generate SDF (no attrs) from")
+  priority-group-to-sdf(|chars, kfr, nl):
+    simple-ref-group(ref) -> prods-group(<sort-cons-to-prods(|chars, kfr, nl)> ref)
 
-  template-production-to-sdf:
-    Desugared(TemplateProduction(S', t, attrs)) -> p|[ A* -> S' attrs' ]|
-    where with-spxverify (
-      A* := <template-to-sdf> t;
-      attrs' := <attrs(filter(not(?sdf-completion(_)))) <+ no-attrs()> attrs
-    )
+  priority-group-to-sdf(|chars, kfr, nl):
+    prods-ref-group(ref*) -> prods-group(<mapconcat(sort-cons-to-prods(|chars, kfr, nl))> ref*)
 
-  template-production-to-sdf =
-    templatelang-not-desugared(|"generate SDF from")
+  priority-group-to-sdf(|chars, kfr, nl):
+    assoc-ref-group(a, ref*) -> assoc-group(a, <map(sort-cons-to-prods(|chars, kfr, nl))> ref*)
+
+  sort-cons-to-prods(|chars, kfr, nl) =
+     ?SortCons(s, c) 
+   ; body-of
+   ; try-make-list
+   ; map(try(template-to-sdf(|chars, kfr, nl)))
+   ; map(!prod(<id>, sort(s), no-attrs()))
+
+rules
+	
+  cons-to-attrs =
+    (Inj() -> []) <+ ![sdf-cons(<double-quote>)]
+  
+  get-attrs =
+    (no-attrs() -> []) + ?attrs(<id>)
+ 
+  set-attrs =
+    ([] -> no-attrs()) <+ !attrs(<id>)
 
   // Single line template.
   //  -OR-
   // Template with only a placeholder. (i.e., injection)
   // The placeholder is at the start AND at the end of the template!
-  template-to-sdf:
+  template-to-sdf(|chars, kfr, nl):
     < ?SingleLineTemplate(elem*)
     + ?Template([Line(elem* @ [Layout(_), Placeholder(label, _, _, _)])]) > -> A*
     where with-spxverify (
       A* := <maybe-separating(
-               filter(template-element-to-sdf-sep <+ template-element-to-sdf),
-               filter(template-element-to-sdf)
+               filter(template-element-to-sdf-sep <+ template-element-to-sdf(|chars))
+             , filter(template-element-to-sdf(|chars))
+             | kfr
              );
              flatten-list> elem*
     )
 
   // Multi line template.
-  template-to-sdf:
+  template-to-sdf(|chars, kfr, nl):
     Template(line*) -> A*
     where with-spxverify (
       A* := <filter(?Line([Layout(_), _ | _]));
              maybe-separating(
-                !(<id>, 0); thread-map(template-line-to-sdf-sep); ?(<id>, _),
-                map(template-line-to-sdf)
+               !(<id>, 0); thread-map(template-line-to-sdf-sep(|chars)); ?(<id>, _)
+             , map(template-line-to-sdf(|chars, nl))
+             | kfr
              );
              flatten-list> line*
     )
-  maybe-separating(yes, no) =
-    if <templatelang-get-option> Newlines() => Separating() then yes else no end
+    
+  maybe-separating(yes, no|kfr) =
+    if !kfr => Separating() then yes else no end
 
 rules
 
-  template-line-to-sdf-sep:
+  template-line-to-sdf-sep(|chars):
     (Line([Layout(_), p @ Placeholder(label, sort(S), mult, option*)]), state) ->
       (result, state)
     where
@@ -146,16 +179,16 @@ rules
         case ?(Plus()  , 1) : result := A|[ (L S)+ ]|
       end
 
-  template-line-to-sdf-sep:
-    (Line(elem*), 0) -> (<template-line-to-sdf-sep-helper> elem*, 1)
+  template-line-to-sdf-sep(|chars):
+    (Line(elem*), 0) -> (<template-line-to-sdf-sep-helper(|chars)> elem*, 1)
 
-  template-line-to-sdf-sep:
+  template-line-to-sdf-sep(|chars):
     (Line(elem*), 1) ->
-      ([ A|[ "\"\\n\"" ]| | <template-line-to-sdf-sep-helper> elem*], 1)
+      ([ A|[ "\"\\n\"" ]| | <template-line-to-sdf-sep-helper(|chars)> elem*], 1)
 
-  template-line-to-sdf-sep-helper =
+  template-line-to-sdf-sep-helper(|chars) =
     not(?[Layout(_), Placeholder(label, _, _, <one(Separator(is-substring(!"\n")))>)]);
-    filter(template-element-to-sdf-sep <+ template-element-to-sdf)
+    filter(template-element-to-sdf-sep <+ template-element-to-sdf(|chars))
 
   template-element-to-sdf-sep:
     Placeholder(label, sort(S), Star(), option*) -> A|[ {S "\"\\n\""}* ]|
@@ -167,43 +200,43 @@ rules
 
 rules
 
-  template-line-to-sdf =
+  template-line-to-sdf(|chars, nl) =
     ?Line(<id>);
     if not(?[Layout(_), Placeholder(label, _, _, _)]) then
-      switch <templatelang-get-option> Newlines()
+      switch !nl
         case ?None()     : id
         case ?Leading()  : ![String("\n") | <id>]
         case ?Trailing() : (elem* -> [elem*, String("\n")])
       end
     end;
-    filter(template-element-to-sdf)
+    filter(template-element-to-sdf(|chars))
 
-  template-element-to-sdf:
-    String(x) -> <string-to-sdf> x
+  template-element-to-sdf(|chars):
+    String(x) -> <string-to-sdf(|chars)> x
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(None(), sort(S), None(), _) -> A|[ S ]|
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(Label(l), sort(s), None(), _) -> label(unquoted(l), sort(s))
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(label, sort(S), Option(), _) -> A|[ S? ]|
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(label, sort(S), Star(), option*) -> A|[ S* ]|
     where <not(one(Separator(not(string-is-layout))))> option*
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(label, sort(S), Star(), option*) -> A|[ { S L }* ]|
     where <one(Separator(not(string-is-layout)))> option*
     where with-spxverify ( L := <separator-to-literal> option*)
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(label, sort(S), Plus(), option*) -> A|[ S+ ]|
     where <not(one(Separator(not(string-is-layout))))> option*
 
-  template-element-to-sdf:
+  template-element-to-sdf(|chars):
     Placeholder(label, sort(S), Plus(), option*) -> A|[ { S L }+ ]|
     where <one(Separator(not(string-is-layout)))> option*
     where with-spxverify( L := <separator-to-literal> option*  )
@@ -237,8 +270,24 @@ strategies
    * Split on the edges delimiting identifiers.
    * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
    */
-  string-to-sdf =
-    where( chars := <templatelang-get-option> Tokenize() );
+  string-to-sdf(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<templatelang-escape; double-quote>))
+
+  templatelang-escape =
+    string-replace(|"\\", "\\\\");
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"'", "\\'");
+    string-replace(|"\"", "\\\"")
+
+  body-of(|ctx) = ?SortCons(_, <body-lookup(|ctx)>)
+  
+  // property-of(|kind) = 
+  //   insert-results
+  // ; nabl-collect-one-resolved-def
+  // ; nabl-uri
+  // ; nabl-get-all-properties(|kind)
+    

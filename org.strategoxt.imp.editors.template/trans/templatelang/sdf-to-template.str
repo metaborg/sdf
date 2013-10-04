@@ -7,13 +7,13 @@ imports
 
 rules // Convert SDF productions to desugared syntax templates
 
-  templatelang-sdf-prod-to-template-prod:
-    prod(sym*, sort(sort), a) ->
-      Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), a'))
-    where
-      elem* := <map(templatelang-sdf-sym-to-template-elem);
-                separate-by(|Layout(" "))> sym*;
-      a' := attrs(<templatelang-get-attrs> a)
+  // templatelang-sdf-prod-to-template-prod:
+  //   prod(sym*, sort(sort), a) ->
+  //     Desugared(TemplateProduction(sort, SingleLineTemplate(elem*), a'))
+  //   where
+  //     elem* := <map(templatelang-sdf-sym-to-template-elem);
+  //               separate-by(|Layout(" "))> sym*;
+  //     a' := attrs(<templatelang-get-attrs> a)
 
   templatelang-sdf-prod-to-template-prod =
     debug(!"Warning: Could not generate template from production: "); fail

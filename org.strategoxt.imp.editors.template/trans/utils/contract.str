@@ -1,6 +1,6 @@
 /* Adapted from org.strategoxt.imp.editors.spoofax/trans/utils/contract.str */
 
-module templatelang/utils/contract
+module utils/contract
 
 rules
 

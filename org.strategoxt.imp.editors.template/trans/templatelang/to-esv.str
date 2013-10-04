@@ -13,54 +13,54 @@ imports
 
 rules
 
-  template-sections-to-esv =
-    filter(template-section-to-esv)
+  // template-sections-to-esv =
+  //   filter(template-section-to-esv)
 
-  template-section-to-esv:
-    TemplateSection(x) -> Completions("", x')
-    where
-      x' := <filter(template-to-completion-template)> x
-
-  template-section-to-esv:
-    SDFSection(context-free-syntax(x)) -> Completions("", x')
-    where
-      x' := <filter(templatelang-sdf-prod-to-template-prod;
-                    template-to-completion-template)> x
+//   template-section-to-esv:
+//     TemplateSection(x) -> Completions("", x')
+//     where
+//       x' := <filter(template-to-completion-template)> x
+// 
+//   template-section-to-esv:
+//     SDFSection(context-free-syntax(x)) -> Completions("", x')
+//     where
+//       x' := <filter(templatelang-sdf-prod-to-template-prod;
+//                     template-to-completion-template)> x
 
 rules
 
-  template-to-completion-template:
-    Desugared(prod @ TemplateProduction(sort, SingleLineTemplate(_), attrs)) ->
-      |[ completion template ~sort : ~prefix = ~*part* ]|
-    where
-      not(<is-deprecated + is-reject> attrs)
-    where with-spxverify(
-      elem* := <expand-single-line-template-production> prod;
-      part* := <filter(template-element-to-esv);
-                template-to-completion-template-helper> elem*;
-      prefix := <build-prefix> part*
-    )
-    where
-      <accept-template-parts(|sort)> part*
+//   template-to-completion-template:
+//     Desugared(prod @ TemplateProduction(sort, SingleLineTemplate(_), attrs)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* ]|
+//     where
+//       not(<is-deprecated + is-reject> attrs)
+//     where with-spxverify(
+//       elem* := <expand-single-line-template-production> prod;
+//       part* := <filter(template-element-to-esv);
+//                 template-to-completion-template-helper> elem*;
+//       prefix := <build-prefix> part*
+//     )
+//     where
+//       <accept-template-parts(|sort)> part*
+// 
+//   template-to-completion-template:
+//     Desugared(prod @ TemplateProduction(sort, Template(_), attrs)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* (blank) ]|
+//     where
+//       not(<is-deprecated + is-reject> attrs)
+//     where with-spxverify(
+//       line* := <expand-multi-line-template-production> prod;
+//       part* := <filter(template-line-to-esv);
+//                 remove-cursor-except-first;
+//                 separate-by(|String("\n"));
+//                 template-to-completion-template-helper> line*;
+//       prefix := <build-prefix> part*
+//     )
+//     where
+//       <accept-template-parts(|sort)> part*
 
-  template-to-completion-template:
-    Desugared(prod @ TemplateProduction(sort, Template(_), attrs)) ->
-      |[ completion template ~sort : ~prefix = ~*part* (blank) ]|
-    where
-      not(<is-deprecated + is-reject> attrs)
-    where with-spxverify(
-      line* := <expand-multi-line-template-production> prod;
-      part* := <filter(template-line-to-esv);
-                remove-cursor-except-first;
-                separate-by(|String("\n"));
-                template-to-completion-template-helper> line*;
-      prefix := <build-prefix> part*
-    )
-    where
-      <accept-template-parts(|sort)> part*
-
-  template-to-completion-template =
-    templatelang-not-desugared(|"generate completion templates from")
+  // template-to-completion-template =
+  //   templatelang-not-desugared(|"generate completion templates from")
 
   template-to-completion-template-helper =
     flatten-list;
