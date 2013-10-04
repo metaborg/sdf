@@ -10,37 +10,9 @@ imports
   analysis/names
   
   generation/tokenize
-  generation/pp-sdf
-  runtime/nbl/-
-  runtime/index/-
-  runtime/task/-
-  
-  editor-common.generated
   
 rules
-
-  pack-sdf-abstract:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      task-setup(|project-path)
-    ; filename := <guarantee-extension(|"aterm")> path
-    ; result   := <pack-sdf> ast
-  
-  pack-sdf-concrete =
-    pack-sdf-abstract
-  ; (guarantee-extension(|"def") , pp-sdf-to-string)
-  
-  generate-sdf-abstract:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      task-setup(|project-path)
-    ; filename := <guarantee-extension(|"aterm")> path
-    ; result   := <module-to-sdf> ast
-  
-  generate-sdf-concrete =
-  	generate-sdf-abstract
-  ; (guarantee-extension(|"sdf") , pp-sdf-to-string)
-  
+	  
   pack-sdf = MkSingleton ; !definition(<pack-sdf(|[])>)
   
   pack-sdf(|seen) = ?[]
@@ -57,26 +29,27 @@ rules
       end
   			    
   module-to-sdf =
-  	'module(id, id, !exports(<template-sections-to-sdf>))
+  	'module(id, id, !exports(<sections-to-sdf>))
   	
   /** @type List(TemplateSection | ...) -> List(grammar) */
-  template-sections-to-sdf =
+  sections-to-sdf =
     where (chars := <collect-one(?Tokenize(<id>)) <+ !['(', ')']>)
   ; where (kfr   := <collect-one(?KeywordFollowRestriction(<id>) <+ !None())>)
   ; where (nl    := <collect-one(?Newlines(<id>) <+ !None())>)
-  ; filter(template-section-to-sdf(|chars, kfr, nl))
+  ; filter(section-to-sdf(|chars, kfr, nl))
   ; concat
 
 rules
 
   /** @type TemplateSection -> grammar */
-  template-section-to-sdf(|chars, kfr, nl):
-    TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
+  section-to-sdf(|chars, kfr, nl):
+    TemplateSection(t*) -> [context-free-syntax(p*), inj*, restr*]
     where with-spxverify(
-      p* := <map(template-production-to-sdf(|chars, kfr, nl))> x;
+      p* := <map(template-production-to-sdf(|chars, kfr, nl))> t*;
       // content complete productions
-      p'* := <map(?TemplateProduction(<id>, _, _, _)); nub;
-              map(sort-to-contentcomplete)> x;
+      p'* := < map(?TemplateProduction(<id>, _, _, _))
+             ; nub
+             ; map(sort-to-contentcomplete)> t*;
       if !p'* => [] then
         inj* := []
       else
@@ -91,7 +64,7 @@ rules
             where(explode-string; chars-end-with-identifier-char)
       in
         r* := <collect-om(?String(<string-ends-with-identifier-char>));
-               filter(string-to-sdf(|chars); last)> x;
+               filter(string-to-sdf(|chars); last)> t*;
         if !r* => [] + !kfr => None() then
           restr* := []
         else
@@ -112,11 +85,11 @@ rules
 
 rules
 	
-  template-section-to-sdf(|chars, kfr, nl):
+  section-to-sdf(|chars, kfr, nl):
     SDFSection(x) -> [<alltd(sdf-production-to-sdf + priority-group-to-sdf(|chars, kfr, nl))> x]
 
   sdf-production-to-sdf:
-    SdfProduction(sort, cons, symbol*, attrs) ->
+    SdfProduction(sort, cons, Rhs(symbol*), attrs) ->
       prod(symbol*, sort(sort), attrs')
     where with-spxverify(
       attr1* := <cons-to-attrs> cons
@@ -136,9 +109,9 @@ rules
   sort-cons-to-prods(|chars, kfr, nl) =
      ?SortCons(s, c) 
    ; def-of
-   ; try-make-list
+   ; (is-list <+ MkSingleton)
    ; map(
-       ?SdfProduction(_, _, <id>, _)
+       ?SdfProduction(_, _, Rhs(<id>), _)
      + ?TemplateProduction(_, _, <template-to-sdf(|chars, kfr, nl)>, _)
      )
    ; map(!prod(<id>, sort(s), no-attrs()))
@@ -312,10 +285,4 @@ strategies
 
   def-of(|ctx) = ?SortCons(_, <def-lookup(|ctx)>)
   def-of(|ctx) = ?'module(unparameterized(<def-lookup(|ctx)>))
-  
-  // property-of(|kind) = 
-  //   insert-results
-  // ; nabl-collect-one-resolved-def
-  // ; nabl-uri
-  // ; nabl-get-all-properties(|kind)
     

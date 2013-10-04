@@ -2,9 +2,66 @@ module analysis/types
 
 imports 
   include/TemplateLang
+  libstrc
   runtime/types/collect
+  utils/contract
   
+overlays
+  
+  SortType(t)    = ConstType(SortNoArgs(t))
+  OptionType(t)  = ConstType(Sort("Option", [SortNoArgs(t)]))
+  ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
+
 rules
   
-  nabl-property-eq(|kind) = strip-annos; eq <+ debug
-   
+  type-of(|ctx) =
+    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)
+  ; type-is(|ctx)
+    
+  type-of(|ctx) =
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)
+  ; type-is(|ctx)
+    
+  type-of:
+    Placeholder(_, sort(t), None(), _) -> SortType(t)
+
+  type-of:
+    Placeholder(_, sort(t), Option(), _) -> OptionType(t)
+
+  type-of:
+    Placeholder(_, sort(t), Plus(), _) -> ListType(t) 
+
+  type-of:
+    Placeholder(_, sort(t), Star(), _) -> ListType(t) 
+
+rules
+  
+  type-of(|ctx) =
+  	?Rhs(<filter(is-lexical-symbol < fail + type-of <+ debug(!"untypable ") ; fail)>)
+  ; type-is(|ctx)	
+  	
+  type-of:
+    sort(t) -> SortType(t)
+  
+  type-of:
+    opt(s) -> ListType(<type-of> s)
+  
+  type-of:
+    iter(s) -> ListType(<type-of> s)
+  
+  type-of:
+    iter-star(s) -> ListType(<type-of> s)
+  
+  type-of:
+    iter-sep(s, lit(_)) -> ListType(<type-of> s)
+  
+  type-of:
+    iter-star-sep(s, lit(_)) -> ListType(<type-of> s)
+    
+rules
+  
+  nabl-property-eq(|kind) = (id, try(?FunType(_, <id>))); strip-annos; eq <+ debug
+
+rules
+	
+	is-lexical-symbol = collect-one(?lit(_) + ?ci-lit(_) + ?char-class(_))

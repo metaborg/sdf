@@ -1,0 +1,38 @@
+module editor/builders
+
+imports
+  
+  runtime/index/-
+  runtime/task/-
+  generation/-
+  libstrc
+  
+  editor-common.generated
+  
+rules
+
+  generate-aterm(s):
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      task-setup(|project-path)
+    ; index-setup(|<language>, [project-path])
+    ; filename := <guarantee-extension(|"aterm")> path
+    ; result   := <s> ast
+
+rules
+	  
+  pack-sdf-abstract     = generate-aterm(pack-sdf)
+  generate-sdf-abstract = generate-aterm(module-to-sdf)
+  generate-sig-abstract = generate-aterm(module-to-sig(!$[[<id>].sig]))
+
+  pack-sdf-concrete =
+    pack-sdf-abstract
+  ; (guarantee-extension(|"def") , pp-sdf-to-string)
+  
+  generate-sdf-concrete =
+    generate-sdf-abstract
+  ; (guarantee-extension(|"sdf") , pp-sdf-to-string)
+
+  generate-sig-concrete =
+    generate-sig-abstract
+  ; (guarantee-extension(|"sig.str") , pp-stratego-string)

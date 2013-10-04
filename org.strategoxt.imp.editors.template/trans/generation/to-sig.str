@@ -1,0 +1,55 @@
+module to-sig
+
+imports
+  libstratego-lib
+  libstrc
+  include/TemplateLang
+  utils/contract
+  analysis/types
+  runtime/nbl/-
+  runtime/task/-
+  
+rules
+	
+	module-to-sig(ext):
+		'module(unparameterized(m), i*, s*) -> Module(m', [is*, <sections-to-sig> s*])
+		where
+			m'  := <ext> m
+		; is* := <map(to-str-import(ext))> i*
+		  
+  to-str-import(ext):
+  	imports(i*) -> Imports(<map(!Import(<to-str-module-name(ext)>))> i*)
+  	
+  to-str-module-name(ext):
+  	'module(unparameterized(m)) -> <ext> m
+  	
+rules
+
+  sections-to-sig = !Signature(<filter(section-to-sig)>)
+  
+  section-to-sig:
+    TemplateSection(t*) -> Constructors(sig*)
+    with
+      sig* := <map(?TemplateProduction(_, <cons-to-decl>, _, _))> t*
+  
+  section-to-sig:
+    SDFSection(context-free-syntax(p*)) -> Constructors(sig*)
+    with
+      sig* := <map(?SdfProduction(_, <cons-to-decl>, _, _))> p*
+    
+rules 
+  
+  cons-to-decl =
+    ?Inj() 
+  < !OpDeclInj(<stype-of>)
+  + !OpDecl(<id>, <stype-of>)
+  
+  stype-of = 
+  	nabl-collect-def
+  ; nabl-get-property(|Type())
+  ; insert-results
+  ; try(?FunType([], <id>))
+   
+  
+    
+  

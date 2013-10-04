@@ -10,13 +10,13 @@ signature
     deprecated : Term
 
 overlays
-  sdf-cons(x) = term(default(appl(unquoted("cons"), [fun(quoted(x))])))
-  sdf-deprecated() = term(default(fun(unquoted("deprecated"))))
+  sdf-cons(x)       = term(default(appl(unquoted("cons"), [fun(quoted(x))])))
+  sdf-deprecated()  = term(default(fun(unquoted("deprecated"))))
   sdf-deprecated(x) = term(default(appl(unquoted("deprecated"), [fun(quoted(x))])))
 
   sdf-completion-prefer() = term(default(appl(unquoted("completion"), [fun(unquoted("prefer"))])))
-  sdf-completion-avoid() = term(default(appl(unquoted("completion"), [fun(unquoted("avoid"))])))
-  sdf-completion(x) = term(default(appl(unquoted("completion"), [x])))
+  sdf-completion-avoid()  = term(default(appl(unquoted("completion"), [fun(unquoted("avoid"))])))
+  sdf-completion(x)       = term(default(appl(unquoted("completion"), [x])))
 
 strategies
 
@@ -35,8 +35,6 @@ strategies
   fetch-cons-name:
     attrs(attr*) -> <getfirst(fetch-cons-name)> attr*
 
-  remove-cons = attrs(remove-all(fetch-cons); ?[_|_]) <+ !no-attrs()
-  
   is-bracket:
     attrs(attr*) -> <one(?bracket())> attr*
 

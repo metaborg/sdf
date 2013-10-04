@@ -159,7 +159,7 @@ rules
       )
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
-    ?SdfProduction(s, c, symbol*, attr*)
+    ?SdfProduction(s, c, rhs, attrs)
     ; origin-track-forced(
         SdfProduction(
           nabl-def(
@@ -204,28 +204,33 @@ rules
       )
 
   nabl-prop-site(|lang__, partition__, states__, implicits__) =
-    ?SdfProduction(s, c, symbol*, attr*)
+    ?SdfProduction(s, c, rhs, attrs)
     ; origin-track-forced(
-        SdfProduction(
-          id
-        , nabl-props(
-          | partition__
-          , [ Prop(Type(), s, [])
-            , Prop(
-                NablProp_def()
-              , SdfProduction(s, c, symbol*, attr*)
-              , []
-              )
-            ]
+        where(r3-2-1__ := <property-task(|Type(), partition__)> rhs)
+        ; SdfProduction(
+            id
+          , nabl-props(
+            | partition__
+            , [ Prop(
+                  Type()
+                , FunType(r3-2-1__, SortType(s))
+                , [r3-2-1__]
+                )
+              , Prop(
+                  NablProp_def()
+                , SdfProduction(s, c, rhs, attrs)
+                , [r3-2-1__]
+                )
+              ]
+            )
+          , id
+          , id
           )
-        , id
-        , id
-        )
       |
       )
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
-    ?TemplateProduction(s, c, symbol*, attr*)
+    ?TemplateProduction(s, c, t, attrs)
     ; origin-track-forced(
         TemplateProduction(
           nabl-def(
@@ -270,23 +275,28 @@ rules
       )
 
   nabl-prop-site(|lang__, partition__, states__, implicits__) =
-    ?TemplateProduction(s, c, symbol*, attr*)
+    ?TemplateProduction(s, c, t, attrs)
     ; origin-track-forced(
-        TemplateProduction(
-          id
-        , nabl-props(
-          | partition__
-          , [ Prop(Type(), s, [])
-            , Prop(
-                NablProp_def()
-              , TemplateProduction(s, c, symbol*, attr*)
-              , []
-              )
-            ]
+        where(r4-2-1__ := <property-task(|Type(), partition__)> t)
+        ; TemplateProduction(
+            id
+          , nabl-props(
+            | partition__
+            , [ Prop(
+                  Type()
+                , FunType(r4-2-1__, SortType(s))
+                , [r4-2-1__]
+                )
+              , Prop(
+                  NablProp_def()
+                , TemplateProduction(s, c, t, attrs)
+                , [r4-2-1__]
+                )
+              ]
+            )
+          , id
+          , id
           )
-        , id
-        , id
-        )
       |
       )
 

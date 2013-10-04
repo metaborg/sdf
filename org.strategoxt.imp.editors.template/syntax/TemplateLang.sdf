@@ -45,8 +45,10 @@ exports
     "context-free" "syntax" SdfProduction* -> Grammar[[SDF]] {cons("context-free-syntax"), prefer}
 
     %% syntactic sugar for SDF
-    ID Cons "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProduction")}
+    ID Cons "=" RHS Attributes[[SDF]] -> SdfProduction {cons("SdfProduction")}
    
+    Symbols[[SDF]] -> RHS {cons("Rhs")}
+    
     %% template productions
     ID Cons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
 

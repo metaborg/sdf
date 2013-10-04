@@ -20,6 +20,9 @@ imports
   lib/runtime/editor/-
 	analysis/-
 	generation/-
+	editor/-
+	//utils/props
+	
 	// analyze
 	// name-desugar
 	// name-check

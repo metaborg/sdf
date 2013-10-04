@@ -23,18 +23,20 @@ binding rules
   'module(unparameterized(m)):
     imports Sort, Constructor from Module m
   
-  SdfProduction(s, c, symbol*, attr*): 
+  SdfProduction(s, c, rhs, attrs): 
     defines non-unique Sort s 
     defines unique Constructor c
-      of type s
-      of def SdfProduction(s, c, symbol*, attr*)
-  
-  TemplateProduction(s, c, symbol*, attr*): 
-    defines non-unique Sort s 
-    defines unique Constructor c
-      of type s
-      of def TemplateProduction(s, c, symbol*, attr*)
+      of type FunType(ty*, SortType(s))
+      of def SdfProduction(s, c, rhs, attrs)
+      where rhs has type ty*
       
+  TemplateProduction(s, c, t, attrs): 
+    defines non-unique Sort s 
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+      of def TemplateProduction(s, c, t, attrs)
+      where t has type ty*
+        
   SortCons(s, c):
   	refers to Sort s
   	refers to Constructor c of type s

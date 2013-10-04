@@ -10,8 +10,10 @@ rules
   lift-sdf2 = topdown(try(lift-sdf2-prod))
   
   lift-sdf2-prod: 
-  	prod(sym*, sort(s), attr*) -> SdfProduction(s, cons, sym*, attr'*)
+  	prod(sym*, sort(s), attrs) -> SdfProduction(s, cons, Rhs(sym*), attrs')
     where
-    	cons   := <fetch-cons-name <+ !Inj()> attr* 
-    ; attr'* := <remove-cons> attr*
+    	cons   := <fetch-cons-name <+ !Inj()> attrs 
+    ; attrs' := <remove-cons> attrs
+  
+  remove-cons = attrs(remove-all(fetch-cons); ?[_|_]) <+ !no-attrs()
   
