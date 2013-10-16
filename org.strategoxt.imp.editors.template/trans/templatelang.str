@@ -87,8 +87,8 @@ rules // Debugging
 	debug-reanalyze = 
 		analysis-debug-reanalyze(|<language>)
 		
-  analysis-default-debug-interface(msg) = debug(msg)
-  analysis-default-debug-interface = debug
+  // analysis-default-debug-interface(msg) = debug(msg)
+  // analysis-default-debug-interface = debug
 
 rules
 
