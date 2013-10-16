@@ -1,8 +1,9 @@
 module names
 
 imports
-  lib/runtime/nbl/-
+  lib/runtime/nabl/-
   lib/runtime/task/-
+  lib/runtime/properties/-
   lib/runtime/types/-
   lib/runtime/editor/-
   include/TemplateLang
@@ -16,6 +17,13 @@ signature
 
 
 rules
+
+  nabl-get-scope =
+    ?'module(unparameterized(m), _, _)
+    ; ![NablNsSort()]
+
+  nabl-get-name :
+    'module(unparameterized(m), _, _) -> <strip-annos> m
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?'module(unparameterized(m), _, _)
@@ -44,6 +52,9 @@ rules
         ; match(implicits__|[])
       |
       )
+
+  nabl-get-name :
+    'module(unparameterized(m)) -> <strip-annos> m
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?'module(unparameterized(m))
@@ -92,6 +103,9 @@ rules
       |
       )
 
+  nabl-get-name :
+    TemplateProduction(s, _, _) -> <strip-annos> s
+
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?TemplateProduction(s, _, _)
     ; origin-track-forced(
@@ -118,6 +132,9 @@ rules
       |
       )
 
+  nabl-get-name :
+    SortDef(s) -> <strip-annos> s
+
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?SortDef(s)
     ; origin-track-forced(
@@ -142,6 +159,9 @@ rules
       |
       )
 
+  nabl-get-name :
+    SortRef(s) -> <strip-annos> s
+
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?SortRef(s)
     ; origin-track-forced(
@@ -163,6 +183,9 @@ rules
         )
       |
       )
+
+  nabl-get-name :
+    sort(s) -> <strip-annos> s
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?sort(s)
