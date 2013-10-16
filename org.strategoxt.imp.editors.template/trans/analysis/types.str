@@ -14,11 +14,11 @@ overlays
 
 rules
   
-  type-of(|ctx) =
+  create-type-task(|ctx) =
     ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)
   ; type-is(|ctx)
     
-  type-of(|ctx) =
+  create-type-task(|ctx) =
     ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)
   ; type-is(|ctx)
     
@@ -36,7 +36,7 @@ rules
 
 rules
   
-  type-of(|ctx) =
+  create-type-task(|ctx) =
   	?Rhs(<filter(is-lexical-symbol < fail + type-of <+ debug(!"untypable ") ; fail)>)
   ; type-is(|ctx)	
   	
@@ -65,3 +65,4 @@ rules
 rules
 	
 	is-lexical-symbol = collect-one(?lit(_) + ?ci-lit(_) + ?char-class(_))
+	

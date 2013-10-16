@@ -8,11 +8,10 @@ imports
   libstrc
   include/TemplateLang
   // include/libtemplatelang
-  //editor/TemplateLang-Outliner
   lib/EditorService
   lib/editor-common.generated
   lib/runtime/analysis/-
-  lib/runtime/nbl/-
+  lib/runtime/nabl/-
   lib/runtime/task/-
   lib/runtime/index/-
   lib/runtime/tmpl/-

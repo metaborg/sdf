@@ -6,8 +6,9 @@ imports
   include/TemplateLang
   utils/contract
   analysis/types
-  runtime/nbl/-
+  runtime/nabl/-
   runtime/task/-
+  runtime/types/-
   
 rules
 	
@@ -16,7 +17,7 @@ rules
 		where
 			m'  := <ext> m
 		; is* := <map(to-str-import(ext))> i*
-		  
+	  
   to-str-import(ext):
   	imports(i*) -> Imports(<map(!Import(<to-str-module-name(ext)>))> i*)
   	
@@ -46,7 +47,7 @@ rules
   
   stype-of = 
   	nabl-collect-def
-  ; nabl-get-property(|Type())
+  ; get-type
   ; insert-results
   ; try(?FunType([], <id>))
    

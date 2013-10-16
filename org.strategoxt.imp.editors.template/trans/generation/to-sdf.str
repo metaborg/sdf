@@ -8,11 +8,21 @@ imports
   include/TemplateLang
   analysis/attributes
   analysis/names
+  runtime/nabl/-
+  runtime/task/-
+  runtime/properties/-
   
   generation/tokenize
   
 rules
-	  
+	
+	get-def-improved = 
+	   get-property-task(|NablProp_def())
+   ; insert-results // TODO: is this the right insertion?
+  <+ try(nabl-get-name)
+   ; nabl-uris // TODO: how to handle multiple values?
+   ; mapconcat(!Prop(<id>, NablProp_def(), ()); nabl-get-all-values; insert-results; concat)
+
   pack-sdf = MkSingleton ; !definition(<pack-sdf(|[])>)
   
   pack-sdf(|seen) = ?[]
@@ -21,11 +31,14 @@ rules
   	[ m @ 'module(mn, i*, _) | m* ] -> result
   	where
   		if <elem> (mn, seen) then
+  		  debug(!1) ;
   			result := <pack-sdf(|seen)> m*
       else
-      	im*    := <mapconcat(?imports(<map(def-of)>))> i*
-      ;	m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
-      ; result := [<module-to-sdf> m, m'*]
+      	im*    := <mapconcat(?imports(<mapconcat(get-def-improved)>))> i*
+      ;	debug(!2) ;
+        m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
+      ; debug(!3) ;
+        result := [<module-to-sdf> m, m'*]
       end
   			    
   module-to-sdf =
@@ -108,7 +121,7 @@ rules
 
   sort-cons-to-prods(|chars, kfr, nl) =
      ?SortCons(s, c) 
-   ; def-of
+   ; get-def-improved
    ; (is-list <+ MkSingleton)
    ; map(
        ?SdfProduction(_, _, Rhs(<id>), _)
@@ -283,6 +296,6 @@ strategies
     string-replace(|"'", "\\'");
     string-replace(|"\"", "\\\"")
 
-  def-of(|ctx) = ?SortCons(_, <def-lookup(|ctx)>)
-  def-of(|ctx) = ?'module(unparameterized(<def-lookup(|ctx)>))
+  create-def-task(|ctx) = ?SortCons(_, <def-lookup(|ctx)>)
+  create-def-task(|ctx) = ?'module(unparameterized(<def-lookup(|ctx)>))
     

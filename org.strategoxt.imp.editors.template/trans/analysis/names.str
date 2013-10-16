@@ -1,8 +1,9 @@
 module analysis/names
 
 imports
-  lib/runtime/nbl/-
+  lib/runtime/nabl/-
   lib/runtime/task/-
+  lib/runtime/properties/-
   lib/runtime/types/-
   lib/runtime/editor/-
   include/TemplateLang
@@ -25,41 +26,62 @@ signature
 
 rules
 
-  custom-properties(add-properties) =
+  nabl-custom-properties(add-properties) =
     ![NablProp_def()] ; add-properties
 
   def-is(|task*) =
-    prop-calc(|task*, [])
+    nabl-prop-calc(|task*, [])
 
   def-is(|task*, dep*) =
-    prop-calc(|task*, dep*)
+    nabl-prop-calc(|task*, dep*)
 
-  def-check(|task*) =
-    prop-check(|NablProp_def(), task*, [])
+  def-list(|task*) =
+    nabl-prop-list(|task*, [])
 
-  def-check(|task*, dep*) =
-    prop-check(|NablProp_def(), task*, dep*)
+  def-list(|task*, dep*) =
+    nabl-prop-list(|task*, dep*)
 
   def-lookup(|task*) =
-    prop-lookup(|NablProp_def(), task*, [])
+    nabl-prop-lookup(|NablProp_def(), task*, [])
 
   def-lookup(|task*, dep*) =
-    prop-lookup(|NablProp_def(), task*, dep*)
+    nabl-prop-lookup(|NablProp_def(), task*, dep*)
 
-  def-match(|task*, relation) =
-    prop-match(|task*, relation)
+  def-match(|task*, expected) =
+    nabl-prop-match(
+    | NablProp_def()
+    , task*
+    , Eq()
+    , expected
+    )
 
-  def-of(|task*) =
+  def-match(|task*, relation, expected) =
+    nabl-prop-match(|NablProp_def(), task*, relation, expected)
+
+  create-def-task(|task*) =
     fail
 
-  def-of =
-    property-of(|NablProp_def())
+  get-def =
+    get-property(|NablProp_def())
 
-  new-property-task(|task*):
-    (NablProp_def(), term) -> <def-of(|task*)> term
+  store-def(|partition, prop) =
+    nabl-store-prop(
+    | partition
+    , Prop(NablProp_def(), prop, [])
+    )
+
+  create-property-task(|partition):
+    (NablProp_def(), term) -> <create-def-task(|partition)> term
 
 
 rules
+
+  nabl-get-scope =
+    ?'module(unparameterized(m), i*, s*)
+    ; ![NablNsSort(), NablNsConstructor()]
+
+  nabl-get-name :
+    'module(unparameterized(m), i*, s*) -> m
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?'module(unparameterized(m), i*, s*)
@@ -89,12 +111,12 @@ rules
       |
       )
 
-  nabl-prop-site(|lang__, partition__, states__, implicits__) =
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?'module(unparameterized(m), i*, s*)
     ; origin-track-forced(
         'module(
           unparameterized(
-            nabl-props(
+            nabl-store-props(
             | partition__
             , [ Prop(
                   NablProp_def()
@@ -109,6 +131,9 @@ rules
         )
       |
       )
+
+  nabl-get-name :
+    'module(unparameterized(m)) -> m
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?'module(unparameterized(m))
@@ -204,13 +229,13 @@ rules
       |
       )
 
-  nabl-prop-site(|lang__, partition__, states__, implicits__) =
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?SdfProduction(s, c, rhs, attrs)
     ; origin-track-forced(
-        where(r3-2-1__ := <property-task(|Type(), partition__)> rhs)
+        where(r3-2-1__ := <get-property-task(|Type())> rhs)
         ; SdfProduction(
             id
-          , nabl-props(
+          , nabl-store-props(
             | partition__
             , [ Prop(
                   Type()
@@ -275,13 +300,13 @@ rules
       |
       )
 
-  nabl-prop-site(|lang__, partition__, states__, implicits__) =
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?TemplateProduction(s, c, t, attrs)
     ; origin-track-forced(
-        where(r4-2-1__ := <property-task(|Type(), partition__)> t)
+        where(r4-2-1__ := <get-property-task(|Type())> t)
         ; TemplateProduction(
             id
-          , nabl-props(
+          , nabl-store-props(
             | partition__
             , [ Prop(
                   Type()
@@ -340,6 +365,9 @@ rules
           )
       |
       )
+
+  nabl-get-name :
+    sort(s) -> s
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?sort(s)
