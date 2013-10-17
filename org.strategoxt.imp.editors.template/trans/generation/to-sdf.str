@@ -31,14 +31,11 @@ rules
   	[ m @ 'module(mn, i*, _) | m* ] -> result
   	where
   		if <elem> (mn, seen) then
-  		  debug(!1) ;
-  			result := <pack-sdf(|seen)> m*
+  		  result := <pack-sdf(|seen)> m*
       else
       	im*    := <mapconcat(?imports(<mapconcat(get-def-improved)>))> i*
-      ;	debug(!2) ;
-        m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
-      ; debug(!3) ;
-        result := [<module-to-sdf> m, m'*]
+      ;	m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
+      ; result := [<module-to-sdf> m, m'*]
       end
   			    
   module-to-sdf =

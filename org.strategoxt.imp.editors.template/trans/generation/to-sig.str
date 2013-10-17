@@ -49,6 +49,7 @@ rules
   	nabl-collect-def
   ; get-type
   ; insert-results
+  ; ?[<id>]
   ; try(?FunType([], <id>))
    
   
