@@ -1,0 +1,58 @@
+module TemplateLang-Menus
+
+imports TemplateLang-Menus.generated
+
+  // This file can be used to specify toolbar menus.
+  // See the imported file for a brief introduction and examples.
+
+menus
+  
+  menu: "Syntax" 
+  
+	  action : "Show abstract syntax"   = debug-show-aterm (openeditor) (realtime) (meta) (source)                     
+	  action : "Show desugared syntax"  = debug-show-desugared (openeditor) (realtime) (meta) (source)
+	  action : "Show analyzed syntax"   = debug-show-analyzed (openeditor) (realtime) (meta)
+  
+  menu: "Analysis"
+    
+    action: "Reset and reanalyze"       = debug-reanalyze (meta)   
+    action: "Show analysis (project)"   = debug-project (openeditor) (meta)
+    action: "Show analysis (partition)" = debug-partition (openeditor) (meta)
+    action: "Show index (project)"      = debug-index-project (openeditor) (meta)
+    action: "Show index (partition)"    = debug-index-partition (openeditor) (meta)
+    action: "Show tasks (project)"      = debug-task-project (openeditor) (meta)
+    action: "Show tasks (partition)"    = debug-task-partition (openeditor) (meta)
+    action: "Show tasks (selection)"    = debug-task-selection (openeditor) (meta)
+
+  menu: "Generate"
+  
+  submenu: "SDF"
+  
+	  action : "Generate SDF (abstract)" = generate-sdf-abstract (openeditor) (realtime)
+	  action : "Generate SDF (concrete)" = generate-sdf-concrete (openeditor) (realtime)
+	  action : "Generate DEF (abstract)" = pack-sdf-abstract (openeditor) (realtime)
+	  action : "Generate DEF (concrete)" = pack-sdf-concrete (openeditor) (realtime)
+    // action : "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
+	end
+  
+  submenu: "Signature"
+  
+    action : "Generate signature (abstract, for selection)" = generate-sig-abstract (openeditor) (realtime)
+    action : "Generate signature (concrete, for selection)" = generate-sig-concrete (openeditor) (realtime)
+	
+	end
+	
+	submenu: "ESV"
+	
+	  action : "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
+	  action : "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
+
+  end
+    
+  submenu: "PP"
+  
+	  action : "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract (openeditor) (realtime)
+	  action : "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
+	
+	end
+    
