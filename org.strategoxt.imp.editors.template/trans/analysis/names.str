@@ -1,11 +1,11 @@
 module analysis/names
 
 imports
-  lib/runtime/nabl/-
-  lib/runtime/task/-
-  lib/runtime/properties/-
-  lib/runtime/types/-
-  lib/runtime/editor/-
+  lib/nabl/-
+  lib/task/-
+  lib/properties/-
+  lib/types/-
+  lib/editor/-
   include/TemplateLang
   analysis/types
   libstrc
@@ -21,13 +21,15 @@ signature
 
 signature
   constructors
-    NablProp_def : Property
+    NablProp_def  : Property
+    NablProp_sort : Property
 
 
 rules
 
   nabl-custom-properties(add-properties) =
-    ![NablProp_def()] ; add-properties
+    ![NablProp_def(), NablProp_sort()]
+    ; add-properties
 
   def-is(|task*) =
     nabl-prop-calc(|task*, [])
@@ -70,8 +72,54 @@ rules
     , Prop(NablProp_def(), prop, [])
     )
 
-  create-property-task(|partition):
-    (NablProp_def(), term) -> <create-def-task(|partition)> term
+  create-property-task(|partition, kind):
+    term -> <create-def-task(|partition)> term
+    where NablProp_def() := kind
+
+  sort-is(|task*) =
+    nabl-prop-calc(|task*, [])
+
+  sort-is(|task*, dep*) =
+    nabl-prop-calc(|task*, dep*)
+
+  sort-list(|task*) =
+    nabl-prop-list(|task*, [])
+
+  sort-list(|task*, dep*) =
+    nabl-prop-list(|task*, dep*)
+
+  sort-lookup(|task*) =
+    nabl-prop-lookup(|NablProp_sort(), task*, [])
+
+  sort-lookup(|task*, dep*) =
+    nabl-prop-lookup(|NablProp_sort(), task*, dep*)
+
+  sort-match(|task*, expected) =
+    nabl-prop-match(
+    | NablProp_sort()
+    , task*
+    , Eq()
+    , expected
+    )
+
+  sort-match(|task*, relation, expected) =
+    nabl-prop-match(|NablProp_sort(), task*, relation, expected)
+
+  create-sort-task(|task*) =
+    fail
+
+  get-sort =
+    get-property(|NablProp_sort())
+
+  store-sort(|partition, prop) =
+    nabl-store-prop(
+    | partition
+    , Prop(NablProp_sort(), prop, [])
+    )
+
+  create-property-task(|partition, kind):
+    term -> <create-sort-task(|partition)> term
+    where NablProp_sort() := kind
 
 
 rules
@@ -242,6 +290,7 @@ rules
                 , FunType(r3-2-1__, SortType(s))
                 , [r3-2-1__]
                 )
+              , Prop(NablProp_sort(), s, [r3-2-1__])
               , Prop(
                   NablProp_def()
                 , SdfProduction(s, c, rhs, attrs)
@@ -313,6 +362,7 @@ rules
                 , FunType(r4-2-1__, SortType(s))
                 , [r4-2-1__]
                 )
+              , Prop(NablProp_sort(), s, [r4-2-1__])
               , Prop(
                   NablProp_def()
                 , TemplateProduction(s, c, t, attrs)
@@ -355,7 +405,7 @@ rules
             , uris__
             , [ UseCandidate(
                   NablNsConstructor()
-                , [Prop(Type(), s, [])]
+                , [Prop(NablProp_sort(), s, [])]
                 , Current()
                 , True()
                 , []

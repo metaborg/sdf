@@ -16,12 +16,12 @@ imports
   
 rules
 	
-	get-def-improved = 
-	   get-property-task(|NablProp_def())
-   ; insert-results // TODO: is this the right insertion?
-  <+ try(nabl-get-name)
-   ; nabl-uris // TODO: how to handle multiple values?
-   ; mapconcat(!Prop(<id>, NablProp_def(), ()); nabl-get-all-values; insert-results; concat)
+	// get-def-improved = 
+	//    get-property-task(|NablProp_def())
+ //   ; insert-results // TODO: is this the right insertion?
+ //  <+ try(nabl-get-name)
+ //   ; nabl-uris // TODO: how to handle multiple values?
+ //   ; mapconcat(!Prop(<id>, NablProp_def(), ()); nabl-get-all-values; insert-results; concat)
 
   pack-sdf = MkSingleton ; !definition(<pack-sdf(|[])>)
   
@@ -33,7 +33,7 @@ rules
   		if <elem> (mn, seen) then
   		  result := <pack-sdf(|seen)> m*
       else
-      	im*    := <mapconcat(?imports(<mapconcat(get-def-improved)>))> i*
+      	im*    := <mapconcat(?imports(<map(get-def)>))> i*
       ;	m'*    := <pack-sdf(|[mn|seen])> [m*, im*]
       ; result := [<module-to-sdf> m, m'*]
       end
@@ -118,7 +118,7 @@ rules
 
   sort-cons-to-prods(|chars, kfr, nl) =
      ?SortCons(s, c) 
-   ; get-def-improved
+   ; get-def
    ; (is-list <+ MkSingleton)
    ; map(
        ?SdfProduction(_, _, Rhs(<id>), _)
