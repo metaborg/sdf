@@ -23,16 +23,16 @@ rules
 	  
   pack-sdf-abstract     = generate-aterm(pack-sdf)
   generate-sdf-abstract = generate-aterm(module-to-sdf)
-  generate-sig-abstract = generate-aterm(module-to-sig(!$[[<id>].sig]))
+  generate-sig-abstract = generate-aterm(module-to-sig)
 
   pack-sdf-concrete =
     pack-sdf-abstract
-  ; (guarantee-extension(|"def") , pp-sdf-to-string)
+  ; (!$[src-gen/[<guarantee-extension(|"def")>]] , pp-sdf-to-string)
   
   generate-sdf-concrete =
     generate-sdf-abstract
-  ; (guarantee-extension(|"sdf") , pp-sdf-to-string)
-
+  ; (!$[src-gen/[<guarantee-extension(|"sdf")>]] , pp-sdf-to-string)
+  
   generate-sig-concrete =
     generate-sig-abstract
-  ; (guarantee-extension(|"sig.str") , pp-stratego-string)
+  ; (!$[src-gen/[<guarantee-extension(|"sig.str")>]] , pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp "))))

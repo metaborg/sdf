@@ -37,8 +37,8 @@ menus
   
   submenu: "Signature"
   
-    action : "Generate signature (abstract, for selection)" = generate-sig-abstract (openeditor) (realtime)
-    action : "Generate signature (concrete, for selection)" = generate-sig-concrete (openeditor) (realtime)
+    action : "Generate signature (abstract)" = generate-sig-abstract (openeditor) (realtime)
+    action : "Generate signature (concrete)" = generate-sig-concrete (openeditor) (realtime)
 	
 	end
 	

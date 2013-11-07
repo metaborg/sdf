@@ -12,32 +12,57 @@ imports
   
 rules
 	
-	module-to-sig(ext):
-		'module(unparameterized(m), i*, s*) -> Module(m', [is*, <sections-to-sig> s*])
-		where
-			m'  := <ext> m
-		; is* := <map(to-str-import(ext))> i*
-	  
-  to-str-import(ext):
-  	imports(i*) -> Imports(<map(!Import(<to-str-module-name(ext)>))> i*)
+	module-to-sig:
+		'module(unparameterized(m), i*, s*) -> Module(m', [is*, s'])
+		with
+			m'  := <conc-strings> (m, ".sig")
+		; is* := <map(to-str-import)> i*
+	  ; s'  := Signature(<filter(section-to-sig)> s*)
+	    
+  to-str-import:
+  	imports(i*) -> Imports(<map(!Import(<to-str-module-name>))> i*)
   	
-  to-str-module-name(ext):
-  	'module(unparameterized(m)) -> <ext> m
+  to-str-module-name:
+  	'module(unparameterized(m)) -> <conc-strings> (m, ".sig")
   	
 rules
-
-  sections-to-sig = !Signature(<filter(section-to-sig)>)
+ 
+  section-to-sig:
+  	SDFSection('sorts(s*)) -> Sorts(s'*)
+  	with
+  		s'* := <map(sort-to-sig)> s*
+  		
+  section-to-sig:
+    SDFSection(lexical-syntax(p*)) -> Constructors(sig*)
+    where
+      sig* := <filter(lexical-to-sig); not(?[])> p*
+    
+  section-to-sig:
+    SDFSection(context-free-syntax(p*)) -> Constructors(sig*)
+    where
+      sig* := <filter(cfg-to-sig); not(?[])> p*
   
   section-to-sig:
     TemplateSection(t*) -> Constructors(sig*)
     with
-      sig* := <map(?TemplateProduction(_, <cons-to-decl>, _, _))> t*
+      sig* := <map(template-to-sig)> t*
   
-  section-to-sig:
-    SDFSection(context-free-syntax(p*)) -> Constructors(sig*)
-    with
-      sig* := <map(?SdfProduction(_, <cons-to-decl>, _, _))> p*
+  sort-to-sig:
+    sort(s) -> SortNoArgs(s)
+  
+  lexical-to-sig:
+    SdfProduction(s, _, _, attrs) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    where
+      <not(attrs(fetch-elem(reject())))> attrs
     
+  cfg-to-sig:
+  	SdfProduction(_, c, _, attrs) -> <cons-to-decl> c
+    where
+    	<not(attrs(fetch-elem(reject())))> attrs
+    
+  template-to-sig:
+    TemplateProduction(_, c, _, _) -> <cons-to-decl> c  
+  		
 rules 
   
   cons-to-decl =
@@ -45,11 +70,8 @@ rules
   < !OpDeclInj(<stype-of>)
   + !OpDecl(<id>, <stype-of>)
   
-  stype-of = 
-  	nabl-collect-def
-  ; get-type
-  ; insert-results
-  ; ?[<id>]
+  stype-of =
+    get-type; debug(!"type ")
   ; try(?FunType([], <id>))
    
   
