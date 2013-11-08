@@ -13,48 +13,56 @@ imports
 rules
 
   module-to-pp:
-    'module(unparameterized(m), i*, s*) -> Module(m', [is*, s'*])
+    'module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])
     with
-      m'  := <conc-strings> (m, ".pp")
-    ; is* := <map(to-str-import(|".pp"))> i*
+      m'  := <to-str-module-name(|".pp")> 'module(m)
+    ; i0  := Imports([Import("runtime/tmpl/pp"), Import(<to-str-module-name(|".sig")> 'module(m))])
+    ; i1* := <map(to-str-import(|".sig"))> i*
+    ; i2* := <map(to-str-import(|".pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
   section-to-pp(|lang):
-    SDFSection(lexical-syntax(p*)) -> Strategies(s*)
+    SDFSection(lexical-syntax(p*)) -> Strategies(<?[_|_]> [s1*, s2*])
     with
-      s*   := <filterconcat(?SdfProduction(<sort-to-pp(|lang)>, _, _, _))> p*
-      
+    	sort* := <filter(productive-sort); make-set> p*
+    ; s1*    := <map(sort-to-pp(|lang))> sort*
+    ; s2*    := <map(sort-to-pp)> sort*
+  
   section-to-pp(|lang):
-    TemplateSection(t*) -> Strategies(s*)
+    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*])
     with
-      s* := <filterconcat(template-to-pp(|lang)); make-set> t*
+      sort* := <filter(productive-sort); make-set> t*
+    ; s1*   := <map(sort-to-pp(|lang))> sort*
+    ; s2*   := <filter(template-to-pp)> t*
 
+  productive-sort:
+    SdfProduction(s, _, _, attrs) -> s
+    where not (
+      <attrs(fetch-elem(?reject()))> attrs
+    )
+  
+  productive-sort:
+    TemplateProduction(s, _, _, attrs) -> s
+    where not (
+      <attrs(fetch-elem(?reject()))> attrs
+    )
+    	
 strategies
 
   sort-to-pp(|lang):
-    x -> 
-      [ SDefNoArgs(
-	        $[prettyprint-[lang]]
-	      , CallNoArgs(SVar($[prettyprint-[x]]))
-	      )
-      , SDefNoArgs(
-          $[prettyprint-[x]]
-          , Strategy |[ ![S(<is-string>)] ]|
-        ) ]
+    x -> SDefNoArgs($[prettyprint-[lang]], CallNoArgs(SVar($[prettyprint-[x]])))
+
+  sort-to-pp:
+    x -> SDefNoArgs($[prettyprint-[x]], Strategy |[ ![S(<is-string>)] ]| ) 
 
 rules
 
-  template-to-pp(|lang):
+  template-to-pp:
     TemplateProduction(s, cons, t, attrs) ->
-      [ SDefNoArgs(
-          $[prettyprint-[lang]]
-        , CallNoArgs(SVar($[prettyprint-[s]]))
-        )
-      , RDefNoArgs(
-          $[prettyprint-[s]]
-        , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
-        )
-      ]
+      RDefNoArgs(
+        $[prettyprint-[s]]
+      , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
+      )
     with
       !t => SingleLineTemplate(elem*)
     < line* := [Line([Layout(""), elem*])]
@@ -62,7 +70,7 @@ rules
     with
       (line'*, _)    := <thread-map(introduce-labels-line)> (line*, 0);
       output         := <map(template-line-to-stratego)> line'*;
-      arg*           := <mapconcat(?Line(<filter(?Placeholder(Label(<id>), _, _, _))>))> line'*;
+      arg*           := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
       (with*, output') := <extract-apps> output;
       if <is-string> cons then
         input := Op(cons, arg*)
@@ -74,7 +82,7 @@ rules
             // injection
             // FIXME: this may result in infinite loop in pretty printer
             //        if there is a cycle of injections in the grammar!
-            input := Var("a")
+            input := Var("t__")
           end
         else
           input := Tuple(arg*)
@@ -90,9 +98,9 @@ rules
     
   extract-app :
     t@App(_, _) -> Var(x)
-    where x := <newname> <oncetd(?Var(y)); !y <+ !"a"> t;
+    where x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'");
           rules(
-            Condition :+ _ -> WhereClause(Assign(Var(x), t))
+            Condition :+ _ -> WithClause(Assign(Var(x), t))
           )
     
 rules
@@ -202,6 +210,9 @@ rules
         // no separator => horizontal box
         s := Call(ppl, [ppx])
       end
+  
+  placeholder-to-var: 
+  	Placeholder(Label(l), _, _, _) -> Var(l)
       
   concatenate-consecutive-strings =
     rec r(

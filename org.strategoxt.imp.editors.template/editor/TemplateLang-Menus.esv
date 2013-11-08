@@ -51,8 +51,8 @@ menus
     
   submenu: "PP"
   
-	  action : "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract (openeditor) (realtime)
-	  action : "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
+	  action : "Generate BOX-based PP (abstract)" = generate-pp-abstract (openeditor) (realtime)
+	  action : "Generate BOX-based PP (concrete)" = generate-pp-concrete (openeditor) (realtime)
 	
 	end
     

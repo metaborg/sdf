@@ -2,29 +2,37 @@ module editor/builders
 
 imports
   
+  libstrc
+  libstratego-sdf
+  libstratego-gpp
+  lib/sdf-desugar
+  lib/sdf-parenthesize
+
+  editor-common.generated
+  
   runtime/index/-
   runtime/task/-
   generation/-
-  libstrc
-  
-  editor-common.generated
   
 rules
 
-  generate-aterm(s):
+  generate-aterm(s) = generate-aterm(s|"aterm")
+  
+  generate-aterm(s|ext):
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       task-setup(|project-path)
     ; index-setup(|<language>, [project-path])
-    ; filename := <guarantee-extension(|"aterm")> path
+    ; filename := <guarantee-extension(|ext)> path
     ; result   := <s> ast
 
 rules
 	  
   pack-sdf-abstract     = generate-aterm(pack-sdf)
   generate-sdf-abstract = generate-aterm(module-to-sdf)
-  generate-sig-abstract = generate-aterm(module-to-sig)
-
+  generate-sig-abstract = generate-aterm(module-to-sig|"rtree")
+  generate-pp-abstract  = generate-aterm(module-to-pp|"rtree")
+  
   pack-sdf-concrete =
     pack-sdf-abstract
   ; (!$[src-gen/[<guarantee-extension(|"def")>]] , pp-sdf-to-string)
@@ -36,3 +44,16 @@ rules
   generate-sig-concrete =
     generate-sig-abstract
   ; (!$[src-gen/[<guarantee-extension(|"sig.str")>]] , pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp "))))
+
+  generate-pp-concrete =
+    generate-pp-abstract
+  ; (!$[src-gen/[<guarantee-extension(|"pp.str")>]] , pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp "))))
+  
+rules
+  
+  pp-sdf-to-string =
+  sdf-desugar;
+  parenthesize-Sdf2;
+  sdf-ppfix;
+  ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
+  box2text-string(|80)
