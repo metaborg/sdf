@@ -3,7 +3,7 @@ module sdf-to-template
 imports
   libstratego-sglr
   include/TemplateLang
-  templatelang/desugar
+  analysis/desugar
 
 rules // Convert SDF productions to desugared syntax templates
 

@@ -4,7 +4,6 @@ imports
   include/TemplateLang
   templatelang/utils/attributes
   templatelang/utils/stubs
-  templatelang/analyze
   templatelang/to-string
 
 strategies
@@ -90,11 +89,11 @@ strategies
   //     end
 
   // Do not touch already expanded placeholders.
-  expand-template-line:
-    [t @ Line([Layout(_), Placeholder(label, sort(x), <None() + Plus()>, option*)]) | tail] -> [t | tail]
-    where
-      <Expanded> x
-      + <one(?Text(_))> option*
+  // expand-template-line:
+  //   [t @ Line([Layout(_), Placeholder(label, sort(x), <None() + Plus()>, option*)]) | tail] -> [t | tail]
+  //   where
+  //     <Expanded> x
+  //     + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-line:
@@ -136,11 +135,11 @@ strategies
   //     text := <map(template-element-to-string); concat-strings> elem*
 
   // Do not touch already expanded placeholders.
-  expand-template-element:
-    [t @ Placeholder(label, sort(x), <None() + Plus()>, option*) | tail] -> [t | tail]
-    where
-      <Expanded> x
-      + <one(?Text(_))> option*
+  // expand-template-element:
+  //   [t @ Placeholder(label, sort(x), <None() + Plus()>, option*) | tail] -> [t | tail]
+  //   where
+  //     <Expanded> x
+  //     + <one(?Text(_))> option*
 
   // Do not touch option/star placeholders.
   expand-template-element:
@@ -164,11 +163,11 @@ strategies
 
 strategies  // helpers
 
-  get-templates =
-    ?sort;
-    rules( Expanded : sort -> sort );
-    <resolve-all-symbol-definitions> (sort, TemplateBySort());
-    not(?[])
+  // get-templates =
+  //   ?sort;
+  //   rules( Expanded : sort -> sort );
+  //   <resolve-all-symbol-definitions> (sort, TemplateBySort());
+  //   not(?[])
 
   /**
    * @type String -> List(template-line)
