@@ -71,7 +71,7 @@ rules
       (line'*, _)    := <thread-map(introduce-labels-line)> (line*, 0);
       output         := <map(template-line-to-stratego)> line'*;
       arg*           := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
-      (with*, output') := <extract-apps> output;
+      (output', with*) := <thread-alltd(extract-app)> (output, []);
       if <is-string> cons then
         input := Op(cons, arg*)
       else
@@ -89,19 +89,10 @@ rules
         end
       end
     
-  extract-apps :
-    t -> (with*, t')
-    where {| Condition 
-           : t' := <alltd(extract-app)> t
-           ; with* := <bagof-Condition; reverse>
-           |}
-    
   extract-app :
-    t@App(_, _) -> Var(x)
-    where x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'");
-          rules(
-            Condition :+ _ -> WithClause(Assign(Var(x), t))
-          )
+    (t@App(_, _), e*) -> (Var(x), [e*, WithClause(Assign(Var(x), t))]) 
+    where 
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")
     
 rules
 
