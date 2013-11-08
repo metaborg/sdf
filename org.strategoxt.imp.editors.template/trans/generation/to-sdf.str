@@ -16,13 +16,6 @@ imports
   
 rules
 	
-	// get-def-improved = 
-	//    get-property-task(|NablProp_def())
- //   ; insert-results // TODO: is this the right insertion?
- //  <+ try(nabl-get-name)
- //   ; nabl-uris // TODO: how to handle multiple values?
- //   ; mapconcat(!Prop(<id>, NablProp_def(), ()); nabl-get-all-values; insert-results; concat)
-
   pack-sdf = MkSingleton ; !definition(<pack-sdf(|[])>)
   
   pack-sdf(|seen) = ?[]
