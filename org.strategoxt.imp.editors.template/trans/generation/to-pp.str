@@ -16,7 +16,7 @@ rules
     'module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])
     with
       m'  := <to-str-module-name(|".pp")> 'module(m)
-    ; i0  := Imports([Import("runtime/tmpl/pp"), Import(<to-str-module-name(|".sig")> 'module(m))])
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|".sig")> 'module(m))])
     ; i1* := <map(to-str-import(|".sig"))> i*
     ; i2* := <map(to-str-import(|".pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
