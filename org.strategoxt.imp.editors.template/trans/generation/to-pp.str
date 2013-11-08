@@ -1,0 +1,212 @@
+module generation/to-pp
+
+imports
+  libstratego-lib
+  libstratego-sglr
+  libstrc
+  include/TemplateLang
+  utils/contract
+  analysis/desugar
+
+  generation/to-str
+  
+rules
+
+  module-to-pp:
+    'module(unparameterized(m), i*, s*) -> Module(m', [is*, s'*])
+    with
+      m'  := <conc-strings> (m, ".pp")
+    ; is* := <map(to-str-import(|".pp"))> i*
+    ; s'* := <filter(section-to-pp(|"example"))> s*
+
+  section-to-pp(|lang):
+    SDFSection(lexical-syntax(p*)) -> Strategies(s*)
+    with
+      s*   := <filterconcat(?SdfProduction(<sort-to-pp(|lang)>, _, _, _))> p*
+      
+  section-to-pp(|lang):
+    TemplateSection(t*) -> Strategies(s*)
+    with
+      s* := <filterconcat(template-to-pp(|lang)); make-set> t*
+
+strategies
+
+  sort-to-pp(|lang):
+    x -> 
+      [ SDefNoArgs(
+	        $[prettyprint-[lang]]
+	      , CallNoArgs(SVar($[prettyprint-[x]]))
+	      )
+      , SDefNoArgs(
+          $[prettyprint-[x]]
+          , Strategy |[ ![S(<is-string>)] ]|
+        ) ]
+
+rules
+
+  template-to-pp(|lang):
+    TemplateProduction(s, cons, t, attrs) ->
+      [ SDefNoArgs(
+          $[prettyprint-[lang]]
+        , CallNoArgs(SVar($[prettyprint-[s]]))
+        )
+      , RDefNoArgs(
+          $[prettyprint-[s]]
+        , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
+        )
+      ]
+    with
+      !t => SingleLineTemplate(elem*)
+    < line* := [Line([Layout(""), elem*])]
+    + !t => Template(line*)
+    with
+      (line'*, _)    := <thread-map(introduce-labels-line)> (line*, 0);
+      output         := <map(template-line-to-stratego)> line'*;
+      arg*           := <mapconcat(?Line(<filter(?Placeholder(Label(<id>), _, _, _))>))> line'*;
+      (with*, output') := <extract-apps> output;
+      if <is-string> cons then
+        input := Op(cons, arg*)
+      else
+        if !arg* => [arg] then
+          if <fetch-elem(?bracket())> attrs then
+            input := Op("Parenthetical", arg*)
+          else
+            // injection
+            // FIXME: this may result in infinite loop in pretty printer
+            //        if there is a cycle of injections in the grammar!
+            input := Var("a")
+          end
+        else
+          input := Tuple(arg*)
+        end
+      end
+    
+  extract-apps :
+    t -> (with*, t')
+    where {| Condition 
+           : t' := <alltd(extract-app)> t
+           ; with* := <bagof-Condition; reverse>
+           |}
+    
+  extract-app :
+    t@App(_, _) -> Var(x)
+    where x := <newname> <oncetd(?Var(y)); !y <+ !"a"> t;
+          rules(
+            Condition :+ _ -> WhereClause(Assign(Var(x), t))
+          )
+    
+rules
+
+  introduce-labels-line:
+    (Line(elem*), index) -> (Line(elem'*), index')
+    with
+      (elem'*, index') := <thread-map(try(introduce-labels))> (elem*, index)
+
+  introduce-labels:
+    (Placeholder(None(), a, b, c), i) -> (Placeholder(Label(l), a, b, c), i')
+    with
+      l  := $[t[i]__];
+      i' := <inc> i
+
+rules
+
+  template-line-to-stratego:
+    Line([Layout(indent) | elem*]) ->
+      App(
+          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])
+        , NoAnnoList(List(elem'*))
+      )
+    where
+      not(!indent => "");
+      not(!elem* => []);
+      is := <string-length; int-to-string; double-quote> indent;
+      elem'* := <template-line-elements-to-stratego> elem*
+
+  template-line-to-stratego:
+    Line([Layout("") | elem*]) -> Term |[ H([SOpt(HS(), "0")], [t*]) ]|
+    where
+      not(!elem* => []);
+      t* := <template-line-elements-to-stratego> elem*
+
+  template-line-to-stratego:
+    // Include empty string element to prevent BOX from removing the empty H box!
+    Line([Layout(_)]) -> Term |[ H([], [S("")]) ]|
+
+  template-line-elements-to-stratego =
+    // 1. Convert Layout to String.
+    map(try(\Layout(t) -> String(t)\));
+    // 2. Collapse consecutive Strings into single String.
+    // (Optional, improves readability and performance of generated code.)
+    concatenate-consecutive-strings;
+    // 3. Map template elements to strings of Stratego code and String cons,
+    //    while removing empty strings.
+    // (The latter is necessary to prevent spurious blank lines:
+    // BOX removes empty lists, but not empty string elements.)
+    filter(template-element-to-stratego)
+
+  template-element-to-stratego:
+    String(t) -> Op("S", [NoAnnoList(Str(t'))])
+    where
+      not(!t => "");
+      t' := <escape; double-quote> t
+
+  template-element-to-stratego:
+    Placeholder(Label(l), sort(x), None(), _) -> App(s, Var(l))
+    with
+      placeholder-to-pp-one => s
+    
+  template-element-to-stratego:
+    Placeholder(Label(l), sort(x), Option(), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
+    with
+      placeholder-to-pp-one => s
+    
+  placeholder-to-pp-one:
+    Placeholder(_, sort(s), _, option*) -> Call(SVar(ppo), [ppx])
+    with
+      if <fetch-elem(?Anchor())> option* then
+        ppo := "pp-one-V"
+      else
+        ppo := "pp-one-Z"
+      end
+    ; ppx := CallNoArgs(SVar($[prettyprint-[s]]))
+      
+  template-element-to-stratego:
+    Placeholder(Label(l), sort(x), <Star() + Plus()>, option*) -> App(s, Var(l))
+    with
+      <fetch-elem(?Wrap())> option*
+    < <fetch-elem(?Anchor())> option*
+    < ppl := SVar("pp-HV-list")
+    + ppl := SVar("pp-HZ-list")
+    + ppl := SVar("pp-H-list")
+    with 
+      ppx := CallNoArgs(SVar($[prettyprint-[x]]))
+    ; if <getfirst(?Separator(<id>))> option* => sep then
+        vs := <explode-string; occurrences(?'\n'); dec> sep;
+        literals  := <escape; string-replace(|"\\n", "")> sep;
+        literals' := NoAnnoList(Str(<double-quote> literals));
+        switch !(vs, literals)
+          case ?(-1, _):
+            // separator with literals only => horizontal box with sep option
+            s    := CallT(ppl, [ppx], [literals'])
+          case ?(0, ""):
+            // separator is a line break => vertical box
+            s := Call(SVar("pp-V-list"), [ppx])
+          case ?(_, ""):
+            // separator is multiple line breaks => vertical box with vs option
+            s := CallT(SVar("pp-V-list"), [ppx], [literals'])
+          otherwise:
+            // separator has mixed line breaks and literals => vertical box with vs and sep options
+            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
+        end
+      else
+        // no separator => horizontal box
+        s := Call(ppl, [ppx])
+      end
+      
+  concatenate-consecutive-strings =
+    rec r(
+         ?[String("") | <r>]
+      <+ \[String(a), String(b) | tail] -> <r> [String(<conc-strings> (a, b)) | tail]\
+      <+ [id | r]
+      <+ []
+    )

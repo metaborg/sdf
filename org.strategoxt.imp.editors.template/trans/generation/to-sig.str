@@ -10,22 +10,16 @@ imports
   runtime/task/-
   runtime/types/-
   
+  generation/to-str
+  
 rules
 	
 	module-to-sig:
 		'module(unparameterized(m), i*, s*) -> Module(m', [is*, s'])
 		with
 			m'  := <conc-strings> (m, ".sig")
-		; is* := <map(to-str-import)> i*
+		; is* := <map(to-str-import(|".sig"))> i*
 	  ; s'  := Signature(<filter(section-to-sig)> s*)
-	    
-  to-str-import:
-  	imports(i*) -> Imports(<map(!Import(<to-str-module-name>))> i*)
-  	
-  to-str-module-name:
-  	'module(unparameterized(m)) -> <conc-strings> (m, ".sig")
-  	
-rules
  
   section-to-sig:
   	SDFSection('sorts(s*)) -> Sorts(s'*)
@@ -63,17 +57,11 @@ rules
   template-to-sig:
     TemplateProduction(_, c, _, _) -> <cons-to-decl> c  
   		
-rules 
-  
   cons-to-decl =
     ?Inj() 
-  < !OpDeclInj(<stype-of>)
-  + !OpDecl(<id>, <stype-of>)
+  < !OpDeclInj(<get-type; try(?FunType([], <id>))>)
+  + !OpDecl(<id>, <get-type; try(?FunType([], <id>))>)
   
-  stype-of =
-    get-type; debug(!"type ")
-  ; try(?FunType([], <id>))
-   
   
     
   
