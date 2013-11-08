@@ -376,6 +376,43 @@ rules
       |
       )
 
+  nabl-scoping-site =
+    ?Rhs(_)
+    ; origin-track-forced(
+        nabl-scope(|[NablNsLabel()])
+      |
+      )
+
+  nabl-get-scope =
+    ?Rhs(_) ; ![NablNsLabel()]
+
+  nabl-get-name :
+    Label(l) -> l
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?Label(l)
+    ; origin-track-forced(
+        Label(
+          nabl-def(
+            ?c-uri1__
+          , ?s-uri1__
+          | lang__
+          , partition__
+          , uniques__
+          , uri__
+          , uri__
+          , NablNsLabel()
+          , Unique()
+          , Current()
+          , []
+          )
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?SortCons(s, c)
     ; origin-track-forced(

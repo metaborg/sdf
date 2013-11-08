@@ -40,7 +40,12 @@ binding rules
       of sort s
       of def TemplateProduction(s, c, t, attrs)
       where t has type ty*
-        
+  
+  Rhs(_): scopes Label
+  
+  Label(l):
+    defines Label l
+     
   SortCons(s, c):
   	refers to Sort s
   	refers to Constructor c of sort s
