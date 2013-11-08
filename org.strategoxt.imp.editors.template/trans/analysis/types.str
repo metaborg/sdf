@@ -37,7 +37,7 @@ rules
 rules
   
   create-type-task(|ctx) =
-  	?Rhs(<filter(is-lexical-symbol < fail + type-of <+ debug(!"untypable ") ; fail)>)
+  	?Rhs(<filter(type-of <+ not(is-lexical-symbol); debug(!"untypable ") ; fail)>)
   ; type-is(|ctx)	
   	
   type-of:
@@ -58,10 +58,6 @@ rules
   type-of:
     iter-star-sep(s, lit(_)) -> ListType(<type-of> s)
     
-rules
-  
-  nabl-property-eq(|kind) = (id, try(?FunType(_, <id>))); strip-annos; eq <+ debug
-
 rules
 	
 	is-lexical-symbol = collect-one(?lit(_) + ?ci-lit(_) + ?char-class(_))
