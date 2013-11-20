@@ -23,7 +23,10 @@ rules
     ; ![NablNsSort()]
 
   nabl-get-name :
-    'module(unparameterized(m), _, _) -> <strip-annos> m
+    'module(unparameterized(m), _, _) -> m
+
+  nabl-name-apply(s) =
+    'module(unparameterized(s), id, id)
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?'module(unparameterized(m), _, _)
@@ -42,6 +45,7 @@ rules
             , Unique()
             , Current()
             , [NablNsSort()]
+            , []
             )
           )
         , id
@@ -54,7 +58,10 @@ rules
       )
 
   nabl-get-name :
-    'module(unparameterized(m)) -> <strip-annos> m
+    'module(unparameterized(m)) -> m
+
+  nabl-name-apply(s) =
+    'module(unparameterized(s))
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?'module(unparameterized(m))
@@ -80,12 +87,13 @@ rules
       |
       )
 
-  nabl-import-site(|lang__, partition__, uris__, states__) =
+  nabl-import-site(|lang__, partition__, uniques__, uris__, states__) =
     ?'module(unparameterized(m))
     ; origin-track-forced(
         nabl-import(
         | lang__
         , partition__
+        , uniques__
         , uris__
         , [ Wildcard(
               [Import(lang__, NablNsSort())]
@@ -104,7 +112,10 @@ rules
       )
 
   nabl-get-name :
-    TemplateProduction(s, _, _) -> <strip-annos> s
+    TemplateProduction(s, _, _) -> s
+
+  nabl-name-apply(s) =
+    TemplateProduction(s, id, id)
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?TemplateProduction(s, _, _)
@@ -122,6 +133,7 @@ rules
           , NonUnique()
           , Current()
           , []
+          , []
           )
         , id
         , id
@@ -133,7 +145,10 @@ rules
       )
 
   nabl-get-name :
-    SortDef(s) -> <strip-annos> s
+    SortDef(s) -> s
+
+  nabl-name-apply(s) =
+    SortDef(s)
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
     ?SortDef(s)
@@ -151,6 +166,7 @@ rules
           , NonUnique()
           , Current()
           , []
+          , []
           )
         )
         ; match(child-uris__|c-uri1__)
@@ -160,7 +176,10 @@ rules
       )
 
   nabl-get-name :
-    SortRef(s) -> <strip-annos> s
+    SortRef(s) -> s
+
+  nabl-name-apply(s) =
+    SortRef(s)
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?SortRef(s)
@@ -185,7 +204,10 @@ rules
       )
 
   nabl-get-name :
-    sort(s) -> <strip-annos> s
+    sort(s) -> s
+
+  nabl-name-apply(s) =
+    sort(s)
 
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?sort(s)
