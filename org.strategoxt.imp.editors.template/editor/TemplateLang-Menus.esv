@@ -1,0 +1,43 @@
+module TemplateLang-Menus
+
+imports TemplateLang-Menus.generated
+
+menus
+  
+  menu: "Syntax"
+    
+    action: "Show abstract syntax"   = debug-show-aterm (openeditor) (realtime) (meta) (source)
+    action: "Show desugared syntax" = debug-show-desugared (openeditor) (realtime) (meta) (source)
+    action: "Show analyzed syntax"   = debug-show-analyzed (openeditor) (meta)
+    
+  menu: "Analysis"
+    
+    action: "Reset and reanalyze"  = debug-reanalyze (meta)   
+
+    submenu: "Show analysis"
+      action: "Project"            = debug-project (openeditor) (meta)
+      action: "Partition"          = debug-partition (openeditor) (meta)
+    end
+    
+    submenu: "Show index"
+      action: "Project"            = debug-index-project (openeditor) (meta)
+      action: "Partition"          = debug-index-partition (openeditor) (meta)
+    end
+    
+    submenu: "Show tasks"
+      action: "Project"            = debug-task-project (openeditor) (meta)
+      action: "Partition"          = debug-task-partition (openeditor) (meta)
+      action: "Selection"          = debug-task-selection (openeditor) (meta)
+    end
+  
+  menu: "Generation"
+    
+	  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
+	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
+	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
+	  action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
+	  action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime)
+	  action: "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract (openeditor) (realtime)
+	  action: "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
+	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract (openeditor) (realtime)
+	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete (openeditor) (realtime)
