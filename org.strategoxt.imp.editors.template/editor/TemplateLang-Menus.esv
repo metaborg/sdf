@@ -42,5 +42,5 @@ menus
 	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract (openeditor) (realtime)
 	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete (openeditor) (realtime)
 	  separator
-	  action: "Generate Coq model file for sort definitions" = generate-coq-semantics-sort-def-partition (openeditor) (meta)
-	  action: "Generate Coq model file for project based on all sort uses" = generate-coq-semantics-sort-ref-project (openeditor) (meta)
+	  action: "Generate Coq model file for partition" = generate-coq-semantics-partition (openeditor) (meta)
+	  // action: "Generate Coq model file for project" = generate-coq-semantics-project (openeditor) (meta)

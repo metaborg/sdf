@@ -7,10 +7,13 @@ imports
   coq-semantics/Vernacular.pp.generated
   coq-semantics/Coq-parenthesize
   name-desugar
+  lib/runtime/index/-
+  lib/runtime/nabl/-
+  names
   
 rules
   
-  generate-coq-semantics-sort-def-partition:
+  generate-coq-semantics-partition:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"v")> path
@@ -19,13 +22,14 @@ rules
        result := <parenthesize-Coq; prettyprint-CoqFile; box2text-string(|100)> coq-file
     <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprint-example) ; debug(!"cannot pp ")))> coq-file
     ;  result := ""
- 
+
 rules
   
   module-to-coq:
-    ast -> Sent(<sorts-to-coq> sort*)
+    ast -> Sent(<conc> (<sorts-to-coq> sort*, const*))
     where
-    	sort* := <collect-all(?SDFSection('sorts(<id>))); concat>
+    	sort* := <collect-all(?SDFSection('sorts(<id>))); concat> ast
+    ; const* := <collect-all(?TemplateProductionWithCons(_,_,_)); template-productions-to-coq> ast
     
 rules // sorts
   
@@ -40,3 +44,57 @@ rules // sorts
   	  
   sort-to-coq: // Waiting for more complex examples
     'sort(n) -> ConsDecl($[[n]_S], [], None())
+
+rules // Template productions (i.e. constructors)
+  
+  template-productions-to-coq:
+    template* ->
+     [ Inductive(Ind([Induc("Signames", [], None(), ListDeclBar(signame*))]))
+     , Definition(Def("signames", [], None(), Ref("Signames")))
+     , Fixpoint(
+         Fixpoint(
+           [
+             FixBody(
+	             "get_sig"
+	           , [ Binds(["x"], Ref("signames")) ]
+	           , None()
+	           , None() // Type(Prod... Apply... list sort * sort etc)
+	           , Match(
+	               [ MatchItem(
+	                   Ref("x")
+	                 , None()
+	                 , None())
+	               ]
+	             , None()
+	             , eq*
+	             )
+	           )
+           ]
+         )
+       )
+     ]
+     where
+       eq* := <map(template-production-to-coq)> template*
+     ; signame* := <map(?Eq([[x]],_) => ConsDecl(x, [], None()))> eq*
+  
+  template-production-to-coq:
+    TemplateProductionWithCons(SortCons(s,c),template*,_) -> eq
+    where
+      template-cdec := <template-to-coq> template*
+    ; eq :=
+      Eq(
+        [[c]]
+      , Apply(
+          Apply(
+            Ref("pair")
+          , template-cdec
+          )
+        , Ref(s)
+        )
+      )
+  
+  template-to-coq =
+      collect-all(?Placeholder(None(), sort(<id>), None(), NoOptions()))
+    ; conc (id, ["nil"])
+    ; map(Ref)
+    ; foldl(Apply)
