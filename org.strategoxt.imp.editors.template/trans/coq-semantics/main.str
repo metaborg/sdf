@@ -1,0 +1,42 @@
+module coq-semantics/main
+
+imports
+  include/TemplateLang
+  libstratego-gpp
+  coq-semantics/Coq
+  coq-semantics/Vernacular.pp.generated
+  coq-semantics/Coq-parenthesize
+  name-desugar
+  
+rules
+  
+  generate-coq-semantics-sort-def-partition:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"v")> path
+    ; coq-file := <strip-annos; module-to-coq> ast
+    with
+       result := <parenthesize-Coq; prettyprint-CoqFile; box2text-string(|100)> coq-file
+    <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprint-example) ; debug(!"cannot pp ")))> coq-file
+    ;  result := ""
+ 
+rules
+  
+  module-to-coq:
+    ast -> Sent(<sorts-to-coq> sort*)
+    where
+    	sort* := <collect-all(?SDFSection('sorts(<id>))); concat>
+    
+rules // sorts
+  
+  sorts-to-coq:
+    sort* ->
+  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar(cdec*))]))
+  	 , Assumption(Assuption("Parameter", Term(["Ident"], Sort(Set()))))
+  	 , Definition(Def("sort", [], None(), Ref("sorts")))
+  	 , Definition(Def("Ident_Sort", [], None(), Ref("ID_S")))]
+  	with
+  	  cdec* := <map(sort-to-coq)> sort*
+  	  
+  sort-to-coq: // Waiting for more complex examples
+    'sort(n) -> ConsDecl($[[n]_S], [], None())

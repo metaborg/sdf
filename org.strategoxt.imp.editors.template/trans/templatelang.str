@@ -24,6 +24,7 @@ imports
 	name-desugar
 	name-check
 	check
+	coq-semantics/main
     
 rules // Analysis
   

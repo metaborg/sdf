@@ -1,0 +1,319 @@
+module Vernacular.pp.generated
+
+imports 
+  libstratego-gpp
+  lib/runtime/tmpl/-
+
+imports
+  coq-semantics/Coq
+  coq-semantics/Lexical.pp.generated
+  coq-semantics/Gallina.pp.generated
+
+strategies
+  prettyprint-AssumptionKeyword =
+    ![S(<is-string>)]
+
+  prettyprint-AssertionKeyword =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-AssumptionKeyword
+
+  prettyprint-example =
+    prettyprint-AssertionKeyword
+
+
+strategies
+  prettyprint-CoqFile :
+    Sent(a) -> [ H(
+                   [SOpt(HS(), "0")]
+                 , [a240]
+                 )
+               ]
+    where a240 := <pp-V-list(prettyprint-Sentence|"1")> a
+
+  prettyprint-Sentence :
+    Assumption(a) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [a241]
+                       )
+                     ]
+    where a241 := <pp-one-Z(prettyprint-Assumption)> a
+
+  prettyprint-Sentence :
+    Definition(a) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [a242]
+                       )
+                     ]
+    where a242 := <pp-one-Z(prettyprint-Definition)> a
+
+  prettyprint-Sentence :
+    Inductive(a) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [a243]
+                      )
+                    ]
+    where a243 := <pp-one-Z(prettyprint-Inductive)> a
+
+  prettyprint-Sentence :
+    Fixpoint(a) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [a244]
+                     )
+                   ]
+    where a244 := <pp-one-Z(prettyprint-Fixpoint)> a
+
+  prettyprint-Sentence :
+    AssertionProof(a, b) -> [ H(
+                                [SOpt(HS(), "0")]
+                              , [a245, S(" "), b142]
+                              )
+                            ]
+    where a245 := <pp-one-Z(prettyprint-Assertion)> a
+    where b142 := <pp-one-Z(prettyprint-Proof)> b
+
+  prettyprint-Assumption :
+    Assuption(a, b) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [ a246
+                           , S(" ")
+                           , b143
+                           , S(".")
+                           ]
+                         )
+                       ]
+    where a246 := <pp-one-Z(prettyprint-AssumptionKeyword)> a
+    where b143 := <pp-one-Z(prettyprint-Assums)> b
+
+  prettyprint-Assums :
+    Term(a, b) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [a247, S(" : "), b144]
+                    )
+                  ]
+    where a247 := <pp-H-list(prettyprint-Ident)> a
+    where b144 := <pp-one-Z(prettyprint-Term)> b
+
+  prettyprint-Assums :
+    Terms(a) -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [a248]
+                  )
+                ]
+    where a248 := <pp-H-list(prettyprint-AssumsPar)> a
+
+  prettyprint-AssumsPar :
+    Pars(a, b) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [ S("(")
+                      , a249
+                      , S(" : ")
+                      , b145
+                      , S(")")
+                      ]
+                    )
+                  ]
+    where a249 := <pp-H-list(prettyprint-Ident)> a
+    where b145 := <pp-one-Z(prettyprint-Term)> b
+
+  prettyprint-Definition :
+    Def(a, b, c, d) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [ S("Definition ")
+                           , a250
+                           , S(" ")
+                           , b146
+                           , S(" ")
+                           , c37
+                           , S(" :=")
+                           ]
+                         )
+                       , H(
+                           [SOpt(HS(), "0")]
+                         , [d26]
+                         )
+                       , H(
+                           [SOpt(HS(), "0")]
+                         , [S(".")]
+                         )
+                       ]
+    where a250 := <pp-one-Z(prettyprint-Ident)> a
+    where b146 := <pp-H-list(prettyprint-Binder)> b
+    where c37 := <pp-one-Z(prettyprint-OptType)> c
+    where d26 := <pp-one-Z(prettyprint-Term)> d
+
+  prettyprint-Definition :
+    Let(a, b, c, d) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [ S("Let ")
+                           , a251
+                           , S(" ")
+                           , b147
+                           , S(" ")
+                           , c38
+                           , S(" :=")
+                           ]
+                         )
+                       , H(
+                           [SOpt(HS(), "0")]
+                         , [d27, S(".")]
+                         )
+                       ]
+    where a251 := <pp-one-Z(prettyprint-Ident)> a
+    where b147 := <pp-H-list(prettyprint-Binder)> b
+    where c38 := <pp-one-Z(prettyprint-OptType)> c
+    where d27 := <pp-one-Z(prettyprint-Term)> d
+
+  prettyprint-Inductive :
+    Ind(a) -> [ H(
+                  [SOpt(HS(), "0")]
+                , [S("Inductive "), a252, S(".")]
+                )
+              ]
+    where a252 := <pp-H-list(prettyprint-IndBody|"with ")> a
+
+  prettyprint-Inductive :
+    CoInd(a) -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [S("CoInductive "), a253, S(".")]
+                  )
+                ]
+    where a253 := <pp-H-list(prettyprint-IndBody|"with ")> a
+
+  prettyprint-ConsDecl :
+    ConsDecl(a, b, c) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [ a254
+                             , S(" ")
+                             , b148
+                             , S(" ")
+                             , c39
+                             ]
+                           )
+                         , H(
+                             []
+                           , [S("")]
+                           )
+                         ]
+    where a254 := <pp-one-Z(prettyprint-Ident)> a
+    where b148 := <pp-H-list(prettyprint-Binder)> b
+    where c39 := <pp-one-Z(prettyprint-OptType)> c
+
+  prettyprint-ConsDecls :
+    ListDeclBar(a) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [S("| "), a255]
+                        )
+                      ]
+    where a255 := <pp-H-list(prettyprint-ConsDecl|"| ")> a
+
+  prettyprint-ConsDecls :
+    ListDecl(a) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [a256]
+                     )
+                   ]
+    where a256 := <pp-H-list(prettyprint-ConsDecl|"| ")> a
+
+  prettyprint-IndBody :
+    Induc(a, b, c, d) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [ a257
+                             , S(" ")
+                             , b149
+                             , S(" ")
+                             , c40
+                             , S(" :=")
+                             ]
+                           )
+                         , H(
+                             [SOpt(HS(), "0")]
+                           , [d28]
+                           )
+                         ]
+    where a257 := <pp-one-Z(prettyprint-Ident)> a
+    where b149 := <pp-H-list(prettyprint-Binder)> b
+    where c40 := <pp-one-Z(prettyprint-OptType)> c
+    where d28 := <pp-one-Z(prettyprint-ConsDecls)> d
+
+  prettyprint-Fixpoint :
+    Fixpoint(a) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [S("Fixpoint "), a258, S(".")]
+                     )
+                   ]
+    where a258 := <pp-V-list(prettyprint-FixBody|"0", " with")> a
+
+  prettyprint-Fixpoint :
+    CoFixpoint(a) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S("CoFixpoint "), a259, S(".")]
+                       )
+                     ]
+    where a259 := <pp-V-list(prettyprint-CoFixBody|"0", " with")> a
+
+  prettyprint-Assertion :
+    Assertion(a, b, c, d) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [ a260
+                                 , S(" ")
+                                 , b150
+                                 , S(" ")
+                                 , c41
+                                 , S(" : ")
+                                 , d29
+                                 , S(".")
+                                 ]
+                               )
+                             ]
+    where a260 := <pp-one-Z(prettyprint-AssertionKeyword)> a
+    where b150 := <pp-one-Z(prettyprint-Ident)> b
+    where c41 := <pp-H-list(prettyprint-Binder)> c
+    where d29 := <pp-one-Z(prettyprint-Term)> d
+
+  prettyprint-Proof :
+    Admitted() -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [S("Proof. Admitted.")]
+                    )
+                  ]
+
+  prettyprint-example =
+    prettyprint-CoqFile
+
+  prettyprint-example =
+    prettyprint-Sentence
+
+  prettyprint-example =
+    prettyprint-Assumption
+
+  prettyprint-example =
+    prettyprint-Assums
+
+  prettyprint-example =
+    prettyprint-AssumsPar
+
+  prettyprint-example =
+    prettyprint-Definition
+
+  prettyprint-example =
+    prettyprint-Inductive
+
+  prettyprint-example =
+    prettyprint-ConsDecl
+
+  prettyprint-example =
+    prettyprint-ConsDecls
+
+  prettyprint-example =
+    prettyprint-IndBody
+
+  prettyprint-example =
+    prettyprint-Fixpoint
+
+  prettyprint-example =
+    prettyprint-Assertion
+
+  prettyprint-example =
+    prettyprint-Proof

@@ -1,0 +1,30 @@
+module Qid.pp.generated
+
+imports 
+  libstratego-gpp
+  lib/runtime/tmpl/-
+  
+imports
+  coq-semantics/Coq
+  coq-semantics/Lexical.pp.generated
+  
+strategies
+  prettyprint-QualId :
+    a -> [ H(
+             [SOpt(HS(), "0")]
+           , [a238]
+           )
+         ]
+    where a238 := <pp-one-Z(prettyprint-Ident)> a
+
+  prettyprint-QualId :
+    QId(a, b) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [a239, S("."), b141]
+                   )
+                 ]
+    where a239 := <pp-one-Z(prettyprint-QualId)> a
+    where b141 := <pp-one-Z(prettyprint-Ident)> b
+
+  prettyprint-example =
+    prettyprint-QualId
