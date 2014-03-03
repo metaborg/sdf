@@ -26,11 +26,14 @@ rules
 rules
   
   module-to-coq:
-    ast -> Sent(<conc> (<sorts-to-coq> sort*, const*))
+    ast -> Sent([sort*, const*])
     where
-    	sort* := <collect-all(?SDFSection('sorts(<id>))); concat> ast
-    ; const* := <collect-all(?TemplateProductionWithCons(_,_,_)); template-productions-to-coq> ast
-    
+     	sort* := <collect-all( ?SDFSection('sorts(<id>))
+    	                     + ?TemplateProduction(<id>, _, _)
+    	                     + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
+    	                     ); sorts-to-coq> ast
+    ; const* := <collect-all(where(?TemplateProductionWithCons(_,_,_))); template-productions-to-coq> ast
+
 rules // sorts
   
   sorts-to-coq:
@@ -43,7 +46,7 @@ rules // sorts
   	  cdec* := <map(sort-to-coq)> sort*
   	  
   sort-to-coq: // Waiting for more complex examples
-    'sort(n) -> ConsDecl($[[n]_S], [], None())
+    n -> ConsDecl($[[n]_S], [], None())
 
 rules // Template productions (i.e. constructors)
   
@@ -75,10 +78,10 @@ rules // Template productions (i.e. constructors)
      ]
      where
        eq* := <map(template-production-to-coq)> template*
-     ; signame* := <map(?Eq([[x]],_) => ConsDecl(x, [], None()))> eq*
+     ; signame* := <map(\ Eq([[x]],_) -> ConsDecl(x, [], None()) \)> eq*
   
   template-production-to-coq:
-    TemplateProductionWithCons(SortCons(s,c),template*,_) -> eq
+    TemplateProductionWithCons(SortCons(s,c),Template(template*),_) -> eq
     where
       template-cdec := <template-to-coq> template*
     ; eq :=
@@ -94,7 +97,7 @@ rules // Template productions (i.e. constructors)
       )
   
   template-to-coq =
-      collect-all(?Placeholder(None(), sort(<id>), None(), NoOptions()))
-    ; conc (id, ["nil"])
-    ; map(Ref)
-    ; foldl(Apply)
+  	  collect-all(?Placeholder(None(), sort(<id>), None(), NoOptions()))
+    ; map(!Apply(Ref("cons"), Ref(<id>)))
+    ; !(<id>, Ref("nil"))
+    ; foldl(\ (x,y) -> Apply(x, y) \ )
