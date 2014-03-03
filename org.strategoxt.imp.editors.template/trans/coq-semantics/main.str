@@ -69,7 +69,7 @@ rules // Template productions (i.e. constructors)
 	                 , None())
 	               ]
 	             , None()
-	             , eq*
+	             , ListEqBar(eq*)
 	             )
 	           )
            ]

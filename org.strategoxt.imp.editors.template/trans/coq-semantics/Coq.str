@@ -65,7 +65,8 @@ signature
     Bind           : Name -> Binder
     Type           : Term -> OptType
     None           : OptType
-                   : List(Equation) -> Equations
+    ListEqBar      : List(Equation) -> Equations
+    ListEq         : List(Equation) -> Equations
     Num            : Num -> Term
     Sort           : Sort -> Term
     Ref            : QualId -> Term
