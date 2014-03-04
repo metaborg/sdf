@@ -38,12 +38,16 @@ rules // sorts
   
   sorts-to-coq:
     sort* ->
-  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar(cdec*))]))
+  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar([def-sort*, cdec*]))]))
   	 , Assumption(Assuption("Parameter", Term(["Ident"], Sort(Set()))))
   	 , Definition(Def("sort", [], None(), Ref("sorts")))
   	 , Definition(Def("Ident_Sort", [], None(), Ref("ID_S")))]
   	with
   	  cdec* := <map(sort-to-coq)> sort*
+  	; def-sort* := [
+  	    ConsDecl("ID_S", [], None())
+      , ConsDecl("INT_S", [], None())
+  	  ]
   	  
   sort-to-coq: // Waiting for more complex examples
     n -> ConsDecl($[[n]_S], [], None())
@@ -52,7 +56,7 @@ rules // Template productions (i.e. constructors)
   
   template-productions-to-coq:
     template* ->
-     [ Inductive(Ind([Induc("Signames", [], None(), ListDeclBar(signame*))]))
+     [ Inductive(Ind([Induc("Signames", [], None(), ListDeclBar([def-signame*, signame*]))]))
      , Definition(Def("signames", [], None(), Ref("Signames")))
      , Fixpoint(
          Fixpoint(
@@ -61,7 +65,12 @@ rules // Template productions (i.e. constructors)
 	             "get_sig"
 	           , [ Binds(["x"], Ref("signames")) ]
 	           , None()
-	           , None() // Type(Prod... Apply... list sort * sort etc)
+	           , Type(
+                 Apply(
+				           Apply(Ref("prod"), Apply(Ref("list"), Ref("sort")))
+				         , Ref("sort")
+				         )
+				       )
 	           , Match(
 	               [ MatchItem(
 	                   Ref("x")
@@ -69,7 +78,7 @@ rules // Template productions (i.e. constructors)
 	                 , None())
 	               ]
 	             , None()
-	             , ListEqBar(eq*)
+	             , ListEqBar([def-const*, eq*])
 	             )
 	           )
            ]
@@ -79,6 +88,19 @@ rules // Template productions (i.e. constructors)
      where
        eq* := <map(template-production-to-coq)> template*
      ; signame* := <map(\ Eq([[x]],_) -> ConsDecl(x, [], None()) \)> eq*
+     ; def-const* := [
+         Eq(
+           [[QidPattern("INTC", ["n"])]]
+         , Apply(Apply(Ref("pair"), Ref("nil")), Ref("INT_S"))
+         )
+       ]
+     ; def-signame* := [
+	       ConsDecl(
+           "INTC"
+         , [Binds(["n"], Ref("nat"))]
+         , None()
+         )
+       ]
   
   template-production-to-coq:
     TemplateProductionWithCons(SortCons(s,c),Template(template*),_) -> eq
