@@ -53,7 +53,7 @@ exports
     ID Cons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
 
            -> Cons {cons("Inj")}
-    "." ID -> Cons {bracket}
+    "." ID -> Cons {cons("Constr")}
 
     ID "." ID -> SortCons {cons("SortCons")}
     
