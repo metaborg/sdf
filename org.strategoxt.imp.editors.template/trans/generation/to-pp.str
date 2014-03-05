@@ -22,7 +22,7 @@ rules
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
   section-to-pp(|lang):
-    SDFSection(lexical-syntax(p*)) -> Strategies(<?[_|_]> [s1*, s2*])
+    SDFSection(lexical-syntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
     with
     	sort* := <filter(productive-sort); make-set> p*
     ; s1*    := <map(sort-to-pp(|lang))> sort*
@@ -58,7 +58,7 @@ strategies
 rules
 
   template-to-pp:
-    TemplateProduction(s, cons, t, attrs) ->
+    TemplateProduction(s, c, t, attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[s]]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
@@ -68,15 +68,15 @@ rules
     < line* := [Line([Layout(""), elem*])]
     + !t => Template(line*)
     with
-      (line'*, _)    := <thread-map(introduce-labels-line)> (line*, 0);
-      output         := <map(template-line-to-stratego)> line'*;
-      arg*           := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+      (line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
+      output      := <map(template-line-to-stratego)> line'*;
+      arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
       (output', with*) := <thread-alltd(extract-app)> (output, []);
-      if <is-string> cons then
-        input := Op(cons, arg*)
+      if <?Constr(c')> c then
+        input := Op(c', arg*)
       else
         if !arg* => [arg] then
-          if <fetch-elem(?bracket())> attrs then
+          if <fetch-elem(?bracket())> a* then
             input := Op("Parenthetical", arg*)
           else
             // injection
@@ -160,14 +160,13 @@ rules
       placeholder-to-pp-one => s
     
   placeholder-to-pp-one:
-    Placeholder(_, sort(s), _, option*) -> Call(SVar(ppo), [ppx])
+    Placeholder(_, sort(s), _, option*) -> Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))])
     with
       if <fetch-elem(?Anchor())> option* then
         ppo := "pp-one-V"
       else
         ppo := "pp-one-Z"
       end
-    ; ppx := CallNoArgs(SVar($[prettyprint-[s]]))
       
   template-element-to-stratego:
     Placeholder(Label(l), sort(x), <Star() + Plus()>, option*) -> App(s, Var(l))
@@ -210,5 +209,5 @@ rules
          ?[String("") | <r>]
       <+ \[String(a), String(b) | tail] -> <r> [String(<conc-strings> (a, b)) | tail]\
       <+ [id | r]
-      <+ []
+      <+ ?[]
     )
