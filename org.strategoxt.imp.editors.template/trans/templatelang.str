@@ -32,10 +32,10 @@ rules // Analysis
   editor-analyze = analysis-default-editor
   
   analysis-single-default-interface = 
-  	analysis-single-default(desugar-templates; lift-sdf2, id, id|<language>)
+  	analysis-single-default(desugar-templates; normalize-all, id, id|<language>)
   	
   analysis-multiple-default-interface = 
-  	analysis-multiple-default(parse-file <+ !(), desugar-templates; lift-sdf2, id, id|<language>, <project-path>)
+  	analysis-multiple-default(parse-file <+ !(), desugar-templates; normalize-all, id, id|<language>, <project-path>)
   
   editor-save = analysis-save-default(|<language>)
       
@@ -62,7 +62,7 @@ rules // Debugging
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"analyzed.aterm")> path;
-      result   := <lift-sdf2> selected
+      result   := <desugar-templates; normalize-all> selected
       
   debug-show-analyzed:
     (selected, position, ast, path, project-path) -> (filename, selected)
