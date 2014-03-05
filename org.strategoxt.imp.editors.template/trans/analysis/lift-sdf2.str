@@ -5,15 +5,35 @@ imports
   include/TemplateLang
   analysis/attributes
   
+strategies
+  
+  normalize-all = bottomup(try(normalize))
+  
 rules
   
-  lift-sdf2 = topdown(try(lift-sdf2-prod))
+  normalize: no-attrs() -> attrs([])
   
-  lift-sdf2-prod: 
-  	prod(sym*, sort(s), attrs) -> SdfProduction(s, cons, Rhs(sym*), attrs')
-    where
-    	cons   := <fetch-cons-name <+ !Inj()> attrs 
-    ; attrs' := <remove-cons> attrs
-  
-  remove-cons = attrs(remove-all(fetch-cons); ?[_|_]) <+ !no-attrs()
+  normalize:
+    TemplateProduction(s, Constr(c), r, attrs(a*)) -> TemplateProduction(s, Constr(c), r, attrs(a'*))
+    with
+      c'  := <double-quote> c
+    ; a'* := [sdf-cons(c'), a*]
+
+  normalize:
+    SdfProduction(s, Constr(c), r, attrs(a*)) -> SdfProduction(s, Constr(c), r, attrs(a'*))
+    with
+      c'  := <double-quote> c
+    ; a'* := [sdf-cons(c'), a*]
+      
+  normalize: 
+  	prod(sym*, sort(s), attrs(a*)) -> SdfProduction(s, c, Rhs(sym*), attrs(a*))
+    with
+        c := <getfirst(lift-constr)> a*
+     <+ c := Inj() 
+    
+  lift-constr:
+    sdf-cons(x) -> Constr(<un-double-quote> x)
+    
+  lift-constr:
+    Constructor(x) -> Constr(<un-double-quote> x)
   
