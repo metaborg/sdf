@@ -25,22 +25,37 @@ binding rules
   'module(unparameterized(m)):
     imports Sort, Constructor from Module m
   
-  SdfProduction(s, c, rhs, attrs): 
+  p@SdfProduction(s, Constr(c), rhs, attrs): 
     defines non-unique Sort s 
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       of sort s
-      of def SdfProduction(s, c, rhs, attrs)
+      of def p
       where rhs has type ty*
-      
-  TemplateProduction(s, c, t, attrs): 
+  
+  p@SdfProduction(s, Inj(), rhs, attrs): 
+    defines non-unique Sort s 
+    defines unique Constructor Inj()
+      of type FunType(ty*, SortType(s))
+      of def p
+      where rhs has type ty*
+          
+  p@TemplateProduction(s, Constr(c), t, attrs): 
     defines non-unique Sort s 
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       of sort s
-      of def TemplateProduction(s, c, t, attrs)
+      of def p
       where t has type ty*
   
+  p@TemplateProduction(s, Inj(), t, attrs): 
+    defines non-unique Sort s 
+    defines unique Constructor Inj()
+      of type FunType(ty*, SortType(s))
+      of def p
+      where t has type ty*
+  
+  // can productions scope labels instead?
   Rhs(_): scopes Label
   
   Label(l):
