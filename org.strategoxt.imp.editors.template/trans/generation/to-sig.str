@@ -39,29 +39,35 @@ rules
   section-to-sig:
     TemplateSection(t*) -> Constructors(sig*)
     with
-      sig* := <map(template-to-sig)> t*
+      sig* := <filter(template-to-sig); not(?[])> t*
   
   sort-to-sig:
     sort(s) -> SortNoArgs(s)
   
   lexical-to-sig:
-    SdfProduction(s, _, _, attrs) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    SdfProduction(s, _, _, attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
     where
-      <not(attrs(fetch-elem(reject())))> attrs
+      <not(fetch-elem(?reject()))> a*
     
   cfg-to-sig:
-  	SdfProduction(_, c, _, attrs) -> <cons-to-decl> c
+  	SdfProduction(_, c, _, attrs(a*)) -> <cons-to-decl> c
     where
-    	<not(attrs(fetch-elem(reject())))> attrs
-    
+    	<not(fetch-elem(?reject() + ?bracket()))> a*
+  
   template-to-sig:
-    TemplateProduction(_, c, _, _) -> <cons-to-decl> c  
-  		
-  cons-to-decl =
-    ?Inj() 
-  < !OpDeclInj(<get-type; try(?FunType([], <id>))>)
-  + !OpDecl(<id>, <get-type; try(?FunType([], <id>))>)
+    TemplateProduction(_, c, _, attrs(a*)) -> <cons-to-decl> c
+    where
+      <not(fetch-elem(?reject() + ?bracket()))> a*
   
+  cons-to-decl:
+    Inj() -> OpDeclInj(t)
+    with
+      t := <get-type; try(check-fun-type)>
   
-    
+  cons-to-decl:
+    Constr(c) -> OpDecl(c, t)
+    with
+      t := <get-type; try(check-fun-type)> c
+     
+  check-fun-type: FunType([], t) -> t
   
