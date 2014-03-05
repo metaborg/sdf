@@ -44,7 +44,7 @@ rules
     sort(t) -> SortType(t)
   
   type-of:
-    opt(s) -> ListType(<type-of> s)
+    opt(s) -> OptionType(<type-of> s)
   
   type-of:
     iter(s) -> ListType(<type-of> s)
