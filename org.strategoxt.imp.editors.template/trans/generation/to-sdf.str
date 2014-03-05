@@ -78,13 +78,10 @@ rules
     )
 
   template-production-to-sdf(|chars, kfr, nl):
-    TemplateProduction(s, c, t, attrs) -> prod(sym*, s, attrs')
-    where with-spxverify (
+    TemplateProduction(s, c, t, attrs(a*)) -> prod(sym*, s, attrs(a'*))
+    with
       sym* := <template-to-sdf(|chars, kfr, nl)> t
-    ; attr1* := <cons-to-attrs> c
-    ; attr2* := <get-attrs; remove-all(?sdf-completion(_))> attrs
-    ; attrs' := <set-attrs> [attr1*, attr2*]
-    )
+    ; a'*  := <remove-all(?sdf-completion(_))> a*
 
 rules
 	
@@ -92,14 +89,8 @@ rules
     SDFSection(x) -> [<alltd(sdf-production-to-sdf + priority-group-to-sdf(|chars, kfr, nl))> x]
 
   sdf-production-to-sdf:
-    SdfProduction(sort, cons, Rhs(symbol*), attrs) ->
-      prod(symbol*, sort(sort), attrs')
-    where with-spxverify(
-      attr1* := <cons-to-attrs> cons
-    ; attr2* := <get-attrs> attrs
-    ; attrs' := <set-attrs> [attr1*, attr2*] 
-    )
-
+    SdfProduction(sort, cons, Rhs(symbol*), attrs) -> prod(symbol*, sort(sort), attrs)
+    
   priority-group-to-sdf(|chars, kfr, nl):
     simple-ref-group(ref) -> prods-group(<sort-cons-to-prods(|chars, kfr, nl)> ref)
 
