@@ -56,14 +56,14 @@ rules // Template productions (i.e. constructors)
   
   template-productions-to-coq:
     template* ->
-     [ Inductive(Ind([Induc("Signames", [], None(), ListDeclBar([def-signame*, signame*]))]))
-     , Definition(Def("signames", [], None(), Ref("Signames")))
+     [ Inductive(Ind([Induc("Constructors", [], None(), ListDeclBar([def-signame*, signame*]))]))
+     , Definition(Def("constructors", [], None(), Ref("Constructors")))
      , Fixpoint(
          Fixpoint(
            [
              FixBody(
 	             "get_sig"
-	           , [ Binds(["x"], Ref("signames")) ]
+	           , [ Binds(["x"], Ref("constructors")) ]
 	           , None()
 	           , Type(
                  Apply(
