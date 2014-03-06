@@ -2,7 +2,7 @@ module include/Coq-parenthesize
 
 imports
   libstratego-lib
-  include/Coq
+  coq-semantics/Coq
 
 
 strategies
