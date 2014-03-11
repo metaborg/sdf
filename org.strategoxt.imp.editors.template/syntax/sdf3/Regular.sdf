@@ -1,0 +1,25 @@
+module sdf3/Regular
+imports sdf3/Kernel sdf3/aterm/IntCon
+
+exports
+  context-free syntax
+    "(" ")"                                          -> Symbol {cons("Empty")}
+    "(" head:Symbol Symbol+ ")"                      -> Symbol {cons("Seq")}
+    Symbol "?"                                       -> Symbol {cons("Opt")}
+    Symbol "+"                                       -> Symbol {cons("Iter")}
+    Symbol "*"                                       -> Symbol {cons("IterStar")}
+    "{" Symbol sep:Symbol "}" "+"                    -> Symbol {cons("IterSep")}
+    "{" Symbol sep:Symbol "}" "*"                    -> Symbol {cons("IterStarSep")}
+    "<" head:Symbol "," {Symbol ","}+ ">"            -> Symbol {cons("Tuple")}
+    "(" arguments:Symbols "=" ">" results:Symbol ")" -> Symbol {cons("Func")}
+    Symbol "|" Symbol                                -> Symbol {cons("Alt")}
+    "(" Symbol "-" ">" Symbol ")"                    -> Symbol {cons("Strategy")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}
+
+  context-free priorities
+    { Symbol "?" -> Symbol
+      Symbol "*" -> Symbol
+      Symbol "+" -> Symbol } >
+    Symbol "|" Symbol -> Symbol

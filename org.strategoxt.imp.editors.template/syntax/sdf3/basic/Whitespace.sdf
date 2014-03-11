@@ -1,0 +1,7 @@
+module sdf3/basic/Whitespace
+exports
+  lexical syntax
+    [\ \t\n\r] -> LAYOUT {cons("Whitespace")}
+
+  context-free restrictions
+    LAYOUT? -/- [\ \t\n\r]

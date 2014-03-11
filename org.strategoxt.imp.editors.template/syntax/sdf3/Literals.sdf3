@@ -1,0 +1,25 @@
+module sdf3/Literals
+
+imports sdf3/Kernel 
+imports sdf3/basic/StrCon
+imports sdf3/basic/IdentifierCon
+
+lexical syntax
+
+    SingleQuotedStrChar.NewLine = "\\n"                    
+    SingleQuotedStrChar.Tab = "\\t"                   
+    SingleQuotedStrChar.Quote = "\\'"           
+    SingleQuotedStrChar.Backslash = "\\\\"                    
+    SingleQuotedStrChar.Decimal = "\\" a:[0-9]b:[0-9]c:[0-9] 
+    SingleQuotedStrChar.Normal = ~[\0-\31\n\t\'\\] 
+    
+    SingleQuotedStrCon.Default =  [\'] chars:SingleQuotedStrChar* [\'] 
+    
+templates
+	FunctionName.UnquotedFun = <<IdCon>>
+	FunctionName.QuotedFun = <<StrCon>>
+	
+templates
+	Symbol.Lit = <<string:StrCon>>
+	Symbol.CiLit = <<ci-string:SingleQuotedStrCon>>
+	Production.PrefixFun = <<fun:FunctionName> (<arguments:Symbol*; separator=",">) -\> <result:Symbol> <Attributes> >

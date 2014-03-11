@@ -1,0 +1,7 @@
+module sdf3/CC
+
+imports sdf3/Character-Class 
+        sdf3/Kernel
+
+templates
+    Symbol.CharClass = <<CharClass>>

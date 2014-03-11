@@ -1,0 +1,9 @@
+module sdf3/Lifting
+imports sdf3/Kernel
+
+exports
+  context-free syntax
+    "`" Symbol "`" -> Symbol {cons("Lifting")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}

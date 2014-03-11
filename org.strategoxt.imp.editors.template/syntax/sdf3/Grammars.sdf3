@@ -1,0 +1,10 @@
+module sdf3/Grammars
+
+imports sdf3/basic/Comments
+
+templates
+
+Grammar.Empty = <(/)>
+//"left":Grammar "right":Grammar -> Grammar  {assoc,cons("conc-grammars")}
+Grammar.ConcGrammars = <<Grammar> <Grammar>> {assoc}
+Grammar = <(<Grammar>)> {bracket}

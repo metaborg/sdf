@@ -1,0 +1,17 @@
+module sdf3/Basic
+
+imports sdf3/Kernel
+
+templates
+
+Grammar.Lexical = < lexical syntax <Productions> >
+Grammar.Contextfree = < context-free syntax <Productions> >
+Grammar.Variables = < variables <Productions> >
+Grammar.LexVariables = < lexical variables <Productions> >
+
+Symbol.Cf = < \<<Symbol>-CF\> >
+Symbol.Lex = < \<<Symbol>-LEX\> >
+Symbol.VarSym = < \<<Symbol>-VAR\>>
+
+Symbol.Layout = < <LAYOUT> >  
+

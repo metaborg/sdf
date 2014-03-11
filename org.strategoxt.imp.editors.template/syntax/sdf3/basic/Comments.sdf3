@@ -1,0 +1,11 @@
+module sdf3/basic/Comments
+
+imports
+  sdf3/basic/Whitespace
+
+lexical syntax
+	LAYOUT.Line = "%%" line:~[\n]* "\n"	{category("Comment")}
+    LAYOUT.Nested = "%" content:~[\%\n]+ "%"	{category("Comment")}
+
+context-free restrictions
+    LAYOUT? -/- [\%]

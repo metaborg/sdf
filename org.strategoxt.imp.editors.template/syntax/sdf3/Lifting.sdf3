@@ -1,0 +1,10 @@
+module sdf3/Lifting
+
+imports sdf3/Kernel
+
+
+templates
+
+//left-quote:"`" Symbol right-quote:"`" -> Symbol  {cons("lifting")}
+Symbol.Lifting = <`<Symbol>`>
+    

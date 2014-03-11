@@ -1,0 +1,13 @@
+module sdf3/SDF
+imports sdf3/Sdf2
+
+context-free start-symbols
+    SDF Module
+
+
+templates
+Group.NonTransitive = <<Group>.> {non-assoc}
+
+%% HACK
+//  context-free syntax
+//  Group "." -> Group {non-assoc,cons("non-transitive")}

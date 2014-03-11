@@ -1,0 +1,65 @@
+module sdf3/Sdf2
+
+imports sdf3/Sdf2-Syntax
+
+context-free start-symbols
+    SDF Module
+
+lexical syntax
+  	Sort = "LAYOUT" {reject}
+
+templates
+    
+    ModuleName = <aliases> {reject}
+    ModuleName = <lexical> {reject}
+    ModuleName = <priorities> {reject}
+    ModuleName = <context-free> {reject}
+    ModuleName = <definition> {reject}
+    ModuleName = <syntax> {reject}
+    ModuleName = <variables> {reject}
+    ModuleName = <module> {reject}
+    ModuleName = <imports> {reject}
+    ModuleName = <exports> {reject}
+    ModuleName = <hiddens> {reject}
+    ModuleName = <left> {reject}
+    ModuleName = <right> {reject}
+    ModuleName = <assoc> {reject}
+    ModuleName = <non-assoc> {reject}
+    ModuleName = <bracket> {reject}
+    ModuleName = <sorts> {reject}
+    ModuleName = <restrictions> {reject}
+    
+    Symbols = <<StrCon> ( <arguments:Symbol*; separator=","> )> {reject}
+    
+    Label = <<Associativity>> {reject}
+    ATermAttribute = <<Associativity>> {reject}
+    ATermAttribute = <reject> {reject}
+    ATermAttribute = <prefer> {reject}
+    ATermAttribute = <avoid> {reject}
+    ATermAttribute = <bracket> {reject}
+    ATermAttribute = <id (<ModuleName>)> {reject}
+    
+
+  restrictions
+    <Sort -CF>
+    "aliases"
+    "lexical"
+    "priorities"
+    "context-free"
+    "definition"
+    "syntax"
+    "variables"
+    "module"
+    "imports"
+    "exports"
+    "hiddens"
+    "left"
+    "right"
+    "assoc"
+    "non-assoc"
+    "bracket"
+    "sorts"             -/- [A-Za-z0-9]
+    <NatCon -CF>        -/- [0-9]
+    <LAYOUT?-CF>        -/- [\ \t\n\%]
+    <NumChar -CF>       -/- [0-9]
+    <ModuleName -CF>    -/- [A-Za-z0-9\_\-]

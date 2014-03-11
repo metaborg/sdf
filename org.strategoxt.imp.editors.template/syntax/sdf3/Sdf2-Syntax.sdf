@@ -1,0 +1,23 @@
+module sdf3/Sdf2-Syntax
+imports sdf3/Kernel sdf3/Basic sdf3/Modules sdf3/Regular sdf3/Lifting
+        sdf3/Priority sdf3/CC sdf3/Sorts sdf3/Start-Symbols sdf3/Literals
+        sdf3/Labels sdf3/Restrictions sdf3/Aliases
+
+exports
+  context-free syntax
+    "<" "START" ">"                            -> Symbol  {cons("Start")}
+    "<" "Start" ">"                            -> Symbol  {cons("FileStart")}
+    "lexical" "priorities" Priorities          -> Grammar {cons("LexicalPriorities")}
+    "context-free" "priorities" Priorities     -> Grammar {cons("ContextFreePriorities")}
+    "lexical" "restrictions" Restrictions      -> Grammar {cons("LexicalRestrictions")}
+    "context-free" "restrictions" Restrictions -> Grammar {cons("ContextFreeRestrictions")}
+    "definition" Definition                    -> SDF     {cons("Definition")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
+    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> SDF     {cons("COMPLETION-SDF")}
+
+  context-free priorities
+    Symbol "|" Symbol -> Symbol >
+    Label ":" Symbol -> Symbol

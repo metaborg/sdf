@@ -1,0 +1,29 @@
+module sdf3/Restrictions
+imports sdf3/CC
+
+exports
+  context-free syntax
+    CharClass                          -> Lookahead    {cons("CharClass")}
+    head:CharClass "." tail:Lookaheads -> Lookahead    {cons("Seq")}
+    Lookahead                          -> Lookaheads   {cons("Single")}
+    Lookaheads "|" Lookaheads          -> Lookaheads   {cons("Alt"), right}
+    "(" Lookaheads ")"                 -> Lookaheads   {bracket}
+    "[[" {Lookahead ","}* "]]"         -> Lookaheads   {cons("List")}
+    Symbols "-/-" Lookaheads           -> Restriction  {cons("Follow")}
+    Restriction*                       -> Restrictions 
+    "restrictions" Restrictions        -> Grammar      {cons("Restrictions")}
+    "reject"                           -> Attribute    {cons("Reject")}
+    "prefer"                           -> Attribute    {cons("Prefer")}
+    "avoid"                            -> Attribute    {cons("Avoid")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Lookahead    {cons("COMPLETION-Lookahead")}
+    CONTENTCOMPLETE -> Lookaheads   {cons("COMPLETION-Lookaheads")}
+    CONTENTCOMPLETE -> Restriction  {cons("COMPLETION-Restriction")}
+    CONTENTCOMPLETE -> Restrictions {cons("COMPLETION-Restrictions")}
+    CONTENTCOMPLETE -> Grammar      {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> Attribute    {cons("COMPLETION-Attribute")}
+
+  context-free priorities
+    head:CharClass "." tail:Lookaheads -> Lookahead >
+    Lookaheads "|" Lookaheads -> Lookaheads
