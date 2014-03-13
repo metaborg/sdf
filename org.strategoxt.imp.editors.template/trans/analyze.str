@@ -6,10 +6,12 @@ imports
 
 strategies
 
-  analyze =
-    templatelang-desugar-top;
-    templatelang-init-options;
-    declare-top
+  //analyze =
+  //  templatelang-desugar-top;
+  //  templatelang-init-options;
+  //  declare-top
+  
+  analyze = id
 
   declare-top =
     alltd(templatelang-declare-section)

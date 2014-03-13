@@ -13,23 +13,23 @@ signature
 
 strategies
 	
-	name-sugar-all = alltd(name-sugar)
-	name-desugar-all = topdown(try(name-desugar))
-	
-rules // Sugar certain sort constructors into SortRef or SortDef constructors for name binding.
-	
-	name-sugar =
-		TemplateProduction(id, alltd(sort-to-ref), id) 
-  + prod(alltd(sort-to-ref), alltd(sort-to-def), id)
-	
-	sort-to-def: sort(s) -> SortDef(s)
-	sort-to-ref: sort(s) -> SortRef(s)
-	
-rules // Desugar the SortRef and SortDef constructors back into sort constructors to make generation work.
-	
-	name-desugar:
-		SortRef(s) -> sort(s)
-		
-	name-desugar:
-		SortDef(s) -> sort(s)
+// 	name-sugar-all = alltd(name-sugar)
+// 	name-desugar-all = topdown(try(name-desugar))
+// 	
+// rules // Sugar certain sort constructors into SortRef or SortDef constructors for name binding.
+// 	
+// 	name-sugar =
+// 		TemplateProduction(id, alltd(sort-to-ref), id) 
+//   + prod(alltd(sort-to-ref), alltd(sort-to-def), id)
+// 	
+// 	sort-to-def: sort(s) -> SortDef(s)
+// 	sort-to-ref: sort(s) -> SortRef(s)
+// 	
+// rules // Desugar the SortRef and SortDef constructors back into sort constructors to make generation work.
+// 	
+// 	name-desugar:
+// 		SortRef(s) -> sort(s)
+// 		
+// 	name-desugar:
+// 		SortDef(s) -> sort(s)
 		

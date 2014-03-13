@@ -30,10 +30,12 @@ rules // Analysis
   editor-analyze = analysis-default-editor
   
   analysis-single-default-interface = 
-  	analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
+  	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
+  	analysis-single-default(analyze; id, id, id|<language>)
   	
   analysis-multiple-default-interface = 
-  	analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
+  	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
+  analysis-multiple-default(parse-file <+ !(), analyze; id, id, id|<language>, <project-path>)
   
   editor-save = generate-all; analysis-save-default(|<language>)
       
@@ -213,7 +215,7 @@ rules
   generate-box-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := $[[project-path]/trans/[<guarantee-extension(|"pp.generated.str"); base-filename> path]];
+      filename := $[[project-path]/trans/[<guarantee-extension(|"pp.gen.str"); base-filename> path]];
       result   := <generate-box-pp(|path); pp-stratego-string> selected
 
   generate-signature =
@@ -233,12 +235,12 @@ rules
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> <id>
+   // with
+    //  generate-esv-concrete; write-string-to-file
     with
-      generate-esv-concrete; write-string-to-file
-    with
-      generate-sdf-concrete; write-string-to-file
-    with
-      generate-box-pp-concrete; write-string-to-file
+     generate-sdf-concrete; write-string-to-file
+  //  with
+ //     generate-box-pp-concrete; write-string-to-file
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
