@@ -1,7 +1,0 @@
-module sdf3/basic/IdentifierCon
-exports
-  lexical syntax
-    [A-Za-z] [A-Za-z\-0-9]* -> IdCon {cons("Default")}
-
-  lexical restrictions
-    IdCon -/- [A-Za-z\-0-9]

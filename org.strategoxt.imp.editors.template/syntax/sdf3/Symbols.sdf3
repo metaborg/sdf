@@ -1,8 +1,0 @@
-module sdf3/Symbols
-
-imports sdf3/basic/Comments
-
-templates
-
-Symbol = <(<Symbol>)> {bracket}
-Symbols = <<list:Symbol*>>

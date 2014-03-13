@@ -49,18 +49,12 @@ completions
                                       
   // Derived completions may follow   
                                       
-  completion keyword                : "\\TOP"
-  completion keyword                : "\\EOF"
-  completion keyword                : "\\BOT"
-  completion keyword                : "\\LABEL_START"
   completion keyword                : "-CF"
   completion keyword                : "-LEX"
   completion keyword                : "-VAR"
-  completion keyword                : "\n"
-  completion keyword                : "<START>"
-  completion keyword                : "<Start>"
   completion keyword                : "__default"
   completion keyword                : "__internal"
+  completion keyword                : "{Associativity"
   completion keyword                : "\\t"
   completion keyword                : "\\r"
   completion keyword                : "\\n"

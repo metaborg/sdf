@@ -1,8 +1,0 @@
-module sdf3/basic/Whitespace
-
-
-lexical syntax
-    LAYOUT.Whitespace = [\ \t\n\r]
-
-context-free restrictions
-    LAYOUT? -/- [\ \t\n\r]
