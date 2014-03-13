@@ -1,0 +1,18 @@
+module Sorts
+
+imports Kernel
+
+lexical syntax
+	//head:[A-Z] -> Sort {cons("one-char")}
+    Sort.OneChar = [A-Z]
+    //head:[A-Z] middle:[A-Za-z0-9\-]* last:[A-Za-z0-9] -> Sort {cons("more-chars")}
+    Sort.MoreChars = [A-Z] [A-Za-z0-9\-]* [A-Za-z0-9]
+     
+templates
+Symbol.Sort = <<Sort>>
+Symbol.ParameterizedSort = <<Sort> [[<parameters:Symbol+; separator=",">]]>
+
+Grammar.Sorts = <sorts <Symbols>>
+ 
+lexical restrictions
+    Sort -/- [A-Za-z0-9]
