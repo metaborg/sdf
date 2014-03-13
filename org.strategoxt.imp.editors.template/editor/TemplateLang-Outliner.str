@@ -91,6 +91,7 @@ rules
 rules
 	
   // module
+  get-module-name: Module(Unparameterized(name), _, _) -> name
   get-module-name: 'module(name, _, _) -> name
   get-module-name = ?CompilationUnit(_); origin-file
   

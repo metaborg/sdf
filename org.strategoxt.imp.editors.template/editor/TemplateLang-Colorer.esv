@@ -10,5 +10,5 @@ colorer
 
 	PlaceholderLabel.Label: grey
 	_.String: blue
-	_.Constructor: blue
+	_.Constructor: darkblue
 	
