@@ -1,0 +1,26 @@
+module Aterms
+ 
+imports IntCon
+		RealCon
+		StrCon
+        IdentifierCon
+
+context-free start-symbols
+    ATerm
+
+templates
+	AFun.Quoted = <<StrCon>>
+	AFun.Unquoted = <<IdCon>>
+
+
+templates
+	ATerm.Int = <<IntCon>>
+	ATerm.Real = <<RealCon>>
+	ATerm.Fun = <<AFun>>
+	ATerm.Appl = <<AFun> ( <ATerm*; separator=","> )>
+	ATerm.PlaceHolder = < \< <ATerm> \> >
+	ATerm.List = < [<ATerm*; separator=",">] >
+	ATerm.Annotated = <<ATerm> <Annotation> >
+
+templates
+	Annotation.Default = <{ <ATerm+; separator=","> }>

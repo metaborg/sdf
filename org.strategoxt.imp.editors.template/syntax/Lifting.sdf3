@@ -1,0 +1,10 @@
+module Lifting
+
+imports Kernel
+
+
+templates
+
+//left-quote:"`" Symbol right-quote:"`" -> Symbol  {cons("lifting")}
+Symbol.Lifting = <`<Symbol>`>
+     

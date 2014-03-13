@@ -1,0 +1,10 @@
+module Grammars
+
+imports Comments
+ 
+templates
+
+Grammar.Empty = <(/)>
+//"left":Grammar "right":Grammar -> Grammar  {assoc,cons("conc-grammars")}
+//Grammar.ConcGrammars = <<Grammar> <Grammar>> {assoc} IGNORED RULE
+Grammar = <(<Grammar>)> {bracket}

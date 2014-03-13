@@ -1,0 +1,10 @@
+module Labels
+
+imports Kernel 
+        StrCon
+ 
+templates
+
+Label.Quoted = <<StrCon>>
+Label.Unquoted = <<IdCon>>
+Symbol.Label = <<Label> : <Symbol>>

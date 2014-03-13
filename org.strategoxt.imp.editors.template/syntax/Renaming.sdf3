@@ -1,0 +1,9 @@
+module Renaming
+
+imports Kernel
+ 
+templates
+
+Renamings.Renamings = <[<list:Renaming*>]>
+Renaming.Symbol = <<from:Symbol> =\> <to:Symbol>>
+Renaming.Production = <<from-prod:Production> =\> <to-prod:Production>>
