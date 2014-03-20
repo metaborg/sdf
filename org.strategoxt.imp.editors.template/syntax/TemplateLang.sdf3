@@ -32,7 +32,7 @@ templates
 //options section
 Section.TemplateOptions = <template options <TemplateOption*>>
 
-TemplateOption.NewLines = <newlines : <NewlineOptionValue>>
+TemplateOption.Newlines = <newlines : <NewlineOptionValue>>
 
 NewlineOptionValue.None = <none>
 NewlineOptionValue.Leading = <leading>
@@ -47,7 +47,7 @@ templates
 //references to productions using sort.cons notation in priority specification
 Group.SimpleRefGroup = <<SortCons>>
 Group.ProdsRefGroup = <{<SortCons+>}>
-Group.AssocRefGroup = <{Associativity : <SortCons+>}>
+Group.AssocRefGroup = <{<Associativity> : <SortCons+>}>
 
 templates 
 //grammars
