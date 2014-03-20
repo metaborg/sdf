@@ -19,6 +19,7 @@ imports
   lib/runtime/properties/-
   lib/runtime/types/-
   lib/runtime/editor/-
+  
 	analyze
 	names
 	name-desugar
@@ -37,7 +38,7 @@ rules // Analysis
   	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
   analysis-multiple-default(parse-file <+ !(), analyze; id, id, id|<language>, <project-path>)
   
-  editor-save = generate-all; analysis-save-default(|<language>)
+  editor-save = generate-all //; analysis-save-default(|<language>)
       
 rules // Editor services
 
@@ -105,11 +106,11 @@ rules
   declare-syntax-template :
     d@Desugared(
 	  TemplateProduction(
-	    c#([])
+	    Sort(c#([]))
 	  , _
-	  , attrs(
-	      [term(
-	         default(appl(_, [fun(quoted(consstring))]))
+	  , Attrs(
+	      [Term(
+	         Default(Appl(_, [Fun(Quoted(consstring))]))
 	       ),xs*]
 	    )
 	  )
@@ -121,7 +122,7 @@ rules
   declare-syntax-template-no-cons =
     ?d@Desugared(
 	  TemplateProduction(
-	    c#([])
+	    Sort(c#([]))
 	  , _
 	  , _
 	  )
@@ -137,12 +138,12 @@ rules
   collect-sections-2:
     selection ->
       [ TemplateSection(tp*)
-        , SDFSection(context-free-syntax(cp*))
-        , SDFSection(lexical-syntax(lp*)) ]
+        , SDFSection(ContextFreeSyntax(cp*))
+        , SDFSection(LexicalSyntax(lp*)) ]
     with
       tp* := <collect-om(?Desugared(_))> selection;
-      p*  := <collect-om(?prod(_, _, _))> selection;
-      (cp*, lp*) := <partition(where(?prod(_, _, <fetch-cons + is-bracket>)))> p*
+      p*  := <collect-om(?Prod(_, _, _))> selection;
+      (cp*, lp*) := <partition(where(?Prod(_, _, <fetch-cons + is-bracket>)))> p*
 
 rules
 
@@ -181,6 +182,8 @@ rules
     collect-sections;
     template-sections-to-sdf;
     !'module(unparameterized(mn), i*, [exports(<list-to-conc-grammars>)])
+    
+  
 
   generate-sdf-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -195,13 +198,26 @@ rules
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-       <?'module(unparameterized(mn), i*, _)> ast ;
+       <?Module(Unparameterized(mn), i*, _)> ast ;
        filename := <guarantee-extension(|"sdf")> path
     <+ filename := <conc-strings> (<remove-extension> path, "generated.sdf");
        mn := $[[<base-filename ; remove-extension> path]generated];
        i* := []
     with
       result   := <generate-sdf(|mn, i*); pp-sdf-to-string> selected
+
+  // New SDF generator
+  generate-sdf-concrete-test:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+       <?Module(Unparameterized(mn), i*, _)> ast ;
+       filename := <guarantee-extension(|"sdftst")> path
+    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdftst");
+       mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
+      result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
+  
 
   // Generate pretty printer (BOX-based)
   generate-box-pp(|path) =
@@ -237,8 +253,10 @@ rules
     (selected, position, ast, path, project-path) -> <id>
    // with
     //  generate-esv-concrete; write-string-to-file
+   // with
+  //   generate-sdf-concrete; write-string-to-file
     with
-     generate-sdf-concrete; write-string-to-file
+     generate-sdf-concrete-test; write-string-to-file
   //  with
  //     generate-box-pp-concrete; write-string-to-file
 
