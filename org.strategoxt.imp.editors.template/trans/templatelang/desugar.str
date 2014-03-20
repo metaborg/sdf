@@ -25,20 +25,20 @@ strategies
 rules
 
   templatelang-desugar:
-    SdfProduction(sort, symbol*, attr*) ->
-      prod(symbol*, sort(sort), attr*)
+    SdfProduction(symbol, symbol*, attr*) ->
+      Prod(symbol*, symbol, attr*)
 
   templatelang-desugar:
-    SdfProductionWithCons(SortCons(sort, cons), symbol*, attrs(attr*)) ->
-      prod(symbol*, sort(sort), attrs(attr'*))
+    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbol*, Attrs(attr*)) ->
+      Prod(symbol*, symbol, Attrs(attr'*))
     where with-spxverify(
     	attr   := <templatelang-origin-track-forced(!sdf-cons(<double-quote> cons))> cons; 
       attr'* := [attr | attr*]
     )
 
   templatelang-desugar:
-    SdfProductionWithCons(SortCons(sort, cons), symbol*, no-attrs()) ->
-      prod(symbol*, sort(sort), attrs(attr'*))
+    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbol*, NoAttrs()) ->
+      Prod(symbol*, symbol, Attrs(attr'*))
     where with-spxverify(
     	attr   := <templatelang-origin-track-forced(!sdf-cons(<double-quote> cons))> cons;
       attr'* := [attr]
@@ -47,8 +47,8 @@ rules
 rules
 
   templatelang-desugar:
-    TemplateProduction(sort, template, a) ->
-      Desugared(TemplateProduction(sort, template', attrs(attr*)))
+    TemplateProduction(symbol, template, a) ->
+      Desugared(TemplateProduction(symbol, template', Attrs(attr*)))
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
@@ -56,8 +56,8 @@ rules
       )
 
   templatelang-desugar:
-    TemplateProductionWithCons(SortCons(sort, cons), template, a) ->
-      Desugared(TemplateProduction(sort, template', attrs(attr*)))
+    TemplateProductionWithCons(SortCons(symbol, Constructor(cons)), template, a) ->
+      Desugared(TemplateProduction(symbol, template', Attrs(attr*)))
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
@@ -66,7 +66,7 @@ rules
       )
 
   templatelang-get-attrs =
-    (no-attrs() -> []) + ?attrs(<id>)
+    (NoAttrs() -> []) + ?Attrs(<id>)
 
   templatelang-template-desugar:
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
@@ -206,7 +206,7 @@ rules
 rules
 
   templatelang-prod-to-sort:
-    prod(_, sort(x), _) -> x
+    Prod(_, Sort(x), _) -> x
 
   templatelang-prod-to-sort:
     Desugared(TemplateProduction(x, _, _)) -> x
