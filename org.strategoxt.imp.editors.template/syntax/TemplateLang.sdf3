@@ -9,7 +9,7 @@
 
 module TemplateLang
 imports
-  SDF
+  sdf2-core/SDF
   
 //main productions to link SDF2 and SDF3
 context-free start-symbols
