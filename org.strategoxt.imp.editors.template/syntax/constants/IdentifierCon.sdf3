@@ -1,0 +1,10 @@
+module constants/IdentifierCon
+
+lexical syntax
+ 
+//head:[A-Za-z] tail:[A-Za-z\-0-9]* -> IdCon {cons("default")}
+IdCon.Default = [A-Za-z][A-Za-z\-0-9]* 
+
+lexical restrictions
+
+IdCon -/- [A-Za-z\-0-9]

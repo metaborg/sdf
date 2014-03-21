@@ -1,8 +1,0 @@
-module Start-Symbols
-
-imports Kernel
- 
-templates
-Grammar.KernelStartSymbols = <start-symbols <Symbols>>
-Grammar.LexicalStartSymbols = <lexical start-symbols <Symbols>>
-Grammar.ContextFreeStartSymbols = <context-free start-symbols <Symbols>>

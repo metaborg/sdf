@@ -1,0 +1,8 @@
+module symbols/Symbols
+
+imports layout/Comments
+ 
+templates
+
+Symbol = <(<Symbol>)> {bracket}
+Symbols = <<list:Symbol*>>

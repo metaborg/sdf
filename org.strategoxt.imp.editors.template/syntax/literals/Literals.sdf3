@@ -1,0 +1,25 @@
+module literals/Literals
+ 
+imports kernel/Kernel 
+imports constants/StrCon
+imports constants/IdentifierCon
+
+lexical syntax
+
+    SingleQuotedStrChar.Newline = "\\n"                    
+    SingleQuotedStrChar.Tab = "\\t"                   
+    SingleQuotedStrChar.Quote = "\\'"           
+    SingleQuotedStrChar.Backslash = "\\\\"                    
+    SingleQuotedStrChar.Decimal = "\\" a:[0-9]b:[0-9]c:[0-9] 
+    SingleQuotedStrChar.Normal = ~[\0-\31\n\t\'\\] 
+    
+    SingleQuotedStrCon.Default =  [\'] chars:SingleQuotedStrChar* [\'] 
+    
+templates
+	FunctionName.UnquotedFun = <<IdCon>>
+	FunctionName.QuotedFun = <<StrCon>>
+	
+templates
+	Symbol.Lit = <<string:StrCon>>
+	Symbol.CiLit = <<ci-string:SingleQuotedStrCon>>
+	Production.PrefixFun = <<fun:FunctionName> (<arguments:Symbol*; separator=",">) -\> <result:Symbol> <Attributes> >

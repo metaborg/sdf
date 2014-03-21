@@ -1,0 +1,12 @@
+module constants/StrCon
+
+lexical syntax
+    
+    StrChar.Newline = "\\n"       
+    StrChar.Tab = "\\t"                
+    StrChar.Quote = "\\\""                     
+    StrChar.Backslash = "\\\\"                    
+    StrChar.Decimal = "\\" a:[0-9]b:[0-9]c:[0-9] 
+    StrChar.Normal = ~[\0-\31\n\t\"\\]          
+
+    StrCon.Default = [\"] chars:StrChar* [\"]   

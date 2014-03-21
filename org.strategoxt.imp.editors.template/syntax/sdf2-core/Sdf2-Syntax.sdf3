@@ -1,0 +1,35 @@
+module sdf2-core/Sdf2-Syntax
+
+imports kernel/Kernel
+        basic/Basic
+        modules/Modules
+        regular/Regular
+        lifting/Lifting
+        priority/Priority
+        characterclass/CC
+        sorts/Sorts
+        symbols/Start-Symbols
+        literals/Literals
+        labels/Labels
+        restrictions/Restrictions
+        aliases/Aliases
+
+templates
+
+Symbol.Start = <\<START\>>
+Symbol.FileStart = <\<Start\>>
+
+Grammar.LexicalPriorities = <lexical priorities <Priorities>>
+Grammar.ContextFreePriorities = <context-free priorities <Priorities>>
+Grammar.LexicalRestrictions = <lexical restrictions <Restrictions>>
+Grammar.ContextFreeRestrictions = <context-free restrictions <Restrictions>>
+
+//SDF.Definition = <definition <Definition>> IGNORED PRODUCTION
+
+context-free priorities
+//probably couldn't refer to the productions in the other modules
+//Symbol.Alt >
+//Symbol.Label
+
+Symbol "|" Symbol  -> Symbol >
+    Label ":" Symbol -> Symbol 

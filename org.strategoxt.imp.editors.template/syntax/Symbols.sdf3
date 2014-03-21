@@ -1,8 +1,0 @@
-module Symbols
-
-imports Comments
- 
-templates
-
-Symbol = <(<Symbol>)> {bracket}
-Symbols = <<list:Symbol*>>

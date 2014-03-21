@@ -1,7 +1,0 @@
-module CC
-
-imports Character-Class 
-        Kernel
- 
-templates
-    Symbol.CharClass = <<CharClass>>

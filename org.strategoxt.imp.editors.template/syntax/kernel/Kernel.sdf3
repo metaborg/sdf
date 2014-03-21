@@ -1,0 +1,19 @@
+module kernel/Kernel
+
+imports aterms/Aterms 
+        symbols/Symbols 
+        grammar/Grammars
+ 
+templates
+
+ATermAttribute.Default = <<aterm:ATerm>>
+Attribute.Term = <<ATermAttribute>>
+
+Attributes.Attrs = <{<list:Attribute*; separator=",">}>
+Attributes.NoAttrs = <>
+
+Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes>>
+
+Productions = <<list:Production*>>
+
+Grammar.Syntax = <syntax <Productions>>
