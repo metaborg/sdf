@@ -28,29 +28,26 @@ rules
   module-to-coq:
     ast -> Sent([sort*, const*])
     where
-     	sort* := <collect-all( ?SDFSection('sorts(<id>))
+     	sort* := <collect-all( ?'sort(<id>)
     	                     + ?TemplateProduction(<id>, _, _)
     	                     + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
-    	                     ); sorts-to-coq> ast
+    	                     ); nub; sorts-to-coq> ast
     ; const* := <collect-all(where(?TemplateProductionWithCons(_,_,_))); template-productions-to-coq> ast
 
 rules // sorts
   
   sorts-to-coq:
     sort* ->
-  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar([def-sort*, cdec*]))]))
+  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar(cdec*))]))
   	 , Assumption(Assuption("Parameter", Term(["Ident"], Sort(Set()))))
   	 , Definition(Def("sort", [], None(), Ref("sorts")))
   	 , Definition(Def("Ident_Sort", [], None(), Ref("ID_S")))]
   	with
-  	  cdec* := <map(sort-to-coq)> sort*
-  	; def-sort* := [
-  	    ConsDecl("ID_S", [], None())
-      , ConsDecl("INT_S", [], None())
-  	  ]
+  	  cdec* := <!["ID", "INT" | <id>]; nub; map(sort-to-coq)> sort*
   	  
   sort-to-coq: // Waiting for more complex examples
     n -> ConsDecl($[[n]_S], [], None())
+    where <is-string> n
 
 rules // Template productions (i.e. constructors)
   
