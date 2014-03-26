@@ -10,7 +10,7 @@ signature
     deprecated : Term
 
 overlays
-  sdf-cons(x) = term(default(appl(unquoted("cons"), [fun(quoted(x))])))
+  sdf-cons(x) = Term(Default(Appl(Unquoted("cons"), [Fun(Quoted(x))])))
   sdf-deprecated() = term(default(fun(unquoted("deprecated"))))
   sdf-deprecated(x) = term(default(appl(unquoted("deprecated"), [fun(quoted(x))])))
 
