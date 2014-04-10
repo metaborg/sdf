@@ -1,180 +1,170 @@
 module TemplateLang
-imports
-  SPXCommon
-  SPXFake
+imports sdf2-core/SDF
 
 exports
   context-free start-symbols
-    %% for testing
-    SdfProduction TemplateProduction Template
+    Start
 
   context-free syntax
-    %% tweaks for content completion
-    CONTENTCOMPLETE -> TemplateProduction {recover, cons("WATER")}
-    CONTENTCOMPLETE -> PlaceholderOption  {recover, cons("WATER")}
-    CONTENTCOMPLETE -> PlaceholderOptions {recover, cons("WATER")}
+    Section* -> Start {cons("CompilationUnit"), deprecated("Syntax definitions should be part of a module")}
 
   context-free syntax
-    %% options section
-    "template" "options" TemplateOption* -> Section {cons("TemplateOptions")}
-
-    "newlines" ":" NewlineOptionValue -> TemplateOption {cons("Newlines")}
-
-    "none"       -> NewlineOptionValue {cons("None")}
-    "leading"    -> NewlineOptionValue {cons("Leading")}
-    "trailing"   -> NewlineOptionValue {cons("Trailing")}
-    "separating" -> NewlineOptionValue {cons("Separating")}
-
-    "keyword" "-/-" Lookaheads[[SDF]] -> TemplateOption {cons("KeywordFollowRestriction")}
-
-    "tokenize" ":" STRING -> TemplateOption {cons("Tokenize")}
+    CONTENTCOMPLETE -> Start {cons("COMPLETION-Start")}
 
   context-free syntax
-    %% references to productions using sort.cons notation in priority specification
-    SortCons                                   -> Group[[SDF]]  {cons("simple-ref-group")}
-    "{" SortCons+ "}"                          -> Group[[SDF]]  {cons("prods-ref-group")}
-    "{" Associativity[[SDF]] ":" SortCons+ "}" -> Group[[SDF]]  {cons("assoc-ref-group")}
+    QuotedConstructor -> Attribute         {cons("QuotedConstructor"), prefer}
+    StrCon            -> QuotedConstructor 
 
   context-free syntax
-    %% "grammars"
-    "templates" TemplateProduction* -> Section {cons("TemplateSection")}
+    CONTENTCOMPLETE -> Attribute         {cons("COMPLETION-Attribute")}
+    CONTENTCOMPLETE -> QuotedConstructor {cons("COMPLETION-QuotedConstructor")}
 
-    %% BNF order and SDF order can't go together in the same section,
-    %% because of ambiguity. "X = Y -> Z": is it "X = Y" "Z" or "X =" "Y -> Z"?
-    "lexical" "syntax"      SdfProduction* -> Grammar[[SDF]] {cons("lexical-syntax"), prefer}
-    "context-free" "syntax" SdfProduction* -> Grammar[[SDF]] {cons("context-free-syntax"), prefer}
+  context-free syntax
+    CONTENTCOMPLETE -> TemplateProduction {cons("WATER"), recover}
+    CONTENTCOMPLETE -> PlaceholderOption  {cons("WATER"), recover}
+    CONTENTCOMPLETE -> PlaceholderOptions {cons("WATER"), recover}
 
-    %% syntactic sugar for SDF
-    ID "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProduction")}
-    SortCons "=" Symbols[[SDF]] Attributes[[SDF]] -> SdfProduction {cons("SdfProductionWithCons")}
+  context-free syntax
+    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
+    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
+    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
 
-    %% template productions
-    ID "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProduction")}
+  context-free syntax
+    "template" "options" TemplateOption* -> Section            {cons("TemplateOptions")}
+    "newlines" ":" NewlineOptionValue    -> TemplateOption     {cons("Newlines")}
+    "none"                               -> NewlineOptionValue {cons("None")}
+    "leading"                            -> NewlineOptionValue {cons("Leading")}
+    "trailing"                           -> NewlineOptionValue {cons("Trailing")}
+    "separating"                         -> NewlineOptionValue {cons("Separating")}
+    "keyword" "-/-" Lookaheads           -> TemplateOption     {cons("KeywordFollowRestriction")}
+    "tokenize" ":" StrCon                -> TemplateOption     {cons("Tokenize")}
 
-    %% template productions `sort.cons = ...'
-    SortCons "=" Template Attributes[[SDF]] -> TemplateProduction {cons("TemplateProductionWithCons")}
+  context-free syntax
+    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
+    CONTENTCOMPLETE -> NewlineOptionValue {cons("COMPLETION-NewlineOptionValue")}
+    CONTENTCOMPLETE -> TemplateOption     {cons("COMPLETION-TemplateOption")}
 
-    ID "." ID -> SortCons {cons("SortCons")}
+  context-free syntax
+    SortCons                           -> Group {cons("SimpleRefGroup")}
+    "{" SortCons+ "}"                  -> Group {cons("ProdsRefGroup")}
+    "{" Associativity ":" SortCons+ "}" -> Group {cons("AssocRefGroup")}
 
-    %% placeholders
-    "<" Placeholder ">" -> TemplatePart1 {bracket}
-    "[" Placeholder "]" -> TemplatePart2 {bracket}
-    PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder {cons("Placeholder")}
+  context-free syntax
+    CONTENTCOMPLETE -> Group {cons("COMPLETION-Group")}
 
-    %% constructor identical to SDF sort to simplify some transformations
-    ID -> PlaceholderSort {cons("sort")}
+  context-free syntax
+    "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
+    "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
+    "context-free" "syntax" SdfProduction*                                -> Grammar            {cons("ContextFreeSyntax"), prefer}
+    Symbol "=" Symbols Attributes                                         -> SdfProduction      {cons("SdfProduction")}
+    SortCons "=" Symbols Attributes                                       -> SdfProduction      {cons("SdfProductionWithCons")}
+    Symbol "=" Template Attributes                                        -> TemplateProduction {cons("TemplateProduction")}
+    SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
+    IdCon                                                                 -> Constructor        {cons("Constructor")}
+    Symbol "." Constructor                                                -> SortCons           {cons("SortCons")}
+    "<" Placeholder ">"                                                   -> TemplatePart1      {bracket}
+    "[" Placeholder "]"                                                   -> TemplatePart2      {bracket}
+    PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder        {cons("Placeholder")}
+    Sort                                                                  -> PlaceholderSort    {cons("Sort")}
+                                                                          -> PlaceholderLabel   {cons("None")}
+    Label ":"                                                             -> PlaceholderLabel   {cons("Label")}
+                                                                          -> PlaceholderSuffix  {cons("None")}
+    "*"                                                                   -> PlaceholderSuffix  {cons("Star")}
+    "+"                                                                   -> PlaceholderSuffix  {cons("Plus")}
+    "?"                                                                   -> PlaceholderSuffix  {cons("Option")}
+                                                                          -> PlaceholderOptions {cons("NoOptions")}
+    ";" {PlaceholderOption ","}+                                          -> PlaceholderOptions {cons("Options")}
+    "hide"                                                                -> PlaceholderOption  {cons("Hide")}
+    "wrap"                                                                -> PlaceholderOption  {cons("Wrap")}
+    "anchor"                                                              -> PlaceholderOption  {cons("Anchor")}
+    "separator" "=" StrCon                                                -> PlaceholderOption  {cons("Separator")}
+    "text" "=" StrCon                                                     -> PlaceholderOption  {cons("Text")}
 
-        	-> PlaceholderLabel {cons("None")}
-    ID ":"  -> PlaceholderLabel {cons("Label")}
-    
-        -> PlaceholderSuffix {cons("None")}
-    "*" -> PlaceholderSuffix {cons("Star")}
-    "+" -> PlaceholderSuffix {cons("Plus")}
-    "?" -> PlaceholderSuffix {cons("Option")}
-
-                                 -> PlaceholderOptions {cons("NoOptions")}
-    ";" {PlaceholderOption ","}+ -> PlaceholderOptions {cons("Options")}
-
-    "hide"                 -> PlaceholderOption {cons("Hide")}
-    "wrap"                 -> PlaceholderOption {cons("Wrap")}
-    "anchor"               -> PlaceholderOption {cons("Anchor")}
-    "separator" "=" STRING -> PlaceholderOption {cons("Separator")}
-    "text" "=" STRING      -> PlaceholderOption {cons("Text")}
+  context-free syntax
+    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
+    CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> SdfProduction      {cons("COMPLETION-SdfProduction")}
+    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
+    CONTENTCOMPLETE -> Constructor        {cons("COMPLETION-Constructor")}
+    CONTENTCOMPLETE -> SortCons           {cons("COMPLETION-SortCons")}
+    CONTENTCOMPLETE -> TemplatePart1      {cons("COMPLETION-TemplatePart1")}
+    CONTENTCOMPLETE -> TemplatePart2      {cons("COMPLETION-TemplatePart2")}
+    CONTENTCOMPLETE -> Placeholder        {cons("COMPLETION-Placeholder")}
+    CONTENTCOMPLETE -> PlaceholderSort    {cons("COMPLETION-PlaceholderSort")}
+    CONTENTCOMPLETE -> PlaceholderLabel   {cons("COMPLETION-PlaceholderLabel")}
+    CONTENTCOMPLETE -> PlaceholderSuffix  {cons("COMPLETION-PlaceholderSuffix")}
+    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
+    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
 
   syntax
-    %% template parts
-    "<" {<TemplateLine1-CF> "\n"}+ ">" -> <Template-CF> {cons("Template")}
-    "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF> {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
-    <TemplatePart1-CF>* -> <TemplateLine1-CF> {cons("Line")}
-    <TemplateString1-LEX> -> <TemplatePart1-CF> {cons("String")}
-    <TemplateEscape1-LEX> -> <TemplatePart1-CF> {cons("Escape")}
-    <TemplateLayout-LEX>  -> <TemplatePart1-CF> {cons("Layout")}
-
-    "[" {<TemplateLine2-CF> "\n"}+ "]" -> <Template-CF> {cons("Template")}
-    "[[" {<TemplateLine2-CF> "\n"}+ "]]" -> <Template-CF> {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
-    <TemplatePart2-CF>* -> <TemplateLine2-CF> {cons("Line")}
-    <TemplateString2-LEX> -> <TemplatePart2-CF> {cons("String")}
-    <TemplateEscape2-LEX> -> <TemplatePart2-CF> {cons("Escape")}
-    <TemplateLayout-LEX>  -> <TemplatePart2-CF> {cons("Layout")}
-
-    %% special: no placeholders, no newlines
-    '"' <TemplatePartQ-CF>* '"' -> <Template-CF> {cons("SingleLineTemplate")}
-    <TemplateStringQ-LEX> -> <TemplatePartQ-CF> {cons("String")}
-    <TemplateEscapeQ-LEX> -> <TemplatePartQ-CF> {cons("Escape")}
-    <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
+    "<" {<TemplateLine1-CF> "\n"}+ ">"   -> <Template-CF>      {cons("Template")}
+    "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF>      {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
+    <TemplatePart1-CF>*                  -> <TemplateLine1-CF> {cons("Line")}
+    <TemplateString1-LEX>                -> <TemplatePart1-CF> {cons("String")}
+    <TemplateEscape1-LEX>                -> <TemplatePart1-CF> {cons("Escape")}
+    <TemplateLayout-LEX>                 -> <TemplatePart1-CF> {cons("Layout")}
+    "[" {<TemplateLine2-CF> "\n"}+ "]"   -> <Template-CF>      {cons("Template")}
+    "[[" {<TemplateLine2-CF> "\n"}+ "]]" -> <Template-CF>      {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
+    <TemplatePart2-CF>*                  -> <TemplateLine2-CF> {cons("Line")}
+    <TemplateString2-LEX>                -> <TemplatePart2-CF> {cons("String")}
+    <TemplateEscape2-LEX>                -> <TemplatePart2-CF> {cons("Escape")}
+    <TemplateLayout-LEX>                 -> <TemplatePart2-CF> {cons("Layout")}
+    '"' <TemplatePartQ-CF>* '"'          -> <Template-CF>      {cons("SingleLineTemplate")}
+    <TemplateStringQ-LEX>                -> <TemplatePartQ-CF> {cons("String")}
+    <TemplateEscapeQ-LEX>                -> <TemplatePartQ-CF> {cons("Escape")}
+    <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    [\r][\n] -> "\n"
-    [\ \t]+  -> TemplateLayout
-
-    (~[\\\<\>\ \t\r\n] | Backslash1)+ -> TemplateString1
-    (~[\\\[\]\ \t\r\n] | Backslash2)+ -> TemplateString2
-    ~[\\\"\ \t]+                      -> TemplateStringQ
-
-    [\\] -> Backslash1
-    [\\] -> Backslash2
+  	[\n\r]							   -> "\n"
+    [\ \t]+                            -> TemplateLayout  
+    ( ~[\\\<\>\ \t\r\n] | Backslash )+ -> TemplateString1 
+    ( ~[\\\[\]\ \t\r\n] | Backslash )+ -> TemplateString2 
+    ~[\\\"\ \t]+                       -> TemplateStringQ 
+    [\\]                               -> Backslash       
 
   lexical restrictions
     TemplateLayout -/- [\ \t]
-
-    %% must be followed by:
     TemplateString1 -/- ~[\\\<\>\ \t\r\n]
     TemplateString2 -/- ~[\\\[\]\ \t\r\n]
     TemplateStringQ -/- ~[\\\"\ \t]
-
-    %% if followed by a backslash, then the backslash must be followed by:
-    TemplateString1 -/- [\\].~[\<\>\\]
-    TemplateString2 -/- [\\].~[\[\]\\]
-
-    Backslash1 -/- [\<\>\\]
-    Backslash2 -/- [\[\]\\]
+    TemplateString1 -/- [\\] . ~[\<\>\\]
+    TemplateString2 -/- [\\] . ~[\[\]\\]
+    Backslash -/- [\<\>\\]
 
   lexical syntax
-    %% combine sequences of escaped chars
-    EscapedChar1+ -> TemplateEscape1
-    EscapedChar2+ -> TemplateEscape2
-
-    %% this are the escapes which StringTemplate has
-    "\\<"  -> EscapedChar1
-    "\\>"  -> EscapedChar1
-    "\\\\" -> EscapedChar1
-    "\\["  -> EscapedChar2
-    "\\]"  -> EscapedChar2
-    "\\\\" -> EscapedChar2
-
-    "<" (EscapedBackslashChar1 | EscapedChar)* ">" -> EscapedChar1
-    "<\\\\>" [\ \t\r]* [\n] -> EscapedChar1
-    "[" (EscapedBackslashChar2 | EscapedChar)* "]" -> EscapedChar2
-    "[\\\\]" [\ \t\r]* [\n] -> EscapedChar2
-
-    %% double-backslash isn't allowed as sole member of escape placeholder
-    %% (would clash with <\\> / [\\] line continuation construct)
-    %% so we add follow restrictions to the following symbols:
-    "\\\\" -> EscapedBackslashChar1
-    "\\\\" -> EscapedBackslashChar2
-
-    ("\\\\" | EscapedChar)+ -> TemplateEscapeQ
-
-    %% escapes allowed in a placeholder-like construct
-    "\\'" -> EscapedChar
-    '\\"' -> EscapedChar
-    "\\ " -> EscapedChar
-    "\\t" -> EscapedChar
-    "\\r" -> EscapedChar
-    "\\n" -> EscapedChar
-
-    "\\u" [0-9A-Fa-f]+ -> EscapedUnicodeChar
-    EscapedUnicodeChar -> EscapedChar
-
-    "\\" ~[]       -> EscapedChar  {recover, cons("WATER")}
-    "<" ~[\>]+ ">" -> EscapedChar1 {recover, cons("WATER")}
-    "[" ~[\]]+ "]" -> EscapedChar2 {recover, cons("WATER")}
+    [a-zA-Z]* "CONTENTCOMPLETE" [0-9]+               -> CONTENTCOMPLETE       {avoid}
+    EscapedChar1+                                    -> TemplateEscape1       
+    EscapedChar2+                                    -> TemplateEscape2       
+    "\\<"                                            -> EscapedChar1          
+    "\\>"                                            -> EscapedChar1          
+    "\\\\"                                           -> EscapedChar1          
+    "\\["                                            -> EscapedChar2          
+    "\\]"                                            -> EscapedChar2          
+    "\\\\"                                           -> EscapedChar2          
+    "<" ( EscapedBackslashChar1 | EscapedChar )* ">" -> EscapedChar1          
+    "<\\\\>" [\ \t\r]* [\n]                          -> EscapedChar1          
+    "[" ( EscapedBackslashChar2 | EscapedChar )* "]" -> EscapedChar2          
+    "[\\\\]" [\ \t\r]* [\n]                          -> EscapedChar2          
+    "\\\\"                                           -> EscapedBackslashChar1 
+    "\\\\"                                           -> EscapedBackslashChar2 
+    ( "\\\\" | EscapedChar )+                        -> TemplateEscapeQ       
+    "\\'"                                            -> EscapedChar           
+    '\\"'                                            -> EscapedChar           
+    "\\ "                                            -> EscapedChar           
+    "\\t"                                            -> EscapedChar           
+    "\\r"                                            -> EscapedChar           
+    "\\n"                                            -> EscapedChar           
+    "\\u" [0-9A-Fa-f]+                               -> EscapedUnicodeChar    
+    EscapedUnicodeChar                               -> EscapedChar           
+    "\\" ~[]                                         -> EscapedChar           {cons("WATER"), recover}
+    "<" ~[\>]+ ">"                                   -> EscapedChar1          {cons("WATER"), recover}
+    "[" ~[\]]+ "]"                                   -> EscapedChar2          {cons("WATER"), recover}
 
   lexical restrictions
     TemplateEscape1 -/- [\\]
-    TemplateEscape1 -/- [\<].[\\\>]
+    TemplateEscape1 -/- [\<] . [\\\>]
     TemplateEscape2 -/- [\\]
-    TemplateEscape2 -/- [\[].[\\\]]
+    TemplateEscape2 -/- [\[] . [\\\]]
     TemplateEscapeQ -/- [\\]
     EscapedBackslashChar1 -/- [\>]
     EscapedBackslashChar2 -/- [\]]

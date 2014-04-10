@@ -1,0 +1,542 @@
+module analysis/names
+
+imports
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/properties/-
+  lib/runtime/types/-
+  lib/runtime/editor/-
+
+
+rules
+
+  nabl-get-scope =
+    ?Module(Unparameterized(m), i*, s*)
+    ; ![NablNsSort(), NablNsConstructor()]
+
+  nabl-get-name :
+    Module(Unparameterized(m), i*, s*) -> m
+
+  nabl-name-apply(s) =
+    Module(Unparameterized(s), id, id)
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?Module(Unparameterized(m), i*, s*)
+    ; origin-track-forced(
+        Module(
+          origin-track-forced(
+            Unparameterized(
+              nabl-def(
+                ?c-uri1__
+              , ?s-uri1__
+              | lang__
+              , partition__
+              , uniques__
+              , uri__
+              , uri__
+              , NablNsModule()
+              , Unique()
+              , Current()
+              , [NablNsSort(), NablNsConstructor()]
+              , []
+              )
+            )
+          |
+          )
+        , id
+        , id
+        )
+      |
+      )
+    ; match(child-uris__|c-uri1__)
+    ; match(sibl-uris__|s-uri1__)
+    ; match(implicits__|[])
+
+  nabl-get-name :
+    Module(Unparameterized(m)) -> m
+
+  nabl-name-apply(s) =
+    Module(Unparameterized(s))
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?Module(Unparameterized(m))
+    ; origin-track-forced(
+        Module(
+          origin-track-forced(
+            Unparameterized(
+              nabl-use(
+              | lang__
+              , partition__
+              , uniques__
+              , uris__
+              , [ UseCandidate(
+                    NablNsModule()
+                  , []
+                  , Current()
+                  , True()
+                  , []
+                  )
+                ]
+              )
+            )
+          |
+          )
+        )
+      |
+      )
+
+  nabl-import-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?Module(Unparameterized(m))
+    ; origin-track-forced(
+        nabl-import(
+        | lang__
+        , partition__
+        , uniques__
+        , uris__
+        , [ Wildcard(
+              [ Import(lang__, NablNsSort())
+              , Import(lang__, NablNsConstructor())
+              ]
+            , Context(
+                NablNsModule()
+              , m
+              , []
+              , Current()
+              )
+            , Current()
+            , []
+            )
+          ]
+        )
+      |
+      )
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?p@SdfProduction(
+         SortCons(Sort(s), Constructor(c))
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; origin-track-forced(
+           SdfProduction(
+             origin-track-forced(
+               SortCons(
+                 origin-track-forced(
+                   Sort(
+                     nabl-def(
+                       ?c-uri1__
+                     , ?s-uri1__
+                     | lang__
+                     , partition__
+                     , uniques__
+                     , uri__
+                     , uri__
+                     , NablNsSort()
+                     , NonUnique()
+                     , Current()
+                     , []
+                     , []
+                     )
+                   )
+                 |
+                 )
+               , origin-track-forced(Constructor(id)|)
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; (id
+       ; origin-track-forced(
+           SdfProduction(
+             origin-track-forced(
+               SortCons(
+                 origin-track-forced(Sort(id)|)
+               , origin-track-forced(
+                   Constructor(
+                     nabl-def(
+                       ?c-uri2__
+                     , ?s-uri2__
+                     | lang__
+                     , partition__
+                     , uniques__
+                     , c-uri1__
+                     , s-uri1__
+                     , NablNsConstructor()
+                     , Unique()
+                     , Current()
+                     , []
+                     , []
+                     )
+                   )
+                 |
+                 )
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; match(child-uris__|c-uri2__)
+    ; match(sibl-uris__|s-uri2__)
+    ; match(implicits__|[])
+
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProduction(
+         SortCons(Sort(s), Constructor(c))
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProduction(
+           SortCons(
+             Sort(id)
+           , Constructor(
+               nabl-store-props(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+
+  nabl-get-name :
+    p@SdfProduction(Sort(s), rhs, attrs) -> s
+
+  nabl-name-apply(s) =
+    id
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?p@SdfProduction(Sort(s), rhs, attrs)
+    ; (id
+       ; origin-track-forced(
+           SdfProduction(
+             origin-track-forced(
+               Sort(
+                 nabl-def(
+                   ?c-uri1__
+                 , ?s-uri1__
+                 | lang__
+                 , partition__
+                 , uniques__
+                 , uri__
+                 , uri__
+                 , NablNsSort()
+                 , NonUnique()
+                 , Current()
+                 , []
+                 , []
+                 )
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; match(child-uris__|c-uri1__)
+    ; match(sibl-uris__|s-uri1__)
+    ; match(implicits__|[])
+
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProduction(Sort(s), rhs, attrs)
+    ; (id
+       ; SdfProduction(
+           Sort(
+             nabl-store-props(
+             | partition__
+             , [Prop(NablProp_def(), p, [])]
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?p@TemplateProduction(
+         SortCons(Sort(s), Constructor(c))
+       , t
+       , attrs
+       )
+    ; (id
+       ; origin-track-forced(
+           TemplateProduction(
+             origin-track-forced(
+               SortCons(
+                 origin-track-forced(
+                   Sort(
+                     nabl-def(
+                       ?c-uri1__
+                     , ?s-uri1__
+                     | lang__
+                     , partition__
+                     , uniques__
+                     , uri__
+                     , uri__
+                     , NablNsSort()
+                     , NonUnique()
+                     , Current()
+                     , []
+                     , []
+                     )
+                   )
+                 |
+                 )
+               , origin-track-forced(Constructor(id)|)
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; (id
+       ; origin-track-forced(
+           TemplateProduction(
+             origin-track-forced(
+               SortCons(
+                 origin-track-forced(Sort(id)|)
+               , origin-track-forced(
+                   Constructor(
+                     nabl-def(
+                       ?c-uri2__
+                     , ?s-uri2__
+                     | lang__
+                     , partition__
+                     , uniques__
+                     , c-uri1__
+                     , s-uri1__
+                     , NablNsConstructor()
+                     , Unique()
+                     , Current()
+                     , []
+                     , []
+                     )
+                   )
+                 |
+                 )
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; match(child-uris__|c-uri2__)
+    ; match(sibl-uris__|s-uri2__)
+    ; match(implicits__|[])
+
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@TemplateProduction(
+         SortCons(Sort(s), Constructor(c))
+       , t
+       , attrs
+       )
+    ; (id
+       ; TemplateProduction(
+           SortCons(
+             Sort(id)
+           , Constructor(
+               nabl-store-props(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+
+  nabl-get-name :
+    p@TemplateProduction(Sort(s), t, attrs) -> s
+
+  nabl-name-apply(s) =
+    id
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?p@TemplateProduction(Sort(s), t, attrs)
+    ; (id
+       ; origin-track-forced(
+           TemplateProduction(
+             origin-track-forced(
+               Sort(
+                 nabl-def(
+                   ?c-uri1__
+                 , ?s-uri1__
+                 | lang__
+                 , partition__
+                 , uniques__
+                 , uri__
+                 , uri__
+                 , NablNsSort()
+                 , NonUnique()
+                 , Current()
+                 , []
+                 , []
+                 )
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
+    ; match(child-uris__|c-uri1__)
+    ; match(sibl-uris__|s-uri1__)
+    ; match(implicits__|[])
+
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@TemplateProduction(Sort(s), t, attrs)
+    ; (id
+       ; TemplateProduction(
+           Sort(
+             nabl-store-props(
+             | partition__
+             , [Prop(NablProp_def(), p, [])]
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+
+
+imports
+  include/TemplateLang
+  libstrc
+
+
+signature
+  constructors
+    NablNsModule      : Namespace
+    NablNsSort        : Namespace
+    NablNsConstructor : Namespace
+    NablNsLabel       : Namespace
+
+
+signature
+  constructors
+    NablProp_def  : Property
+    NablProp_sort : Property
+
+
+rules
+
+  nabl-custom-properties(add-properties) =
+    ![NablProp_def(), NablProp_sort()]
+    ; add-properties
+
+  def-is(|task*) =
+    nabl-prop-calc(|task*, [])
+
+  def-task(|task*) =
+    get-or-create-property-task(|task*, NablProp_def())
+
+  def-is(|task*, dep*) =
+    nabl-prop-calc(|task*, dep*)
+
+  def-list(|task*) =
+    nabl-prop-list(|task*, [])
+
+  def-list(|task*, dep*) =
+    nabl-prop-list(|task*, dep*)
+
+  def-lookup(|task*) =
+    nabl-prop-lookup(|NablProp_def(), task*, [])
+
+  def-lookup(|task*, dep*) =
+    nabl-prop-lookup(|NablProp_def(), task*, dep*)
+
+  def-match(|task*, expected) =
+    nabl-prop-match(
+    | NablProp_def()
+    , task*
+    , Eq()
+    , expected
+    )
+
+  def-match(|task*, relation, expected) =
+    nabl-prop-match(|NablProp_def(), task*, relation, expected)
+
+  create-def-task(|task*) =
+    fail
+
+  get-def =
+    get-property(|NablProp_def())
+
+  store-def(|partition, prop) =
+    nabl-store-prop(
+    | partition
+    , Prop(NablProp_def(), prop, [])
+    )
+
+  create-property-task(|partition, kind):
+    term -> <create-def-task(|partition)> term
+    where NablProp_def() := kind
+
+  sort-is(|task*) =
+    nabl-prop-calc(|task*, [])
+
+  sort-task(|task*) =
+    get-or-create-property-task(|task*, NablProp_sort())
+
+  sort-is(|task*, dep*) =
+    nabl-prop-calc(|task*, dep*)
+
+  sort-list(|task*) =
+    nabl-prop-list(|task*, [])
+
+  sort-list(|task*, dep*) =
+    nabl-prop-list(|task*, dep*)
+
+  sort-lookup(|task*) =
+    nabl-prop-lookup(|NablProp_sort(), task*, [])
+
+  sort-lookup(|task*, dep*) =
+    nabl-prop-lookup(|NablProp_sort(), task*, dep*)
+
+  sort-match(|task*, expected) =
+    nabl-prop-match(
+    | NablProp_sort()
+    , task*
+    , Eq()
+    , expected
+    )
+
+  sort-match(|task*, relation, expected) =
+    nabl-prop-match(|NablProp_sort(), task*, relation, expected)
+
+  create-sort-task(|task*) =
+    fail
+
+  get-sort =
+    get-property(|NablProp_sort())
+
+  store-sort(|partition, prop) =
+    nabl-store-prop(
+    | partition
+    , Prop(NablProp_sort(), prop, [])
+    )
+
+  create-property-task(|partition, kind):
+    term -> <create-sort-task(|partition)> term
+    where NablProp_sort() := kind

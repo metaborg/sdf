@@ -7,7 +7,7 @@ imports
   libstratego-sglr
   libstrc
   include/TemplateLang
-  include/libtemplatelang
+  //include/libtemplatelang
   editor/TemplateLang-Outliner
   lib/EditorService
   lib/editor-common.generated
@@ -20,11 +20,14 @@ imports
   lib/runtime/types/-
   lib/runtime/editor/-
   
-	analyze
-	names
-	name-desugar
-	name-check
-	check
+  trans/analysis/-
+  trans/generation/-
+  trans/editor/-
+	//analyze
+	//names
+	//name-desugar
+//	name-check
+	//check
     
 rules // Analysis
   
@@ -38,7 +41,7 @@ rules // Analysis
   	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
   analysis-multiple-default(parse-file <+ !(), analyze; id, id, id|<language>, <project-path>)
   
-  editor-save = generate-all //; analysis-save-default(|<language>)
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       
 rules // Editor services
 
@@ -95,57 +98,7 @@ rules // Debugging
 
 rules
 
-  collect-sections =
-    (collect-sections-1
-    <+ collect-sections-2)
-    ; with(filterconcat(?TemplateSection(<id>)); 
-           map(declare-syntax-template 
-               <+ declare-syntax-template-no-cons 
-               <+ debug(!"declare-syntax-template failed: "); fail))
-
-  declare-syntax-template :
-    d@Desugared(
-	  TemplateProduction(
-	    Sort(c#([]))
-	  , _
-	  , Attrs(
-	      [Term(
-	         Default(Appl(_, [Fun(Quoted(consstring))]))
-	       ),xs*]
-	    )
-	  )
-	)
-	-> <create-template-production-dr> ((<un-double-quote>c, <un-double-quote> consstring), d)
-		
-  //todo:    figure out if this variant can be referred to and needs to be declared
-  //example: ReturnType   = <: <Type>>
-  declare-syntax-template-no-cons =
-    ?d@Desugared(
-	  TemplateProduction(
-	    Sort(c#([]))
-	  , _
-	  , _
-	  )
-	)
-	//-> <create-template-production-dr> ((<un-double-quote>c, ?), d) 
-
-  collect-sections-1:
-    selection -> section*
-    where
-      section* := <collect-om(?TemplateSection(_) + ?SDFSection(_))> selection;
-      ?[_ | _]
-
-  collect-sections-2:
-    selection ->
-      [ TemplateSection(tp*)
-        , SDFSection(ContextFreeSyntax(cp*))
-        , SDFSection(LexicalSyntax(lp*)) ]
-    with
-      tp* := <collect-om(?Desugared(_))> selection;
-      p*  := <collect-om(?Prod(_, _, _))> selection;
-      (cp*, lp*) := <partition(where(?Prod(_, _, <fetch-cons + is-bracket>)))> p*
-
-rules
+ /*rules
 
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm(s):
@@ -206,17 +159,7 @@ rules
     with
       result   := <generate-sdf(|mn, i*); pp-sdf-to-string> selected
 
-  // New SDF generator
-  generate-sdf-concrete-test:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-       <?Module(Unparameterized(mn), i*, _)> ast ;
-       filename := <guarantee-extension(|"sdftst")> path
-    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdftst");
-       mn := $[[<base-filename ; remove-extension> path]generated];
-       i* := []
-    with
-      result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
+  
   
 
   // Generate pretty printer (BOX-based)
@@ -234,32 +177,11 @@ rules
       filename := $[[project-path]/trans/[<guarantee-extension(|"pp.gen.str"); base-filename> path]];
       result   := <generate-box-pp(|path); pp-stratego-string> selected
 
-  generate-signature =
-    collect-om(?Desugared(_));
-    map(templatelang-production-to-signature);
-    !Specification([Signature([Constructors(<id>)])])
+  
 
-  generate-signature-abstract =
-    generate-aterm(generate-signature)
+ 
 
-  generate-signature-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"generated.str")> path;
-      result   := <generate-signature; pp-stratego-string> selected
-
-  // On-save handler
-  generate-all:
-    (selected, position, ast, path, project-path) -> <id>
-   // with
-    //  generate-esv-concrete; write-string-to-file
-   // with
-  //   generate-sdf-concrete; write-string-to-file
-    with
-     generate-sdf-concrete-test; write-string-to-file
-  //  with
- //     generate-box-pp-concrete; write-string-to-file
-
+*/
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
   	?(filename, string);
