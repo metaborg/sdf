@@ -1,0 +1,12 @@
+module analysis/analyze
+
+imports
+  include/TemplateLang
+  analysis/desugar
+  analysis/normalization
+
+strategies
+
+  analyze =
+    desugar-templates
+    ;normalize-all

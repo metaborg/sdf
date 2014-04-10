@@ -1,0 +1,82 @@
+module analysis/normalization
+imports
+  libstratego-lib
+  include/TemplateLang
+  templatelang/utils/attributes
+  templatelang/utils/contract
+  templatelang/utils/misc
+  runtime/editor/origins
+  analysis/names
+  
+  
+  strategies
+  
+  normalize-all = bottomup(try(normalize))
+     
+  rules
+  	
+  normalize: 
+  	NoAttrs() -> Attrs([])
+  	
+  normalize:
+    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbols*, Attrs(a*)) ->
+      SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbols*, Attrs(a'*))
+    with
+    	c   := <double-quote> cons; 
+        a'* := [sdf-cons(c) , a*]
+    
+  normalize: 
+  	TemplateProductionWithCons(SortCons(symbol, Constructor(cons)), template, Attrs(a*)) ->
+      TemplateProductionWithCons(SortCons(symbol, Constructor(cons)), template, Attrs(a'*))
+     with
+     	c   := <double-quote> cons; 
+        a'* := [sdf-cons(c) , a*]
+     	
+  normalize:
+  	Prod(symbols*, symbol, a*) -> result
+  	with
+  		c := <getfirst(lift-constr)> a*;
+  		result := SdfProductionWithCons(SortCons(symbol, c), symbols*, a*)
+  	<+  result := SdfProduction(symbol, symbols*, a*)
+  	
+  	
+  normalize:
+  	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]
+  	with
+  		p* := < map(?TemplateProduction(<id>, _, _) <+ ?TemplateProductionWithCons(SortCons(<id>, Constructor(_)), _, _))
+             ; nub 
+             ; map(sort-to-contentcomplete)> t;	
+        if [] := p*
+        then
+        	contentcompletion* := []
+        else
+          contentcompletion* := [SDFSection(ContextFreeSyntax(p*))]
+        end
+  
+  
+  normalize:
+  	Module(m, i, sections) -> Module(m, i, sections')
+  	with
+  		sections' := <flatten-list> sections
+  
+        
+  sort-to-contentcomplete:
+     sort@Sort(s) -> SdfProductionWithCons(SortCons(sort, Constructor($[COMPLETION-[s]])), [Sort("CONTENTCOMPLETE")], Attrs([sdf-cons(c)]))
+     with
+     	c := <double-quote> $[COMPLETION-[s]]
+     	
+     	
+  //normalize:
+  	//SimpleRefGroup(SortCons(sort, Constructor(c))) -> <id> //SimpleGroup(prod')
+  //	with
+ // 		prod' := <get-def> c
+ // 		; debug(!"a")
+  	
+  lift-constr:
+  	sdf-cons(c) -> Constructor(<un-double-quote> c)
+  	
+  lift-constr:
+    QuotedConstructor(c) -> Constructor(<un-double-quote> c)
+     
+  		
+  		

@@ -1,0 +1,98 @@
+module editor/builders
+
+imports
+  
+  libstrc
+  libstratego-sdf
+  libstratego-gpp
+  lib/sdf-desugar
+  lib/sdf-parenthesize
+  include/TemplateLang
+
+  editor-common.generated
+  
+  runtime/index/-
+  runtime/task/-
+  trans/generation/-
+  
+  
+  
+  rules
+  	 	
+  generate-sdf-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+       <?Module(Unparameterized(mn), i*, _)> ast ;
+       filename := <guarantee-extension(|"sdftst")> path
+    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdftst");
+       mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
+      result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
+      ; <write-to-src-gen(|project-path)> (filename, result)
+  
+  
+  //generate-signature =
+  //  collect-om(?Desugared(_));
+  //  map(sdf3-to-signature);
+  //  !Specification([Signature([Constructors(<id>)])])
+
+  //generate-signature-abstract =
+  //  generate-aterm(generate-signature)
+
+  //generate-signature-concrete:
+  //  (selected, position, ast, path, project-path) -> None()
+  //  with
+  //    filename := <guarantee-extension(|"generated.str")> path;
+  //    result   := <generate-signature; pp-stratego-string> selected
+  //    ; <write-to-src-gen(|project-path)> (<base-filename> filename, result)
+  
+  
+  // On-save handler
+  generate-all:
+    (selected, position, ast, path, project-path) -> <id>
+   // with
+    //  generate-esv-concrete; write-string-to-file
+   // with
+  //   generate-sdf-concrete; write-string-to-file
+    with
+     generate-sdf-concrete; write-string-to-file
+  //  with
+ //     generate-box-pp-concrete; write-string-to-file
+	
+  
+  rules
+  
+  pp-sdf-to-string =
+  sdf-desugar;
+  parenthesize-Sdf2;
+  sdf-ppfix;
+  ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
+  box2text-string(|80)
+
+  // When given a tuple (path, string) this writes string into path.
+  write-string-to-file =
+  	?(filename, string);
+  	if <dirname; readdir> filename then
+	    with(
+	      handle := <fopen> (filename, "w");
+	      <fputs> (string, handle);
+	      <fclose> handle;
+	      <refresh-workspace-file> filename
+	    )
+	  end
+	  
+  write-to-src-gen(|project-path):
+  	(filename, string) -> None()
+  with
+  	src-gen-path := <concat-strings> [project-path, "/src-gen"];
+  	  if <not( file-exists ; filemode ; isdir)> src-gen-path
+  	  then
+  	  	<mkdir> src-gen-path
+  	  end;
+  	filename' := <concat-strings> [src-gen-path, "/" ,filename];
+  	debug(!"file");
+  	<write-string-to-file> (filename', string)		
+ 	
+  	
+  
