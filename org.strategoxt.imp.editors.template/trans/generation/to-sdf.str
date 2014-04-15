@@ -23,7 +23,7 @@ rules
   		'module(unparameterized(mn), imports, exports)
   	with
   		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
-  		//debug(!"tokenize");
+  	//	debug(!"tokenize");
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections
   	with
@@ -208,12 +208,11 @@ rules
     	prods' := <map(prod-to-sdf)> prods
   
   sortcons-to-sdf(|chars, newline):
-  	SortCons(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
+  	SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
   	with
   		prod := <get-def> c;
-  		debug(!c);
   		p := <get-prod-elems(|chars, newline)> prod
-  		;debug(!"b")
+  		
   		
   		
   get-prod-elems(|chars, newline):
@@ -223,30 +222,34 @@ rules
   
   //Productions
   prod-to-sdf:
-  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbols*, a*) -> prod(symbols'*, symbol', a'*)
+  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
   	with
   		symbols'* := <term-translation> symbols*;
   		symbol' := <term-translation> symbol;
   		a'* := <term-translation> a*
   		
   prod-to-sdf:
-  	SdfProduction(symbol, symbols*, a*) -> prod(symbols'*, symbol', a'*)
+  	SdfProduction(symbol, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
   	with
   		symbols'* := <term-translation> symbols*;
   		symbol' := <term-translation> symbol;  		
   		a'* := <term-translation> a*
   		
-  		
-  
-  
-  
   //TemplateSection
   section-to-sdf(|chars, newline, kfr):
   	TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
   	with
   		p* := <map(prod-to-sdf(|chars, newline))> x;
   		//content complete prods
-  		inj* := [];
+  		cc* := < map(?TemplateProduction(<id>, _, _) <+ ?TemplateProductionWithCons(SortCons(<id>, Constructor(_)), _, _))
+             ; nub 
+             ; map(sort-to-contentcomplete)> x;	
+        if [] := cc*
+        then
+        	inj* := []
+        else
+          inj* := [context-free-syntax(<term-translation> cc*)]
+        end;
   		// lexical restrictions
   		let
 	  		chars-end-with-identifier-char =
@@ -460,12 +463,15 @@ rules //conversion of SDF3 terms into SDF2
    */
   string-to-sdf(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
-   // debug(!"stringtosdf");
+    debug(!"stringtosdf");
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<template-escape; double-quote>))
     
   
-
+ sort-to-contentcomplete:
+     sort@Sort(s) -> prod([sort("CONTENTCOMPLETE")], sort(s), attrs([sdf-cons(c)]))
+     with
+     	c := <double-quote> $[COMPLETION-[s]]
 
 template-escape =
     string-replace(|"\\", "\\\\");
