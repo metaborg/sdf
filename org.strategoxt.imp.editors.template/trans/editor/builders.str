@@ -18,9 +18,18 @@ imports
   
   
   rules
+  	
+  generate-sdf-abstract:
+    (selected, position, ast, path, project-path)	-> (filename, result)
+    with
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	filename := <guarantee-extension(|"sdf.aterm")> path;
+    	result := <to-sdf-test(|mn, i*)> selected
+    	//; <write-to-src-gen(|project-path, "-sdf.aterm")> (mn, result)
+    	
   	 	
   generate-sdf-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
+    (selected, position, ast, path, project-path) -> (filename, selected)
     with
        <?Module(Unparameterized(mn), i*, _)> ast ;
        filename := <guarantee-extension(|"sdftst")> path
@@ -29,7 +38,7 @@ imports
        i* := []
     with
       result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
-      ; <write-to-src-gen(|project-path)> (filename, result)
+      ; <write-to-src-gen(|project-path, ".sdf")> (mn, result)
   
   
   //generate-signature =
@@ -37,8 +46,13 @@ imports
   //  map(sdf3-to-signature);
   //  !Specification([Signature([Constructors(<id>)])])
 
-  //generate-signature-abstract =
-  //  generate-aterm(generate-signature)
+  generate-sig-concrete:
+    (selected, position, ast, path, project-path) -> None()
+    with
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	result   := <module-to-sig; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
+      ; <write-to-src-gen(|project-path, "-sig.str")> (mn, result)
+    	
 
   //generate-signature-concrete:
   //  (selected, position, ast, path, project-path) -> None()
@@ -56,7 +70,9 @@ imports
    // with
   //   generate-sdf-concrete; write-string-to-file
     with
-     generate-sdf-concrete; write-string-to-file
+     generate-sig-concrete
+    with
+     generate-sdf-concrete
   //  with
  //     generate-box-pp-concrete; write-string-to-file
 	
@@ -82,17 +98,37 @@ imports
 	    )
 	  end
 	  
-  write-to-src-gen(|project-path):
+  write-to-src-gen(|project-path, ext):
   	(filename, string) -> None()
   with
-  	src-gen-path := <concat-strings> [project-path, "/src-gen"];
+  	fn := <get-filename> filename;
+  	dir := <get-dir> filename;
+  	src-gen-path := <concat-strings> [project-path, "/src-gen/", dir];
+  	//debug(!"dir ");
   	  if <not( file-exists ; filemode ; isdir)> src-gen-path
   	  then
   	  	<mkdir> src-gen-path
   	  end;
-  	filename' := <concat-strings> [src-gen-path, "/" ,filename];
-  	debug(!"file");
+  	filename' := <concat-strings> [src-gen-path, "/" , fn, ext];
+  	//debug(!"file ");
   	<write-string-to-file> (filename', string)		
  	
+ 	
+ 	get-filename :
+ 		s -> s'
+ 		with
+ 			names := <string-tokenize(|['/'])> s;
+ 			//debug(!"names ");
+ 			s' := <last> names
+ 			
+ 	get-dir :
+ 		s -> s'
+ 		with
+ 			names := <string-tokenize(|['/'])> s;
+ 			names' := <at-last(![])> names;
+ 			s' := <concat-strings> names'
+ 			//;debug(!"dirnms ")
+ 			
+ 			
   	
   

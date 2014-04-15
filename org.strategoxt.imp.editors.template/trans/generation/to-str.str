@@ -1,0 +1,15 @@
+module generation/to-str
+
+imports
+  
+  include/TemplateLang
+  libstrc
+  
+rules
+  
+  to-str-import(|ext):
+    Imports(i*) -> Imports(<map(!Import(<to-str-module-name(|ext)>))> i*)
+    
+  to-str-module-name(|ext):
+    Module(Unparameterized(m)) -> <conc-strings> (m, ext)
+    

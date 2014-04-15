@@ -1,0 +1,107 @@
+module generation/to-sig
+
+imports
+  libstratego-lib
+  libstrc
+  include/TemplateLang
+ // utils/contract
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  
+  generation/to-str
+  
+rules
+	
+	module-to-sig:
+		Module(Unparameterized(m), i*, s*) -> Module(m', [is*, s'])
+		with
+			m'  := <conc-strings> (m, "-sig")
+		; is* := <map(to-str-import(|"-sig"))> i*
+	  ; s'  := Signature(<filter(section-to-sig)> s*)
+ 
+  section-to-sig:
+  	SDFSection(Sorts(s*)) -> Sorts(s'*)
+  	with
+  		s'* := <map(sort-to-sig)> s*
+  		
+  section-to-sig:
+    SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
+    where
+      sig* := <filter(lexical-to-sig); not(?[])> p*
+
+	sort-to-sig:
+    Sort(s) -> SortNoArgs(s)
+		
+	lexical-to-sig:
+    SdfProduction(Sort(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    where
+      <not(fetch-elem(?Reject()))> a*
+      
+    section-to-sig:
+    TemplateSection(t*) -> Constructors(sig*)
+    with
+      sig* := <filter(template-to-sig); not(?[])> t*
+      
+    template-to-sig:
+    TemplateProductionWithCons(SortCons(s, c), _, Attrs(a*)) -> <cons-to-decl> c
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
+      
+    template-to-sig:
+    TemplateProduction(Sort(s), t, Attrs(a*)) -> OpDeclInj(t')
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*;
+      temp-type := <get-type> t;
+      t' := <try(check-fun-type)> FunType(temp-type, SortType(s))
+      ; debug(!"type")
+      
+    cons-to-decl:
+    Constructor(c) -> OpDecl(c, t)
+    with
+      t := <get-type; try(check-fun-type)> c
+     
+  check-fun-type: FunType([], t) -> t
+      
+    /*   
+  section-to-sig:
+    SDFSection(context-free-syntax(p*)) -> Constructors(sig*)
+    where
+      sig* := <filter(cfg-to-sig); not(?[])> p*
+  
+  section-to-sig:
+    TemplateSection(t*) -> Constructors(sig*)
+    with
+      sig* := <filter(template-to-sig); not(?[])> t*
+  
+  
+  
+  lexical-to-sig:
+    SdfProduction(s, _, _, attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    where
+      <not(fetch-elem(?reject()))> a*
+    
+  cfg-to-sig:
+  	SdfProduction(_, c, _, attrs(a*)) -> <cons-to-decl> c
+    where
+    	<not(fetch-elem(?reject() + ?bracket()))> a*
+  
+  template-to-sig:
+    TemplateProduction(_, c, _, attrs(a*)) -> <cons-to-decl> c
+    where
+      <not(fetch-elem(?reject() + ?bracket()))> a*
+  
+  cons-to-decl:
+    Inj() -> OpDeclInj(t)
+    with
+      t := <get-type; try(check-fun-type)>
+  
+  cons-to-decl:
+    Constr(c) -> OpDecl(c, t)
+    with
+      t := <get-type; try(check-fun-type)> c
+     
+  check-fun-type: FunType([], t) -> t
+  */
+  
