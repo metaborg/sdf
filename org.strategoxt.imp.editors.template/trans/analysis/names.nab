@@ -2,9 +2,10 @@ module analysis/names
 
 imports 
   include/TemplateLang
-  //analysis/types
+  analysis/types
   libstrc
   
+ 
 namespaces
   
   Module Sort Constructor Label 
@@ -25,36 +26,45 @@ binding rules
   Module(Unparameterized(m)):
     imports Sort, Constructor from Module m
   
-  p@SdfProduction(SortCons(Sort(s), Constructor(c)), rhs, attrs): 
+  p@SdfProductionWithCons(SortCons(Sort(s), Constructor(c)), rhs, attrs): 
     defines non-unique Sort s 
     defines unique Constructor c
-   //   of type FunType(ty*, SortType(s))
+      of type FunType(ty*, SortType(s))
       of sort s
-      of def p
-   //   where rhs has type ty*
+      of def p 
+      where rhs has type ty*
   
   p@SdfProduction(Sort(s), rhs, attrs): 
     defines non-unique Sort s 
-   // defines unique Constructor Inj()
-   //   of type FunType(ty*, SortType(s))
-      of def p
-   //   where rhs has type ty*
+    //implicitly defines unique Constructor Inj()
+  //    of type FunType(ty*, SortType(s))
+   //   of def p
+  //    where rhs has type ty*
           
-  p@TemplateProduction(SortCons(Sort(s), Constructor(c)), t, attrs): 
+  p@TemplateProductionWithCons(SortCons(Sort(s), Constructor(c)), t, attrs): 
     defines non-unique Sort s 
     defines unique Constructor c
-   //   of type FunType(ty*, SortType(s))
+      of type FunType(ty*, SortType(s))
       of sort s
       of def p
-   //   where t has type ty*
+      where t has type ty*
   
   p@TemplateProduction(Sort(s), t, attrs): 
     defines non-unique Sort s 
-//    defines unique Constructor Inj()
-  //    of type FunType(ty*, SortType(s))
-      of def p
-   //   where t has type ty*
+  // implicitly defines unique Constructor Inj()
+   //   of type FunType(ty*, SortType(s))
+   //   of def p
+  //    where t has type ty*
   
+  
+  Placeholder(label, Sort(s), t, options):
+  	refers to Sort s
+  	
+ SortConsRef(Sort(s), Constructor(c)):
+  	refers to Sort s
+  	refers to Constructor c of sort s	
+  	
+  	
   // can productions scope labels instead?
  // Rhs(_): scopes Label
   

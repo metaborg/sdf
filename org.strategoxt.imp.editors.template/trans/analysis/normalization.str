@@ -40,7 +40,7 @@ imports
   	<+  result := SdfProduction(symbol, symbols*, a*)
   	
   	
-  normalize:
+  /*normalize:
   	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]
   	with
   		p* := < map(?TemplateProduction(<id>, _, _) <+ ?TemplateProductionWithCons(SortCons(<id>, Constructor(_)), _, _))
@@ -52,7 +52,7 @@ imports
         else
           contentcompletion* := [SDFSection(ContextFreeSyntax(p*))]
         end
-  
+  */
   
   normalize:
   	Module(m, i, sections) -> Module(m, i, sections')
@@ -60,11 +60,11 @@ imports
   		sections' := <flatten-list> sections
   
         
-  sort-to-contentcomplete:
+  /*sort-to-contentcomplete:
      sort@Sort(s) -> SdfProductionWithCons(SortCons(sort, Constructor($[COMPLETION-[s]])), [Sort("CONTENTCOMPLETE")], Attrs([sdf-cons(c)]))
      with
      	c := <double-quote> $[COMPLETION-[s]]
-     	
+   */  	
      	
   //normalize:
   	//SimpleRefGroup(SortCons(sort, Constructor(c))) -> <id> //SimpleGroup(prod')

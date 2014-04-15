@@ -1,0 +1,70 @@
+module analysis/types
+
+imports 
+  include/TemplateLang
+  libstrc
+  runtime/types/collect
+  //utils/contract
+  
+signature
+  constructors
+  	
+  	Inj : Constructor
+
+overlays
+  
+  SortType(t)    = ConstType(SortNoArgs(t))
+  OptionType(t)  = ConstType(Sort("Option", [SortNoArgs(t)]))
+  ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
+ 
+
+  
+rules
+  
+  create-type-task(|ctx) =
+    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)
+  ; type-is(|ctx)
+    
+  create-type-task(|ctx) =
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)
+  ; type-is(|ctx)
+    
+  type-of:
+    Placeholder(_, Sort(t), None(), _) -> SortType(t)
+
+  type-of:
+    Placeholder(_, Sort(t), Option(), _) -> OptionType(t)
+
+  type-of:
+    Placeholder(_, Sort(t), Plus(), _) -> ListType(t) 
+
+  type-of:
+    Placeholder(_, Sort(t), Star(), _) -> ListType(t) 
+    
+rules
+  
+  create-type-task(|ctx) =
+  	?Rhs(<filter(type-of <+ not(is-lexical-symbol); debug(!"untypable ") ; fail)>)
+  ; type-is(|ctx)	
+  	
+  type-of:
+    Sort(t) -> SortType(t)
+  
+  type-of:
+    Opt(s) -> OptionType(<type-of> s)
+  
+  type-of:
+    Iter(s) -> ListType(<type-of> s)
+  
+  type-of:
+    IterStar(s) -> ListType(<type-of> s)
+  
+  type-of:
+    IterSep(s, Lit(_)) -> ListType(<type-of> s)
+  
+  type-of:
+    IterStarSep(s, Lit(_)) -> ListType(<type-of> s)
+    
+rules
+	
+	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_))
