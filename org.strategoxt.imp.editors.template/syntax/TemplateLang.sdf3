@@ -45,9 +45,10 @@ TemplateOption.Tokenize = <tokenize : <StrCon>>
 
 templates
 //references to productions using sort.cons notation in priority specification
-Group.SimpleRefGroup = <<SortCons>>
-Group.ProdsRefGroup = <{<SortCons+>}>
-Group.AssocRefGroup = <{<Associativity> : <SortCons+>}>
+Group.SimpleRefGroup = <<SortConsRef>>
+Group.ProdsRefGroup = <{<SortConsRef+>}>
+Group.AssocRefGroup = <{<Associativity> : <SortConsRef+>}>
+SortConsRef.SortConsRef = <<Symbol>.<Constructor>>
 
 templates 
 //grammars
@@ -59,8 +60,9 @@ Grammar.LexicalSyntax = <lexical syntax <SdfProduction*>> {prefer}
 Grammar.ContextFreeSyntax = <context-free syntax <SdfProduction*>> {prefer}
 
 // syntactic sugar for SDF
-SdfProduction.SdfProduction = <<Symbol> = <Symbols> <Attributes>> 
-SdfProduction.SdfProductionWithCons = <<SortCons> = <Symbols> <Attributes>>
+SdfProduction.SdfProduction = <<Symbol> = <RHS> <Attributes>> 
+SdfProduction.SdfProductionWithCons = <<SortCons> = <RHS> <Attributes>>
+RHS.Rhs = <<Symbols>>
 
 // template productions
 TemplateProduction.TemplateProduction = <<Symbol> = <Template> <Attributes>>
@@ -71,6 +73,7 @@ TemplateProduction.TemplateProductionWithCons = <<SortCons> = <Template> <Attrib
 Constructor.Constructor = <<IdCon>>
 
 SortCons.SortCons = <<Symbol>.<Constructor>>
+
 
 // placeholders
 TemplatePart1 = <\<<Placeholder>\>> {bracket}
