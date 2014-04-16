@@ -30,9 +30,18 @@ menus
       action: "Selection"          = debug-task-selection (openeditor) (meta)
     end
   
-  menu: "Generation"
+   menu: "Generate"
+   	submenu: "SDF"
+      action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime) (meta)
+      action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime) (meta)
+    end
     
-	  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
+    submenu: "Signature"
+      action: "Generate Signature (abstract, for selection)" = generate-sig-abstract (openeditor) (realtime) (meta)
+      action: "Generate Signature (concrete, for selection)" = generate-sig-concrete (openeditor) (realtime) (meta)
+      
+     end
+	/*  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
 	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
 	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
 	  action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
@@ -41,3 +50,4 @@ menus
 	  action: "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
 	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract (openeditor) (realtime)
 	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete (openeditor) (realtime)
+*/
