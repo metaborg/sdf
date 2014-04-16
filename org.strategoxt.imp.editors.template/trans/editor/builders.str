@@ -70,7 +70,7 @@ imports
    // with
   //   generate-sdf-concrete; write-string-to-file
     with
-     generate-sig-concrete
+    	generate-sig-concrete
     with
      generate-sdf-concrete
   //  with
@@ -104,13 +104,13 @@ imports
   	fn := <get-filename> filename;
   	dir := <get-dir> filename;
   	src-gen-path := <concat-strings> [project-path, "/src-gen/", dir];
-  	//debug(!"dir ");
+  	debug(!"dir ");
   	  if <not( file-exists ; filemode ; isdir)> src-gen-path
   	  then
   	  	<mkdir> src-gen-path
   	  end;
   	filename' := <concat-strings> [src-gen-path, "/" , fn, ext];
-  	//debug(!"file ");
+  	debug(!"file ");
   	<write-string-to-file> (filename', string)		
  	
  	
@@ -118,7 +118,7 @@ imports
  		s -> s'
  		with
  			names := <string-tokenize(|['/'])> s;
- 			//debug(!"names ");
+ 			debug(!"names ");
  			s' := <last> names
  			
  	get-dir :
@@ -127,7 +127,7 @@ imports
  			names := <string-tokenize(|['/'])> s;
  			names' := <at-last(![])> names;
  			s' := <concat-strings> names'
- 			//;debug(!"dirnms ")
+ 			;debug(!"dirnms ")
  			
  			
   	
