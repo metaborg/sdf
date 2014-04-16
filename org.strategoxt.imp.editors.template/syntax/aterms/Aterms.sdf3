@@ -17,7 +17,7 @@ templates
 	ATerm.Int = <<IntCon>>
 	ATerm.Real = <<RealCon>>
 	ATerm.Fun = <<AFun>>
-	ATerm.Appl = <<AFun> ( <ATerm*; separator=","> )>
+	ATerm.Appl = <<AFun> ( <ATerm+; separator=","> )>
 	ATerm.PlaceHolder = < \< <ATerm> \> >
 	ATerm.List = < [<ATerm*; separator=",">] >
 	ATerm.Annotated = <<ATerm> <Annotation> >

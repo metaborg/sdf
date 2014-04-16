@@ -1,0 +1,10 @@
+module grammar/Grammars
+imports layout/Comments
+
+exports
+  context-free syntax
+    "(" "/" ")"     -> Grammar {cons("Empty")}
+    "(" Grammar ")" -> Grammar {bracket}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}

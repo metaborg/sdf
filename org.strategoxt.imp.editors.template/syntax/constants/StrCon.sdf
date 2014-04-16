@@ -1,0 +1,10 @@
+module constants/StrCon
+exports
+  lexical syntax
+    "\\n"                        -> StrChar {cons("Newline")}
+    "\\t"                        -> StrChar {cons("Tab")}
+    "\\\""                       -> StrChar {cons("Quote")}
+    "\\\\"                       -> StrChar {cons("Backslash")}
+    "\\" a:[0-9] b:[0-9] c:[0-9] -> StrChar {cons("Decimal")}
+    ~[\0-\31\n\t\"\\]            -> StrChar {cons("Normal")}
+    [\"] chars:StrChar* [\"]     -> StrCon  {cons("Default")}

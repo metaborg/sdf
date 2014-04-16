@@ -2,6 +2,7 @@ module labels/Labels
 
 imports kernel/Kernel 
         constants/StrCon
+        constants/IdentifierCon
  
 templates
 

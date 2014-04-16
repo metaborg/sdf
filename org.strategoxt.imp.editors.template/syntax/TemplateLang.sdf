@@ -45,9 +45,10 @@ exports
     CONTENTCOMPLETE -> TemplateOption     {cons("COMPLETION-TemplateOption")}
 
   context-free syntax
-    SortCons                           -> Group {cons("SimpleRefGroup")}
-    "{" SortCons+ "}"                  -> Group {cons("ProdsRefGroup")}
-    "{" Associativity ":" SortCons+ "}" -> Group {cons("AssocRefGroup")}
+    SortConsRef                            -> Group       {cons("SimpleRefGroup")}
+    "{" SortConsRef+ "}"                   -> Group       {cons("ProdsRefGroup")}
+    "{" Associativity ":" SortConsRef+ "}" -> Group       {cons("AssocRefGroup")}
+    Symbol "." Constructor                 -> SortConsRef {cons("SortConsRef")}
 
   context-free syntax
     CONTENTCOMPLETE -> Group {cons("COMPLETION-Group")}
@@ -56,8 +57,9 @@ exports
     "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
     "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
     "context-free" "syntax" SdfProduction*                                -> Grammar            {cons("ContextFreeSyntax"), prefer}
-    Symbol "=" Symbols Attributes                                         -> SdfProduction      {cons("SdfProduction")}
-    SortCons "=" Symbols Attributes                                       -> SdfProduction      {cons("SdfProductionWithCons")}
+    Symbol "=" RHS Attributes                                             -> SdfProduction      {cons("SdfProduction")}
+    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
+    Symbols                                                               -> RHS                {cons("Rhs")}
     Symbol "=" Template Attributes                                        -> TemplateProduction {cons("TemplateProduction")}
     SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
     IdCon                                                                 -> Constructor        {cons("Constructor")}

@@ -2,6 +2,7 @@ module modules/Modules
 
 imports kernel/Kernel 
         renaming/Renaming
+        symbols/Symbols
  
 context-free start-symbols 
   Module

@@ -1,7 +1,7 @@
-module layout/Whitespace
-
-lexical syntax 
+module layout/Whitespace 
+    
+lexical syntax    
     LAYOUT = [\ \t\n\r]
 
 context-free restrictions
-    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\ \t\n\r] 

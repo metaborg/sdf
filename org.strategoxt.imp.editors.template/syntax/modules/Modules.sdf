@@ -1,0 +1,38 @@
+module modules/Modules
+imports kernel/Kernel renaming/Renaming
+
+exports
+  context-free start-symbols
+    Module
+
+  lexical syntax
+    [A-Za-z0-9\_\-]+        -> ModuleWord {cons("Word")}
+    ModuleWord              -> ModuleId   {cons("Leaf")}
+    "/" ModuleId            -> ModuleId   {cons("Root")}
+    ModuleWord "/" ModuleId -> ModuleId   {cons("Path")}
+
+  context-free syntax
+    Module*                                  -> Definition 
+    "module" ModuleName ImpSection* Sections -> Module     {cons("Module")}
+    Section*                                 -> Sections   
+    Grammar                                  -> Section    {cons("SDFSection")}
+    ModuleId                                 -> ModuleName {cons("Unparameterized")}
+    ModuleId "[" params:Symbols "]"          -> ModuleName {cons("Parameterized")}
+    "imports" list:Imports                   -> ImpSection {cons("Imports")}
+    Import*                                  -> Imports    
+    ModuleName                               -> Import     {cons("Module")}
+    "(" Import ")"                           -> Import     {bracket}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Definition {cons("COMPLETION-Definition")}
+    CONTENTCOMPLETE -> Module     {cons("COMPLETION-Module")}
+    CONTENTCOMPLETE -> Sections   {cons("COMPLETION-Sections")}
+    CONTENTCOMPLETE -> Section    {cons("COMPLETION-Section")}
+    CONTENTCOMPLETE -> ModuleName {cons("COMPLETION-ModuleName")}
+    CONTENTCOMPLETE -> ImpSection {cons("COMPLETION-ImpSection")}
+    CONTENTCOMPLETE -> Imports    {cons("COMPLETION-Imports")}
+    CONTENTCOMPLETE -> Import     {cons("COMPLETION-Import")}
+
+  lexical restrictions
+    ModuleWord -/- [A-Za-z0-9\_\-]
+    ModuleId -/- [\/]

@@ -1,11 +1,13 @@
 module restrictions/Restrictions
-
-imports characterclass/CC
+ 
+imports characterclass/CC 
+		characterclass/Character-Class
+		symbols/Symbols 
 
 templates
-
+  
 Lookahead.CharClass = <<CharClass>>
-Lookahead.Seq = <<head:CharClass>.<tail:Lookaheads>>
+Lookahead.Seq = <<CharClass>.<Lookaheads>>  
 
 Lookaheads.Single = <<Lookahead>>
 //"left":Lookaheads "|" "right":Lookaheads -> Lookaheads  {cons("alt"),right}
@@ -14,15 +16,15 @@ Lookaheads = <(<Lookaheads>)> {bracket}
 Lookaheads.List = <[[<list:Lookahead*; separator=",">]]>
 
 Restriction.Follow = <<Symbols> -/- <Lookaheads>>
-
+ 
 Restrictions = <<list:Restriction*>>
  
 Grammar.Restrictions = <restrictions <Restrictions>>
 
 Attribute.Reject = <reject>
 Attribute.Prefer = <prefer>
-Attribute.Avoid = <avoid>
+Attribute.Avoid = <avoid> 
 
 context-free priorities    
-    Lookahead.Seq >
+    Lookahead.Seq > 
     Lookaheads.Alt

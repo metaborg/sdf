@@ -1,0 +1,30 @@
+module priority/Priority
+imports kernel/Kernel
+
+exports
+  context-free syntax
+    "left"                                -> Associativity     {cons("Left")}
+    "right"                               -> Associativity     {cons("Right")}
+    "non-assoc"                           -> Associativity     {cons("NonAssoc")}
+    "assoc"                               -> Associativity     {cons("Assoc")}
+    "bracket"                             -> Attribute         {cons("Bracket")}
+    Associativity                         -> Attribute         {cons("Assoc")}
+    "<" {NatCon ","}+ ">"                 -> ArgumentIndicator {cons("Default")}
+    Group ArgumentIndicator               -> Group             {cons("WithArguments"), non-assoc}
+    Group "."                             -> Group             {cons("NonTransitive"), non-assoc}
+    Production                            -> Group             {cons("SimpleGroup")}
+    "{" Productions "}"                   -> Group             {cons("ProdsGroup")}
+    "{" Associativity ":" Productions "}" -> Group             {cons("AssocGroup")}
+    {Group ">"}+                          -> Priority          {cons("Chain")}
+    Group Associativity Group             -> Priority          {cons("Assoc")}
+    {Priority ","}*                       -> Priorities        
+    "priorities" Priorities               -> Grammar           {cons("Priorities")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Associativity     {cons("COMPLETION-Associativity")}
+    CONTENTCOMPLETE -> Attribute         {cons("COMPLETION-Attribute")}
+    CONTENTCOMPLETE -> ArgumentIndicator {cons("COMPLETION-ArgumentIndicator")}
+    CONTENTCOMPLETE -> Group             {cons("COMPLETION-Group")}
+    CONTENTCOMPLETE -> Priority          {cons("COMPLETION-Priority")}
+    CONTENTCOMPLETE -> Priorities        {cons("COMPLETION-Priorities")}
+    CONTENTCOMPLETE -> Grammar           {cons("COMPLETION-Grammar")}

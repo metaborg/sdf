@@ -1,0 +1,21 @@
+module layout/Comments
+imports layout/Whitespace
+
+exports
+  lexical syntax
+    "%%" line:~[\n\r]* [\n\r] | EOF    -> LAYOUT      {category("Comment")}
+    "%" content:~[\%\n\r]+ "%"         -> LAYOUT      {category("Comment")}
+    "/*" ( ~[\*] | CommentChar )* "*/" -> LAYOUT      
+    [\*]                               -> CommentChar 
+    "//" ~[\n\r]* [\n\r] | EOF         -> LAYOUT      
+                                       -> EOF         
+
+  lexical restrictions
+    CommentChar -/- [\/]
+    EOF -/- ~[]
+
+  context-free restrictions
+    LAYOUT? -/- [\%]
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\/] . [\/]
+    LAYOUT? -/- [\/] . [\*]
