@@ -1,0 +1,128 @@
+module generation/to-esv
+
+imports
+  include/TemplateLang
+  lib/EditorService
+  templatelang/utils/attributes
+  templatelang/utils/misc
+  analysis/desugar
+  templatelang/expand
+  // templatelang/sdf-to-template
+  generation/to-string
+
+rules
+
+  template-sections-to-esv =
+    filter(template-section-to-esv)
+
+  template-section-to-esv:
+    TemplateSection(x) -> Completions("", x')
+    where
+      x' := <fail> // <filter(template-to-completion-template)> x
+
+  // template-section-to-esv:
+  //   SDFSection(context-free-syntax(x)) -> Completions("", x')
+  //   where
+  //     x' := <filter(templatelang-sdf-prod-to-template-prod;
+  //                   template-to-completion-template)> x
+
+rules
+
+//   template-to-completion-template:
+//     prod@TemplateProduction(sort, cons, SingleLineTemplate(_), attrs(a*)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* ]|
+//     where
+//       not(<?deprecated() + ?deprecated(_) + ?reject()> a*)
+//     with
+//       elem* := <expand-single-line-template-production> prod;
+//       part* := <filter(template-element-to-esv);
+//                 template-to-completion-template-helper> elem*;
+//       prefix := <build-prefix> part*
+//     where
+//       <accept-template-parts(|sort)> part*
+// 
+//   template-to-completion-template:
+//     prod @TemplateProduction(sort, cons, Template(_), attrs(a*)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* (blank) ]|
+//     where
+//       not(<?deprecated() + ?deprecated(_) + ?reject()> a*)
+//     with
+//       line* := <expand-multi-line-template-production> prod;
+//       part* := <filter(template-line-to-esv);
+//                 remove-cursor-except-first;
+//                 separate-by(|String("\n"));
+//                 template-to-completion-template-helper> line*;
+//       prefix := <build-prefix> part*
+//     where
+//       <accept-template-parts(|sort)> part*
+
+  template-to-completion-template-helper =
+    flatten-list;
+    concatenate-consecutive-strings;
+    map(try(String(templatelang-escape)))
+
+  build-prefix =
+    map(template-element-to-string);
+    concat-strings;
+    string-replace(|"\\n", " ");
+    string-replace(|"\\t", " ");
+    string-as-chars(listbu(try( \[' ', ' ' | t] -> [' ' | t]\ )));
+    !String(<id>)
+
+  accept-template-parts(|sort) =
+    // not acceptable are:
+    //  * empty templates
+    //  * injections (i.e., a single element that isn't String(_))
+    ?[_, _ | _] + ?[String(_) | _]
+
+rules
+
+  template-line-to-esv:
+    Line([Layout(x), Placeholder(label, _, <Option() + Star()>, option*)]) ->
+      <spaces-to-tabs> [String(x), Cursor()]
+      where
+        <not(one(?Text(_)))> option*
+
+  template-line-to-esv:
+    Line(elem*) -> <filter(template-element-to-esv); not(?[]); spaces-to-tabs> elem*
+
+  spaces-to-tabs =
+    try([String(string-replace(|"  ", "\t")) | id])
+
+  // Any placeholder with title results in a placeholder with that title.
+  template-element-to-esv:
+    Placeholder(label, Sort(sort), _, option*) ->
+      PlaceholderWithSort($[<[text]:], sort)
+      where
+        <one(?Text(text))> option*
+
+  // A and A+ result in a placeholder containing the shortest expansion of A.
+  // template-element-to-esv:
+  //   placeholder @ Placeholder(label, sort(sort), <None() + Plus()>, option*) ->
+  //     PlaceholderWithSort($[<[text]:], sort)
+  //   where
+  //     <not(one(?Text(_) + ?Hide()))> option*
+  //   where
+  //     text := <expand-template-element;
+  //              map(template-element-to-string);
+  //              concat-strings
+  //              <+ !sort> [placeholder]
+
+  // A? and A* result in a 0-length placeholder.
+  template-element-to-esv:
+    Placeholder(label, Sort(sort), <Option() + Star()>, option*) ->
+      PlaceholderWithSort("<:", sort)
+    where
+      <not(one(?Text(_)))> option*
+
+  template-element-to-esv:
+    Layout(x) -> String(x)
+
+  template-element-to-esv:
+    String(_) -> <id>
+
+  remove-cursor-except-first =
+    [[id, Cursor()] | remove-cursor] <+ [id | remove-cursor-except-first] <+ []
+
+  remove-cursor = 
+    ?[[_, Cursor()] | <remove-cursor>] <+ [id | remove-cursor] <+ []
