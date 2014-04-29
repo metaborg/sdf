@@ -1,6 +1,7 @@
 module symbols/Start-Symbols
 
 imports kernel/Kernel
+symbols/Symbols
  
 templates
 Grammar.KernelStartSymbols = <start-symbols <Symbols>>
