@@ -10,6 +10,7 @@ imports
   templatelang/utils/misc
   templatelang/utils/tokenize
   analysis/names
+  lib/runtime/nabl/utils
 
 
 
@@ -202,7 +203,7 @@ rules
     	prods' := <map(prod-to-sdf)> prods
     
   group-to-sdf(|chars, newline):
-    AssocGroup(a, prods) -> assoc-group(a, prods')
+    AssocGroup(a, prods) -> assoc-group(a', prods')
     with
     	a' := <term-translation> a;
     	prods' := <map(prod-to-sdf)> prods
@@ -213,7 +214,8 @@ rules
   		prod := <get-def> c;
   		p := <get-prod-elems(|chars, newline)> prod
   		
-  		
+  get-prod-elems(|chars, newline):
+  	SdfProductionWithCons(s, Rhs(symbols*), a*) -> <term-translation> symbols*		
   		
   get-prod-elems(|chars, newline):
   	TemplateProductionWithCons(s, t, a) -> result
@@ -346,8 +348,8 @@ rules
      		case ?None() : lines' := lines
      	end     	
      with
-     	debug(!"a");
-     	debug(!lines');
+     	//debug(!"a");
+     //	debug(!lines');
      	elems := <map(line-to-sdf(|chars))> lines'
     	*/
  
@@ -378,6 +380,9 @@ rules //conversion of SDF3 terms into SDF2
   //special constructors conversion		
   special-term-to-sdf:
   	IterSep(sort, lit) -> iter-sep(sort, lit)
+  	
+  special-term-to-sdf:
+  	Right() -> right()
   
   special-term-to-sdf:
   	IterStar(sort) -> iter-star(sort)
@@ -463,7 +468,7 @@ rules //conversion of SDF3 terms into SDF2
    */
   string-to-sdf(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
-    debug(!"stringtosdf");
+    //debug(!"stringtosdf");
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<template-escape; double-quote>))
     
@@ -478,5 +483,5 @@ template-escape =
     string-replace(|"\t", "\\t");
     string-replace(|"\r", "\\r");
     string-replace(|"\n", "\\n");
-    string-replace(|"'", "\\'");
+    //string-replace(|"'", "\\'");
     string-replace(|"\"", "\\\"")

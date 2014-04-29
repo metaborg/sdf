@@ -30,6 +30,15 @@ rules
     SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
     where
       sig* := <filter(lexical-to-sig); not(?[])> p*
+      
+  
+      
+  section-to-sig:
+  	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
+  	where
+  		sig* := <filter(cfg-to-sig); not(?[])> p*
+  		
+ 
 
 	sort-to-sig:
     Sort(s) -> SortNoArgs(s)
@@ -38,6 +47,19 @@ rules
     SdfProduction(Sort(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
     where
       <not(fetch-elem(?Reject()))> a*
+     
+    cfg-to-sig:
+    SdfProductionWithCons(SortCons(s,c), _, Attrs(a*)) -> <cons-to-decl> c
+    where
+    	<not(fetch-elem(?Reject() + ?Bracket()))> a*
+    	
+    cfg-to-sig:
+    SdfProduction(Sort(s), rhs, Attrs(a*)) -> OpDeclInj(t')
+    where
+    	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+    	rhs-type := <get-type> rhs;
+    	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
+    
       
     section-to-sig:
     TemplateSection(t*) -> Constructors(sig*)
@@ -55,7 +77,7 @@ rules
       <not(fetch-elem(?Reject() + ?Bracket()))> a*;
       temp-type := <get-type> t;
       t' := <try(check-fun-type)> FunType(temp-type, SortType(s))
-      ; debug(!"type")
+     
       
     cons-to-decl:
     Constructor(c) -> OpDecl(c, t)

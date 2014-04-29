@@ -33,13 +33,19 @@ imports
         a'* := [sdf-cons(c) , a*]
      	
   normalize:
-  	Prod(symbols*, symbol, a*) -> result
+  	Prod(symbols*, symbol, Attrs(a*)) -> result
   	with
   		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(symbol, c), symbols*, a*)
-  	<+  result := SdfProduction(symbol, symbols*, a*)
+  		result := SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), Attrs(a*))
+  	<+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*)) 
+  
+  //normalize reductive productions section to productive productions section
+  normalize:
+  	Contextfree(p*) -> ContextFreeSyntax(p*)
   	
-  	
+  normalize:
+  	Lexical(p*) -> LexicalSyntax(p*)
+  	  	
   /*normalize:
   	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]
   	with
@@ -52,13 +58,13 @@ imports
         else
           contentcompletion* := [SDFSection(ContextFreeSyntax(p*))]
         end
-  */
+  
   
   normalize:
   	Module(m, i, sections) -> Module(m, i, sections')
   	with
   		sections' := <flatten-list> sections
-  
+*/  
         
   /*sort-to-contentcomplete:
      sort@Sort(s) -> SdfProductionWithCons(SortCons(sort, Constructor($[COMPLETION-[s]])), [Sort("CONTENTCOMPLETE")], Attrs([sdf-cons(c)]))

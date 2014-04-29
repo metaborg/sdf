@@ -1,0 +1,159 @@
+module analysis/names-hack
+
+imports
+
+  include/TemplateLang
+  analysis/names
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  lib/runtime/properties/-
+  
+rules
+	
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProductionWithCons(
+         SortCons(
+           Cf(Sort(s))
+         , Constructor(c)
+         )
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProductionWithCons(
+           SortCons(
+             Cf(Sort(id))
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+      
+      
+  nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProductionWithCons(
+         SortCons(
+           Lex(Sort(s))
+         , Constructor(c)
+         )
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProductionWithCons(
+           SortCons(
+             Lex(Sort(id))
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+      
+   nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProductionWithCons(
+         SortCons(Sort(s), Constructor(c))
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProductionWithCons(
+           SortCons(
+             Sort(id)
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+   nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProduction(Sort(s), rhs, attrs)
+    ; (id
+       ; SdfProduction(
+           Sort(
+             nabl-store-props-raw(
+             | partition__
+             , [Prop(NablProp_def(), p, [])]
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+   nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@TemplateProductionWithCons(
+         SortCons(Sort(s), Constructor(c))
+       , t
+       , attrs
+       )
+    ; (id
+       ; TemplateProductionWithCons(
+           SortCons(
+             Sort(id)
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [Prop(NablProp_def(), p, [])
+               , Prop(NablProp_sort(), s, [])]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+   nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@TemplateProduction(Sort(s), t, attrs)
+    ; (id
+       ; TemplateProduction(
+           Sort(
+             nabl-store-props-raw(
+             | partition__
+             , [Prop(NablProp_def(), p, [])]
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+rules // Library
+	
+  nabl-store-props-raw(|partition, prop*):
+  	name -> name
+  	where
+  	  uri := <nabl-collect-def; nabl-uri> name
+	  ; <map(nabl-store-prop-raw(|partition, uri, name))> prop*
+	
+  nabl-store-prop-raw(|partition, uri, name):
+    Prop(kind, prop, dep*) -> <new-prop(|partition, uri, kind, prop)> name
+
+    	

@@ -18,15 +18,15 @@ overlays
   ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
  
 
-  
+
 rules
   
   create-type-task(|ctx) =
-    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)
+    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)//; debug(!"singleline")
   ; type-is(|ctx)
     
   create-type-task(|ctx) =
-    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)//; debug(!"multiline")
   ; type-is(|ctx)
     
   type-of:
@@ -49,6 +49,12 @@ rules
   	
   type-of:
     Sort(t) -> SortType(t)
+    
+  type-of:
+  	Lex(Sort(t)) -> SortType(t)
+  
+  type-of:
+  	Cf(Sort(t)) -> SortType(t)
   
   type-of:
     Opt(s) -> OptionType(<type-of> s)
@@ -67,4 +73,4 @@ rules
     
 rules
 	
-	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_))
+	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_)) 

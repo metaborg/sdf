@@ -1,0 +1,49 @@
+module analysis/name-constraints
+
+imports
+
+  include/TemplateLang
+  analysis/names
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  
+  strategies
+  	
+  	nabl-check-disable-duplicate(|uri, ns) = id
+  	nabl-check-disable-unresolved = id
+  	
+  	
+  	nabl-constraint(|ctx):
+  		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
+  		where
+  			<has-annotation(?Use(task))> c;
+  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+  			
+  	
+  	nabl-constraint(|ctx):
+  		p@Placeholder(label, Sort(s), t, options) -> <fail>
+  		where
+  			<has-annotation(?Use(task))> s;
+  			msg := $[Unresolved reference to sort '[s]'];
+  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> p
+  			
+  	nabl-constraint(|ctx):
+  		 Sort(s) -> <fail>
+  		where
+  			<has-annotation(?Use(task))> s;
+  			msg := $[Unresolved reference to sort '[s]'];
+  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
+  	
+  			
+   /* nabl-constraint(|ctx):
+  		SdfProductionWithCons(SortCons(Sort(s), Constructor(c)), rhs, attrs) -> <fail>
+  		where
+  			task := <nabl-lookup-local(|ctx)> c;
+  			debug(!"a");
+  			msg := $[Duplicated definition for constructor [c]];
+  			<task-create-error-on-triggers(|ctx, [Multiple(task)], msg)> c
+  			
+  		*/	
+  	
