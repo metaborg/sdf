@@ -48,7 +48,7 @@ templates
 Group.SimpleRefGroup = <<SortConsRef>>
 Group.ProdsRefGroup = <{<SortConsRef+>}>
 Group.AssocRefGroup = <{<Associativity> : <SortConsRef+>}>
-SortConsRef.SortConsRef = <<Symbol>.<Constructor>>
+SortConsRef.SortConsRef = <<Sort>.<Constructor>>
 
 templates 
 //grammars
@@ -58,21 +58,24 @@ Section.TemplateSection = <templates <TemplateProduction*>>
 // because of ambiguity. "X = Y -> Z": is it "X = Y" "Z" or "X =" "Y -> Z"?
 Grammar.LexicalSyntax = <lexical syntax <SdfProduction*>> {prefer}
 Grammar.ContextFreeSyntax = <context-free syntax <SdfProduction*>> {prefer}
+Grammar.Kernel = <syntax <SdfProduction*>> {prefer}
 
 // syntactic sugar for SDF
-SdfProduction.SdfProduction = <<Symbol> = <RHS> <Attributes>> 
+SdfProduction.SymbolSdfProduction = <<Symbol> = <RHS> <Attributes>> 
+SdfProduction.SortKernelProduction = <<KernelSort> = <RHS> <Attributes>> {prefer}
+SdfProduction.SdfProduction = <<Sort> = <RHS> <Attributes>> {prefer}
 SdfProduction.SdfProductionWithCons = <<SortCons> = <RHS> <Attributes>>
 RHS.Rhs = <<Symbols>>
 
 // template productions
-TemplateProduction.TemplateProduction = <<Symbol> = <Template> <Attributes>>
+TemplateProduction.TemplateProduction = <<Sort> = <Template> <Attributes>>
 
 // template productions Sort.Cons = ...
 TemplateProduction.TemplateProductionWithCons = <<SortCons> = <Template> <Attributes>>
 
 Constructor.Constructor = <<IdCon>>
 
-SortCons.SortCons = <<Symbol>.<Constructor>>
+SortCons.SortCons = <<Sort>.<Constructor>>
 
 
 // placeholders
@@ -129,7 +132,7 @@ PlaceholderOption.Text = <text = <StrCon>>
     <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    "\n" = [\r][\n] //this rule is not allowed in SDF3 yet
+    "\n" = [\r\n] //this rule is not allowed in SDF3 yet
     TemplateLayout =  [\ \t]+
     
     TemplateString1 = (~[\\\<\>\ \t\r\n] | Backslash)+

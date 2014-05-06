@@ -1,5 +1,5 @@
 module basic/Basic
-imports kernel/Kernel
+imports kernel/Kernel sorts/Sorts
 
 exports
   context-free syntax
@@ -10,6 +10,9 @@ exports
     "<" Symbol "-CF" ">"                -> Symbol  {cons("Cf")}
     "<" Symbol "-LEX" ">"               -> Symbol  {cons("Lex")}
     "<" Symbol "-VAR" ">"               -> Symbol  {cons("Varsym")}
+    "<" Sort "-CF" ">"                -> KernelSort  {cons("SortCf")}
+    "<" Sort "-LEX" ">"               -> KernelSort  {cons("SortLex")}
+    "<" Sort "-VAR" ">"               -> KernelSort  {cons("SortVarsym")}
     "LAYOUT"                            -> Symbol  {cons("Layout")}
 
   context-free syntax

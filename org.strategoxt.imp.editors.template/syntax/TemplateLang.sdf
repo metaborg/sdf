@@ -48,22 +48,26 @@ exports
     SortConsRef                            -> Group       {cons("SimpleRefGroup")}
     "{" SortConsRef+ "}"                   -> Group       {cons("ProdsRefGroup")}
     "{" Associativity ":" SortConsRef+ "}" -> Group       {cons("AssocRefGroup")}
-    Symbol "." Constructor                 -> SortConsRef {cons("SortConsRef")}
+    Sort "." Constructor                   -> SortConsRef {cons("SortConsRef")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Group {cons("COMPLETION-Group")}
+    CONTENTCOMPLETE -> Group       {cons("COMPLETION-Group")}
+    CONTENTCOMPLETE -> SortConsRef {cons("COMPLETION-SortConsRef")}
 
   context-free syntax
     "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
     "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
     "context-free" "syntax" SdfProduction*                                -> Grammar            {cons("ContextFreeSyntax"), prefer}
-    Symbol "=" RHS Attributes                                             -> SdfProduction      {cons("SdfProduction")}
+    "syntax" SdfProduction*                           					  -> Grammar            {cons("Kernel"), prefer}
+    Symbol "=" RHS Attributes                                             -> SdfProduction      {cons("SymbolSdfProduction")}
+    KernelSort "=" RHS Attributes                                         -> SdfProduction      {cons("SortKernelProduction"), prefer}
+    Sort "=" RHS Attributes                                               -> SdfProduction      {cons("SdfProduction"), prefer}
     SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
     Symbols                                                               -> RHS                {cons("Rhs")}
-    Symbol "=" Template Attributes                                        -> TemplateProduction {cons("TemplateProduction")}
+    Sort "=" Template Attributes                                          -> TemplateProduction {cons("TemplateProduction")}
     SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
     IdCon                                                                 -> Constructor        {cons("Constructor")}
-    Symbol "." Constructor                                                -> SortCons           {cons("SortCons")}
+    Sort "." Constructor                                                  -> SortCons           {cons("SortCons")}
     "<" Placeholder ">"                                                   -> TemplatePart1      {bracket}
     "[" Placeholder "]"                                                   -> TemplatePart2      {bracket}
     PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder        {cons("Placeholder")}
@@ -86,6 +90,7 @@ exports
     CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
     CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
     CONTENTCOMPLETE -> SdfProduction      {cons("COMPLETION-SdfProduction")}
+    CONTENTCOMPLETE -> RHS                {cons("COMPLETION-RHS")}
     CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
     CONTENTCOMPLETE -> Constructor        {cons("COMPLETION-Constructor")}
     CONTENTCOMPLETE -> SortCons           {cons("COMPLETION-SortCons")}
@@ -117,7 +122,7 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-  	[\n\r]							   -> "\n"
+    [\r\n]                             -> "\n"            
     [\ \t]+                            -> TemplateLayout  
     ( ~[\\\<\>\ \t\r\n] | Backslash )+ -> TemplateString1 
     ( ~[\\\[\]\ \t\r\n] | Backslash )+ -> TemplateString2 
