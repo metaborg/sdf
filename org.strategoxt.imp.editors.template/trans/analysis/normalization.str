@@ -19,25 +19,45 @@ imports
   	NoAttrs() -> Attrs([])
   	
   normalize:
-    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbols*, Attrs(a*)) ->
-      SdfProductionWithCons(SortCons(symbol, Constructor(cons)), symbols*, Attrs(a'*))
+    SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a*)) ->
+      SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a'*))
     with
     	c   := <double-quote> cons; 
         a'* := [sdf-cons(c) , a*]
     
   normalize: 
-  	TemplateProductionWithCons(SortCons(symbol, Constructor(cons)), template, Attrs(a*)) ->
-      TemplateProductionWithCons(SortCons(symbol, Constructor(cons)), template, Attrs(a'*))
+  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a*)) ->
+      TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a'*))
      with
      	c   := <double-quote> cons; 
         a'* := [sdf-cons(c) , a*]
-     	
+  
+  //regular sdf2 productions become sdf3 productions with or without constructors     	
+  normalize:
+  	Prod(symbols*, Sort(s), Attrs(a*)) -> result
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		result := SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*))
+  	<+  result := SdfProduction(s, Rhs(symbols*), Attrs(a*)) 
+  
+  //sdf2 productions with complex symbols in the left hand side become a SymbolSdfProduction	
   normalize:
   	Prod(symbols*, symbol, Attrs(a*)) -> result
-  	with
-  		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), Attrs(a*))
-  	<+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*)) 
+  	where 	
+  		<not(?Sort(_) <+ ?Lex(Sort(_)) <+ ?Cf(Sort(_)))> symbol; //if this prod is not kernel
+  		result := SymbolSdfProduction(symbol, Rhs(symbols*), Attrs(a*))
+  		
+  
+  normalize:
+  	Prod(symbols*, Lex(Sort(c)), Attrs(a*)) -> result
+  	with 	
+  		result := SortKernelProduction(SortLex(c), Rhs(symbols*), Attrs(a*))
+  		
+  normalize:
+  	Prod(symbols*, Cf(Sort(c)), Attrs(a*)) -> result
+  	with 	
+  		result := SortKernelProduction(SortCf(c), Rhs(symbols*), Attrs(a*))		
+ 
   
   //normalize reductive productions section to productive productions section
   normalize:
@@ -45,6 +65,9 @@ imports
   	
   normalize:
   	Lexical(p*) -> LexicalSyntax(p*)
+  	
+  normalize:
+  	Syntax(p*) -> Kernel(p*)	
   	  	
   /*normalize:
   	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]

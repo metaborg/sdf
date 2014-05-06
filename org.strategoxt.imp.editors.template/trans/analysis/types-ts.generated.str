@@ -1,0 +1,50 @@
+module trans/analysis/types-ts.generated
+
+imports
+  
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/types/-
+  lib/runtime/properties/-
+  lib/runtime/relations/-
+
+imports
+
+  include/TemplateLang
+  libstrc
+  
+signature constructors
+  
+  
+  
+rules // functions 
+  
+
+rules // relations
+  
+
+rules // rules
+  
+  create-type-task(|ctx) :
+    Iter(s) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-task(|ctx)> s
+  
+  create-type-task(|ctx) :
+    IterStar(s) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-task(|ctx)> s
+  
+  create-type-task(|ctx) :
+    IterSep(s, Lit(x)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-task(|ctx)> s
+  
+  create-type-task(|ctx) :
+    IterStarSep(s, Lit(x)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-task(|ctx)> s
+  
+
+rules // projections
+  

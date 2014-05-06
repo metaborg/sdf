@@ -4,7 +4,16 @@ imports
   include/TemplateLang
   libstrc
   runtime/types/collect
-  //utils/contract
+
+imports
+  
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/types/-
+  lib/runtime/properties/-
+  lib/runtime/relations/-
+  analysis/name-constraints
+
   
 signature
   constructors
@@ -44,33 +53,52 @@ rules
 rules
   
   create-type-task(|ctx) =
-  	?Rhs(<filter(type-of <+ not(is-lexical-symbol); debug(!"untypable ") ; fail)>)
+  	?Rhs(<filter(create-type-task(|ctx) <+ not(is-lexical-symbol); debug(!"untypable ") ; fail)>)
   ; type-is(|ctx)	
+    
+  
+  create-type-task(|ctx) :
+    Sort(s) -> <task-create-id(|ctx,[t])> t
+    where 
+      t' := <type-lookup(|ctx)> s;
+      t  := <task-create-make-set(|ctx)> t'
+  
+  create-type-task(|ctx) :
+    Lex(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t' := <type-lookup(|ctx)> s;
+      t  := <task-create-make-set(|ctx)> t'
+  
+  create-type-task(|ctx) :
+    Cf(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t' := <type-lookup(|ctx)> s;
+      t  := <task-create-make-set(|ctx)> t'
   	
-  type-of:
+  /*type-of:
     Sort(t) -> SortType(t)
     
-  type-of:
-  	Lex(Sort(t)) -> SortType(t)
+  type-of(|ctx):
+  	Lex(Sort(t)) -> <type-lookup(|ctx)> t
   
-  type-of:
-  	Cf(Sort(t)) -> SortType(t)
+  type-of(|ctx):
+  	Cf(Sort(t)) -> <type-lookup(|ctx)> t
   
-  type-of:
-    Opt(s) -> OptionType(<type-of> s)
+  type-of(|ctx):
+    Opt(s) -> <type-lookup(|ctx)> s
   
-  type-of:
-    Iter(s) -> ListType(<type-of> s)
+  type-of(|ctx):
+    Iter(s) -> <type-lookup(|ctx)> s
   
-  type-of:
-    IterStar(s) -> ListType(<type-of> s)
+  type-of(|ctx):
+    IterStar(s) -> <type-lookup(|ctx)> s
   
-  type-of:
+  type-of(|ctx):
     IterSep(s, Lit(_)) -> ListType(<type-of> s)
   
-  type-of:
+  type-of(|ctx):
     IterStarSep(s, Lit(_)) -> ListType(<type-of> s)
-    
+   */ 
 rules
 	
 	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_)) 

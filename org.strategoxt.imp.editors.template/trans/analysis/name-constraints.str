@@ -4,9 +4,11 @@ imports
 
   include/TemplateLang
   analysis/names
+  libstrc
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
+  analysis/types
   
   strategies
   	
@@ -15,7 +17,7 @@ imports
   	
   	
   	nabl-constraint(|ctx):
-  		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
+  		sc@SortConsRef(s, Constructor(c)) -> <fail>
   		where
   			<has-annotation(?Use(task))> c;
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
@@ -37,13 +39,32 @@ imports
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
   	
   			
-   /* nabl-constraint(|ctx):
-  		SdfProductionWithCons(SortCons(Sort(s), Constructor(c)), rhs, attrs) -> <fail>
+    nabl-constraint(|ctx):
+  		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
   		where
-  			task := <nabl-lookup-local(|ctx)> c;
-  			debug(!"a");
-  			msg := $[Duplicated definition for constructor [c]];
-  			<task-create-error-on-triggers(|ctx, [Multiple(task)], msg)> c
-  			
-  		*/	
-  	
+  			type       := <type-lookup(|ctx)> c;
+  			lookup     := <nabl-lookup-lexical(|ctx)> c;
+  			cons-types := <type-lookup(|ctx)> lookup;
+  			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
+  			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
+
+		
+	task-rewrite:
+  	  ("match-sort-type", (e@FunType(ty*, SortType(s)), a@FunType(ty'*, SortType(s')))) -> a
+  	  where
+  	  	<?s> s';
+  	  	<eq> (<length> ty*, <length> ty'*)
+  	  	
+ signature constructors
+ 	
+ 	MakeSet : List(Term) -> Instruction
+ 	
+rules
+	
+	task-is-combinator = ?MakeSet(_)
+	
+	perform-task(|task-id):
+		MakeSet(list) -> <make-set> list
+		
+	task-create-make-set(|ctx):
+		list -> <new-task(|ctx)> MakeSet(list)
