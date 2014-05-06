@@ -22,55 +22,50 @@ imports
   generate-sdf-abstract:
     (selected, position, ast, path, project-path)	-> (filename, result)
     with
-    	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	filename := <guarantee-extension(|"sdf.aterm")> path;
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	 <?Module(Unparameterized(mn), i*, _)> ast ;
+    	filename := <create-src-gen(|project-path, ".sdf.aterm")> mn;
     	result := <to-sdf-test(|mn, i*)> selected
-    	//; <write-to-src-gen(|project-path, "-sdf.aterm")> (mn, result)
-    	
   	 	
   generate-sdf-concrete:
-    (selected, position, ast, path, project-path) -> (filename, selected)
+    (selected, position, ast, path, project-path) -> (filename, result)
     with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
        <?Module(Unparameterized(mn), i*, _)> ast ;
-       filename := <guarantee-extension(|"sdftst")> path
-    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdftst");
-       mn := $[[<base-filename ; remove-extension> path]generated];
-       i* := []
-    with
-      result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
-      ; <write-to-src-gen(|project-path, ".sdf")> (mn, result)
-  
-  
-  //generate-signature =
-  //  collect-om(?Desugared(_));
-  //  map(sdf3-to-signature);
-  //  !Specification([Signature([Constructors(<id>)])])
+       filename := <create-src-gen(|project-path, ".sdf")> mn;
+       result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
  
-  generate-sig-concrete:
-    (selected, position, ast, path, project-path) -> None()
+  
+  generate-sig-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
     with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	result   := <module-to-sig> selected
+      ; filename := <create-src-gen(|project-path, ".sig.aterm")> mn
+  
+  
+  
+  generate-sig-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   := <module-to-sig; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
-      ; <write-to-src-gen(|project-path, "-sig.str")> (mn, result)
+      ; filename := <create-src-gen(|project-path, "-sig.str")> mn
     	
 
-  //generate-signature-concrete:
-  //  (selected, position, ast, path, project-path) -> None()
-  //  with
-  //    filename := <guarantee-extension(|"generated.str")> path;
-  //    result   := <generate-signature; pp-stratego-string> selected
-  //    ; <write-to-src-gen(|project-path)> (<base-filename> filename, result)
-  
-  
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> <id> 
    // with
     //  generate-esv-concrete; write-string-to-file
-   // with
-  //   generate-sdf-concrete; write-string-to-file
     with
-   	generate-sig-concrete
+   	 generate-sig-concrete
     with
      generate-sdf-concrete
   //  with
@@ -98,8 +93,8 @@ imports
 	    )
 	  end
 	  
-  write-to-src-gen(|project-path, ext):
-  	(filename, string) -> None()
+  create-src-gen(|project-path, ext):
+  	filename -> filename'
   with
   	fn := <get-filename> filename;
   	dir := <get-dir> filename;
@@ -109,9 +104,9 @@ imports
   	  then
   	  	<mkdir> src-gen-path
   	  end;
-  	filename' := <concat-strings> [src-gen-path, "/" , fn, ext];
+  	filename' := <concat-strings> [src-gen-path, "/" , fn, ext]
   	//debug(!"file ");
-  	<write-string-to-file> (filename', string)		
+  	//<write-string-to-file> (filename', string)		
  	
  	
  	get-filename :

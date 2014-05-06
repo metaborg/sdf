@@ -32,13 +32,13 @@ menus
   
    menu: "Generate"
    	submenu: "SDF"
-      action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime) (meta)
-      action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime) (meta)
+      action: "Generate SDF (abstract for selection)" = generate-sdf-abstract (openeditor) (realtime) (meta)
+      action: "Generate SDF (concrete for selection)" = generate-sdf-concrete (openeditor) (realtime) (meta)
     end
     
     submenu: "Signature"
-      action: "Generate Signature (abstract, for selection)" = generate-sig-abstract (openeditor) (realtime) (meta)
-      action: "Generate Signature (concrete, for selection)" = generate-sig-concrete (openeditor) (realtime) (meta)
+      action: "Generate Signature (abstract for selection)" = generate-sig-abstract (openeditor) (realtime) (meta)
+      action: "Generate Signature (concrete for selection)" = generate-sig-concrete (openeditor) (realtime) (meta)
       
      end
 	/*  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)

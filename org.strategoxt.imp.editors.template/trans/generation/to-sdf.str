@@ -97,7 +97,7 @@ rules
   		
   //kernel syntax
   section-to-sdf(|chars, newline, kfr):
-  	SDFSection(Syntax(prods)) -> syntax(prods')
+  	SDFSection(Kernel(prods)) -> syntax(prods')
   	with
   		prods' := <map(prod-to-sdf)> prods
   		
@@ -209,7 +209,7 @@ rules
     	prods' := <map(prod-to-sdf)> prods
   
   sortcons-to-sdf(|chars, newline):
-  	SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
+  	SortConsRef(s, Constructor(c)) -> prod(p, s, no-attrs())
   	with
   		prod := <get-def> c;
   		p := <get-prod-elems(|chars, newline)> prod
@@ -236,6 +236,21 @@ rules
   		symbols'* := <term-translation> symbols*;
   		symbol' := <term-translation> symbol;  		
   		a'* := <term-translation> a*
+  		
+  prod-to-sdf:
+  	SymbolSdfProduction(symbol, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)		
+  	with
+  		symbols'* := <term-translation> symbols*;
+  		symbol' := <term-translation> symbol;  		
+  		a'* := <term-translation> a*
+  		
+  prod-to-sdf:
+  	SortKernelProduction(kernelSort, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
+  	with
+  		symbols'* := <term-translation> symbols*;
+  		symbol' := <term-translation> kernelSort;  		
+  		a'* := <term-translation> a*  				
+  		
   		
   //TemplateSection
   section-to-sdf(|chars, newline, kfr):
@@ -386,6 +401,15 @@ rules //conversion of SDF3 terms into SDF2
   
   special-term-to-sdf:
   	IterStar(sort) -> iter-star(sort)
+  	
+  special-term-to-sdf:
+  	SortCf(s) -> cf(sort(s))
+  	
+  special-term-to-sdf:
+  	SortLex(s) -> cf(sort(s))
+  	
+  special-term-to-sdf:
+  	SortVarsym(s) -> varsym(sort(s))		
   		
   special-term-to-sdf:
   	Simple(sort) -> simple-charclass(sort)
@@ -474,7 +498,7 @@ rules //conversion of SDF3 terms into SDF2
     
   
  sort-to-contentcomplete:
-     sort@Sort(s) -> prod([sort("CONTENTCOMPLETE")], sort(s), attrs([sdf-cons(c)]))
+     s -> prod([sort("CONTENTCOMPLETE")], sort(s), attrs([sdf-cons(c)]))
      with
      	c := <double-quote> $[COMPLETION-[s]]
 
