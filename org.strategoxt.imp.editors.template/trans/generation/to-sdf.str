@@ -212,6 +212,7 @@ rules
   	SortConsRef(s, Constructor(c)) -> prod(p, s, no-attrs())
   	with
   		prod := <get-def> c;
+  		//debug(!"def");
   		p := <get-prod-elems(|chars, newline)> prod
   		
   get-prod-elems(|chars, newline):
@@ -467,6 +468,11 @@ rules //conversion of SDF3 terms into SDF2
   		     
   special-term-to-sdf:
   	CiLit(lit) -> ci-lit(lit)
+  
+  special-term-to-sdf:
+  	NoAttrs() -> no-attrs()
+  
+ 	
   		  		
   terms-to-sdf:
   	[term | tail] -> <id>
