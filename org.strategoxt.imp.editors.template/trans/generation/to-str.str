@@ -11,5 +11,5 @@ rules
     Imports(i*) -> Imports(<map(!Import(<to-str-module-name(|ext)>))> i*)
     
   to-str-module-name(|ext):
-    Module(Unparameterized(m)) -> <conc-strings> (m, ext)
+    Module(Unparameterized(m)) -> <conc-strings> ("src-gen/", m, ext)
     

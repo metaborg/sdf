@@ -12,6 +12,7 @@ imports
 
   include/TemplateLang
   libstrc
+  analysis/types
   
 signature constructors
   
@@ -26,22 +27,17 @@ rules // relations
 rules // rules
   
   create-type-task(|ctx) :
-    Iter(s) -> <task-create-id(|ctx,[t])> t
+    Lex(s) -> <task-create-id(|ctx,[t])> t
     where 
       t := <type-task(|ctx)> s
   
   create-type-task(|ctx) :
-    IterStar(s) -> <task-create-id(|ctx,[t])> t
+    Cf(s) -> <task-create-id(|ctx,[t])> t
     where 
       t := <type-task(|ctx)> s
   
   create-type-task(|ctx) :
-    IterSep(s, Lit(x)) -> <task-create-id(|ctx,[t])> t
-    where 
-      t := <type-task(|ctx)> s
-  
-  create-type-task(|ctx) :
-    IterStarSep(s, Lit(x)) -> <task-create-id(|ctx,[t])> t
+    Placeholder(_, s, None(), _) -> <task-create-id(|ctx,[t])> t
     where 
       t := <type-task(|ctx)> s
   

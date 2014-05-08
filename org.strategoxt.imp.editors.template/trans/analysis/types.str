@@ -31,25 +31,28 @@ overlays
 rules
   
   create-type-task(|ctx) =
-    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(type-of)>)//; debug(!"singleline")
+    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(create-type-task(|ctx))>)//; debug(!"singleline")
   ; type-is(|ctx)
     
   create-type-task(|ctx) =
-    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(type-of)>))>)//; debug(!"multiline")
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(create-type-task(|ctx))>))>)//; debug(!"multiline")
   ; type-is(|ctx)
     
-  type-of:
-    Placeholder(_, Sort(t), None(), _) -> SortType(t)
-
-  type-of:
-    Placeholder(_, Sort(t), Option(), _) -> OptionType(t)
-
-  type-of:
-    Placeholder(_, Sort(t), Plus(), _) -> ListType(t) 
-
-  type-of:
-    Placeholder(_, Sort(t), Star(), _) -> ListType(t) 
-    
+  create-type-task(|ctx) :
+    Placeholder(_, Sort(s), Option(), _) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> OptionType(<strip-annos> s)    
+  
+  create-type-task(|ctx) :
+   Placeholder(_, Sort(s), Plus(), _) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)
+      
+  create-type-task(|ctx) :
+    Placeholder(_, Sort(s), Star(), _) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)
+      
 rules
   
   create-type-task(|ctx) =
@@ -62,43 +65,38 @@ rules
     where 
       t' := <type-lookup(|ctx)> s;
       t  := <task-create-make-set(|ctx)> t'
+      
+      
+  
+  //Types for when symbol operators operate on a single sort
+  //HACK: it is necessary to strip-annos because of the multiple definitions of Sort(s)
+  create-type-task(|ctx) :
+    Opt(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> OptionType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    Lex(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    IterStar(Sort(s)) -> <task-create-id(|ctx,[t])> t
     where 
-      t' := <type-lookup(|ctx)> s;
-      t  := <task-create-make-set(|ctx)> t'
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+      
+  create-type-task(|ctx) :
+    Iter(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+ 
+  create-type-task(|ctx) :
+    IterSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    Cf(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    IterStarSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t])> t
     where 
-      t' := <type-lookup(|ctx)> s;
-      t  := <task-create-make-set(|ctx)> t'
-  	
-  /*type-of:
-    Sort(t) -> SortType(t)
-    
-  type-of(|ctx):
-  	Lex(Sort(t)) -> <type-lookup(|ctx)> t
-  
-  type-of(|ctx):
-  	Cf(Sort(t)) -> <type-lookup(|ctx)> t
-  
-  type-of(|ctx):
-    Opt(s) -> <type-lookup(|ctx)> s
-  
-  type-of(|ctx):
-    Iter(s) -> <type-lookup(|ctx)> s
-  
-  type-of(|ctx):
-    IterStar(s) -> <type-lookup(|ctx)> s
-  
-  type-of(|ctx):
-    IterSep(s, Lit(_)) -> ListType(<type-of> s)
-  
-  type-of(|ctx):
-    IterStarSep(s, Lit(_)) -> ListType(<type-of> s)
-   */ 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+   
+   
+   
 rules
 	
 	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_)) 

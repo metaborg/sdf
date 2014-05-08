@@ -17,7 +17,7 @@ rules
 	module-to-sig:
 		Module(Unparameterized(m), i*, s*) -> Module(m', [is*, s'])
 		with
-			m'  := <conc-strings> (m, "-sig")
+			m'  := <conc-strings> ("src-gen/", m, "-sig")
 		; is* := <map(to-str-import(|"-sig"))> i*
 	  ; s'  := Signature(<filter(section-to-sig)> s*)
  
@@ -37,14 +37,19 @@ rules
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
   	where
   		sig* := <filter(cfg-to-sig); not(?[])> p*
-  		
+  	
+  section-to-sig:
+  	SDFSection(Syntax(p*)) -> Constructors(sig*)
+  	where
+  		sig* := <filter(cfg-to-sig); not(?[])> p*		
+ 
  
 
 	sort-to-sig:
     Sort(s) -> SortNoArgs(s)
 		
 	lexical-to-sig:
-    SdfProduction(Sort(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    SdfProduction(s, _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
     where
       <not(fetch-elem(?Reject()))> a*
      
@@ -54,12 +59,26 @@ rules
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
     	
     cfg-to-sig:
-    SdfProduction(Sort(s), rhs, Attrs(a*)) -> OpDeclInj(t')
+    SdfProduction(s, rhs, Attrs(a*)) -> OpDeclInj(t')
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
     	rhs-type := <get-type> rhs;
     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
     
+  // kernel productions
+     cfg-to-sig:
+     SdfProduction(Lex(Sort(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
+     where
+     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+     	rhs-type := <get-type> rhs;
+     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
+     	
+ 	 cfg-to-sig:
+     SdfProduction(Cf(Sort(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
+     where
+     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+     	rhs-type := <get-type> rhs;
+     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
       
     section-to-sig:
     TemplateSection(t*) -> Constructors(sig*)
@@ -72,7 +91,7 @@ rules
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
       
     template-to-sig:
-    TemplateProduction(Sort(s), t, Attrs(a*)) -> OpDeclInj(t')
+    TemplateProduction(s, t, Attrs(a*)) -> OpDeclInj(t')
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*;
       temp-type := <get-type> t;
