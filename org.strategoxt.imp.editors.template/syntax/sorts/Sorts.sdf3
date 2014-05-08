@@ -1,6 +1,7 @@
 module sorts/Sorts
 
 imports kernel/Kernel
+symbols/Symbols
 
 lexical syntax
 	//head:[A-Z] -> Sort {cons("one-char")}

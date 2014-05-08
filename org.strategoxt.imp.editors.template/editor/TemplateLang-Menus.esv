@@ -41,6 +41,11 @@ menus
       action: "Generate Signature (concrete for selection)" = generate-sig-concrete (openeditor) (realtime) (meta)
       
      end
+     
+     submenu: "Pretty-printer"
+     	action: "Generate PP (abstract for selection)" = generate-pp-abstract (openeditor) (realtime) (meta)
+     	action: "Generate PP (concrete for selection)" = generate-pp-concrete (openeditor) (realtime) (meta)
+     end
 	/*  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
 	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
 	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)

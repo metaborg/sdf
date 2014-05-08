@@ -7,7 +7,6 @@ imports
   libstratego-sglr
   libstrc
   include/TemplateLang
-  //include/libtemplatelang
   editor/TemplateLang-Outliner
   lib/EditorService
   lib/editor-common.generated

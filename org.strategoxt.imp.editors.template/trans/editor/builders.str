@@ -57,8 +57,26 @@ imports
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   := <module-to-sig; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
       ; filename := <create-src-gen(|project-path, "-sig.str")> mn
-    	
-
+   
+   generate-pp-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	result   :=  <module-to-pp> selected
+      ; filename := <create-src-gen(|project-path, ".pp.aterm")> mn 	
+  
+   generate-pp-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
+      ; filename := <create-src-gen(|project-path, "-pp.str")> mn
+  
+  
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> <id> 

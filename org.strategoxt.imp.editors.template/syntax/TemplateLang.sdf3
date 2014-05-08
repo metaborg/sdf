@@ -10,6 +10,15 @@
 module TemplateLang
 imports
   sdf2-core/SDF
+  constants/StrCon
+  sorts/Sorts
+  symbols/Symbols
+  labels/Labels
+  constants/IdentifierCon
+  kernel/Kernel
+  restrictions/Restrictions
+  priority/Priority
+  basic/Basic
   
 //main productions to link SDF2 and SDF3
 context-free start-symbols
@@ -77,7 +86,7 @@ Constructor.Constructor = <<IdCon>>
 
 SortCons.SortCons = <<Sort>.<Constructor>>
 
-
+ 
 // placeholders
 TemplatePart1 = <\<<Placeholder>\>> {bracket}
 // should we use square brackets?
@@ -130,7 +139,8 @@ PlaceholderOption.Text = <text = <StrCon>>
     <TemplateStringQ-LEX> -> <TemplatePartQ-CF> {cons("String")}
     <TemplateEscapeQ-LEX> -> <TemplatePartQ-CF> {cons("Escape")}
     <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
-
+  
+  
   lexical syntax
     "\n" = [\r\n] //this rule is not allowed in SDF3 yet
     TemplateLayout =  [\ \t]+
