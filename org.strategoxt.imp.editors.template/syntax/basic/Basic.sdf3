@@ -14,9 +14,7 @@ Symbol.Cf = < \<<Symbol>-CF\> >
 Symbol.Lex = < \<<Symbol>-LEX\> >
 Symbol.Varsym = < \<<Symbol>-VAR\>>
 
-KernelSort.SortCf = < \<<Sort>-CF\> >
-KernelSort.SortLex = < \<<Sort>-LEX\> >
-KernelSort.SortVarsym = < \<<Sort>-VAR\>>
+
 
 
 Symbol.Layout = <LAYOUT>  

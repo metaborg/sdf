@@ -42,7 +42,7 @@ templates
 Section.TemplateOptions = <template options <TemplateOption*>>
 
 TemplateOption.Newlines = <newlines : <NewlineOptionValue>>
-
+ 
 NewlineOptionValue.None = <none>
 NewlineOptionValue.Leading = <leading>
 NewlineOptionValue.Trailing = <trailing>
@@ -57,7 +57,7 @@ templates
 Group.SimpleRefGroup = <<SortConsRef>>
 Group.ProdsRefGroup = <{<SortConsRef+>}>
 Group.AssocRefGroup = <{<Associativity> : <SortConsRef+>}>
-SortConsRef.SortConsRef = <<Sort>.<Constructor>>
+SortConsRef.SortConsRef = <<Symbol>.<Constructor>>
 
 templates 
 //grammars
@@ -70,21 +70,19 @@ Grammar.ContextFreeSyntax = <context-free syntax <SdfProduction*>> {prefer}
 Grammar.Kernel = <syntax <SdfProduction*>> {prefer}
 
 // syntactic sugar for SDF
-SdfProduction.SymbolSdfProduction = <<Symbol> = <RHS> <Attributes>> 
-SdfProduction.SortKernelProduction = <<KernelSort> = <RHS> <Attributes>> {prefer}
-SdfProduction.SdfProduction = <<Sort> = <RHS> <Attributes>> {prefer}
+SdfProduction.SdfProduction = <<SymbolDef> = <RHS> <Attributes>> 
 SdfProduction.SdfProductionWithCons = <<SortCons> = <RHS> <Attributes>>
 RHS.Rhs = <<Symbols>>
 
 // template productions
-TemplateProduction.TemplateProduction = <<Sort> = <Template> <Attributes>>
+TemplateProduction.TemplateProduction = <<SymbolDef> = <Template> <Attributes>>
 
 // template productions Sort.Cons = ...
 TemplateProduction.TemplateProductionWithCons = <<SortCons> = <Template> <Attributes>>
 
 Constructor.Constructor = <<IdCon>>
 
-SortCons.SortCons = <<Sort>.<Constructor>>
+SortCons.SortCons = <<SymbolDef>.<Constructor>>
 
  
 // placeholders

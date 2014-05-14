@@ -1,5 +1,5 @@
 module sorts/Sorts
-imports kernel/Kernel
+imports kernel/Kernel symbols/Symbols
 
 exports
   lexical syntax
@@ -7,13 +7,18 @@ exports
     [A-Z] [A-Za-z0-9\-]* [A-Za-z0-9] -> Sort {cons("MoreChars")}
 
   context-free syntax
-    Sort                         -> Symbol  {cons("Sort")}
-    Sort "[[" {Symbol ","}+ "]]" -> Symbol  {cons("ParameterizedSort")}
-    "sorts" Symbols              -> Grammar {cons("Sorts")}
+    Sort                                    -> Symbol    {cons("Sort")}
+    Sort "[[" parameters:{Symbol ","}+ "]]" -> Symbol    {cons("ParameterizedSort")}
+    Sort                                    -> SymbolDef {cons("SortDef"), prefer}
+    "<" SymbolDef "-CF" ">"                 -> SymbolDef {cons("Cf"), prefer}
+    "<" SymbolDef "-LEX" ">"                -> SymbolDef {cons("Lex"), prefer}
+    "<" SymbolDef "-VAR" ">"                -> SymbolDef {cons("Var"), prefer}
+    "sorts" Symbols                         -> Grammar   {cons("Sorts")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
-    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> Symbol    {cons("COMPLETION-Symbol")}
+    CONTENTCOMPLETE -> SymbolDef {cons("COMPLETION-SymbolDef")}
+    CONTENTCOMPLETE -> Grammar   {cons("COMPLETION-Grammar")}
 
   lexical restrictions
     Sort -/- [A-Za-z0-9]

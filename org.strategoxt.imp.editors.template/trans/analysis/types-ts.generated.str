@@ -27,14 +27,14 @@ rules // relations
 rules // rules
   
   create-type-task(|ctx) :
-    Lex(s) -> <task-create-id(|ctx,[t])> t
+    Lex(sort@Sort(s)) -> <task-create-id(|ctx,[t])> t
     where 
-      t := <type-task(|ctx)> s
+      t := <type-task(|ctx)> sort
   
   create-type-task(|ctx) :
-    Cf(s) -> <task-create-id(|ctx,[t])> t
+    Cf(sort@Sort(s)) -> <task-create-id(|ctx,[t])> t
     where 
-      t := <type-task(|ctx)> s
+      t := <type-task(|ctx)> sort
   
   create-type-task(|ctx) :
     Placeholder(_, s, None(), _) -> <task-create-id(|ctx,[t])> t

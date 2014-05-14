@@ -56,7 +56,7 @@ rules
 rules
   
   create-type-task(|ctx) =
-  	?Rhs(<filter(create-type-task(|ctx) <+ not(is-lexical-symbol); debug(!"untypable ") ; fail)>)
+  	?Rhs(<filter(create-type-task(|ctx) <+ not(is-lexical-symbol <+ is-layout-symbol); debug(!"untypable ") ; fail)>)
   ; type-is(|ctx)	
     
   
@@ -100,3 +100,4 @@ rules
 rules
 	
 	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_)) 
+	is-layout-symbol = collect-one(?Layout() + ?Lex(Layout()) + ?Cf(Layout()))

@@ -7,6 +7,7 @@ imports
   libstratego-gpp
   lib/sdf-desugar
   lib/sdf-parenthesize
+  lib/EditorService
   include/TemplateLang
 
   editor-common.generated
@@ -26,16 +27,21 @@ imports
     	index-setup(|<language>, project-path);
     	 <?Module(Unparameterized(mn), i*, _)> ast ;
     	filename := <create-src-gen(|project-path, ".sdf.aterm")> mn;
-    	result := <to-sdf-test(|mn, i*)> selected
+    	result := <module-to-sdf> selected
   	 	
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
-    with
+   with
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
-       <?Module(Unparameterized(mn), i*, _)> ast ;
+       <?Module(Unparameterized(mn), i*, sections)> ast ;
+     	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+  	//	debug(!"tokenize");
+  		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+  		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections
+   with
        filename := <create-src-gen(|project-path, ".sdf")> mn;
-       result   := <to-sdf-test(|mn, i*); pp-sdf-to-string> selected
+       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected
  
   
   generate-sig-abstract:
@@ -77,13 +83,31 @@ imports
       ; filename := <create-src-gen(|project-path, "-pp.str")> mn
   
   
+  generate-esv-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected
+      ; filename := <create-src-gen(|project-path, ".esv.aterm")> mn 	
+  
+   generate-esv-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, sections)> ast ;
+    	result   := <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> selected
+      ; filename := <create-src-gen(|project-path, "-esv.esv")> mn
+  
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> <id> 
    // with
     //  generate-esv-concrete; write-string-to-file
-    with
-   	 generate-sig-concrete
+   // with
+   //	 generate-sig-concrete
     with
      generate-sdf-concrete
   //  with
@@ -92,12 +116,43 @@ imports
   
   rules
   
+  
+  //pretty-printer for the generated sdf
   pp-sdf-to-string =
   sdf-desugar;
   parenthesize-Sdf2;
   sdf-ppfix;
   ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
   box2text-string(|80)
+  
+  
+  //pretty-printer for the generated esv
+  pp-esv-to-string = 
+  	topdown(try(pp-fix-string-quotes));
+    ast2box(|[<esv-pp-table>]);
+    box2text-string(|80)
+    
+  pp-fix-string-quotes:
+    String(string) -> String(string')
+    where
+      <not(string-starts-with(|"\""))> string
+    with
+      string' := <conc-strings> ("\"", string, "\"")
+  
+  pp-fix-string-quotes:
+    Placeholder(string) -> Placeholder(string')
+    where
+      <not(string-starts-with(|"<"))> string
+    with
+      string' := <conc-strings> ("<", string, ">")  
+    
+  esv-pp-table =
+    DescriptorPPTable
+  <+
+    tbl := <import-term(include/EditorService-pretty.pp.af)>;
+    rules(DescriptorPPTable := tbl)
+    
+    
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
@@ -130,14 +185,14 @@ imports
  	get-filename :
  		s -> s'
  		with
- 			names := <string-tokenize(|['/'])> s;
+ 			names := <strip-annos; string-tokenize(|['/'])> s;
  			//debug(!"names ");
  			s' := <last> names
  			
  	get-dir :
  		s -> s'
  		with
- 			names := <string-tokenize(|['/'])> s;
+ 			names := <strip-annos; string-tokenize(|['/'])> s;
  			names' := <at-last(![])> names;
  			s' := <concat-strings> names'
  			//;debug(!"dirnms ")

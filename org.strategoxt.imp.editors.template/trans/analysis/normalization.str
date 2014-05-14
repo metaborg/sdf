@@ -37,27 +37,26 @@ imports
   	Prod(symbols*, Sort(s), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*))
-  	<+  result := SdfProduction(s, Rhs(symbols*), Attrs(a*)) 
+  		result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a*))
+  	<+  result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) 
   
-  //sdf2 productions with complex symbols in the left hand side become a SymbolSdfProduction	
-  normalize:
-  	Prod(symbols*, symbol, Attrs(a*)) -> result
-  	where 	
-  		<not(?Sort(_) <+ ?Lex(Sort(_)) <+ ?Cf(Sort(_)))> symbol; //if this prod is not kernel
-  		result := SymbolSdfProduction(symbol, Rhs(symbols*), Attrs(a*))
-  		
   
+  //Lexical kernel sdf2 productions become sdf3 productions with or without constructors     	
   normalize:
-  	Prod(symbols*, Lex(Sort(c)), Attrs(a*)) -> result
-  	with 	
-  		result := SortKernelProduction(SortLex(c), Rhs(symbols*), Attrs(a*))
-  		
+  	Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a*))
+  	<+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+  
+  //Cf kernel sdf2 productions become sdf3 productions with or without constructors     	
   normalize:
-  	Prod(symbols*, Cf(Sort(c)), Attrs(a*)) -> result
-  	with 	
-  		result := SortKernelProduction(SortCf(c), Rhs(symbols*), Attrs(a*))		
- 
+  	Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a*))
+  	<+  result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+  
   
   //normalize reductive productions section to productive productions section
   normalize:

@@ -6,3 +6,4 @@ templates
 
 Symbol = <(<Symbol>)> {bracket}
 Symbols = <<list:Symbol*>>
+SymbolDef = <<Symbol>>

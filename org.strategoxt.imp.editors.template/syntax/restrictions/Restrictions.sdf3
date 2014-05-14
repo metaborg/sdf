@@ -1,8 +1,9 @@
 module restrictions/Restrictions
- 
+  
 imports characterclass/CC 
 		characterclass/Character-Class
 		symbols/Symbols 
+		constants/StrCon
 
 templates
   
@@ -24,6 +25,8 @@ Grammar.Restrictions = <restrictions <Restrictions>>
 Attribute.Reject = <reject>
 Attribute.Prefer = <prefer>
 Attribute.Avoid = <avoid> 
+Attribute.Deprecated = <deprecated> {prefer}
+Attribute.Deprecated = <deprecated (<StrCon>)> {prefer}
 
 context-free priorities    
     Lookahead.Seq > 

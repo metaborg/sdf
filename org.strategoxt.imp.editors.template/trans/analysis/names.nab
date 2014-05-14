@@ -26,16 +26,33 @@ binding rules
     
   Module(Unparameterized(m)):
     imports Sort, Constructor from Module m
-        
+    
   //Kernel Productions  
-   SortKernelProduction(SortCf(s), Rhs, a*):
-   	defines non-unique Sort s of type SortType(s)
-   	
-   SortKernelProduction(SortLex(s), Rhs, a*):
-   	defines non-unique Sort s of type SortType(s)
-
+  p@SdfProductionWithCons(SortCons(Lex(SortDef(s)), Constructor(c)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+    //  of sort s
+   //   of def p 
+      where rhs has type ty*
+      
+  p@SdfProduction(Lex(SortDef(s)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+   
+   p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+    //  of sort s
+   //   of def p 
+      where rhs has type ty*
+      
+  p@SdfProduction(Cf(SortDef(s)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+  
+        
   //Regular Productions
-  p@SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs): 
+  p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
@@ -43,14 +60,14 @@ binding rules
    //   of def p 
       where rhs has type ty*
   
-  p@SdfProduction(s, rhs, attrs): 
+  p@SdfProduction(SortDef(s), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)
     //implicitly defines unique Constructor Inj()
   //    of type FunType(ty*, SortType(s))
    //   of def p
   //    where rhs has type ty*
           
-  p@TemplateProductionWithCons(SortCons(s, Constructor(c)), t, attrs): 
+  p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs): 
     defines non-unique Sort s of type SortType(s)
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
@@ -58,7 +75,7 @@ binding rules
   //    of def p
      where t has type ty*
   
-  p@TemplateProduction(s, t, attrs): 
+  p@TemplateProduction(SortDef(s), t, attrs): 
     defines non-unique Sort s of type SortType(s)
   // implicitly defines unique Constructor Inj()
    //   of type FunType(ty*, SortType(s))
@@ -69,7 +86,7 @@ binding rules
   Placeholder(label, Sort(s), t, options):
   	refers to Sort s //otherwise refers to CfSort s otherwise refers to  LexSort s
   	
- SortConsRef(s, Constructor(c)):
+ SortConsRef(Sort(s), Constructor(c)):
   	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
   	refers to Constructor c of sort s	
   	

@@ -6,7 +6,7 @@ imports
   libstrc
   include/TemplateLang
   analysis/desugar
-
+  generation/to-template
   generation/to-str
   
 rules
@@ -24,39 +24,87 @@ rules
     SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
     with
     	sort* := <filter(productive-sort); make-set> p*
-    ; s1*    := <map(sort-to-pp)> sort*
-    ; s2*    := <map(sort-to-pp(|lang))> sort*
-    
+    	; s1*    := <map(sort-to-pp)> sort*
+    	; s2*    := <map(sort-to-pp(|lang))> sort*
+    	  
+    	  
+      
+  section-to-pp(|lang):
+  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+  	with
+  		sort* := <filter(productive-sort); make-set> p*
+  		; s1*   := <map(sort-to-pp(|lang))> sort*
+    	; s2*   := <filter(prod-to-template; template-to-pp)> p*
+  		    
+   section-to-pp(|lang):
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+  	with
+  		sort* := <filter(cf-productive-sort); make-set> p*
+  		; s1*   := <map(sort-to-pp(|lang))> sort*
+    	; s2*   := <filter(cf-prod-to-template; template-to-pp)> p*
+    	  
+  section-to-pp(|lang):
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+  	with
+  		sort* := <filter(lex-productive-sort); make-set> p*
+  		; s1*   := <map(sort-to-pp)> sort*
+    	; s2*   := <map(sort-to-pp(|lang))> sort*  	  
+    	   
   section-to-pp(|lang):
     TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*])
     with
-      sort* := <filter(productive-sort); make-set> t*
-    ; s1*   := <map(sort-to-pp(|lang))> sort*
-    ; s2*   := <filter(template-to-pp)> t*
+      	sort* := <filter(productive-sort); make-set> t*
+    	; s1*   := <map(sort-to-pp)> sort*
+    	; s2*   := <map(sort-to-pp(|lang))> sort*
 
   productive-sort:
-    TemplateProduction(s, _, attrs) -> s
+    TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s
     where not (
-      <attrs(fetch-elem(?reject()))> attrs
+      <attrs(fetch-elem(?Reject()))> attrs
     )
     
     productive-sort:
-    TemplateProductionWithCons(SortCons(s, c), _, attrs) -> s
+    TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(attrs)) -> s
     where not (
-      <attrs(fetch-elem(?reject()))> attrs
+      <attrs(fetch-elem(?Reject()))> attrs
     )
   
   productive-sort:
-    SdfProduction(s, _, attrs) -> s
+    SdfProduction(SortDef(s), _, Attrs(attrs)) -> s
     where not (
-      <attrs(fetch-elem(?reject()))> attrs
+      <attrs(fetch-elem(?Reject()))> attrs
     )
     
   productive-sort:
-    SdfProductionWithCons(SortCons(s,c), _, attrs) -> s
+    SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(attrs)) -> s
     where not (
-      <attrs(fetch-elem(?reject()))> attrs
+      <attrs(fetch-elem(?Reject()))> attrs
     )  
+    
+    cf-productive-sort:
+    	SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(attrs)) -> s
+    where not (
+      <attrs(fetch-elem(?Reject()))> attrs
+    )
+    
+    cf-productive-sort:
+    	SdfProduction(Cf(SortDef(s)), _, Attrs(attrs)) -> s
+    where not (
+      <attrs(fetch-elem(?Reject()))> attrs
+    )    
+    
+    lex-productive-sort:
+    	SdfProduction(Lex(SortDef(s)), _, Attrs(attrs)) -> s
+    where not (
+      <attrs(fetch-elem(?Reject()))> attrs
+    )
+    
+    lex-productive-sort:
+    	SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(attrs)) -> s
+    where not (
+      <attrs(fetch-elem(?Reject()))> attrs
+    )
+        
     
     sort-to-pp(|lang):
     x -> SDefNoArgs($[prettyprint-[lang]], CallNoArgs(SVar($[prettyprint-[x]])))
@@ -67,7 +115,7 @@ rules
  
   
   template-to-pp:
-    TemplateProductionWithCons(SortCons(s, Constructor(c)), t, Attrs(a*)) ->
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[s]]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
@@ -84,7 +132,7 @@ rules
       input       := Op(c, arg*)
   
   template-to-pp:
-    TemplateProduction(s, t, Attrs(a*)) ->
+    TemplateProduction(SortDef(s), t, Attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[s]]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)

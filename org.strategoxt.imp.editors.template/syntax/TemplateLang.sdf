@@ -1,5 +1,7 @@
 module TemplateLang
-imports sdf2-core/SDF
+imports sdf2-core/SDF constants/StrCon sorts/Sorts symbols/Symbols labels/Labels
+        constants/IdentifierCon kernel/Kernel restrictions/Restrictions
+        priority/Priority basic/Basic
 
 exports
   context-free start-symbols
@@ -48,7 +50,7 @@ exports
     SortConsRef                            -> Group       {cons("SimpleRefGroup")}
     "{" SortConsRef+ "}"                   -> Group       {cons("ProdsRefGroup")}
     "{" Associativity ":" SortConsRef+ "}" -> Group       {cons("AssocRefGroup")}
-    Sort "." Constructor                   -> SortConsRef {cons("SortConsRef")}
+    Symbol "." Constructor                 -> SortConsRef {cons("SortConsRef")}
 
   context-free syntax
     CONTENTCOMPLETE -> Group       {cons("COMPLETION-Group")}
@@ -58,16 +60,14 @@ exports
     "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
     "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
     "context-free" "syntax" SdfProduction*                                -> Grammar            {cons("ContextFreeSyntax"), prefer}
-    "syntax" SdfProduction*                           					  -> Grammar            {cons("Kernel"), prefer}
-    Symbol "=" RHS Attributes                                             -> SdfProduction      {cons("SymbolSdfProduction")}
-    KernelSort "=" RHS Attributes                                         -> SdfProduction      {cons("SortKernelProduction"), prefer}
-    Sort "=" RHS Attributes                                               -> SdfProduction      {cons("SdfProduction"), prefer}
+    "syntax" SdfProduction*                                               -> Grammar            {cons("Kernel"), prefer}
+    SymbolDef "=" RHS Attributes                                          -> SdfProduction      {cons("SdfProduction")}
     SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
     Symbols                                                               -> RHS                {cons("Rhs")}
-    Sort "=" Template Attributes                                          -> TemplateProduction {cons("TemplateProduction")}
+    SymbolDef "=" Template Attributes                                     -> TemplateProduction {cons("TemplateProduction")}
     SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
     IdCon                                                                 -> Constructor        {cons("Constructor")}
-    Sort "." Constructor                                                  -> SortCons           {cons("SortCons")}
+    SymbolDef "." Constructor                                             -> SortCons           {cons("SortCons")}
     "<" Placeholder ">"                                                   -> TemplatePart1      {bracket}
     "[" Placeholder "]"                                                   -> TemplatePart2      {bracket}
     PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder        {cons("Placeholder")}
@@ -122,7 +122,6 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    [\r\n]                             -> "\n"            
     [\ \t]+                            -> TemplateLayout  
     ( ~[\\\<\>\ \t\r\n] | Backslash )+ -> TemplateString1 
     ( ~[\\\[\]\ \t\r\n] | Backslash )+ -> TemplateString2 

@@ -16,17 +16,12 @@ imports
 
 rules
  
- to-sdf-test(|mn, i*) = 
- 	module-to-sdf
+ to-sdf(|chars, newline, kfr) = 
+ 	module-to-sdf(|chars, newline, kfr) <+ section-to-sdf(|chars, newline, kfr) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
   
-  module-to-sdf:
+  module-to-sdf(|chars, newline, kfr):
   	Module(Unparameterized(mn), i, sections) ->
   		'module(unparameterized(mn), imports, exports)
-  	with
-  		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
-  	//	debug(!"tokenize");
-  		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
-  		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections
   	with
   		if [] := sections
   		then
@@ -209,7 +204,7 @@ rules
     	prods' := <map(prod-to-sdf)> prods
   
   sortcons-to-sdf(|chars, newline):
-  	SortConsRef(s, Constructor(c)) -> prod(p, s, no-attrs())
+  	SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
   	with
   		prod := <get-def> c;
   		//debug(!"def");
@@ -238,28 +233,14 @@ rules
   		symbol' := <term-translation> symbol;  		
   		a'* := <term-translation> a*
   		
-  prod-to-sdf:
-  	SymbolSdfProduction(symbol, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)		
-  	with
-  		symbols'* := <term-translation> symbols*;
-  		symbol' := <term-translation> symbol;  		
-  		a'* := <term-translation> a*
-  		
-  prod-to-sdf:
-  	SortKernelProduction(kernelSort, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
-  	with
-  		symbols'* := <term-translation> symbols*;
-  		symbol' := <term-translation> kernelSort;  		
-  		a'* := <term-translation> a*  				
-  		
-  		
+  
   //TemplateSection
   section-to-sdf(|chars, newline, kfr):
   	TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
   	with
   		p* := <map(prod-to-sdf(|chars, newline))> x;
   		//content complete prods
-  		cc* := < map(?TemplateProduction(<id>, _, _) <+ ?TemplateProductionWithCons(SortCons(<id>, Constructor(_)), _, _))
+  		cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
              ; nub 
              ; map(sort-to-contentcomplete)> x;	
         if [] := cc*
@@ -404,15 +385,6 @@ rules //conversion of SDF3 terms into SDF2
   	IterStar(sort) -> iter-star(sort)
   	
   special-term-to-sdf:
-  	SortCf(s) -> cf(sort(s))
-  	
-  special-term-to-sdf:
-  	SortLex(s) -> cf(sort(s))
-  	
-  special-term-to-sdf:
-  	SortVarsym(s) -> varsym(sort(s))		
-  		
-  special-term-to-sdf:
   	Simple(sort) -> simple-charclass(sort)
   	
   special-term-to-sdf:
@@ -472,6 +444,14 @@ rules //conversion of SDF3 terms into SDF2
   special-term-to-sdf:
   	NoAttrs() -> no-attrs()
   
+  special-term-to-sdf:
+  	SortDef(s) -> sort(s)
+  	
+  special-term-to-sdf:
+  	Deprecated() -> term(default(fun(unquoted("deprecated"))))
+  	
+  special-term-to-sdf:
+  	Deprecated(s) -> term(default(appl(unquoted("deprecated"), [fun(quoted(s))])))		
  	
   		  		
   terms-to-sdf:

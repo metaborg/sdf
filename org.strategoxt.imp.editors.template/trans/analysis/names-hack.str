@@ -14,7 +14,7 @@ rules
   
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@SdfProductionWithCons(
-         SortCons(s, Constructor(c))
+         SortCons(SortDef(s), Constructor(c))
        , rhs
        , attrs
        )
@@ -38,7 +38,7 @@ rules
       
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@TemplateProductionWithCons(
-         SortCons(s, Constructor(c))
+         SortCons(SortDef(s), Constructor(c))
        , t
        , attrs
        )

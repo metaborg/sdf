@@ -17,7 +17,7 @@ imports
   	
   	
   	nabl-constraint(|ctx):
-  		sc@SortConsRef(s, Constructor(c)) -> <fail>
+  		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
   		where
   			<has-annotation(?Use(task))> c;
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
@@ -40,7 +40,7 @@ imports
   	
   			
     nabl-constraint(|ctx):
-  		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
+  		SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs) -> <fail>
   		where
   			type       := <type-lookup(|ctx)> c;
   			lookup     := <nabl-lookup-lexical(|ctx)> c;
