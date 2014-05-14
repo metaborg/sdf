@@ -90,6 +90,16 @@ binding rules
   	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
   	refers to Constructor c of sort s	
   	
+  SortConsRef(Lex(Sort(s)), Constructor(c)):
+  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	refers to Constructor c of sort s	 	
+  
+   SortConsRef(Cf(Sort(s)), Constructor(c)):
+  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	refers to Constructor c of sort s	
+  	
+  
+  	
  Sort(s):
  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
   	

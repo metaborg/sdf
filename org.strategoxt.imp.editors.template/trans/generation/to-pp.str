@@ -54,8 +54,8 @@ rules
     TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*])
     with
       	sort* := <filter(productive-sort); make-set> t*
-    	; s1*   := <map(sort-to-pp)> sort*
-    	; s2*   := <map(sort-to-pp(|lang))> sort*
+    	; s1*   := <map(sort-to-pp(|lang))> sort*
+    	; s2*   := <filter(template-to-pp)> t*
 
   productive-sort:
     TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s

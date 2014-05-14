@@ -34,11 +34,11 @@ rules // Analysis
   
   analysis-single-default-interface = 
   	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
-  	analysis-single-default(analyze; id, id, id|<language>)
+  	analysis-single-default(normalization; id, id, id|<language>)
   	
   analysis-multiple-default-interface = 
   	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
-  analysis-multiple-default(parse-file <+ !(), analyze; id, id, id|<language>, <project-path>)
+  analysis-multiple-default(parse-file <+ !(), normalization; id, id, id|<language>, <project-path>)
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       
@@ -65,7 +65,7 @@ rules // Debugging
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"analyzed.aterm")> path;
-      result   := <analyze> selected
+      result   := <normalization> selected
       
   debug-show-analyzed:
     (selected, position, ast, path, project-path) -> (filename, selected)

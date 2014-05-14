@@ -37,6 +37,55 @@ rules
     ; fail
       
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProductionWithCons(
+         SortCons(Lex(SortDef(s)), Constructor(c))
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProductionWithCons(
+           SortCons(
+             id
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+      
+    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
+    ?p@SdfProductionWithCons(
+         SortCons(Cf(SortDef(s)), Constructor(c))
+       , rhs
+       , attrs
+       )
+    ; (id
+       ; SdfProductionWithCons(
+           SortCons(
+             id
+           , Constructor(
+               nabl-store-props-raw(
+               | partition__
+               , [ Prop(NablProp_sort(), s, [])
+                 , Prop(NablProp_def(), p, [])
+                 ]
+               )
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail  
+         
+      
+   nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@TemplateProductionWithCons(
          SortCons(SortDef(s), Constructor(c))
        , t

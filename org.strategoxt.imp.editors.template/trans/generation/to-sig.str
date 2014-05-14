@@ -39,7 +39,7 @@ rules
   		sig* := <filter(cfg-to-sig); not(?[])> p*
   	
   section-to-sig:
-  	SDFSection(Syntax(p*)) -> Constructors(sig*)
+  	SDFSection(Kernel(p*)) -> Constructors(sig*)
   	where
   		sig* := <filter(cfg-to-sig); not(?[])> p*		
  
@@ -67,14 +67,14 @@ rules
     
   // kernel productions
      cfg-to-sig:
-     SdfProduction(Lex(Sort(SortDef(s))), rhs, Attrs(a*)) -> OpDeclInj(t')
+     SdfProduction(Lex(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
      	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
      	rhs-type := <get-type> rhs;
      	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
      	
  	 cfg-to-sig:
-     SdfProduction(Cf(Sort(SortDef(s))), rhs, Attrs(a*)) -> OpDeclInj(t')
+     SdfProduction(Cf(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
      	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
      	rhs-type := <get-type> rhs;

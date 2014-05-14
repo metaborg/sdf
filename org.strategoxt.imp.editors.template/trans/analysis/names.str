@@ -998,6 +998,134 @@ rules
       |
       )
 
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?SortConsRef(
+       Lex(Sort(s))
+     , Constructor(c)
+     )
+    ; origin-track-forced(
+        SortConsRef(
+          origin-track-forced(
+            Lex(
+              origin-track-forced(
+                Sort(
+                  nabl-use(
+                  | lang__
+                  , partition__
+                  , uniques__
+                  , uris__
+                  , [ UseCandidate(
+                        NablNsSort()
+                      , []
+                      , Current()
+                      , True()
+                      , []
+                      )
+                    ]
+                  )
+                )
+              |
+              )
+            )
+          |
+          )
+        , origin-track-forced(Constructor(id)|)
+        )
+      |
+      )
+    ; origin-track-forced(
+        SortConsRef(
+          origin-track-forced(
+            Lex(origin-track-forced(Sort(id)|))
+          |
+          )
+        , origin-track-forced(
+            Constructor(
+              nabl-use(
+              | lang__
+              , partition__
+              , uniques__
+              , uris__
+              , [ UseCandidate(
+                    NablNsConstructor()
+                  , [Prop(NablProp_sort(), s, [])]
+                  , Current()
+                  , True()
+                  , []
+                  )
+                ]
+              )
+            )
+          |
+          )
+        )
+      |
+      )
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?SortConsRef(
+       Cf(Sort(s))
+     , Constructor(c)
+     )
+    ; origin-track-forced(
+        SortConsRef(
+          origin-track-forced(
+            Cf(
+              origin-track-forced(
+                Sort(
+                  nabl-use(
+                  | lang__
+                  , partition__
+                  , uniques__
+                  , uris__
+                  , [ UseCandidate(
+                        NablNsSort()
+                      , []
+                      , Current()
+                      , True()
+                      , []
+                      )
+                    ]
+                  )
+                )
+              |
+              )
+            )
+          |
+          )
+        , origin-track-forced(Constructor(id)|)
+        )
+      |
+      )
+    ; origin-track-forced(
+        SortConsRef(
+          origin-track-forced(
+            Cf(origin-track-forced(Sort(id)|))
+          |
+          )
+        , origin-track-forced(
+            Constructor(
+              nabl-use(
+              | lang__
+              , partition__
+              , uniques__
+              , uris__
+              , [ UseCandidate(
+                    NablNsConstructor()
+                  , [Prop(NablProp_sort(), s, [])]
+                  , Current()
+                  , True()
+                  , []
+                  )
+                ]
+              )
+            )
+          |
+          )
+        )
+      |
+      )
+
   nabl-get-name :
     Sort(s) -> s
 

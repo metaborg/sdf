@@ -7,6 +7,6 @@ imports
 
 strategies
 
-  analyze =
+  normalization =
     desugar-templates
     ;normalize-all

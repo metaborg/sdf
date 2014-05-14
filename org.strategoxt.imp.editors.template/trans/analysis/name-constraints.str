@@ -22,7 +22,30 @@ imports
   			<has-annotation(?Use(task))> c;
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-  			
+  	
+  	nabl-constraint(|ctx):
+  		sc@SortConsRef(Cf(Sort(s)), Constructor(c)) -> <fail>
+  		where
+  			<has-annotation(?Use(task))> c;
+  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+  	
+  	nabl-constraint(|ctx):
+  		sc@SortConsRef(Lex(Sort(s)), Constructor(c)) -> <fail>
+  		where
+  			<has-annotation(?Use(task))> c;
+  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+  	
+  	
+  	
+  	nabl-constraint(|ctx):
+  		Module(Unparameterized(m)) -> <fail>
+  		where
+  		<has-annotation(?Use(task))> m;
+  		msg := $[Unresolved reference to module '[m]'];
+  		<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
+  					
   	
   	nabl-constraint(|ctx):
   		p@Placeholder(label, Sort(s), t, options) -> <fail>
@@ -40,7 +63,7 @@ imports
   	
   			
     nabl-constraint(|ctx):
-  		SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs) -> <fail>
+  		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
   		where
   			type       := <type-lookup(|ctx)> c;
   			lookup     := <nabl-lookup-lexical(|ctx)> c;
