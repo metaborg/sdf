@@ -1,0 +1,79 @@
+module to-template
+
+imports
+  libstratego-sglr
+  include/TemplateLang
+  templatelang/desugar
+
+rules // Convert regular productions to desugared syntax templates
+	
+	prod-to-template:
+		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a*)) ->
+		TemplateProductionWithCons(SortCons(SortDef(s), c), SingleLineTemplate(elem*), Attrs(a*))
+	with
+		elem* := <map(symbol-to-elem);
+                separate-by(|Layout(" "))> symbols*
+    
+    prod-to-template:
+		SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) ->
+		TemplateProduction(SortDef(s), SingleLineTemplate(elem*), Attrs(a*))
+	with
+		elem* := <map(symbol-to-elem);
+                separate-by(|Layout(" "))> symbols*            
+    
+    
+    cf-prod-to-template:
+    	SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) -> 
+    		TemplateProduction(SortDef(s), SingleLineTemplate(elem*), Attrs(a*))
+    with
+    	elem* := <map(symbol-to-elem)> symbols*
+    	//;debug(!"a")
+    
+    cf-prod-to-template:
+    	SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a*)) -> 
+    		TemplateProductionWithCons(SortCons(SortDef(s), c), SingleLineTemplate(elem*), Attrs(a*))
+    with
+    	elem* := <map(symbol-to-elem)> symbols*
+    	//; debug(! "b")
+    
+    symbol-to-elem:
+    	<Cf(Layout()) + Lex(Layout())> -> Layout(" ")
+    	
+    symbol-to-elem:
+    	Lex(s) -> <symbol-to-elem> s
+    
+    symbol-to-elem:
+    	Cf(s) -> <symbol-to-elem> s
+    
+    
+    
+    
+    
+	symbol-to-elem:
+   		Lit(t) -> String(<un-double-quote; unescape> t)
+	
+	
+	symbol-to-elem:
+    	t@Sort(_) -> Placeholder(None(), t, None(), [])
+    
+    symbol-to-elem:
+		Opt(t@Sort(_)) -> Placeholder(None(), t, Option(), [])
+	
+	symbol-to-elem:
+		IterStar(t@Sort(_)) -> Placeholder(None(), t, Star(), [])
+	
+	symbol-to-elem:
+		Iter(t@Sort(_)) -> Placeholder(None(), t, Plus(), [])
+	
+	symbol-to-elem:
+    	IterStarSep(t@Sort(_), Lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
+    with
+      	s' := <un-double-quote; unescape> s
+	
+	symbol-to-elem:
+		IterSep(t @ Sort(_), lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
+	with
+		s' := <un-double-quote; unescape> s
+		
+
+  
