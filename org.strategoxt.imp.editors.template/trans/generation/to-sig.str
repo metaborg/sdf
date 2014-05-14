@@ -49,17 +49,17 @@ rules
     Sort(s) -> SortNoArgs(s)
 		
 	lexical-to-sig:
-    SdfProduction(s, _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    SdfProduction(SortDef(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
     where
       <not(fetch-elem(?Reject()))> a*
      
     cfg-to-sig:
-    SdfProductionWithCons(SortCons(s,c), _, Attrs(a*)) -> <cons-to-decl> c
+    SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
     	
     cfg-to-sig:
-    SdfProduction(s, rhs, Attrs(a*)) -> OpDeclInj(t')
+    SdfProduction(SortDef(s), rhs, Attrs(a*)) -> OpDeclInj(t')
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
     	rhs-type := <get-type> rhs;
@@ -67,14 +67,14 @@ rules
     
   // kernel productions
      cfg-to-sig:
-     SdfProduction(Lex(Sort(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
+     SdfProduction(Lex(Sort(SortDef(s))), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
      	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
      	rhs-type := <get-type> rhs;
      	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
      	
  	 cfg-to-sig:
-     SdfProduction(Cf(Sort(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
+     SdfProduction(Cf(Sort(SortDef(s))), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
      	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
      	rhs-type := <get-type> rhs;
@@ -86,12 +86,12 @@ rules
       sig* := <filter(template-to-sig); not(?[])> t*
       
     template-to-sig:
-    TemplateProductionWithCons(SortCons(s, c), _, Attrs(a*)) -> <cons-to-decl> c
+    TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-decl> c
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
       
     template-to-sig:
-    TemplateProduction(s, t, Attrs(a*)) -> OpDeclInj(t')
+    TemplateProduction(SortDef(s), t, Attrs(a*)) -> OpDeclInj(t')
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*;
       temp-type := <get-type> t;
