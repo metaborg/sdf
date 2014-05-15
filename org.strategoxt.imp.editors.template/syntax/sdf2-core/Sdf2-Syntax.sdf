@@ -15,6 +15,3 @@ exports
     CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
     CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
 
-  context-free priorities
-    Symbol "|" Symbol -> Symbol >
-    Label ":" Symbol -> Symbol

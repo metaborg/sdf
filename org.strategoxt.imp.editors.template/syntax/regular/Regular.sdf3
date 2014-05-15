@@ -1,29 +1,30 @@
 module regular/Regular
 
-imports kernel/Kernel constants/IntCon symbols/Symbols
+imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon labels/Labels
  
 templates 
 
-Symbol.Empty = <()>
-Symbol.Seq = <(<head:Symbol> <tail:Symbol+>)>
+// Symbol.Empty = <()>
+// Symbol.Seq = <(<head:Symbol> <tail:Symbol+>)>
+// Symbol.Tuple = <\<<head:Symbol> , <rest:Symbol+; separator=",">\>>
+
+
 Symbol.Opt = <<Symbol>?>
 Symbol.Iter = <<Symbol>+>
 Symbol.IterStar = <<Symbol>*>
-Symbol.IterSep = <{<Symbol> <sep:Symbol>} +>
-Symbol.IterStarSep = <{<Symbol> <sep:Symbol>} *>
-Symbol.Tuple = <\<<head:Symbol> , <rest:Symbol+; separator=",">\>>
-Symbol.Func = <(<arguments:Symbols> =\> <results:Symbol>)>
-//"left":Symbol "|" "right":Symbol              -> Symbol {right,cons("alt")}
-Symbol.Alt = <<Symbol> | <Symbol>> {right}
+Symbol.IterSep = <{<Symbol> <sep:Separator>} +>
+Symbol.IterStarSep = <{<Symbol> <sep:Separator>} *>
+Separator.Lit = <<StrCon>>
+
+
+//Symbol.Func = <(<arguments:Symbols> =\> <results:Symbol>)>
+//"left":Symbol "|" "right":Symbol              - > Symbol {right,cons("alt")}
+//Symbol.Alt = <<Symbol> | <Symbol>> {right}
 // "(" "left":Symbol "->" "right":Symbol ")"     -> Symbol {cons("strategy")}
-Symbol.Strategy = <(<Symbol> -\> <Symbol> )>
+//Symbol.Strategy = <(<Symbol> -\> <Symbol> )>
  
-context-free priorities
+context-free priorities 
 {Symbol.Opt
  Symbol.IterStar
- Symbol.Iter} >  
- Symbol.Alt 
-
-template options
-
-tokenize : "(" 
+ Symbol.Iter} >
+ Symbol.Label

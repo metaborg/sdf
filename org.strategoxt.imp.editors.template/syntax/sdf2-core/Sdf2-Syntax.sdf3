@@ -26,10 +26,3 @@ Grammar.ContextFreeRestrictions = <context-free restrictions <Restrictions>>
 
 //SDF.Definition = <definition <Definition>> IGNORED PRODUCTION
 
-context-free priorities
-//probably couldn't refer to the productions in the other modules
-//Symbol.Alt >
-//Symbol.Label
-
-Symbol "|" Symbol  -> Symbol >
-    Label ":" Symbol -> Symbol 

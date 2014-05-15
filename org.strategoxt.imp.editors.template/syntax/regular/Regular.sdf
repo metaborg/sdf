@@ -1,25 +1,22 @@
 module regular/Regular
-imports kernel/Kernel constants/IntCon
+imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon
+        labels/Labels
 
 exports
   context-free syntax
-    "(" ")"                                          -> Symbol {cons("Empty")}
-    "(" head:Symbol Symbol+ ")"                      -> Symbol {cons("Seq")}
-    Symbol "?"                                       -> Symbol {cons("Opt")}
-    Symbol "+"                                       -> Symbol {cons("Iter")}
-    Symbol "*"                                       -> Symbol {cons("IterStar")}
-    "{" Symbol sep:Symbol "}" "+"                    -> Symbol {cons("IterSep")}
-    "{" Symbol sep:Symbol "}" "*"                    -> Symbol {cons("IterStarSep")}
-    "<" head:Symbol "," {Symbol ","}+ ">"            -> Symbol {cons("Tuple")}
-    "(" arguments:Symbols "=" ">" results:Symbol ")" -> Symbol {cons("Func")}
-    Symbol "|" Symbol                                -> Symbol {right, cons("Alt")}
-    "(" Symbol "-" ">" Symbol ")"                    -> Symbol {cons("Strategy")}
+    Symbol "?"                       -> Symbol    {cons("Opt")}
+    Symbol "+"                       -> Symbol    {cons("Iter")}
+    Symbol "*"                       -> Symbol    {cons("IterStar")}
+    "{" Symbol sep:Separator "}" "+" -> Symbol    {cons("IterSep")}
+    "{" Symbol sep:Separator "}" "*" -> Symbol    {cons("IterStarSep")}
+    StrCon                           -> Separator {cons("Lit")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}
+    CONTENTCOMPLETE -> Symbol    {cons("COMPLETION-Symbol")}
+    CONTENTCOMPLETE -> Separator {cons("COMPLETION-Separator")}
 
   context-free priorities
     { Symbol "?" -> Symbol
       Symbol "*" -> Symbol
       Symbol "+" -> Symbol } >
-    Symbol "|" Symbol -> Symbol
+    Label ":" Symbol -> Symbol

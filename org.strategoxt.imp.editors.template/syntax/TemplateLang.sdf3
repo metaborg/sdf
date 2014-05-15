@@ -7,7 +7,7 @@
 // The restrictions for module names (SPXCommon) are in Sdf2.sdf3
 // Sections are defined in Modules.sdf3
 
-module TemplateLang
+module TemplateLang 
 imports
   sdf2-core/SDF
   constants/StrCon
@@ -143,10 +143,11 @@ PlaceholderOption.Text = <text = <StrCon>>
     "\n" = [\r\n] //this rule is not allowed in SDF3 yet
     TemplateLayout =  [\ \t]+
     
-    TemplateString1 = (~[\\\<\>\ \t\r\n] | Backslash)+
-    TemplateString2 = (~[\\\[\]\ \t\r\n] | Backslash)+
+    TemplateString1 = BackslashAlt+
+    TemplateString2 = BackslashAlt+
 	TemplateStringQ =  ~[\\\"\ \t]+   
-   
+    BackslashAlt = ~[\\\<\>\ \t\r\n]
+    BackslashAlt = Backslash
 
 	Backslash = [\\] 
     // [\\] -> Backslash1
@@ -183,9 +184,17 @@ PlaceholderOption.Text = <text = <StrCon>>
   EscapedChar2 = "\\]"
   EscapedChar2 = "\\\\"
   
-   EscapedChar1 = "<" (EscapedBackslashChar1 | EscapedChar)* ">"
+   //EscapedChar1 = "<" (EscapedBackslashChar1 | EscapedChar)* ">"
+   EscapedChar1 = "<" EscapedChar1Alt* ">"
+   EscapedChar1Alt = EscapedBackslashChar1
+   EscapedChar1Alt = EscapedChar
+   
    EscapedChar1 = "<\\\\>" [\ \t\r]* [\n]
-   EscapedChar2 = "[" (EscapedBackslashChar2 | EscapedChar)* "]"
+   
+   //EscapedChar2 = "[" (EscapedBackslashChar2 | EscapedChar)* "]"
+   EscapedChar2 = "[" EscapedChar2Alt* "]"
+   EscapedChar2Alt = EscapedBackslashChar2 
+   EscapedChar2Alt = EscapedChar
    EscapedChar2 = "[\\\\]" [\ \t\r]* [\n]
 
     // double-backslash isn't allowed as sole member of escape placeholder
@@ -194,7 +203,9 @@ PlaceholderOption.Text = <text = <StrCon>>
    EscapedBackslashChar1 = "\\\\"
    EscapedBackslashChar2 = "\\\\"
    
-   TemplateEscapeQ = ("\\\\" | EscapedChar)+
+   TemplateEscapeQ = EscapedCharAlt+
+   EscapedCharAlt = EscapedChar
+   EscapedCharAlt = "\\\\"
    
    //escapes allowed in a placeholder-like construct
    EscapedChar = "\\'"

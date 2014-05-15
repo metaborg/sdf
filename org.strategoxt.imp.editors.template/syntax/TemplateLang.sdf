@@ -122,11 +122,14 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    [\ \t]+                            -> TemplateLayout  
-    ( ~[\\\<\>\ \t\r\n] | Backslash )+ -> TemplateString1 
-    ( ~[\\\[\]\ \t\r\n] | Backslash )+ -> TemplateString2 
-    ~[\\\"\ \t]+                       -> TemplateStringQ 
-    [\\]                               -> Backslash       
+    [\r\n]            -> "\n"            
+    [\ \t]+           -> TemplateLayout  
+    BackslashAlt+     -> TemplateString1 
+    BackslashAlt+     -> TemplateString2 
+    ~[\\\"\ \t]+      -> TemplateStringQ 
+    ~[\\\<\>\ \t\r\n] -> BackslashAlt    
+    Backslash         -> BackslashAlt    
+    [\\]              -> Backslash       
 
   lexical restrictions
     TemplateLayout -/- [\ \t]
@@ -138,33 +141,39 @@ exports
     Backslash -/- [\<\>\\]
 
   lexical syntax
-    [a-zA-Z]* "CONTENTCOMPLETE" [0-9]+               -> CONTENTCOMPLETE       {avoid}
-    EscapedChar1+                                    -> TemplateEscape1       
-    EscapedChar2+                                    -> TemplateEscape2       
-    "\\<"                                            -> EscapedChar1          
-    "\\>"                                            -> EscapedChar1          
-    "\\\\"                                           -> EscapedChar1          
-    "\\["                                            -> EscapedChar2          
-    "\\]"                                            -> EscapedChar2          
-    "\\\\"                                           -> EscapedChar2          
-    "<" ( EscapedBackslashChar1 | EscapedChar )* ">" -> EscapedChar1          
-    "<\\\\>" [\ \t\r]* [\n]                          -> EscapedChar1          
-    "[" ( EscapedBackslashChar2 | EscapedChar )* "]" -> EscapedChar2          
-    "[\\\\]" [\ \t\r]* [\n]                          -> EscapedChar2          
-    "\\\\"                                           -> EscapedBackslashChar1 
-    "\\\\"                                           -> EscapedBackslashChar2 
-    ( "\\\\" | EscapedChar )+                        -> TemplateEscapeQ       
-    "\\'"                                            -> EscapedChar           
-    '\\"'                                            -> EscapedChar           
-    "\\ "                                            -> EscapedChar           
-    "\\t"                                            -> EscapedChar           
-    "\\r"                                            -> EscapedChar           
-    "\\n"                                            -> EscapedChar           
-    "\\u" [0-9A-Fa-f]+                               -> EscapedUnicodeChar    
-    EscapedUnicodeChar                               -> EscapedChar           
-    "\\" ~[]                                         -> EscapedChar           {cons("WATER"), recover}
-    "<" ~[\>]+ ">"                                   -> EscapedChar1          {cons("WATER"), recover}
-    "[" ~[\]]+ "]"                                   -> EscapedChar2          {cons("WATER"), recover}
+    [a-zA-Z]* "CONTENTCOMPLETE" [0-9]+ -> CONTENTCOMPLETE       {avoid}
+    EscapedChar1+                      -> TemplateEscape1       
+    EscapedChar2+                      -> TemplateEscape2       
+    "\\<"                              -> EscapedChar1          
+    "\\>"                              -> EscapedChar1          
+    "\\\\"                             -> EscapedChar1          
+    "\\["                              -> EscapedChar2          
+    "\\]"                              -> EscapedChar2          
+    "\\\\"                             -> EscapedChar2          
+    "<" EscapedChar1Alt* ">"           -> EscapedChar1          
+    EscapedBackslashChar1              -> EscapedChar1Alt       
+    EscapedChar                        -> EscapedChar1Alt       
+    "<\\\\>" [\ \t\r]* [\n]            -> EscapedChar1          
+    "[" EscapedChar2Alt* "]"           -> EscapedChar2          
+    EscapedBackslashChar2              -> EscapedChar2Alt       
+    EscapedChar                        -> EscapedChar2Alt       
+    "[\\\\]" [\ \t\r]* [\n]            -> EscapedChar2          
+    "\\\\"                             -> EscapedBackslashChar1 
+    "\\\\"                             -> EscapedBackslashChar2 
+    EscapedCharAlt+                    -> TemplateEscapeQ       
+    EscapedChar                        -> EscapedCharAlt        
+    "\\\\"                             -> EscapedCharAlt        
+    "\\'"                              -> EscapedChar           
+    '\\"'                              -> EscapedChar           
+    "\\ "                              -> EscapedChar           
+    "\\t"                              -> EscapedChar           
+    "\\r"                              -> EscapedChar           
+    "\\n"                              -> EscapedChar           
+    "\\u" [0-9A-Fa-f]+                 -> EscapedUnicodeChar    
+    EscapedUnicodeChar                 -> EscapedChar           
+    "\\" ~[]                           -> EscapedChar           {cons("WATER"), recover}
+    "<" ~[\>]+ ">"                     -> EscapedChar1          {cons("WATER"), recover}
+    "[" ~[\]]+ "]"                     -> EscapedChar2          {cons("WATER"), recover}
 
   lexical restrictions
     TemplateEscape1 -/- [\\]
