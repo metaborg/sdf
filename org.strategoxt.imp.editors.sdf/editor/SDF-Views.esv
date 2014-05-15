@@ -2,5 +2,5 @@ module SDF-Views
 
 views
   
-  outline view: editor-outline
+  outline view: editor-outline (source)
     expand to level: 3
