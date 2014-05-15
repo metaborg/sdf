@@ -1,0 +1,6 @@
+module SDF-Views
+
+views
+  
+  outline view: editor-outline
+    expand to level: 3
