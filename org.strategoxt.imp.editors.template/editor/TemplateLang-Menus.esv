@@ -1,43 +1,41 @@
 module TemplateLang-Menus
 
-imports TemplateLang-Menus.generated
-
 menus
   
-  menu: "Syntax"
+  menu: "Syntax"                      (openeditor) (meta)
     
-    action: "Show abstract syntax"   = debug-show-aterm (openeditor) (realtime) (meta) (source)
-    action: "Show desugared syntax" = debug-show-desugared (openeditor) (realtime) (meta) (source)
-    action: "Show analyzed syntax"   = debug-show-analyzed (openeditor) (meta)
+    action: "Show abstract syntax"  = debug-show-aterm (realtime) (source)
+    action: "Show desugared syntax" = debug-show-desugared (realtime) (source)
+    action: "Show analyzed syntax"  = debug-show-analyzed
     
-  menu: "Analysis"
+  menu: "Analysis"                    (meta)
     
-    action: "Reset and reanalyze"  = debug-reanalyze (meta)   
+    action: "Reset and reanalyze"   = debug-reanalyze   
 
-    submenu: "Show analysis"
-      action: "Project"            = debug-project (openeditor) (meta)
-      action: "Partition"          = debug-partition (openeditor) (meta)
+    submenu: "Show analysis"          (openeditor)
+      action: "Project"             = debug-project
+      action: "Partition"           = debug-partition
     end
     
-    submenu: "Show index"
-      action: "Project"            = debug-index-project (openeditor) (meta)
-      action: "Partition"          = debug-index-partition (openeditor) (meta)
+    submenu: "Show index"             (openeditor)
+      action: "Project"             = debug-index-project
+      action: "Partition"           = debug-index-partition
     end
     
-    submenu: "Show tasks"
-      action: "Project"            = debug-task-project (openeditor) (meta)
-      action: "Partition"          = debug-task-partition (openeditor) (meta)
-      action: "Selection"          = debug-task-selection (openeditor) (meta)
+    submenu: "Show tasks"             (openeditor)
+      action: "Project"             = debug-task-project
+      action: "Partition"           = debug-task-partition
+      action: "Selection"           = debug-task-selection
     end
   
-  menu: "Generation"
+  menu: "Generation" (openeditor) (realtime)
     
-	  action: "Show expanded templates (for selection)" = generate-expanded (openeditor) (realtime)
-	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract (openeditor) (realtime)
-	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete (openeditor) (realtime)
-	  action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract (openeditor) (realtime)
-	  action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete (openeditor) (realtime)
-	  action: "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract (openeditor) (realtime)
-	  action: "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete (openeditor) (realtime)
-	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract (openeditor) (realtime)
-	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete (openeditor) (realtime)
+	  action: "Show expanded templates (for selection)" = generate-expanded
+	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract
+	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete
+	  action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract
+	  action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete
+	  action: "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract
+	  action: "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete
+	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract
+	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete
