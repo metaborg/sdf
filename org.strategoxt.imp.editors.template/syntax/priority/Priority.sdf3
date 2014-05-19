@@ -1,6 +1,6 @@
 module priority/Priority
 
-imports kernel/Kernel
+imports kernel/Kernel constants/NatCon
  
 templates
 

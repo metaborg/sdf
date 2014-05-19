@@ -3,12 +3,16 @@ imports layout/Whitespace
 
 exports
   lexical syntax
-    "%%" line:~[\n\r]* [\n\r] | EOF    -> LAYOUT      {category("Comment")}
-    "%" content:~[\%\n\r]+ "%"         -> LAYOUT      {category("Comment")}
-    "/*" ( ~[\*] | CommentChar )* "*/" -> LAYOUT      
-    [\*]                               -> CommentChar 
-    "//" ~[\n\r]* [\n\r] | EOF         -> LAYOUT      
-                                       -> EOF         
+    "%%" line:~[\n\r]* LayoutNewlineAlt -> LAYOUT           {category("Comment")}
+    [\n\r]                              -> LayoutNewlineAlt 
+    EOF                                 -> LayoutNewlineAlt 
+    "%" content:~[\%\n\r]+ "%"          -> LAYOUT           {category("Comment")}
+    "/*" LayoutCommentAlt* "*/"         -> LAYOUT           
+    ~[\*]                               -> LayoutCommentAlt 
+    CommentChar                         -> LayoutCommentAlt 
+    [\*]                                -> CommentChar      
+    "//" ~[\n\r]* LayoutNewlineAlt      -> LAYOUT           
+                                        -> EOF              
 
   lexical restrictions
     CommentChar -/- [\/]

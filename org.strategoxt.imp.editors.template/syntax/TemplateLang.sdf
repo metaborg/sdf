@@ -122,14 +122,15 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
-    [\r\n]            -> "\n"            
-    [\ \t]+           -> TemplateLayout  
-    BackslashAlt+     -> TemplateString1 
-    BackslashAlt+     -> TemplateString2 
-    ~[\\\"\ \t]+      -> TemplateStringQ 
-    ~[\\\<\>\ \t\r\n] -> BackslashAlt    
-    Backslash         -> BackslashAlt    
-    [\\]              -> Backslash       
+    [\r\n]              -> "\n"               
+    [\ \t]+             -> TemplateLayout     
+    TemplateString1Alt+ -> TemplateString1    
+    TemplateString2Alt+ -> TemplateString2    
+    ~[\\\"\ \t]+        -> TemplateStringQ    
+    ~[\\\<\>\ \t\r\n]   -> TemplateString1Alt 
+    ~[\\\[\]\ \t\r\n]   -> TemplateString2Alt 
+    Backslash           -> TemplateString2Alt 
+    [\\]                -> Backslash          
 
   lexical restrictions
     TemplateLayout -/- [\ \t]
@@ -160,9 +161,9 @@ exports
     "[\\\\]" [\ \t\r]* [\n]            -> EscapedChar2          
     "\\\\"                             -> EscapedBackslashChar1 
     "\\\\"                             -> EscapedBackslashChar2 
-    EscapedCharAlt+                    -> TemplateEscapeQ       
-    EscapedChar                        -> EscapedCharAlt        
-    "\\\\"                             -> EscapedCharAlt        
+    TemplateEscapeQAlt+                -> TemplateEscapeQ       
+    EscapedChar                        -> TemplateEscapeQAlt    
+    "\\\\"                             -> TemplateEscapeQAlt    
     "\\'"                              -> EscapedChar           
     '\\"'                              -> EscapedChar           
     "\\ "                              -> EscapedChar           

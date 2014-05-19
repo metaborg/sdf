@@ -1,12 +1,3 @@
-// changes in the SDF3 grammar:
-// ID => Sort (ID could produce a sort starting with a lower case letter)
-// removed the parametrized sorts replacing them with the actual sorts from the SDF grammar
-// STRING replaced by StrCon from SDF2 Grammar
-// The Syntax grammar couldnot be translated to SDF3 due SDF3 only allow sorts, and not symbols in its productions
-// Merged Backslash1 and Backslash2 into backslash
-// The restrictions for module names (SPXCommon) are in Sdf2.sdf3
-// Sections are defined in Modules.sdf3
-
 module TemplateLang 
 imports
   sdf2-core/SDF
@@ -87,7 +78,6 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
  
 // placeholders
 TemplatePart1 = <\<<Placeholder>\>> {bracket}
-// should we use square brackets?
 TemplatePart2 = <[<Placeholder>]> {bracket}
 
 //Probably fix this to avoid <Sort*; separator="c">
@@ -114,9 +104,7 @@ PlaceholderOption.Anchor = <anchor>
 PlaceholderOption.Separator = <separator = <StrCon>>
 PlaceholderOption.Text = <text = <StrCon>>
 
-//this section probably should be rules for a normalized SDF3 grammar
-//these rules cannot be translated to templates because placeholders only accept sorts
-  syntax
+syntax
     %% template parts
     "<" {<TemplateLine1-CF> "\n"}+ ">" -> <Template-CF> {cons("Template")}
     "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF> {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
@@ -140,14 +128,15 @@ PlaceholderOption.Text = <text = <StrCon>>
   
   
   lexical syntax
-    "\n" = [\r\n] //this rule is not allowed in SDF3 yet
+    "\n" = [\r\n] 
     TemplateLayout =  [\ \t]+
     
-    TemplateString1 = BackslashAlt+
-    TemplateString2 = BackslashAlt+
+    TemplateString1 = TemplateString1Alt+
+    TemplateString2 = TemplateString2Alt+
 	TemplateStringQ =  ~[\\\"\ \t]+   
-    BackslashAlt = ~[\\\<\>\ \t\r\n]
-    BackslashAlt = Backslash
+    TemplateString1Alt = ~[\\\<\>\ \t\r\n]
+    TemplateString2Alt = ~[\\\[\]\ \t\r\n] 
+    TemplateString2Alt = Backslash
 
 	Backslash = [\\] 
     // [\\] -> Backslash1
@@ -203,9 +192,9 @@ PlaceholderOption.Text = <text = <StrCon>>
    EscapedBackslashChar1 = "\\\\"
    EscapedBackslashChar2 = "\\\\"
    
-   TemplateEscapeQ = EscapedCharAlt+
-   EscapedCharAlt = EscapedChar
-   EscapedCharAlt = "\\\\"
+   TemplateEscapeQ = TemplateEscapeQAlt+
+   TemplateEscapeQAlt = EscapedChar
+   TemplateEscapeQAlt = "\\\\"
    
    //escapes allowed in a placeholder-like construct
    EscapedChar = "\\'"

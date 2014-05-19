@@ -1,8 +1,8 @@
 module sdf2-core/SDF
-imports sdf2-core/Sdf2
+imports sdf2-core/Sdf2 modules/Modules
 
 context-free start-symbols
-    SDF Module
+    Module
 
 
 templates

@@ -4,11 +4,15 @@ imports
   layout/Whitespace
  
 lexical syntax
-	LAYOUT = "%%" line:~[\n\r]* ([\n\r] | EOF)	{category("Comment")}
+	LAYOUT = "%%" line:~[\n\r]* LayoutNewlineAlt	{category("Comment")}
+	LayoutNewlineAlt = [\n\r]
+	LayoutNewlineAlt = EOF
     LAYOUT = "%" content:~[\%\n\r]+ "%"	{category("Comment")}
-    LAYOUT = "/*" (~[\*] | CommentChar)* "*/" 
+    LAYOUT = "/*" LayoutCommentAlt* "*/" 
+    LayoutCommentAlt = ~[\*]
+    LayoutCommentAlt = CommentChar
     CommentChar = [\*]
-    LAYOUT = "//" ~[\n\r]* ([\n\r] | EOF)
+    LAYOUT = "//" ~[\n\r]* LayoutNewlineAlt
     EOF = 
     
 lexical restrictions

@@ -1,9 +1,9 @@
 module sdf2-core/Sdf2
 
-imports sdf2-core/Sdf2-Syntax
+imports sdf2-core/Sdf2-Syntax constants/StrCon constants/NatCon priority/Priority characterclass/Character modules/Modules
 
 context-free start-symbols
-    SDF Module
+    Module
 
 lexical syntax
   	Sort = "LAYOUT" {reject}
