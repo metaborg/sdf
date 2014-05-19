@@ -16,6 +16,7 @@ imports
   runtime/task/-
   trans/generation/-
   
+ 
   
   
   rules
@@ -25,10 +26,10 @@ imports
     with
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
-    	 <?Module(Unparameterized(mn), i*, _)> ast ;
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
     	filename := <create-src-gen(|project-path, ".sdf.aterm")> mn;
     	result := <module-to-sdf> selected
-  	 	
+    	  	 	
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
    with
@@ -38,9 +39,8 @@ imports
      	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   	//	debug(!"tokenize");
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
-  		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections
-   with
-       filename := <create-src-gen(|project-path, ".sdf")> mn;
+  		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+        filename := <create-src-gen(|project-path, ".sdf")> mn;
        result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected
  
   
@@ -61,7 +61,7 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   := <module-to-sig; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
+    	result   := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> selected
       ; filename := <create-src-gen(|project-path, "-sig.str")> mn
    
    generate-pp-abstract:

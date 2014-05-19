@@ -16,6 +16,7 @@ language General properties
   start symbols : Start
 
   provider : include/templatelang.jar
+  provider : include/templatelang-java.jar
   provider : include/libtemplatelang.jar
 
   observer : editor-analyze (multifile)

@@ -95,7 +95,10 @@ rules
     where 
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
    
-   
+   create-type-task(|ctx) :
+    IterStar(Cf(Sort(s))) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-is(|ctx)> ListType(<strip-annos> s)   
    
 rules
 	

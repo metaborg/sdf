@@ -8,6 +8,9 @@ imports
   runtime/editor/origins
   analysis/names
   
+   rules
+  external unquote(|)
+  
   
   strategies
   
@@ -31,6 +34,12 @@ imports
      with
      	c   := <double-quote> cons; 
         a'* := [sdf-cons(c) , a*]
+  
+  normalize:
+  	SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->
+  		SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*))
+  	where
+  		c := <getfirst(lift-constr)> a* 
   
   //regular sdf2 productions become sdf3 productions with or without constructors     	
   normalize:
@@ -101,10 +110,10 @@ imports
  // 		; debug(!"a")
   	
   lift-constr:
-  	sdf-cons(c) -> Constructor(<un-double-quote> c)
+  	sdf-cons(c) -> Constructor(<unquote>  c)
   	
   lift-constr:
-    QuotedConstructor(c) -> Constructor(<un-double-quote> c)
+    QuotedConstructor(c) -> Constructor(<unquote> c)
      
   		
   		
