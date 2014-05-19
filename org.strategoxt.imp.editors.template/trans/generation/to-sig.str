@@ -24,23 +24,23 @@ rules
   section-to-sig:
   	SDFSection(Sorts(s*)) -> Sorts(s'*)
   	with
-  		s'* := <map(sort-to-sig)> s*
+  		s'* := <map(sort-to-sig <+ debug(!"sort-to-sig failed");fail)> s*
   		
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
-    where
+    with
       sig* := <filter(lexical-to-sig); not(?[])> p*
       
   
       
   section-to-sig:
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
-  	where
+  	with
   		sig* := <filter(cfg-to-sig); not(?[])> p*
   	
   section-to-sig:
   	SDFSection(Kernel(p*)) -> Constructors(sig*)
-  	where
+  	with
   		sig* := <filter(cfg-to-sig); not(?[])> p*		
  
  
@@ -61,7 +61,8 @@ rules
     cfg-to-sig:
     SdfProduction(SortDef(s), rhs, Attrs(a*)) -> OpDeclInj(t')
     where
-    	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+    	<not(fetch-elem(?Reject() + ?Bracket()))> a*
+    with	
     	rhs-type := <get-type> rhs;
     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
     
@@ -69,22 +70,35 @@ rules
      cfg-to-sig:
      SdfProduction(Lex(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
-     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
+     with	
      	rhs-type := <get-type> rhs;
      	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
      	
  	 cfg-to-sig:
      SdfProduction(Cf(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
-     	<not(fetch-elem(?Reject() + ?Bracket()))> a*;
+     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
+     with	
      	rhs-type := <get-type> rhs;
      	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
-      
+     	
+    cfg-to-sig:
+    SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
+    where
+    	<not(fetch-elem(?Reject() + ?Bracket()))> a*	
+     	
+    cfg-to-sig:
+    SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
+    where
+    	<not(fetch-elem(?Reject() + ?Bracket()))> a* 
+   
     section-to-sig:
     TemplateSection(t*) -> Constructors(sig*)
     with
       sig* := <filter(template-to-sig); not(?[])> t*
       
+    
     template-to-sig:
     TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-decl> c
     where
@@ -93,7 +107,8 @@ rules
     template-to-sig:
     TemplateProduction(SortDef(s), t, Attrs(a*)) -> OpDeclInj(t')
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a*;
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+    with  
       temp-type := <get-type> t;
       t' := <try(check-fun-type)> FunType(temp-type, SortType(s))
      
