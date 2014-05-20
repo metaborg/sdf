@@ -59,10 +59,12 @@ exports
   context-free syntax
     "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
     "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
-    "context-free" "syntax" SdfProduction*                                -> Grammar            {cons("ContextFreeSyntax"), prefer}
+    "context-free" "syntax" GeneralProduction*                            -> Grammar            {cons("ContextFreeSyntax"), prefer}
     "syntax" SdfProduction*                                               -> Grammar            {cons("Kernel"), prefer}
+    SdfProduction                                                         -> GeneralProduction  
+    TemplateProduction                                                    -> GeneralProduction  
     SymbolDef "=" RHS Attributes                                          -> SdfProduction      {cons("SdfProduction")}
-    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
+    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}    
     Symbols                                                               -> RHS                {cons("Rhs")}
     SymbolDef "=" Template Attributes                                     -> TemplateProduction {cons("TemplateProduction")}
     SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
@@ -89,6 +91,7 @@ exports
   context-free syntax
     CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
     CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> GeneralProduction  {cons("COMPLETION-GeneralProduction")}
     CONTENTCOMPLETE -> SdfProduction      {cons("COMPLETION-SdfProduction")}
     CONTENTCOMPLETE -> RHS                {cons("COMPLETION-RHS")}
     CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
@@ -105,21 +108,17 @@ exports
 
   syntax
     "<" {<TemplateLine1-CF> "\n"}+ ">"   -> <Template-CF>      {cons("Template")}
-    "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF>      {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
+    "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF>      {cons("TemplateDeprecated"), avoid, deprecated("Use single brackets to delimit the template")}
     <TemplatePart1-CF>*                  -> <TemplateLine1-CF> {cons("Line")}
     <TemplateString1-LEX>                -> <TemplatePart1-CF> {cons("String")}
     <TemplateEscape1-LEX>                -> <TemplatePart1-CF> {cons("Escape")}
     <TemplateLayout-LEX>                 -> <TemplatePart1-CF> {cons("Layout")}
-    "[" {<TemplateLine2-CF> "\n"}+ "]"   -> <Template-CF>      {cons("Template")}
-    "[[" {<TemplateLine2-CF> "\n"}+ "]]" -> <Template-CF>      {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
+    "[" {<TemplateLine2-CF> "\n"}+ "]"   -> <Template-CF>      {cons("TemplateSquare")}
+    "[[" {<TemplateLine2-CF> "\n"}+ "]]" -> <Template-CF>      {cons("TemplateSquareDeprecated"), avoid, deprecated("Use single brackets to delimit the template")}
     <TemplatePart2-CF>*                  -> <TemplateLine2-CF> {cons("Line")}
     <TemplateString2-LEX>                -> <TemplatePart2-CF> {cons("String")}
     <TemplateEscape2-LEX>                -> <TemplatePart2-CF> {cons("Escape")}
     <TemplateLayout-LEX>                 -> <TemplatePart2-CF> {cons("Layout")}
-    '"' <TemplatePartQ-CF>* '"'          -> <Template-CF>      {cons("SingleLineTemplate")}
-    <TemplateStringQ-LEX>                -> <TemplatePartQ-CF> {cons("String")}
-    <TemplateEscapeQ-LEX>                -> <TemplatePartQ-CF> {cons("Escape")}
-    <TemplateLayout-LEX>                 -> <TemplatePartQ-CF> {cons("Layout")}
 
   lexical syntax
     [\r\n]              -> "\n"               

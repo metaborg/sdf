@@ -10,9 +10,9 @@ exports
     Sort                                    -> Symbol    {cons("Sort")}
     Sort "[[" parameters:{Symbol ","}+ "]]" -> Symbol    {cons("ParameterizedSort")}
     Sort                                    -> SymbolDef {cons("SortDef"), prefer}
-    "<" SymbolDef "-CF" ">"                 -> SymbolDef {cons("Cf"), prefer}
-    "<" SymbolDef "-LEX" ">"                -> SymbolDef {cons("Lex"), prefer}
-    "<" SymbolDef "-VAR" ">"                -> SymbolDef {cons("Var"), prefer}
+    SymbolDef "-CF"                         -> SymbolDef {cons("Cf"), prefer}
+    SymbolDef "-LEX"                        -> SymbolDef {cons("Lex"), prefer}
+    SymbolDef "-VAR"                        -> SymbolDef {cons("Var"), prefer}
     "sorts" Symbols                         -> Grammar   {cons("Sorts")}
 
   context-free syntax
