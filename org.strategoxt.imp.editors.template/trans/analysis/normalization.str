@@ -21,32 +21,38 @@ imports
   normalize: 
   	NoAttrs() -> Attrs([])
   	
-  normalize:
-    SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a*)) ->
-      SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a'*))
-    with
-    	c   := <double-quote> cons; 
-        a'* := [sdf-cons(c) , a*]
-    
-  normalize: 
-  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a*)) ->
-      TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a'*))
-     with
-     	c   := <double-quote> cons; 
-        a'* := [sdf-cons(c) , a*]
+  // normalize:
+  //   SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a*)) ->
+  //     SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a'*))
+  //   with
+  //   	c   := <double-quote> cons; 
+  //       a'* := [sdf-cons(c) , a*]
+  //   
+  // normalize: 
+  // 	TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a*)) ->
+  //     TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a'*))
+  //    with
+  //    	c   := <double-quote> cons; 
+  //       a'* := [sdf-cons(c) , a*]
+  
+  
+  	
   
   normalize:
   	SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->
-  		SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*))
+  		SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
   	where
-  		c := <getfirst(lift-constr)> a* 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?lift-constr)> a* 
+  		
   
   //regular sdf2 productions become sdf3 productions with or without constructors     	
   normalize:
   	Prod(symbols*, Sort(s), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a*))
+  		a'* := <remove-all(?lift-constr)> a* ;
+  		result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) 
   
   
@@ -55,7 +61,8 @@ imports
   	Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a*))
+  		a'* := <remove-all(?lift-constr)> a* ;
+  		result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
   
   //Cf kernel sdf2 productions become sdf3 productions with or without constructors     	
@@ -63,7 +70,8 @@ imports
   	Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a*))
+  		a'* := <remove-all(?lift-constr)> a* ;
+  		result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
   
   
@@ -110,7 +118,7 @@ imports
  // 		; debug(!"a")
   	
   lift-constr:
-  	sdf-cons(c) -> Constructor(<unquote>  c)
+  	Constructor(c) -> Constructor(<unquote>  c)
   	
   lift-constr:
     QuotedConstructor(c) -> Constructor(<unquote> c)
