@@ -28,7 +28,7 @@ rules
   template-section-to-esv:
   	SDFSection(ContextFreeSyntax(p*)) -> Completions("", x')
   	where
-  		x' := <filter(prod-to-template; template-to-completion)> p*
+  		x' := <filter(prod-to-template; template-to-completion <+ template-to-completion)> p*
   		
   template-section-to-esv:
   	SDFSection(Kernel(p*)) -> Completions("", x')

@@ -61,6 +61,18 @@ imports
   			msg := $[Unresolved reference to sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
   	
+  	
+  	nabl-constraint(|ctx):
+  		TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
+  		where
+  			type       := <type-lookup(|ctx)> c;
+  			lookup     := <nabl-lookup-lexical(|ctx)> c;
+  			cons-types := <type-lookup(|ctx)> lookup;
+  			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
+  			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
+  			
+  	
+  	
   			
     nabl-constraint(|ctx):
   		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>

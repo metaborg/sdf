@@ -34,7 +34,7 @@ rules
   	with
   		sort* := <filter(productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(prod-to-template; template-to-pp)> p*
+    	; s2*   := <filter(prod-to-template; template-to-pp <+ template-to-pp)> p*
   		    
    section-to-pp(|lang):
   	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])

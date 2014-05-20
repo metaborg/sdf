@@ -36,7 +36,7 @@ rules
   section-to-sig:
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
   	with
-  		sig* := <filter(cfg-to-sig); not(?[])> p*
+  		sig* := <filter(cfg-to-sig <+ template-to-sig); not(?[])> p*
   	
   section-to-sig:
   	SDFSection(Kernel(p*)) -> Constructors(sig*)

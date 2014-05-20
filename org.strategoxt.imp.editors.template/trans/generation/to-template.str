@@ -3,7 +3,8 @@ module to-template
 imports
   libstratego-sglr
   include/TemplateLang
-  templatelang/desugar
+  analysis/desugar
+  
 
 rules // Convert regular productions to desugared syntax templates
 	

@@ -13,6 +13,7 @@ imports
   lib/runtime/properties/-
   lib/runtime/relations/-
   analysis/name-constraints
+  analysis/desugar
 
   
 signature

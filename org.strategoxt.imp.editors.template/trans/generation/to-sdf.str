@@ -11,6 +11,7 @@ imports
   templatelang/utils/tokenize
   analysis/names
   lib/runtime/nabl/utils
+  analysis/attributes
 
 
 
@@ -68,27 +69,39 @@ rules
   		
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-  	SDFSection(ContextFreeSyntax(prods)) -> context-free-syntax(prods')
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*]
   	with
-  		prods' := <map(prod-to-sdf)> prods
+  		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+  		//content complete prods
+  		cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
+             ; nub 
+             ; map(sort-to-contentcomplete)> prods*;	
+        if [] := cc*
+        then
+        	inj* := []
+        else
+          inj* := [context-free-syntax(<term-translation> cc*)]
+        end
   
   //reductive productions section
-  section-to-sdf(|chars, newline, kfr):
-  	SDFSection(Contextfree(prods)) -> context-free-syntax(prods')
-  	with
-  		prods' := <map(prod-to-sdf)> prods
+  // section-to-sdf(|chars, newline, kfr):
+  // 	SDFSection(Contextfree(prods)) -> context-free-syntax(prods')
+  // 	with
+  // 		prods' := <map(prod-to-sdf)> prods
   		
   //lexical syntax productive section
   section-to-sdf(|chars, newline, kfr):
   	SDFSection(LexicalSyntax(prods)) -> lexical-syntax(prods')
   	with
   		prods' := <map(prod-to-sdf)> prods
+  		
+  		
   
    //lexical syntax reductive section
-  section-to-sdf(|chars, newline, kfr):
-  	SDFSection(Lexical(prods)) -> lexical-syntax(prods')
-  	with
-  		prods' := <map(prod-to-sdf)> prods
+  // section-to-sdf(|chars, newline, kfr):
+  // 	SDFSection(Lexical(prods)) -> lexical-syntax(prods')
+  // 	with
+  // 		prods' := <map(prod-to-sdf)> prods
   		
   //kernel syntax
   section-to-sdf(|chars, newline, kfr):
@@ -220,11 +233,13 @@ rules
   
   //Productions
   prod-to-sdf:
-  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
+  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), Attrs(a*)) -> prod(symbols'*, symbol', a''*)
   	with
   		symbols'* := <term-translation> symbols*;
   		symbol' := <term-translation> symbol;
-  		a'* := <term-translation> a*
+  		c   := <double-quote> cons; 
+        a'* := [sdf-cons(c) , a*];
+  		a''* := <term-translation> Attrs(a'*)
   		
   prod-to-sdf:
   	SdfProduction(symbol, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
@@ -275,11 +290,13 @@ rules
   		
   		
   prod-to-sdf(|chars, newline):
-  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, a) -> prod(t', s', a')
+  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, Attrs(a*)) -> prod(t', s', a''*)
   	with
   		t' := <template-to-sdf(|chars, newline)> t;
   		s' := <term-translation> s;
-  		a' := <term-translation> a	
+  		c   := <double-quote> cons; 
+        a'* := [sdf-cons(c) , a*];
+  		a''* := <term-translation> Attrs(a'*)	
   
   //single-line template
   template-to-sdf(|chars, newline):
