@@ -7,6 +7,10 @@ imports
   templatelang/utils/misc
   runtime/editor/origins
 
+signature constructors
+SingleLineTemplate            : List(TemplateElement) -> Template
+
+
 strategies
 
   desugar-templates =
@@ -15,19 +19,34 @@ strategies
 rules
   desugar-template:
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
-    where with-spxverify(
-      elem'* := <desugar-elements> elem* )
+    with
+      elem'* := <desugar-elements> elem* 
 
   desugar-template:
     Template([Line(elem*)]) -> SingleLineTemplate(elem'*)
-    where with-spxverify(
-      elem'* := <desugar-elements> elem* )
+    with
+      elem'* := <desugar-elements> elem* 
+      
+  desugar-template:
+  	TemplateSquare(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)
+  		
+  desugar-template:
+  	TemplateDeprecated(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)
+  	
+  desugar-template: 
+  	TemplateSquareDeprecated(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)  
 
   desugar-template:
     Template(line*) -> Template(line'*)
     where
       not(!line* => [_])
-    where with-spxverify(
+   with
       let line-is-empty =
             ?Line([]) + ?Line([Layout(_)])
 
@@ -69,7 +88,7 @@ rules
         map(line-remove-trailing-layout; line-ensure-leading-layout);
         unindent;
         ?line'*
-      end )
+      end 
 
   desugar-elements =
     alltd(origin-track-forced(desugar-element))
@@ -88,7 +107,7 @@ rules
 
   desugar-element:
     Escape(t) -> String(t')
-    where with-spxverify(
+    with
       let parse-unicode =
             {before*, mid, after*:
                split-fetch-keep(not(is-hexnum)) => (before*, mid, after*);
@@ -118,12 +137,12 @@ rules
       in
         t' := <origin-track-forced(unescape)> t
       end
-      )
+      
 
   desugar-element:
     Layout(t) -> Layout(t')
-    where with-spxverify(
+    with
       t' := <origin-track-forced(string-replace(|"\t", "  "))> t
-     )
+     
 
 
