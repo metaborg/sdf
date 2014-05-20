@@ -16,8 +16,6 @@ exports
     "reject"                        -> Attribute    {cons("Reject")}
     "prefer"                        -> Attribute    {cons("Prefer")}
     "avoid"                         -> Attribute    {cons("Avoid")}
-    "deprecated"                    -> Attribute    {cons("Deprecated"), prefer}
-    "deprecated" "(" StrCon ")"     -> Attribute    {cons("Deprecated"), prefer}
 
   context-free syntax
     CONTENTCOMPLETE -> Lookahead    {cons("COMPLETION-Lookahead")}
