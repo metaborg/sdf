@@ -2,7 +2,7 @@ module regular/Regular
 
 imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon labels/Labels
  
-templates 
+context-free syntax 
 
 // Symbol.Empty = <()>
 // Symbol.Seq = <(<head:Symbol> <tail:Symbol+>)>

@@ -6,7 +6,7 @@ imports constants/IntCon
 context-free start-symbols 
     RealCon
  
-templates
+context-free syntax
 	OptExp.Present = <e <IntCon>>
 	OptExp.Absent = <>
 	//base:IntCon "." decimal:NatCon exp:OptExp  -> RealCon {cons("real-con")}

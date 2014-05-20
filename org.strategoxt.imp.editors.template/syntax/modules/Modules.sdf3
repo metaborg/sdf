@@ -17,7 +17,7 @@ lexical syntax
     //dirname:ModuleWord sep:"/" basename:ModuleId -> ModuleId  {cons("path")}
     ModuleId.Path = ModuleWord "/" ModuleId
     
-templates
+context-free syntax
 	Definition = <<list:Module*>>
 	
 	Module.Module = <module <ModuleName> <list:ImpSection*> <Sections>>

@@ -5,7 +5,7 @@ imports aterms/Aterms
         grammar/Grammars
         constants/StrCon
  
-templates
+context-free syntax
 
 ATermAttribute.Default = <<aterm:ATerm>>
 Attribute.Term = <<ATermAttribute>>

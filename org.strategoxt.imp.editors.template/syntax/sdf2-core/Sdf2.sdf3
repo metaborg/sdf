@@ -8,7 +8,7 @@ context-free start-symbols
 lexical syntax
   	Sort = "LAYOUT" {reject}
  
-templates
+context-free syntax
     
     ModuleName = <aliases> {reject}
     ModuleName = <lexical> {reject}
@@ -59,7 +59,7 @@ templates
     
 
   restrictions
-    <Sort -CF>
+    Sort-CF
     "aliases"
     "lexical"
     "priorities"
@@ -77,7 +77,7 @@ templates
     "non-assoc"
     "bracket"
     "sorts"             -/- [A-Za-z0-9]
-    <NatCon -CF>        -/- [0-9]
-    <LAYOUT?-CF>        -/- [\ \t\n\%]
-    <NumChar -CF>       -/- [0-9]
-    <ModuleName -CF>    -/- [A-Za-z0-9\_\-]
+    NatCon-CF        -/- [0-9]
+    LAYOUT?-CF        -/- [\ \t\n\%]
+    NumChar-CF       -/- [0-9]
+    ModuleName-CF    -/- [A-Za-z0-9\_\-]

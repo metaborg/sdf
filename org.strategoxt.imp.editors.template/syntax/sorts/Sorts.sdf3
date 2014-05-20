@@ -9,7 +9,7 @@ lexical syntax
     //head:[A-Z] middle:[A-Za-z0-9\-]* last:[A-Za-z0-9] -> Sort {cons("more-chars")}
     Sort.MoreChars = [A-Z] [A-Za-z0-9\-]* [A-Za-z0-9]
      
-templates
+context-free syntax
 Symbol.Sort = <<Sort>>
 Symbol.ParameterizedSort = <<Sort> [[<parameters:Symbol+; separator=",">]]>
 SymbolDef.SortDef = <<Sort>> {prefer}

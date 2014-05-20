@@ -8,12 +8,12 @@ imports constants/IntCon
 context-free start-symbols
     ATerm
 
-templates
+context-free syntax
 	AFun.Quoted = <<StrCon>>
 	AFun.Unquoted = <<IdCon>>
 
 
-templates
+context-free syntax
 	ATerm.Int = <<IntCon>>
 	ATerm.Real = <<RealCon>>
 	ATerm.Fun = <<AFun>>
@@ -22,5 +22,5 @@ templates
 	ATerm.List = < [<ATerm*; separator=",">] >
 	ATerm.Annotated = <<ATerm> <Annotation> >
 
-templates
+context-free syntax
 	Annotation.Default = <{ <ATerm+; separator=","> }>

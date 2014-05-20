@@ -6,7 +6,7 @@ imports layout/Whitespace
 context-free start-symbols 
     IntCon
 
-templates
+context-free syntax
  
 	IntCon.Natural = < <NatCon> >
 	

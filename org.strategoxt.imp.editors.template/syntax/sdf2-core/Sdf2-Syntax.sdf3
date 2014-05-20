@@ -14,7 +14,7 @@ imports kernel/Kernel
         restrictions/Restrictions
         aliases/Aliases
 
-templates
+context-free syntax
 
 Symbol.Start = <\<START\>>
 Symbol.FileStart = <\<Start\>>

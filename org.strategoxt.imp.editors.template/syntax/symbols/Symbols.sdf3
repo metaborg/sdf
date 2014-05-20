@@ -2,7 +2,7 @@ module symbols/Symbols
 
 imports layout/Comments
  
-templates
+context-free syntax
 
 Symbol = <(<Symbol>)> {bracket}
 Symbols = <<list:Symbol*>>

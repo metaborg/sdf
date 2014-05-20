@@ -3,7 +3,7 @@ module basic/Basic
 imports kernel/Kernel
 		sorts/Sorts
 
-templates
+context-free syntax
  
 Grammar.Lexical = < lexical syntax <Productions> >
 Grammar.Contextfree = < context-free syntax <Productions> >

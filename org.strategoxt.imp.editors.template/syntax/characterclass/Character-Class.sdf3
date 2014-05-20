@@ -2,7 +2,7 @@ module characterclass/Character-Class
 
 imports characterclass/Character
 
-templates
+context-free syntax
 
 CharRange = <<Character>>
 CharRange.Range = <<start:Character> - <end:Character>>

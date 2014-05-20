@@ -3,5 +3,5 @@ module characterclass/CC
 imports characterclass/Character-Class 
         kernel/Kernel
  
-templates
+context-free syntax
     Symbol.CharClass = <<CharClass>>

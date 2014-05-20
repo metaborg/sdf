@@ -15,11 +15,11 @@ lexical syntax
     
     SingleQuotedStrCon.Default =  [\'] chars:SingleQuotedStrChar* [\'] 
     
-templates
+context-free syntax
 	FunctionName.UnquotedFun = <<IdCon>>
 	FunctionName.QuotedFun = <<StrCon>>
 	
-templates
+context-free syntax
 	Symbol.Lit = <<string:StrCon>>
 	Symbol.CiLit = <<ci-string:SingleQuotedStrCon>>
 	Production.PrefixFun = <<fun:FunctionName> (<arguments:Symbol*; separator=",">) -\> <result:Symbol> <Attributes> >

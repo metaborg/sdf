@@ -57,14 +57,14 @@ exports
     CONTENTCOMPLETE -> SortConsRef {cons("COMPLETION-SortConsRef")}
 
   context-free syntax
-    "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection")}
+    "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection"), deprecated("Use context-free syntax section instead")}
     "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
     "context-free" "syntax" GeneralProduction*                            -> Grammar            {cons("ContextFreeSyntax"), prefer}
     "syntax" SdfProduction*                                               -> Grammar            {cons("Kernel"), prefer}
     SdfProduction                                                         -> GeneralProduction  
     TemplateProduction                                                    -> GeneralProduction  
     SymbolDef "=" RHS Attributes                                          -> SdfProduction      {cons("SdfProduction")}
-    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}    
+    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
     Symbols                                                               -> RHS                {cons("Rhs")}
     SymbolDef "=" Template Attributes                                     -> TemplateProduction {cons("TemplateProduction")}
     SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}

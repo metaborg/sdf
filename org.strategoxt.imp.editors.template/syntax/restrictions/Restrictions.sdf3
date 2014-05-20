@@ -5,7 +5,7 @@ imports characterclass/CC
 		symbols/Symbols 
 		constants/StrCon
 
-templates
+context-free syntax
   
 Lookahead.CharClass = <<CharClass>>
 Lookahead.Seq = <<CharClass>.<Lookaheads>>  

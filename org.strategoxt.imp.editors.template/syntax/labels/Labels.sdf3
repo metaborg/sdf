@@ -4,7 +4,7 @@ imports kernel/Kernel
         constants/StrCon
         constants/IdentifierCon
  
-templates
+context-free syntax
 
 Label.Quoted = <<StrCon>>
 Label.Unquoted = <<IdCon>>

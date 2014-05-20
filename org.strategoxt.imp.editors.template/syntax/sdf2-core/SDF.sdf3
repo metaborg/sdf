@@ -5,7 +5,7 @@ context-free start-symbols
     Module
 
 
-templates
+context-free syntax
 Group.NonTransitive = <<Group>.> {non-assoc}
 
 %% HACK

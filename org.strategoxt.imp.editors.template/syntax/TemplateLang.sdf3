@@ -15,20 +15,20 @@ imports
 context-free start-symbols
     Start
 
-templates
+context-free syntax
 Start.CompilationUnit = <<Section*>> {deprecated("Syntax definitions should be part of a module")}
 
-templates
+context-free syntax
 Attribute.QuotedConstructor = <<QuotedConstructor>> {prefer}
 QuotedConstructor = <<StrCon>>  
 
-templates
+context-free syntax
 //tweaks for content completion
 TemplateProduction.WATER = <<CONTENTCOMPLETE>> {recover}
 PlaceholderOption.WATER = <<CONTENTCOMPLETE>> {recover}
 PlaceholderOptions.WATER = <<CONTENTCOMPLETE>> {recover}
 
-templates
+context-free syntax
 //options section
 Section.TemplateOptions = <template options <TemplateOption*>>
 
@@ -43,16 +43,16 @@ TemplateOption.KeywordFollowRestriction = <keyword -/- <Lookaheads>>
 
 TemplateOption.Tokenize = <tokenize : <StrCon>>
 
-templates
+context-free syntax
 //references to productions using sort.cons notation in priority specification
 Group.SimpleRefGroup = <<SortConsRef>>
 Group.ProdsRefGroup = <{<SortConsRef+>}>
 Group.AssocRefGroup = <{<Associativity> : <SortConsRef+>}>
 SortConsRef.SortConsRef = <<Symbol>.<Constructor>>
 
-templates 
+context-free syntax 
 //grammars
-Section.TemplateSection = <templates <TemplateProduction*>>
+Section.TemplateSection = <templates <TemplateProduction*>> {deprecated("Use context-free syntax section instead")}
 
 // BNF order and SDF order can't go together in the same section,
 // because of ambiguity. "X = Y -> Z": is it "X = Y" "Z" or "X =" "Y -> Z"?
@@ -66,8 +66,6 @@ GeneralProduction = <<TemplateProduction>>
 // syntactic sugar for SDF
 SdfProduction.SdfProduction = <<SymbolDef> = <RHS> <Attributes>> 
 SdfProduction.SdfProductionWithCons = <<SortCons> = <RHS> <Attributes>>
-SdfProduction = <<TemplateProduction>>
-//SdfProduction = "TemplateProduction"
 RHS.Rhs = <<Symbols>>
 
 // template productions

@@ -2,7 +2,7 @@ module grammar/Grammars
 
 imports layout/Comments
  
-templates
+context-free syntax
 
 Grammar.Empty = <(/)>
 //"left":Grammar "right":Grammar -> Grammar  {assoc,cons("conc-grammars")}

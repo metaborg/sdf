@@ -2,7 +2,7 @@ module priority/Priority
 
 imports kernel/Kernel constants/NatCon
  
-templates
+context-free syntax
 
 Associativity.Left = <left>
 Associativity.Right = <right>
