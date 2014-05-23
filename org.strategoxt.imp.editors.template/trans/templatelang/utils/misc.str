@@ -18,5 +18,4 @@ strategies
     string-replace(|"\t", "\\t");
     string-replace(|"\r", "\\r");
     string-replace(|"\n", "\\n");
-    string-replace(|"'", "\\'");
     string-replace(|"\"", "\\\"")

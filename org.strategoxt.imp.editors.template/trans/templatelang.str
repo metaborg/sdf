@@ -53,6 +53,11 @@ rules // Editor services
     (node, position, ast, path, project-path) -> proposals
     where
     	proposals := <analysis-propose-completions(|<language>, project-path, path)> ast
+    	
+  editor-outline:
+    (node, position, ast, path, project-path) -> outline
+    where
+      outline := <outline> ast
 
 rules // Debugging
   
