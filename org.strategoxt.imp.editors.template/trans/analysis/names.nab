@@ -83,8 +83,7 @@ binding rules
   //    where t has type ty*
   
   
-  Placeholder(label, Sort(s), t, options):
-  	refers to Sort s //otherwise refers to CfSort s otherwise refers to  LexSort s
+  
   	
  SortConsRef(Sort(s), Constructor(c)):
   	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s

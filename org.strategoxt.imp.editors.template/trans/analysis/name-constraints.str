@@ -47,12 +47,12 @@ imports
   		<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
   					
   	
-  	nabl-constraint(|ctx):
-  		p@Placeholder(label, Sort(s), t, options) -> <fail>
-  		where
-  			<has-annotation(?Use(task))> s;
-  			msg := $[Unresolved reference to sort '[s]'];
-  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> p
+  //	nabl-constraint(|ctx):
+  //		p@Placeholder(label, Sort(s), t, options) -> <fail>
+  //		where
+  //			<has-annotation(?Use(task))> s;
+  //			msg := $[Unresolved reference to sort '[s]'];
+  //			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> p
   			
   	nabl-constraint(|ctx):
   		 Sort(s) -> <fail>

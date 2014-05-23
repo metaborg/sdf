@@ -12,6 +12,7 @@ imports
   analysis/names
   lib/runtime/nabl/utils
   analysis/attributes
+  analysis/desugar
 
 
 
@@ -73,7 +74,7 @@ rules
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
   		//content complete prods
-  		cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
+  		cc* := < filter(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
              ; nub 
              ; map(sort-to-contentcomplete)> prods*;	
         if [] := cc*
@@ -308,45 +309,75 @@ rules
   	String(t) -> <string-to-sdf(|chars)> t
   	
   template-elem-to-sdf(|chars):
-  	Placeholder(None(), Sort(x), regular, option) -> result
-  	where <not(one(Separator(not(string-is-layout))))> option
+  	Placeholder(symbol, option) -> symbol' 
+  	where
+  		<?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
   	with
-  		switch !(regular)
-  		case ?(Star()) : result := iter-star(sort(x))
-  		case ?(Option()) : result := opt(sort(x))
-  		case ?(Plus()) : result := iter(sort(x))
-  		case ?(None()) : result := sort(x)
-  		end
+  		lit' := <separator-to-literal> lit;
+  		//debug(!"lit' = ");
+  		if "" := lit'
+  		then
+  			switch !symbol
+	  			case ?IterSep(sym, _) : symbol' := <term-translation> Iter(sym)
+	  			case ?IterStarSep(sym, _) : symbol' := <term-translation> IterStar(sym)
+	  			case ?Label(l, IterSep(sym, _)) : symbol' := <term-translation> Label(l, Iter(sym))
+	  			case ?Label(l, IterStarSep(sym, _)) : symbol' := <term-translation> Label(l, IterStar(sym))
+  			end
+  		else	
+	  		switch !symbol
+	  			case ?IterSep(sym, _) : symbol' := <term-translation> IterSep(sym, Lit(lit'))
+	  			case ?IterStarSep(sym, _) : symbol' := <term-translation> IterStarSep(sym, Lit(lit'))
+	  			case ?Label(l, IterSep(sym, _)) : symbol' := <term-translation> Label(l, IterSep(sym, Lit(lit')))
+	  			case ?Label(l, IterStarSep(sym, _)) : symbol' := <term-translation> Label(l, IterStarSep(sym, Lit(lit')))
+	  		end
+	  	end	
   		
   template-elem-to-sdf(|chars):
-  	Placeholder(None(), Sort(x), regular, option) -> result
-  	where <one(Separator(not(string-is-layout)))> option
-  	with
-  		switch !(regular)
-  		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
-  		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option))
-  		end
-  	
-  	
-  template-elem-to-sdf(|chars):
-  	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
-  	where <not(one(Separator(not(string-is-layout))))> option
-  	with
-  		switch !(regular)
-  		case ?(Star()) : result := iter-star(sort(x))
-  		case ?(Option()) : result := opt(sort(x))
-  		case ?(Plus()) : result := iter(sort(x))
-  		case ?(None()) : result := sort(x)  		
-  		end
+  	Placeholder(symbol, option) -> <term-translation> symbol
+  	where
+  		<not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
   
-  template-elem-to-sdf(|chars):
-  	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
-  	where <one(Separator(not(string-is-layout)))> option
-  	with
-  		switch !(regular)
-  		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
-  		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option)) 		
-  		end
+  	
+  // template-elem-to-sdf(|chars):
+  // 	Placeholder(None(), Sort(x), regular, option) -> result
+  // 	where <not(one(Separator(not(string-is-layout))))> option
+  // 	with
+  // 		switch !(regular)
+  // 		case ?(Star()) : result := iter-star(sort(x))
+  // 		case ?(Option()) : result := opt(sort(x))
+  // 		case ?(Plus()) : result := iter(sort(x))
+  // 		case ?(None()) : result := sort(x)
+  // 		end
+  // 		
+  // template-elem-to-sdf(|chars):
+  // 	Placeholder(None(), Sort(x), regular, option) -> result
+  // 	where <one(Separator(not(string-is-layout)))> option
+  // 	with
+  // 		switch !(regular)
+  // 		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
+  // 		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option))
+  // 		end
+  // 	
+  // 	
+  // template-elem-to-sdf(|chars):
+  // 	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
+  // 	where <not(one(Separator(not(string-is-layout))))> option
+  // 	with
+  // 		switch !(regular)
+  // 		case ?(Star()) : result := iter-star(sort(x))
+  // 		case ?(Option()) : result := opt(sort(x))
+  // 		case ?(Plus()) : result := iter(sort(x))
+  // 		case ?(None()) : result := sort(x)  		
+  // 		end
+  // 
+  // template-elem-to-sdf(|chars):
+  // 	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
+  // 	where <one(Separator(not(string-is-layout)))> option
+  // 	with
+  // 		switch !(regular)
+  // 		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
+  // 		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option)) 		
+  // 		end
   
   //multi-line template
   template-to-sdf(|chars, newline):
@@ -486,8 +517,7 @@ rules //conversion of SDF3 terms into SDF2
   remove-layout =
     string-as-chars(filter(not(char-is-layout)))
 
-  separator-to-literal =
-    getfirst(?Separator(<remove-layout; template-escape; double-quote>))
+  separator-to-literal = un-double-quote; unescape; remove-layout; template-escape
 
 /**
    * Split on the edges delimiting identifiers.

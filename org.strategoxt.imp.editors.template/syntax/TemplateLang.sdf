@@ -57,36 +57,29 @@ exports
     CONTENTCOMPLETE -> SortConsRef {cons("COMPLETION-SortConsRef")}
 
   context-free syntax
-    "templates" TemplateProduction*                                       -> Section            {cons("TemplateSection"), deprecated("Use context-free syntax section instead")}
-    "lexical" "syntax" SdfProduction*                                     -> Grammar            {cons("LexicalSyntax"), prefer}
-    "context-free" "syntax" GeneralProduction*                            -> Grammar            {cons("ContextFreeSyntax"), prefer}
-    "syntax" SdfProduction*                                               -> Grammar            {cons("Kernel"), prefer}
-    SdfProduction                                                         -> GeneralProduction  
-    TemplateProduction                                                    -> GeneralProduction  
-    SymbolDef "=" RHS Attributes                                          -> SdfProduction      {cons("SdfProduction")}
-    SortCons "=" RHS Attributes                                           -> SdfProduction      {cons("SdfProductionWithCons")}
-    Symbols                                                               -> RHS                {cons("Rhs")}
-    SymbolDef "=" Template Attributes                                     -> TemplateProduction {cons("TemplateProduction")}
-    SortCons "=" Template Attributes                                      -> TemplateProduction {cons("TemplateProductionWithCons")}
-    IdCon                                                                 -> Constructor        {cons("Constructor")}
-    SymbolDef "." Constructor                                             -> SortCons           {cons("SortCons")}
-    "<" Placeholder ">"                                                   -> TemplatePart1      {bracket}
-    "[" Placeholder "]"                                                   -> TemplatePart2      {bracket}
-    PlaceholderLabel PlaceholderSort PlaceholderSuffix PlaceholderOptions -> Placeholder        {cons("Placeholder")}
-    Sort                                                                  -> PlaceholderSort    {cons("Sort")}
-                                                                          -> PlaceholderLabel   {cons("None")}
-    Label ":"                                                             -> PlaceholderLabel   {cons("Label")}
-                                                                          -> PlaceholderSuffix  {cons("None")}
-    "*"                                                                   -> PlaceholderSuffix  {cons("Star")}
-    "+"                                                                   -> PlaceholderSuffix  {cons("Plus")}
-    "?"                                                                   -> PlaceholderSuffix  {cons("Option")}
-                                                                          -> PlaceholderOptions {cons("NoOptions")}
-    ";" {PlaceholderOption ","}+                                          -> PlaceholderOptions {cons("Options")}
-    "hide"                                                                -> PlaceholderOption  {cons("Hide")}
-    "wrap"                                                                -> PlaceholderOption  {cons("Wrap")}
-    "anchor"                                                              -> PlaceholderOption  {cons("Anchor")}
-    "separator" "=" StrCon                                                -> PlaceholderOption  {cons("Separator")}
-    "text" "=" StrCon                                                     -> PlaceholderOption  {cons("Text")}
+    "templates" TemplateProduction*            -> Section            {cons("TemplateSection"), deprecated("Use context-free syntax section instead")}
+    "lexical" "syntax" SdfProduction*          -> Grammar            {cons("LexicalSyntax"), prefer}
+    "context-free" "syntax" GeneralProduction* -> Grammar            {cons("ContextFreeSyntax"), prefer}
+    "syntax" SdfProduction*                    -> Grammar            {cons("Kernel"), prefer}
+    SdfProduction                              -> GeneralProduction  
+    TemplateProduction                         -> GeneralProduction  
+    SymbolDef "=" RHS Attributes               -> SdfProduction      {cons("SdfProduction")}
+    SortCons "=" RHS Attributes                -> SdfProduction      {cons("SdfProductionWithCons")}
+    Symbols                                    -> RHS                {cons("Rhs")}
+    SymbolDef "=" Template Attributes          -> TemplateProduction {cons("TemplateProduction")}
+    SortCons "=" Template Attributes           -> TemplateProduction {cons("TemplateProductionWithCons")}
+    IdCon                                      -> Constructor        {cons("Constructor")}
+    SymbolDef "." Constructor                  -> SortCons           {cons("SortCons")}
+    "<" Placeholder ">"                        -> TemplatePart1      {bracket}
+    "[" Placeholder "]"                        -> TemplatePart2      {bracket}
+    Symbol PlaceholderOptions                  -> Placeholder        {cons("Placeholder")}
+                                               -> PlaceholderOptions {cons("NoOptions")}
+    ";" {PlaceholderOption ","}+               -> PlaceholderOptions {cons("Options")}
+    "hide"                                     -> PlaceholderOption  {cons("Hide")}
+    "wrap"                                     -> PlaceholderOption  {cons("Wrap")}
+    "anchor"                                   -> PlaceholderOption  {cons("Anchor")}
+    "separator" "=" StrCon                     -> PlaceholderOption  {cons("Separator")}
+    "text" "=" StrCon                          -> PlaceholderOption  {cons("Text")}
 
   context-free syntax
     CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
@@ -100,9 +93,6 @@ exports
     CONTENTCOMPLETE -> TemplatePart1      {cons("COMPLETION-TemplatePart1")}
     CONTENTCOMPLETE -> TemplatePart2      {cons("COMPLETION-TemplatePart2")}
     CONTENTCOMPLETE -> Placeholder        {cons("COMPLETION-Placeholder")}
-    CONTENTCOMPLETE -> PlaceholderSort    {cons("COMPLETION-PlaceholderSort")}
-    CONTENTCOMPLETE -> PlaceholderLabel   {cons("COMPLETION-PlaceholderLabel")}
-    CONTENTCOMPLETE -> PlaceholderSuffix  {cons("COMPLETION-PlaceholderSuffix")}
     CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
     CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
 

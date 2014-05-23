@@ -14,10 +14,10 @@ rules
   module-to-pp:
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])
     with
-      m'  := <to-str-module-name(|"-pp")> Module(m)
-    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|"-sig")> Module(m))])
-    ; i1* := <map(to-str-import(|"-sig"))> i*
-    ; i2* := <map(to-str-import(|"-pp"))> i*
+      m'  := <to-str-module-name(|"-pp", "pp")> Module(m)
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|"-sig", "signatures")> Module(m))])
+    ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
+    ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
   section-to-pp(|lang):
@@ -153,7 +153,7 @@ rules
             // injection
             // FIXME: this may result in infinite loop in pretty printer
             //        if there is a cycle of injections in the grammar!
-            input := Var("t__")
+            input := arg*
           end
       else
       	input := Tuple(arg*)
@@ -171,14 +171,18 @@ rules
       (elem'*, index') := <thread-map(try(introduce-labels))> (elem*, index)
       
   introduce-labels:
-    (Placeholder(None(), a, b, c), i) -> (Placeholder(Label(l), a, b, c), i')
-    with
-      l  := $[t[i]__];
-      i' := <inc> i
+     (Placeholder(symbol, c), i) -> (Placeholder(Label(l, symbol), c), i')
+     where
+     	<not(?Label(_, _))> symbol
+     with
+       l  := $[t[i]__];
+       i' := <inc> i
   
   introduce-labels:
-    (Placeholder(Label(Unquoted(l)), a, b, c), i) -> (Placeholder(Label(l), a, b, c), i)
-    
+     (Placeholder(Label(Unquoted(l), symbol), c), i) -> (Placeholder(Label(l, symbol), c), i)
+   
+  introduce-labels:
+  	term -> <id>  
   
   template-line-to-stratego:   //template line starting with indentation
     Line([Layout(indent) | elem*]) -> 
@@ -223,60 +227,97 @@ rules
       t' := <escape; double-quote> t
       
   template-element-to-stratego:
-    p@Placeholder(Label(l), Sort(x), None(), _) -> App(s, Var(l))
-    with
-      s := <placeholder-to-pp-one> p 
+     p@Placeholder(Label(l, Sort(x)), _) -> App(s, Var(l))
+     with
+       s := <placeholder-to-pp-one> p 
+  
   
   template-element-to-stratego:
-    p@Placeholder(Label(l), Sort(x), Option(), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
+    p@Placeholder(Label(l, Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
     with
-      s := <placeholder-to-pp-one> p
+       s := <placeholder-to-pp-one> p
       
   placeholder-to-pp-one:
-    Placeholder(_, Sort(s), _, option*) -> Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))])
-    with
-      if <fetch-elem(?Anchor())> option* then
-        ppo := "pp-one-V"
-      else
-        ppo := "pp-one-Z"
-      end
+     Placeholder(symbol, option*) -> Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))])
+     where
+     	<collect-om(?Sort(s))> symbol
+     with
+       if <fetch-elem(?Anchor())> option* then
+         ppo := "pp-one-V"
+       else
+         ppo := "pp-one-Z"
+       end
   
-  template-element-to-stratego:
-    Placeholder(Label(l), Sort(x), <Star() + Plus()>, option*) -> App(s, Var(l))
-    with
-      <fetch-elem(?Wrap())> option* < 
-      	<fetch-elem(?Anchor())> option* < 
-      		ppl := SVar("pp-HV-list") // wrap and anchor
-            + ppl := SVar("pp-HZ-list") // wrap and !anchor
-      + ppl := SVar("pp-H-list")  // !wrap and !anchor
-    with 
-      ppx := CallNoArgs(SVar($[prettyprint-[x]]))
-    ; if <getfirst(?Separator(<id>))> option* => sep then
-        vs := <explode-string; occurrences(?'\n'); dec> sep;
-        literals  := <escape; string-replace(|"\\n", "")> sep;
-        literals' := NoAnnoList(Str(<double-quote> literals));
-        switch !(vs, literals)
-          case ?(-1, _):
-            // separator with literals only => horizontal box with sep option
-            s    := CallT(ppl, [ppx], [literals'])
-          case ?(0, ""):
-            // separator is a line break => vertical box
-            s := Call(SVar("pp-V-list"), [ppx])
-          case ?(_, ""):
-            // separator is multiple line breaks => vertical box with vs option
-            s := CallT(SVar("pp-V-list"), [ppx], [literals'])
-          otherwise:
-            // separator has mixed line breaks and literals => vertical box with vs and sep options
-            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
-        end
-      else
-        // no separator => horizontal box
-        s := Call(ppl, [ppx])
-      end
+  
+  //Label(l), Sort(x), <Star() + Plus()>
+   template-element-to-stratego:
+      Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(s, Var(l))
+      with
+        <fetch-elem(?Wrap())> option* < 
+        	<fetch-elem(?Anchor())> option* < 
+        		ppl := SVar("pp-HV-list") // wrap and anchor
+              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+        + ppl := SVar("pp-H-list")  // !wrap and !anchor
+      with 
+        ppx := CallNoArgs(SVar($[prettyprint-[x]]));
+          // no separator => horizontal box
+          s := Call(ppl, [ppx])
+          
+          
+  //  ; if <getfirst(?Separator(<id>))> option* => sep then
+  //         vs := <explode-string; occurrences(?'\n'); dec> sep;
+  //         literals  := <escape; string-replace(|"\\n", "")> sep;
+  //         literals' := NoAnnoList(Str(<double-quote> literals));
+  //         switch !(vs, literals)
+  //           case ?(-1, _):
+  //             // separator with literals only => horizontal box with sep option
+  //             s    := CallT(ppl, [ppx], [literals'])
+  //           case ?(0, ""):
+  //             // separator is a line break => vertical box
+  //             s := Call(SVar("pp-V-list"), [ppx])
+  //           case ?(_, ""):
+  //             // separator is multiple line breaks => vertical box with vs option
+  //             s := CallT(SVar("pp-V-list"), [ppx], [literals'])
+  //           otherwise:
+  //             // separator has mixed line breaks and literals => vertical box with vs and sep options
+  //             s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
+  //         end
+  //       else        
+  // 
+  
+   template-element-to-stratego:
+      Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(s, Var(l))
+      with
+        <fetch-elem(?Wrap())> option* < 
+        	<fetch-elem(?Anchor())> option* < 
+        		ppl := SVar("pp-HV-list") // wrap and anchor
+              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+        + ppl := SVar("pp-H-list")  // !wrap and !anchor
+      with 
+        ppx := CallNoArgs(SVar($[prettyprint-[x]]));
+        vs := <un-double-quote; unescape; explode-string; occurrences(?'\n'); dec> sep;
+           literals  := <un-double-quote; string-replace(|"\\n", "")> sep;
+           literals' := NoAnnoList(Str(<double-quote> literals));
+           switch !(vs, literals)
+             case ?(-1, _):
+               // separator with literals only => horizontal box with sep option
+               s    := CallT(ppl, [ppx], [literals'])
+             case ?(0, ""):
+               // separator is a line break => vertical box
+               s := Call(SVar("pp-V-list"), [ppx])
+             case ?(_, ""):
+              // separator is multiple line breaks => vertical box with vs option
+               s := CallT(SVar("pp-V-list"), [ppx], [literals'])
+             otherwise:
+               // separator has mixed line breaks and literals => vertical box with vs and sep options
+               s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
+  		    end
+  
   
   placeholder-to-var: 
-  	Placeholder(Label(l), _, _, _) -> Var(l)
+   	Placeholder(Label(l, _), _) -> Var(l)
   	
+  
   concatenate-consecutive-strings =
     rec r(
          ?[String("") | <r>]

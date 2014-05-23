@@ -10,23 +10,22 @@ imports
   restrictions/Restrictions
   priority/Priority
   basic/Basic
-  
-//main productions to link SDF2 and SDF3
+
 context-free start-symbols
     Start
-
+   
 context-free syntax
 Start.CompilationUnit = <<Section*>> {deprecated("Syntax definitions should be part of a module")}
 
 context-free syntax
 Attribute.QuotedConstructor = <<QuotedConstructor>> {prefer}
 QuotedConstructor = <<StrCon>>  
-
+ 
 context-free syntax
 //tweaks for content completion
 TemplateProduction.WATER = <<CONTENTCOMPLETE>> {recover}
 PlaceholderOption.WATER = <<CONTENTCOMPLETE>> {recover}
-PlaceholderOptions.WATER = <<CONTENTCOMPLETE>> {recover}
+PlaceholderOptions.WATER = <<CONTENTCOMPLETE>> {recover} 
 
 context-free syntax
 //options section
@@ -83,19 +82,23 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
 TemplatePart1 = <\<<Placeholder>\>> {bracket}
 TemplatePart2 = <[<Placeholder>]> {bracket}
 
-//Probably fix this to avoid <Sort*; separator="c">
-Placeholder.Placeholder = <<PlaceholderLabel> <PlaceholderSort> <PlaceholderSuffix> <PlaceholderOptions>>
 
-PlaceholderSort.Sort = <<Sort>>
+//Old Placeholder Style
+//Placeholder.Placeholder = <<PlaceholderLabel> <PlaceholderSort> <PlaceholderSuffix> <PlaceholderOptions>>
 
-PlaceholderLabel.None = <>
-PlaceholderLabel.Label = <<Label>:>
+//PlaceholderSort.Sort = <<Sort>>
 
-//Probably define this rules using SDF2 style, merging PlaceholderSort PlaceholderSuffix -> PlaceholderSort
-PlaceholderSuffix.None = <>
-PlaceholderSuffix.Star = <*>
-PlaceholderSuffix.Plus = <+>
-PlaceholderSuffix.Option = <?>
+//PlaceholderLabel.None = <>
+//PlaceholderLabel.Label = <<Label>:>
+
+// PlaceholderSuffix.None = <>
+// PlaceholderSuffix.Star = <*>
+// PlaceholderSuffix.Plus = <+>
+// PlaceholderSuffix.Option = <?>
+
+Placeholder.Placeholder = <<Symbol> <PlaceholderOptions>>
+
+
 
 PlaceholderOptions.NoOptions = <>
 PlaceholderOptions.Options = <; <PlaceholderOption+; separator=",">>

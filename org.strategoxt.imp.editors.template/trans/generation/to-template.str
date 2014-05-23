@@ -46,24 +46,24 @@ rules // Convert regular productions to desugared syntax templates
     symbol-to-elem:
     	Cf(s) -> <symbol-to-elem> s
     
-    symbol-to-elem:
-		Opt(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(None(), t, Option(), [])
-	
+     symbol-to-elem:
+	 	Opt(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(Opt(t), [])
+	 
+	 symbol-to-elem:
+	 	IterStar(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(IterStar(t), [])
+	 
+	 symbol-to-elem:
+	 	Iter(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(Iter(t), [])
+	 
+	 symbol-to-elem:
+    	IterStarSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterStarSep(t, Lit(s)), [])
+ //    with
+ //      	s' := <un-double-quote; unescape> s
+	// 
 	symbol-to-elem:
-		IterStar(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(None(), t, Star(), [])
-	
-	symbol-to-elem:
-		Iter(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(None(), t, Plus(), [])
-	
-	symbol-to-elem:
-    	IterStarSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
-    with
-      	s' := <un-double-quote; unescape> s
-	
-	symbol-to-elem:
-		IterSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
-	with
-		s' := <un-double-quote; unescape> s
+		IterSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterSep(t, Lit(s)), [])
+	// with
+	// 	s' := <un-double-quote; unescape> s
         
     
 	symbol-to-elem:
@@ -72,27 +72,27 @@ rules // Convert regular productions to desugared syntax templates
 	symbol-to-elem:
 		CiLit(s) -> String(<un-single-quote> s)
 	
-	symbol-to-elem:
-    	t@Sort(_) -> Placeholder(None(), t, None(), [])
-    
-    symbol-to-elem:
-		Opt(t@Sort(_)) -> Placeholder(None(), t, Option(), [])
+	 symbol-to-elem:
+     	t@Sort(_) -> Placeholder(t, [])
+     
+     symbol-to-elem:
+	 	opt@Opt(Sort(_)) -> Placeholder(opt, [])
+	 	 
+	 symbol-to-elem:
+	 	iterstar@IterStar(Sort(_)) -> Placeholder(iterstar, [])
+	 
+	 symbol-to-elem:
+	 	iter@Iter(Sort(_)) -> Placeholder(iter, [])
 	
-	symbol-to-elem:
-		IterStar(t@Sort(_)) -> Placeholder(None(), t, Star(), [])
-	
-	symbol-to-elem:
-		Iter(t@Sort(_)) -> Placeholder(None(), t, Plus(), [])
-	
-	symbol-to-elem:
-    	IterStarSep(t@Sort(_), Lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
-    with
-      	s' := <un-double-quote; unescape> s
-	
-	symbol-to-elem:
-		IterSep(t @ Sort(_), Lit(s)) -> Placeholder(None(), t, Star(), [Separator(s')])
-	with
-		s' := <un-double-quote; unescape> s
-		
+	 symbol-to-elem:
+    	iterStarSep@IterStarSep(Sort(_), Lit(s)) -> Placeholder(iterStarSep, [])
+     with
+       	s' := <un-double-quote; unescape> s
+	 
+	 symbol-to-elem:
+	 	iterSep@IterSep(Sort(_), Lit(_)) -> Placeholder(iterSep, [])
+	 // with
+	// 	s' := <un-double-quote; unescape> s
+	// 	
 
   

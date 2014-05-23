@@ -99,11 +99,16 @@ rules
   desugar-element:
     Options(x) -> <alltd(origin-track-forced(desugar-option))> x
 
-  desugar-option:
-    Separator(x) -> Separator(<origin-track-forced(un-double-quote; unescape)> x)
+  //desugar-option:
+  //  Separator(x) -> Separator(<origin-track-forced(un-double-quote; unescape)> x)
 
   desugar-option:
     Text(x) -> Text(<origin-track-forced(un-double-quote; unescape)> x)
+    
+ 
+    	
+    	
+    	  
 
   desugar-element:
     Escape(t) -> String(t')

@@ -909,42 +909,6 @@ rules
          ))
     ; fail
 
-  nabl-get-name :
-    Placeholder(label, Sort(s), t, options) -> s
-
-  nabl-name-apply(s) =
-    Placeholder(id, Sort(s), id, id)
-
-  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
-    ?Placeholder(label, Sort(s), t, options)
-    ; origin-track-forced(
-        Placeholder(
-          id
-        , origin-track-forced(
-            Sort(
-              nabl-use(
-              | lang__
-              , partition__
-              , uniques__
-              , uris__
-              , [ UseCandidate(
-                    NablNsSort()
-                  , []
-                  , Current()
-                  , True()
-                  , []
-                  )
-                ]
-              )
-            )
-          |
-          )
-        , id
-        , id
-        )
-      |
-      )
-
   nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
     ?SortConsRef(Sort(s), Constructor(c))
     ; origin-track-forced(

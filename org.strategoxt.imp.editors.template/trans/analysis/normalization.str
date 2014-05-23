@@ -35,8 +35,19 @@ imports
   //    	c   := <double-quote> cons; 
   //       a'* := [sdf-cons(c) , a*]
   
-  
-  	
+   normalize:
+  	Placeholder(symbol, options*) -> Placeholder(symbol', options'*)
+  	where
+  		<?Iter(_) + ?IterStar(_) + ?Label(_, Iter(_)) + ?Label(_, IterStar(_))> symbol;
+  		<getfirst(?Separator(sep))> options*
+    with    	
+    	switch !symbol
+    	case ?Iter(s) : symbol' := IterSep(s, Lit(sep))
+    	case ?IterStar(s) : symbol' := IterStarSep(s, Lit(sep))
+    	case ?Label(l, Iter(s)) : symbol' := Label(l, IterSep(s, Lit(sep)))
+    	case ?Label(l, IterStar(s)) : symbol' := Label(l, IterStarSep(s, Lit(sep)))
+    	end;  	
+    	options'* := <remove-all(?Separator(_))> options*  	
   
   normalize:
   	SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->

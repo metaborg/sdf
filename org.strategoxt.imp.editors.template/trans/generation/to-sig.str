@@ -17,30 +17,30 @@ rules
 	module-to-sig:
 		Module(Unparameterized(m), i*, s*) -> Module(m', [is*, s'])
 		with
-			m'  := <conc-strings> ("src-gen/", m, "-sig")
-		; is* := <map(to-str-import(|"-sig"))> i*
+			m'  := <conc-strings> ("src-gen/", "signatures/", m, "-sig")
+		; is* := <map(to-str-import(|"-sig", "signatures"))> i*
 	  ; s'  := Signature(<filter(section-to-sig)> s*)
  
   section-to-sig:
   	SDFSection(Sorts(s*)) -> Sorts(s'*)
   	with
-  		s'* := <map(sort-to-sig <+ debug(!"sort-to-sig failed");fail)> s*
+  		s'* := <map(sort-to-sig)> s*
   		
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
-    with
+    where
       sig* := <filter(lexical-to-sig); not(?[])> p*
       
   
       
   section-to-sig:
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
-  	with
+  	where
   		sig* := <filter(cfg-to-sig <+ template-to-sig); not(?[])> p*
   	
   section-to-sig:
   	SDFSection(Kernel(p*)) -> Constructors(sig*)
-  	with
+  	where
   		sig* := <filter(cfg-to-sig); not(?[])> p*		
  
  
@@ -81,7 +81,7 @@ rules
      	<not(fetch-elem(?Reject() + ?Bracket()))> a*
      with	
      	rhs-type := <get-type> rhs;
-     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(s))
+     	t' := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
      	
     cfg-to-sig:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
@@ -110,7 +110,7 @@ rules
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
     with  
       temp-type := <get-type> t;
-      t' := <try(check-fun-type)> FunType(temp-type, SortType(s))
+      t' := <try(check-fun-type)> FunType(temp-type, SortType(<strip-annos> s))
      
       
     cons-to-decl:

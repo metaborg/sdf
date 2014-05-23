@@ -8,4 +8,4 @@ context-free syntax
 
 Label.Quoted = <<StrCon>>
 Label.Unquoted = <<IdCon>>
-Symbol.Label = <<Label> : <Symbol>>
+Symbol.Label = <<Label>:<Symbol>>

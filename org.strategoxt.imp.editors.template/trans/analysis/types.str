@@ -32,34 +32,41 @@ overlays
 rules
   
   create-type-task(|ctx) =
-    ?SingleLineTemplate(<filter(?Placeholder(_, _, _, _)); map(create-type-task(|ctx))>)//; debug(!"singleline")
+    ?SingleLineTemplate(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>)//; debug(!"singleline")
   ; type-is(|ctx)
     
   create-type-task(|ctx) =
-    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _, _, _)); map(create-type-task(|ctx))>))>)//; debug(!"multiline")
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>)//; debug(!"multiline")
   ; type-is(|ctx)
     
-  create-type-task(|ctx) :
-    Placeholder(_, Sort(s), Option(), _) -> <task-create-id(|ctx,[t])> t
-    where 
-      t := <type-is(|ctx)> OptionType(<strip-annos> s)    
+ // create-type-task(|ctx) :
+  //  Placeholder(_, Sort(s), Option(), _) -> <task-create-id(|ctx,[t])> t
+  //  where 
+  //    t := <type-is(|ctx)> OptionType(<strip-annos> s)    
   
-  create-type-task(|ctx) :
-   Placeholder(_, Sort(s), Plus(), _) -> <task-create-id(|ctx,[t])> t
-    where 
-      t := <type-is(|ctx)> ListType(<strip-annos> s)
+//  create-type-task(|ctx) :
+ //  Placeholder(_, Sort(s), Plus(), _) -> <task-create-id(|ctx,[t])> t
+  //  where 
+  //    t := <type-is(|ctx)> ListType(<strip-annos> s)
       
-  create-type-task(|ctx) :
-    Placeholder(_, Sort(s), Star(), _) -> <task-create-id(|ctx,[t])> t
-    where 
-      t := <type-is(|ctx)> ListType(<strip-annos> s)
+ // create-type-task(|ctx) :
+  //  Placeholder(_, Sort(s), Star(), _) -> <task-create-id(|ctx,[t])> t
+  //  where 
+   //   t := <type-is(|ctx)> ListType(<strip-annos> s)
       
 rules
   
-  create-type-task(|ctx) =
-  	?Rhs(<filter(create-type-task(|ctx) <+ not(is-lexical-symbol <+ is-layout-symbol); debug(!"untypable ") ; fail)>)
-  ; type-is(|ctx)	
+  // create-type-task(|ctx) = 
+  // 	?Rhs(<filter(is-typable < create-type-task(|ctx) + debug(!"I FAVE FAILTED "))>)
+  // ; debug(!"before ") ; type-is(|ctx) 	
     
+  
+  create-type-task(|ctx) :
+  	Rhs(symbols*) -> <task-create-id(|ctx,[t])> t
+  where
+  	symbols'* := <filter(is-typable)> symbols*;
+  	t         := <type-task(|ctx)> symbols'* 
+  
   
   create-type-task(|ctx) :
     Sort(s) -> <task-create-id(|ctx,[t])> t
@@ -77,31 +84,49 @@ rules
       t := <type-is(|ctx)> OptionType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    IterStar(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    IterStar(symbol) -> <task-create-id(|ctx,[t])> t
     where 
+      <oncetd(?Sort(s))> symbol;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
       
   create-type-task(|ctx) :
-    Iter(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    Iter(symbol) -> <task-create-id(|ctx,[t])> t
     where 
+      <oncetd(?Sort(s))> symbol;	
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
  
   create-type-task(|ctx) :
-    IterSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t])> t
-    where 
+    IterSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t])> t
+    where
+      <oncetd(?Sort(s))> symbol; 
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    IterStarSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t])> t
+    IterStarSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t])> t
     where 
+      <oncetd(?Sort(s))> symbol;	
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
    
+      
    create-type-task(|ctx) :
-    IterStar(Cf(Sort(s))) -> <task-create-id(|ctx,[t])> t
+    Label(l, symbol) -> <task-create-id(|ctx,[t])> t
     where 
-      t := <type-is(|ctx)> ListType(<strip-annos> s)   
+      <is-typable> symbol;
+      t := <type-task(|ctx)> symbol   
+   
+   create-type-task(|ctx) :   
+    Lex(symbol) -> <task-create-id(|ctx,[t])> t
+    where 
+      <is-typable> symbol;
+      t := <type-task(|ctx)> symbol   
+    	
+    create-type-task(|ctx) :   
+    Cf(symbol) -> <task-create-id(|ctx,[t])> t
+    where 
+      <is-typable> symbol;
+      t := <type-task(|ctx)> symbol
    
 rules
 	
-	is-lexical-symbol = collect-one(?Lit(_) + ?CiLit(_) + ?CharClass(_)) 
-	is-layout-symbol = collect-one(?Layout() + ?Lex(Layout()) + ?Cf(Layout()))
+	is-typable = oncetd(?Sort(_))
+	

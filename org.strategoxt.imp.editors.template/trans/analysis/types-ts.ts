@@ -15,14 +15,16 @@ type rules
 	
 	//Iter(Sort(s)) : ListType(s)
 	
-    Lex(sort@Sort(s)) : t
-    	where sort: t
-    	
-    Cf(sort@Sort(s)) : t
-    	where sort: t
     
-    Placeholder(_, s, None(), _) : t
+    
+    Placeholder(s, opt) : t
     	where s : t
+    
+    
+    
+    
+   // Placeholder(_, s, None(), _) : t
+    //	where s : t
     	
     
     	
