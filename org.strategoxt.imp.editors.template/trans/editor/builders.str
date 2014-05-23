@@ -30,7 +30,7 @@ imports
     	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
-    	filename := <create-src-gen(|project-path, ".sdf.aterm")> mn;
+    	filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
     	result := <to-sdf(|chars, newline, kfr)> selected
     	  	 	
   generate-sdf-concrete:
@@ -42,7 +42,7 @@ imports
      	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
-        filename := <create-src-gen(|project-path, ".sdf")> mn;
+        filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
        result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected
  
   
@@ -53,7 +53,7 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   := <module-to-sig> selected
-      ; filename := <create-src-gen(|project-path, ".sig.aterm")> mn
+      ; filename := <create-src-gen(|project-path, "signatures", ".sig.aterm")> mn
   
   
   
@@ -64,7 +64,7 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> selected
-      ; filename := <create-src-gen(|project-path, "-sig.str")> mn
+      ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
    
    generate-pp-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -73,7 +73,7 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   :=  <module-to-pp> selected
-      ; filename := <create-src-gen(|project-path, ".pp.aterm")> mn 	
+      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn 	
   
    generate-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -82,7 +82,7 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
-      ; filename := <create-src-gen(|project-path, "-pp.str")> mn
+      ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn
   
   
   generate-esv-abstract:
@@ -92,7 +92,7 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected
-      ; filename := <create-src-gen(|project-path, ".esv.aterm")> mn 	
+      ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn 	
   
    generate-esv-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -101,19 +101,22 @@ imports
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	result   := <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> selected
-      ; filename := <create-src-gen(|project-path, "-esv.esv")> mn
+      ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
   
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> <id> 
-   // with
-    //  generate-esv-concrete; write-string-to-file
-   // with
-   //	 generate-sig-concrete
     with
-     generate-sdf-concrete
-  //  with
- //     generate-box-pp-concrete; write-string-to-file
+    	filename := <base-filename> path;
+    	debug(!"generating for ")
+    with
+      generate-esv-concrete; write-string-to-file
+    with
+   	 generate-sig-concrete; write-string-to-file
+    with
+     generate-sdf-concrete; write-string-to-file
+    with
+      generate-pp-concrete; write-string-to-file
 	
   
   rules
@@ -168,22 +171,64 @@ imports
 	    )
 	  end
 	  
-  create-src-gen(|project-path, ext):
+  create-src-gen(|project-path, folder, ext):
   	filename -> filename'
   with
-  	fn := <get-filename> filename;
-  	dir := <get-dir> filename;
-  	src-gen-path := <concat-strings> [project-path, "/src-gen/", dir];
-  	//debug(!"dir ");
-  	  if <not( file-exists ; filemode ; isdir)> src-gen-path
-  	  then
-  	  	<mkdir> src-gen-path
-  	  end;
-  	filename' := <concat-strings> [src-gen-path, "/" , fn, ext]
-  	//debug(!"file ");
+  	fn := <get-filename> filename; 
+  	src-gen-path := <concat-strings; create-dir> [project-path, "/src-gen"];
+  	src-gen-folder := <concat-strings; create-dir> [src-gen-path, "/" ,folder];
+  	file-folder := <get-dir(|src-gen-folder)> filename ;
+  	filename' := <concat-strings> [file-folder, "/" , fn, ext]
+  	//;debug(!"filename' ")
+ 	
+  	
+  	
+  	
   	//<write-string-to-file> (filename', string)		
  	
- 	
+ 	// dir := <get-dir> filename;
+  // 	debug(!"dir ");
+  // 	src-gen-path := <concat-strings> [project-path, "/src-gen/", dir];
+  // 	debug(!"src-gen-path ");
+  // 	  if <not( file-exists ; filemode ; isdir)> src-gen-path
+  // 	  then
+  // 	  	<mkdir> src-gen-path
+  // 	  end;
+  
+    get-dir(|path) :
+ 		s -> s'
+ 		with
+ 			names := <strip-annos; string-tokenize(|['/'])> s;
+ 			names' := <at-last(![])> names;
+ 		//	debug(!"names ");
+ 			if [h | tl] := names'
+ 			then 			
+	 			first := <concat-strings> [path, "/" ,h]; 
+	 		//	debug(!"get-dir ");
+	 			<create-dirs(|first)> tl;
+	 		//	debug(!"create-dirs ");
+	 			s' := <concat-strings> [path, "/",  <at-last(separate-by(|"/")); concat-strings> names']
+ 		    else
+ 		    	s' := path
+ 		    end
+ 			
+   
+   create-dir  = not( file-exists ; filemode ; isdir) < mkdir + id
+   
+   create-dirs(|dir):
+   	[h | tl] -> None()
+   	where
+   		<create-dir> dir;
+	   	new-dir := <concat-strings> [dir, "/", h];
+	 //  	debug(!"create-dirs new dir ");
+	   	<create-dirs(|new-dir)> tl
+   	
+   	create-dirs(|dir):
+   	[] -> None()
+   	where
+   		<create-dir> dir
+   	//	; debug(!"create-dirs empty ")
+  
  	get-filename :
  		s -> s'
  		with
@@ -191,13 +236,13 @@ imports
  			//debug(!"names ");
  			s' := <last> names
  			
- 	get-dir :
- 		s -> s'
- 		with
- 			names := <strip-annos; string-tokenize(|['/'])> s;
- 			names' := <at-last(![])> names;
- 			s' := <concat-strings> names'
- 			//;debug(!"dirnms ")
+ 	// get-dir :
+ 	// 	s -> s'
+ 	// 	with
+ 	// 		names := <strip-annos; string-tokenize(|['/'])> s;
+ 	// 		names' := <at-last(![])> names;
+ 	// 		s' := <concat-strings> names'
+ 	// 		//;debug(!"dirnms ")
  			
  			
   	
