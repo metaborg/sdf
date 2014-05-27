@@ -30,15 +30,17 @@ imports
     
 rules // Analysis
   
+  // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
+  
   editor-analyze = analysis-default-editor
   
   analysis-single-default-interface = 
   	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
-  	analysis-single-default(normalization; id, id, id|<language>)
+  	analysis-single-default(normalization, id, id|<language>)
   	
   analysis-multiple-default-interface = 
   	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
-  analysis-multiple-default(parse-file <+ !(), normalization; id, id, id|<language>, <project-path>)
+  analysis-multiple-default(parse-file <+ !(), normalization, id, id|<language>, <project-path>)
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       
@@ -73,7 +75,7 @@ rules // Debugging
       result   := <normalization> selected
       
   debug-show-analyzed:
-    (selected, position, ast, path, project-path) -> (filename, selected)
+    (selected, position, ast, path, project-path) -> (filename, ast)
     with
       filename := <guarantee-extension(|"analyzed.aterm")> path
 

@@ -3,9 +3,9 @@ imports
   libstratego-lib
   include/TemplateLang
   templatelang/utils/attributes
-  templatelang/utils/contract
   templatelang/utils/misc
   runtime/editor/origins
+  runtime/editor/annotations
 
 signature constructors
 SingleLineTemplate            : List(TemplateElement) -> Template
@@ -14,7 +14,7 @@ SingleLineTemplate            : List(TemplateElement) -> Template
 strategies
 
   desugar-templates =
-    alltd(alltd(origin-track-forced(desugar-template)))
+    alltd(alltd(origin-track-forced(preserve-annotations-attachments(desugar-template))))
 
 rules
   desugar-template:

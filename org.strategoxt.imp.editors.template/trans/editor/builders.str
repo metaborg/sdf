@@ -9,7 +9,7 @@ imports
   lib/sdf-parenthesize
   lib/EditorService
   include/TemplateLang
-
+  analysis/desugar
   editor-common.generated
   
   runtime/index/-
@@ -30,8 +30,10 @@ imports
     	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+  		selected'     := <desugar-templates> selected;
+    	//selected' := selected ;
     	filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
-    	result := <to-sdf(|chars, newline, kfr)> selected
+    	result := <to-sdf(|chars, newline, kfr)> selected'
     	  	 	
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -42,8 +44,10 @@ imports
      	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+  		selected'     := <desugar-templates> selected;
+        //selected' := selected ;
         filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected
+       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected'
  
   
   generate-sig-abstract:
@@ -52,7 +56,9 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   := <module-to-sig> selected
+    	selected'     := <desugar-templates> selected;
+    	
+    	result   := <module-to-sig> selected'
       ; filename := <create-src-gen(|project-path, "signatures", ".sig.aterm")> mn
   
   
@@ -63,7 +69,8 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> selected
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
    
    generate-pp-abstract:
@@ -72,7 +79,8 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   :=  <module-to-pp> selected
+    	selected'     := <desugar-templates> selected;
+    	result   :=  <module-to-pp> selected'
       ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn 	
   
    generate-pp-concrete:
@@ -81,7 +89,8 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected'
       ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn
   
   
@@ -91,7 +100,8 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
-    	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected
+    	selected'     := <desugar-templates> selected;
+    	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected'
       ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn 	
   
    generate-esv-concrete:
@@ -100,23 +110,39 @@ imports
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
-    	result   := <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> selected
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> selected'
       ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
   
   // On-save handler
   generate-all:
-    (selected, position, ast, path, project-path) -> <id> 
+    (selected, position, ast, path, project-path) -> None() 
     with
     	filename := <base-filename> path;
-    	debug(!"generating for ")
+    	debug(!"generating for ");
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	ast'     := <desugar-templates> ast;
+    	<?Module(Unparameterized(mn), i*, sections)> ast 
     with
-      generate-esv-concrete; write-string-to-file
+    	esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
+    	esv-ast              :=  <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> ast';
+    	<write-string-to-file> (esv-filename, esv-ast) 
     with
-   	 generate-sig-concrete; write-string-to-file
+    	sig-ast              := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> ast';
+        sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
+    	<write-string-to-file> (sig-filename, sig-ast)  
     with
-     generate-sdf-concrete; write-string-to-file
+    	chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+  		newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+  		kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+        sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+        sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> ast';
+    	<write-string-to-file> (sdf-filename, sdf-ast)  
     with
-      generate-pp-concrete; write-string-to-file
+        pp-ast               := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> ast'
+      ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
+        <write-string-to-file> (pp-filename, pp-ast)  
 	
   
   rules

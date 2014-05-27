@@ -29,6 +29,9 @@ menus
     end
   
    menu: "Generate" (openeditor) (realtime)
+   
+    action: "Generate all files" = generate-all
+   
    	submenu: "SDF"
       action: "Generate SDF (abstract for selection)" = generate-sdf-abstract
       action: "Generate SDF (concrete for selection)" = generate-sdf-concrete
