@@ -29,8 +29,19 @@ rules
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
     where
-      sig* := <filter(lexical-to-sig); not(?[])> p*
+      sig* := < map(get-sort-from-prod)
+             ; nub 
+             ; map(lexsort-to-injection)
+             ; not(?[])> p*	
       
+ 
+  get-sort-from-prod:
+  	<?SdfProduction(SortDef(sort), _, Attrs(a*)) + ?SdfProductionWithCons(SortCons(SortDef(sort), Constructor(_)), _, Attrs(a*))> -> sort
+  	where
+  		<not(fetch-elem(?Reject()))> a*
+  
+  lexsort-to-injection:
+  	s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
   
       
   section-to-sig:
@@ -48,10 +59,10 @@ rules
 	sort-to-sig:
     Sort(s) -> SortNoArgs(s)
 		
-	lexical-to-sig:
-    SdfProduction(SortDef(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
-    where
-      <not(fetch-elem(?Reject()))> a*
+	// lexical-to-sig:
+ //    SdfProduction(SortDef(s), _, Attrs(a*)) -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+ //    where
+ //      <not(fetch-elem(?Reject()))> a*
      
     cfg-to-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-decl> c
