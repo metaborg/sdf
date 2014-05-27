@@ -20,6 +20,9 @@ lexical syntax
 Sort = Sort "-LEX" {reject}
 Sort = Sort "-CF" {reject}
 Sort = Sort "-VAR" {reject}
+Sort = "LAYOUT" "-LEX" {reject}
+Sort = "LAYOUT" "-CF" {reject}
+Sort = "LAYOUT" "-VAR" {reject}
 
 
 
