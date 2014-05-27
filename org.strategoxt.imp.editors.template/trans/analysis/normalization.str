@@ -3,7 +3,6 @@ imports
   libstratego-lib
   include/TemplateLang
   templatelang/utils/attributes
-  templatelang/utils/contract
   templatelang/utils/misc
   runtime/editor/origins
   analysis/names

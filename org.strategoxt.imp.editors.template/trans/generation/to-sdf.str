@@ -3,10 +3,7 @@ imports
   libstratego-lib
   libstratego-sglr
   include/TemplateLang
-  templatelang/analyze
-  templatelang/desugar
   templatelang/utils/attributes
-  templatelang/utils/contract
   templatelang/utils/misc
   templatelang/utils/tokenize
   analysis/names

@@ -17,7 +17,6 @@ language General properties
 
   provider : include/templatelang.jar
   provider : include/templatelang-java.jar
-  provider : include/libtemplatelang.jar
 
   observer : editor-analyze (multifile)
   on save : editor-save
