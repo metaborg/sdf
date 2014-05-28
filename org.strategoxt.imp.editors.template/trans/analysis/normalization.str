@@ -35,7 +35,7 @@ imports
   //       a'* := [sdf-cons(c) , a*]
   
    normalize:
-  	Placeholder(symbol, options*) -> Placeholder(symbol', options'*)
+  	Placeholder(symbol, Options(options*)) -> Placeholder(symbol', options'*)
   	where
   		<?Iter(_) + ?IterStar(_) + ?Label(_, Iter(_)) + ?Label(_, IterStar(_))> symbol;
   		<getfirst(?Separator(sep))> options*
@@ -130,8 +130,7 @@ imports
   lift-constr:
   	Constructor(c) -> Constructor(<unquote>  c)
   	
-  lift-constr:
-    QuotedConstructor(c) -> Constructor(<unquote> c)
+  
      
   		
   		

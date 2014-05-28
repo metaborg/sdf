@@ -436,9 +436,6 @@ rules //conversion of SDF3 terms into SDF2
   	CharClass(sort) -> char-class(sort)
   	
   special-term-to-sdf:
-  	QuotedConstructor(sort) -> Constructor(sort)
-  	
-  special-term-to-sdf:
   	LabelStart() -> label_start()
   	
   special-term-to-sdf:
