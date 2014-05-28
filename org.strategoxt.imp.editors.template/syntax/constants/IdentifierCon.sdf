@@ -1,7 +1,0 @@
-module constants/IdentifierCon
-exports
-  lexical syntax
-    [A-Za-z] [A-Za-z\-0-9\_]* -> IdCon {cons("Default")}
-
-  lexical restrictions
-    IdCon -/- [A-Za-z\-0-9]

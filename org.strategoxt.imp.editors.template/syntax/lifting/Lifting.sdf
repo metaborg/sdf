@@ -1,9 +1,0 @@
-module lifting/Lifting
-imports kernel/Kernel
-
-exports
-  context-free syntax
-    "`" Symbol "`" -> Symbol {cons("Lifting")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}
