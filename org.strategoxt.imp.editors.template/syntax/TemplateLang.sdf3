@@ -10,17 +10,11 @@ imports
   restrictions/Restrictions
   priority/Priority
   basic/Basic
+  modules/Modules
 
 context-free start-symbols
-    Start
-   
-context-free syntax
-Start.CompilationUnit = <<Section*>> {deprecated("Syntax definitions should be part of a module")}
-
-context-free syntax
-Attribute.QuotedConstructor = <<QuotedConstructor>> {prefer}
-QuotedConstructor = <<StrCon>>  
- 
+    Module
+    
 context-free syntax
 //tweaks for content completion
 TemplateProduction.WATER = <<CONTENTCOMPLETE>> {recover}

@@ -13,7 +13,7 @@ language General properties
 
   extensions    : tmpl, sdf3
   table         : include/TemplateLang.tbl
-  start symbols : Start
+  start symbols : Module
 
   provider : include/templatelang.jar
   provider : include/templatelang-java.jar
