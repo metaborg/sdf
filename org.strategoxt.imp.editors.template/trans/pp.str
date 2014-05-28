@@ -1,0 +1,27 @@
+module trans/pp
+
+imports
+
+	libstratego-gpp
+	lib/runtime/tmpl/pp
+	src-gen/pp/-
+
+rules
+	
+  pp-SDF3-string =
+    prettyprint-Start
+    ; !V([], <id>)
+    ; box2text-string(|120)
+      
+  pp-partial-Minimal-string =
+    prettyprint-example
+    ; !V([], <id>)
+    ; box2text-string(|120)
+      
+  pp-debug :
+    ast -> result
+    with
+       result := <pp-SDF3-string> ast
+    <+ <bottomup(try(not(is-string); not(is-list); not(pp-SDF3-string); debug(!"cannot pp ")))> ast
+    ;  result := ""
+

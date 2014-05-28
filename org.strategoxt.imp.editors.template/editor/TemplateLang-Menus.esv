@@ -1,6 +1,9 @@
 module TemplateLang-Menus
 
 menus
+
+  menu: "Format" (openeditor) (realtime)
+    action: "Format"                = pp-sdf3
   
   menu: "Syntax"                      (openeditor) (meta)
     
@@ -33,22 +36,22 @@ menus
     action: "Generate all files" = generate-all
    
    	submenu: "SDF"
-      action: "Generate SDF (abstract for selection)" = generate-sdf-abstract
-      action: "Generate SDF (concrete for selection)" = generate-sdf-concrete
+      action: "Generate SDF (abstract)" = generate-sdf-abstract
+      action: "Generate SDF (concrete)" = generate-sdf-concrete
     end
     
     submenu: "Signature"
-      action: "Generate Signature (abstract for selection)" = generate-sig-abstract
-      action: "Generate Signature (concrete for selection)" = generate-sig-concrete
+      action: "Generate Signature (abstract)" = generate-sig-abstract
+      action: "Generate Signature (concrete)" = generate-sig-concrete
       
      end
      
      submenu: "Pretty-printer"
-     	action: "Generate PP (abstract for selection)" = generate-pp-abstract
-     	action: "Generate PP (concrete for selection)" = generate-pp-concrete
+     	action: "Generate PP (abstract)" = generate-pp-abstract
+     	action: "Generate PP (concrete)" = generate-pp-concrete
      end
      
      submenu: "Content Completion"
-     	action: "Generate ESV (abstract for selection)" = generate-esv-abstract
-     	action: "Generate ESV (concrete for selection)" = generate-esv-concrete
+     	action: "Generate ESV (abstract)" = generate-esv-abstract
+     	action: "Generate ESV (concrete)" = generate-esv-concrete
      end
