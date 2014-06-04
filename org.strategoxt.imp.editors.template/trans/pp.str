@@ -9,9 +9,14 @@ imports
 rules
 	
   pp-SDF3-string =
-    prettyprint-Start
+    prettyprint-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
+  
+  
+  pp-SDF3-string-abstract =
+    prettyprint-Module 
+    ; !V([], <id>)
       
   pp-partial-Minimal-string =
     prettyprint-example

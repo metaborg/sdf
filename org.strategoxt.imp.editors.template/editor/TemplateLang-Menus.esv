@@ -2,8 +2,8 @@ module TemplateLang-Menus
 
 menus
 
-  menu: "Format" (openeditor) (realtime)
-    action: "Format"                = pp-sdf3
+  
+    
   
   menu: "Syntax"                      (openeditor) (meta)
     
@@ -55,3 +55,10 @@ menus
      	action: "Generate ESV (abstract)" = generate-esv-abstract
      	action: "Generate ESV (concrete)" = generate-esv-concrete
      end
+     
+  menu: "Format" (openeditor) (realtime)
+    
+    action: "Format"             			      = pp-sdf3 (source)
+    action: "Format (box AST)"            		  = pp-sdf3-abstract (meta) (source)
+    action: "Lift" 								  = lift-sdf3
+    action: "Lift (box AST)" 					  = lift-sdf3-abstract (meta)
