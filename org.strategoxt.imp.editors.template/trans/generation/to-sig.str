@@ -15,10 +15,10 @@ imports
 rules
 	
 	module-to-sig:
-		Module(Unparameterized(m), i*, s*) -> Module(m', [is*, s'])
+		Module(Unparameterized(m), i*, s*) -> Module(m', [s'])
 		with
 			m'  := <conc-strings> ("src-gen/", "signatures/", m, "-sig")
-		; is* := <map(to-str-import(|"-sig", "signatures"))> i*
+	//	; is* := <map(to-str-import(|"-sig", "signatures"))> i*
 	  ; s'  := Signature(<filter(section-to-sig)> s*)
  
   section-to-sig:
