@@ -8,10 +8,10 @@ context-free start-symbols
 
 context-free syntax
  
-	IntCon.Natural = < <NatCon> >
+	IntCon.Natural = <<NatCon>>
 	
 	//pos:"+" NatCon -> IntCon {cons("positive")}
-	IntCon.Positive = < +<NatCon> >
+	IntCon.Positive = <+<NatCon>>
 	//neg:"-" NatCon -> IntCon {cons("negative")}
-	IntCon.Negative = < -<NatCon> >
+	IntCon.Negative = <-<NatCon>>
     

@@ -19,10 +19,33 @@ context-free syntax
 Symbol.Start = <\<START\>>
 Symbol.FileStart = <\<Start\>>
 
-Grammar.LexicalPriorities = <lexical priorities <Priorities>>
-Grammar.ContextFreePriorities = <context-free priorities <Priorities>>
-Grammar.LexicalRestrictions = <lexical restrictions <Restrictions>>
-Grammar.ContextFreeRestrictions = <context-free restrictions <Restrictions>>
+Grammar.LexicalPriorities = <
+	lexical priorities 
+
+		<Priorities>
+		
+	>
+
+Grammar.ContextFreePriorities = <
+	context-free priorities
+	
+		<Priorities>
+	
+	>
+	
+Grammar.LexicalRestrictions = <
+	lexical restrictions
+	
+		<Restrictions>
+	
+	>
+
+Grammar.ContextFreeRestrictions = <
+	context-free restrictions
+	
+		<Restrictions>
+	
+	>
 
 //SDF.Definition = <definition <Definition>> IGNORED PRODUCTION
 

@@ -5,31 +5,28 @@ imports characterclass/Character
 context-free syntax
 
 CharRange = <<Character>>
-CharRange.Range = <<start:Character> - <end:Character>>
+CharRange.Range = <<start:Character>-<end:Character>>
 CharRanges = <<CharRange>>
 //"left":CharRanges "right":CharRanges        -> CharRanges   {cons("conc"),right,memo}
-CharRanges.Conc = <<CharRanges> <CharRanges>> {right, memo}
+CharRanges.Conc = <<CharRanges><CharRanges>> {right, memo}
 CharRanges = <(<CharRanges>)> {bracket}
 
 OptCharRanges.Absent = <>
-OptCharRanges.Present = < <CharRanges> >
+OptCharRanges.Present = <<CharRanges>>
  
-CharClass.Simple = < [ <OptCharRanges> ] >
+CharClass.Simple = <[<OptCharRanges>]>
 CharClass.Comp = <~<CharClass>>
 //"left":CharClass "/" "right":CharClass   -> CharClass  {cons("diff"),left,memo}
-CharClass.Diff = < <CharClass> / <CharClass> > {left, memo}
+CharClass.Diff = <<CharClass>/<CharClass>> {left, memo}
 //"left":CharClass "/\\" "right":CharClass -> CharClass  {cons("isect"),left,memo}
-CharClass.Isect = < <CharClass> /\\ <CharClass> > {left, memo}
+CharClass.Isect = <<CharClass>/\\<CharClass>> {left, memo}
 //"left":CharClass "\\/" "right":CharClass -> CharClass  {cons("union"),left}
-ClarClass.Union = < <CharClass> \\/ <CharClass> > {left}
-CharClass = < (<CharClass>) > {bracket, avoid}
+CharClass.Union = <<CharClass>\\/<CharClass>> {left}
+CharClass = <(<CharClass>)> {bracket, avoid}
 
 context-free priorities
-	CharClass.Comp > CharClass.Diff,
-	CharClass.Diff > CharClass.Isect
-	//,CharClass.Isect > CharClass.Union
+	CharClass.Comp > CharClass.Diff >
+	CharClass.Isect > CharClass.Union
 	
-	// "~" CharClass             -> CharClass >
-    //CharClass "/" CharClass   -> CharClass >
-    //CharClass "/\\" CharClass -> CharClass >
-    //CharClass "\\/" CharClass -> CharClass  
+	
+	 

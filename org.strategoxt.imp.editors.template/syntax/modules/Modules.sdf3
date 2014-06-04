@@ -15,14 +15,21 @@ lexical syntax
     ModuleId.Path = ModuleWord "/" ModuleId
     
 context-free syntax
-	Definition = <<list:Module*>>
+	//Definition = <<list:Module*>>
 	
-	Module.Module = <module <ModuleName> <list:ImpSection*> <Sections>>
+	Module.Module = <
+	module <ModuleName>
+	
+	<list:ImpSection*>
+	
+	<Sections>>
 	
 	//Section.Exports = <exports <Grammar>>
 	//Section.Hiddens = <hiddens <Grammar>>
 	
-    Sections = <<list:Section*>>
+    Sections = <
+    
+    <{Section "\n"}*>>
     
     Section.SDFSection = <<Grammar>>
 	
@@ -34,8 +41,8 @@ context-free syntax
 	ImpSection.Imports = <imports <list:Imports>>
 	
 	//Grammar.ImpSection = <<ImpSection>> IGNORED PRODUCTION
-	
-	Imports = <<list:Import*>>
+	 
+	Imports = <<list:{Import "\n\t"}*>>
 	
 	Import.Module = <<ModuleName>>
 	//Import.RenamedModule = <<ModuleName> <Renamings>> IGNORED PRODUCTION

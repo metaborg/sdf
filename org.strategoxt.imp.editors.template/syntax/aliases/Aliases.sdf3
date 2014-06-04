@@ -10,7 +10,10 @@ context-free syntax
 	Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes> > {incremental}
 	 
 context-free syntax  
-	Grammar.Aliases = < aliases <Aliases> >
+	Grammar.Aliases = <
+	aliases 
+	
+	<Aliases>>
 	//Symbol arrow:"->" alias:Symbol -> Alias    {cons("alias")}
 	Alias.Alias = <<Symbol> -\> <alias:Symbol>>
 	Aliases     = <<list:Alias*>> 

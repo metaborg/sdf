@@ -5,14 +5,34 @@ imports kernel/Kernel
 
 context-free syntax
  
-Grammar.Lexical = < lexical syntax <Productions> >
-Grammar.Contextfree = < context-free syntax <Productions> >
-Grammar.Variables = < variables <Productions> >
-Grammar.LexVariables = < lexical variables <Productions> >
+Grammar.Lexical = <
+	lexical syntax
+	
+	<Productions>
+	
+	>
+Grammar.Contextfree = <
+	context-free syntax
+	
+	<Productions>
+	
+	>
+Grammar.Variables = <
+	variables
+	
+	<Productions>
+	
+	>
+Grammar.LexVariables = <
+	lexical variables
+	
+	<Productions>
+	
+	>
 
-Symbol.Cf = < <Symbol>-CF >
-Symbol.Lex = < <Symbol>-LEX >
-Symbol.Varsym = < <Symbol>-VAR>
+Symbol.Cf = <<Symbol>-CF>
+Symbol.Lex = <<Symbol>-LEX>
+Symbol.Varsym = <<Symbol>-VAR>
 Symbol.Layout = <LAYOUT>  
 
 lexical syntax

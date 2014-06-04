@@ -17,10 +17,10 @@ context-free syntax
 	ATerm.Int = <<IntCon>>
 	ATerm.Real = <<RealCon>>
 	ATerm.Fun = <<AFun>>
-	ATerm.Appl = <<AFun> ( <ATerm+; separator=","> )>
-	ATerm.PlaceHolder = < \< <ATerm> \> >
-	ATerm.List = < [<ATerm*; separator=",">] >
-	ATerm.Annotated = <<ATerm> <Annotation> >
+	ATerm.Appl = <<AFun>(<{ATerm ","}+>)>
+	ATerm.PlaceHolder = <\<<ATerm>\>>
+	ATerm.List = <[<{ATerm ","}*>]>
+	ATerm.Annotated = <<ATerm><Annotation>>
 
 context-free syntax
-	Annotation.Default = <{ <ATerm+; separator=","> }>
+	Annotation.Default = <{<{ATerm ","}+>}>

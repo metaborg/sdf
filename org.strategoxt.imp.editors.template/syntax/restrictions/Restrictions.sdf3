@@ -18,9 +18,14 @@ Lookaheads.List = <[[<list:Lookahead*; separator=",">]]>
 
 Restriction.Follow = <<Symbols> -/- <Lookaheads>>
  
-Restrictions = <<list:Restriction*>>
+Restrictions = <<list:{Restriction "\n"}*>>
  
-Grammar.Restrictions = <restrictions <Restrictions>>
+Grammar.Restrictions = <
+	restrictions
+	
+		<Restrictions>
+	
+	>
 
 Attribute.Reject = <reject>
 Attribute.Prefer = <prefer>

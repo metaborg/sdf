@@ -13,11 +13,14 @@ context-free syntax
 Symbol.Sort = <<Sort>>
 Symbol.ParameterizedSort = <<Sort> [[<parameters:Symbol+; separator=",">]]>
 SymbolDef.SortDef = <<Sort>> {prefer}
-SymbolDef.Cf = < <SymbolDef>-CF > {prefer}
-SymbolDef.Lex = < <SymbolDef>-LEX > {prefer}
-SymbolDef.Var = < <SymbolDef>-VAR > {prefer}
+SymbolDef.Cf = <<SymbolDef>-CF> {prefer}
+SymbolDef.Lex = <<SymbolDef>-LEX> {prefer}
+SymbolDef.Var = <<SymbolDef>-VAR> {prefer}
 
-Grammar.Sorts = <sorts <Symbols>>
+Grammar.Sorts = <
+	sorts 
+
+	<Symbols>>
  
 lexical restrictions
     Sort -/- [A-Za-z0-9]
