@@ -36,7 +36,11 @@ rules
   ; type-is(|ctx)
     
   create-type-task(|ctx) =
-    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>)//; debug(!"multiline")
+    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquare(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
+    ?TemplateDeprecated(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquareDeprecated(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>)
+    
   ; type-is(|ctx)
     
  // create-type-task(|ctx) :

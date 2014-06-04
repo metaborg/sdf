@@ -17,15 +17,19 @@ strategies
     alltd(alltd(origin-track-forced(preserve-annotations-attachments(desugar-template))))
 
 rules
+  
   desugar-template:
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     with
       elem'* := <desugar-elements> elem* 
 
   desugar-template:
-    Template([Line(elem*)]) -> SingleLineTemplate(elem'*)
+    <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])>-> SingleLineTemplate(elem'*)
     with
       elem'* := <desugar-elements> elem* 
+  
+  
+  
       
   desugar-template:
   	TemplateSquare(lines*) -> result
