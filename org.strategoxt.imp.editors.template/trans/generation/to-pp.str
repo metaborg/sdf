@@ -12,12 +12,12 @@ imports
 rules
 
   module-to-pp:
-    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])
+    Module(m, i*, s*) -> Module(m', [i0, s'*])
     with
       m'  := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|"-sig", "signatures")> Module(m))])
-    ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
-    ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("src-gen/pp/-"), Import("src-gen/signatures/-")])
+  //  ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
+ //   ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
   section-to-pp(|lang):
@@ -28,35 +28,39 @@ rules
     	; s2*    := <map(sort-to-pp(|lang))> sort*
     	  
     	  
+    	  
       
   section-to-pp(|lang):
-  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
   	with
   		sort* := <filter(productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(prod-to-template; template-to-pp <+ template-to-pp)> p*
+    	; s2*   := <filter(prod-to-template; template-to-pp <+ template-to-pp); flatten-list> p*
+    	; s3*   := <map(is-sort-fail)> sort*  
   		    
    section-to-pp(|lang):
-  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
   	with
   		sort* := <filter(cf-productive-sort); make-set> p*
-  		; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(cf-prod-to-template; template-to-pp)> p*
+  		; s1*   := <map(sort-to-pp(|lang))> sort*  
+    	; s2*   := <filter(cf-prod-to-template; template-to-pp); flatten-list> p*
+    	; s3*   := <map(is-sort-fail)> sort*
     	  
   section-to-pp(|lang):
   	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])
   	with
   		sort* := <filter(lex-productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp)> sort*
-    	; s2*   := <map(sort-to-pp(|lang))> sort*  	  
+    	; s2*   := <map(sort-to-pp(|lang))> sort*  
     	   
   section-to-pp(|lang):
-    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*])
+    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*])
     with
       	sort* := <filter(productive-sort); make-set> t*
     	; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(template-to-pp)> t*
-
+    	; s2*   := <filter(template-to-pp); flatten-list> t*
+    	; s3*   := <map(is-sort-fail)> sort*
+    	  
   productive-sort:
     TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s
     where not (
@@ -116,10 +120,11 @@ rules
   
   template-to-pp:
     TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
-      RDefNoArgs(
+      [RDefNoArgs(
         $[prettyprint-[s]]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
-      )
+      ), SDefNoArgs($[is-[s]], Match(NoAnnoList(Op(c, WldArg*))))
+      ]
       where
       	not(<fetch-elem(?Reject())> a*)
       with
@@ -130,6 +135,7 @@ rules
       	(line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
         output      := <map(template-line-to-stratego)> line'*;
         arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+        WldArg*     := <map(!Wld())> arg*;
         (output', with*) := <thread-alltd(extract-app)> (output, []);
         input       := Op(c, arg*)
   
@@ -137,7 +143,7 @@ rules
     TemplateProduction(SortDef(s), t, Attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[s]]
-      , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
+      , Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
       )
       where
       	not(<fetch-elem(?Reject())> a*)
@@ -149,25 +155,35 @@ rules
       (line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
       output      := <map(template-line-to-stratego)> line'*;
       arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
-      (output', with*) := <thread-alltd(extract-app)> (output, []);
       if !arg* => [arg] then
-          if <fetch-elem(?bracket())> a* then
-            input := Op("Parenthetical", arg*)
+          if <fetch-elem(?Bracket())> a* then
+            input := Op("Parenthetical", arg*);
+            (output', cond*) := <thread-alltd(extract-app)> (output, [])
           else
             // injection
             // FIXME: this may result in infinite loop in pretty printer
             //        if there is a cycle of injections in the grammar!
-            input := arg*
+            input := arg*;
+            (output', with*) := <thread-alltd(extract-app-where)> (output, []);
+            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*]
           end
       else
-      	input := Tuple(arg*)
+      	input := Tuple(arg*);
+      	(output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
   
+  is-sort-fail:
+  	s -> SDefNoArgs($[is-[s]], Fail())
       
   extract-app :
     (t@App(_, _), e*) -> (Var(x), [e*, WithClause(Assign(Var(x), t))]) 
     where 
     	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")    
+    	
+   extract-app-where :
+    (t@App(_, _), e*) -> (Var(x), [e*, WhereClause(Assign(Var(x), t))]) 
+    where 
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")  	
       	
   introduce-labels-line:
     (Line(elem*), index) -> (Line(elem'*), index')
@@ -183,7 +199,12 @@ rules
        i' := <inc> i
   
   introduce-labels:
-     (Placeholder(Label(Unquoted(l), symbol), c), i) -> (Placeholder(Label(l, symbol), c), i)
+     (Placeholder(Label(Unquoted(l), symbol), c), i) -> (Placeholder(Label($[[l]__], symbol), c), i)
+  
+  introduce-labels:
+     (Placeholder(Label(Quoted(l), symbol), c), i) -> (Placeholder(Label($[[l']__], symbol), c), i)
+     with
+     	l' := <un-double-quote> l
    
   introduce-labels:
   	term -> <id>  
