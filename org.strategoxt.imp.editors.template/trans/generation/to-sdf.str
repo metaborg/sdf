@@ -217,7 +217,7 @@ rules
   sortcons-to-sdf(|chars, newline):
   	SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
   	with
-  		prod := <get-def> c;
+  		prod := <get-def; try(desugar-templates)> c;
   		//debug(!"def");
   		p := <get-prod-elems(|chars, newline)> prod
   		
