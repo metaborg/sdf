@@ -32,14 +32,14 @@ overlays
 rules
   
   create-type-task(|ctx) =
-    ?SingleLineTemplate(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>)//; debug(!"singleline")
+    ?SingleLineTemplate(<filter(is-template-placeholder); map(create-type-task(|ctx))>)//; debug(!"singleline")
   ; type-is(|ctx)
     
   create-type-task(|ctx) =
-    ?Template(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
-    ?TemplateSquare(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
-    ?TemplateDeprecated(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>) +
-    ?TemplateSquareDeprecated(<mapconcat(?Line(<filter(?Placeholder(_, _)); map(create-type-task(|ctx))>))>)
+    ?Template(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquare(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateDeprecated(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquareDeprecated(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>)
     
   ; type-is(|ctx)
     
@@ -133,4 +133,5 @@ rules
 rules
 	
 	is-typable = oncetd(?Sort(_))
+	is-template-placeholder = ?Angled(<id>) + ?Squared(<id>)
 	
