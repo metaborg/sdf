@@ -28,12 +28,12 @@ rules
   template-section-to-esv:
   	SDFSection(ContextFreeSyntax(p*)) -> Completions("", x')
   	where
-  		x' := <filter(prod-to-template; template-to-completion <+ template-to-completion); not(?[])> p*
+  		x' := <filter(prod-to-template; desugar-templates; template-to-completion <+ template-to-completion); not(?[])> p*
   		
   template-section-to-esv:
   	SDFSection(Kernel(p*)) -> Completions("", x')
   	where
-  		x' := <filter(cf-prod-to-template; template-to-completion); not(?[])> p*		
+  		x' := <filter(cf-prod-to-template; desugar-templates; template-to-completion); not(?[])> p*		
  
   template-to-completion:
   	TemplateProduction(SortDef(s), SingleLineTemplate(elems*), Attrs(attrs*)) -> CompletionTemplateEx([Sort(s)], CompletionPrefix(prefix), part*, [])
