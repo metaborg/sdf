@@ -12,12 +12,12 @@ imports
 rules
 
   module-to-pp:
-    Module(m, i*, s*) -> Module(m', [i0, s'*])
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])//Module(m', [i0, s'*])
     with
       m'  := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("src-gen/pp/-"), Import("src-gen/signatures/-")])
-  //  ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
- //   ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+   ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
+    ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
   section-to-pp(|lang):
@@ -35,7 +35,7 @@ rules
   	with
   		sort* := <filter(productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(prod-to-template; template-to-pp <+ template-to-pp); flatten-list> p*
+    	; s2*   := <filter(prod-to-template; desugar-templates;template-to-pp <+ template-to-pp); flatten-list> p*
     	; s3*   := <map(is-sort-fail)> sort*  
   		    
    section-to-pp(|lang):
@@ -43,7 +43,7 @@ rules
   	with
   		sort* := <filter(cf-productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp(|lang))> sort*  
-    	; s2*   := <filter(cf-prod-to-template; template-to-pp); flatten-list> p*
+    	; s2*   := <filter(cf-prod-to-template; desugar-templates; template-to-pp); flatten-list> p*
     	; s3*   := <map(is-sort-fail)> sort*
     	  
   section-to-pp(|lang):
@@ -321,16 +321,20 @@ rules
       with 
         ppx := CallNoArgs(SVar($[prettyprint-[x]]));
         vs := <un-double-quote; unescape; explode-string; occurrences(?'\n'); dec> sep;
-           literals  := <un-double-quote; string-replace(|"\\n", "")> sep;
+           literals  := <un-double-quote; string-replace(|"\\n", ""); string-replace(|"_from_kernel", "")> sep;
+           kernel    := <un-double-quote; is-substring(!"_from_kernel") < !"1"+ !"0"> sep;
            literals' := NoAnnoList(Str(<double-quote> literals));
-           switch !(vs, literals)
-             case ?(-1, _):
+           switch !(vs, literals, kernel)
+           	  case ?(_, _, "1"):
+           	  	literals'' := <string-replace(|"_from_kernel", "")> sep;
+           	  	s    := CallT(ppl, [ppx], [NoAnnoList(Str(literals''))])
+             case ?(-1, _, "0"):
                // separator with literals only => horizontal box with sep option
                s    := CallT(ppl, [ppx], [literals'])
-             case ?(0, ""):
+             case ?(0, "", "0"):
                // separator is a line break => vertical box
                s := Call(SVar("pp-V-list"), [ppx])
-             case ?(_, ""):
+             case ?(_, "", "0"):
               // separator is multiple line breaks => vertical box with vs option
                s := CallT(SVar("pp-V-list"), [ppx], [literals'])
              otherwise:
