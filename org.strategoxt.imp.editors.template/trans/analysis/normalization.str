@@ -46,7 +46,7 @@ imports
     	case ?Label(l, Iter(s)) : symbol' := Label(l, IterSep(s, Lit(sep)))
     	case ?Label(l, IterStar(s)) : symbol' := Label(l, IterStarSep(s, Lit(sep)))
     	end;  	
-    	options'* := <remove-all(?Separator(_))> options*  	
+    	options'* := <remove-all(?Separator(_)); not(?[]) <+ !NoOptions()> options*  	
   
   normalize:
   	SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->
@@ -94,6 +94,9 @@ imports
   	
   normalize:
   	Syntax(p*) -> Kernel(p*)	
+  	
+  normalize:
+  	TemplateSection(t*) -> SDFSection(ContextFreeSyntax(t*))	
   	  	
   /*normalize:
   	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]
