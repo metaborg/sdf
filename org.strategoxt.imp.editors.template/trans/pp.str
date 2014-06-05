@@ -4,7 +4,9 @@ imports
 
 	libstratego-gpp
 	lib/runtime/tmpl/pp
-	src-gen/pp/-
+	src-gen/pp/TemplateLang-pp
+	src-gen/pp/modules/Modules-pp
+	
 
 rules
 	
@@ -29,4 +31,5 @@ rules
        result := <pp-SDF3-string> ast
     <+ <bottomup(try(not(is-string); not(is-list); not(pp-SDF3-string); debug(!"cannot pp ")))> ast
     ;  result := ""
+
 

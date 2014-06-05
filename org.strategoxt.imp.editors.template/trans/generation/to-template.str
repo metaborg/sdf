@@ -8,16 +8,26 @@ imports
 
 rules // Convert regular productions to desugared syntax templates
 	
+	module-to-template:
+		Module(m, i*, sections*) -> Module(m, i*, sections'*)
+	with
+		sections'* := <map(try(section-to-template))> sections*
+		
+	section-to-template:
+		SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax(p'*))
+	with
+		p'* := <map(try(prod-to-template; make-angled)); bottomup(try(escape-brackets))> p*	
+	
 	prod-to-template:
 		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a*)) ->
-		TemplateProductionWithCons(SortCons(SortDef(s), c), SingleLineTemplate(elem*), Attrs(a*))
+		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
 	with
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*
     
     prod-to-template:
 		SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) ->
-		TemplateProduction(SortDef(s), SingleLineTemplate(elem*), Attrs(a*))
+		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
 	with
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*            
@@ -25,14 +35,14 @@ rules // Convert regular productions to desugared syntax templates
     
     cf-prod-to-template:
     	SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) -> 
-    		TemplateProduction(SortDef(s), SingleLineTemplate(elem*), Attrs(a*))
+    		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
     with
     	elem* := <map(symbol-to-elem)> symbols*
     	//;debug(!"a")
     
     cf-prod-to-template:
     	SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a*)) -> 
-    		TemplateProductionWithCons(SortCons(SortDef(s), c), SingleLineTemplate(elem*), Attrs(a*))
+    		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
     with
     	elem* := <map(symbol-to-elem)> symbols*
     	//; debug(! "b")
@@ -47,52 +57,87 @@ rules // Convert regular productions to desugared syntax templates
     	Cf(s) -> <symbol-to-elem> s
     
      symbol-to-elem:
-	 	Opt(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(Opt(t), [])
+	 	Opt(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(Opt(t), NoOptions())
 	 
 	 symbol-to-elem:
-	 	IterStar(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(IterStar(t), [])
+	 	IterStar(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(IterStarSep(t, Lit("\"\"")), NoOptions())
 	 
 	 symbol-to-elem:
-	 	Iter(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(Iter(t), [])
+	 	Iter(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>) -> Placeholder(IterSep(t, Lit("\"\"")), NoOptions())
 	 
 	 symbol-to-elem:
-    	IterStarSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterStarSep(t, Lit(s)), [])
- //    with
- //      	s' := <un-double-quote; unescape> s
-	// 
+    	IterStarSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterStarSep(t, Lit(kernelsep)), NoOptions())
+      with
+        	s' 			:= <un-double-quote> s;
+        	kernelsep 	:= <double-quote> $[[s']_from_kernel]
+	 
 	symbol-to-elem:
-		IterSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterSep(t, Lit(s)), [])
-	// with
-	// 	s' := <un-double-quote; unescape> s
+		IterSep(<?Lex(t@Sort(_)) + ?Cf(t@Sort(_))>, Lit(s)) -> Placeholder(IterSep(t, Lit(kernelsep)), NoOptions())
+	 with
+	 	s' 			:= <un-double-quote> s;
+        	kernelsep 	:= <double-quote> $[[s']_from_kernel]
         
     
 	symbol-to-elem:
    		Lit(t) -> String(<un-double-quote; unescape> t)
+		
 	
 	symbol-to-elem:
 		CiLit(s) -> String(<un-single-quote> s)
+		
+	// symbol-to-elem:
+ //   		Lit(t) -> Escape(<un-double-quote;debug(!"here ")> t)
+ //   		where
+ //   			<?"<" + ?">"> t
+	// 
+	// symbol-to-elem:
+	// 	CiLit(s) -> Escape(<un-single-quote> s)
+	// 	where
+ //   			<?"<" + ?">"> s
+	
+	
 	
 	 symbol-to-elem:
-     	t@Sort(_) -> Placeholder(t, [])
+     	t@Sort(_) -> Placeholder(t, NoOptions())
      
      symbol-to-elem:
-	 	opt@Opt(Sort(_)) -> Placeholder(opt, [])
+	 	opt@Opt(Sort(_)) -> Placeholder(opt, NoOptions())
 	 	 
 	 symbol-to-elem:
-	 	iterstar@IterStar(Sort(_)) -> Placeholder(iterstar, [])
+	 	iterstar@IterStar(Sort(_)) -> Placeholder(iterstar, NoOptions())
 	 
 	 symbol-to-elem:
-	 	iter@Iter(Sort(_)) -> Placeholder(iter, [])
+	 	iter@Iter(Sort(_)) -> Placeholder(iter, NoOptions())
 	
 	 symbol-to-elem:
-    	iterStarSep@IterStarSep(Sort(_), Lit(s)) -> Placeholder(iterStarSep, [])
+    	iterStarSep@IterStarSep(Sort(_), Lit(s)) -> Placeholder(iterStarSep, NoOptions())
      with
        	s' := <un-double-quote; unescape> s
 	 
 	 symbol-to-elem:
-	 	iterSep@IterSep(Sort(_), Lit(_)) -> Placeholder(iterSep, [])
+	 	iterSep@IterSep(Sort(_), Lit(_)) -> Placeholder(iterSep, NoOptions())
 	 // with
 	// 	s' := <un-double-quote; unescape> s
 	// 	
+	
+	escape-brackets :
+		String("<") -> String("\\<")
+	
+	escape-brackets :
+		String(">") -> String("\\>")
+	
+	
+	make-angled :
+		TemplateProductionWithCons(sc, Template([Line(elem*)]), a) -> TemplateProductionWithCons(sc, Template([Line(elem'*)]), a)
+	with
+			elem'* := <map(try(angle-placeholder))> elem*
+		
+	make-angled :	
+		TemplateProduction(s, Template([Line(elem*)]), a) -> TemplateProduction(s, Template([Line(elem'*)]), a)
+	with
+		elem'* := <map(try(angle-placeholder))> elem*
+	
+	angle-placeholder :
+		p@Placeholder(_, _) -> Angled(p)
 
   
