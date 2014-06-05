@@ -82,8 +82,8 @@ imports
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   :=  <module-to-pp> selected'
-      ; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> fn 	
+     // ; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn 	
   
    generate-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -93,8 +93,8 @@ imports
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected'
-    	; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> fn
+    	//; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn//fn
   
   
   generate-esv-abstract:
@@ -123,14 +123,14 @@ imports
   	with
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <pp-SDF3-string-abstract> ast;
-  		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
   
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes)); pp-SDF3-string-abstract> ast;
-  		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
   
   
   
@@ -147,6 +147,22 @@ imports
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
+  	
+  	
+  	
+  lift-sdf3-template-abstract:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		result   := <module-to-template> ast;
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn		
+  		
+   lift-sdf3-template:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		result   := < module-to-template;bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
+  		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
   
   // On-save handler
   generate-all:
@@ -158,14 +174,14 @@ imports
     	index-setup(|<language>, project-path);
     	ast'     := <desugar-templates> ast;
     	<?Module(Unparameterized(mn), i*, sections)> ast 
-    	; fn       :=  <get-filename> mn    	  
+    	//; fn       :=  <get-filename> mn    	  
     with
-    	esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> fn;
+    	esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
     	esv-ast              :=  <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> ast';
     	<write-string-to-file> (esv-filename, esv-ast) 
     with
     	sig-ast              := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> ast';
-        sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> fn;
+        sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
     	<write-string-to-file> (sig-filename, sig-ast)  
     with
     	chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
@@ -176,7 +192,7 @@ imports
     	<write-string-to-file> (sdf-filename, sdf-ast)  
     with
         pp-ast               := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> ast'
-      ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> fn;
+      ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
         <write-string-to-file> (pp-filename, pp-ast)  
 	
   
@@ -300,5 +316,7 @@ imports
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  			
+  
   	
+  		
   
