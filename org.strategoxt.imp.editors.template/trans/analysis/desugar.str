@@ -154,4 +154,10 @@ rules
       t' := <origin-track-forced(string-replace(|"\t", "  "))> t
      
 
-
+  desugar-element:
+  	Squared(p) -> p
+  
+  desugar-element:
+  	Angled(p) -> p
+  
+  
