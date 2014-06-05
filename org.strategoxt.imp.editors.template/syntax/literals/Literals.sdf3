@@ -22,4 +22,4 @@ context-free syntax
 context-free syntax
 	Symbol.Lit = <<string:StrCon>>
 	Symbol.CiLit = <<ci-string:SingleQuotedStrCon>>
-	Production.PrefixFun = <<fun:FunctionName>(<arguments:{Symbol ","}*>) -\> <result:Symbol> <Attributes>>
+	Production.PrefixFun = <<fun:FunctionName>(<arguments:{Symbol ", "}*>) -\> <result:Symbol> <Attributes>>

@@ -18,9 +18,11 @@ SymbolDef.Lex = <<SymbolDef>-LEX> {prefer}
 SymbolDef.Var = <<SymbolDef>-VAR> {prefer}
 
 Grammar.Sorts = <
-	sorts 
+	sorts
 
-	<Symbols>>
+		<Symbols>
+		
+		>
  
 lexical restrictions
     Sort -/- [A-Za-z0-9]

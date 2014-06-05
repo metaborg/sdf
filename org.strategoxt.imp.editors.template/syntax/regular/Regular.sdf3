@@ -12,8 +12,8 @@ context-free syntax
 Symbol.Opt = <<Symbol>?>
 Symbol.Iter = <<Symbol>+>
 Symbol.IterStar = <<Symbol>*>
-Symbol.IterSep = <{<Symbol> <sep:Separator>} +>
-Symbol.IterStarSep = <{<Symbol> <sep:Separator>} *>
+Symbol.IterSep = <{<Symbol> <sep:Separator>}+>
+Symbol.IterStarSep = <{<Symbol> <sep:Separator>}*>
 Separator.Lit = <<StrCon>>
 
 

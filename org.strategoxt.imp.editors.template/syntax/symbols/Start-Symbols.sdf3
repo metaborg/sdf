@@ -7,14 +7,20 @@ context-free syntax
 Grammar.KernelStartSymbols = <
 	start-symbols
 	
-	<Symbols>>
+		<Symbols>
+	
+	>
 	
 Grammar.LexicalStartSymbols = <
 	lexical start-symbols
 	
-	<Symbols>>
+		<Symbols>
+	
+	>
 
 Grammar.ContextFreeStartSymbols = <
 	context-free start-symbols
 	
-	<Symbols>>
+		<Symbols>
+	
+	>

@@ -26,7 +26,7 @@ context-free syntax
 Section.TemplateOptions = <
 	template options 
 	
-	<{TemplateOption "\n"}*>
+		<{TemplateOption "\n"}*>
 	
 	>
 
@@ -44,7 +44,7 @@ TemplateOption.Tokenize = <tokenize : <StrCon>>
 context-free syntax
 //references to productions using sort.cons notation in priority specification
 Group.SimpleRefGroup = <<SortConsRef>>
-Group.ProdsRefGroup = <{<SortConsRef+>}>
+Group.ProdsRefGroup = <{<{SortConsRef "\n"}+>}>
 Group.AssocRefGroup = <
 	{<Associativity> :
 		<{SortConsRef "\n"}+>}>
@@ -90,10 +90,10 @@ SdfProduction.SdfProductionWithCons = <<SortCons> = <RHS> <Attributes>>
 RHS.Rhs = <<Symbols>>
 
 // template productions
-TemplateProduction.TemplateProduction = <<SymbolDef> = <Template><Attributes>>
+TemplateProduction.TemplateProduction = <<SymbolDef> = <Template> <Attributes>>
 
 // template productions Sort.Cons = ...
-TemplateProduction.TemplateProductionWithCons = <<SortCons> = <Template><Attributes>>
+TemplateProduction.TemplateProductionWithCons = <<SortCons> = <Template> <Attributes>>
 
 Constructor.Constructor = <<IdCon>>
 
@@ -101,8 +101,8 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
 
  
 // placeholders
-TemplatePart1 = <\<<Placeholder>\>> {bracket}
-TemplatePart2 = <[<Placeholder>]> {bracket}
+TemplatePart1.Angled = <\<<Placeholder>\>>
+TemplatePart2.Squared = <[<Placeholder>]>
 
 
 //Old Placeholder Style
@@ -123,13 +123,13 @@ Placeholder.Placeholder = <<Symbol><PlaceholderOptions>>
 
 
 PlaceholderOptions.NoOptions = <>
-PlaceholderOptions.Options = <;<{PlaceholderOption ","}+>>
+PlaceholderOptions.Options = <;<{PlaceholderOption ", "}+>>
 
 PlaceholderOption.Hide = <hide>
 PlaceholderOption.Wrap = <wrap>
 PlaceholderOption.Anchor = <anchor>
 //mark as deprecated
-PlaceholderOption.Separator = <separator=<StrCon>>
+PlaceholderOption.Separator = <separator=<StrCon>> {deprecated("Use list with separator symbol instead")}
 PlaceholderOption.Text = <text=<StrCon>>
  
 // syntax

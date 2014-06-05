@@ -22,12 +22,14 @@ Group.AssocGroup = <
 	{<Associativity>: 
 		<Productions>}> 
 
-Priority.Chain = <<list:{Group ">"}+>>
+Priority.Chain = <<list:{Group " > "}+>>
 //"left":Group Associativity "right":Group             -> Priority  {cons("assoc")}
 Priority.Assoc = <<Group> <Associativity> <Group>>
 
-Priorities = <<list:{Priority ","}*>>
+Priorities = <<list:{Priority ", "}*>>
 Grammar.Priorities = <
 	priorities 
 
-	<Priorities>>
+		<Priorities>
+		
+		>

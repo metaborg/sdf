@@ -5,15 +5,18 @@ imports kernel/Kernel
   
 context-free syntax 
 
-	// HACK: incremental parsing annotation
-    // Symbols "->" result:Symbol Attributes -> Production  {cons("prod"), incremental}
-	Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes> > {incremental}
+// HACK: incremental parsing annotation
+// Symbols "->" result:Symbol Attributes -> Production  {cons("prod"), incremental}
+Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes> > {incremental}
 	 
 context-free syntax  
-	Grammar.Aliases = <
+
+Grammar.Aliases = <
 	aliases 
 	
-	<Aliases>>
+		<Aliases>
+		
+	>
 	//Symbol arrow:"->" alias:Symbol -> Alias    {cons("alias")}
-	Alias.Alias = <<Symbol> -\> <alias:Symbol>>
-	Aliases     = <<list:Alias*>> 
+Alias.Alias = <<Symbol> -\> <alias:Symbol>>
+Aliases     = <<list:Alias*>> 

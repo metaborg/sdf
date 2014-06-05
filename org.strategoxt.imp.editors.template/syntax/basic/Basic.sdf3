@@ -8,25 +8,25 @@ context-free syntax
 Grammar.Lexical = <
 	lexical syntax
 	
-	<Productions>
+		<Productions>
 	
 	>
 Grammar.Contextfree = <
 	context-free syntax
 	
-	<Productions>
+		<Productions>
 	
 	>
 Grammar.Variables = <
 	variables
 	
-	<Productions>
+		<Productions>
 	
 	>
 Grammar.LexVariables = <
 	lexical variables
 	
-	<Productions>
+		<Productions>
 	
 	>
 
