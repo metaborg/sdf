@@ -14,7 +14,7 @@ Lookaheads.Single = <<Lookahead>>
 //"left":Lookaheads "|" "right":Lookaheads -> Lookaheads  {cons("alt"),right}
 Lookaheads.Alt = <<Lookaheads> | <Lookaheads>> {right}
 Lookaheads = <(<Lookaheads>)> {bracket}
-Lookaheads.List = <[[<list:Lookahead*; separator=",">]]>
+Lookaheads.List = <[[<list:{Lookahead ", "}*>]]>
 
 Restriction.Follow = <<Symbols> -/- <Lookaheads>>
  

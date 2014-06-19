@@ -47,7 +47,7 @@ context-free syntax
     ModuleName = <__default> {reject}
     ModuleName = <__internal> {reject}
 
-    Symbols = <<StrCon>(<arguments:Symbol*; separator=",">)> {reject}
+    Symbols = <<StrCon>(<arguments:{Symbol ","}*>)> {reject}
     
     Label = <<Associativity>> {reject}
     ATermAttribute = <<Associativity>> {reject}

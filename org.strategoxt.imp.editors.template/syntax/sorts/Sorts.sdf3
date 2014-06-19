@@ -11,7 +11,7 @@ lexical syntax
      
 context-free syntax
 Symbol.Sort = <<Sort>>
-Symbol.ParameterizedSort = <<Sort> [[<parameters:Symbol+; separator=",">]]>
+Symbol.ParameterizedSort = <<Sort> [[<parameters:{Symbol ", "}+>]]>
 SymbolDef.SortDef = <<Sort>> {prefer}
 SymbolDef.Cf = <<SymbolDef>-CF> {prefer}
 SymbolDef.Lex = <<SymbolDef>-LEX> {prefer}
