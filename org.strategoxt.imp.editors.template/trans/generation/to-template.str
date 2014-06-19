@@ -85,18 +85,16 @@ rules // Convert regular productions to desugared syntax templates
 	symbol-to-elem:
 		CiLit(s) -> String(<un-single-quote> s)
 		
-	// symbol-to-elem:
- //   		Lit(t) -> Escape(<un-double-quote;debug(!"here ")> t)
- //   		where
- //   			<?"<" + ?">"> t
-	// 
-	// symbol-to-elem:
-	// 	CiLit(s) -> Escape(<un-single-quote> s)
-	// 	where
- //   			<?"<" + ?">"> s
+	symbol-to-elem:
+		Label(l, s) -> Placeholder(Label(l, s), NoOptions())
+	where
+		<oncetd(?Sort(_))> s
 	
-	
-	
+	symbol-to-elem:
+		Label(l, s) -> <symbol-to-elem> s
+	where
+		not(<oncetd(?Sort(_))> s)	
+		
 	 symbol-to-elem:
      	t@Sort(_) -> Placeholder(t, NoOptions())
      
