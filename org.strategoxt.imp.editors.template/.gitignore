@@ -4,6 +4,7 @@ bin
 editor/*generated*
 editor/java/org/strategoxt/imp/editors/template/generated
 editor/java/trans
+editor/java/pplib
 include
 lib-refactoring
 lib/analysis-library-internal.generated.str
