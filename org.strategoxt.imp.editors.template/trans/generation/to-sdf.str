@@ -494,6 +494,10 @@ rules //conversion of SDF3 terms into SDF2
   	
   special-term-to-sdf:
   	Deprecated(s) -> term(default(appl(unquoted("deprecated"), [fun(quoted(s))])))		
+  	
+  special-term-to-sdf:
+  	Constructor(s) -> term(default(appl(unquoted("cons"), [fun(quoted(s))])))		
+   	
  	
   		  		
   terms-to-sdf:

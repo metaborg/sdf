@@ -53,7 +53,7 @@ imports
   		SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
   	where
   		c := <getfirst(lift-constr)> a*;
-  		a'* := <remove-all(?lift-constr)> a* 
+  		a'* := <remove-all(?Constructor(_))> a* 
   		
   
   //regular sdf2 productions become sdf3 productions with or without constructors     	
@@ -61,7 +61,7 @@ imports
   	Prod(symbols*, Sort(s), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		a'* := <remove-all(?lift-constr)> a* ;
+  		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) 
   
@@ -71,7 +71,7 @@ imports
   	Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		a'* := <remove-all(?lift-constr)> a* ;
+  		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
   
@@ -80,9 +80,21 @@ imports
   	Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
-  		a'* := <remove-all(?lift-constr)> a* ;
+  		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
   	<+  result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+  
+  
+  //sdf2 productions that does not define a sort become sdf3 productions with or without constructors     	
+  normalize:
+  	Prod(symbols*, symbol, Attrs(a*)) -> result
+  	where
+  		not(<?Sort(s) + ?Lex(Sort(_)) + ?Cf(Sort(_))> symbol)
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?Constructor(_))> a* ;
+  		result := SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), Attrs(a'*))
+  	<+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*)) 
   
   
   //normalize reductive productions section to productive productions section
