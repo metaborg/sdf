@@ -7,6 +7,7 @@
 	<property name="metasdfmodule" value="Stratego-TemplateLang" />
 	<property name="esvmodule" value="TemplateLang" />
 	<property name="strmodule" value="templatelang" />
+	<property name="ppmodule" value="TemplateLang-pp" />
 
 	<!-- Project directories -->
 	<property name="trans" location="trans" />
@@ -16,6 +17,9 @@
 	<property name="lib" location="lib" />
 	<property name="build" location="bin" />
 	<property name="dist" location="bin/dist" />
+	<property name="pp" location="src-gen/pp" />
+	<property name="signatures" location="src-gen/signatures" />
+	<property name="sdf3-src-gen" location="src-gen" />
 
 	<!-- Imports -->
 	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
@@ -47,18 +51,18 @@
 
 	<import file="build.generated.xml" />
 
-		<!-- The files for which the on-save handler is called before building. -->
-		<path id="call-onsave.files">
-			<fileset dir=".">
-				<include name="**/*.tmpl" />
-				<include name="**/*.sdf3" />
-				<include name="**/*.nab" />
-				<include name="**/*.ts" />
-			</fileset>
-		</path>
-	
+	<!-- The files for which the on-save handler is called before building. -->
+	<path id="call-onsave.files">
+		<fileset dir=".">
+			<include name="**/*.tmpl" />
+			<include name="**/*.sdf3_" />
+			<include name="**/*.nab" />
+			<include name="**/*.ts" />
+		</fileset>
+	</path>
+
 	<!-- Main target -->
-	<target name="all" depends="pppack-esv, spoofaximp.default.jar" />
+	<target name="all" depends="pppack-esv, spoofaximp.default.ctree, pp.jar" />
 
 
 	<!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
@@ -72,5 +76,124 @@
 			<arg value="${include}/EditorService-pretty.pp.af" />
 		</java>
 	</target>
+
+	
+	<available file="${pp}/${ppmodule}.str" property="pp.module.enabled" />
+
+	<!-- Target to create ctree from generated pp and signatures -->
+	<target name="pp.ctree">
+		<fail message="Main pp file '${ppmodule}.str' not found.">
+			<condition>
+				<not>
+					<isset property="pp.module.enabled" />
+				</not>
+			</condition>
+		</fail>
+		<dependset>
+			<srcfileset dir="${pp}">
+				<include name="**/*.str" />
+				<include name="**/*.astr" />
+			</srcfileset>
+			<srcfileset dir="${signatures}">
+				<include name="**/*.str" />
+				<include name="**/*.astr" />
+			</srcfileset>
+			<targetfileset file="${pp}/${ppmodule}.ctree" />
+		</dependset>
+		<available file="${pp}/${ppmodule}.ctree" property="pp-module.available" />
+		<antcall target="pp.ctree.helper">
+			<param name="build.ctree.outputfile" value="${sdf3-src-gen}/${ppmodule}.ctree" />
+			<param name="build.ctree.extraargs" value="-F" />
+		</antcall>
+	</target>
+	
+	
+	<!-- Target to create jar from generated pp and signatures -->
+	<target name="pp.jar" depends="utils-files">
+		<fail message="Main pp file '${ppmodule}.str' not found.">
+			<condition>
+				<not>
+					<isset property="pp.module.enabled" />
+				</not>
+			</condition>
+		</fail>
+		<dependset>
+			<srcfileset dir="${pp}">
+				<include name="**/*.str" />
+				<include name="**/*.astr" />
+			</srcfileset>
+			<srcfileset dir="${signatures}">
+				<include name="**/*.str" />
+				<include name="**/*.astr" />
+			</srcfileset>
+			<targetfileset file="${src-gen}/pplib/Main.java" />
+		</dependset>
+		
+		<available file="${src-gen}/pplib/Main.java" property="pp-java.available" />
+		<antcall target="pp.jar.deletehelper" />
+		<antcall target="pp.jar.helper">
+			<param name="build.jar.outputfile" value="${src-gen}/pplib/Main.java" />
+			<param name="build.jar.extraargs" value="" />
+		</antcall>
+		<javac srcdir="${src-gen}" includes="pplib/**" destdir="${build}" source="1.7" target="1.7" debug="on">
+			<classpath>
+				<pathelement path="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" />
+				<!--fileset dir="${eclipse.home}/plugins">
+					<include name="*.jar" />
+				</fileset-->
+				<!-- Spoofax/322 -->
+			</classpath>
+		</javac>
+		<!-- copy imported terms -->
+		<copy todir="${build}/pplib">
+				<fileset dir="${src-gen}/pplib" excludes="**/*.java" />
+		</copy>
+		<jar basedir="${build}" includes="pplib/**" destfile="${include}/${ppmodule}.tmp.jar" />
+		<move file="${include}/${ppmodule}.tmp.jar" tofile="${include}/${ppmodule}.jar" />
+	    <delete>
+			<fileset dir="${build}" includes="pplib/**" />
+		</delete> 
+	</target>
+	
+	<target name="pp.jar.deletehelper" unless="pp-java.available">
+				<delete>
+					<fileset dir="${src-gen}" includes="pplib/**" />
+					<fileset dir="${build}" includes="pplib/**" />
+					<!-- fileset dir="${pp}" includes="${ppmodule}.rtree" /-->
+				</delete>
+			</target>
+	
+	<property name="build.ppjar.args" value="
+		      --library
+		      -I &quot;${basedir}&quot;
+		      -I &quot;${trans}&quot;
+		      -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm   
+	  	      -la stratego-sdf -la strc" />
+	
+	<target name="pp.jar.helper" unless="pp-java.available" if="pp.module.enabled">
+		<!--delete file="${include}/${strmodule}.rtree" failonerror="false" /-->
+		<java classname="org.strategoxt.strj.Main" failonerror="true">
+			<arg value="-i" />
+			<arg value="${pp}/${ppmodule}.str" />
+			<arg value="-o" />
+			<arg value="${build.jar.outputfile}" />
+			<arg value="-p" />
+			<arg value="pplib" />
+			<arg value="--library" />
+			<arg value="--clean" />			
+			<arg line="${build.ppjar.args}" />
+			<arg line="${build.jar.extraargs}" />
+			<arg line="${externaljarflags}" />
+			<arg line="${externaldefimport}" />
+			<arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;" />
+		</java>
+		<!--delete file="${include}/${strmodule}.rtree" failonerror="false" /-->
+		<mkdir dir="${build}/pplib" />
+	</target>
+
+	<target name="java.jar" if="java.jar.enabled">
+			<jar basedir="${build}" excludes="trans/** pplib/**" update="true" destfile="${include}/${strmodule}-java.jar" />
+		</target>
+
 
 </project>

@@ -15,7 +15,7 @@ language General properties
   table         : include/TemplateLang.tbl
   start symbols : Module
 
-  provider : include/templatelang.jar
+  provider : include/templatelang.ctree
   provider : include/templatelang-java.jar
 
   observer : editor-analyze (multifile)
