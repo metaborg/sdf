@@ -58,9 +58,9 @@ menus
      
   menu: "Format" (openeditor) (realtime)
     
+    action: "Format (abstract)"            		  = pp-sdf3-abstract (meta) (source)
     action: "Format"             			      = pp-sdf3 (source)
-    action: "Format (box AST)"            		  = pp-sdf3-abstract (meta) (source)
-    action: "Lift" 								  = lift-sdf3
-    action: "Lift (box AST)" 					  = lift-sdf3-abstract (meta)
+    action: "Lift (abstract)" 					  = lift-sdf3-abstract (meta)
+    action: "Lift" 								  = lift-sdf3    
     action: "Lift (templates, abstract)"          = lift-sdf3-template-abstract (meta)
     action: "Lift (templates)"                    = lift-sdf3-template 

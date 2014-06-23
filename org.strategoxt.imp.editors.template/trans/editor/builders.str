@@ -16,6 +16,8 @@ imports
   runtime/index/-
   runtime/task/-
   trans/generation/-
+  analysis/names
+  lib/runtime/nabl/-
   
  
   
@@ -122,14 +124,14 @@ imports
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := <pp-SDF3-string-abstract> ast;
+  		result   := <pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
   
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := <bottomup(try(sugar-attributes)); pp-SDF3-string-abstract> ast;
+  		result   := <bottomup(try(sugar-attributes))> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
   
   
@@ -284,7 +286,7 @@ imports
 	 		//	debug(!"get-dir ");
 	 			<create-dirs(|first)> tl;
 	 		//	debug(!"create-dirs ");
-	 			s' := <concat-strings> [path, "/",  <at-last(separate-by(|"/")); concat-strings> names']
+	 			s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
  		    else
  		    	s' := path
  		    end
@@ -316,7 +318,3 @@ imports
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  			
-  
-  	
-  		
-  
