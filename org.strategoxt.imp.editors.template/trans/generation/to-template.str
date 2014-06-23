@@ -19,30 +19,38 @@ rules // Convert regular productions to desugared syntax templates
 		p'* := <map(try(prod-to-template; make-angled)); bottomup(try(escape-brackets))> p*	
 	
 	prod-to-template:
-		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a*)) ->
+		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), attrs) ->
 		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
+	with
+		a* := <?Attrs(<id>) <+ ![]> attrs
 	with
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*
     
     prod-to-template:
-		SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) ->
+		SdfProduction(SortDef(s), Rhs(symbols*), attrs) ->
 		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
+	with
+		a* := <?Attrs(<id>) <+ ![]> attrs
 	with
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*            
     
     
     cf-prod-to-template:
-    	SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) -> 
+    	SdfProduction(Cf(SortDef(s)), Rhs(symbols*), attrs) -> 
     		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
+    with
+		a* := <?Attrs(<id>) <+ ![]> attrs
     with
     	elem* := <map(symbol-to-elem)> symbols*
     	//;debug(!"a")
     
     cf-prod-to-template:
-    	SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a*)) -> 
+    	SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), attrs) -> 
     		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
+    with
+		a* := <?Attrs(<id>) <+ ![]> attrs
     with
     	elem* := <map(symbol-to-elem)> symbols*
     	//; debug(! "b")
@@ -119,10 +127,9 @@ rules // Convert regular productions to desugared syntax templates
 	// 	
 	
 	escape-brackets :
-		String("<") -> String("\\<")
-	
-	escape-brackets :
-		String(">") -> String("\\>")
+		String(s) -> String(s')
+	with
+		s' := <string-replace(|">","\\>"); string-replace(|"<","\\<")> s	
 	
 	
 	make-angled :
