@@ -16,7 +16,8 @@ Lookaheads.Alt = <<Lookaheads> | <Lookaheads>> {right}
 Lookaheads = <(<Lookaheads>)> {bracket}
 Lookaheads.List = <[[<list:{Lookahead ", "}*>]]>
 
-Restriction.Follow = <<Symbols> -/- <Lookaheads>>
+Restriction.Follow = <<RestrictionSymbols> -/- <Lookaheads>>
+RestrictionSymbols = <<list:{Symbol "\n"}*>>
  
 Restrictions = <<list:{Restriction "\n"}*>>
  
