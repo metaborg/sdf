@@ -5,6 +5,7 @@ imports include/SDF
 		editor-common.generated
 		lib/sdf3/TemplateLang-pp
 		libstratego-gpp
+		libstratego-aterm
 
   rules
   	
@@ -15,14 +16,61 @@ imports include/SDF
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
       result   := <module-to-sdf3> ast
     
+   generate-sdf3-abstract:
+    (selected, position, ast, path, project-path) -> None()
+    where
+      <?definition(modules*)> ast 
+    with
+    	<map(generate-sdf3-abstract(|project-path))> modules*
+    	   
+   generate-sdf3-abstract(|project-path):
+   	ast@'module(unparameterized(mn), i*, e*) -> None()
+   	with
+   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
+      result   := <module-to-sdf3> ast;
+      <write-string-to-file> (filename, <aterm-escape-strings; pp-aterm-box; box2text-string(|100)> result)
+       
    generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-      result   := <module-to-sdf3; pp-SDF3-string> ast 	  	 	
-  
-    
+      result   := <module-to-sdf3; pp-SDF3-string> ast 	 
+         
+   generate-sdf3-concrete:
+    (selected, position, ast, path, project-path) -> None()
+    where
+      <?definition(modules*)> ast 
+    with
+    	<map(generate-sdf3-concrete(|project-path))> modules*    	 	
+       
+   generate-sdf3-concrete(|project-path):
+   	ast@'module(unparameterized(mn), i*, e*) -> None()
+   	with
+   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
+   	  result   := <module-to-sdf3; pp-SDF3-string> ast;
+      <write-string-to-file> (filename, result)
+   
+    generate-sdf3-templates:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?'module(unparameterized(mn), i*, e*)> ast ;
+      filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
+      result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast 	 
+         
+   generate-sdf3-templates:
+    (selected, position, ast, path, project-path) -> None()
+    where
+      <?definition(modules*)> ast 
+    with
+    	<map(generate-sdf3-templates(|project-path))> modules*    	 	
+       
+   generate-sdf3-templates(|project-path):
+   	ast@'module(unparameterized(mn), i*, e*) -> None()
+   	with
+   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
+   	  result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
+      <write-string-to-file> (filename, result) 	
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
@@ -54,11 +102,12 @@ imports include/SDF
  		//	debug(!"names ");
  			if [h | tl] := names'
  			then 			
-	 			first := <concat-strings> [path, "/" ,h]; 
+	 			first := <concat-strings> [path, "/" , h]; 
 	 		//	debug(!"get-dir ");
 	 			<create-dirs(|first)> tl;
-	 		//	debug(!"create-dirs ");
-	 			s' := <concat-strings> [path, "/",  <at-last(separate-by(|"/")); concat-strings> names']
+	 			//debug(!"create-dirs ");
+	 			s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
+	 			
  		    else
  		    	s' := path
  		    end
@@ -92,5 +141,10 @@ imports include/SDF
     prettyprint-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
+      
+ sugar-attributes:
+ 	Attrs([]) -> NoAttrs() 			
+ 				
+ 			
   		
   

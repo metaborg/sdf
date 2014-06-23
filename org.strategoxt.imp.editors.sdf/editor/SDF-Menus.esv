@@ -11,6 +11,6 @@ menus
 	  action: "Show syntax templates (for selection)" = generate-syntax-templates
 	  action: "Lift to SDF3 (abstract)"						  = generate-sdf3-abstract
 	  action: "Lift to SDF3 (concrete)"						  = generate-sdf3-concrete
-	 // action: "Lift to SDF3 (templates)"			  = generate-sdf3-templates
+	  action: "Lift to SDF3 (templates)"			  = generate-sdf3-templates
 	  
 	  
