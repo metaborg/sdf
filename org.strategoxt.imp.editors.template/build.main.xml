@@ -19,7 +19,7 @@
 	<property name="dist" location="bin/dist" />
 	<property name="pp" location="src-gen/pp" />
 	<property name="signatures" location="src-gen/signatures" />
-	<property name="sdf3-src-gen" location="src-gen" />
+	<property name="sdf-src-gen" location="src-gen" />
 
 	<!-- Imports -->
 	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
@@ -55,7 +55,7 @@
 	<path id="call-onsave.files">
 		<fileset dir=".">
 			<include name="**/*.tmpl" />
-			<include name="**/*.sdf3_" />
+			<include name="**/*.sdf3" />
 			<include name="**/*.nab" />
 			<include name="**/*.ts" />
 		</fileset>
@@ -102,7 +102,7 @@
 		</dependset>
 		<available file="${pp}/${ppmodule}.ctree" property="pp-module.available" />
 		<antcall target="pp.ctree.helper">
-			<param name="build.ctree.outputfile" value="${sdf3-src-gen}/${ppmodule}.ctree" />
+			<param name="build.ctree.outputfile" value="${sdf-src-gen}/${ppmodule}.ctree" />
 			<param name="build.ctree.extraargs" value="-F" />
 		</antcall>
 	</target>
@@ -190,6 +190,42 @@
 		<!--delete file="${include}/${strmodule}.rtree" failonerror="false" /-->
 		<mkdir dir="${build}/pplib" />
 	</target>
+	
+	<target name="clean" description="Clean project">
+				<delete dir="${build}" />
+				<delete dir="${sdf-src-gen}" />
+				<delete dir=".cache" />
+				<delete file="${include}/${sdfmodule}.def" />
+				<delete file="${include}/${sdfmodule}-parenthesize.str" />
+				<delete file="${include}/${sdfmodule}-Permissive.def" />
+				<delete file="${include}/${sdfmodule}.generated.pp.af" />
+				<delete file="${include}/${sdfmodule}.packed.esv" />
+				<delete file="${include}/${sdfmodule}.pp.af" />
+				<delete file="${include}/${sdfmodule}.rtg" />
+				<delete file="${include}/${sdfmodule}.str" />
+				<delete file="${include}/${sdfmodule}.tbl" />
+				<delete file="${include}/${strmodule}.rtree" />
+				<delete file="${include}/${strmodule}.ctree" />
+				<delete file="${include}/${strmodule}.ctree.dep" />
+				<delete file="${include}/${strmodule}.jar" />
+				<delete>
+					<fileset dir="editor" includes="*.generated.*" />
+		      <fileset dir="trans" includes="*.pp.generated.str" />
+				</delete>
+				<delete dir="${src-gen}/trans" />
+				<delete file="editor/${sdfmodule}.generated.esv" />
+				<delete file="${syntax}/${sdfmodule}.generated.esv" />
+				<delete file="${syntax}/${sdfmodule}.generated.pp" />
+				<delete file="${include}/${metasdfmodule}-Permissive.def" />
+				<delete file="${include}/${metasdfmodule}.def" />
+				<delete file="${include}/${metasdfmodule}.tbl" />
+				<delete file=".settings/org.eclipse.jdt.core.prefs" />
+				<delete dir="utils" />
+				<delete>
+					<fileset dir="${lib}" includes="*.generated.str" />
+				</delete>
+				<antcall target="refresh-cleaned" />
+			</target>
 
 	<target name="java.jar" if="java.jar.enabled">
 			<jar basedir="${build}" excludes="trans/** pplib/**" update="true" destfile="${include}/${strmodule}-java.jar" />
