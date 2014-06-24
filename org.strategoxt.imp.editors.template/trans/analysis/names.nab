@@ -16,6 +16,7 @@ properties
 
   def of Constructor       : SdfProduction
   sort of Constructor      : Sort
+  constructorName of Sort	   : Constructor
   
 binding rules
 
@@ -29,7 +30,7 @@ binding rules
     
   //Kernel Productions  
   p@SdfProductionWithCons(SortCons(Lex(SortDef(s)), Constructor(c)), rhs, attrs): 
-    defines non-unique Sort s of type SortType(s)
+    defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
     //  of sort s
@@ -40,7 +41,7 @@ binding rules
     defines non-unique Sort s of type SortType(s)
    
    p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs): 
-    defines non-unique Sort s of type SortType(s)
+    defines non-unique Sort s of type SortType(s)  of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
     //  of sort s
@@ -53,7 +54,7 @@ binding rules
         
   //Regular Productions
   p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs): 
-    defines non-unique Sort s of type SortType(s)
+    defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
     //  of sort s
@@ -68,7 +69,7 @@ binding rules
   //    where rhs has type ty*
           
   p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs): 
-    defines non-unique Sort s of type SortType(s)
+    defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
    //   of sort s

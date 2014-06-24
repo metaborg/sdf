@@ -22,14 +22,15 @@ signature
 
 signature
   constructors
-    NablProp_def  : Property
-    NablProp_sort : Property
+    NablProp_def             : Property
+    NablProp_sort            : Property
+    NablProp_constructorName : Property
 
 
 rules
 
   nabl-custom-properties(add-properties) =
-    ![NablProp_def(), NablProp_sort()]
+    ![NablProp_def(), NablProp_sort(), NablProp_constructorName()]
     ; add-properties
 
   def-is(|ctx__) =
@@ -127,6 +128,54 @@ rules
   create-property-task(|ctx__, kind):
     term -> <create-sort-task(|ctx__)> term
     where NablProp_sort() := kind
+
+  constructorName-is(|ctx__) =
+    nabl-prop-calc(|ctx__, [])
+
+  constructorName-is(|ctx__, dep*) =
+    nabl-prop-calc(|ctx__, dep*)
+
+  constructorName-task(|ctx__) =
+    get-or-create-property-task(|ctx__, NablProp_constructorName())
+
+  constructorName-list(|ctx__) =
+    nabl-prop-list(|ctx__, [])
+
+  constructorName-list(|ctx__, dep*) =
+    nabl-prop-list(|ctx__, dep*)
+
+  constructorName-lookup(|ctx__) =
+    nabl-prop-lookup(|NablProp_constructorName(), ctx__, [])
+
+  constructorName-lookup(|ctx__, dep*) =
+    nabl-prop-lookup(|NablProp_constructorName(), ctx__, dep*)
+
+  constructorName-match(|ctx__, expected) =
+    nabl-prop-match(
+    | NablProp_constructorName()
+    , ctx__
+    , Eq()
+    , expected
+    )
+
+  constructorName-match(|ctx__, relation, expected) =
+    nabl-prop-match(|NablProp_constructorName(), ctx__, relation, expected)
+
+  create-constructorName-task(|ctx__) =
+    fail
+
+  get-constructorName(|) =
+    get-property(|NablProp_constructorName())
+
+  store-constructorName(|ctx__, prop) =
+    nabl-store-prop(
+    | ctx__
+    , Prop(NablProp_constructorName(), prop, [])
+    )
+
+  create-property-task(|ctx__, kind):
+    term -> <create-constructorName-task(|ctx__)> term
+    where NablProp_constructorName() := kind
 
 
 rules
@@ -343,6 +392,7 @@ rules
                     nabl-store-props(
                     | ctx__
                     , [ Prop(Type(), SortType(s), [])
+                      , Prop(NablProp_constructorName(), c, [])
                       ]
                     )
                   )
@@ -545,6 +595,7 @@ rules
                     nabl-store-props(
                     | ctx__
                     , [ Prop(Type(), SortType(s), [])
+                      , Prop(NablProp_constructorName(), c, [])
                       ]
                     )
                   )
@@ -732,6 +783,7 @@ rules
                   nabl-store-props(
                   | ctx__
                   , [ Prop(Type(), SortType(s), [])
+                    , Prop(NablProp_constructorName(), c, [])
                     ]
                   )
                 )
@@ -910,6 +962,7 @@ rules
                   nabl-store-props(
                   | ctx__
                   , [ Prop(Type(), SortType(s), [])
+                    , Prop(NablProp_constructorName(), c, [])
                     ]
                   )
                 )

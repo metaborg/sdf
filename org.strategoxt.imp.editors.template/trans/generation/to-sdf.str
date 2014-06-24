@@ -300,11 +300,12 @@ rules
   template-to-sdf(|chars, newline):
   	SingleLineTemplate(elems) -> elems'
   	with
-  	elems' := <filter(template-elem-to-sdf(|chars))> elems
+  	elems' := <filter(template-elem-to-sdf(|chars)); flatten-list> elems
   	
   template-elem-to-sdf(|chars):
   	String(t) -> <string-to-sdf(|chars)> t
-  	
+  
+  //removing layout from separator	
   template-elem-to-sdf(|chars):
   	Placeholder(symbol, option) -> symbol' 
   	where
@@ -404,7 +405,7 @@ rules
   line-to-sdf(|chars):
   	Line(elems) -> elems'
   	with
-  		elems' := <filter(template-elem-to-sdf(|chars))> elems
+  		elems' := <filter(template-elem-to-sdf(|chars)); flatten-list> elems
   
 
 

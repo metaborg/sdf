@@ -18,6 +18,7 @@ imports
   trans/generation/-
   analysis/names
   lib/runtime/nabl/-
+  lib/runtime/properties/-
   
  
   
@@ -130,8 +131,10 @@ imports
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := <bottomup(try(sugar-attributes))> ast;
+  		result   := <bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
   
   
@@ -146,8 +149,10 @@ imports
   lift-sdf3:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := <bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
+  		result   := <bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
   	
   	
@@ -162,8 +167,10 @@ imports
    lift-sdf3-template:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := < module-to-template;bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
+  		result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
   
   // On-save handler
@@ -318,3 +325,4 @@ imports
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  			
+  
