@@ -1,6 +1,7 @@
 .cache
 .settings
 bin
+target
 editor/*generated*
 editor/java/org/strategoxt/imp/editors/template/generated
 editor/java/trans
