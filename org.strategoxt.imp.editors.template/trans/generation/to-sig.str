@@ -129,7 +129,7 @@ rules
     with
       t := <get-type; try(check-fun-type)> c
      
-  check-fun-type: FunType([], t) -> t
+  check-fun-type: FunType([[]], t) -> t
       
     /*   
   section-to-sig:
