@@ -165,7 +165,7 @@ rules
   group-to-sdf3:
     simple-group(prod) -> SimpleGroup(prod')
     with
-    	prod' := <prod-to-sdf3> prod
+    	[prod'] := <prod-to-sdf3; flatten-list> prod
   
   group-to-sdf3:
     prods-group(prods) -> ProdsGroup(prods')
@@ -240,6 +240,9 @@ rules
   		result := SdfProductionWithCons(SortCons(symbol', c), Rhs(symbols'*), Attrs(a'*))
   	<+  result := SdfProduction(symbol', Rhs(symbols'*), Attrs(a*)) 
   
+  
+  
+ 
   
   
    symbol-to-sdf3:
