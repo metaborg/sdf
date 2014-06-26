@@ -1,0 +1,11 @@
+module src-gen/completion/constants/RealCon-esv
+
+imports
+  src-gen/completion/constants/IntCon-esv
+  src-gen/completion/constants/NatCon-esv
+
+completions
+  completion template OptExp : "efoo" =
+    "e" <foo:IntCon>  
+  completion template RealCon : "foo.foofoo" =
+    <foo:IntCon> "." <foo:NatCon> <foo:OptExp>  

@@ -1,0 +1,169 @@
+module src-gen/pp/aterms/Aterms-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/aterms/Aterms-sig
+
+
+imports
+  src-gen/signatures/constants/IntCon-sig
+  src-gen/signatures/constants/RealCon-sig
+  src-gen/signatures/constants/StrCon-sig
+  src-gen/signatures/constants/IdentifierCon-sig
+
+
+imports
+  src-gen/pp/constants/IntCon-pp
+  src-gen/pp/constants/RealCon-pp
+  src-gen/pp/constants/StrCon-pp
+  src-gen/pp/constants/IdentifierCon-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-AFun
+
+  prettyprint-AFun :
+    Quoted(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+
+  is-AFun =
+    ?Quoted(_)
+
+  prettyprint-AFun :
+    Unquoted(t0__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t0__']
+                        )
+                      ]
+    with t0__' := <pp-one-Z(prettyprint-IdCon)> t0__
+
+  is-AFun =
+    ?Unquoted(_)
+
+  is-AFun =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-ATerm
+
+  prettyprint-ATerm :
+    Int(t0__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t0__']
+                   )
+                 ]
+    with t0__' := <pp-one-Z(prettyprint-IntCon)> t0__
+
+  is-ATerm =
+    ?Int(_)
+
+  prettyprint-ATerm :
+    Real(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t0__']
+                    )
+                  ]
+    with t0__' := <pp-one-Z(prettyprint-RealCon)> t0__
+
+  is-ATerm =
+    ?Real(_)
+
+  prettyprint-ATerm :
+    Fun(t0__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t0__']
+                   )
+                 ]
+    with t0__' := <pp-one-Z(prettyprint-AFun)> t0__
+
+  is-ATerm =
+    ?Fun(_)
+
+  prettyprint-ATerm :
+    Appl(t0__, t1__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [ t0__'
+                            , S("(")
+                            , t1__'
+                            , S(")")
+                            ]
+                          )
+                        ]
+    with t0__' := <pp-one-Z(prettyprint-AFun)> t0__
+    with t1__' := <pp-H-list(prettyprint-ATerm|",")> t1__
+
+  is-ATerm =
+    ?Appl(_, _)
+
+  prettyprint-ATerm :
+    PlaceHolder(t0__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [ S("<")
+                             , t0__'
+                             , S(">")
+                             ]
+                           )
+                         ]
+    with t0__' := <pp-one-Z(prettyprint-ATerm)> t0__
+
+  is-ATerm =
+    ?PlaceHolder(_)
+
+  prettyprint-ATerm :
+    List(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [ S("[")
+                      , t0__'
+                      , S("]")
+                      ]
+                    )
+                  ]
+    with t0__' := <pp-H-list(prettyprint-ATerm|",")> t0__
+
+  is-ATerm =
+    ?List(_)
+
+  prettyprint-ATerm :
+    Annotated(t0__, t1__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [t0__', t1__']
+                               )
+                             ]
+    with t0__' := <pp-one-Z(prettyprint-ATerm)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Annotation)> t1__
+
+  is-ATerm =
+    ?Annotated(_, _)
+
+  is-ATerm =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Annotation
+
+  prettyprint-Annotation :
+    Default(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [ S("{")
+                         , t0__'
+                         , S("}")
+                         ]
+                       )
+                     ]
+    with t0__' := <pp-H-list(prettyprint-ATerm|",")> t0__
+
+  is-Annotation =
+    ?Default(_)
+
+  is-Annotation =
+    fail

@@ -1,0 +1,7 @@
+module constants/NatCon
+exports
+  lexical syntax
+    [0-9]+ -> NatCon {cons("Digits")}
+
+  lexical restrictions
+    NatCon -/- [0-9]

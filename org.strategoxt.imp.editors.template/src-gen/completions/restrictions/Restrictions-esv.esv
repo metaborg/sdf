@@ -1,0 +1,27 @@
+module src-gen/completion/restrictions/Restrictions-esv
+
+imports
+  src-gen/completion/characterclass/CC-esv
+  src-gen/completion/characterclass/Character-Class-esv
+  src-gen/completion/symbols/Symbols-esv
+  src-gen/completion/constants/StrCon-esv
+
+completions
+  completion template Lookahead : "foo.foo" =
+    <foo:CharClass> "." <foo:Lookaheads>  
+  completion template Lookaheads : "foo | foo" =
+    <foo:Lookaheads> " | " <foo:Lookaheads>  
+  completion template Lookaheads : "(foo)" =
+    "(" <foo:Lookaheads> ")"  
+  completion template Lookaheads : "[[foo]]" =
+    "[[" <foo:Lookahead> "]]"  
+  completion template Restriction : "foo -/- foo" =
+    <foo:RestrictionSymbols> " -/- " <foo:Lookaheads>  
+  completion template Grammar : "restrictions foo " =
+    "restrictions\n\n\t" <foo:Restrictions> "\n" (blank)  
+  completion template Attribute : "reject" =
+    "reject"  
+  completion template Attribute : "prefer" =
+    "prefer"  
+  completion template Attribute : "avoid" =
+    "avoid"   

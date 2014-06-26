@@ -1,0 +1,8 @@
+module src-gen/completion/lifting/Lifting-esv
+
+imports
+  src-gen/completion/kernel/Kernel-esv
+
+completions
+  completion template Symbol : "`foo`" =
+    "`" <foo:Symbol> "`"  

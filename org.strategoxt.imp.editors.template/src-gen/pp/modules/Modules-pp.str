@@ -1,0 +1,218 @@
+module src-gen/pp/modules/Modules-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/modules/Modules-sig
+
+
+imports
+  src-gen/signatures/kernel/Kernel-sig
+  src-gen/signatures/renaming/Renaming-sig
+  src-gen/signatures/symbols/Symbols-sig
+
+
+imports
+  src-gen/pp/kernel/Kernel-pp
+  src-gen/pp/renaming/Renaming-pp
+  src-gen/pp/symbols/Symbols-pp
+
+
+strategies
+  prettyprint-ModuleWord =
+    ![S(<is-string>)]
+
+  prettyprint-ModuleId =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-ModuleWord
+
+  prettyprint-example =
+    prettyprint-ModuleId
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Module
+
+  prettyprint-example =
+    prettyprint-Sections
+
+  prettyprint-example =
+    prettyprint-Section
+
+  prettyprint-example =
+    prettyprint-ModuleName
+
+  prettyprint-example =
+    prettyprint-Attribute
+
+  prettyprint-example =
+    prettyprint-ImpSection
+
+  prettyprint-example =
+    prettyprint-Imports
+
+  prettyprint-example =
+    prettyprint-Import
+
+  prettyprint-Module :
+    Module(t0__, list__, t1__) -> [ H(
+                                      [SOpt(HS(), "0")]
+                                    , [S("module "), t0__']
+                                    )
+                                  , H(
+                                      []
+                                    , [S("")]
+                                    )
+                                  , H(
+                                      [SOpt(HS(), "0")]
+                                    , [list__']
+                                    )
+                                  , H(
+                                      []
+                                    , [S("")]
+                                    )
+                                  , H(
+                                      [SOpt(HS(), "0")]
+                                    , [t1__']
+                                    )
+                                  ]
+    with t0__' := <pp-one-Z(prettyprint-ModuleName)> t0__
+    with list__' := <pp-H-list(prettyprint-ImpSection)> list__
+    with t1__' := <pp-one-Z(prettyprint-Sections)> t1__
+
+  is-Module =
+    ?Module(_, _, _)
+
+  prettyprint-Sections :
+    t0__ -> [ H(
+                []
+              , [S("")]
+              )
+            , H(
+                [SOpt(HS(), "0")]
+              , [t0__']
+              )
+            ]
+    where not(is-Sections)
+    where t0__' := <pp-V-list(prettyprint-Section)> t0__
+
+  prettyprint-Section :
+    SDFSection(t0__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [t0__']
+                          )
+                        ]
+    with t0__' := <pp-one-Z(prettyprint-Grammar)> t0__
+
+  is-Section =
+    ?SDFSection(_)
+
+  prettyprint-ModuleName :
+    Unparameterized(t0__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [t0__']
+                               )
+                             ]
+    with t0__' := <pp-one-Z(prettyprint-ModuleId)> t0__
+
+  is-ModuleName =
+    ?Unparameterized(_)
+
+  prettyprint-ModuleName :
+    Parameterized(t0__, params__) -> [ H(
+                                         [SOpt(HS(), "0")]
+                                       , [ t0__'
+                                         , S(" [")
+                                         , params__'
+                                         , S("]")
+                                         ]
+                                       )
+                                     ]
+    with t0__' := <pp-one-Z(prettyprint-ModuleId)> t0__
+    with params__' := <pp-one-Z(prettyprint-Symbols)> params__
+
+  is-ModuleName =
+    ?Parameterized(_, _)
+
+  prettyprint-Attribute :
+    Id(t0__) -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [ S("id (")
+                    , t0__'
+                    , S(") ")
+                    ]
+                  )
+                ]
+    with t0__' := <pp-one-Z(prettyprint-ModuleName)> t0__
+
+  is-Attribute =
+    ?Id(_)
+
+  prettyprint-ImpSection :
+    Imports(list__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [S("imports "), list__']
+                         )
+                       ]
+    with list__' := <pp-one-Z(prettyprint-Imports)> list__
+
+  is-ImpSection =
+    ?Imports(_)
+
+  prettyprint-Imports :
+    list__ -> [ H(
+                  [SOpt(HS(), "0")]
+                , [list__']
+                )
+              ]
+    where not(is-Imports)
+    where list__' := <pp-V-list(prettyprint-Import|"0", "\t")> list__
+
+  prettyprint-Import :
+    Module(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-ModuleName)> t0__
+
+  is-Import =
+    ?Module(_)
+
+  prettyprint-Import :
+    Parenthetical(t0__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("(")
+                               , t0__'
+                               , S(")")
+                               ]
+                             )
+                           ]
+    with t0__' := <pp-one-Z(prettyprint-Import)> t0__
+
+  is-Module =
+    fail
+
+  is-Sections =
+    fail
+
+  is-Section =
+    fail
+
+  is-ModuleName =
+    fail
+
+  is-Attribute =
+    fail
+
+  is-ImpSection =
+    fail
+
+  is-Imports =
+    fail
+
+  is-Import =
+    fail

@@ -55,7 +55,7 @@
 	<path id="call-onsave.files">
 		<fileset dir=".">
 			<include name="**/*.tmpl" />
-			<include name="**/*.sdf3" />
+			<include name="**/*.sdf3_" />
 			<include name="**/*.nab" />
 			<include name="**/*.ts" />
 		</fileset>

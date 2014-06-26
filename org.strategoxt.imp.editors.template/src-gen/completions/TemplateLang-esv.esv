@@ -1,0 +1,80 @@
+module src-gen/completion/TemplateLang-esv
+
+imports
+  src-gen/completion/sdf2-core/SDF-esv
+  src-gen/completion/constants/StrCon-esv
+  src-gen/completion/sorts/Sorts-esv
+  src-gen/completion/symbols/Symbols-esv
+  src-gen/completion/labels/Labels-esv
+  src-gen/completion/constants/IdentifierCon-esv
+  src-gen/completion/kernel/Kernel-esv
+  src-gen/completion/restrictions/Restrictions-esv
+  src-gen/completion/priority/Priority-esv
+  src-gen/completion/basic/Basic-esv
+  src-gen/completion/modules/Modules-esv
+
+completions
+  completion template Section : "template options " =
+    "template options\n\n\t" (cursor) "\n" (blank)  
+  completion template TemplateOption : "newlines : foo" =
+    "newlines : " <foo:NewlineOptionValue>  
+  completion template NewlineOptionValue : "none" =
+    "none"  
+  completion template NewlineOptionValue : "leading" =
+    "leading"  
+  completion template NewlineOptionValue : "trailing" =
+    "trailing"  
+  completion template NewlineOptionValue : "separating" =
+    "separating"  
+  completion template TemplateOption : "keyword -/- foo" =
+    "keyword -/- " <foo:Lookaheads>  
+  completion template TemplateOption : "tokenize : foo" =
+    "tokenize : " <foo:StrCon>  
+
+completions
+  completion template Group : "{foo}" =
+    "{" <foo:SortConsRef> "}"  
+  completion template Group : "{foo : foo}" =
+    "{" <foo:Associativity> " :\n\t" <foo:SortConsRef> "}" (blank)  
+  completion template SortConsRef : "foo.foo" =
+    <foo:Symbol> "." <foo:Constructor>  
+
+completions
+  completion template Grammar : "lexical syntax " =
+    "lexical syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template Grammar : "context-free syntax " =
+    "context-free syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template Grammar : "syntax " =
+    "syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template SdfProduction : "foo = foo foo" =
+    <foo:SymbolDef> " = " <foo:RHS> " " <foo:Attributes>  
+  completion template SdfProduction : "foo = foo foo" =
+    <foo:SortCons> " = " <foo:RHS> " " <foo:Attributes>  
+  completion template TemplateProduction : "foo = foo foo" =
+    <foo:SymbolDef> " = " <foo:Template> " " <foo:Attributes>  
+  completion template TemplateProduction : "foo = foo foo" =
+    <foo:SortCons> " = " <foo:Template> " " <foo:Attributes>  
+  completion template SortCons : "foo.foo" =
+    <foo:SymbolDef> "." <foo:Constructor>  
+  completion template TemplatePart1 : "<foo>" =
+    "<" <foo:Placeholder> ">"  
+  completion template TemplatePart2 : "[foo]" =
+    "[" <foo:Placeholder> "]"  
+  completion template Placeholder : "foofoo" =
+    <foo:Symbol> <foo:PlaceholderOptions>  
+  completion template PlaceholderOptions : ";foo" =
+    ";" <foo:PlaceholderOption>  
+  completion template PlaceholderOption : "hide" =
+    "hide"  
+  completion template PlaceholderOption : "wrap" =
+    "wrap"  
+  completion template PlaceholderOption : "anchor" =
+    "anchor"  
+  completion template PlaceholderOption : "text=foo" =
+    "text=" <foo:StrCon>  
+
+completions
+  completion template Template : "<foo>" =
+    "<" <foo:TemplateLine1> ">"  
+  completion template Template : "[foo]" =
+    "[" <foo:TemplateLine2> "]"  

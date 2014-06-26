@@ -1,0 +1,23 @@
+module src-gen/completion/basic/Basic-esv
+
+imports
+  src-gen/completion/kernel/Kernel-esv
+  src-gen/completion/sorts/Sorts-esv
+
+completions
+  completion template Grammar : "lexical syntax foo " =
+    "lexical syntax\n\n\t" <foo:Productions> "\n" (blank)  
+  completion template Grammar : "context-free syntax foo " =
+    "context-free syntax\n\n\t" <foo:Productions> "\n" (blank)  
+  completion template Grammar : "variables foo " =
+    "variables\n\n\t" <foo:Productions> "\n" (blank)  
+  completion template Grammar : "lexical variables foo " =
+    "lexical variables\n\n\t" <foo:Productions> "\n" (blank)  
+  completion template Symbol : "foo-CF" =
+    <foo:Symbol> "-CF"  
+  completion template Symbol : "foo-LEX" =
+    <foo:Symbol> "-LEX"  
+  completion template Symbol : "foo-VAR" =
+    <foo:Symbol> "-VAR"  
+  completion template Symbol : "LAYOUT" =
+    "LAYOUT"          

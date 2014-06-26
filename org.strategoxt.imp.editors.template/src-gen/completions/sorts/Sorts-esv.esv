@@ -1,0 +1,17 @@
+module src-gen/completion/sorts/Sorts-esv
+
+imports
+  src-gen/completion/kernel/Kernel-esv
+  src-gen/completion/symbols/Symbols-esv
+
+completions
+  completion template Symbol : "foo [[foo]]" =
+    <foo:Sort> " [[" <foo:Symbol> "]]"  
+  completion template SymbolDef : "foo-CF" =
+    <foo:SymbolDef> "-CF"  
+  completion template SymbolDef : "foo-LEX" =
+    <foo:SymbolDef> "-LEX"  
+  completion template SymbolDef : "foo-VAR" =
+    <foo:SymbolDef> "-VAR"  
+  completion template Grammar : "sorts foo " =
+    "sorts\n\n\t" <foo:Symbols> "\n" (blank)  

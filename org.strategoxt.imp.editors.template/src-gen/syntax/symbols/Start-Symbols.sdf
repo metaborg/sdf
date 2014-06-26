@@ -1,0 +1,11 @@
+module symbols/Start-Symbols
+imports kernel/Kernel symbols/Symbols
+
+exports
+  context-free syntax
+    "start-symbols" Symbols                -> Grammar {cons("KernelStartSymbols")}
+    "lexical" "start-symbols" Symbols      -> Grammar {cons("LexicalStartSymbols")}
+    "context-free" "start-symbols" Symbols -> Grammar {cons("ContextFreeStartSymbols")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}

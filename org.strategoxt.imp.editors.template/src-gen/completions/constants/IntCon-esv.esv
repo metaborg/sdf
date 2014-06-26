@@ -1,0 +1,11 @@
+module src-gen/completion/constants/IntCon-esv
+
+imports
+  src-gen/completion/layout/Whitespace-esv
+  src-gen/completion/constants/NatCon-esv
+
+completions
+  completion template IntCon : "+foo" =
+    "+" <foo:NatCon>  
+  completion template IntCon : "-foo" =
+    "-" <foo:NatCon>  

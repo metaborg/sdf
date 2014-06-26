@@ -1,0 +1,153 @@
+module src-gen/pp/basic/Basic-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/basic/Basic-sig
+
+
+imports
+  src-gen/signatures/kernel/Kernel-sig
+  src-gen/signatures/sorts/Sorts-sig
+
+
+imports
+  src-gen/pp/kernel/Kernel-pp
+  src-gen/pp/sorts/Sorts-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Grammar
+
+  prettyprint-example =
+    prettyprint-Symbol
+
+  prettyprint-Grammar :
+    Lexical(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S("lexical syntax")]
+                       )
+                     , H(
+                         []
+                       , [S("")]
+                       )
+                     , t0__'
+                     , H(
+                         []
+                       , [S("")]
+                       )
+                     ]
+    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t0__]
+
+  is-Grammar =
+    ?Lexical(_)
+
+  prettyprint-Grammar :
+    Contextfree(t0__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [S("context-free syntax")]
+                           )
+                         , H(
+                             []
+                           , [S("")]
+                           )
+                         , t0__'
+                         , H(
+                             []
+                           , [S("")]
+                           )
+                         ]
+    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t0__]
+
+  is-Grammar =
+    ?Contextfree(_)
+
+  prettyprint-Grammar :
+    Variables(t0__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [S("variables")]
+                         )
+                       , H(
+                           []
+                         , [S("")]
+                         )
+                       , t0__'
+                       , H(
+                           []
+                         , [S("")]
+                         )
+                       ]
+    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t0__]
+
+  is-Grammar =
+    ?Variables(_)
+
+  prettyprint-Grammar :
+    LexVariables(t0__) -> [ H(
+                              [SOpt(HS(), "0")]
+                            , [S("lexical variables")]
+                            )
+                          , H(
+                              []
+                            , [S("")]
+                            )
+                          , t0__'
+                          , H(
+                              []
+                            , [S("")]
+                            )
+                          ]
+    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t0__]
+
+  is-Grammar =
+    ?LexVariables(_)
+
+  prettyprint-Symbol :
+    Cf(t0__) -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [t0__', S("-CF")]
+                  )
+                ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+
+  is-Symbol =
+    ?Cf(_)
+
+  prettyprint-Symbol :
+    Lex(t0__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t0__', S("-LEX")]
+                   )
+                 ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+
+  is-Symbol =
+    ?Lex(_)
+
+  prettyprint-Symbol :
+    Varsym(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__', S("-VAR")]
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+
+  is-Symbol =
+    ?Varsym(_)
+
+  prettyprint-Symbol :
+    Layout() -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [S("LAYOUT")]
+                  )
+                ]
+
+  is-Symbol =
+    ?Layout()
+
+  is-Grammar =
+    fail
+
+  is-Symbol =
+    fail

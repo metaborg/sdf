@@ -1,0 +1,24 @@
+module characterclass/Character-Class
+
+imports characterclass/Character
+
+
+context-free syntax
+
+  CharRange = <<Character>> 
+  CharRange.Range = <<start:Character>-<end:Character>> 
+  CharRanges = <<CharRange>> 
+  CharRanges.Conc = <<CharRanges><CharRanges>> {right, memo}
+  CharRanges = <(<CharRanges>)> {bracket}
+  OptCharRanges.Absent = <> 
+  OptCharRanges.Present = <<CharRanges>> 
+  CharClass.Simple = <[<OptCharRanges>]> 
+  CharClass.Comp = <~<CharClass>> 
+  CharClass.Diff = <<CharClass>/<CharClass>> {left, memo}
+  CharClass.Isect = <<CharClass>/\\<CharClass>> {left, memo}
+  CharClass.Union = <<CharClass>\\/<CharClass>> {left}
+  CharClass = <(<CharClass>)> {bracket, avoid}
+
+context-free priorities
+
+  CharClass.Comp > CharClass.Diff > CharClass.Isect > CharClass.Union

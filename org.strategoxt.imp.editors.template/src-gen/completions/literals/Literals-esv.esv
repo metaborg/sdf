@@ -1,0 +1,15 @@
+
+module src-gen/completion/literals/Literals-esv
+
+imports
+  src-gen/completion/kernel/Kernel-esv
+
+imports
+  src-gen/completion/constants/StrCon-esv
+
+imports
+  src-gen/completion/constants/IdentifierCon-esv
+
+completions
+  completion template Production : "foo(foo) -> foo foo" =
+    <foo:FunctionName> "(" <foo:Symbol> ") -> " <foo:Symbol> " " <foo:Attributes>  
