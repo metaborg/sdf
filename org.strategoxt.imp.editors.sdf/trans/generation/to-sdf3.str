@@ -16,7 +16,8 @@ rules
   		'module(unparameterized(mn), i*, e*) -> Module(Unparameterized(mn), i'*, sections*)
   	with
   		sections* := <filter(section-to-sdf3); try(flatten-list)> e*;
-  		i'* := <map(imports-to-sdf)> i*
+  		i'* := <map(imports-to-sdf)> i*;
+  		<reset-counter> "SDF3"  
   		
   module-to-sdf:
   	'module(unparameterized(mn)) -> Module(Unparameterized(mn)) 
@@ -69,7 +70,7 @@ rules
   section-to-sdf3:
    	context-free-syntax(prods*) -> result
    	with
-   		prods'* := <filter(prod-to-sdf3)> prods*;
+   		prods'* := <filter(prod-to-sdf3); flatten-list> prods*;
    		result  := <not(?[]) < !SDFSection(ContextFreeSyntax(prods'*)) + ![]> prods'*  
    		
    	
@@ -78,14 +79,14 @@ rules
   section-to-sdf3:
    	lexical-syntax(prods*) -> SDFSection(LexicalSyntax(prods'*))
    	with
-   		prods'* := <map(prod-to-sdf3)> prods* 	
+   		prods'* := <map(prod-to-sdf3); flatten-list> prods* 	
    		
  
  //kernel syntax
   section-to-sdf3:
   	syntax(prods*) -> SDFSection(Kernel(prods'*))
   	with
-  		prods'* := <map(prod-to-sdf3)> prods*
+  		prods'* := <map(prod-to-sdf3); flatten-list> prods*
   		
   		
   //lexical restrictions
@@ -123,13 +124,13 @@ rules
   section-to-sdf3:
   	variables(prods*) -> SDFSection(Variables(prods'*))
   	with
-  		prods'* := <map(prod-to-sdf3)> prods*
+  		prods'* := <map(prod-to-sdf3); flatten-list> prods*
   
     //lexical variables
    section-to-sdf3:
   	lexical-variables(prods*) -> SDFSection(LexVariables(prods'*))
   	with
-  		prods'* := <map(prod-to-sdf3)> prods*
+  		prods'* := <map(prod-to-sdf3); flatten-list> prods*
  
  //context-free priorities
   section-to-sdf3:
@@ -169,24 +170,25 @@ rules
   group-to-sdf3:
     prods-group(prods) -> ProdsGroup(prods')
     with
-    	prods' := <map(prod-to-sdf3)> prods
+    	prods' := <map(prod-to-sdf3); flatten-list> prods
     
   group-to-sdf3:
     assoc-group(a, prods) -> AssocGroup(a', prods')
     with
     	a' := <term-translation> a;
-    	prods' := <map(prod-to-sdf3)> prods
+    	prods' := <map(prod-to-sdf3); flatten-list> prods
  
  
   //Productions
  //regular sdf2 productions that define a sort become sdf3 productions with or without constructors     	
   prod-to-sdf3:
-  	prod(symbols*, sort(s), attrs) -> <term-translation> result
+  	prod(symbols*, sort(s), attrs) -> [<term-translation> result, p*]
   	where
   		not(<?[sort("CONTENTCOMPLETE")]> symbols*)
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <map(symbol-to-sdf3)> symbols*
+  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
+  		p* := <collect-om(new-prods)> symbols*
   	with   		
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -197,10 +199,11 @@ rules
   
   //Lexical kernel sdf2 productions that define a sort become sdf3 productions with or without constructors     	
   prod-to-sdf3:
-  	prod(symbols*, lex(sort(s)), attrs) -> <term-translation> result
+  	prod(symbols*, lex(sort(s)), attrs) -> [<term-translation> result, p*]
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <map(symbol-to-sdf3)> symbols*
+  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
+  		p* := <collect-om(new-prods)> symbols*
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -209,10 +212,11 @@ rules
   
   //Cf kernel sdf2 productions that define a sort become sdf3 productions with or without constructors     	
   prod-to-sdf3:
-  	prod(symbols*, cf(sort(s)), attrs) -> <term-translation> result
+  	prod(symbols*, cf(sort(s)), attrs) -> [<term-translation> result, p*]
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <map(symbol-to-sdf3)> symbols*
+  		symbols'* := <map(symbol-to-sdf3)> symbols*;
+  		p* := <collect-om(new-prods)> symbols*
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -222,13 +226,14 @@ rules
   
   //regular sdf2 productions with complex symbols on the lhs become sdf3 productions with or without constructors     	
   prod-to-sdf3:
-  	prod(symbols*, symbol, attrs) -> <term-translation> result
+  	prod(symbols*, symbol, attrs) -> [<term-translation> result, p*]
   	where
   		not(<?sort(s) + ?cf(sort(s)) + ?lex(sort(s))> symbol)
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <map(symbol-to-sdf3)> symbols*;
-  		symbol' := <symbol-to-sdf3> symbol  		
+  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
+  		symbol' := <symbol-to-sdf3> symbol;
+  		p* := <collect-om(new-prods)> symbols*		
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -236,12 +241,70 @@ rules
   	<+  result := SdfProduction(symbol', Rhs(symbols'*), Attrs(a*)) 
   
   
+  
+   symbol-to-sdf3:
+   	symbol -> symbol'
+   	where
+   		not(is-unsupported) 	
+   	with
+   		symbol' := <try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf )> symbol
+   	
   symbol-to-sdf3:
    	symbol -> symbol'
+   	where
+   		is-unsupported
    	with
-   		symbol' := <unsupported-symbol <+ term-translation> symbol
-   	
+   		symbol' := <lift-symbol> symbol
   
+  lift-symbol:
+  	alt(s1, s2) -> newsymbol
+  	with
+  		newsymbol := Sort($[Alt[<next-counter> "SDF3"]])
+  
+  lift-symbol:
+  	empty() -> newsymbol
+  	with
+  		newsymbol := Sort($[Empty]) 
+  		
+  lift-symbol:
+  	seq(head, tail*) -> newsymbol
+  	with
+  		newsymbol := Sort($[Seq[<next-counter> "SDF3"]])
+ 
+  lift-symbol:
+  	tuple(head, rest*) -> newsymbol
+  	with
+  		newsymbol := Sort($[Tup[<next-counter> "SDF3"]])
+  		
+  lift-symbol:
+  	func(args*, result) -> newsymbol
+  	with
+  		newsymbol := Sort($[Func[<next-counter> "SDF3"]])
+  		
+  lift-symbol:
+  	strategy(sleft, sright) -> newsymbol
+  	with
+  		newsymbol := Sort($[Strategy[<next-counter> "SDF3"]])		
+  		
+  new-prods:
+  	alt(s1, s2) -> [<prod-to-sdf3> prod([s1], sort($[Alt[<get-counter> "SDF3"]]), no-attrs()), <prod-to-sdf3> prod([s2], sort($[Alt[<get-counter> "SDF3"]]), no-attrs())] 	
+  
+  new-prods:
+  	empty() -> <prod-to-sdf3> prod([], sort("Empty"), no-attrs())
+  	
+  new-prods:
+  	seq(head, tail*) -> <prod-to-sdf3> prod([head, tail*], sort($[Seq[<get-counter> "SDF3"]]), attrs([sdf-cons("\"Seq\"")]))	
+  	
+  new-prods:
+  	tuple(head, rest*) -> <prod-to-sdf3> prod([lit("\"<\""), tuple*, lit("\">\"")], sort($[Tup[<get-counter> "SDF3"]]), attrs([sdf-cons("\"Tuple\"")]))
+  with
+  	tuple* := <separate-by(|lit("\",\""))> [head, rest*]
+  	
+  new-prods:
+  	func(args*, result) -> <prod-to-sdf3> prod([args*, lit("\"=>\""), result], sort($[Func[<get-counter> "SDF3"]]), attrs([sdf-cons("\"Func\"")]))	
+  
+  new-prods:
+  	strategy(sleft, sright) -> <prod-to-sdf3> prod([sleft, lit("\"->\""), sright], sort($[Strategy[<get-counter> "SDF3"]]), attrs([sdf-cons("\"Strategy\"")]))
   
  rules //conversion of SDF3 terms into SDF2
 	
@@ -341,6 +404,7 @@ rules
 	with
 		debug(!"Unsupported symbol ")	
  
+ 
  	
   		  		
   terms-to-sdf:
@@ -361,4 +425,5 @@ rules
  	[f|fs] := <explode-string> name;
   	name' := <implode-string> [<to-upper> f|fs]	
   	
- is-unsupported = ?alt(_, _) + ?empty() + ?seq(_,_) + ?tuple(_,_) + ?func(_,_) + ?strategy(_,_)	
+ is-unsupported = ?alt(_, _) + ?empty() + ?seq(_,_) + ?tuple(_,_) + ?func(_,_) + ?strategy(_,_)	+ 
+ 				   ?Alt(_, _) + ?Empty() + ?Seq(_,_)
