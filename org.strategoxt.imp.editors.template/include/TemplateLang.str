@@ -1,0 +1,271 @@
+module TemplateLang
+
+signature
+  constructors
+    Conc                           : ListStarOfTemplateLine24 * ListPlusOfTemplateLine24 -> ListPlusOfTemplateLine24
+    Conc                           : ListPlusOfTemplateLine24 * ListStarOfTemplateLine24 -> ListPlusOfTemplateLine24
+    Conc                           : ListPlusOfTemplateLine24 * ListPlusOfTemplateLine24 -> ListPlusOfTemplateLine24
+                                   : TemplateLine2 -> ListPlusOfTemplateLine24
+    Conc                           : ListStarOfTemplateLine14 * ListPlusOfTemplateLine14 -> ListPlusOfTemplateLine14
+    Conc                           : ListPlusOfTemplateLine14 * ListStarOfTemplateLine14 -> ListPlusOfTemplateLine14
+    Conc                           : ListPlusOfTemplateLine14 * ListPlusOfTemplateLine14 -> ListPlusOfTemplateLine14
+                                   : TemplateLine1 -> ListPlusOfTemplateLine14
+    COMPLETION-Aliases             : CONTENTCOMPLETE -> Aliases
+                                   : List(Alias) -> Aliases
+    COMPLETION-Alias               : CONTENTCOMPLETE -> Alias
+    Alias                          : Symbol * Symbol -> Alias
+    COMPLETION-FunctionName        : CONTENTCOMPLETE -> FunctionName
+    QuotedFun                      : StrCon -> FunctionName
+    UnquotedFun                    : IdCon -> FunctionName
+    COMPLETION-Priorities          : CONTENTCOMPLETE -> Priorities
+                                   : List(Priority) -> Priorities
+    COMPLETION-Priority            : CONTENTCOMPLETE -> Priority
+    Assoc                          : Group * Associativity * Group -> Priority
+    Chain                          : List(Group) -> Priority
+    COMPLETION-PriorityProductions : CONTENTCOMPLETE -> PriorityProductions
+                                   : List(PriorityProduction) -> PriorityProductions
+    COMPLETION-PriorityProduction  : CONTENTCOMPLETE -> PriorityProduction
+                                   : Production -> PriorityProduction
+                                   : SdfProduction -> PriorityProduction
+    COMPLETION-ArgumentIndicator   : CONTENTCOMPLETE -> ArgumentIndicator
+    Default                        : List(NatCon) -> ArgumentIndicator
+    COMPLETION-Associativity       : CONTENTCOMPLETE -> Associativity
+    Assoc                          : Associativity
+    NonAssoc                       : Associativity
+    Right                          : Associativity
+    Left                           : Associativity
+                                   : String -> SingleQuotedStrCon
+                                   : String -> CONTENTCOMPLETE
+    Line                           : List(TemplatePart2) -> TemplateLine2
+    Line                           : List(TemplatePart1) -> TemplateLine1
+    TemplateSquareDeprecated       : ListPlusOfTemplateLine24 -> Template
+    TemplateSquare                 : ListPlusOfTemplateLine24 -> Template
+    TemplateDeprecated             : ListPlusOfTemplateLine14 -> Template
+    Template                       : ListPlusOfTemplateLine14 -> Template
+    COMPLETION-Placeholder         : CONTENTCOMPLETE -> Placeholder
+    Placeholder                    : Symbol * PlaceholderOptions -> Placeholder
+    Layout                         : String -> TemplatePart2
+    Escape                         : String -> TemplatePart2
+    String                         : String -> TemplatePart2
+    COMPLETION-TemplatePart2       : CONTENTCOMPLETE -> TemplatePart2
+    Squared                        : Placeholder -> TemplatePart2
+    Layout                         : String -> TemplatePart1
+    Escape                         : String -> TemplatePart1
+    String                         : String -> TemplatePart1
+    COMPLETION-TemplatePart1       : CONTENTCOMPLETE -> TemplatePart1
+    Angled                         : Placeholder -> TemplatePart1
+    COMPLETION-SortCons            : CONTENTCOMPLETE -> SortCons
+    SortCons                       : SymbolDef * Constructor -> SortCons
+    COMPLETION-Constructor         : CONTENTCOMPLETE -> Constructor
+    Constructor                    : IdCon -> Constructor
+    COMPLETION-RHS                 : CONTENTCOMPLETE -> RHS
+    Rhs                            : Symbols -> RHS
+    COMPLETION-SdfProduction       : CONTENTCOMPLETE -> SdfProduction
+    SdfProductionWithCons          : SortCons * RHS * Attributes -> SdfProduction
+    SdfProduction                  : SymbolDef * RHS * Attributes -> SdfProduction
+    COMPLETION-GeneralProduction   : CONTENTCOMPLETE -> GeneralProduction
+                                   : TemplateProduction -> GeneralProduction
+                                   : SdfProduction -> GeneralProduction
+    COMPLETION-SortConsRef         : CONTENTCOMPLETE -> SortConsRef
+    SortConsRef                    : Symbol * Constructor -> SortConsRef
+    AssocGroup                     : Associativity * PriorityProductions -> Group
+    ProdsGroup                     : PriorityProductions -> Group
+    SimpleGroup                    : PriorityProduction -> Group
+    NonTransitive                  : Group -> Group
+    WithArguments                  : Group * ArgumentIndicator -> Group
+    COMPLETION-Group               : CONTENTCOMPLETE -> Group
+    AssocRefGroup                  : Associativity * List(SortConsRef) -> Group
+    ProdsRefGroup                  : List(SortConsRef) -> Group
+    SimpleRefGroup                 : SortConsRef -> Group
+    COMPLETION-NewlineOptionValue  : CONTENTCOMPLETE -> NewlineOptionValue
+    Separating                     : NewlineOptionValue
+    Trailing                       : NewlineOptionValue
+    Leading                        : NewlineOptionValue
+    None                           : NewlineOptionValue
+    COMPLETION-TemplateOption      : CONTENTCOMPLETE -> TemplateOption
+    Tokenize                       : StrCon -> TemplateOption
+    KeywordFollowRestriction       : Lookaheads -> TemplateOption
+    Newlines                       : NewlineOptionValue -> TemplateOption
+    Options                        : List(PlaceholderOption) -> PlaceholderOptions
+    NoOptions                      : PlaceholderOptions
+    WATER                          : CONTENTCOMPLETE -> PlaceholderOptions
+    Text                           : StrCon -> PlaceholderOption
+    Separator                      : StrCon -> PlaceholderOption
+    Anchor                         : PlaceholderOption
+    Wrap                           : PlaceholderOption
+    Hide                           : PlaceholderOption
+    WATER                          : CONTENTCOMPLETE -> PlaceholderOption
+    TemplateProductionWithCons     : SortCons * Template * Attributes -> TemplateProduction
+    TemplateProduction             : SymbolDef * Template * Attributes -> TemplateProduction
+    WATER                          : CONTENTCOMPLETE -> TemplateProduction
+    COMPLETION-Restrictions        : CONTENTCOMPLETE -> Restrictions
+                                   : List(Restriction) -> Restrictions
+    COMPLETION-RestrictionSymbols  : CONTENTCOMPLETE -> RestrictionSymbols
+                                   : List(Symbol) -> RestrictionSymbols
+    COMPLETION-Restriction         : CONTENTCOMPLETE -> Restriction
+    Follow                         : RestrictionSymbols * Lookaheads -> Restriction
+    COMPLETION-Lookaheads          : CONTENTCOMPLETE -> Lookaheads
+    List                           : List(Lookahead) -> Lookaheads
+    Alt                            : Lookaheads * Lookaheads -> Lookaheads
+    Single                         : Lookahead -> Lookaheads
+    COMPLETION-Lookahead           : CONTENTCOMPLETE -> Lookahead
+    Seq                            : CharClass * Lookaheads -> Lookahead
+    CharClass                      : CharClass -> Lookahead
+    COMPLETION-CharClass           : CONTENTCOMPLETE -> CharClass
+    Union                          : CharClass * CharClass -> CharClass
+    Isect                          : CharClass * CharClass -> CharClass
+    Diff                           : CharClass * CharClass -> CharClass
+    Comp                           : CharClass -> CharClass
+    Simple                         : OptCharRanges -> CharClass
+    COMPLETION-OptCharRanges       : CONTENTCOMPLETE -> OptCharRanges
+    Present                        : CharRanges -> OptCharRanges
+    Absent                         : OptCharRanges
+    COMPLETION-CharRanges          : CONTENTCOMPLETE -> CharRanges
+    Conc                           : CharRanges * CharRanges -> CharRanges
+                                   : CharRange -> CharRanges
+    COMPLETION-CharRange           : CONTENTCOMPLETE -> CharRange
+    Range                          : Character * Character -> CharRange
+                                   : Character -> CharRange
+    COMPLETION-Character           : CONTENTCOMPLETE -> Character
+    LabelStart                     : Character
+    Bot                            : Character
+    Eof                            : Character
+    Top                            : Character
+    Short                          : ShortChar -> Character
+    Numeric                        : NumChar -> Character
+    COMPLETION-Separator           : CONTENTCOMPLETE -> Separator
+    Lit                            : StrCon -> Separator
+    COMPLETION-Label               : CONTENTCOMPLETE -> Label
+    Unquoted                       : IdCon -> Label
+    Quoted                         : StrCon -> Label
+                                   : String -> ShortChar
+                                   : String -> NumChar
+    COMPLETION-Import              : CONTENTCOMPLETE -> Import
+    Module                         : ModuleName -> Import
+    COMPLETION-Imports             : CONTENTCOMPLETE -> Imports
+                                   : List(Import) -> Imports
+    COMPLETION-ImpSection          : CONTENTCOMPLETE -> ImpSection
+    Imports                        : Imports -> ImpSection
+    COMPLETION-ModuleName          : CONTENTCOMPLETE -> ModuleName
+    Parameterized                  : ModuleId * Symbols -> ModuleName
+    Unparameterized                : ModuleId -> ModuleName
+    TemplateSection                : List(TemplateProduction) -> Section
+    TemplateOptions                : List(TemplateOption) -> Section
+    COMPLETION-Section             : CONTENTCOMPLETE -> Section
+    SDFSection                     : Grammar -> Section
+    COMPLETION-Sections            : CONTENTCOMPLETE -> Sections
+                                   : List(Section) -> Sections
+    COMPLETION-Module              : CONTENTCOMPLETE -> Module
+    Module                         : ModuleName * List(ImpSection) * Sections -> Module
+                                   : String -> ModuleId
+    COMPLETION-Productions         : CONTENTCOMPLETE -> Productions
+                                   : List(Production) -> Productions
+    PrefixFun                      : FunctionName * List(Symbol) * Symbol * Attributes -> Production
+    COMPLETION-Production          : CONTENTCOMPLETE -> Production
+    Prod                           : Symbols * Symbol * Attributes -> Production
+    COMPLETION-QuotedConstructor   : CONTENTCOMPLETE -> QuotedConstructor
+    Constructor                    : StrCon -> QuotedConstructor
+    COMPLETION-Attributes          : CONTENTCOMPLETE -> Attributes
+    NoAttrs                        : Attributes
+    Attrs                          : List(Attribute) -> Attributes
+    Assoc                          : Associativity -> Attribute
+    Bracket                        : Attribute
+    Avoid                          : Attribute
+    Prefer                         : Attribute
+    Reject                         : Attribute
+    Id                             : ModuleName -> Attribute
+    COMPLETION-Attribute           : CONTENTCOMPLETE -> Attribute
+                                   : QuotedConstructor -> Attribute
+    Constructor                    : StrCon -> Attribute
+    Deprecated                     : StrCon -> Attribute
+    Deprecated                     : Attribute
+    Term                           : ATermAttribute -> Attribute
+    COMPLETION-ATermAttribute      : CONTENTCOMPLETE -> ATermAttribute
+    Default                        : ATerm -> ATermAttribute
+    ContextFreeRestrictions        : Restrictions -> Grammar
+    LexicalRestrictions            : Restrictions -> Grammar
+    ContextFreePriorities          : Priorities -> Grammar
+    LexicalPriorities              : Priorities -> Grammar
+    Aliases                        : Aliases -> Grammar
+    ContextFreeStartSymbols        : Symbols -> Grammar
+    LexicalStartSymbols            : Symbols -> Grammar
+    KernelStartSymbols             : Symbols -> Grammar
+    Priorities                     : Priorities -> Grammar
+    Kernel                         : List(SdfProduction) -> Grammar
+    ContextFreeSyntax              : List(GeneralProduction) -> Grammar
+    LexicalSyntax                  : List(SdfProduction) -> Grammar
+    Restrictions                   : Restrictions -> Grammar
+    LexVariables                   : Productions -> Grammar
+    Variables                      : Productions -> Grammar
+    Contextfree                    : Productions -> Grammar
+    Lexical                        : Productions -> Grammar
+    Sorts                          : Symbols -> Grammar
+    Syntax                         : Productions -> Grammar
+    COMPLETION-Grammar             : CONTENTCOMPLETE -> Grammar
+    Empty                          : Grammar
+    FileStart                      : Symbol
+    Start                          : Symbol
+    CiLit                          : SingleQuotedStrCon -> Symbol
+    Lit                            : StrCon -> Symbol
+    CharClass                      : CharClass -> Symbol
+    Lifting                        : Symbol -> Symbol
+    IterStarSep                    : Symbol * Separator -> Symbol
+    IterSep                        : Symbol * Separator -> Symbol
+    IterStar                       : Symbol -> Symbol
+    Iter                           : Symbol -> Symbol
+    Opt                            : Symbol -> Symbol
+    Label                          : Label * Symbol -> Symbol
+    Layout                         : Symbol
+    Varsym                         : Symbol -> Symbol
+    Lex                            : Symbol -> Symbol
+    Cf                             : Symbol -> Symbol
+    ParameterizedSort              : Sort * List(Symbol) -> Symbol
+    Sort                           : Sort -> Symbol
+    COMPLETION-Symbol              : CONTENTCOMPLETE -> Symbol
+    Var                            : SymbolDef -> SymbolDef
+    Lex                            : SymbolDef -> SymbolDef
+    Cf                             : SymbolDef -> SymbolDef
+    SortDef                        : Sort -> SymbolDef
+    COMPLETION-SymbolDef           : CONTENTCOMPLETE -> SymbolDef
+                                   : Symbol -> SymbolDef
+    COMPLETION-Symbols             : CONTENTCOMPLETE -> Symbols
+                                   : List(Symbol) -> Symbols
+                                   : String -> Sort
+    COMPLETION-Annotation          : CONTENTCOMPLETE -> Annotation
+    Default                        : List(ATerm) -> Annotation
+    COMPLETION-ATerm               : CONTENTCOMPLETE -> ATerm
+    Annotated                      : ATerm * Annotation -> ATerm
+    List                           : List(ATerm) -> ATerm
+    PlaceHolder                    : ATerm -> ATerm
+    Appl                           : AFun * List(ATerm) -> ATerm
+    Fun                            : AFun -> ATerm
+    Real                           : RealCon -> ATerm
+    Int                            : IntCon -> ATerm
+    COMPLETION-AFun                : CONTENTCOMPLETE -> AFun
+    Unquoted                       : IdCon -> AFun
+    Quoted                         : StrCon -> AFun
+    COMPLETION-RealCon             : CONTENTCOMPLETE -> RealCon
+    RealCon                        : IntCon * NatCon * OptExp -> RealCon
+    COMPLETION-OptExp              : CONTENTCOMPLETE -> OptExp
+    Absent                         : OptExp
+    Present                        : IntCon -> OptExp
+                                   : String -> IdCon
+                                   : String -> StrCon
+    COMPLETION-IntCon              : CONTENTCOMPLETE -> IntCon
+    Negative                       : NatCon -> IntCon
+    Positive                       : NatCon -> IntCon
+    Natural                        : NatCon -> IntCon
+                                   : String -> NatCon
+
+
+signature
+  constructors
+    Some : a -> Option(a)
+    None : Option(a)
+
+
+signature
+  constructors
+    Cons : a * List(a) -> List(a)
+    Nil  : List(a)
+    Conc : List(a) * List(a) -> List(a)
