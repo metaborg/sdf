@@ -184,6 +184,12 @@ rules
     ?Module(Unparameterized(m), i*, s*)
     ; ![NablNsSort(), NablNsConstructor()]
 
+  nabl-scoping-site =
+    ?Module(Unparameterized(m), i*, s*)
+    ; nabl-scope(
+      | [NablNsSort(), NablNsConstructor()]
+      )
+
   nabl-get-name :
     Module(Unparameterized(m), i*, s*) -> m
 
