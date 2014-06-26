@@ -156,7 +156,7 @@ rules
      where
        <not(one(?Text(_) + ?Hide()))> option*
      with
-       text := "foo";//<template-element-to-string> p;
+       text := <template-element-to-string> p;
        <oncetd(?Sort(sort))> symbol 
   	    
   template-element-to-esv:
