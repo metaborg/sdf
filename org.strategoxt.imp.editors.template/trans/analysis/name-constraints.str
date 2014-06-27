@@ -89,17 +89,3 @@ imports
   	  where
   	  	<?s> s';
   	  	<eq> (<length> ty*, <length> ty'*)
-  	  	
- signature constructors
- 	
- 	MakeSet : List(Term) -> Instruction
- 	
-rules
-	
-	task-is-combinator = ?MakeSet(_)
-	
-	perform-task(|task-id):
-		MakeSet(list) -> <make-set> list
-		
-	task-create-make-set(|ctx):
-		list -> <new-task(|ctx)> MakeSet(list)
