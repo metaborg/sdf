@@ -111,9 +111,7 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/properties/entries.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/properties/debug.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/properties/collect.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/utils.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/query.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/partition.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/legacy.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/globals.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/index/core.str \
