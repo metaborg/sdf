@@ -8,13 +8,13 @@ imports
   src-gen/completion/labels/Labels-esv
 
 completions
-  completion template Symbol : "foo?" =
-    <foo:Symbol> "?"  
-  completion template Symbol : "foo+" =
-    <foo:Symbol> "+"  
-  completion template Symbol : "foo*" =
-    <foo:Symbol> "*"  
-  completion template Symbol : "{foo foo}+" =
-    "{" <foo:Symbol> " " <foo:Separator> "}+"  
-  completion template Symbol : "{foo foo}*" =
-    "{" <foo:Symbol> " " <foo:Separator> "}*"  
+  completion template Symbol : "Symbol?" =
+    <Symbol:Symbol> "?"  
+  completion template Symbol : "Symbol+" =
+    <Symbol:Symbol> "+"  
+  completion template Symbol : "Symbol*" =
+    <Symbol:Symbol> "*"  
+  completion template Symbol : "{Symbol Separator}+" =
+    "{" <Symbol:Symbol> " " <Separator:Separator> "}+"  
+  completion template Symbol : "{Symbol Separator}*" =
+    "{" <Symbol:Symbol> " " <Separator:Separator> "}*"  

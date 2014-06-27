@@ -19,8 +19,8 @@ rules // Convert regular productions to desugared syntax templates
 		p'* := <map(try(prod-to-template; make-angled)); bottomup(try(escape-brackets))> p*	
 	
 	prod-to-template:
-		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), attrs) ->
-		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
+		SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), attrs) ->
+		TemplateProductionWithCons(SortCons(symbol, c), Template([Line([elem*])]), Attrs(a*))
 	with
 		a* := <?Attrs(<id>) <+ ![]> attrs
 	with

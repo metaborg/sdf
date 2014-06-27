@@ -74,6 +74,7 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/templatelang/utils/tokenize.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/types-ts.generated.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/names-hack.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/name-constraints.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/attributes.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/analyze.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-formatted.str \
@@ -81,7 +82,6 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/types.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/normalization.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/names.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/name-constraints.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/desugar.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/relations/tasks.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/relations/query.str \
