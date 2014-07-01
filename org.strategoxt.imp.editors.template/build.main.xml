@@ -2,46 +2,46 @@
 
 <project name="TemplateLang" default="all">
 
-  <!-- Key input modules -->
-  <property name="sdfmodule" value="TemplateLang" />
-  <property name="metasdfmodule" value="Stratego-TemplateLang" />
-  <property name="esvmodule" value="TemplateLang" />
-  <property name="strmodule" value="templatelang" />
+	<!-- Key input modules -->
+	<property name="sdfmodule" value="TemplateLang" />
+	<property name="metasdfmodule" value="Stratego-TemplateLang" />
+	<property name="esvmodule" value="TemplateLang" />
+	<property name="strmodule" value="templatelang" />
 
-  <!-- Project directories -->
-  <property name="trans" location="trans" />
-  <property name="src-gen" location="editor/java" />
-  <property name="syntax" location="syntax" />
-  <property name="include" location="include" />
-  <property name="lib" location="lib" />
-  <property name="build" location="target/classes" />
+	<!-- Project directories -->
+	<property name="trans" location="trans" />
+	<property name="src-gen" location="editor/java" />
+	<property name="syntax" location="syntax" />
+	<property name="include" location="include" />
+	<property name="lib" location="lib" />
+	<property name="build" location="target/classes" />
 
-  <!-- Imports -->
-  <property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
-  <property name="build.stratego.args" value="
+	<!-- Imports -->
+	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
+	<property name="build.stratego.args" value="
       --library
       -I &quot;${basedir}&quot;
       -I &quot;${trans}&quot;
       -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm   
       -la stratego-sdf -la strc -la org.strategoxt.imp.editors.template.generated" />
 
-  <!-- Optional: external .def and .jar locations
+	<!-- Optional: external .def and .jar locations
   <property name="externaldef" location="syntax/${sdfmodule}.def"/>
   <property name="externaljar" value="../lib.jar"/>
   <property name="externaljarflags" value="-la org.lib"/>
   -->
 
-  <!-- Environment configuration for command-line builds -->
-  <condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
-    <isset property="eclipse.spoofaximp.nativeprefix" />
-  </condition>
-  <property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
+	<!-- Environment configuration for command-line builds -->
+	<condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
+		<isset property="eclipse.spoofaximp.nativeprefix" />
+	</condition>
+	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
 
-  <import file="build.generated.xml" />
+	<import file="build.generated.xml" />
 
-  <!-- Main target -->
-  <target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.edited.jar" />
-  <target name="spoofaximp.edited.jar" depends="
+	<!-- Main target -->
+	<target name="all" depends="meta-sdf2table-stratego-sdf2,meta-sdf2table-stratego-esv,meta-sdf2table-strategostratego,pppack-esv,spoofaximp.edited.jar" />
+	<target name="spoofaximp.edited.jar" depends="
       check-classpath,
       call-onsave,
       init,
@@ -56,115 +56,120 @@
       stratego.aster,
       java.jar,
       stratego.jar.helper,
+  	  compile-java-files,
+      stratego.jar.makejar,
+      java.jar,
       refresh,
       sdf2imp.eclipse.load" />
 
-  <!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
-  <available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
-  <target name="meta-sdf2table-stratego-sdf2" unless="stratego-sdf2.available">
-    <fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
-    <antcall target="pack-sdf.helper">
-      <param name="syntax" value="${lib}" />
-      <param name="sdfmodule" value="Stratego-Sdf2" />
-      <param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
-    </antcall>
-    <antcall target="sdf2table">
-      <param name="sdfmodule" value="Stratego-Sdf2" />
-    </antcall>
-    <antcall target="meta-sdf2table.helper" />
-  </target>
+	<!-- Target to create -Permissive grammar and parse table for Stratego-Sdf2.def -->
+	<available file="include/Stratego-Sdf2.tbl" property="stratego-sdf2.available" />
+	<target name="meta-sdf2table-stratego-sdf2" unless="stratego-sdf2.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="Stratego-Sdf2" />
+			<param name="build.sdf.imports" value="-Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="Stratego-Sdf2" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
 
-  <!-- Target to create -Permissive grammar and parse table for Stratego-EditorService.def -->
-  <available file="include/Stratego-EditorService.tbl" property="stratego-esv.available" />
-  <target name="meta-sdf2table-stratego-esv" unless="stratego-esv.available">
-    <fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
-    <antcall target="pack-sdf.helper">
-      <param name="syntax" value="${lib}" />
-      <param name="sdfmodule" value="Stratego-EditorService" />
-      <param name="build.sdf.imports" value="-Idef &quot;${lib}/EditorService.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
-    </antcall>
-    <antcall target="sdf2table">
-      <param name="sdfmodule" value="Stratego-EditorService" />
-    </antcall>
-    <antcall target="meta-sdf2table.helper" />
-  </target>
+	<!-- Target to create -Permissive grammar and parse table for Stratego-EditorService.def -->
+	<available file="include/Stratego-EditorService.tbl" property="stratego-esv.available" />
+	<target name="meta-sdf2table-stratego-esv" unless="stratego-esv.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="Stratego-EditorService" />
+			<param name="build.sdf.imports" value="-Idef &quot;${lib}/EditorService.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="Stratego-EditorService" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
 
-  <!-- Target to create -Permissive grammar and parse table for StrategoStratego.def -->
-  <available file="include/StrategoStratego.tbl" property="strategostratego.available" />
-  <target name="meta-sdf2table-strategostratego" unless="strategostratego.available">
-    <fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
-    <antcall target="pack-sdf.helper">
-      <param name="syntax" value="${lib}" />
-      <param name="sdfmodule" value="StrategoStratego" />
-      <param name="build.sdf.imports" value="-Idef &quot;${lib}/Stratego-Attributes.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
-    </antcall>
-    <antcall target="sdf2table">
-      <param name="sdfmodule" value="StrategoStratego" />
-    </antcall>
-    <antcall target="meta-sdf2table.helper" />
-  </target>
+	<!-- Target to create -Permissive grammar and parse table for StrategoStratego.def -->
+	<available file="include/StrategoStratego.tbl" property="strategostratego.available" />
+	<target name="meta-sdf2table-strategostratego" unless="strategostratego.available">
+		<fail unless="eclipse.spoofaximp.jars" message="Property eclipse.spoofaximp.jars must point to the directory containing StrategoMix.def" />
+		<antcall target="pack-sdf.helper">
+			<param name="syntax" value="${lib}" />
+			<param name="sdfmodule" value="StrategoStratego" />
+			<param name="build.sdf.imports" value="-Idef &quot;${lib}/Stratego-Attributes.def&quot; -Idef &quot;${eclipse.spoofaximp.jars}/StrategoMix.def&quot; ${build.sdf.imports}" />
+		</antcall>
+		<antcall target="sdf2table">
+			<param name="sdfmodule" value="StrategoStratego" />
+		</antcall>
+		<antcall target="meta-sdf2table.helper" />
+	</target>
 
-  <!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
-  <available file="include/EditorService-pretty.pp.af" property="pppack-esv.available" />
-  <target name="pppack-esv" unless="pppack-esv.available">
-    <java classname="run" failonerror="true">
-      <arg value="org.strategoxt.tools.main-parse-pp-table"/>
-      <arg value="-i"/>
-      <arg value="${lib}/EditorService-pretty.pp"/>
-      <arg value="-o"/>
-      <arg value="${include}/EditorService-pretty.pp.af"/>
-    </java>
-  </target>
+	<!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
+	<available file="include/EditorService-pretty.pp.af" property="pppack-esv.available" />
+	<target name="pppack-esv" unless="pppack-esv.available">
+		<java classname="run" failonerror="true">
+			<arg value="org.strategoxt.tools.main-parse-pp-table" />
+			<arg value="-i" />
+			<arg value="${lib}/EditorService-pretty.pp" />
+			<arg value="-o" />
+			<arg value="${include}/EditorService-pretty.pp.af" />
+		</java>
+	</target>
 
-  <!-- Targets to create libtemplatelang.{jar,rtree} -->
-  <!-- Stratego to Java compiler -->
-  <target name="libtemplatelang.stratego.jar" depends="rtg2sig,utils-files">
-      <dependset>
-          <srcfileset dir="${basedir}/trans/templatelang">
-              <include name="**/*.str"/>
-          </srcfileset>
-          <targetfileset file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java"/>
-      </dependset>
-      <available file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java" property="libtemplatelang.strc-java.available"/>
-      <antcall target="libtemplatelang.stratego.jar.deletehelper"/>
-      <antcall target="libtemplatelang.stratego.jvm.helper">
-          <param name="build.stratego.outputfile" value="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java"/>
-          <param name="build.stratego.extraargs" value="-la java-front ${java.jar.import}"/>
-      </antcall>
-      <javac classpath="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" srcdir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" destdir="${build}" source="1.5" target="1.5" debug="on"/>
-      <copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.rtree" tofile="${include}/lib${strmodule}.rtree"/>
-      <!-- copy imported terms -->
-      <copy todir="${build}/org/strategoxt/imp/editors/template/generated">
-          <fileset dir="${src-gen}/org/strategoxt/imp/editors/template/generated" excludes="**/*.java"/>
-      </copy>
-      <jar basedir="${build}" includes="org/strategoxt/imp/editors/template/generated/**" destfile="${include}/lib${strmodule}.tmp.jar"/>
-      <move file="${include}/lib${strmodule}.tmp.jar" tofile="${include}/lib${strmodule}.jar"/>
-      <delete><fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**"/></delete>
-  </target>
+	<!-- Targets to create libtemplatelang.{jar,rtree} -->
+	<!-- Stratego to Java compiler -->
+	<target name="libtemplatelang.stratego.jar" depends="rtg2sig,utils-files">
+		<dependset>
+			<srcfileset dir="${basedir}/trans/templatelang">
+				<include name="**/*.str" />
+			</srcfileset>
+			<targetfileset file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java" />
+		</dependset>
+		<available file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java" property="libtemplatelang.strc-java.available" />
+		<antcall target="libtemplatelang.stratego.jar.deletehelper" />
+		<antcall target="libtemplatelang.stratego.jvm.helper">
+			<param name="build.stratego.outputfile" value="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.java" />
+			<param name="build.stratego.extraargs" value="-la java-front ${java.jar.import}" />
+		</antcall>
+		<javac classpath="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}" srcdir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" destdir="${build}" source="1.5" target="1.5" debug="on" />
+		<copy file="${src-gen}/org/strategoxt/imp/editors/template/generated/Main.rtree" tofile="${include}/lib${strmodule}.rtree" />
+		<!-- copy imported terms -->
+		<copy todir="${build}/org/strategoxt/imp/editors/template/generated">
+			<fileset dir="${src-gen}/org/strategoxt/imp/editors/template/generated" excludes="**/*.java" />
+		</copy>
+		<jar basedir="${build}" includes="org/strategoxt/imp/editors/template/generated/**" destfile="${include}/lib${strmodule}.tmp.jar" />
+		<move file="${include}/lib${strmodule}.tmp.jar" tofile="${include}/lib${strmodule}.jar" />
+		<delete>
+			<fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**" />
+		</delete>
+	</target>
 
-  <target name="libtemplatelang.stratego.jar.deletehelper" unless="libtemplatelang.strc-java.available">
-      <delete>
-          <fileset dir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**"/>
-          <fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**"/>
-      </delete>
-  </target>
+	<target name="libtemplatelang.stratego.jar.deletehelper" unless="libtemplatelang.strc-java.available">
+		<delete>
+			<fileset dir="${src-gen}" includes="org/strategoxt/imp/editors/template/generated/**" />
+			<fileset dir="${build}" includes="org/strategoxt/imp/editors/template/generated/**" />
+		</delete>
+	</target>
 
-  <target name="libtemplatelang.stratego.jvm.helper" unless="libtemplatelang.strc-java.available" if="build.stratego.enabled">
-      <java classname="org.strategoxt.strj.Main" failonerror="true">
-          <arg value="-i"/>
-          <arg value="${trans}/templatelang/main.str"/>
-          <arg value="-o"/>
-          <arg value="${build.stratego.outputfile}"/>
-          <arg value="-p"/>
-          <arg value="org.strategoxt.imp.editors.template.generated"/>
-          <arg value="--library"/>
-          <arg value="--clean"/>
-          <arg line="${build.stratego.args}"/>
-          <arg line="${build.stratego.extraargs}"/>
-          <arg line="${externaljarflags}"/>
-          <arg line="${externaldefimport}"/>
-          <arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
-      </java>
-      <mkdir dir="${build}/org/strategoxt/imp/editors/template/generated"/>
-  </target>
+	<target name="libtemplatelang.stratego.jvm.helper" unless="libtemplatelang.strc-java.available" if="build.stratego.enabled">
+		<java classname="org.strategoxt.strj.Main" failonerror="true">
+			<arg value="-i" />
+			<arg value="${trans}/templatelang/main.str" />
+			<arg value="-o" />
+			<arg value="${build.stratego.outputfile}" />
+			<arg value="-p" />
+			<arg value="org.strategoxt.imp.editors.template.generated" />
+			<arg value="--library" />
+			<arg value="--clean" />
+			<arg line="${build.stratego.args}" />
+			<arg line="${build.stratego.extraargs}" />
+			<arg line="${externaljarflags}" />
+			<arg line="${externaldefimport}" />
+			<arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;" />
+		</java>
+		<mkdir dir="${build}/org/strategoxt/imp/editors/template/generated" />
+	</target>
 </project>
