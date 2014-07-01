@@ -14,8 +14,7 @@
   <property name="syntax" location="syntax" />
   <property name="include" location="include" />
   <property name="lib" location="lib" />
-  <property name="build" location="bin" />
-  <property name="dist" location="bin/dist" />
+  <property name="build" location="target/classes" />
 
   <!-- Imports -->
   <property name="build.sdf.imports" value="-Idef ${lib}/SDF.def" />
