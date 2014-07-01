@@ -46,8 +46,8 @@
 	<target name="package-ctree" depends="java.jar" />
 
 	<!-- Initialization -->
-	<available file="${src-gen}/org/strategoxt/imp/editors/stratego/strategies/Main.java" property="java.jar.enabled" />
-	<condition property="java.jar.import" value="-la org.strategoxt.imp.editors.stratego.strategies" else="">
+	<available file="${src-gen}/org/strategoxt/imp/editors/sdf/strategies/Main.java" property="java.jar.enabled" />
+	<condition property="java.jar.import" value="-la org.strategoxt.imp.editors.sdf.strategies" else="">
 		<isset property="java.jar.enabled" />
 	</condition>
 	<condition property="java.jar.classpath" value=":${include}/${strmodule}-java.jar" else="">
@@ -459,7 +459,7 @@
 	</target>
 
 	<target name="java.jar" if="java.jar.enabled">
-		<jar basedir="${build}" includes="org/strategoxt/imp/editors/stratego/strategies/" update="true" destfile="${include}/${strmodule}-java.jar" />
+		<jar basedir="${build}" includes="org/strategoxt/imp/editors/sdf/strategies/" update="true" destfile="${include}/${strmodule}-java.jar" />
 	</target>
 
 	<!-- Stratego to Java interpreter -->
