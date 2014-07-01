@@ -2,14 +2,35 @@ module check
 
 imports
 	
+	lib/runtime/task/messages
+	lib/runtime/task/tasks
 	include/TemplateLang
 	
 rules
-	
-  constraint-error:
-    t@term(default(appl(unquoted("cons"), [fun(quoted("\"Nil\""))])))
-    	-> (t, $[In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)])
-      
-  constraint-error:
-    t@term(default(appl(unquoted("cons"), [fun(quoted("\"Cons\""))])))
-    	-> (t, $[In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)])
+
+  nabl-constraint(|ctx):
+    t@term(default(appl(unquoted("cons"), [fun(quoted("\"Nil\""))]))) -> <fail>
+    where
+      msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> t
+
+  nabl-constraint(|ctx):
+    t@term(default(appl(unquoted("cons"), [fun(quoted("\"Cons\""))]))) -> <fail>
+    where
+      msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> t
+
+  nabl-constraint(|ctx):
+    t@Placeholder(_, _, None(), lst) -> <fail>
+    where
+      <fetch(?Separator(_))> lst;
+      msg := "You specify a separator, but this isn't a list.";
+      <task-create-warning(|ctx, msg)> t
+  
+  nabl-constraint(|ctx):
+    t@Placeholder(_, _, Option(), lst) -> <fail>
+    where
+      <fetch(?Separator(_))> lst;
+      msg := "You specify a separator, but this isn't a list.";
+      <task-create-warning(|ctx, msg)> t
+
