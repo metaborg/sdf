@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <project name="SDF" default="all">
-
 	<!-- Key input modules -->
 	<property name="sdfmodule" value="SDF" />
 	<property name="esvmodule" value="SDF" />
@@ -13,8 +11,7 @@
 	<property name="syntax" location="syntax" />
 	<property name="include" location="include" />
 	<property name="lib" location="lib" />
-	<property name="build" location="bin" />
-	<property name="dist" location="bin/dist" />
+	<property name="build" location="target/classes" />
 
 	<!-- Imports -->
 	<property name="build.sdf.imports" value="-Idef &quot;${basedir}/lib/SDF.def&quot;" />
@@ -39,4 +36,6 @@
 
 	<!-- Main target -->
 	<target name="all" depends="spoofaximp.default.jar" />
+	<target name="generate-sources" depends="generate-sources-java" />
+	<target name="package" depends="package-java" />
 </project>
