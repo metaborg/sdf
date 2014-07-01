@@ -13,8 +13,7 @@
 	<property name="syntax" location="syntax" />
 	<property name="include" location="include" />
 	<property name="lib" location="lib" />
-	<property name="build" location="bin" />
-	<property name="dist" location="bin/dist" />
+	<property name="build" location="target/classes" />
 	<property name="sdf-src-gen" location="src-gen" />
 
 	<!-- Imports -->
@@ -37,16 +36,6 @@
 	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
 
 	<import file="build.generated.xml" />
-	
-	<!-- The files for which the on-save handler is called before building. -->
-		<path id="call-onsave.files">
-			<fileset dir=".">
-				<include name="**/*.tmpl" />
-				<include name="**/*.sdf3_" />
-				<include name="**/*.nab" />
-				<include name="**/*.ts" />
-			</fileset>
-		</path>
 
 	<!-- Main target -->
 	<target name="all" depends="spoofaximp.default.ctree" />
