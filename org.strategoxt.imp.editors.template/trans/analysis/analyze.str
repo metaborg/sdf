@@ -8,5 +8,4 @@ imports
 strategies
 
   normalization =
-   // desugar-templates;
     normalize-all

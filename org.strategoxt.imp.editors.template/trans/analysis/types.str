@@ -12,7 +12,6 @@ imports
   lib/runtime/types/-
   lib/runtime/properties/-
   lib/runtime/relations/-
-  analysis/name-constraints
   analysis/desugar
 
   

@@ -54,7 +54,6 @@ completions
   completion keyword                : "-VAR"
   completion keyword                : "__default"
   completion keyword                : "__internal"
-  completion keyword                : "{Associativity"
   completion keyword                : "\\t"
   completion keyword                : "\\r"
   completion keyword                : "\\n"

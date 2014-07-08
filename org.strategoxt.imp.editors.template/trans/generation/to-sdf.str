@@ -3,9 +3,9 @@ imports
   libstratego-lib
   libstratego-sglr
   include/TemplateLang
-  templatelang/utils/attributes
-  templatelang/utils/misc
-  templatelang/utils/tokenize
+  trans/utils/attributes
+  trans/utils/misc
+  trans/utils/tokenize
   analysis/names
   lib/runtime/nabl/utils
   analysis/attributes

@@ -64,8 +64,8 @@ exports
     "hide"                                     -> PlaceholderOption  {cons("Hide")}
     "wrap"                                     -> PlaceholderOption  {cons("Wrap")}
     "anchor"                                   -> PlaceholderOption  {cons("Anchor")}
-    "separator=" StrCon                        -> PlaceholderOption  {cons("Separator"), deprecated("Use list with separator symbol instead")}
-    "text=" StrCon                             -> PlaceholderOption  {cons("Text")}
+    "separator" "=" StrCon                     -> PlaceholderOption  {cons("Separator"), deprecated("Use list with separator symbol instead")}
+    "text" "=" StrCon                          -> PlaceholderOption  {cons("Text")}
 
   context-free syntax
     CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}

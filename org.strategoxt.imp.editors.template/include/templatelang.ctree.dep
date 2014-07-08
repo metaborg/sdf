@@ -71,7 +71,7 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-sig.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-sdf.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-pp.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/templatelang/utils/tokenize.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/utils/tokenize.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/types-ts.generated.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/names-hack.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/name-constraints.str \
@@ -88,8 +88,8 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/relations/interface.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/relations/incremental.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/relations/entries.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/templatelang/utils/misc.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/templatelang/utils/attributes.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/utils/misc.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/utils/attributes.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/editor/time.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/editor/queue.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/runtime/editor/properties.str \

@@ -23,13 +23,13 @@ regular tree grammar
     ListPlusOfTemplatePart20       -> <conc>(ListPlusOfTemplatePart20,ListStarOfTemplatePart20)
     ListPlusOfTemplatePart20       -> <conc>(ListPlusOfTemplatePart20,ListPlusOfTemplatePart20)
     ListPlusOfTemplatePart20       -> <cons>(TemplatePart2,ListStarOfTemplatePart20)
-    ListStarOfTemplateLine24       -> ListPlusOfTemplateLine24
-    ListStarOfTemplateLine24       -> <nil>()
-    ListStarOfTemplateLine24       -> <conc>(ListStarOfTemplateLine24,ListStarOfTemplateLine24)
-    ListPlusOfTemplateLine24       -> <conc>(ListStarOfTemplateLine24,ListPlusOfTemplateLine24)
-    ListPlusOfTemplateLine24       -> <conc>(ListPlusOfTemplateLine24,ListStarOfTemplateLine24)
-    ListPlusOfTemplateLine24       -> <conc>(ListPlusOfTemplateLine24,ListPlusOfTemplateLine24)
-    ListPlusOfTemplateLine24       -> TemplateLine2
+    ListStarOfTemplateLine20       -> ListPlusOfTemplateLine20
+    ListStarOfTemplateLine20       -> <nil>()
+    ListStarOfTemplateLine20       -> <conc>(ListStarOfTemplateLine20,ListStarOfTemplateLine20)
+    ListPlusOfTemplateLine20       -> <conc>(ListStarOfTemplateLine20,ListPlusOfTemplateLine20)
+    ListPlusOfTemplateLine20       -> <conc>(ListPlusOfTemplateLine20,ListStarOfTemplateLine20)
+    ListPlusOfTemplateLine20       -> <conc>(ListPlusOfTemplateLine20,ListPlusOfTemplateLine20)
+    ListPlusOfTemplateLine20       -> TemplateLine2
     ListStarOfTemplatePart10       -> ListPlusOfTemplatePart10
     ListStarOfTemplatePart10       -> <nil>()
     ListStarOfTemplatePart10       -> <conc>(ListStarOfTemplatePart10,ListStarOfTemplatePart10)
@@ -37,13 +37,13 @@ regular tree grammar
     ListPlusOfTemplatePart10       -> <conc>(ListPlusOfTemplatePart10,ListStarOfTemplatePart10)
     ListPlusOfTemplatePart10       -> <conc>(ListPlusOfTemplatePart10,ListPlusOfTemplatePart10)
     ListPlusOfTemplatePart10       -> <cons>(TemplatePart1,ListStarOfTemplatePart10)
-    ListStarOfTemplateLine14       -> ListPlusOfTemplateLine14
-    ListStarOfTemplateLine14       -> <nil>()
-    ListStarOfTemplateLine14       -> <conc>(ListStarOfTemplateLine14,ListStarOfTemplateLine14)
-    ListPlusOfTemplateLine14       -> <conc>(ListStarOfTemplateLine14,ListPlusOfTemplateLine14)
-    ListPlusOfTemplateLine14       -> <conc>(ListPlusOfTemplateLine14,ListStarOfTemplateLine14)
-    ListPlusOfTemplateLine14       -> <conc>(ListPlusOfTemplateLine14,ListPlusOfTemplateLine14)
-    ListPlusOfTemplateLine14       -> TemplateLine1
+    ListStarOfTemplateLine10       -> ListPlusOfTemplateLine10
+    ListStarOfTemplateLine10       -> <nil>()
+    ListStarOfTemplateLine10       -> <conc>(ListStarOfTemplateLine10,ListStarOfTemplateLine10)
+    ListPlusOfTemplateLine10       -> <conc>(ListStarOfTemplateLine10,ListPlusOfTemplateLine10)
+    ListPlusOfTemplateLine10       -> <conc>(ListPlusOfTemplateLine10,ListStarOfTemplateLine10)
+    ListPlusOfTemplateLine10       -> <conc>(ListPlusOfTemplateLine10,ListPlusOfTemplateLine10)
+    ListPlusOfTemplateLine10       -> TemplateLine1
     ListStarOfPlaceholderOption0   -> ListPlusOfPlaceholderOption0
     ListStarOfPlaceholderOption0   -> <nil>()
     ListStarOfPlaceholderOption0   -> <conc>(ListStarOfPlaceholderOption0,ListStarOfPlaceholderOption0)
@@ -86,20 +86,20 @@ regular tree grammar
     ListPlusOfTemplateOption0      -> <conc>(ListPlusOfTemplateOption0,ListStarOfTemplateOption0)
     ListPlusOfTemplateOption0      -> <conc>(ListPlusOfTemplateOption0,ListPlusOfTemplateOption0)
     ListPlusOfTemplateOption0      -> <cons>(TemplateOption,ListStarOfTemplateOption0)
-    ListStarOfAlias11              -> ListPlusOfAlias0
-    ListStarOfAlias11              -> <nil>()
-    ListStarOfAlias11              -> <conc>(ListStarOfAlias11,ListStarOfAlias11)
-    ListPlusOfAlias0               -> <conc>(ListStarOfAlias11,ListPlusOfAlias0)
-    ListPlusOfAlias0               -> <conc>(ListPlusOfAlias0,ListStarOfAlias11)
+    ListStarOfAlias1               -> ListPlusOfAlias0
+    ListStarOfAlias1               -> <nil>()
+    ListStarOfAlias1               -> <conc>(ListStarOfAlias1,ListStarOfAlias1)
+    ListPlusOfAlias0               -> <conc>(ListStarOfAlias1,ListPlusOfAlias0)
+    ListPlusOfAlias0               -> <conc>(ListPlusOfAlias0,ListStarOfAlias1)
     ListPlusOfAlias0               -> <conc>(ListPlusOfAlias0,ListPlusOfAlias0)
-    ListPlusOfAlias0               -> <cons>(Alias,ListStarOfAlias11)
-    ListStarOfPriority11           -> ListPlusOfPriority0
-    ListStarOfPriority11           -> <nil>()
-    ListStarOfPriority11           -> <conc>(ListStarOfPriority11,ListStarOfPriority11)
-    ListPlusOfPriority0            -> <conc>(ListStarOfPriority11,ListPlusOfPriority0)
-    ListPlusOfPriority0            -> <conc>(ListPlusOfPriority0,ListStarOfPriority11)
+    ListPlusOfAlias0               -> <cons>(Alias,ListStarOfAlias1)
+    ListStarOfPriority1            -> ListPlusOfPriority0
+    ListStarOfPriority1            -> <nil>()
+    ListStarOfPriority1            -> <conc>(ListStarOfPriority1,ListStarOfPriority1)
+    ListPlusOfPriority0            -> <conc>(ListStarOfPriority1,ListPlusOfPriority0)
+    ListPlusOfPriority0            -> <conc>(ListPlusOfPriority0,ListStarOfPriority1)
     ListPlusOfPriority0            -> <conc>(ListPlusOfPriority0,ListPlusOfPriority0)
-    ListPlusOfPriority0            -> <cons>(Priority,ListStarOfPriority11)
+    ListPlusOfPriority0            -> <cons>(Priority,ListStarOfPriority1)
     ListStarOfGroup0               -> ListPlusOfGroup0
     ListStarOfGroup0               -> <nil>()
     ListStarOfGroup0               -> <conc>(ListStarOfGroup0,ListStarOfGroup0)
@@ -107,13 +107,13 @@ regular tree grammar
     ListPlusOfGroup0               -> <conc>(ListPlusOfGroup0,ListStarOfGroup0)
     ListPlusOfGroup0               -> <conc>(ListPlusOfGroup0,ListPlusOfGroup0)
     ListPlusOfGroup0               -> <cons>(Group,ListStarOfGroup0)
-    ListStarOfPriorityProduction4  -> ListPlusOfPriorityProduction0
-    ListStarOfPriorityProduction4  -> <nil>()
-    ListStarOfPriorityProduction4  -> <conc>(ListStarOfPriorityProduction4,ListStarOfPriorityProduction4)
-    ListPlusOfPriorityProduction0  -> <conc>(ListStarOfPriorityProduction4,ListPlusOfPriorityProduction0)
-    ListPlusOfPriorityProduction0  -> <conc>(ListPlusOfPriorityProduction0,ListStarOfPriorityProduction4)
+    ListStarOfPriorityProduction1  -> ListPlusOfPriorityProduction0
+    ListStarOfPriorityProduction1  -> <nil>()
+    ListStarOfPriorityProduction1  -> <conc>(ListStarOfPriorityProduction1,ListStarOfPriorityProduction1)
+    ListPlusOfPriorityProduction0  -> <conc>(ListStarOfPriorityProduction1,ListPlusOfPriorityProduction0)
+    ListPlusOfPriorityProduction0  -> <conc>(ListPlusOfPriorityProduction0,ListStarOfPriorityProduction1)
     ListPlusOfPriorityProduction0  -> <conc>(ListPlusOfPriorityProduction0,ListPlusOfPriorityProduction0)
-    ListPlusOfPriorityProduction0  -> <cons>(PriorityProduction,ListStarOfPriorityProduction4)
+    ListPlusOfPriorityProduction0  -> <cons>(PriorityProduction,ListStarOfPriorityProduction1)
     ListStarOfNatCon0              -> ListPlusOfNatCon0
     ListStarOfNatCon0              -> <nil>()
     ListStarOfNatCon0              -> <conc>(ListStarOfNatCon0,ListStarOfNatCon0)
@@ -123,20 +123,20 @@ regular tree grammar
     ListPlusOfNatCon0              -> <cons>(NatCon,ListStarOfNatCon0)
     ListStarOfSingleQuotedStrChar0 -> <string>
     ListPlusOfSingleQuotedStrChar0 -> <string>
-    ListStarOfRestriction11        -> ListPlusOfRestriction0
-    ListStarOfRestriction11        -> <nil>()
-    ListStarOfRestriction11        -> <conc>(ListStarOfRestriction11,ListStarOfRestriction11)
-    ListPlusOfRestriction0         -> <conc>(ListStarOfRestriction11,ListPlusOfRestriction0)
-    ListPlusOfRestriction0         -> <conc>(ListPlusOfRestriction0,ListStarOfRestriction11)
+    ListStarOfRestriction1         -> ListPlusOfRestriction0
+    ListStarOfRestriction1         -> <nil>()
+    ListStarOfRestriction1         -> <conc>(ListStarOfRestriction1,ListStarOfRestriction1)
+    ListPlusOfRestriction0         -> <conc>(ListStarOfRestriction1,ListPlusOfRestriction0)
+    ListPlusOfRestriction0         -> <conc>(ListPlusOfRestriction0,ListStarOfRestriction1)
     ListPlusOfRestriction0         -> <conc>(ListPlusOfRestriction0,ListPlusOfRestriction0)
-    ListPlusOfRestriction0         -> <cons>(Restriction,ListStarOfRestriction11)
-    ListStarOfSymbol11             -> ListPlusOfSymbol0
-    ListStarOfSymbol11             -> <nil>()
-    ListStarOfSymbol11             -> <conc>(ListStarOfSymbol11,ListStarOfSymbol11)
-    ListPlusOfSymbol0              -> <conc>(ListStarOfSymbol11,ListPlusOfSymbol0)
-    ListPlusOfSymbol0              -> <conc>(ListPlusOfSymbol0,ListStarOfSymbol11)
+    ListPlusOfRestriction0         -> <cons>(Restriction,ListStarOfRestriction1)
+    ListStarOfSymbol1              -> ListPlusOfSymbol0
+    ListStarOfSymbol1              -> <nil>()
+    ListStarOfSymbol1              -> <conc>(ListStarOfSymbol1,ListStarOfSymbol1)
+    ListPlusOfSymbol0              -> <conc>(ListStarOfSymbol1,ListPlusOfSymbol0)
+    ListPlusOfSymbol0              -> <conc>(ListPlusOfSymbol0,ListStarOfSymbol1)
     ListPlusOfSymbol0              -> <conc>(ListPlusOfSymbol0,ListPlusOfSymbol0)
-    ListPlusOfSymbol0              -> <cons>(Symbol,ListStarOfSymbol11)
+    ListPlusOfSymbol0              -> <cons>(Symbol,ListStarOfSymbol1)
     ListStarOfLookahead0           -> ListPlusOfLookahead0
     ListStarOfLookahead0           -> <nil>()
     ListStarOfLookahead0           -> <conc>(ListStarOfLookahead0,ListStarOfLookahead0)
@@ -144,20 +144,20 @@ regular tree grammar
     ListPlusOfLookahead0           -> <conc>(ListPlusOfLookahead0,ListStarOfLookahead0)
     ListPlusOfLookahead0           -> <conc>(ListPlusOfLookahead0,ListPlusOfLookahead0)
     ListPlusOfLookahead0           -> <cons>(Lookahead,ListStarOfLookahead0)
-    ListStarOfImport11             -> ListPlusOfImport0
-    ListStarOfImport11             -> <nil>()
-    ListStarOfImport11             -> <conc>(ListStarOfImport11,ListStarOfImport11)
-    ListPlusOfImport0              -> <conc>(ListStarOfImport11,ListPlusOfImport0)
-    ListPlusOfImport0              -> <conc>(ListPlusOfImport0,ListStarOfImport11)
+    ListStarOfImport1              -> ListPlusOfImport0
+    ListStarOfImport1              -> <nil>()
+    ListStarOfImport1              -> <conc>(ListStarOfImport1,ListStarOfImport1)
+    ListPlusOfImport0              -> <conc>(ListStarOfImport1,ListPlusOfImport0)
+    ListPlusOfImport0              -> <conc>(ListPlusOfImport0,ListStarOfImport1)
     ListPlusOfImport0              -> <conc>(ListPlusOfImport0,ListPlusOfImport0)
-    ListPlusOfImport0              -> <cons>(Import,ListStarOfImport11)
-    ListStarOfSection11            -> ListPlusOfSection0
-    ListStarOfSection11            -> <nil>()
-    ListStarOfSection11            -> <conc>(ListStarOfSection11,ListStarOfSection11)
-    ListPlusOfSection0             -> <conc>(ListStarOfSection11,ListPlusOfSection0)
-    ListPlusOfSection0             -> <conc>(ListPlusOfSection0,ListStarOfSection11)
+    ListPlusOfImport0              -> <cons>(Import,ListStarOfImport1)
+    ListStarOfSection1             -> ListPlusOfSection0
+    ListStarOfSection1             -> <nil>()
+    ListStarOfSection1             -> <conc>(ListStarOfSection1,ListStarOfSection1)
+    ListPlusOfSection0             -> <conc>(ListStarOfSection1,ListPlusOfSection0)
+    ListPlusOfSection0             -> <conc>(ListPlusOfSection0,ListStarOfSection1)
     ListPlusOfSection0             -> <conc>(ListPlusOfSection0,ListPlusOfSection0)
-    ListPlusOfSection0             -> <cons>(Section,ListStarOfSection11)
+    ListPlusOfSection0             -> <cons>(Section,ListStarOfSection1)
     ListStarOfImpSection0          -> ListPlusOfImpSection0
     ListStarOfImpSection0          -> <nil>()
     ListStarOfImpSection0          -> <conc>(ListStarOfImpSection0,ListStarOfImpSection0)
@@ -172,20 +172,20 @@ regular tree grammar
     ListPlusOfRenaming0            -> <conc>(ListPlusOfRenaming0,ListStarOfRenaming0)
     ListPlusOfRenaming0            -> <conc>(ListPlusOfRenaming0,ListPlusOfRenaming0)
     ListPlusOfRenaming0            -> <cons>(Renaming,ListStarOfRenaming0)
-    ListStarOfSymbol12             -> ListPlusOfSymbol1
-    ListStarOfSymbol12             -> <nil>()
-    ListStarOfSymbol12             -> <conc>(ListStarOfSymbol12,ListStarOfSymbol12)
-    ListPlusOfSymbol1              -> <conc>(ListStarOfSymbol12,ListPlusOfSymbol1)
-    ListPlusOfSymbol1              -> <conc>(ListPlusOfSymbol1,ListStarOfSymbol12)
+    ListStarOfSymbol2              -> ListPlusOfSymbol1
+    ListStarOfSymbol2              -> <nil>()
+    ListStarOfSymbol2              -> <conc>(ListStarOfSymbol2,ListStarOfSymbol2)
+    ListPlusOfSymbol1              -> <conc>(ListStarOfSymbol2,ListPlusOfSymbol1)
+    ListPlusOfSymbol1              -> <conc>(ListPlusOfSymbol1,ListStarOfSymbol2)
     ListPlusOfSymbol1              -> <conc>(ListPlusOfSymbol1,ListPlusOfSymbol1)
-    ListPlusOfSymbol1              -> <cons>(Symbol,ListStarOfSymbol12)
-    ListStarOfProduction11         -> ListPlusOfProduction0
-    ListStarOfProduction11         -> <nil>()
-    ListStarOfProduction11         -> <conc>(ListStarOfProduction11,ListStarOfProduction11)
-    ListPlusOfProduction0          -> <conc>(ListStarOfProduction11,ListPlusOfProduction0)
-    ListPlusOfProduction0          -> <conc>(ListPlusOfProduction0,ListStarOfProduction11)
+    ListPlusOfSymbol1              -> <cons>(Symbol,ListStarOfSymbol2)
+    ListStarOfProduction1          -> ListPlusOfProduction0
+    ListStarOfProduction1          -> <nil>()
+    ListStarOfProduction1          -> <conc>(ListStarOfProduction1,ListStarOfProduction1)
+    ListPlusOfProduction0          -> <conc>(ListStarOfProduction1,ListPlusOfProduction0)
+    ListPlusOfProduction0          -> <conc>(ListPlusOfProduction0,ListStarOfProduction1)
     ListPlusOfProduction0          -> <conc>(ListPlusOfProduction0,ListPlusOfProduction0)
-    ListPlusOfProduction0          -> <cons>(Production,ListStarOfProduction11)
+    ListPlusOfProduction0          -> <cons>(Production,ListStarOfProduction1)
     ListStarOfAttribute0           -> ListPlusOfAttribute0
     ListStarOfAttribute0           -> <nil>()
     ListStarOfAttribute0           -> <conc>(ListStarOfAttribute0,ListStarOfAttribute0)
@@ -212,10 +212,10 @@ regular tree grammar
     Symbol                         -> Start()
     Aliases                        -> COMPLETION-Aliases(CONTENTCOMPLETE)
     Alias                          -> COMPLETION-Alias(CONTENTCOMPLETE)
-    Aliases                        -> ListStarOfAlias11
+    Aliases                        -> ListStarOfAlias1
     Alias                          -> Alias(Symbol,Symbol)
     Grammar                        -> Aliases(Aliases)
-    Production                     -> PrefixFun(FunctionName,ListStarOfSymbol12,Symbol,Attributes)
+    Production                     -> PrefixFun(FunctionName,ListStarOfSymbol2,Symbol,Attributes)
     Symbol                         -> CiLit(SingleQuotedStrCon)
     Symbol                         -> Lit(StrCon)
     FunctionName                   -> COMPLETION-FunctionName(CONTENTCOMPLETE)
@@ -231,10 +231,10 @@ regular tree grammar
     ArgumentIndicator              -> COMPLETION-ArgumentIndicator(CONTENTCOMPLETE)
     Associativity                  -> COMPLETION-Associativity(CONTENTCOMPLETE)
     Grammar                        -> Priorities(Priorities)
-    Priorities                     -> ListStarOfPriority11
+    Priorities                     -> ListStarOfPriority1
     Priority                       -> Assoc(Group,Associativity,Group)
     Priority                       -> Chain(ListPlusOfGroup0)
-    PriorityProductions            -> ListStarOfPriorityProduction4
+    PriorityProductions            -> ListStarOfPriorityProduction1
     PriorityProduction             -> Production
     PriorityProduction             -> SdfProduction
     Group                          -> AssocGroup(Associativity,PriorityProductions)
@@ -275,14 +275,14 @@ regular tree grammar
     TemplatePart2                  -> Escape(<string>)
     TemplatePart2                  -> String(<string>)
     TemplateLine2                  -> Line(ListStarOfTemplatePart20)
-    Template                       -> TemplateSquareDeprecated(ListPlusOfTemplateLine24)
-    Template                       -> TemplateSquare(ListPlusOfTemplateLine24)
+    Template                       -> TemplateSquareDeprecated(ListPlusOfTemplateLine20)
+    Template                       -> TemplateSquare(ListPlusOfTemplateLine20)
     TemplatePart1                  -> Layout(<string>)
     TemplatePart1                  -> Escape(<string>)
     TemplatePart1                  -> String(<string>)
     TemplateLine1                  -> Line(ListStarOfTemplatePart10)
-    Template                       -> TemplateDeprecated(ListPlusOfTemplateLine14)
-    Template                       -> Template(ListPlusOfTemplateLine14)
+    Template                       -> TemplateDeprecated(ListPlusOfTemplateLine10)
+    Template                       -> Template(ListPlusOfTemplateLine10)
     Placeholder                    -> COMPLETION-Placeholder(CONTENTCOMPLETE)
     TemplatePart2                  -> COMPLETION-TemplatePart2(CONTENTCOMPLETE)
     TemplatePart1                  -> COMPLETION-TemplatePart1(CONTENTCOMPLETE)
@@ -342,8 +342,8 @@ regular tree grammar
     Attribute                      -> Prefer()
     Attribute                      -> Reject()
     Grammar                        -> Restrictions(Restrictions)
-    Restrictions                   -> ListStarOfRestriction11
-    RestrictionSymbols             -> ListStarOfSymbol11
+    Restrictions                   -> ListStarOfRestriction1
+    RestrictionSymbols             -> ListStarOfSymbol1
     Restriction                    -> Follow(RestrictionSymbols,Lookaheads)
     Lookaheads                     -> List(ListStarOfLookahead0)
     Lookaheads                     -> Alt(Lookaheads,Lookaheads)
@@ -395,13 +395,13 @@ regular tree grammar
     Sections                       -> COMPLETION-Sections(CONTENTCOMPLETE)
     Module                         -> COMPLETION-Module(CONTENTCOMPLETE)
     Import                         -> Module(ModuleName)
-    Imports                        -> ListStarOfImport11
+    Imports                        -> ListStarOfImport1
     ImpSection                     -> Imports(Imports)
     Attribute                      -> Id(ModuleName)
     ModuleName                     -> Parameterized(ModuleId,Symbols)
     ModuleName                     -> Unparameterized(ModuleId)
     Section                        -> SDFSection(Grammar)
-    Sections                       -> ListStarOfSection11
+    Sections                       -> ListStarOfSection1
     Module                         -> Module(ModuleName,ListStarOfImpSection0,Sections)
     Renaming                       -> COMPLETION-Renaming(CONTENTCOMPLETE)
     Renamings                      -> COMPLETION-Renamings(CONTENTCOMPLETE)
@@ -432,7 +432,7 @@ regular tree grammar
     Attributes                     -> COMPLETION-Attributes(CONTENTCOMPLETE)
     ATermAttribute                 -> COMPLETION-ATermAttribute(CONTENTCOMPLETE)
     Grammar                        -> Syntax(Productions)
-    Productions                    -> ListStarOfProduction11
+    Productions                    -> ListStarOfProduction1
     Production                     -> Prod(Symbols,Symbol,Attributes)
     QuotedConstructor              -> Constructor(StrCon)
     Attribute                      -> QuotedConstructor
@@ -449,7 +449,7 @@ regular tree grammar
     Symbols                        -> COMPLETION-Symbols(CONTENTCOMPLETE)
     Symbol                         -> COMPLETION-Symbol(CONTENTCOMPLETE)
     SymbolDef                      -> Symbol
-    Symbols                        -> ListStarOfSymbol11
+    Symbols                        -> ListStarOfSymbol1
     Sort                           -> <string>
     Annotation                     -> COMPLETION-Annotation(CONTENTCOMPLETE)
     Annotation                     -> Default(ListPlusOfATerm0)

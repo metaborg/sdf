@@ -2,8 +2,8 @@ module analysis/normalization
 imports
   libstratego-lib
   include/TemplateLang
-  templatelang/utils/attributes
-  templatelang/utils/misc
+  trans/utils/attributes
+  trans/utils/misc
   runtime/editor/origins
   analysis/names
   

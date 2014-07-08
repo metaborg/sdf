@@ -212,7 +212,10 @@ PlaceholderOption.Text = <text=<StrCon>>
     TemplateString2 -/- [\\].~[\[\]\\]
 
     Backslash -/- [\<\>\\]
-   
+
+  template options
+  
+  	tokenize : "="  
 
   lexical syntax
   //production for ContenteCompletion

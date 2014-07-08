@@ -2,14 +2,14 @@ module TemplateLang
 
 signature
   constructors
-    Conc                           : ListStarOfTemplateLine24 * ListPlusOfTemplateLine24 -> ListPlusOfTemplateLine24
-    Conc                           : ListPlusOfTemplateLine24 * ListStarOfTemplateLine24 -> ListPlusOfTemplateLine24
-    Conc                           : ListPlusOfTemplateLine24 * ListPlusOfTemplateLine24 -> ListPlusOfTemplateLine24
-                                   : TemplateLine2 -> ListPlusOfTemplateLine24
-    Conc                           : ListStarOfTemplateLine14 * ListPlusOfTemplateLine14 -> ListPlusOfTemplateLine14
-    Conc                           : ListPlusOfTemplateLine14 * ListStarOfTemplateLine14 -> ListPlusOfTemplateLine14
-    Conc                           : ListPlusOfTemplateLine14 * ListPlusOfTemplateLine14 -> ListPlusOfTemplateLine14
-                                   : TemplateLine1 -> ListPlusOfTemplateLine14
+    Conc                           : ListStarOfTemplateLine20 * ListPlusOfTemplateLine20 -> ListPlusOfTemplateLine20
+    Conc                           : ListPlusOfTemplateLine20 * ListStarOfTemplateLine20 -> ListPlusOfTemplateLine20
+    Conc                           : ListPlusOfTemplateLine20 * ListPlusOfTemplateLine20 -> ListPlusOfTemplateLine20
+                                   : TemplateLine2 -> ListPlusOfTemplateLine20
+    Conc                           : ListStarOfTemplateLine10 * ListPlusOfTemplateLine10 -> ListPlusOfTemplateLine10
+    Conc                           : ListPlusOfTemplateLine10 * ListStarOfTemplateLine10 -> ListPlusOfTemplateLine10
+    Conc                           : ListPlusOfTemplateLine10 * ListPlusOfTemplateLine10 -> ListPlusOfTemplateLine10
+                                   : TemplateLine1 -> ListPlusOfTemplateLine10
     COMPLETION-Aliases             : CONTENTCOMPLETE -> Aliases
                                    : List(Alias) -> Aliases
     COMPLETION-Alias               : CONTENTCOMPLETE -> Alias
@@ -38,10 +38,10 @@ signature
                                    : String -> CONTENTCOMPLETE
     Line                           : List(TemplatePart2) -> TemplateLine2
     Line                           : List(TemplatePart1) -> TemplateLine1
-    TemplateSquareDeprecated       : ListPlusOfTemplateLine24 -> Template
-    TemplateSquare                 : ListPlusOfTemplateLine24 -> Template
-    TemplateDeprecated             : ListPlusOfTemplateLine14 -> Template
-    Template                       : ListPlusOfTemplateLine14 -> Template
+    TemplateSquareDeprecated       : ListPlusOfTemplateLine20 -> Template
+    TemplateSquare                 : ListPlusOfTemplateLine20 -> Template
+    TemplateDeprecated             : ListPlusOfTemplateLine10 -> Template
+    Template                       : ListPlusOfTemplateLine10 -> Template
     COMPLETION-Placeholder         : CONTENTCOMPLETE -> Placeholder
     Placeholder                    : Symbol * PlaceholderOptions -> Placeholder
     Layout                         : String -> TemplatePart2

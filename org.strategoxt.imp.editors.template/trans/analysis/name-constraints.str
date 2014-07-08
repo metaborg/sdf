@@ -15,6 +15,20 @@ imports
   	nabl-check-disable-duplicate(|uri, ns) = id
   	nabl-check-disable-unresolved = id
   	
+  	rules
+
+  	nabl-constraint(|ctx):
+    t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Nil\""))]))) -> <fail>
+    where
+      msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> t
+
+  	nabl-constraint(|ctx):
+    t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Cons\""))]))) -> <fail>
+    where
+      msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> t
+  	
   	
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
@@ -46,14 +60,6 @@ imports
   		msg := $[Unresolved reference to module '[m]'];
   		<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
   					
-  	
-  //	nabl-constraint(|ctx):
-  //		p@Placeholder(label, Sort(s), t, options) -> <fail>
-  //		where
-  //			<has-annotation(?Use(task))> s;
-  //			msg := $[Unresolved reference to sort '[s]'];
-  //			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> p
-  			
   	nabl-constraint(|ctx):
   		 Sort(s) -> <fail>
   		where
