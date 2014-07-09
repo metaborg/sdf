@@ -16,8 +16,8 @@ imports
 completions
   completion template Section : "template options " =
     "template options\n\n\t" (cursor) "\n" (blank)  
-  completion template TemplateOption : "newlines : foo" =
-    "newlines : " <foo:NewlineOptionValue>  
+  completion template TemplateOption : "newlines : NewlineOptionValue" =
+    "newlines : " <NewlineOptionValue:NewlineOptionValue>  
   completion template NewlineOptionValue : "none" =
     "none"  
   completion template NewlineOptionValue : "leading" =
@@ -26,18 +26,18 @@ completions
     "trailing"  
   completion template NewlineOptionValue : "separating" =
     "separating"  
-  completion template TemplateOption : "keyword -/- foo" =
-    "keyword -/- " <foo:Lookaheads>  
-  completion template TemplateOption : "tokenize : foo" =
-    "tokenize : " <foo:StrCon>  
+  completion template TemplateOption : "keyword -/- Lookaheads" =
+    "keyword -/- " <Lookaheads:Lookaheads>  
+  completion template TemplateOption : "tokenize : StrCon" =
+    "tokenize : " <StrCon:StrCon>  
 
 completions
-  completion template Group : "{foo}" =
-    "{" <foo:SortConsRef> "}"  
-  completion template Group : "{foo : foo}" =
-    "{" <foo:Associativity> " :\n\t" <foo:SortConsRef> "}" (blank)  
-  completion template SortConsRef : "foo.foo" =
-    <foo:Symbol> "." <foo:Constructor>  
+  completion template Group : "{SortConsRef}" =
+    "{" <SortConsRef:SortConsRef> "}"  
+  completion template Group : "{Associativity : SortConsRef}" =
+    "{" <Associativity:Associativity> " :\n\t" <SortConsRef:SortConsRef> "}" (blank)  
+  completion template SortConsRef : "Symbol.Constructor" =
+    <Symbol:Symbol> "." <Constructor:Constructor>  
 
 completions
   completion template Grammar : "lexical syntax " =
@@ -46,35 +46,35 @@ completions
     "context-free syntax\n\n\t" (cursor) "\n" (blank)  
   completion template Grammar : "syntax " =
     "syntax\n\n\t" (cursor) "\n" (blank)  
-  completion template SdfProduction : "foo = foo foo" =
-    <foo:SymbolDef> " = " <foo:RHS> " " <foo:Attributes>  
-  completion template SdfProduction : "foo = foo foo" =
-    <foo:SortCons> " = " <foo:RHS> " " <foo:Attributes>  
-  completion template TemplateProduction : "foo = foo foo" =
-    <foo:SymbolDef> " = " <foo:Template> " " <foo:Attributes>  
-  completion template TemplateProduction : "foo = foo foo" =
-    <foo:SortCons> " = " <foo:Template> " " <foo:Attributes>  
-  completion template SortCons : "foo.foo" =
-    <foo:SymbolDef> "." <foo:Constructor>  
-  completion template TemplatePart1 : "<foo>" =
-    "<" <foo:Placeholder> ">"  
-  completion template TemplatePart2 : "[foo]" =
-    "[" <foo:Placeholder> "]"  
-  completion template Placeholder : "foofoo" =
-    <foo:Symbol> <foo:PlaceholderOptions>  
-  completion template PlaceholderOptions : ";foo" =
-    ";" <foo:PlaceholderOption>  
+  completion template SdfProduction : "SymbolDef = RHS Attributes" =
+    <SymbolDef:SymbolDef> " = " <RHS:RHS> " " <Attributes:Attributes>  
+  completion template SdfProduction : "SortCons = RHS Attributes" =
+    <SortCons:SortCons> " = " <RHS:RHS> " " <Attributes:Attributes>  
+  completion template TemplateProduction : "SymbolDef = Template Attributes" =
+    <SymbolDef:SymbolDef> " = " <Template:Template> " " <Attributes:Attributes>  
+  completion template TemplateProduction : "SortCons = Template Attributes" =
+    <SortCons:SortCons> " = " <Template:Template> " " <Attributes:Attributes>  
+  completion template SortCons : "SymbolDef.Constructor" =
+    <SymbolDef:SymbolDef> "." <Constructor:Constructor>  
+  completion template TemplatePart1 : "<Placeholder>" =
+    "<" <Placeholder:Placeholder> ">"  
+  completion template TemplatePart2 : "[Placeholder]" =
+    "[" <Placeholder:Placeholder> "]"  
+  completion template Placeholder : "SymbolPlaceholderOptions" =
+    <Symbol:Symbol> <PlaceholderOptions:PlaceholderOptions>  
+  completion template PlaceholderOptions : ";PlaceholderOption" =
+    ";" <PlaceholderOption:PlaceholderOption>  
   completion template PlaceholderOption : "hide" =
-    "hide"  
+    "hide"                    
   completion template PlaceholderOption : "wrap" =
-    "wrap"  
+    "wrap"                    
   completion template PlaceholderOption : "anchor" =
-    "anchor"  
-  completion template PlaceholderOption : "text=foo" =
-    "text=" <foo:StrCon>  
+    "anchor"                
+  completion template PlaceholderOption : "text=StrCon" =
+    "text=" <StrCon:StrCon>  
 
 completions
-  completion template Template : "<foo>" =
-    "<" <foo:TemplateLine1> ">"  
-  completion template Template : "[foo]" =
-    "[" <foo:TemplateLine2> "]"  
+  completion template Template : "<TemplateLine1>" =
+    "<" <TemplateLine1:TemplateLine1> ">"  
+  completion template Template : "[TemplateLine2]" =
+    "[" <TemplateLine2:TemplateLine2> "]"  

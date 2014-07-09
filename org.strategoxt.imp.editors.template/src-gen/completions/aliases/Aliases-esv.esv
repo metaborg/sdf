@@ -5,11 +5,11 @@ imports
   src-gen/completion/symbols/Symbols-esv
 
 completions
-  completion template Production : "foo -> foo foo " =
-    <foo:Symbols> " -> " <foo:Symbol> " " <foo:Attributes> " "  
+  completion template Production : "Symbols -> Symbol Attributes " =
+    <Symbols:Symbols> " -> " <Symbol:Symbol> " " <Attributes:Attributes> " "  
 
 completions
-  completion template Grammar : "aliases foo " =
-    "aliases\n\n\t" <foo:Aliases> "\n" (blank)  
-  completion template Alias : "foo -> foo" =
-    <foo:Symbol> " -> " <foo:Symbol>  
+  completion template Grammar : "aliases Aliases " =
+    "aliases\n\n\t" <Aliases:Aliases> "\n" (blank)  
+  completion template Alias : "Symbol -> Symbol" =
+    <Symbol:Symbol> " -> " <Symbol:Symbol>  
