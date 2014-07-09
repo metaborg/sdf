@@ -41,8 +41,7 @@ Example:
  	- src-gen/pp
  	- src-gen/completions
  	
- 	<br>
- - Transformation from .sdf and .def files that generate .sdf3 files in the folder src-gen/sdf3-syntax.
+- Transformation from .sdf and .def files that generate .sdf3 files in the folder src-gen/sdf3-syntax.
  
 ###### New Builders
 
@@ -61,10 +60,9 @@ There are new builders available for both SDF2 and SDF3 files. They include:
 	
 - SDF2 - Generate:
 	- Lift to SDF3, which generates .sdf3 files from the sdf2 definition.
-	- Lift to SDF3 (templates), which does the same as the previous one, but generates single line templates from regular productions.<br><br>	 
+	- Lift to SDF3 (templates), which does the same as the previous one, but generates single line templates from regular productions.<br>	 
 	
 	All builders have the option (abstract) to generate .aterm files containing the AST for the respective builder.  		
- 
 
 #### Dropped Features  
 
@@ -75,7 +73,7 @@ Some sdf2 symbols are not supported whithin .sdf3 files and should be manually r
 
 Example:
 
-	context-free syntax
+    context-free syntax
 
     Symbol = SymbolLeft | SymbolRight
 
@@ -89,10 +87,11 @@ should be translated to:
     
  - Sequences:
  
- Example:
+
+Example:
 
     context-free syntax
-
+    
     Symbol = (SymbolHead SymbolTail+)
 
 should be translated to:
@@ -103,8 +102,8 @@ should be translated to:
     Seq.Seq = SymbolHead SymbolTail+
  
  - Tuples:
- 
- Example:
+
+Example:
 
     context-free syntax
     
@@ -120,8 +119,8 @@ should be translated to:
  
  
  - Function:
- 
- Example:
+
+Example:
 
     context-free syntax
     
@@ -137,7 +136,7 @@ should be translated to:
  
  - Strategy:
  
-  Example:
+Example:
 
     context-free syntax
     
