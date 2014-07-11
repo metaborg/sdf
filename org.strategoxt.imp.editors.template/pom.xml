@@ -21,32 +21,24 @@
 				<version>${maven-antrun-version}</version>
 				<dependencies>
 					<dependency>
-						<groupId>local</groupId>
-						<artifactId>aster</artifactId>
-						<version>1.0</version>
-						<scope>system</scope>
-						<systemPath>${aster-jar}</systemPath>
+						<groupId>org.metaborg</groupId>
+						<artifactId>aster-jar</artifactId>
+						<version>${metaborg-version}</version>
 					</dependency>
 					<dependency>
-						<groupId>local</groupId>
-						<artifactId>strategoxt</artifactId>
-						<version>1.0</version>
-						<scope>system</scope>
-						<systemPath>${strategoxt-jar}</systemPath>
+						<groupId>org.metaborg</groupId>
+						<artifactId>strategoxt-jar</artifactId>
+						<version>${metaborg-version}</version>
 					</dependency>
 					<dependency>
-						<groupId>local</groupId>
-						<artifactId>sdf2imp</artifactId>
-						<version>1.0</version>
-						<scope>system</scope>
-						<systemPath>${sdf2imp-jar}</systemPath>
+						<groupId>org.metaborg</groupId>
+						<artifactId>sdf2imp-jar</artifactId>
+						<version>${metaborg-version}</version>
 					</dependency>
 					<dependency>
-						<groupId>local</groupId>
-						<artifactId>make_permissive.jar</artifactId>
-						<version>1.0</version>
-						<scope>system</scope>
-						<systemPath>${makepermissive-jar}</systemPath>
+						<groupId>org.metaborg</groupId>
+						<artifactId>make-permissive-jar</artifactId>
+						<version>${metaborg-version}</version>
 					</dependency>
 					<dependency>
 						<groupId>ant-contrib</groupId>
