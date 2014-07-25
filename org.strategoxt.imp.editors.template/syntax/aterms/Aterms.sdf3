@@ -1,0 +1,26 @@
+module aterms/Aterms
+ 
+imports constants/IntCon
+		constants/RealCon
+		constants/StrCon
+        constants/IdentifierCon
+
+context-free start-symbols
+    ATerm
+
+context-free syntax
+	AFun.Quoted = <<StrCon>>
+	AFun.Unquoted = <<IdCon>>
+
+
+context-free syntax
+	ATerm.Int = <<IntCon>>
+	ATerm.Real = <<RealCon>>
+	ATerm.Fun = <<AFun>>
+	ATerm.Appl = <<AFun>(<{ATerm ","}+>)>
+	ATerm.PlaceHolder = <\<<ATerm>\>>
+	ATerm.List = <[<{ATerm ","}*>]>
+	ATerm.Annotated = <<ATerm><Annotation>>
+
+context-free syntax
+	Annotation.Default = <{<{ATerm ","}+>}>

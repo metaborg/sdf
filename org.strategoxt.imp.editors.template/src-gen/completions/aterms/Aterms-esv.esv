@@ -1,0 +1,21 @@
+module src-gen/completion/aterms/Aterms-esv
+
+imports
+  src-gen/completion/constants/IntCon-esv
+  src-gen/completion/constants/RealCon-esv
+  src-gen/completion/constants/StrCon-esv
+  src-gen/completion/constants/IdentifierCon-esv
+
+completions
+  completion template ATerm : "foo(foo)" =
+    <foo:AFun> "(" <foo:ATerm> ")"  
+  completion template ATerm : "<foo>" =
+    "<" <foo:ATerm> ">"  
+  completion template ATerm : "[foo]" =
+    "[" <foo:ATerm> "]"  
+  completion template ATerm : "foofoo" =
+    <foo:ATerm> <foo:Annotation>  
+
+completions
+  completion template Annotation : "{foo}" =
+    "{" <foo:ATerm> "}"  

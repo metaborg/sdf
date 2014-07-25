@@ -1,0 +1,10 @@
+module lifting/Lifting
+
+imports kernel/Kernel
+
+
+context-free syntax
+
+//left-quote:"`" Symbol right-quote:"`" -> Symbol  {cons("lifting")}
+Symbol.Lifting = <`<Symbol>`>
+     

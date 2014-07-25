@@ -1,7 +1,9 @@
 module SDF.main
 
 imports
-  SDF-Builders
+
+  SDF-Menus
+  SDF-Views
   SDF-Colorer
   SDF-Folding
   SDF-References
@@ -20,3 +22,8 @@ language General properties
   extensions    : sdf, def
   table         : include/SDF.tbl
   start symbols : Module
+
+  provider : include/sdf.ctree
+  provider : lib/sdf3/TemplateLang-pp.jar
+  
+  observer : editor-analyze

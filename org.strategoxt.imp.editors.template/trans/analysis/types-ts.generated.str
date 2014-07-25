@@ -1,0 +1,36 @@
+module trans/analysis/types-ts.generated
+
+imports
+  
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/types/-
+  lib/runtime/properties/-
+  lib/runtime/relations/-
+
+imports
+
+  include/TemplateLang
+  libstrc
+  analysis/types
+  
+signature constructors
+  
+  
+  
+rules // functions 
+  
+
+rules // relations
+  
+
+rules // rules
+  
+  create-type-task(|ctx) :
+    Placeholder(s, opt) -> <task-create-id(|ctx,[t])> t
+    where 
+      t := <type-task(|ctx)> s
+  
+
+rules // projections
+  

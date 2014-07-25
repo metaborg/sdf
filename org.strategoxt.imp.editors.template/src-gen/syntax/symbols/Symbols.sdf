@@ -1,0 +1,13 @@
+module symbols/Symbols
+imports layout/Comments
+
+exports
+  context-free syntax
+    "(" Symbol ")" -> Symbol    {bracket}
+    list:Symbol*   -> Symbols   
+    Symbol         -> SymbolDef 
+
+  context-free syntax
+    CONTENTCOMPLETE -> Symbol    {cons("COMPLETION-Symbol")}
+    CONTENTCOMPLETE -> Symbols   {cons("COMPLETION-Symbols")}
+    CONTENTCOMPLETE -> SymbolDef {cons("COMPLETION-SymbolDef")}

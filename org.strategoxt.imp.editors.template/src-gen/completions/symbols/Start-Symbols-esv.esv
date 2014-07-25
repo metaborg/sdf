@@ -1,0 +1,13 @@
+module src-gen/completion/symbols/Start-Symbols-esv
+
+imports
+  src-gen/completion/kernel/Kernel-esv
+  src-gen/completion/symbols/Symbols-esv
+
+completions
+  completion template Grammar : "start-symbols foo " =
+    "start-symbols\n\n\t" <foo:Symbols> "\n" (blank)  
+  completion template Grammar : "lexical start-symbols foo " =
+    "lexical start-symbols\n\n\t" <foo:Symbols> "\n" (blank)  
+  completion template Grammar : "context-free start-symbols foo " =
+    "context-free start-symbols\n\n\t" <foo:Symbols> "\n" (blank)  

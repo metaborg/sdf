@@ -1,0 +1,32 @@
+module restrictions/Restrictions
+imports characterclass/CC characterclass/Character-Class symbols/Symbols
+        constants/StrCon
+
+exports
+  context-free syntax
+    CharClass                           -> Lookahead          {cons("CharClass")}
+    CharClass "." Lookaheads            -> Lookahead          {cons("Seq")}
+    Lookahead                           -> Lookaheads         {cons("Single")}
+    Lookaheads "|" Lookaheads           -> Lookaheads         {cons("Alt"), right}
+    "(" Lookaheads ")"                  -> Lookaheads         {bracket}
+    "[[" list:{Lookahead ","}* "]]"     -> Lookaheads         {cons("List")}
+    RestrictionSymbols "-/-" Lookaheads -> Restriction        {cons("Follow")}
+    list:Symbol*                        -> RestrictionSymbols 
+    list:Restriction*                   -> Restrictions       
+    "restrictions" Restrictions         -> Grammar            {cons("Restrictions")}
+    "reject"                            -> Attribute          {cons("Reject")}
+    "prefer"                            -> Attribute          {cons("Prefer")}
+    "avoid"                             -> Attribute          {cons("Avoid")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Lookahead          {cons("COMPLETION-Lookahead")}
+    CONTENTCOMPLETE -> Lookaheads         {cons("COMPLETION-Lookaheads")}
+    CONTENTCOMPLETE -> Restriction        {cons("COMPLETION-Restriction")}
+    CONTENTCOMPLETE -> RestrictionSymbols {cons("COMPLETION-RestrictionSymbols")}
+    CONTENTCOMPLETE -> Restrictions       {cons("COMPLETION-Restrictions")}
+    CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> Attribute          {cons("COMPLETION-Attribute")}
+
+  context-free priorities
+    CharClass "." Lookaheads -> Lookahead >
+    Lookaheads "|" Lookaheads -> Lookaheads

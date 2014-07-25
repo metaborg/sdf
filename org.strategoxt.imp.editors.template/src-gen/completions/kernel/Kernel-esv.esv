@@ -1,0 +1,17 @@
+module src-gen/completion/kernel/Kernel-esv
+
+imports
+  src-gen/completion/aterms/Aterms-esv
+  src-gen/completion/symbols/Symbols-esv
+  src-gen/completion/grammar/Grammars-esv
+  src-gen/completion/constants/StrCon-esv
+
+completions
+  completion template Attributes : "{foo}" =
+    "{" <foo:Attribute> "}"  
+  completion template Attribute : "deprecated" =
+    "deprecated"  
+  completion template Attribute : "deprecated(foo)" =
+    "deprecated(" <foo:StrCon> ")"  
+  completion template Grammar : "syntax foo " =
+    "syntax\n\n\t" <foo:Productions> "\n" (blank)  

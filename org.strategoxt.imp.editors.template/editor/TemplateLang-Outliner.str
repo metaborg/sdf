@@ -7,10 +7,28 @@ module editor/TemplateLang-Outliner
 imports
   libstratego-sglr
   include/TemplateLang
-  include/libtemplatelang
+ // include/libtemplatelang
   lib/runtime/editor/outline-library
   lib/runtime/editor/origins
+  
+  
+rules
 
+  outline = simple-label-outline(to-outline-label)
+  
+  to-outline-label = ?TemplateProduction(<id>, _, _)
+  to-outline-label = ?appl(<id>, _)
+  to-outline-label = ?parameterized(<id>, _)
+  to-outline-label = ?parameterized-sort(<id>, _)
+  to-outline-label = ?SdfProduction(<id>, _, _)
+  to-outline-label = ?prod(_, <id>, _)
+  to-outline-label = ?prefix-fun(<id>, _, _, _)
+  to-outline-label = ?follow(_, <id>)
+
+  
+  
+  
+/*
 rules
   
   outline:
@@ -29,6 +47,9 @@ rules
   outline-desugar = ?label(_, <id>)
   outline-desugar = ?unparameterized(<id>)
   outline-desugar = ?parameterized(<id>, _)
+  outline-desugar = ?Label(_, <id>)
+  outline-desugar = ?Unparameterized(<id>)
+  outline-desugar = ?Parameterized(<id>, _)
   
 rules
   
@@ -66,7 +87,13 @@ rules
         <Hd; explode-term; ?(<id>, _);
         string-replace(|"lexical-", "lexical ");
         string-replace(|"context-free-", "context-free ");
+        string-replace(|"Contextfree", "context-free ");
+        string-replace(|"ContextFreeStartSymbols", "context-free starting-symbols");
+        string-replace(|"KernelStartSymbols","start-symbols");
+        string-replace(|"LexicalStartSymbols","lexical start-symbols");
         string-replace(|"TemplateSection", "templates");
+        string-replace(|"LexicalSyntax", "lexical syntax");
+        string-replace(|"Syntax", "syntax");
         string-replace(|"TemplateOptions", "template options")> sections';
       icon := <icon-exports>;
       children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section), conc); map(label-to-outline-node)> sections'
@@ -74,11 +101,17 @@ rules
   label-to-outline-node = ?label; !Node(label, [])
   
   get-outline-section: section -> Start()
-    where <?kernel-start-symbols(_) + ?lexical-start-symbols(_) + ?context-free-start-symbols(_)> section
+    where <?kernel-start-symbols(_) + ?lexical-start-symbols(_) + 
+    ?context-free-start-symbols(_) + ?KernelStartSymbols(_) + ?LexicalStartSymbols(_) + ?ContextFreeStartSymbols(_) > section
+  
   get-outline-section: section -> Lex()
-    where <?lexical-syntax(_) + ?syntax(_)> section
+    where <?lexical-syntax(_) + ?syntax(_) + ?LexicalSyntax(_) + ?Syntax(_)> section
+    
   get-outline-section: section -> CF()
-    where <?context-free-syntax(_) + ?TemplateSection(_)> section
+    where <?context-free-syntax(_) + ?Contextfree(_) + ?TemplateSection(_)> section
+   
+    
+    
   get-outline-section: section -> Restriction()
     where <?context-free-restrictions(_)> section
   get-outline-section: section -> Other()
@@ -91,12 +124,18 @@ rules
 rules
 	
   // module
+  get-module-name: Module(name, _, _) -> name
   get-module-name: 'module(name, _, _) -> name
-  get-module-name = ?CompilationUnit(_); origin-file
+  get-module-name =  origin-file; base-filename; remove-extension
   
   // start
   to-outline-label(|outline-section):
     sort(s) -> s{<icon-start>}
+    where
+      Start() := outline-section
+  
+  to-outline-label(|outline-section):
+    Sort(s) -> s{<icon-start>}
     where
       Start() := outline-section
   
@@ -180,3 +219,4 @@ rules
   
   restriction-has-symbols(|symbols) = ?follow(symbols, _)
 
+*/

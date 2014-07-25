@@ -1,0 +1,6 @@
+module src-gen/pp/layout/Whitespace-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/layout/Whitespace-sig

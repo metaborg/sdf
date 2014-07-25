@@ -1,0 +1,24 @@
+module src-gen/completion/characterclass/Character-Class-esv
+
+imports
+  src-gen/completion/characterclass/Character-esv
+
+completions
+  completion template CharRange : "foo-foo" =
+    <foo:Character> "-" <foo:Character>  
+  completion template CharRanges : "foofoo" =
+    <foo:CharRanges> <foo:CharRanges>  
+  completion template CharRanges : "(foo)" =
+    "(" <foo:CharRanges> ")"  
+  completion template CharClass : "[foo]" =
+    "[" <foo:OptCharRanges> "]"  
+  completion template CharClass : "~foo" =
+    "~" <foo:CharClass>  
+  completion template CharClass : "foo/foo" =
+    <foo:CharClass> "/" <foo:CharClass>  
+  completion template CharClass : "foo/\\foo" =
+    <foo:CharClass> "/\\" <foo:CharClass>  
+  completion template CharClass : "foo\\/foo" =
+    <foo:CharClass> "\\/" <foo:CharClass>  
+  completion template CharClass : "(foo)" =
+    "(" <foo:CharClass> ")"  

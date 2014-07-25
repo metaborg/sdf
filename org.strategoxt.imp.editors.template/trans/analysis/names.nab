@@ -1,0 +1,136 @@
+module analysis/names
+
+imports 
+  include/TemplateLang
+  analysis/types
+  libstrc
+  
+ 
+namespaces
+  
+  Module Sort Constructor Label 
+// LexSort CfSort
+  // Option
+  
+properties
+
+  def of Constructor       : SdfProduction
+  sort of Constructor      : Sort
+  constructorName of Sort	   : Constructor
+  
+binding rules
+
+  Module(Unparameterized(m), i*, s*):
+    defines Module m 
+   //   of def 'module(unparameterized(m), i*, s*)
+    scopes Sort, Constructor //, Option
+    
+  Module(Unparameterized(m)):
+    imports Sort, Constructor from Module m
+    
+  //Kernel Productions  
+  p@SdfProductionWithCons(SortCons(Lex(SortDef(s)), Constructor(c)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s) of constructorName c
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+    //  of sort s
+   //   of def p 
+      where rhs has type ty*
+      
+  p@SdfProduction(Lex(SortDef(s)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+   
+   p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)  of constructorName c
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+    //  of sort s
+   //   of def p 
+      where rhs has type ty*
+      
+  p@SdfProduction(Cf(SortDef(s)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+  
+        
+  //Regular Productions
+  p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s) of constructorName c
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+    //  of sort s
+   //   of def p 
+      where rhs has type ty*
+  
+  p@SdfProduction(SortDef(s), rhs, attrs): 
+    defines non-unique Sort s of type SortType(s)
+    //implicitly defines unique Constructor Inj()
+  //    of type FunType(ty*, SortType(s))
+   //   of def p
+  //    where rhs has type ty*
+          
+  p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs): 
+    defines non-unique Sort s of type SortType(s) of constructorName c
+    defines unique Constructor c
+      of type FunType(ty*, SortType(s))
+   //   of sort s
+  //    of def p
+     where t has type ty*
+  
+  p@TemplateProduction(SortDef(s), t, attrs): 
+    defines non-unique Sort s of type SortType(s)
+  // implicitly defines unique Constructor Inj()
+   //   of type FunType(ty*, SortType(s))
+  //    of def p
+  //    where t has type ty*
+  
+  
+  
+  	
+ SortConsRef(Sort(s), Constructor(c)):
+  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	refers to Constructor c of sort s	
+  	
+  SortConsRef(Lex(Sort(s)), Constructor(c)):
+  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	refers to Constructor c of sort s	 	
+  
+   SortConsRef(Cf(Sort(s)), Constructor(c)):
+  	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	refers to Constructor c of sort s	
+  	
+  
+  	
+ Sort(s):
+ 	refers to Sort s //otherwise refers to CfSort s otherwise refers to LexSort s
+  	
+  	
+  // can productions scope labels instead?
+ // Rhs(_): scopes Label
+  
+//  Label(l):
+ //   defines Label l
+     
+ // SortCons(Sort(s), Constructor(c)):
+ // 	refers to Sort s
+ // 	refers to Constructor c of sort s
+    
+ // Sort(s):
+ //   refers to Sort s
+    
+// binding rules
+// 
+//   Newlines(o):
+//     implicitly defines 
+//       non-unique Option Newlines() 
+//       of value o
+//   
+//   KeywordFollowRestriction(lah):
+//     implicitly defines 
+//       non-unique Option KeywordFollowRestriction()
+//       of value lah
+//       
+//   Tokenize(t):
+//     implicitly defines
+//       non-unique Option Tokenize()
+//       of value t
+      

@@ -1,0 +1,12 @@
+module labels/Labels
+imports kernel/Kernel constants/StrCon constants/IdentifierCon
+
+exports
+  context-free syntax
+    StrCon           -> Label  {cons("Quoted")}
+    IdCon            -> Label  {cons("Unquoted")}
+    Label ":" Symbol -> Symbol {cons("Label")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Label  {cons("COMPLETION-Label")}
+    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}

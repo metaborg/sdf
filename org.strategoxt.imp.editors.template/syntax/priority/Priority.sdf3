@@ -1,0 +1,41 @@
+module priority/Priority
+
+imports kernel/Kernel constants/NatCon TemplateLang
+ 
+context-free syntax
+
+Associativity.Left = <left>
+Associativity.Right = <right>
+Associativity.NonAssoc = <non-assoc>
+Associativity.Assoc = <assoc>
+
+Attribute.Bracket = <bracket>
+Attribute.Assoc = <<Associativity>>
+
+ArgumentIndicator.Default = <\<<arguments:{NatCon ","}+>\>>
+Group.WithArguments = <<Group> <ArgumentIndicator>> {non-assoc}
+Group.NonTransitive = <<Group>.> {non-assoc}
+
+Group.SimpleGroup = <<PriorityProduction>>
+Group.ProdsGroup = <{<PriorityProductions>}>
+Group.AssocGroup = <
+	{<Associativity>: 
+		<PriorityProductions>}> 
+
+
+PriorityProduction = <<SdfProduction>>
+PriorityProduction = <<Production>>
+PriorityProductions = <<list:{PriorityProduction "\n"}*>>
+
+
+Priority.Chain = <<list:{Group " > "}+>>
+//"left":Group Associativity "right":Group             -> Priority  {cons("assoc")}
+Priority.Assoc = <<Group> <Associativity> <Group>>
+
+Priorities = <<list:{Priority ",\n"}*>>
+Grammar.Priorities = <
+	priorities 
+
+		<Priorities>
+		
+		>

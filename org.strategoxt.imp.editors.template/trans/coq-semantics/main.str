@@ -6,14 +6,13 @@ imports
   coq-semantics/Coq
   coq-semantics/Vernacular.pp.generated
   coq-semantics/Coq-parenthesize
-  name-desugar
   lib/runtime/index/-
   lib/runtime/nabl/-
-  names
+  analysis/names
   
 rules
   
-  generate-coq-semantics-partition:
+  generate-coq-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"v")> path
@@ -22,13 +21,19 @@ rules
        result := <parenthesize-Coq; prettyprint-CoqFile; box2text-string(|100)> coq-file
     <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprint-example) ; debug(!"cannot pp ")))> coq-file
     ;  result := ""
+  
+  generate-coq-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"coq.aterm")> path
+    ; result := <strip-annos; module-to-coq> ast
 
 rules
   
   module-to-coq:
     ast -> Sent([sort*, const*])
     where
-     	sort* := <collect-all( ?'sort(<id>)
+     	sort* := <collect-all(?Sort(<id>)
     	                     + ?TemplateProduction(<id>, _, _)
     	                     + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
     	                     ); nub; sorts-to-coq> ast
@@ -116,6 +121,6 @@ rules // Template productions (i.e. constructors)
       )
   
   template-to-coq =
-  	  filter(?Placeholder(None(), sort(<id>), None(), NoOptions()))
+  	  filter(?Placeholder(<id>,_))
     ; map(!Apply(Ref("cons"), Ref( $[[<id>]_S] )))
     ; foldr(!Ref("nil"), \ (x,y) -> Apply(x, y) \ )
