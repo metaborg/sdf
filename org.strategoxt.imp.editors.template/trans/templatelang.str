@@ -8,38 +8,92 @@ imports
   libstrc
   include/TemplateLang
   include/libtemplatelang
+  editor/TemplateLang-Outliner
   lib/EditorService
   lib/editor-common.generated
+  lib/runtime/analysis/-
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/index/-
+  lib/runtime/tmpl/-
+  lib/runtime/properties/-
+  lib/runtime/types/-
+  lib/runtime/editor/-
+	analyze
+	names
+	name-desugar
+	name-check
+	check
+    
+rules // Analysis
   
-imports
-  analyze
+  editor-analyze = analysis-default-editor
+  
+  analysis-single-default-interface = 
+  	analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
+  	
+  analysis-multiple-default-interface = 
+  	analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
+  
+  editor-save = generate-all; analysis-save-default(|<language>)
+      
+rules // Editor services
 
-rules // Main editor interface (defined by editor/TemplateLang-Builders and -References.esv)
+  editor-resolve:
+    (node, position, ast, path, project-path) -> definition
+    where
+    	definition := <analysis-resolve(|<language>, project-path, path)> node
+  
+  editor-complete:
+    (node, position, ast, path, project-path) -> proposals
+    where
+    	proposals := <analysis-propose-completions(|<language>, project-path, path)> ast
+    	
+  editor-outline:
+    (node, position, ast, path, project-path) -> outline
+    where
+      outline := <outline> ast
 
-  // Analyzes the current program, returning a tuple with errors, warnings, and notes;
-  // each a list of (term, message) tuples or simply (message) terms.
-  editor-analyze:
-    (ast, path, project-path) -> (ast', [], [], [])
+rules // Debugging
+  
+  debug-show-aterm:
+    (selected, position, ast, path, project-path) -> (filename, selected)
     with
-      editor-init;
-      if <string-ends-with(|"-source.spt")> path then
-        ast' := ast;
-        <analyze> ast
-      else
-        ast' := <analyze> ast
-      end
+      filename := <guarantee-extension(|"aterm")> path
 
-  // Prints the abstract syntax ATerm of a selection.
-  generate-aterm(s):
+  debug-show-desugared:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"aterm")> path;
-      result   := <s> selected
+      filename := <guarantee-extension(|"analyzed.aterm")> path;
+      result   := <analyze> selected
+      
+  debug-show-analyzed:
+    (selected, position, ast, path, project-path) -> (filename, selected)
+    with
+      filename := <guarantee-extension(|"analyzed.aterm")> path
 
-  generate-aterm = generate-aterm(id)
+	debug-index-project =
+		analysis-debug-index-project(|<language>)
+	debug-index-partition =
+		analysis-debug-index-partition(|<language>)
 
-  // Only the builder options are different.
-  generate-desugared-aterm = generate-aterm
+	debug-task-project =
+		analysis-debug-task-project(|<language>)
+	debug-task-partition =
+		analysis-debug-task-partition(|<language>)
+	debug-task-selection =
+		analysis-debug-task-selection(|<language>)
+		
+	debug-project =
+		analysis-debug-project(|<language>)
+	debug-partition =
+		analysis-debug-partition(|<language>)
+		
+	debug-reanalyze = 
+		analysis-debug-reanalyze(|<language>)
+		
+  // analysis-default-debug-interface(msg) = debug(msg)
+  // analysis-default-debug-interface = debug
 
 rules
 
@@ -95,6 +149,13 @@ rules
 
 rules
 
+  // Prints the abstract syntax ATerm of a selection.
+  generate-aterm(s):
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      result := <s> selected
+
   // Expanded templates (input to completion template generator)
   generate-expanded =
     generate-aterm(
@@ -119,22 +180,31 @@ rules
       result   := <generate-esv(|path); pp-descriptor-to-string> selected
 
   // Generate SDF
-  generate-sdf(|path) =
+  generate-sdf(|mn, i*) =
     collect-sections;
     template-sections-to-sdf;
-    !'module(unparameterized($[[<base-filename ; remove-extension> path]generated]), [], [exports(<list-to-conc-grammars>)])
+    !'module(unparameterized(mn), i*, [exports(<list-to-conc-grammars>)])
 
   generate-sdf-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
+       <?'module(unparameterized(mn), i*, _)> ast 
+    <+ mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
       filename := <guarantee-extension(|"aterm")> path;
-      result   := <generate-sdf(|path)> selected
+      result   := <generate-sdf(|mn, i*)> selected
       
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <conc-strings> (<remove-extension> path, "generated.sdf");
-      result   := <generate-sdf(|path); pp-sdf-to-string> selected
+       <?'module(unparameterized(mn), i*, _)> ast ;
+       filename := <guarantee-extension(|"sdf")> path
+    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdf");
+       mn := $[[<base-filename ; remove-extension> path]generated];
+       i* := []
+    with
+      result   := <generate-sdf(|mn, i*); pp-sdf-to-string> selected
 
   // Generate pretty printer (BOX-based)
   generate-box-pp(|path) =
@@ -167,7 +237,7 @@ rules
 
   // On-save handler
   generate-all:
-    (selected, position, ast, path, project-path) -> None()
+    (selected, position, ast, path, project-path) -> <id>
     with
       generate-esv-concrete; write-string-to-file
     with
@@ -177,10 +247,12 @@ rules
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
-    with(
-      ?(filename, string);
-      handle := <fopen> (filename, "w");
-      <fputs> (string, handle);
-      <fclose> handle;
-      <refresh-workspace-file> filename
-    )
+  	?(filename, string);
+  	if <dirname; readdir> filename then
+	    with(
+	      handle := <fopen> (filename, "w");
+	      <fputs> (string, handle);
+	      <fclose> handle;
+	      <refresh-workspace-file> filename
+	    )
+	  end

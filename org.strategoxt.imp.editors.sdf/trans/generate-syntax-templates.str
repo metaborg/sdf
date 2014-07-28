@@ -15,20 +15,19 @@ rules
   generate-syntax-templates:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      filename := <guarantee-extension(|"generated.spx")> path;
+      filename := <guarantee-extension(|"generated.sdf3")> path;
       // If we can find at least one context-free-syntax block, use only
       // context-free productions, otherwise use all productions.
       cf-prod* := < collect-all(?context-free-syntax(<id>)); concat; not([])
                  <+ collect-all(?prod(_, _, _)) > selected;
       template* := <filter(prod-to-template); separate-by(|"\n")> cf-prod*;
-      result := $[package example
-                  module example
+      result := $[module example
                   templates
                     [template*]]
 
   prod-to-template:
     prod(sym*, sort(sort), a) ->
-      $[[sort][<pp-cons> a] = [open][open][elem*][close][close][<pp-attrs> a]]
+      $[[sort][<pp-cons> a] = [open][elem*][close][<pp-attrs> a]]
     where
       (open, close) := <get-delimiters> sym*;
       elem* := <map(sym-to-template-elem(|open, close)); separate-by(|" ")> sym*

@@ -2,7 +2,6 @@ module SDF
 
 imports
   languages/sdf2/syntax/Sdf2
-  Naming
   Keywords
   
 exports

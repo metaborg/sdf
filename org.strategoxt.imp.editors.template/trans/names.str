@@ -1,0 +1,232 @@
+module names
+
+imports
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/properties/-
+  lib/runtime/types/-
+  lib/runtime/editor/-
+  include/TemplateLang
+  name-desugar
+
+
+signature
+  constructors
+    NablNsModule : Namespace
+    NablNsSort   : Namespace
+
+
+rules
+
+  nabl-get-scope =
+    ?'module(unparameterized(m), _, _)
+    ; ![NablNsSort()]
+
+  nabl-get-name :
+    'module(unparameterized(m), _, _) -> m
+
+  nabl-name-apply(s) =
+    'module(unparameterized(s), id, id)
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?'module(unparameterized(m), _, _)
+    ; origin-track-forced(
+        'module(
+          unparameterized(
+            nabl-def(
+              ?c-uri1__
+            , ?s-uri1__
+            | lang__
+            , partition__
+            , uniques__
+            , uri__
+            , uri__
+            , NablNsModule()
+            , Unique()
+            , Current()
+            , [NablNsSort()]
+            , []
+            )
+          )
+        , id
+        , id
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-get-name :
+    'module(unparameterized(m)) -> m
+
+  nabl-name-apply(s) =
+    'module(unparameterized(s))
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?'module(unparameterized(m))
+    ; origin-track-forced(
+        'module(
+          unparameterized(
+            nabl-use(
+            | lang__
+            , partition__
+            , uniques__
+            , uris__
+            , [ UseCandidate(
+                  NablNsModule()
+                , []
+                , Current()
+                , True()
+                , []
+                )
+              ]
+            )
+          )
+        )
+      |
+      )
+
+  nabl-import-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?'module(unparameterized(m))
+    ; origin-track-forced(
+        nabl-import(
+        | lang__
+        , partition__
+        , uniques__
+        , uris__
+        , [ Wildcard(
+              [Import(lang__, NablNsSort())]
+            , Context(
+                NablNsModule()
+              , m
+              , []
+              , Current()
+              )
+            , Current()
+            , []
+            )
+          ]
+        )
+      |
+      )
+
+  nabl-get-name :
+    TemplateProduction(s, _, _) -> s
+
+  nabl-name-apply(s) =
+    TemplateProduction(s, id, id)
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?TemplateProduction(s, _, _)
+    ; origin-track-forced(
+        TemplateProduction(
+          nabl-def(
+            ?c-uri1__
+          , ?s-uri1__
+          | lang__
+          , partition__
+          , uniques__
+          , uri__
+          , uri__
+          , NablNsSort()
+          , NonUnique()
+          , Current()
+          , []
+          , []
+          )
+        , id
+        , id
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-get-name :
+    SortDef(s) -> s
+
+  nabl-name-apply(s) =
+    SortDef(s)
+
+  nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, partition__, uniques__, uri__, states__) =
+    ?SortDef(s)
+    ; origin-track-forced(
+        SortDef(
+          nabl-def(
+            ?c-uri1__
+          , ?s-uri1__
+          | lang__
+          , partition__
+          , uniques__
+          , uri__
+          , uri__
+          , NablNsSort()
+          , NonUnique()
+          , Current()
+          , []
+          , []
+          )
+        )
+        ; match(child-uris__|c-uri1__)
+        ; match(sibl-uris__|s-uri1__)
+        ; match(implicits__|[])
+      |
+      )
+
+  nabl-get-name :
+    SortRef(s) -> s
+
+  nabl-name-apply(s) =
+    SortRef(s)
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?SortRef(s)
+    ; origin-track-forced(
+        SortRef(
+          nabl-use(
+          | lang__
+          , partition__
+          , uniques__
+          , uris__
+          , [ UseCandidate(
+                NablNsSort()
+              , []
+              , Current()
+              , True()
+              , []
+              )
+            ]
+          )
+        )
+      |
+      )
+
+  nabl-get-name :
+    sort(s) -> s
+
+  nabl-name-apply(s) =
+    sort(s)
+
+  nabl-use-site(|lang__, partition__, uniques__, uris__, states__) =
+    ?sort(s)
+    ; origin-track-forced(
+        sort(
+          nabl-use(
+          | lang__
+          , partition__
+          , uniques__
+          , uris__
+          , [ UseCandidate(
+                NablNsSort()
+              , []
+              , Current()
+              , True()
+              , []
+              )
+            ]
+          )
+        )
+      |
+      )

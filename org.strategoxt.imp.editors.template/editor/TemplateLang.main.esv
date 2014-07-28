@@ -1,6 +1,6 @@
 module TemplateLang.main
 
-imports TemplateLang-Builders TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-Outliner TemplateLang-References TemplateLang-Syntax
+imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
 
 language General properties
 
@@ -11,6 +11,12 @@ language General properties
   description   : "Spoofax/IMP-generated editor for the TemplateLang language"
   url           : http://strategoxt.org
 
-  extensions    : tmpl
+  extensions    : tmpl, sdf3
   table         : include/TemplateLang.tbl
   start symbols : Start
+
+  provider : include/templatelang.jar
+  provider : include/libtemplatelang.jar
+
+  observer : editor-analyze (multifile)
+  on save : editor-save

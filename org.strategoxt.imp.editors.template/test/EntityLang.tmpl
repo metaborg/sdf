@@ -1,18 +1,13 @@
 // Grammar for the EntityLang language
 // By default, based on an example "entities" syntax
-
+module EntityLang
+	
 context-free start-symbols
   Start
 
 template options
   keyword -/- [A-Za-z0-9]
-
-// context-free syntax
-//
-//   "module" ID Definition*       -> Start {cons("Module")}
-//   "entity" ID "{" Property* "}" -> Definition {cons("Entity")}
-//   ID ":" Type                   -> Property {cons("Property")}
-//   ID                            -> Type {cons("Type")}
+  
 
 templates
 
@@ -20,15 +15,15 @@ templates
     module <ID>
 
     <Definition*; separator="\n">
-  >
+  > {avoid}
 
   Definition.Entity = <
     entity <ID> {
       <Property*; separator="\n">
     }
-  >
+  >   
 
-  Property.Property = <
+  Property.Property = < 
     <ID> : <Type>
   >
 
@@ -41,7 +36,7 @@ templates
     expression <ID> {
       <Expression>
     }
-  >
+  > 
 
   Expression.Plus  = <<Expression> + <Expression>> {left}
   Expression.Minus = <<Expression> - <Expression>> {left}

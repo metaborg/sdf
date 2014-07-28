@@ -1,0 +1,11 @@
+module name-check
+
+imports
+	
+  include/TemplateLang
+  
+rules // Disable all NaBL error checking since sorts can be defined in SDF as well, which are not considered in name analysis yet.
+	
+	// nabl-check-disable-unresolved = id
+	// nabl-check-disable-duplicate(|uri, ns) = id
+	// nabl-check-disable-hiding(|uri, ns) = id

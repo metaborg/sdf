@@ -124,18 +124,15 @@ rules
 
   template-to-prettyprint-strategy:
     Desugared(TemplateProduction(x, Template(line*), attrs)) ->
-    // ${prettyprint-{sort}:
-    //     {input} -> [{output}]}
-      //RDefNoArgs(
-      SDefNoArgs(
-          $[prettyprint-[x]]
-        // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
-          , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+      RDefNoArgs(
+        $[prettyprint-[x]],
+        Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
       )
     where with-spxverify(
       (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
       output         := <map(template-line-to-stratego)> line'*;
       arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+      (with*, output') := <extract-apps> output;
       if cons := <fetch-cons-name> attrs then
         //input := $[[cons]([<separate-by(|",")> arg*])]
         input := Op(cons, arg*)
@@ -156,7 +153,57 @@ rules
       end,
       !"Failed to pretty-print template"
     )
+    
+    
+  extract-apps :
+    t -> (with*, t')
+    where {| Condition 
+           : t' := <alltd(extract-app)> t
+           ; with* := <bagof-Condition; reverse>
+           |}
+    
+  extract-app :
+    t@App(_, _) -> Var(x)
+    where x := <newname> <oncetd(?Var(y)); !y <+ !"a"> t;
+          rules(
+            Condition :+ _ -> WhereClause(Assign(Var(x), t))
+          )
 
+  // template-to-prettyprint-strategy:
+  //   Desugared(TemplateProduction(x, Template(line*), attrs)) ->=
+  //   // ${prettyprint-{sort}:
+  //   //     {input} -> [{output}]}
+  //     //RDefNoArgs(
+  //     SDefNoArgs(
+  //         $[prettyprint-[x]]
+  //       // , RuleNoCond(NoAnnoList(input), NoAnnoList(List(output)))
+  //        , Seq(Match(NoAnnoList(input)), Build(NoAnnoList(List(output))))
+  //     )
+  //   where with-spxverify(
+  //     (line'*, _)    := <thread-map(rename-template-line)> (line*, 0);
+  //     output         := <map(template-line-to-stratego)> line'*;
+  //     arg*           := <mapconcat(template-line-to-cons-arg)> line'*;
+  //     if cons := <fetch-cons-name> attrs then
+  //       //input := $[[cons]([<separate-by(|",")> arg*])]
+  //       input := Op(cons, arg*)
+  //     else
+  //       if !arg* => [_] then
+  //         if <is-bracket> attrs then
+  //           // bracket / parentheses
+  //           input := Op("Parenthetical", arg*)
+  //         else
+  //           // injection
+  //           // FIXME: this may result in infinite loop in pretty printer
+  //           //        if there is a cycle of injections in the grammar!
+  //           input := Var("a")
+  //         end
+  //       else
+  //         input := Tuple(arg*)
+  //       end
+  //     end,
+  //     !"Failed to pretty-print template"
+  //   )
+    
   template-to-prettyprint-strategy(|languagename) =
     templatelang-not-desugared(|"generate BOX-based pretty printer from")
 
@@ -278,22 +325,27 @@ rules
           ppx       = !CallNoArgs(SVar($[prettyprint-[x]]))
       in
         if separator => sep then
-          switch <explode-string; occurrences(?'\n'); dec> sep => vs
-            case ?-1:
-              // separator without line breaks => horizontal box
+          vs := <explode-string; occurrences(?'\n'); dec> sep;
+          vs' := <int-to-string; double-quote> vs;
+          literals := <templatelang-escape; string-replace(|"\\n", "")> sep;
+          literals' := <double-quote> literals;
+          switch !(vs, literals)
+            case ?(-1, _):
+              // separator with literals only => horizontal box with sep option
               // s := $[pp-[h-or-hv-or-hz]-list(prettyprint-[x]|"[<templatelang-escape> sep]")]
-              sep' := <templatelang-escape; double-quote> sep;
-              s    := CallT(<ppl>, [<ppx>], [NoAnnoList(Str(sep'))])
-            case ?0:
-              // TODO: Support separators with mixed line breaks and literals.
-              // separator with one line break => vertical box
+              s    := CallT(<ppl>, [<ppx>], [NoAnnoList(Str(literals'))])
+            case ?(0, ""):
+              // separator is a line break => vertical box
               // s := $[pp-v-list(prettyprint-[x])]
               s := Call(SVar("pp-V-list"), [<ppx>])
-            otherwise:
-              // separator with multiple line breaks => vertical box with vs option
+            case ?(_, ""):
+              // separator is multiple line breaks => vertical box with vs option
               // s := $[pp-v-list(prettyprint-[x]|"[vs]")]
-              vs' := <int-to-string; double-quote> vs;
-              s   := CallT(SVar("pp-V-list"), [<ppx>], [NoAnnoList(Str(vs'))])
+              s   := CallT(SVar("pp-V-list"), [<ppx>], [NoAnnoList(Str(vs))])
+            otherwise:
+              // separator has mixed line breaks and literals => vertical box with vs and sep options
+              // s := $[pp-v-list(prettyprint-[x]|"[vs]", "[sep]")]
+              s   := CallT(SVar("pp-V-list"), [<ppx>], [NoAnnoList(Str(vs)), NoAnnoList(Str(literals'))])
           end
         else
           // no separator => horizontal box

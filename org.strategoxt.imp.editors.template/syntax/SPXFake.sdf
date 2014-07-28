@@ -10,12 +10,16 @@ imports
   SDFMix[SDF] [
     "definition" Definition -> SDF {cons("Definition")}
       => -> IGNORED
-    "module" ModuleName list:ImpSection* Sections -> Module {cons("module")}
+    Section* -> Sections
       => -> IGNORED
     "left":Grammar "right":Grammar -> Grammar {assoc, cons("conc-grammars")}
       => -> IGNORED
     ImpSection -> Grammar {cons("imp-section")}
       => -> IGNORED
+    ModuleName Renamings  -> Import  {cons("renamed-module")}
+ 	    => -> IGNORED
+ 	  list:Section* -> Sections
+ 	    => -> IGNORED
   ]
 
 exports
@@ -23,9 +27,13 @@ exports
     Start
 
   context-free syntax
-    Section*                    -> Start {cons("CompilationUnit")}
+    Section*                    -> Start  {cons("CompilationUnit"), deprecated ("Syntax definitions should be part of a module.")}
+  
+    Section*                    -> Sections[[SDF]]
     Grammar[[SDF]]              -> Section {cons("SDFSection")}
 
+    Reserved                    -> ModuleId[[SDF]] {reject}
+	
   context-free syntax
     Constructor                 -> Attribute[[SDF]] {prefer, cons("Constructor")}
     StrCon[[SDF]]               -> Constructor

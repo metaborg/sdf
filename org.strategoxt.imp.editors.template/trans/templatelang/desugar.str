@@ -32,14 +32,16 @@ rules
     SdfProductionWithCons(SortCons(sort, cons), symbol*, attrs(attr*)) ->
       prod(symbol*, sort(sort), attrs(attr'*))
     where with-spxverify(
-      attr'* := [sdf-cons(<double-quote> cons) | attr*]
+    	attr   := <templatelang-origin-track-forced(!sdf-cons(<double-quote> cons))> cons; 
+      attr'* := [attr | attr*]
     )
 
   templatelang-desugar:
     SdfProductionWithCons(SortCons(sort, cons), symbol*, no-attrs()) ->
       prod(symbol*, sort(sort), attrs(attr'*))
     where with-spxverify(
-      attr'* := [sdf-cons(<double-quote> cons)]
+    	attr   := <templatelang-origin-track-forced(!sdf-cons(<double-quote> cons))> cons;
+      attr'* := [attr]
     )
 
 rules
@@ -59,7 +61,8 @@ rules
     where
       with-spxverify(
         template' := <templatelang-origin-track-forced(templatelang-template-desugar)> template;
-        attr*     := [sdf-cons(<double-quote> cons) | <templatelang-get-attrs> a]
+        attr   := <templatelang-origin-track-forced(!sdf-cons(<double-quote> cons))> cons;
+        attr*  := [attr | <templatelang-get-attrs> a]
       )
 
   templatelang-get-attrs =

@@ -12,5 +12,5 @@ strategies
     sdf-desugar;
     parenthesize-Sdf2;
     sdf-ppfix;
-    ast2box(|[<pp-table-sdf>]);
+    ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
     box2text-string(|80)
