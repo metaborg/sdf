@@ -9,7 +9,7 @@ imports
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/EditorService
-  include/TemplateLang
+  include/TemplateLang-sig
   analysis/desugar
   editor-common.generated
   trans/pp
@@ -121,13 +121,6 @@ imports
       ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
   
   
-  pp-sdf3-abstract:
-  	(selected, position, ast, path, project-path) -> (filename, result)
-  	with
-  		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		result   := <pp-SDF3-string> ast;
-  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
-  
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
@@ -172,6 +165,26 @@ imports
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
+  		
+  		
+  extract-regular-productions:		
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+  		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		result   := <desugar-templates; remove-templates; pp-SDF3-string> ast;
+  		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
+  	
+  extract-regular-productions-abstract:		
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+  		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		result   := <desugar-templates; remove-templates> ast;
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn		
+  	
   
   // On-save handler
   generate-all:

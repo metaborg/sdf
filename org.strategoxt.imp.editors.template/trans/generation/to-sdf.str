@@ -2,7 +2,7 @@ module generation/to-sdf
 imports
   libstratego-lib
   libstratego-sglr
-  include/TemplateLang
+  include/TemplateLang-sig
   trans/utils/attributes
   trans/utils/misc
   trans/utils/tokenize
@@ -379,9 +379,9 @@ rules
   
   //multi-line template
   template-to-sdf(|chars, newline):
-     Template(lines) -> elems
+     Template(lines*) -> elems*
      with
-     	elems := <map(line-to-sdf(|chars))> lines
+     	elems* := <filter(line-to-sdf(|chars)); flatten-list> lines*
      /*with
      	[f | t] := lines;
      	l := <last> lines;
@@ -403,9 +403,9 @@ rules
   	Line(elem*) -> Line([elem*, String("\n")])
  
   line-to-sdf(|chars):
-  	Line(elems) -> elems'
-  	with
-  		elems' := <filter(template-elem-to-sdf(|chars)); flatten-list> elems
+  	Line(elems*) -> elems'*
+  	where
+  		elems'* := <filter(template-elem-to-sdf(|chars)); flatten-list; not(?[])> elems*
   
 
 
