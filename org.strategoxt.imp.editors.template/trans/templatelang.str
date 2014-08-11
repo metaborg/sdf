@@ -6,7 +6,7 @@ imports
   libstratego-aterm
   libstratego-sglr
   libstrc
-  include/TemplateLang
+  include/TemplateLang-sig
   include/TemplateLang-parenthesize
   editor/TemplateLang-Outliner
   lib/EditorService
@@ -19,7 +19,7 @@ imports
   lib/runtime/properties/-
   lib/runtime/types/-
   lib/runtime/editor/-
-  
+     
   trans/analysis/-
   trans/generation/-
   trans/editor/-

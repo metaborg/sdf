@@ -71,14 +71,15 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-sig.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-sdf.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-pp.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/utils/tokenize.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/types-ts.generated.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/names-hack.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/name-constraints.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/attributes.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/analyze.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-formatted.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/to-esv.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/utils/tokenize.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/attributes.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/generation/remove-template.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/types.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/normalization.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/analysis/names.str \
@@ -156,5 +157,5 @@
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/lib/EditorService.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/editor/TemplateLang-Outliner.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/include/TemplateLang-parenthesize.str \
-	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/include/TemplateLang.str \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/include/TemplateLang-sig.rtree \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/templatelang.str

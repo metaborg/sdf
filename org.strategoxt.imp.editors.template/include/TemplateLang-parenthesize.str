@@ -2,7 +2,7 @@ module include/TemplateLang-parenthesize
 
 imports
   libstratego-lib
-  include/TemplateLang
+  include/TemplateLang-sig
 
 
 strategies

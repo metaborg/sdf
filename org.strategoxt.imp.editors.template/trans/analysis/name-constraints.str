@@ -2,7 +2,7 @@ module analysis/name-constraints
 
 imports
 
-  include/TemplateLang
+  include/TemplateLang-sig
   analysis/names
   libstrc
   runtime/nabl/-

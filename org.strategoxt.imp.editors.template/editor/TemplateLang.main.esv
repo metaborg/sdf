@@ -17,6 +17,7 @@ language General properties
 
   provider : include/templatelang.ctree
   provider : include/templatelang-java.jar
+  provider : include/TemplateLang-sig.ctree
 
   observer : editor-analyze (multifile)
   on save : editor-save

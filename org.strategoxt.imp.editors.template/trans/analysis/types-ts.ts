@@ -1,7 +1,7 @@
 module analysis/types-ts
 
 imports 
-  include/TemplateLang
+  include/TemplateLang-sig
   libstrc
   analysis/types
 
