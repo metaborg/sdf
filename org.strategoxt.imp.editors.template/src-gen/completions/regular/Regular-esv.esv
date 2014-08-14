@@ -6,6 +6,7 @@ imports
   src-gen/completion/symbols/Symbols-esv
   src-gen/completion/constants/StrCon-esv
   src-gen/completion/labels/Labels-esv
+  src-gen/completion/sorts/Sorts-esv
 
 completions
   completion template Symbol : "Symbol?" =
@@ -18,3 +19,13 @@ completions
     "{" <Symbol:Symbol> " " <Separator:Separator> "}+"  
   completion template Symbol : "{Symbol Separator}*" =
     "{" <Symbol:Symbol> " " <Separator:Separator> "}*"  
+  completion template SortSymbol : "Sort?" =
+    <Sort:Sort> "?"  
+  completion template SortSymbol : "Sort+" =
+    <Sort:Sort> "+"  
+  completion template SortSymbol : "Sort*" =
+    <Sort:Sort> "*"  
+  completion template SortSymbol : "{Sort Separator}+" =
+    "{" <Sort:Sort> " " <Separator:Separator> "}+"  
+  completion template SortSymbol : "{Sort Separator}*" =
+    "{" <Sort:Sort> " " <Separator:Separator> "}*"  

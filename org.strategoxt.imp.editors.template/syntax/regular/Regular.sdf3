@@ -1,6 +1,6 @@
 module regular/Regular
 
-imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon labels/Labels
+imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon labels/Labels sorts/Sorts
  
 context-free syntax 
 
@@ -14,7 +14,23 @@ Symbol.Iter = <<Symbol>+>
 Symbol.IterStar = <<Symbol>*>
 Symbol.IterSep = <{<Symbol> <sep:Separator>}+>
 Symbol.IterStarSep = <{<Symbol> <sep:Separator>}*>
+
+
+
+SortSymbol.Opt = <<Sort>?>
+SortSymbol.Iter = <<Sort>+>
+SortSymbol.IterStar = <<Sort>*>
+SortSymbol.IterSep = <{<Sort> <sep:Separator>}+>
+SortSymbol.IterStarSep = <{<Sort> <sep:Separator>}*>
 Separator.Lit = <<StrCon>>
+
+
+Symbol = <<SortSymbol>?> {reject}
+Symbol = <<SortSymbol>+> {reject}
+Symbol = <<SortSymbol>*> {reject}
+Symbol = <{<SortSymbol> <sep:Separator>}+> {reject}
+Symbol = <{<SortSymbol> <sep:Separator>}*> {reject}
+
 
 
 //Symbol.Func = <(<arguments:Symbols> =\> <results:Symbol>)>

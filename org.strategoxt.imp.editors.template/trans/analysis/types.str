@@ -25,6 +25,7 @@ overlays
   SortType(t)    = ConstType(SortNoArgs(t))
   OptionType(t)  = ConstType(Sort("Option", [SortNoArgs(t)]))
   ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
+  AltType(t1, t2) = AltType(SortType(t1), SortType(t2))
  
 
 
@@ -82,32 +83,34 @@ rules
   //Types for when symbol operators operate on a single sort
   //HACK: it is necessary to strip-annos because of the multiple definitions of Sort(s)
   create-type-task(|ctx) :
-    Opt(Sort(s)) -> <task-create-id(|ctx,[t])> t
+    o@Opt(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      t := <type-is(|ctx)> OptionType(<strip-annos> s)    
+      t2 :=<type-lookup(|ctx)> s;  
+      t := <type-is(|ctx)> OptionType(<strip-annos> s)
+        
   
   create-type-task(|ctx) :
-    IterStar(symbol) -> <task-create-id(|ctx,[t])> t
+    IterStar(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
       
   create-type-task(|ctx) :
-    Iter(symbol) -> <task-create-id(|ctx,[t])> t
+    Iter(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      <oncetd(?Sort(s))> symbol;	
+      t2 :=<type-lookup(|ctx)> s;	
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
  
   create-type-task(|ctx) :
-    IterSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t])> t
-    where
-      <oncetd(?Sort(s))> symbol; 
+    IterSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    IterStarSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t])> t
+    IterStarSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      <oncetd(?Sort(s))> symbol;	
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
    
       
@@ -128,6 +131,8 @@ rules
     where 
       <is-typable> symbol;
       t := <type-task(|ctx)> symbol
+      
+ 
    
 rules
 	

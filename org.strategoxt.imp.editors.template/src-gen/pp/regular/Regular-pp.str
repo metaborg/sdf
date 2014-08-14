@@ -12,6 +12,7 @@ imports
   src-gen/signatures/symbols/Symbols-sig
   src-gen/signatures/constants/StrCon-sig
   src-gen/signatures/labels/Labels-sig
+  src-gen/signatures/sorts/Sorts-sig
 
 
 imports
@@ -20,11 +21,15 @@ imports
   src-gen/pp/symbols/Symbols-pp
   src-gen/pp/constants/StrCon-pp
   src-gen/pp/labels/Labels-pp
+  src-gen/pp/sorts/Sorts-pp
 
 
 strategies
   prettyprint-example =
     prettyprint-Symbol
+
+  prettyprint-example =
+    prettyprint-SortSymbol
 
   prettyprint-example =
     prettyprint-Separator
@@ -96,6 +101,73 @@ strategies
   is-Symbol =
     ?IterStarSep(_, _)
 
+  prettyprint-SortSymbol :
+    Opt(t0__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t0__', S("?")]
+                   )
+                 ]
+    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+
+  is-SortSymbol =
+    ?Opt(_)
+
+  prettyprint-SortSymbol :
+    Iter(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t0__', S("+")]
+                    )
+                  ]
+    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+
+  is-SortSymbol =
+    ?Iter(_)
+
+  prettyprint-SortSymbol :
+    IterStar(t0__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t0__', S("*")]
+                        )
+                      ]
+    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+
+  is-SortSymbol =
+    ?IterStar(_)
+
+  prettyprint-SortSymbol :
+    IterSep(t0__, sep__) -> [ H(
+                                [SOpt(HS(), "0")]
+                              , [ S("{")
+                                , t0__'
+                                , S(" ")
+                                , sep__'
+                                , S("}+")
+                                ]
+                              )
+                            ]
+    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
+
+  is-SortSymbol =
+    ?IterSep(_, _)
+
+  prettyprint-SortSymbol :
+    IterStarSep(t0__, sep__) -> [ H(
+                                    [SOpt(HS(), "0")]
+                                  , [ S("{")
+                                    , t0__'
+                                    , S(" ")
+                                    , sep__'
+                                    , S("}*")
+                                    ]
+                                  )
+                                ]
+    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
+
+  is-SortSymbol =
+    ?IterStarSep(_, _)
+
   prettyprint-Separator :
     Lit(t0__) -> [ H(
                      [SOpt(HS(), "0")]
@@ -108,6 +180,9 @@ strategies
     ?Lit(_)
 
   is-Symbol =
+    fail
+
+  is-SortSymbol =
     fail
 
   is-Separator =

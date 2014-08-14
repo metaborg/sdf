@@ -6,6 +6,7 @@ imports
   src-gen/signatures/symbols/Symbols-sig
   src-gen/signatures/constants/StrCon-sig
   src-gen/signatures/labels/Labels-sig
+  src-gen/signatures/sorts/Sorts-sig
 
 
 signature
@@ -15,4 +16,9 @@ signature
     IterStar    : Symbol -> Symbol
     IterSep     : Symbol * Separator -> Symbol
     IterStarSep : Symbol * Separator -> Symbol
+    Opt         : Sort -> SortSymbol
+    Iter        : Sort -> SortSymbol
+    IterStar    : Sort -> SortSymbol
+    IterSep     : Sort * Separator -> SortSymbol
+    IterStarSep : Sort * Separator -> SortSymbol
     Lit         : StrCon -> Separator
