@@ -17,7 +17,7 @@ rules // Convert templates to regular productions
 	remove-template(|chars, newline, kfr) : 
 		SDFSection(ContextFreeSyntax(prods*)) ->  SDFSection(ContextFreeSyntax(prods'*))
 		where
-		prods'* := <filter(template-to-prod(|chars, newline))> prods*
+		prods'* := <map(try(template-to-prod(|chars, newline)))> prods*
 		
 	remove-template(|chars, newline, kfr) : 
 		TemplateSection(x) ->  SDFSection(ContextFreeSyntax(prods'*))

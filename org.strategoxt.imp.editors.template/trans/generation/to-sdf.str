@@ -150,6 +150,18 @@ rules
   	with
   		prods' := <map(prod-to-sdf)> prods
   
+  //variables with productive productions
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(VariablesProductive(prods)) -> variables(prods')
+    with
+        prods' := <map(prod-to-sdf)> prods
+  
+    //lexical variables with productive productions
+   section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexVariablesProductive(prods)) -> lexical-variables(prods')
+    with
+        prods' := <map(prod-to-sdf)> prods
+  
   
   //context-free priorities
   section-to-sdf(|chars, newline, kfr):

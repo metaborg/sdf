@@ -105,7 +105,13 @@ imports
   	Lexical(p*) -> LexicalSyntax(p*)
   	
   normalize:
-  	Syntax(p*) -> Kernel(p*)	
+  	Syntax(p*) -> Kernel(p*)
+  	
+  normalize:
+    Variables(p*) -> VariablesProductive(p*)
+    
+  normalize:
+    LexVariables(p*) -> LexVariablesProductive(p*)  		
   	
   normalize:
   	TemplateSection(t*) -> SDFSection(ContextFreeSyntax(t*))	
