@@ -35,7 +35,7 @@ Symbol = <{<SortSymbol> <sep:Separator>}*> {reject}
 
 //Symbol.Func = <(<arguments:Symbols> =\> <results:Symbol>)>
 //"left":Symbol "|" "right":Symbol              - > Symbol {right,cons("alt")}
-//Symbol.Alt = <<Symbol> | <Symbol>> {right}
+Symbol.Alt = <<Symbol> | <Symbol>> {right}
 // "(" "left":Symbol "->" "right":Symbol ")"     -> Symbol {cons("strategy")}
 //Symbol.Strategy = <(<Symbol> -\> <Symbol> )>
  
@@ -43,4 +43,5 @@ context-free priorities
 {Symbol.Opt
  Symbol.IterStar
  Symbol.Iter} >
+ Symbol.Alt >
  Symbol.Label

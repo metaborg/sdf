@@ -29,3 +29,5 @@ completions
     "{" <Sort:Sort> " " <Separator:Separator> "}+"  
   completion template SortSymbol : "{Sort Separator}*" =
     "{" <Sort:Sort> " " <Separator:Separator> "}*"  
+  completion template Symbol : "Symbol | Symbol" =
+    <Symbol:Symbol> " | " <Symbol:Symbol>  

@@ -19,13 +19,14 @@ signature
   constructors
   	
   	Inj : Constructor
+  	AltType : List(Type) -> Type 
 
 overlays
   
   SortType(t)    = ConstType(SortNoArgs(t))
   OptionType(t)  = ConstType(Sort("Option", [SortNoArgs(t)]))
   ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
-  AltType(t1, t2) = AltType(SortType(t1), SortType(t2))
+ 
  
 
 
@@ -83,54 +84,70 @@ rules
   //Types for when symbol operators operate on a single sort
   //HACK: it is necessary to strip-annos because of the multiple definitions of Sort(s)
   create-type-task(|ctx) :
-    o@Opt(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
+    o@Opt(symbol) -> <task-create-id(|ctx,[t, t2])> t
     where 
+      <oncetd(?Sort(s))> symbol;
       t2 :=<type-lookup(|ctx)> s;  
       t := <type-is(|ctx)> OptionType(<strip-annos> s)
         
   
   create-type-task(|ctx) :
-    IterStar(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
+    IterStar(symbol) -> <task-create-id(|ctx,[t, t2])> t
     where 
+       <oncetd(?Sort(s))> symbol;  
       t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
       
   create-type-task(|ctx) :
-    Iter(Sort(s)) -> <task-create-id(|ctx,[t, t2])> t
+    Iter(symbol) -> <task-create-id(|ctx,[t, t2])> t
     where 
+       <oncetd(?Sort(s))> symbol;  
       t2 :=<type-lookup(|ctx)> s;	
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
  
   create-type-task(|ctx) :
-    IterSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
+    IterSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
     where 
+      <oncetd(?Sort(s))> symbol;
       t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
   
   create-type-task(|ctx) :
-    IterStarSep(Sort(s), Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
+    IterStarSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
     where 
+      <oncetd(?Sort(s))> symbol;
       t2 :=<type-lookup(|ctx)> s;
       t := <type-is(|ctx)> ListType(<strip-annos> s)    
    
       
    create-type-task(|ctx) :
-    Label(l, symbol) -> <task-create-id(|ctx,[t])> t
+    Label(l, symbol) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      <is-typable> symbol;
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-task(|ctx)> symbol   
    
    create-type-task(|ctx) :   
-    Lex(symbol) -> <task-create-id(|ctx,[t])> t
-    where 
-      <is-typable> symbol;
+    Lex(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-task(|ctx)> symbol   
     	
     create-type-task(|ctx) :   
-    Cf(symbol) -> <task-create-id(|ctx,[t])> t
+    Cf(symbol) -> <task-create-id(|ctx,[t, t2])> t
     where 
-      <is-typable> symbol;
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
       t := <type-task(|ctx)> symbol
+      
+   create-type-task(|ctx) :
+    Alt(symbol1, symbol2) -> <task-create-id(|ctx,[t])> t
+    where 
+      typable_symbols* := <filter(is-typable)> [symbol1, symbol2];
+      x26 := <type-task(|ctx)> typable_symbols*;
+      t := <type-is(|ctx)> AltType(x26)
+          
       
  
    

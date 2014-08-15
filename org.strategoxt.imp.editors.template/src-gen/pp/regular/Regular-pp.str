@@ -26,13 +26,13 @@ imports
 
 strategies
   prettyprint-example =
-    prettyprint-Symbol
-
-  prettyprint-example =
     prettyprint-SortSymbol
 
   prettyprint-example =
     prettyprint-Separator
+
+  prettyprint-example =
+    prettyprint-Symbol
 
   prettyprint-Symbol :
     Opt(t0__) -> [ H(
@@ -179,11 +179,23 @@ strategies
   is-Separator =
     ?Lit(_)
 
+  prettyprint-Symbol :
+    Alt(t0__, t1__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t0__', S(" | "), t1__']
+                         )
+                       ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
+
   is-Symbol =
-    fail
+    ?Alt(_, _)
 
   is-SortSymbol =
     fail
 
   is-Separator =
+    fail
+
+  is-Symbol =
     fail
