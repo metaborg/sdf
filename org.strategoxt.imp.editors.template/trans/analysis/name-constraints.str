@@ -3,6 +3,8 @@ module analysis/name-constraints
 imports
 
   include/TemplateLang-sig
+  libstratego-lib
+  libstratego-gpp
   analysis/names
   libstrc
   runtime/nabl/-
@@ -78,7 +80,28 @@ imports
   			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
   			
   	
+  	nabl-constraint(|ctx):
+  	    SDFSection(ContextFreeSyntax(p*)) -> <fail>
+  	    where
+  	        alternatives* := <filter(check-for-alternatives); flatten-list> p*;
+  	        <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax]))> alternatives*
   	
+  	check-for-alternatives:
+  	    p -> alt*
+  	where
+  	    alt* := <collect-all(?Alt(_,_), conc)> p
+  			
+  	nabl-constraint(|ctx):
+        SDFSection(ContextFreeSyntax(p*)) -> <fail>
+        where
+            weird-symbols* := <filter(check-for-weird-symbols); flatten-list> p*;
+            <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*		
+  	
+  	check-for-weird-symbols:
+        p -> weird-symbols*
+        where
+            symbols* := <collect-all(?Iter(<id>) + ?IterStar(<id>) + ?Opt(<id>), conc)> p;
+            weird-symbols* := <filter(not(?Sort(_)))> symbols*  
   			
     nabl-constraint(|ctx):
   		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
