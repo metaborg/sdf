@@ -41,7 +41,7 @@ imports
     	  	 	
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
-   with
+   where
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
        <?Module(Unparameterized(mn), i*, sections)> ast ;
@@ -51,7 +51,7 @@ imports
   		selected'     := <desugar-templates> selected;
         //selected' := selected ;
         filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> selected'
+       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
  
   
   generate-sig-abstract:
@@ -69,12 +69,12 @@ imports
   
   generate-sig-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
-    with
+    where
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
-    	result   := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> selected'
+    	result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
    
    generate-pp-abstract:
@@ -90,12 +90,12 @@ imports
   
    generate-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
-    with
+    where
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
-    	result   := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> selected'
+    	result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
     	//; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn//fn
   
@@ -112,12 +112,12 @@ imports
   
    generate-esv-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
-    with
+    where
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	selected'     := <desugar-templates> selected;
-    	result   := <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> selected'
+    	result   := <module-to-esv; pp-esv-to-string <+ !""; debug(!"The esv file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n")> selected'
       ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
   
   
@@ -197,23 +197,23 @@ imports
     	ast'     := <desugar-templates> ast;
     	<?Module(Unparameterized(mn), i*, sections)> ast 
     	//; fn       :=  <get-filename> mn    	  
-    with
+    where
     	esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
-    	esv-ast              :=  <module-to-esv; pp-esv-to-string <+ bottomup(try(not(pp-esv-to-string); debug(!"cannot pp ")))> ast';
+    	esv-ast              :=  <module-to-esv; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
     	<write-string-to-file> (esv-filename, esv-ast) 
-    with
-    	sig-ast              := <module-to-sig; (pp-stratego-string <+ debug(!"pp-stratego-string failed");fail)> ast';
+    where
+    	sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
         sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
     	<write-string-to-file> (sig-filename, sig-ast)  
-    with
+    where
     	chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
         sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-        sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string> ast';
+        sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
     	<write-string-to-file> (sdf-filename, sdf-ast)  
-    with
-        pp-ast               := <module-to-pp; pp-stratego-string <+ bottomup(try(not(pp-stratego-string); debug(!"cannot pp ")))> ast'
+    where
+        pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
       ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
         <write-string-to-file> (pp-filename, pp-ast)  
 	
