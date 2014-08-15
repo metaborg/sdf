@@ -23,6 +23,24 @@ rules
             + fail)> t_0
 
   TemplateLangParenthesize :
+    Iter(t_0) -> Iter(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    IterStar(t_0) -> IterStar(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Opt(t_0) -> Opt(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
     Diff(t_0, t_1) -> Diff(Parenthetical(t_0), t_1)
     where <(?Union(_, _)
             + ?Isect(_, _)
@@ -34,6 +52,16 @@ rules
             + ?Isect(_, _)
             + ?Diff(_, _)
             + fail)> t_1
+
+  TemplateLangParenthesize :
+    Alt(t_0, t_1) -> Alt(Parenthetical(t_0), t_1)
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Alt(t_0, t_1) -> Alt(t_0, Parenthetical(t_1))
+    where <(?Label(_, _) + fail)> t_1
 
   TemplateLangParenthesize :
     Seq(t_0, t_1) -> Seq(Parenthetical(t_0), t_1)
@@ -54,18 +82,6 @@ rules
             + fail)> t_1
 
   TemplateLangParenthesize :
-    Iter(t_0) -> Iter(Parenthetical(t_0))
-    where <(?Label(_, _) + fail)> t_0
-
-  TemplateLangParenthesize :
-    IterStar(t_0) -> IterStar(Parenthetical(t_0))
-    where <(?Label(_, _) + fail)> t_0
-
-  TemplateLangParenthesize :
-    Opt(t_0) -> Opt(Parenthetical(t_0))
-    where <(?Label(_, _) + fail)> t_0
-
-  TemplateLangParenthesize :
     NonTransitive(t_0) -> NonTransitive(Parenthetical(t_0))
     where <(?NonTransitive(_) + fail)> t_0
 
@@ -76,10 +92,6 @@ rules
   TemplateLangParenthesize :
     WithArguments(t_0, t_1) -> WithArguments(t_0, Parenthetical(t_1))
     where <(?WithArguments(_, _) + fail)> t_1
-
-  TemplateLangParenthesize :
-    Alt(t_0, t_1) -> Alt(Parenthetical(t_0), t_1)
-    where <(?Alt(_, _) + fail)> t_0
 
   TemplateLangParenthesize :
     Union(t_0, t_1) -> Union(t_0, Parenthetical(t_1))

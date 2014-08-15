@@ -1,4 +1,5 @@
 /Users/eduardo/sdf/org.strategoxt.imp.editors.template/include/templatelang.ctree: \
+	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/trans/refactorings/refactorings.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/src-gen/pp/renaming/Renaming-pp.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/src-gen/pp/modules/Modules-pp.str \
 	/Users/eduardo/sdf/org.strategoxt.imp.editors.template/src-gen/pp/basic/Basic-pp.str \

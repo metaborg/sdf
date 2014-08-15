@@ -44,6 +44,7 @@ exports
     "|#CharRanges|"                -> CharRanges            {completion}
     "|#CharClass|"                 -> CharClass             {completion}
     "|#IntCon|"                    -> IntCon                {completion}
+    "|#SortSymbol|"                -> SortSymbol            {completion}
     "|#Symbol|"                    -> Symbol                {completion}
     "|#Sort|"                      -> Sort                  {completion}
     "|#ModuleName|"                -> ModuleName            {completion}
@@ -177,18 +178,20 @@ exports
     ModuleId -/- [\/]
 
 module basic/Basic
-imports kernel/Kernel sorts/Sorts
+imports kernel/Kernel sorts/Sorts TemplateLang
 
 exports
   context-free syntax
-    "lexical" "syntax" Productions      -> Grammar {cons("Lexical")}
-    "context-free" "syntax" Productions -> Grammar {cons("Contextfree")}
-    "variables" Productions             -> Grammar {cons("Variables")}
-    "lexical" "variables" Productions   -> Grammar {cons("LexVariables")}
-    Symbol "-CF"                        -> Symbol  {cons("Cf")}
-    Symbol "-LEX"                       -> Symbol  {cons("Lex")}
-    Symbol "-VAR"                       -> Symbol  {cons("Varsym")}
-    "LAYOUT"                            -> Symbol  {cons("Layout")}
+    "lexical" "syntax" Productions       -> Grammar {cons("Lexical")}
+    "context-free" "syntax" Productions  -> Grammar {cons("Contextfree")}
+    "variables" Productions              -> Grammar {cons("Variables")}
+    "variables" SdfProduction*           -> Grammar {cons("VariablesProductive"), prefer}
+    "lexical" "variables" Productions    -> Grammar {cons("LexVariables")}
+    "lexical" "variables" SdfProduction* -> Grammar {cons("LexVariablesProductive"), prefer}
+    Symbol "-CF"                         -> Symbol  {cons("Cf")}
+    Symbol "-LEX"                        -> Symbol  {cons("Lex")}
+    Symbol "-VAR"                        -> Symbol  {cons("Varsym")}
+    "LAYOUT"                             -> Symbol  {cons("Layout")}
 
   context-free syntax
     CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
@@ -301,7 +304,17 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePart2-CF> {cons("Layout")}
 
   lexical syntax
-    [\r\n]              -> "\n"               
+    LF    -> EOL  
+    CR    -> EOL  
+    CR LF -> EOL  
+    [\r]  -> CR   
+    [\n]  -> LF   
+    EOL   -> "\n" 
+
+  lexical restrictions
+    CR -/- [\n]
+
+  lexical syntax
     [\ \t]+             -> TemplateLayout     
     TemplateString1Alt+ -> TemplateString1    
     TemplateString2Alt+ -> TemplateString2    
@@ -785,25 +798,38 @@ exports
 
 module regular/Regular
 imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon
-        labels/Labels
+        labels/Labels sorts/Sorts
 
 exports
   context-free syntax
-    Symbol "?"                    -> Symbol    {cons("Opt")}
-    Symbol "+"                    -> Symbol    {cons("Iter")}
-    Symbol "*"                    -> Symbol    {cons("IterStar")}
-    "{" Symbol sep:Separator "}+" -> Symbol    {cons("IterSep")}
-    "{" Symbol sep:Separator "}*" -> Symbol    {cons("IterStarSep")}
-    StrCon                        -> Separator {cons("Lit")}
+    Symbol "?"                        -> Symbol     {cons("Opt")}
+    Symbol "+"                        -> Symbol     {cons("Iter")}
+    Symbol "*"                        -> Symbol     {cons("IterStar")}
+    "{" Symbol sep:Separator "}+"     -> Symbol     {cons("IterSep")}
+    "{" Symbol sep:Separator "}*"     -> Symbol     {cons("IterStarSep")}
+    Sort "?"                          -> SortSymbol {cons("Opt")}
+    Sort "+"                          -> SortSymbol {cons("Iter")}
+    Sort "*"                          -> SortSymbol {cons("IterStar")}
+    "{" Sort sep:Separator "}+"       -> SortSymbol {cons("IterSep")}
+    "{" Sort sep:Separator "}*"       -> SortSymbol {cons("IterStarSep")}
+    StrCon                            -> Separator  {cons("Lit")}
+    SortSymbol "?"                    -> Symbol     {reject}
+    SortSymbol "+"                    -> Symbol     {reject}
+    SortSymbol "*"                    -> Symbol     {reject}
+    "{" SortSymbol sep:Separator "}+" -> Symbol     {reject}
+    "{" SortSymbol sep:Separator "}*" -> Symbol     {reject}
+    Symbol "|" Symbol                 -> Symbol     {cons("Alt"), right}
 
   context-free syntax
-    CONTENTCOMPLETE -> Symbol    {cons("COMPLETION-Symbol")}
-    CONTENTCOMPLETE -> Separator {cons("COMPLETION-Separator")}
+    CONTENTCOMPLETE -> SortSymbol {cons("COMPLETION-SortSymbol")}
+    CONTENTCOMPLETE -> Separator  {cons("COMPLETION-Separator")}
+    CONTENTCOMPLETE -> Symbol     {cons("COMPLETION-Symbol")}
 
   context-free priorities
     { Symbol "?" -> Symbol
       Symbol "*" -> Symbol
       Symbol "+" -> Symbol } >
+    Symbol "|" Symbol -> Symbol >
     Label ":" Symbol -> Symbol
 
 module sdf2-core/Sdf2-Syntax
@@ -1007,7 +1033,17 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePart2-CF> {cons("Layout")}
 
   lexical syntax
-    [\r\n]              -> "\n"               
+    LF    -> EOL  
+    CR    -> EOL  
+    CR LF -> EOL  
+    [\r]  -> CR   
+    [\n]  -> LF   
+    EOL   -> "\n" 
+
+  lexical restrictions
+    CR -/- [\n]
+
+  lexical syntax
     [\ \t]+             -> TemplateLayout     
     TemplateString1Alt+ -> TemplateString1    
     TemplateString2Alt+ -> TemplateString2    

@@ -689,6 +689,7 @@ exports
     SortSymbol "*"                    -> Symbol     {reject}
     "{" SortSymbol sep:Separator "}+" -> Symbol     {reject}
     "{" SortSymbol sep:Separator "}*" -> Symbol     {reject}
+    Symbol "|" Symbol                 -> Symbol     {cons("Alt"), right}
 
   context-free syntax
     CONTENTCOMPLETE -> SortSymbol {cons("COMPLETION-SortSymbol")}
@@ -699,6 +700,7 @@ exports
     { Symbol "?" -> Symbol
       Symbol "*" -> Symbol
       Symbol "+" -> Symbol } >
+    Symbol "|" Symbol -> Symbol >
     Label ":" Symbol -> Symbol
 
 module sdf2-core/Sdf2-Syntax
