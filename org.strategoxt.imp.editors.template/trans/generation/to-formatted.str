@@ -9,6 +9,7 @@ imports
   	lib/runtime/properties/-
   	analysis/names
   	trans/utils/tokenize
+  	generation/to-sdf
   
 
 rules
@@ -91,22 +92,4 @@ rules
 string-to-prod =  string-edge-tokenize(where({x: ?x; <one(?x)> ['(', ')']})); map(!Lit(<template-escape; double-quote>))
  
  
- char-is-layout =
-    ' ' + '\t' + '\r' + '\n'
-
-  string-is-layout =
-    string-as-chars(all(char-is-layout))
-
-  remove-layout =
-    string-as-chars(filter(not(char-is-layout)))
-
-  separator-to-literal = un-double-quote; unescape; remove-layout; template-escape
-  		
- template-escape =
-    string-replace(|"\\", "\\\\");
-    string-replace(|"\t", "\\t");
-    string-replace(|"\r", "\\r");
-    string-replace(|"\n", "\\n");
-    //string-replace(|"'", "\\'");
-    string-replace(|"\"", "\\\"") 		
-  		
+ 
