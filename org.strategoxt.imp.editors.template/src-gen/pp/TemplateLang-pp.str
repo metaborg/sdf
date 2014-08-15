@@ -843,6 +843,26 @@ strategies
 
 
 strategies
+  prettyprint-EOL =
+    ![S(<is-string>)]
+
+  prettyprint-CR =
+    ![S(<is-string>)]
+
+  prettyprint-LF =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-EOL
+
+  prettyprint-example =
+    prettyprint-CR
+
+  prettyprint-example =
+    prettyprint-LF
+
+
+strategies
   prettyprint-TemplateLayout =
     ![S(<is-string>)]
 

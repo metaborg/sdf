@@ -76,6 +76,15 @@ signature
     Layout                   : TemplateLayout -> TemplatePart2
 
   constructors
+     : String -> TemplateLayout
+     : String -> TemplateString1
+     : String -> TemplateString2
+     : String -> TemplateStringQ
+     : String -> TemplateString1Alt
+     : String -> TemplateString2Alt
+     : String -> Backslash
+
+  constructors
      : String -> CONTENTCOMPLETE
      : String -> TemplateEscape1
      : String -> TemplateEscape2

@@ -172,20 +172,34 @@ PlaceholderOption.Text = <text=<StrCon>>
   
   TemplatePart2-CF.Escape = TemplateEscape2-LEX
   TemplatePart2-CF.Layout = TemplateLayout-LEX
-  
+   
  // Template-CF.SingleLineTemplate = '"' TemplatePartQ-CF* '"'
  // TemplatePartQ-CF.String = TemplateStringQ-LEX
  // TemplatePartQ-CF.Escape = TemplateEscapeQ-LEX
  // TemplatePartQ-CF.Layout = TemplateLayout-LEX
-  
-  
-  
+   
   
   
   
   
   lexical syntax
-    "\n" = [\r\n] 
+  
+  	EOL = LF
+  	EOL = CR
+  	EOL = CR LF
+  	
+  	CR = [\r]
+  	LF = [\n]
+  	
+    "\n" = EOL
+  
+  lexical restrictions
+  
+    EOL -/- [\n\r]
+      
+  
+  lexical syntax
+    
     TemplateLayout =  [\ \t]+
     
     TemplateString1 = TemplateString1Alt+
