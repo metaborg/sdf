@@ -4,6 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>org.strategoxt.imp.editors.template</artifactId>
 	<packaging>eclipse-plugin</packaging>
+	<description>Spoofax meta-language for specifying concrete and abstract grammars in terms of concrete syntax templates</description>
+	<url>https://github.com/metaborg/sdf</url>
 
 	<parent>
 		<groupId>org.metaborg</groupId>
@@ -107,4 +109,19 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<developers>
+		<developer>
+			<name>Eduardo Amorim</name>
+			<email>l.e.desouzaamorim-1@tudelft.nl</email>
+			<organization>Delft University of Technology</organization>
+			<organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:metaborg/sdf.git</connection>
+		<developerConnection>scm:git:git@github.com:metaborg/sdf.git</developerConnection>
+		<url>https://github.com/metaborg/sdf</url>
+	</scm>
 </project>
