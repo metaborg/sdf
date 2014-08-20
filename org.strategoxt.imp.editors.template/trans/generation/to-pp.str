@@ -39,19 +39,17 @@ rules
     	; s3*   := <map(is-sort-fail)> sort*  
   		    
    section-to-pp(|lang):
-  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*])
   	with
-  		sort* := <filter(cf-productive-sort); make-set> p*
-  		; s1*   := <map(sort-to-pp(|lang))> sort*  
-    	; s2*   := <filter(cf-prod-to-template; desugar-templates; template-to-pp); flatten-list> p*
-    	; s3*   := <map(is-sort-fail)> sort*
+  		sort*            := <filter(cf-productive-sort); make-set> p*
+  		; s1*            := <map(sort-to-pp(|lang))> sort*  
+    	; s2*            := <filter(cf-prod-to-template; desugar-templates; template-to-pp); flatten-list> p*
+    	; s3*            := <map(is-sort-fail)> sort*
+    	; lexical-sorts* := <filter(lex-productive-sort); make-set> p*
+    	; s4*            := <map(sort-to-pp)> lexical-sorts*
+        ; s5*            := <map(sort-to-pp(|lang))> lexical-sorts* 
     	  
-  section-to-pp(|lang):
-  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*])
-  	with
-  		sort* := <filter(lex-productive-sort); make-set> p*
-  		; s1*   := <map(sort-to-pp)> sort*
-    	; s2*   := <map(sort-to-pp(|lang))> sort*  
+  		 
     	   
   section-to-pp(|lang):
     TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*])
