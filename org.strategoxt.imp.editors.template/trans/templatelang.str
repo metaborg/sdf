@@ -72,11 +72,11 @@ rules // Debugging
   debug-show-desugared:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"analyzed.aterm")> path;
+      filename := <guarantee-extension(|"desugared.aterm")> path;
       result   := <desugar-templates> selected
       
   debug-show-analyzed:
-    (selected, position, ast, path, project-path) -> (filename, ast)
+    (selected, position, ast, path, project-path) -> (filename, selected)
     with
       filename := <guarantee-extension(|"analyzed.aterm")> path
 
