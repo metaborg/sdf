@@ -2,6 +2,7 @@ module basic/Basic
 
 imports kernel/Kernel
 		sorts/Sorts
+		TemplateLang
 
 context-free syntax
  
@@ -23,12 +24,26 @@ Grammar.Variables = <
 		<Productions>
 	
 	>
+Grammar.VariablesProductive = <
+    variables
+        
+        <{SdfProduction "\n"}*>
+
+    >	{prefer}
+	
 Grammar.LexVariables = <
 	lexical variables
 	
 		<Productions>
 	
 	>
+	
+Grammar.LexVariablesProductive = <
+    lexical variables
+        
+        <{SdfProduction "\n"}*>
+
+    > {prefer}
 
 Symbol.Cf = <<Symbol>-CF>
 Symbol.Lex = <<Symbol>-LEX>

@@ -1,7 +1,7 @@
 module analysis/names
 
 imports 
-  include/TemplateLang
+  include/TemplateLang-sig
   analysis/types
   libstrc
   

@@ -9,11 +9,13 @@ imports
 imports
   src-gen/signatures/kernel/Kernel-sig
   src-gen/signatures/sorts/Sorts-sig
+  src-gen/signatures/TemplateLang-sig
 
 
 imports
   src-gen/pp/kernel/Kernel-pp
   src-gen/pp/sorts/Sorts-pp
+  src-gen/pp/TemplateLang-pp
 
 
 strategies
@@ -84,6 +86,26 @@ strategies
     ?Variables(_)
 
   prettyprint-Grammar :
+    VariablesProductive(t0__) -> [ H(
+                                     [SOpt(HS(), "0")]
+                                   , [S("variables")]
+                                   )
+                                 , H(
+                                     []
+                                   , [S("")]
+                                   )
+                                 , t0__'
+                                 , H(
+                                     []
+                                   , [S("")]
+                                   )
+                                 ]
+    with t0__' := <pp-indent(|"4")> [<pp-V-list(prettyprint-SdfProduction)> t0__]
+
+  is-Grammar =
+    ?VariablesProductive(_)
+
+  prettyprint-Grammar :
     LexVariables(t0__) -> [ H(
                               [SOpt(HS(), "0")]
                             , [S("lexical variables")]
@@ -102,6 +124,26 @@ strategies
 
   is-Grammar =
     ?LexVariables(_)
+
+  prettyprint-Grammar :
+    LexVariablesProductive(t0__) -> [ H(
+                                        [SOpt(HS(), "0")]
+                                      , [S("lexical variables")]
+                                      )
+                                    , H(
+                                        []
+                                      , [S("")]
+                                      )
+                                    , t0__'
+                                    , H(
+                                        []
+                                      , [S("")]
+                                      )
+                                    ]
+    with t0__' := <pp-indent(|"4")> [<pp-V-list(prettyprint-SdfProduction)> t0__]
+
+  is-Grammar =
+    ?LexVariablesProductive(_)
 
   prettyprint-Symbol :
     Cf(t0__) -> [ H(

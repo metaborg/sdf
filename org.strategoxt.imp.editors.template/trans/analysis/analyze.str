@@ -1,11 +1,11 @@
 module analysis/analyze
 
 imports
-  include/TemplateLang
+  include/TemplateLang-sig
   analysis/desugar
   analysis/normalization
 
 strategies
 
   normalization =
-    normalize-all
+    normalize-all      

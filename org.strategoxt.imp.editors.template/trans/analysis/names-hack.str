@@ -2,7 +2,7 @@ module analysis/names-hack
 
 imports
 
-  include/TemplateLang
+  include/TemplateLang-sig
   analysis/names
   runtime/nabl/-
   runtime/task/-

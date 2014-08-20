@@ -97,7 +97,17 @@ exports
     <TemplateLayout-LEX>                 -> <TemplatePart2-CF> {cons("Layout")}
 
   lexical syntax
-    [\r\n]              -> "\n"               
+    LF    -> EOL  
+    CR    -> EOL  
+    CR LF -> EOL  
+    [\r]  -> CR   
+    [\n]  -> LF   
+    EOL   -> "\n" 
+
+  lexical restrictions
+    EOL -/- [\n\r]
+
+  lexical syntax
     [\ \t]+             -> TemplateLayout     
     TemplateString1Alt+ -> TemplateString1    
     TemplateString2Alt+ -> TemplateString2    

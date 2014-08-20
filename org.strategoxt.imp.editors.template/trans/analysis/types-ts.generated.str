@@ -10,7 +10,7 @@ imports
 
 imports
 
-  include/TemplateLang
+  include/TemplateLang-sig
   libstrc
   analysis/types
   

@@ -1,7 +1,7 @@
 module coq-semantics/main
 
 imports
-  include/TemplateLang
+  src-gen/signatures/TemplateLang-sig
   libstratego-gpp
   coq-semantics/Coq
   coq-semantics/Vernacular.pp.generated
