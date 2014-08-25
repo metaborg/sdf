@@ -7,11 +7,11 @@ imports
   src-gen/completion/constants/StrCon-esv
 
 completions
-  completion template Attributes : "{foo}" =
-    "{" <foo:Attribute> "}"  
+  completion template Attributes : "{}" =
+    "{" <:Attribute> "}"  
   completion template Attribute : "deprecated" =
     "deprecated"  
-  completion template Attribute : "deprecated(foo)" =
-    "deprecated(" <foo:StrCon> ")"  
-  completion template Grammar : "syntax foo " =
-    "syntax\n\n\t" <foo:Productions> "\n" (blank)  
+  completion template Attribute : "deprecated(StrCon)" =
+    "deprecated(" <StrCon:StrCon> ")"  
+  completion template Grammar : "syntax Productions " =
+    "syntax\n\n\t" <Productions:Productions> "\n" (blank)  

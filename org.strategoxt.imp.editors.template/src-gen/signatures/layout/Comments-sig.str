@@ -5,3 +5,8 @@ imports
 
 
 signature
+  constructors
+     : String -> LayoutNewlineAlt
+     : String -> LayoutCommentAlt
+     : String -> CommentChar
+     : String -> EOF

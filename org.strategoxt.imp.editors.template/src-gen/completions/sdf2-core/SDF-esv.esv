@@ -5,5 +5,5 @@ imports
   src-gen/completion/modules/Modules-esv
 
 completions
-  completion template Group : "foo." =
-    <foo:Group> "."  
+  completion template Group : "Group." =
+    <Group:Group> "."  

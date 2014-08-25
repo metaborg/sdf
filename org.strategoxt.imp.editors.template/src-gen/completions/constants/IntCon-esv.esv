@@ -5,7 +5,7 @@ imports
   src-gen/completion/constants/NatCon-esv
 
 completions
-  completion template IntCon : "+foo" =
-    "+" <foo:NatCon>  
-  completion template IntCon : "-foo" =
-    "-" <foo:NatCon>  
+  completion template IntCon : "+NatCon" =
+    "+" <NatCon:NatCon>  
+  completion template IntCon : "-NatCon" =
+    "-" <NatCon:NatCon>  

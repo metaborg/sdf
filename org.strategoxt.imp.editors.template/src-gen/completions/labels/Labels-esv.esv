@@ -6,5 +6,5 @@ imports
   src-gen/completion/constants/IdentifierCon-esv
 
 completions
-  completion template Symbol : "foo:foo" =
-    <foo:Label> ":" <foo:Symbol>  
+  completion template Symbol : "Label:Symbol" =
+    <Label:Label> ":" <Symbol:Symbol>  

@@ -5,13 +5,13 @@ imports
   src-gen/completion/symbols/Symbols-esv
 
 completions
-  completion template Symbol : "foo [[foo]]" =
-    <foo:Sort> " [[" <foo:Symbol> "]]"  
-  completion template SymbolDef : "foo-CF" =
-    <foo:SymbolDef> "-CF"  
-  completion template SymbolDef : "foo-LEX" =
-    <foo:SymbolDef> "-LEX"  
-  completion template SymbolDef : "foo-VAR" =
-    <foo:SymbolDef> "-VAR"  
-  completion template Grammar : "sorts foo " =
-    "sorts\n\n\t" <foo:Symbols> "\n" (blank)  
+  completion template Symbol : "Sort [[Symbol]]" =
+    <Sort:Sort> " [[" <Symbol:Symbol> "]]"  
+  completion template SymbolDef : "SymbolDef-CF" =
+    <SymbolDef:SymbolDef> "-CF"  
+  completion template SymbolDef : "SymbolDef-LEX" =
+    <SymbolDef:SymbolDef> "-LEX"  
+  completion template SymbolDef : "SymbolDef-VAR" =
+    <SymbolDef:SymbolDef> "-VAR"  
+  completion template Grammar : "sorts Symbols " =
+    "sorts\n\n\t" <Symbols:Symbols> "\n" (blank)  

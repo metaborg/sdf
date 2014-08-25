@@ -11,5 +11,5 @@ imports
   src-gen/completion/constants/IdentifierCon-esv
 
 completions
-  completion template Production : "foo(foo) -> foo foo" =
-    <foo:FunctionName> "(" <foo:Symbol> ") -> " <foo:Symbol> " " <foo:Attributes>  
+  completion template Production : "FunctionName() -> Symbol Attributes" =
+    <FunctionName:FunctionName> "(" <:Symbol> ") -> " <Symbol:Symbol> " " <Attributes:Attributes>  

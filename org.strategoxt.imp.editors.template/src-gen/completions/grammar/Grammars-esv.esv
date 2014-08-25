@@ -6,5 +6,5 @@ imports
 completions
   completion template Grammar : "(/)" =
     "(/)"  
-  completion template Grammar : "(foo)" =
-    "(" <foo:Grammar> ")"  
+  completion template Grammar : "(Grammar)" =
+    "(" <Grammar:Grammar> ")"  

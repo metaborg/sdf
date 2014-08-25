@@ -5,7 +5,7 @@ imports
   src-gen/completion/constants/NatCon-esv
 
 completions
-  completion template OptExp : "efoo" =
-    "e" <foo:IntCon>  
-  completion template RealCon : "foo.foofoo" =
-    <foo:IntCon> "." <foo:NatCon> <foo:OptExp>  
+  completion template OptExp : "eIntCon" =
+    "e" <IntCon:IntCon>  
+  completion template RealCon : "IntCon.NatConOptExp" =
+    <IntCon:IntCon> "." <NatCon:NatCon> <OptExp:OptExp>  

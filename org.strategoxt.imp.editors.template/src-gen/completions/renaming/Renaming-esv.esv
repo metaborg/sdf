@@ -5,9 +5,9 @@ imports
   src-gen/completion/symbols/Symbols-esv
 
 completions
-  completion template Renamings : "[foo]" =
-    "[" <foo:Renaming> "]"  
-  completion template Renaming : "foo => foo" =
-    <foo:Symbol> " => " <foo:Symbol>  
-  completion template Renaming : "foo => foo" =
-    <foo:Production> " => " <foo:Production>  
+  completion template Renamings : "[]" =
+    "[" <:Renaming> "]"  
+  completion template Renaming : "Symbol => Symbol" =
+    <Symbol:Symbol> " => " <Symbol:Symbol>  
+  completion template Renaming : "Production => Production" =
+    <Production:Production> " => " <Production:Production>  

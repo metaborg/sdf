@@ -1,3 +1,4 @@
+
 module src-gen/completion/modules/Modules-esv
 
 imports
@@ -6,15 +7,15 @@ imports
   src-gen/completion/symbols/Symbols-esv
 
 completions
-  completion template Module : "module foo foo" =
-    "module " <foo:ModuleName> "\n\n" (cursor) "\n\n" <foo:Sections> (blank)  
+  completion template Module : "module ModuleName Sections" =
+    "module " <ModuleName:ModuleName> "\n\n" (cursor) "\n\n" <Sections:Sections> (blank)  
   completion template Sections : " " =
-    "\n" (cursor) (blank)              
-  completion template ModuleName : "foo [foo]" =
-    <foo:ModuleId> " [" <foo:Symbols> "]"  
-  completion template Attribute : "id (foo) " =
-    "id (" <foo:ModuleName> ") "  
-  completion template ImpSection : "imports foo" =
-    "imports " <foo:Imports>  
-  completion template Import : "(foo)" =
-    "(" <foo:Import> ")"             
+    "\n" (cursor) (blank)                          
+  completion template ModuleName : "ModuleId [Symbols]" =
+    <ModuleId:ModuleId> " [" <Symbols:Symbols> "]"  
+  completion template Attribute : "id (ModuleName) " =
+    "id (" <ModuleName:ModuleName> ") "  
+  completion template ImpSection : "imports Imports" =
+    "imports " <Imports:Imports>   
+  completion template Import : "(Import)" =
+    "(" <Import:Import> ")"                   

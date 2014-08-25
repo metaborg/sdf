@@ -4,5 +4,5 @@ imports
   src-gen/completion/layout/Comments-esv
 
 completions
-  completion template Symbol : "(foo)" =
-    "(" <foo:Symbol> ")"  
+  completion template Symbol : "(Symbol)" =
+    "(" <Symbol:Symbol> ")"  

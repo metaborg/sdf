@@ -7,21 +7,21 @@ imports
   src-gen/completion/constants/StrCon-esv
 
 completions
-  completion template Lookahead : "foo.foo" =
-    <foo:CharClass> "." <foo:Lookaheads>  
-  completion template Lookaheads : "foo | foo" =
-    <foo:Lookaheads> " | " <foo:Lookaheads>  
-  completion template Lookaheads : "(foo)" =
-    "(" <foo:Lookaheads> ")"  
-  completion template Lookaheads : "[[foo]]" =
-    "[[" <foo:Lookahead> "]]"  
-  completion template Restriction : "foo -/- foo" =
-    <foo:RestrictionSymbols> " -/- " <foo:Lookaheads>  
-  completion template Grammar : "restrictions foo " =
-    "restrictions\n\n\t" <foo:Restrictions> "\n" (blank)  
+  completion template Lookahead : "CharClass.Lookaheads" =
+    <CharClass:CharClass> "." <Lookaheads:Lookaheads>  
+  completion template Lookaheads : "Lookaheads | Lookaheads" =
+    <Lookaheads:Lookaheads> " | " <Lookaheads:Lookaheads>  
+  completion template Lookaheads : "(Lookaheads)" =
+    "(" <Lookaheads:Lookaheads> ")"  
+  completion template Lookaheads : "[[]]" =
+    "[[" <:Lookahead> "]]"       
+  completion template Restriction : "RestrictionSymbols -/- Lookaheads" =
+    <RestrictionSymbols:RestrictionSymbols> " -/- " <Lookaheads:Lookaheads>  
+  completion template Grammar : "restrictions Restrictions " =
+    "restrictions\n\n\t" <Restrictions:Restrictions> "\n" (blank)  
   completion template Attribute : "reject" =
-    "reject"  
+    "reject"                    
   completion template Attribute : "prefer" =
-    "prefer"  
+    "prefer"                    
   completion template Attribute : "avoid" =
-    "avoid"   
+    "avoid"                      
