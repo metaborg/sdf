@@ -3,7 +3,8 @@ module to-template
 imports
   libstratego-sglr
   include/TemplateLang-sig
-  analysis/desugar
+  
+
   
 
 rules // Convert regular productions to desugared syntax templates
@@ -16,23 +17,47 @@ rules // Convert regular productions to desugared syntax templates
 	section-to-template:
 		SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax(p'*))
 	with
-		p'* := <map(try(prod-to-template; make-angled)); bottomup(try(escape-brackets))> p*	
+		p'* := <map(try(is-injection-production + contains-escaped-layout <+ prod-to-template; make-angled)); bottomup(try(escape-brackets))> p*
+		
+	is-injection-production:
+	    SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), attrs) -> <id>
+	where
+	    <?[Sort(_)] + ?[]> symbols*    		
+		
+	is-injection-production:
+        SdfProduction(SortDef(s), Rhs(symbols*), attrs) -> <id>
+    where
+        <?[Sort(_)] + ?[]> symbols*
+        
+    contains-escaped-layout :
+        SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), attrs) -> <id>
+    where
+        literals := <filter(?Lit(<id>))> symbols*;
+        <filter(string-contains-escaped-layout); not(?[])> literals
+	
+    contains-escaped-layout :
+	   SdfProduction(SortDef(s), Rhs(symbols*), attrs) -> <id>
+    where
+        literals := <filter(?Lit(<id>))> symbols*;
+        <filter(string-contains-escaped-layout); not(?[])> literals
 	
 	prod-to-template:
-		SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), attrs) ->
-		TemplateProductionWithCons(SortCons(symbol, c), Template([Line([elem*])]), Attrs(a*))
-	with
+		SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), attrs) ->
+		TemplateProductionWithCons(SortCons(SortDef(s), c), Template([Line([elem*])]), Attrs(a*))
+	where
 		a* := <?Attrs(<id>) <+ ![]> attrs
-	with
+	where
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*
     
     prod-to-template:
 		SdfProduction(SortDef(s), Rhs(symbols*), attrs) ->
 		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
-	with
+	where
+        <not(?[Sort(_)] + ?[])> symbols*	
+	where
 		a* := <?Attrs(<id>) <+ ![]> attrs
-	with
+	where
 		elem* := <map(symbol-to-elem);
                 separate-by(|Layout(" "))> symbols*            
     
@@ -144,5 +169,8 @@ rules // Convert regular productions to desugared syntax templates
 	
 	angle-placeholder :
 		p@Placeholder(_, _) -> Angled(p)
-
+		
+	   
+   string-contains-escaped-layout =
+    is-substring(!"\\t") + is-substring(!"\\r") + is-substring(!"\\n")
   
