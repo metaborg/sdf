@@ -1,10 +1,10 @@
-module src-gen/completion/kernel/Kernel-esv
+module src-gen/completions/kernel/Kernel-esv
 
 imports
-  src-gen/completion/aterms/Aterms-esv
-  src-gen/completion/symbols/Symbols-esv
-  src-gen/completion/grammar/Grammars-esv
-  src-gen/completion/constants/StrCon-esv
+  src-gen/completions/aterms/Aterms-esv
+  src-gen/completions/symbols/Symbols-esv
+  src-gen/completions/grammar/Grammars-esv
+  src-gen/completions/constants/StrCon-esv
 
 completions
   completion template Attributes : "{}" =

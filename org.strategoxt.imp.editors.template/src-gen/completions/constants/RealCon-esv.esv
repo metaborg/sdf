@@ -1,8 +1,8 @@
-module src-gen/completion/constants/RealCon-esv
+module src-gen/completions/constants/RealCon-esv
 
 imports
-  src-gen/completion/constants/IntCon-esv
-  src-gen/completion/constants/NatCon-esv
+  src-gen/completions/constants/IntCon-esv
+  src-gen/completions/constants/NatCon-esv
 
 completions
   completion template OptExp : "eIntCon" =

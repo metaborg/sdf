@@ -1,4 +1,4 @@
-module src-gen/completion/layout/Comments-esv
+module src-gen/completions/layout/Comments-esv
 
 imports
-  src-gen/completion/layout/Whitespace-esv
+  src-gen/completions/layout/Whitespace-esv

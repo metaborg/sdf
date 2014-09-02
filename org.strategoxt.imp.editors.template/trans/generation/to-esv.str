@@ -16,8 +16,8 @@ rules
   module-to-esv :
   	Module(m, i*, s*) -> Module(m', i'*, c*)
   	with
-  		m'  := <to-str-module-name(|"-esv", "completion")> Module(m);
-  		i'* := <map(to-str-import(|"-esv", "completion"))> i*;
+  		m'  := <to-str-module-name(|"-esv", "completions")> Module(m);
+  		i'* := <map(to-str-import(|"-esv", "completions"))> i*;
   		c*  := <filter(template-section-to-esv)> s*
   		
   template-section-to-esv:

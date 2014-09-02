@@ -1,8 +1,8 @@
-module src-gen/completion/sorts/Sorts-esv
+module src-gen/completions/sorts/Sorts-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/symbols/Symbols-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/symbols/Symbols-esv
 
 completions
   completion template Symbol : "Sort [[Symbol]]" =

@@ -1,9 +1,9 @@
-module src-gen/completion/basic/Basic-esv
+module src-gen/completions/basic/Basic-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/sorts/Sorts-esv
-  src-gen/completion/TemplateLang-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/sorts/Sorts-esv
+  src-gen/completions/TemplateLang-esv
 
 completions
   completion template Grammar : "lexical syntax Productions " =

@@ -1,10 +1,10 @@
-module src-gen/completion/aterms/Aterms-esv
+module src-gen/completions/aterms/Aterms-esv
 
 imports
-  src-gen/completion/constants/IntCon-esv
-  src-gen/completion/constants/RealCon-esv
-  src-gen/completion/constants/StrCon-esv
-  src-gen/completion/constants/IdentifierCon-esv
+  src-gen/completions/constants/IntCon-esv
+  src-gen/completions/constants/RealCon-esv
+  src-gen/completions/constants/StrCon-esv
+  src-gen/completions/constants/IdentifierCon-esv
 
 completions
   completion template ATerm : "AFun(ATerm)" =

@@ -1,10 +1,10 @@
-module src-gen/completion/restrictions/Restrictions-esv
+module src-gen/completions/restrictions/Restrictions-esv
 
 imports
-  src-gen/completion/characterclass/CC-esv
-  src-gen/completion/characterclass/Character-Class-esv
-  src-gen/completion/symbols/Symbols-esv
-  src-gen/completion/constants/StrCon-esv
+  src-gen/completions/characterclass/CC-esv
+  src-gen/completions/characterclass/Character-Class-esv
+  src-gen/completions/symbols/Symbols-esv
+  src-gen/completions/constants/StrCon-esv
 
 completions
   completion template Lookahead : "CharClass.Lookaheads" =

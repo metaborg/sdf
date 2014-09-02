@@ -1,19 +1,19 @@
-module src-gen/completion/sdf2-core/Sdf2-Syntax-esv
+module src-gen/completions/sdf2-core/Sdf2-Syntax-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/basic/Basic-esv
-  src-gen/completion/modules/Modules-esv
-  src-gen/completion/regular/Regular-esv
-  src-gen/completion/lifting/Lifting-esv
-  src-gen/completion/priority/Priority-esv
-  src-gen/completion/characterclass/CC-esv
-  src-gen/completion/sorts/Sorts-esv
-  src-gen/completion/symbols/Start-Symbols-esv
-  src-gen/completion/literals/Literals-esv
-  src-gen/completion/labels/Labels-esv
-  src-gen/completion/restrictions/Restrictions-esv
-  src-gen/completion/aliases/Aliases-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/basic/Basic-esv
+  src-gen/completions/modules/Modules-esv
+  src-gen/completions/regular/Regular-esv
+  src-gen/completions/lifting/Lifting-esv
+  src-gen/completions/priority/Priority-esv
+  src-gen/completions/characterclass/CC-esv
+  src-gen/completions/sorts/Sorts-esv
+  src-gen/completions/symbols/Start-Symbols-esv
+  src-gen/completions/literals/Literals-esv
+  src-gen/completions/labels/Labels-esv
+  src-gen/completions/restrictions/Restrictions-esv
+  src-gen/completions/aliases/Aliases-esv
 
 completions
   completion template Symbol : "<START>" =

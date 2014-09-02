@@ -1,9 +1,9 @@
-module src-gen/completion/labels/Labels-esv
+module src-gen/completions/labels/Labels-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/constants/StrCon-esv
-  src-gen/completion/constants/IdentifierCon-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/constants/StrCon-esv
+  src-gen/completions/constants/IdentifierCon-esv
 
 completions
   completion template Symbol : "Label:Symbol" =

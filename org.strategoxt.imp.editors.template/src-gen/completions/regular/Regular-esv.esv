@@ -1,12 +1,12 @@
-module src-gen/completion/regular/Regular-esv
+module src-gen/completions/regular/Regular-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/constants/IntCon-esv
-  src-gen/completion/symbols/Symbols-esv
-  src-gen/completion/constants/StrCon-esv
-  src-gen/completion/labels/Labels-esv
-  src-gen/completion/sorts/Sorts-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/constants/IntCon-esv
+  src-gen/completions/symbols/Symbols-esv
+  src-gen/completions/constants/StrCon-esv
+  src-gen/completions/labels/Labels-esv
+  src-gen/completions/sorts/Sorts-esv
 
 completions
   completion template Symbol : "Symbol?" =

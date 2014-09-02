@@ -1,8 +1,8 @@
-module src-gen/completion/constants/IntCon-esv
+module src-gen/completions/constants/IntCon-esv
 
 imports
-  src-gen/completion/layout/Whitespace-esv
-  src-gen/completion/constants/NatCon-esv
+  src-gen/completions/layout/Whitespace-esv
+  src-gen/completions/constants/NatCon-esv
 
 completions
   completion template IntCon : "+NatCon" =

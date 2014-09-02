@@ -1,10 +1,10 @@
 
-module src-gen/completion/modules/Modules-esv
+module src-gen/completions/modules/Modules-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
-  src-gen/completion/renaming/Renaming-esv
-  src-gen/completion/symbols/Symbols-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/renaming/Renaming-esv
+  src-gen/completions/symbols/Symbols-esv
 
 completions
   completion template Module : "module ModuleName Sections" =

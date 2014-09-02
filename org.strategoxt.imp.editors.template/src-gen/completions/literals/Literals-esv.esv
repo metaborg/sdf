@@ -1,14 +1,14 @@
 
-module src-gen/completion/literals/Literals-esv
+module src-gen/completions/literals/Literals-esv
 
 imports
-  src-gen/completion/kernel/Kernel-esv
+  src-gen/completions/kernel/Kernel-esv
 
 imports
-  src-gen/completion/constants/StrCon-esv
+  src-gen/completions/constants/StrCon-esv
 
 imports
-  src-gen/completion/constants/IdentifierCon-esv
+  src-gen/completions/constants/IdentifierCon-esv
 
 completions
   completion template Production : "FunctionName() -> Symbol Attributes" =

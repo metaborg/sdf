@@ -1,7 +1,7 @@
-module src-gen/completion/characterclass/Character-Class-esv
+module src-gen/completions/characterclass/Character-Class-esv
 
 imports
-  src-gen/completion/characterclass/Character-esv
+  src-gen/completions/characterclass/Character-esv
 
 completions
   completion template CharRange : "Character-Character" =
