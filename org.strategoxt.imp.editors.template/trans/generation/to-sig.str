@@ -29,7 +29,7 @@ rules
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
     where
-      sig* := < map(get-sort-from-prod)
+      sig* := < filter(get-sort-from-prod)
              ; nub 
              ; map(lexsort-to-injection)
              ; not(?[])> p*	
