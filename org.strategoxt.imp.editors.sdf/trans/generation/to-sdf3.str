@@ -122,7 +122,7 @@ rules
   
   //variables
   section-to-sdf3:
-  	variables(prods*) -> SDFSection(Variables(prods'*))
+  	variables(prods*) -> SDFSection(VariablesProductive(prods'*))
   	with
   		prods'* := <map(prod-to-sdf3); flatten-list> prods*
   
