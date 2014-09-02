@@ -33,17 +33,31 @@ rules // Analysis
   
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
   
-  editor-analyze = analysis-default-editor
-  
+  editor-analyze: x -> y
+  	where <?(_, path, _)> x
+  		; filename := <base-filename> path
+  		; <concat-strings; debug> ["Analyzing ", filename, "..."]
+  		; measure-time(y := <analysis-default-editor> x, ?analysis-time)
+  		; <concat-strings; debug> ["- Analysis:     ", <cputime-to-seconds; write-to-string> analysis-time, " s"]
+
   analysis-single-default-interface = 
-  	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
-  	analysis-single-default(normalization, id, id|<language>)
+  	analysis-single-default(measure-normalize, id, id|<language>)
   	
   analysis-multiple-default-interface = 
-  	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
-  analysis-multiple-default(parse-file <+ !(), normalization, id, id|<language>, <project-path>)
+  analysis-multiple-default(parse-file <+ !(), measure-normalize, id, id|<language>, <project-path>)
   
-  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
+  measure-normalize: x -> y
+  where measure-time(y := <normalization> x, ?normalization-time)
+  	  ; <concat-strings; debug> ["- Normalization:", <cputime-to-seconds; write-to-string> normalization-time, " s"]
+  
+  editor-save: x -> None()
+  where TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time]) := <generate-all> x
+  	  ; <concat-strings; debug> ["- Desugaring:   ", <cputime-to-seconds; write-to-string> desugar-time, " s"]
+  	  ; <concat-strings; debug> ["- ESV:          ", <cputime-to-seconds; write-to-string> esv-time, " s"]
+  	  ; <concat-strings; debug> ["- SIG:          ", <cputime-to-seconds; write-to-string> sig-time, " s"]
+  	  ; <concat-strings; debug> ["- SDF:          ", <cputime-to-seconds; write-to-string> sdf-time, " s"]
+  	  ; <concat-strings; debug> ["- PP:           ", <cputime-to-seconds; write-to-string> pp-time, " s"]
+  	
       
 rules // Editor services
 

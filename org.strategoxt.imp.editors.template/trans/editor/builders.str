@@ -19,8 +19,11 @@ imports
   analysis/names
   lib/runtime/nabl/-
   lib/runtime/properties/-
+  runtime/editor/time
   
- 
+ signature constructors
+ 	
+ 	TimeResult : List(Real) -> TimeResult
   
   
   rules
@@ -188,35 +191,46 @@ imports
   
   // On-save handler
   generate-all:
-    (selected, position, ast, path, project-path) -> None() 
+    (selected, position, ast, path, project-path) -> TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time])
     with
     	filename := <base-filename> path;
-    	debug(!"generating for ");
+    	debug(!"Generating for ");
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
-    	ast'     := <desugar-templates> ast;
+    	measure-time(ast' := <desugar-templates> ast, ?desugar-time);
     	<?Module(Unparameterized(mn), i*, sections)> ast 
-    	//; fn       :=  <get-filename> mn    	  
-    where
-    	esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
+    where measure-time(<generate-esv> (ast', mn, sections, project-path), ?esv-time)
+    where measure-time(<generate-sig> (ast', mn, sections, project-path), ?sig-time)
+    where measure-time(<generate-sdf> (ast', mn, sections, project-path), ?sdf-time)
+    where measure-time(<generate-pp>  (ast', mn, sections, project-path), ?pp-time)
+
+
+	generate-esv: (ast', mn, sections, project-path) -> None()
+	with
+		esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
     	esv-ast              :=  <module-to-esv; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-    	<write-string-to-file> (esv-filename, esv-ast) 
-    where
-    	sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+    	<write-string-to-file> (esv-filename, esv-ast)
+    	
+    generate-sig: (ast', mn, sections, project-path) -> None()
+	with
+		sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
         sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
-    	<write-string-to-file> (sig-filename, sig-ast)  
-    where
-    	chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+    	<write-string-to-file> (sig-filename, sig-ast)
+    
+    generate-sdf: (ast', mn, sections, project-path) -> None()
+	with
+		chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
   		kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
         sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
         sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
-    	<write-string-to-file> (sdf-filename, sdf-ast)  
-    where
-        pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
-      ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
+    	<write-string-to-file> (sdf-filename, sdf-ast)
+    	
+    generate-pp: (ast', mn, sections, project-path) -> None()
+	with
+		pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      	pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
         <write-string-to-file> (pp-filename, pp-ast)  
-	
   
   rules
   
