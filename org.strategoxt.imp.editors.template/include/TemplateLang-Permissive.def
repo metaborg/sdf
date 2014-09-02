@@ -312,7 +312,7 @@ exports
     EOL   -> "\n" 
 
   lexical restrictions
-    CR -/- [\n]
+    EOL -/- [\n\r]
 
   lexical syntax
     [\ \t]+             -> TemplateLayout     
@@ -1041,7 +1041,7 @@ exports
     EOL   -> "\n" 
 
   lexical restrictions
-    CR -/- [\n]
+    EOL -/- [\n\r]
 
   lexical syntax
     [\ \t]+             -> TemplateLayout     
