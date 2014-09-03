@@ -54,8 +54,6 @@ rules // Convert regular productions to desugared syntax templates
 		SdfProduction(SortDef(s), Rhs(symbols*), attrs) ->
 		TemplateProduction(SortDef(s), Template([Line([elem*])]), Attrs(a*))
 	where
-        <not(?[Sort(_)] + ?[])> symbols*	
-	where
 		a* := <?Attrs(<id>) <+ ![]> attrs
 	where
 		elem* := <map(symbol-to-elem);
