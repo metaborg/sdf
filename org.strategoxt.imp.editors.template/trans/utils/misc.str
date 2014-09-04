@@ -1,7 +1,7 @@
 module trans/utils/misc
 
 imports
-  include/TemplateLang-sig
+  src-gen/lib-gen/TemplateLang-sig
 
 strategies
 
