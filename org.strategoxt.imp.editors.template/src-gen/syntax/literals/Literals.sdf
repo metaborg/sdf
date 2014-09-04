@@ -23,9 +23,9 @@ exports
     CONTENTCOMPLETE -> FunctionName {cons("COMPLETION-FunctionName")}
 
   context-free syntax
-    string:StrCon                                                                     -> Symbol     {cons("Lit")}
-    ci-string:SingleQuotedStrCon                                                      -> Symbol     {cons("CiLit")}
-    fun:FunctionName "(" arguments:{Symbol ","}* ")" "-" ">" result:Symbol Attributes -> Production {cons("PrefixFun")}
+    string:StrCon                                                                  -> Symbol     {cons("Lit")}
+    ci-string:SingleQuotedStrCon                                                   -> Symbol     {cons("CiLit")}
+    fun:FunctionName "(" arguments:{Symbol ","}* ")" "->" result:Symbol Attributes -> Production {cons("PrefixFun")}
 
   context-free syntax
     CONTENTCOMPLETE -> Symbol     {cons("COMPLETION-Symbol")}

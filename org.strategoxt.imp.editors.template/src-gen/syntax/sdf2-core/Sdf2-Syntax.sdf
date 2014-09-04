@@ -6,8 +6,8 @@ imports kernel/Kernel basic/Basic modules/Modules regular/Regular
 
 exports
   context-free syntax
-    "<" "START" ">"                            -> Symbol  {cons("Start")}
-    "<" "Start" ">"                            -> Symbol  {cons("FileStart")}
+    "<START>"                                  -> Symbol  {cons("Start")}
+    "<Start>"                                  -> Symbol  {cons("FileStart")}
     "lexical" "priorities" Priorities          -> Grammar {cons("LexicalPriorities")}
     "context-free" "priorities" Priorities     -> Grammar {cons("ContextFreePriorities")}
     "lexical" "restrictions" Restrictions      -> Grammar {cons("LexicalRestrictions")}

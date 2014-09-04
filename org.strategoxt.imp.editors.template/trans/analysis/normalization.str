@@ -1,7 +1,7 @@
 module analysis/normalization
 imports
   libstratego-lib
-  include/TemplateLang-sig
+  src-gen/lib-gen/TemplateLang-sig
   trans/utils/attributes
   trans/utils/misc
   runtime/editor/origins

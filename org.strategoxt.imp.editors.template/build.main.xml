@@ -26,6 +26,7 @@
 	<property location="src-gen/pp" name="pp"/>
 	<property location="src-gen/signatures" name="signatures"/>
 	<property location="src-gen" name="sdf-src-gen"/>
+	<property location="${sdf-src-gen}/lib-gen" name="lib-gen"/>
 
 	<!-- Imports -->
 	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def"/>
@@ -115,7 +116,7 @@
 		<mkdir dir="${build}/pplib"/>
 		
 		<sequential>
-			<uptodate-mio input="${src-gen}/pplib/Main.java" output="${include}/${ppmodule}.jar" type="javac">
+			<uptodate-mio input="${src-gen}/pplib/Main.java" output="${lib-gen}/${ppmodule}.jar" type="javac">
 				<action>
 					<javac debug="on" destdir="${build}" includes="pplib/**" source="1.7" srcdir="${src-gen}" target="1.7">
 						<classpath>
@@ -126,9 +127,9 @@
 					<copy todir="${build}/pplib">
 							<fileset dir="${src-gen}/pplib" excludes="**/*.java"/>
 					</copy>
-					<copy file="${src-gen}/pplib/Main.rtree" tofile="${pp}/${ppmodule}.rtree" />
-					<jar basedir="${build}" destfile="${include}/${ppmodule}.tmp.jar" includes="pplib/**"/>
-					<move file="${include}/${ppmodule}.tmp.jar" tofile="${include}/${ppmodule}.jar"/>
+					<copy file="${src-gen}/pplib/Main.rtree" tofile="${lib-gen}/${ppmodule}.rtree" />
+					<jar basedir="${build}" destfile="${lib-gen}/${ppmodule}.tmp.jar" includes="pplib/**"/>
+					<move file="${lib-gen}/${ppmodule}.tmp.jar" tofile="${lib-gen}/${ppmodule}.jar"/>
 				    <delete>
 						<fileset dir="${build}" includes="pplib/**"/>
 					</delete> 
@@ -150,7 +151,7 @@
 		</target>
 	
 	
-	<!-- Target to create rtree from generated signatures -->
+	<!-- Target to create library from generated signatures -->
 		<target depends="utils-files" name="sig.lib"> 
 			<available file="${signatures}/${sigmodule}.str" property="sig.module.enabled"/>
 			<fail message="Main pp file '${sigmodule}.str' not found.">
@@ -162,7 +163,7 @@
 			</fail>
 			
 			
-			<strj input="${signatures}/${sigmodule}.str" output="${include}/${sigmodule}.ctree" package="trans">
+			<strj input="${signatures}/${sigmodule}.str" output="${lib-gen}/${sigmodule}.ctree" package="trans">
 						<strjargs> 
 							<arg value="--clean"/>
 							<arg line="${build.stratego.args}"/>
@@ -180,7 +181,7 @@
 			
 			<delete>
 				<!-- fileset dir="${include}" includes="TemplateLang-sig.*" excludes="TemplateLang-sig.rtree" /--> 
-				<fileset dir="${build}" includes="pplib/**"/>
+				<fileset dir="${build}" includes="siglib/**"/>
 			</delete>
 			
 		</target>
@@ -271,7 +272,7 @@
 			<arg value="--rule-prefix"/>
 			<arg value="${sdfmodule}"/>
 			<arg value="--sig-module"/>
-			<arg value="include/${sigmodule}"/>
+			<arg value="src-gen/lib-gen/${sigmodule}"/>
 		</args>
 		</sdf2parenthesize>
 	</target>	
@@ -315,7 +316,7 @@
 			<str-deps>
 				<srcfiles dir="${trans}" includes="**/*.str"/>
 				<srcfiles dir="${include}" includes="**/*.str"/>
-				<srcfiles dir="${lib}" excludes="" includes="**/*.str"/>
+				<srcfiles dir="${lib}" includes="**/*.str" excludes="**/tmpl/pp.str"/>
 			</str-deps>
 		</strj>
 		<delete failonerror="false" file="${include}/${strmodule}.rtree"/>
