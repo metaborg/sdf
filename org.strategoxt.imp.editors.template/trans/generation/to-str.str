@@ -2,7 +2,7 @@ module generation/to-str
 
 imports
   
-  include/TemplateLang-sig
+  src-gen/lib-gen/TemplateLang-sig
   libstrc
   
 rules

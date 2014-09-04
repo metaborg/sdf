@@ -4,7 +4,7 @@ imports
   libstratego-lib
   libstratego-sglr
   libstrc
-  include/TemplateLang-sig
+  src-gen/lib-gen/TemplateLang-sig
   analysis/desugar
   generation/to-template
   generation/to-str
