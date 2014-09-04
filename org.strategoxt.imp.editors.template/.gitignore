@@ -18,4 +18,5 @@ syntax/*generated*
 test/*generated*
 trans/*generated*
 utils
-/include/
+include
+lib-gen
