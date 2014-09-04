@@ -25,9 +25,9 @@ rules
 
   //desugar templates with one line into a single line template
   desugar-template:
-    <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])>-> SingleLineTemplate(elem'*)
+    <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])> -> SingleLineTemplate(elem'*)
     with
-      elem'* := <desugar-elements> elem* 
+      elem'* := <desugar-elements; concatenate-consecutive-strings> elem* 
 
   desugar-template:
   	TemplateSquare(lines*) -> result
@@ -90,6 +90,7 @@ rules
         desugar-elements;
         map(line-remove-trailing-layout; line-ensure-leading-layout);
         unindent;
+        map(Line(concatenate-consecutive-strings));
         ?line'*
       end 
 
