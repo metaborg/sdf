@@ -18,5 +18,6 @@ syntax/*generated*
 test/*generated*
 trans/*generated*
 utils
+!trans/utils
 include
 lib-gen
