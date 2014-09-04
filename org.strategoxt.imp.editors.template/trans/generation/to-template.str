@@ -110,7 +110,7 @@ rules // Convert regular productions to desugared syntax templates
         
     
 	symbol-to-elem:
-   		Lit(t) -> String(<un-double-quote; unescape> t)
+   		Lit(t) -> String(<un-double-quote> t)
 		
 	
 	symbol-to-elem:
@@ -170,5 +170,5 @@ rules // Convert regular productions to desugared syntax templates
 		
 	   
    string-contains-escaped-layout =
-    is-substring(!"\\t") + is-substring(!"\\r") + is-substring(!"\\n")
+    is-substring(!"\\t") + is-substring(!"\\r") + is-substring(!"\\n") + ?"\" \""
   
