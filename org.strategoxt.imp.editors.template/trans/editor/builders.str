@@ -191,7 +191,7 @@ imports
   
   // On-save handler
   generate-all:
-    (selected, position, ast, path, project-path) -> TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time])
+    (selected, position, ast, path, project-path) -> None()
     with
     	filename := <base-filename> path;
     	debug(!"Generating for ");
@@ -203,6 +203,28 @@ imports
     where measure-time(<generate-sig> (ast', mn, sections, project-path), ?sig-time)
     where measure-time(<generate-sdf> (ast', mn, sections, project-path), ?sdf-time)
     where measure-time(<generate-pp>  (ast', mn, sections, project-path), ?pp-time)
+    where
+    	 <concat-strings; debug> ["- Desugaring:   ", <cputime-to-seconds; write-to-string> desugar-time, " s"]
+  	  	; <concat-strings; debug> ["- ESV:          ", <cputime-to-seconds; write-to-string> esv-time, " s"]
+  	  	; <concat-strings; debug> ["- SIG:          ", <cputime-to-seconds; write-to-string> sig-time, " s"]
+  	  	; <concat-strings; debug> ["- SDF:          ", <cputime-to-seconds; write-to-string> sdf-time, " s"]
+  	  	; <concat-strings; debug> ["- PP:           ", <cputime-to-seconds; write-to-string> pp-time, " s"]
+    
+  
+  get-time-generate-all:
+  	(selected, position, ast, path, project-path) -> TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time])
+    with
+    	filename := <base-filename> path;
+    	debug(!"Generating for ");
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	measure-time(ast' := <desugar-templates> ast, ?desugar-time);
+    	<?Module(Unparameterized(mn), i*, sections)> ast 
+    where measure-time(<generate-esv> (ast', mn, sections, project-path), ?esv-time)
+    where measure-time(<generate-sig> (ast', mn, sections, project-path), ?sig-time)
+    where measure-time(<generate-sdf> (ast', mn, sections, project-path), ?sdf-time)
+    where measure-time(<generate-pp>  (ast', mn, sections, project-path), ?pp-time)
+  	  
 
 
 	generate-esv: (ast', mn, sections, project-path) -> None()
