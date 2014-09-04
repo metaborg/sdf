@@ -53,7 +53,7 @@ rules // Analysis
     analysis-multiple-default(parse-file <+ !(), normalization, id, id|<language>, <project-path>)
   
   editor-save: input -> None()
-  	where TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time]) := <get-times-generate-all> input
+  	where TimeResult([desugar-time, esv-time, sig-time, sdf-time, pp-time]) := <get-time-generate-all> input
   	  ; <concat-strings; debug> ["- Desugaring:   ", <cputime-to-seconds; write-to-string> desugar-time, " s"]
   	  ; <concat-strings; debug> ["- ESV:          ", <cputime-to-seconds; write-to-string> esv-time, " s"]
   	  ; <concat-strings; debug> ["- SIG:          ", <cputime-to-seconds; write-to-string> sig-time, " s"]
