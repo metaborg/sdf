@@ -18,4 +18,6 @@ syntax/*generated*
 test/*generated*
 trans/*generated*
 utils
-/include/
+!trans/utils
+include
+lib-gen

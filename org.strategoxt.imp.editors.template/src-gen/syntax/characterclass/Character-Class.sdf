@@ -13,8 +13,8 @@ exports
     "[" OptCharRanges "]"             -> CharClass     {cons("Simple")}
     "~" CharClass                     -> CharClass     {cons("Comp")}
     CharClass "/" CharClass           -> CharClass     {cons("Diff"), left, memo}
-    CharClass "/" "\\" CharClass      -> CharClass     {cons("Isect"), left, memo}
-    CharClass "\\" "/" CharClass      -> CharClass     {cons("Union"), left}
+    CharClass "/\\" CharClass         -> CharClass     {cons("Isect"), left, memo}
+    CharClass "\\/" CharClass         -> CharClass     {cons("Union"), left}
     "(" CharClass ")"                 -> CharClass     {bracket, avoid}
 
   context-free syntax
@@ -26,5 +26,5 @@ exports
   context-free priorities
     "~" CharClass -> CharClass >
     CharClass "/" CharClass -> CharClass >
-    CharClass "/" "\\" CharClass -> CharClass >
-    CharClass "\\" "/" CharClass -> CharClass
+    CharClass "/\\" CharClass -> CharClass >
+    CharClass "\\/" CharClass -> CharClass

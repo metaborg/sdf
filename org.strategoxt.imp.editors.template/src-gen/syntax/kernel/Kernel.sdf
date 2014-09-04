@@ -3,18 +3,18 @@ imports aterms/Aterms symbols/Symbols grammar/Grammars constants/StrCon
 
 exports
   context-free syntax
-    aterm:ATerm                              -> ATermAttribute    {cons("Default")}
-    ATermAttribute                           -> Attribute         {cons("Term")}
-    "{" list:{Attribute ","}* "}"            -> Attributes        {cons("Attrs")}
-                                             -> Attributes        {cons("NoAttrs")}
-    "deprecated"                             -> Attribute         {cons("Deprecated"), prefer}
-    "deprecated" "(" StrCon ")"              -> Attribute         {cons("Deprecated"), prefer}
-    "cons" "(" StrCon ")"                    -> Attribute         {cons("Constructor"), prefer, deprecated("Use 'Sort.Cons' notation instead")}
-    QuotedConstructor                        -> Attribute         {prefer, deprecated("Use 'Sort.Cons' notation instead")}
-    StrCon                                   -> QuotedConstructor {cons("Constructor")}
-    Symbols "-" ">" result:Symbol Attributes -> Production        {cons("Prod"), deprecated("Use productive form instead")}
-    list:Production*                         -> Productions       
-    "syntax" Productions                     -> Grammar           {cons("Syntax")}
+    aterm:ATerm                           -> ATermAttribute    {cons("Default")}
+    ATermAttribute                        -> Attribute         {cons("Term")}
+    "{" list:{Attribute ","}* "}"         -> Attributes        {cons("Attrs")}
+                                          -> Attributes        {cons("NoAttrs")}
+    "deprecated"                          -> Attribute         {cons("Deprecated"), prefer}
+    "deprecated" "(" StrCon ")"           -> Attribute         {cons("Deprecated"), prefer}
+    "cons" "(" StrCon ")"                 -> Attribute         {cons("Constructor"), prefer, deprecated("Use 'Sort.Cons' notation instead")}
+    QuotedConstructor                     -> Attribute         {prefer, deprecated("Use 'Sort.Cons' notation instead")}
+    StrCon                                -> QuotedConstructor {cons("Constructor")}
+    Symbols "->" result:Symbol Attributes -> Production        {cons("Prod"), deprecated("Use productive form instead")}
+    list:Production*                      -> Productions       
+    "syntax" Productions                  -> Grammar           {cons("Syntax")}
 
   context-free syntax
     CONTENTCOMPLETE -> ATermAttribute    {cons("COMPLETION-ATermAttribute")}

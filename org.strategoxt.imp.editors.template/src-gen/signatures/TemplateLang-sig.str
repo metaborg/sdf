@@ -76,6 +76,11 @@ signature
     Layout                   : TemplateLayout -> TemplatePart2
 
   constructors
+     : String -> EOL
+     : String -> CR
+     : String -> LF
+
+  constructors
      : String -> TemplateLayout
      : String -> TemplateString1
      : String -> TemplateString2

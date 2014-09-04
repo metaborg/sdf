@@ -1,10 +1,10 @@
-module src-gen/completion/grammar/Grammars-esv
+module src-gen/completions/grammar/Grammars-esv
 
 imports
-  src-gen/completion/layout/Comments-esv
+  src-gen/completions/layout/Comments-esv
 
 completions
   completion template Grammar : "(/)" =
     "(/)"  
-  completion template Grammar : "(foo)" =
-    "(" <foo:Grammar> ")"  
+  completion template Grammar : "(Grammar)" =
+    "(" <Grammar:Grammar> ")"  
