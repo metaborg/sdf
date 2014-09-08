@@ -27,6 +27,7 @@
 	<property location="src-gen/signatures" name="signatures"/>
 	<property location="src-gen" name="sdf-src-gen"/>
 	<property location="${sdf-src-gen}/lib-gen" name="lib-gen"/>
+	<property location="${sdf-src-gen}/lib-gen" relative="yes" name="lib-gen.rel"/> 
 
 	<!-- Imports -->
 	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def"/>
@@ -79,11 +80,6 @@
 			<arg value="${include}/EditorService-pretty.pp.af"/>
 		</java>
 	</target>
-
-	
-	
-
-	
 	
 	<!-- Target to create jar from generated pp and signatures -->
 	<target depends="utils-files" name="pp.jar">
@@ -216,8 +212,7 @@
 		</target>
 
 	<!-- Importing Ant Macros -->
-	  <taskdef classpath="${eclipse.spoofaximp.strategojar}" resource="org/strategoxt/antcontrib/strategoxt-antlib.xml"/>
-	 
+	<taskdef classpath="${eclipse.spoofaximp.strategojar}" resource="org/strategoxt/antcontrib/strategoxt-antlib.xml"/>
 	<taskdef classpath="${eclipse.spoofaximp.strategojar}" resource="net/sf/antcontrib/antlib.xml"/>
 	
 	<target name="copy-sdf2">
@@ -272,7 +267,7 @@
 			<arg value="--rule-prefix"/>
 			<arg value="${sdfmodule}"/>
 			<arg value="--sig-module"/>
-			<arg value="src-gen/lib-gen/${sigmodule}"/>
+			<arg value="${lib-gen.rel}/${sigmodule}"/>
 		</args>
 		</sdf2parenthesize>
 	</target>	
@@ -316,7 +311,7 @@
 			<str-deps>
 				<srcfiles dir="${trans}" includes="**/*.str"/>
 				<srcfiles dir="${include}" includes="**/*.str"/>
-				<srcfiles dir="${lib}" includes="**/*.str" excludes="**/tmpl/pp.str"/>
+				<srcfiles dir="${lib}" includes="**/*.str" />
 			</str-deps>
 		</strj>
 		<delete failonerror="false" file="${include}/${strmodule}.rtree"/>
