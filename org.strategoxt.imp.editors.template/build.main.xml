@@ -1,354 +1,86 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="all" name="TemplateLang">
+    
+    <!-- Key input modules -->
+    <property name="sdfmodule" value="TemplateLang"/>
+    <property name="metasdfmodule" value="Stratego-TemplateLang"/>
+    <property name="esvmodule" value="TemplateLang"/>
+    <property name="strmodule" value="templatelang"/>
+    <property name="ppmodule" value="TemplateLang-pp"/>
+    <property name="sigmodule" value="TemplateLang-sig"/> 
+    
 
-	
-	
-	<!-- Key input modules -->
-	<property name="sdfmodule" value="TemplateLang"/>
-	<property name="metasdfmodule" value="Stratego-TemplateLang"/>
-	<property name="esvmodule" value="TemplateLang"/>
-	<property name="strmodule" value="templatelang"/>
-	<property name="ppmodule" value="TemplateLang-pp"/>
-	<property name="sigmodule" value="TemplateLang-sig"/> 
-	
+    <!-- Project directories -->
+    <property location="trans" name="trans"/>
+    <property location="trans" name="trans.rel" relative="yes"/>
+    <property location="editor/java" name="src-gen"/>
+    <property location="src-gen/syntax" name="syntax"/>
+    <property name="syntax.rel" relative="yes" value="${syntax}"/>
+    <property location="include" name="include"/>
+    <property name="include.rel" relative="yes" value="${include}"/>
+    <property location="lib" name="lib"/>
+    <property location="target/classes" name="build"/>
+    <property location="bin/dist" name="dist"/>
+    <property location="src-gen/pp" name="pp"/>
+    <property location="src-gen/signatures" name="signatures"/>
+    <property location="src-gen" name="sdf-src-gen"/>
+    <property location="include" name="lib-gen"/>
+    <property location="${lib-gen}" relative="yes" name="lib-gen.rel"/> 
 
-	<!-- Project directories -->
-	<property location="trans" name="trans"/>
-	<property location="trans" name="trans.rel" relative="yes"/>
-	<property location="editor/java" name="src-gen"/>
-	<property location="src-gen/syntax" name="syntax"/>
-	<property name="syntax.rel" relative="yes" value="${syntax}"/>
-	<property location="include" name="include"/>
-	<property name="include.rel" relative="yes" value="${include}"/>
-	<property location="lib" name="lib"/>
-	<property location="target/classes" name="build"/>
-	<property location="bin/dist" name="dist"/>
-	<property location="src-gen/pp" name="pp"/>
-	<property location="src-gen/signatures" name="signatures"/>
-	<property location="src-gen" name="sdf-src-gen"/>
-	<property location="${sdf-src-gen}/lib-gen" name="lib-gen"/>
-	<property location="${sdf-src-gen}/lib-gen" relative="yes" name="lib-gen.rel"/> 
+    <!-- Imports -->
+    <property name="build.sdf.imports" value="-Idef ${lib}/SDF.def"/>
+    <property name="build.stratego.args" value="        --library        -I &quot;${basedir}&quot;        -I &quot;${trans}&quot;        -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm             -la stratego-sdf -la strc"/>
 
-	<!-- Imports -->
-	<property name="build.sdf.imports" value="-Idef ${lib}/SDF.def"/>
-	<property name="build.stratego.args" value="        --library        -I &quot;${basedir}&quot;        -I &quot;${trans}&quot;        -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm             -la stratego-sdf -la strc"/>
-
-	<!--property name="build.stratego.args" value="
+    <!--property name="build.stratego.args" value="
       - -library
       -I &quot;${basedir}&quot;
       -I &quot;${trans}&quot;
       -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm   
       -la stratego-sdf -la strc -la org.strategoxt.imp.editors.template.generated" /-->
 
-	<!-- Optional: external .def and .jar locations
+    <!-- Optional: external .def and .jar locations
   <property name="externaldef" location="syntax/${sdfmodule}.def"/>
   <property name="externaljar" value="../lib.jar"/>
   <property name="externaljarflags" value="-la org.lib"/>
   -->
 
-	<!-- Environment configuration for command-line builds -->
-	<condition else="" property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}">
-		<isset property="eclipse.spoofaximp.nativeprefix"/>
-	</condition>
-	<property name="nativepath" value="${build.strategoxt.sdf}/"/>
-	<property location="${user.home}/.nix-profile/bin" name="build.strategoxt.sdf"/>
+    <!-- Environment configuration for command-line builds -->
+    <condition else="" property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}">
+        <isset property="eclipse.spoofaximp.nativeprefix"/>
+    </condition>
+    <property name="nativepath" value="${build.strategoxt.sdf}/"/>
+    <property location="${user.home}/.nix-profile/bin" name="build.strategoxt.sdf"/>
+	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin"/>
 
-	<import file="build.generated.xml"/>
+    <import file="build.generated.local.xml"/>
 
-	<!-- The files for which the on-save handler is called before building. -->
-	<path id="call-onsave.files">
-		<fileset dir=".">
-			<include name="**/*.tmpl"/>
-			<include name="**/*.sdf3_"/>
-			<include name="**/*.nab"/>
-			<include name="**/*.ts"/>
-		</fileset>
-	</path>
+    <!-- The files for which the on-save handler is called before building. -->
+    <path id="call-onsave.files">
+        <fileset dir=".">
+            <include name="**/*.tmpl"/>
+            <include name="**/*.sdf3_"/>
+            <include name="**/*.nab"/>
+            <include name="**/*.ts"/>
+        </fileset>
+    </path>
 
-	<!-- Main target -->
-	<target depends="sig.lib, pppack-esv, spoofaximp.default.ctree, pp.jar" name="all"/>
+    <!-- Main target -->
+    <target depends="pppack-esv, spoofaximp.default.ctree" name="all"/>
+	<target name="generate-sources" depends="generate-sources-ctree" />
+	<target name="package" depends="package-ctree" />
 
 
-	<!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
-	<available file="include/EditorService-pretty.pp.af" property="pppack-esv.available"/>
-	<target name="pppack-esv" unless="pppack-esv.available">
-		<java classname="run" failonerror="true">
-			<arg value="org.strategoxt.tools.main-parse-pp-table"/>
-			<arg value="-i"/>
-			<arg value="${lib}/EditorService-pretty.pp"/>
-			<arg value="-o"/>
-			<arg value="${include}/EditorService-pretty.pp.af"/>
-		</java>
-	</target>
-	
-	<!-- Target to create jar from generated pp and signatures -->
-	<target depends="utils-files" name="pp.jar">
-		<available file="${pp}/${ppmodule}.str" property="pp.module.enabled"/>
-		<fail message="Main pp file '${ppmodule}.str' not found.">
-			<condition>
-				<not>
-					<isset property="pp.module.enabled"/>
-				</not>
-			</condition>
-		</fail>
-		
-		<available file="${src-gen}/pplib/Main.java" property="pp-java.available"/>
-		<antcall target="pp.jar.deletehelper"/>
-		
-		<strj input="${pp}/${ppmodule}.str" output="${src-gen}/pplib/Main.java" package="pplib">
-					<strjargs> 
-						<arg value="--clean"/>
-						<arg line="${build.stratego.args}"/>
-						<arg line="${externaljarflags}"/>
-						<arg line="${externaldefimport}"/>
-						<arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
-						<arg value="--library"/>
-					</strjargs>
-					<str-deps>
-						<srcfiles dir="${pp}" includes="**/*.str"/>
-						<srcfiles dir="${signatures}" includes="**/*.str"/>
-					</str-deps>
-				</strj>
-		<mkdir dir="${build}/pplib"/>
-		
-		<sequential>
-			<uptodate-mio input="${src-gen}/pplib/Main.java" output="${lib-gen}/${ppmodule}.jar" type="javac">
-				<action>
-					<javac debug="on" destdir="${build}" includes="pplib/**" source="1.7" srcdir="${src-gen}" target="1.7">
-						<classpath>
-							<pathelement path="utils/strategoxt.jar:${src-gen}${externaljarimport1}${externaljarimport2}${java.jar.classpath}"/>
-						</classpath>
-					</javac>
-					<!-- copy imported terms -->
-					<copy todir="${build}/pplib">
-							<fileset dir="${src-gen}/pplib" excludes="**/*.java"/>
-					</copy>
-					<copy file="${src-gen}/pplib/Main.rtree" tofile="${lib-gen}/${ppmodule}.rtree" />
-					<jar basedir="${build}" destfile="${lib-gen}/${ppmodule}.tmp.jar" includes="pplib/**"/>
-					<move file="${lib-gen}/${ppmodule}.tmp.jar" tofile="${lib-gen}/${ppmodule}.jar"/>
-				    <delete>
-						<fileset dir="${build}" includes="pplib/**"/>
-					</delete> 
-				</action>
-				<deps>
-					<srcfiles dir="${src-gen}/pplib/" includes="**/*.java"/>
-				</deps>
-			</uptodate-mio>
-		</sequential>
-		
-	</target>
-	
-	<target name="pp.jar.deletehelper" unless="pp-java.available">
-				<delete>
-					<fileset dir="${src-gen}" includes="pplib/**"/>
-					<fileset dir="${build}" includes="pplib/**"/>
-					<!-- fileset dir="${pp}" includes="${ppmodule}.rtree" /-->
-				</delete>
-		</target>
-	
-	
-	<!-- Target to create library from generated signatures -->
-		<target depends="utils-files" name="sig.lib"> 
-			<available file="${signatures}/${sigmodule}.str" property="sig.module.enabled"/>
-			<fail message="Main pp file '${sigmodule}.str' not found.">
-				<condition>
-					<not>
-						<isset property="sig.module.enabled"/>
-					</not>
-				</condition>
-			</fail>
-			
-			
-			<strj input="${signatures}/${sigmodule}.str" output="${lib-gen}/${sigmodule}.ctree" package="trans">
-						<strjargs> 
-							<arg value="--clean"/>
-							<arg line="${build.stratego.args}"/>
-							<arg line="${externaljarflags}"/>
-							<arg line="${externaldefimport}"/>
-							<arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
-							<arg value="--library"/>
-							<arg value="-F"/>
-						</strjargs>
-						<str-deps>
-							<srcfiles dir="${signatures}" includes="**/*.str"/>
-						</str-deps>
-					</strj>
-			<mkdir dir="${build}/siglib"/>
-			
-			<delete>
-				<!-- fileset dir="${include}" includes="TemplateLang-sig.*" excludes="TemplateLang-sig.rtree" /--> 
-				<fileset dir="${build}" includes="siglib/**"/>
-			</delete>
-			
-		</target>
-	
-	 
-	
-	<target description="Clean project" name="clean">
-		<delete dir="${build}"/>
-		<delete dir=".cache"/>
-		<delete>
-			<fileset dir="editor" includes="*.generated.*"/>
-      <fileset dir="trans" includes="*.pp.generated.str"/>
-		</delete>
-		<delete dir="${sdf-src-gen}"/>
-		<delete dir="${src-gen}/trans"/>
-		<delete file="editor/${sdfmodule}.generated.esv"/>
-		<delete file="${syntax}/${sdfmodule}.generated.esv"/>
-		<delete file="${syntax}/${sdfmodule}.generated.pp"/>
-		<delete file="${include}/${metasdfmodule}-Permissive.def"/>
-		<delete file="${include}/${metasdfmodule}.def"/>
-		<delete file="${include}/${metasdfmodule}.tbl"/>
-		<delete file=".settings/org.eclipse.jdt.core.prefs"/>
-		<delete dir="utils"/>
-		<delete>
-			<fileset dir="${lib}" includes="*.generated.str"/>
-		</delete>
-		<antcall target="refresh-cleaned"/>
-	</target>
-
-	<target if="java.jar.enabled" name="java.jar">
-			<jar basedir="${build}" destfile="${include}/${strmodule}-java.jar" excludes="trans/** pplib/**" update="true"/>
-		</target>
-
-	<!-- Importing Ant Macros -->
-	<taskdef classpath="${eclipse.spoofaximp.strategojar}" resource="org/strategoxt/antcontrib/strategoxt-antlib.xml"/>
-	<taskdef classpath="${eclipse.spoofaximp.strategojar}" resource="net/sf/antcontrib/antlib.xml"/>
-	
-	<target name="copy-sdf2">
-	  <copy preservelastmodified="yes" todir="src-gen/syntax">
-	    <fileset dir="${basedir}/syntax" includes="**/*.sdf"/>
-	  </copy>
-	</target>
-	
-	<target name="pack-sdf">
-		<echo> calling this one </echo>
-		<condition else="" property="utils-include" value="-I ${utils}">
-				<available file="${utils}"/>
-		</condition>
-		<pack-sdf input="${syntax.rel}/${sdfmodule}.sdf" output="${include.rel}/${sdfmodule}.def">
-			<sdf-deps>
-				<srcfiles dir="${basedir}" includes="**/*.sdf"/>
-				<srcfiles dir="${lib}" includes="**/*.def"/>
-				<srcfiles dir="${include}" includes="${sdfmodule}.def"/> 
-			</sdf-deps>
-		
-			<args>
-				<arg value="-I"/>
-				<arg value="${syntax}"/>
-				<arg value="-I"/>
-				<arg value="${lib}"/>
-				<arg line="${utils-include}"/>
-				<arg line="${build.sdf.imports}"/>
-			</args>
-		</pack-sdf>
-	</target>
-	
-	<target depends="make-permissive" name="sdf2table">
-		<echo> calling this one </echo>
-		<for param="input">
-			<path>
-				<fileset dir="${include}" includes="*-Permissive.def"/>
-			</path>
-			<sequential>
-				<local name="input-basename"/>
-				<basename file="@{input}" property="input-basename" suffix="-Permissive.def"/>
-				<sdf2table input="@{input}" main="${sdfmodule}" output="${include}/${input-basename}.tbl"/>
-			</sequential>
-		</for>
-	</target>
-	
-	<target depends="pack-sdf,copy-sdf" name="sdf2parenthesize">
-		<echo> calling this one </echo>
-		<sdf2parenthesize input="${include.rel}/${sdfmodule}.def" language="${sdfmodule}" main="${sdfmodule}" output="${include.rel}/${sdfmodule}-parenthesize.str" outputmodule="include/${sdfmodule}-parenthesize">
-		<args>
-			<arg value="--main-strategy"/>
-			<arg value="io-${sdfmodule}-parenthesize"/>
-			<arg value="--rule-prefix"/>
-			<arg value="${sdfmodule}"/>
-			<arg value="--sig-module"/>
-			<arg value="${lib-gen.rel}/${sigmodule}"/>
-		</args>
-		</sdf2parenthesize>
-	</target>	
-	
-	<target depends="pack-sdf, copy-sdf" name="make-permissive">
-		<echo> calling this one </echo>
-		<make-permissive input="${include.rel}/${sdfmodule}.def" output="${include.rel}/${sdfmodule}-Permissive.def">
-			<permissiveargs>	
-				<arg line="--optimize on"/>
-			</permissiveargs>
-		</make-permissive>
-	</target>
-	
-	<target depends="rtg2sig" name="stratego.ctree">
-		<!-- import these from build properties? -->
-		<property name="version" value="0.19"/> 
-		<property name="revision" value="0"/>
-		
-		<echo> calling this one </echo>
-		<fail message="Main stratego file '${strmodule}.str' not found."> 
-			<condition>
-				<not>
-					<isset property="build.stratego.enabled"/> 
-				</not>
-			</condition>
-		</fail>
-		
-		<!--antcall target="copy-jar" /-->
-		
-		<delete failonerror="false" file="${include}/${strmodule}.rtree"/>
-		<strj input="${trans}/${strmodule}.str" output="${include}/${strmodule}.ctree" package="trans">
-			<strjargs> 
-				<arg value="--clean"/>
-				<arg line="${build.stratego.args}"/>
-				<arg line="${externaljarflags}"/>
-				<arg line="${externaldefimport}"/>
-				<arg line="-I &quot;${lib}&quot; -I &quot;${include}&quot; --cache-dir &quot;${basedir}/.cache&quot;"/>
-				<arg value="--library"/>
-				<arg value="-F"/>
-			</strjargs>
-			<str-deps>
-				<srcfiles dir="${trans}" includes="**/*.str"/>
-				<srcfiles dir="${include}" includes="**/*.str"/>
-				<srcfiles dir="${lib}" includes="**/*.str" />
-			</str-deps>
-		</strj>
-		<delete failonerror="false" file="${include}/${strmodule}.rtree"/>
-		<mkdir dir="${build}/trans"/>
-	</target>
-	
-	<!-- Should we keep this? -->
-	<target depends="pack-sdf" if="build.stratego.enabled" name="ppgen">
-			<echo> ignoring this one </echo>
-		<!-- ppgen input="${include.rel}/${sdfmodule}.def" output="${include.rel}/${sdfmodule}.generated.pp" /-->	
-	</target>
-	
-	<target depends="pack-sdf,copy-sdf" name="sdf2rtg">
-		<echo> ignoring this one </echo>
-		<!--sdf2rtg input="${include.rel}/${sdfmodule}.def" output="${include.rel}/${sdfmodule}.rtg" main="${sdfmodule}" /-->
-	</target>
-		
-	<target depends="sdf2rtg" if="build.stratego.enabled" name="rtg2sig">
-		<echo> ignoring this one </echo>
-		<!--rtg2sig input="${include.rel}/${sdfmodule}.rtg" output="${include.rel}/${sdfmodule}.str" main="${sdfmodule}"/-->
-	</target> 
-	
-	
-	
-	<target name="generate-all">
-		<!-- GENERATE SUCH CODE FOR EVERY BUILDER IN THE LANGUAGE -->
-		<uptodate-mio input="$ALLFILES" output="$RESULTFROMBUILDER" type="$BUILDERNAME">
-            <action>
-               <!-- CALLING THE BUILDER -->
-            </action>
-            <deps>
-                <!-- DOES THE BUILDER DEPEND ON CHANGES IN OTHER FILES TO RUN? -->
-            	<!-- IF NO, THIS SHOULD BE EMPTY -->
-            	<!-- IF YES, THEN IT SHOULD PROBABLY DEPEND ON ALL FILES, OR IDEALLY IN THE IMPORTED FILES -->
-            </deps>
-		</uptodate-mio>
-	</target>
-	
-
+    <!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
+    <available file="include/EditorService-pretty.pp.af" property="pppack-esv.available"/>
+    <target name="pppack-esv" unless="pppack-esv.available">
+        <java classname="run" failonerror="true">
+            <arg value="org.strategoxt.tools.main-parse-pp-table"/>
+            <arg value="-i"/>
+            <arg value="${lib}/EditorService-pretty.pp"/>
+            <arg value="-o"/>
+            <arg value="${include}/EditorService-pretty.pp.af"/>
+        </java>
+    </target>
+    
+   
 </project>

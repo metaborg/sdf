@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="build.generated">
+<project name="build.generated" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<target name="spoofaximp.default" depends="spoofaximp.default.ctree" />
 	<target name="spoofaximp.default.ctree" depends="
 						check-classpath,
@@ -76,13 +76,13 @@
     </target>
 
 	<!-- Initialization -->
-	<available file="${src-gen}/org/strategoxt/imp/editors/sdf/strategies/Main.java" property="java.jar.enabled" />
+	<available file="${src-gen}/org/strategoxt/imp/editors/template/strategies/Main.java" property="java.jar.enabled" />
 	<available file="${pp}/${ppmodule}.str" property="pp.module.enabled" />
 	<available file="${signatures}/${sigmodule}.str" property="sig.module.enabled" />
 	<condition property="parenthesize.signatures" value="${lib-gen.rel}/${sigmodule}" else="include/${sdfmodule}">
         <isset property="sig.module.enabled" />
     </condition>
-	<condition property="java.jar.import" value="-la org.strategoxt.imp.editors.sdf.strategies" else="">
+	<condition property="java.jar.import" value="-la org.strategoxt.imp.editors.template.strategies" else="">
 		<isset property="java.jar.enabled" />
 	</condition>
 	<condition property="java.jar.classpath" value=":${include}/${strmodule}-java.jar" else="">
@@ -536,7 +536,7 @@
 	</target>
 
 	<target name="java.jar" if="java.jar.enabled">
-		<jar basedir="${build}" includes="org/strategoxt/imp/editors/sdf/strategies/" update="true" destfile="${include}/${strmodule}-java.jar" />
+		<jar basedir="${build}" includes="org/strategoxt/imp/editors/template/strategies/" update="true" destfile="${include}/${strmodule}-java.jar" />
 	</target>
 
 	<!-- Stratego to Java interpreter -->
