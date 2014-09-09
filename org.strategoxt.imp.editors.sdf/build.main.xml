@@ -75,7 +75,4 @@
 			</delete>
 			<antcall target="refresh-cleaned" />
 		</target>
-
-
 </project>
-
