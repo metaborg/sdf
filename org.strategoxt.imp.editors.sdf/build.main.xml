@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <project name="SDF" default="all">
-
 	<!-- Key input modules -->
 	<property name="sdfmodule" value="SDF" />
 	<property name="esvmodule" value="SDF" />
@@ -37,8 +35,10 @@
 
 	<import file="build.generated.xml" />
 
-	<!-- Main target -->
-	<target name="all" depends="spoofaximp.default.ctree" />
+  <!-- Main target -->
+  <target name="all" depends="spoofaximp.default.ctree" />
+  <target name="generate-sources" depends="generate-sources-ctree" />
+  <target name="package" depends="package-ctree" />
 	
 	<target name="clean" description="Clean project">
 			<delete dir="${build}" />
