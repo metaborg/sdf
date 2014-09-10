@@ -7,7 +7,7 @@ imports
   lib/runtime/types/-
   lib/runtime/relations/-
   lib/runtime/editor/-
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   analysis/types
   libstrc
 

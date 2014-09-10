@@ -3,7 +3,7 @@ module generation/to-sig
 imports
   libstratego-lib
   libstrc
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
  // utils/contract
   analysis/types
   runtime/nabl/-

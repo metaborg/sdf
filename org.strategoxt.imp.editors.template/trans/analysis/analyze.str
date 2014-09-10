@@ -1,7 +1,7 @@
 module analysis/analyze
 
 imports
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   analysis/desugar
   analysis/normalization
 

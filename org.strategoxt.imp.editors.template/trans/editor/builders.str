@@ -9,7 +9,7 @@ imports
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/EditorService
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   analysis/desugar
   editor-common.generated
   trans/pp

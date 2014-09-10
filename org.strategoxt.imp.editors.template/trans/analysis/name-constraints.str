@@ -2,7 +2,7 @@ module analysis/name-constraints
 
 imports
 
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   libstratego-lib
   libstratego-gpp
   analysis/names

@@ -6,7 +6,7 @@ imports
   libstratego-aterm
   libstratego-sglr
   libstrc
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   include/TemplateLang-parenthesize
   editor/TemplateLang-Outliner
   lib/EditorService

@@ -21,4 +21,4 @@ trans/*generated*
 utils
 !trans/utils
 include
-lib-gen
+src-gen

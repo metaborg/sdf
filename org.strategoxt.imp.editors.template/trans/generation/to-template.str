@@ -2,7 +2,7 @@ module to-template
 
 imports
   libstratego-sglr
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   
 
   

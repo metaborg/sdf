@@ -2,7 +2,7 @@ module remove-template
 
 imports
   libstratego-sglr
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   generation/to-sdf

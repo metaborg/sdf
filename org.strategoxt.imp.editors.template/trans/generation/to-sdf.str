@@ -2,7 +2,7 @@ module generation/to-sdf
 imports
   libstratego-lib
   libstratego-sglr
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   trans/utils/attributes
   trans/utils/misc
   trans/utils/tokenize

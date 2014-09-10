@@ -1,7 +1,7 @@
 module analysis/types
 
 imports 
-  src-gen/lib-gen/TemplateLang-sig
+  include/TemplateLang-sig
   libstrc
   runtime/types/collect
 
