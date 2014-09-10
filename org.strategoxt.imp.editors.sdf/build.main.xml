@@ -52,39 +52,4 @@
   <target name="generate-sources" depends="generate-sources-ctree" />
   <target name="package" depends="package-ctree" />
 	
-	<target name="clean" description="Clean project">
-			<delete dir="${build}" />
-			<delete dir="${sdf-src-gen}" />
-			<delete dir=".cache" />
-			<delete file="${include}/${sdfmodule}.def" />
-			<delete file="${include}/${sdfmodule}-parenthesize.str" />
-			<delete file="${include}/${sdfmodule}-Permissive.def" />
-			<delete file="${include}/${sdfmodule}.generated.pp.af" />
-			<delete file="${include}/${sdfmodule}.packed.esv" />
-			<delete file="${include}/${sdfmodule}.pp.af" />
-			<delete file="${include}/${sdfmodule}.rtg" />
-			<delete file="${include}/${sdfmodule}.str" />
-			<delete file="${include}/${sdfmodule}.tbl" />
-			<delete file="${include}/${strmodule}.rtree" />
-			<delete file="${include}/${strmodule}.ctree" />
-			<delete file="${include}/${strmodule}.ctree.dep" />
-			<delete file="${include}/${strmodule}.jar" />
-			<delete>
-				<fileset dir="editor" includes="*.generated.*" />
-	      <fileset dir="trans" includes="*.pp.generated.str" />
-			</delete>
-			<delete dir="${src-gen}/trans" />
-			<delete file="editor/${sdfmodule}.generated.esv" />
-			<delete file="${syntax}/${sdfmodule}.generated.esv" />
-			<delete file="${syntax}/${sdfmodule}.generated.pp" />
-			<delete file="${include}/${metasdfmodule}-Permissive.def" />
-			<delete file="${include}/${metasdfmodule}.def" />
-			<delete file="${include}/${metasdfmodule}.tbl" />
-			<delete file=".settings/org.eclipse.jdt.core.prefs" />
-			<delete dir="utils" />
-			<delete>
-				<fileset dir="${lib}" includes="*.generated.str" />
-			</delete>
-			<antcall target="refresh-cleaned" />
-		</target>
 </project>

@@ -52,7 +52,7 @@
     <property location="${user.home}/.nix-profile/bin" name="build.strategoxt.sdf"/>
 	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin"/>
 
-    <import file="build.generated.local.xml"/>
+    <import file="build.generated.xml"/>
 
     <!-- The files for which the on-save handler is called before building. -->
     <path id="call-onsave.files">
