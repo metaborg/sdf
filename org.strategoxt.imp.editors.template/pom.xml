@@ -9,13 +9,23 @@
 
 	<parent>
 		<groupId>org.metaborg</groupId>
-		<artifactId>org.metaborg.maven.parent.plugin</artifactId>
+		<artifactId>org.metaborg.maven.parent.language</artifactId>
 		<version>1.2.0-SNAPSHOT</version>
-		<relativePath>../../spoofax-deploy/org.metaborg.maven.parent.plugin</relativePath>
+		<relativePath>../../spoofax-deploy/org.metaborg.maven.parent.language</relativePath>
 	</parent>
 
 	<build>
-		<sourceDirectory>editor/java</sourceDirectory>
+		<plugins>
+			<!-- Reference install and deploy plugin to use settings from parent POM. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
 
 	<developers>
