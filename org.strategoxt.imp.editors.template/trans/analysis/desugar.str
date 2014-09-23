@@ -14,7 +14,7 @@ SingleLineTemplate            : List(TemplateElement) -> Template
 strategies
 
   desugar-templates =
-    alltd(alltd(origin-track-forced(preserve-annotations-attachments(desugar-template))))
+    alltd(origin-track-forced(preserve-annotations-attachments(desugar-template)))
 
 rules
   
