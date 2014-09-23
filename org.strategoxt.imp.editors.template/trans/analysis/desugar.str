@@ -95,7 +95,7 @@ rules
       end 
 
   desugar-elements =
-    alltd(origin-track-forced(desugar-element))
+    alltd(origin-track-forced(desugar-brackets)) ; alltd(origin-track-forced(desugar-element))
 
   desugar-element:
     NoOptions() -> []
@@ -146,10 +146,10 @@ rules
       t' := <origin-track-forced(string-replace(|"\t", "  "))> t
      
 
-  desugar-element:
-  	Squared(p) -> p
+  desugar-brackets:
+  	Squared(p) ->  p
   
-  desugar-element:
-  	Angled(p) -> p
+  desugar-brackets:
+  	Angled(p) ->  p
   
   
