@@ -35,6 +35,18 @@ imports
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
   	
+  	nabl-constraint(|ctx):
+    SortCons(s, c@Constructor("Nil")) -> <fail>
+    where
+      msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> c
+
+    nabl-constraint(|ctx):
+    SortCons(s, c@Constructor("Cons")) -> <fail>
+    where
+      msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> c
+
   	
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
