@@ -64,7 +64,7 @@ exports
     "hide"                                     -> PlaceholderOption  {cons("Hide")}
     "wrap"                                     -> PlaceholderOption  {cons("Wrap")}
     "anchor"                                   -> PlaceholderOption  {cons("Anchor")}
-    "separator" "=" StrCon                     -> PlaceholderOption  {cons("Separator"), deprecated("Use list with separator symbol instead")}
+    "separator" "=" StrCon                     -> PlaceholderOption  {cons("Separator"), deprecated("Use list with separator symbol instead: {S* \"separator\"}")}
     "text" "=" StrCon                          -> PlaceholderOption  {cons("Text")}
 
   context-free syntax

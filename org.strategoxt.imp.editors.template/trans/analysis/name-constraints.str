@@ -3,6 +3,7 @@ module analysis/name-constraints
 imports
 
   include/TemplateLang-sig
+  libstratego-sglr
   libstratego-lib
   libstratego-gpp
   analysis/names
@@ -11,6 +12,9 @@ imports
   runtime/task/-
   runtime/types/-
   analysis/types
+  generation/to-sdf
+  analysis/desugar
+  runtime/properties/-
   
   strategies
   	
@@ -31,6 +35,18 @@ imports
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
   	
+  	nabl-constraint(|ctx):
+    SortCons(s, c@Constructor("Nil")) -> <fail>
+    where
+      msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> c
+
+    nabl-constraint(|ctx):
+    SortCons(s, c@Constructor("Cons")) -> <fail>
+    where
+      msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
+      <task-create-error(|ctx, msg)> c
+
   	
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
@@ -94,8 +110,13 @@ imports
   	nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
         where
-            weird-symbols* := <filter(check-for-weird-symbols); flatten-list> p*;
-            <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*		
+            p'*            := <desugar-templates> p*;
+            weird-symbols* := <filter(check-for-weird-symbols); flatten-list> p'*;
+            prods-wo-cons* := <filter(prod-without-constructor)> p'*;
+            illegal-brackets* := <filter(prod-with-illegal-brackets)> p'*;
+            <map(task-create-warning(|ctx, $[Missing constructor name]))> prods-wo-cons*;
+            <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*;
+            <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*		
   	
   	check-for-weird-symbols:
         p -> weird-symbols*
@@ -112,7 +133,45 @@ imports
   			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
   			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
 
-		
+	
+	prod-without-constructor:
+        p@SdfProduction(s, Rhs(prod-sorts), Attrs(attrs*)) -> s //production does not have a constructor
+        where
+            <not(?[Sort(sort)])> prod-sorts //is not an Injection
+            ; <not(fetch-elem(?Bracket()))> attrs* //does not have the bracket annotation
+           
+    prod-without-constructor:
+        t@TemplateProduction(s, template, Attrs(attrs*)) -> s
+        where
+            rhs* := <template-to-sdf(|["(", ")"], None())> template;
+            <not(?[sort(sort)])> rhs* ;
+            <not(fetch-elem(?Bracket()))> attrs*
+    
+    prod-with-illegal-brackets:
+        p@SdfProduction(SortDef(s), Rhs(rhs*), Attrs(attrs*)) -> bracketanno
+        where
+        	s' := <strip-annos> s;
+            bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
+            debug(!"bracket "); <not(?[_, Sort(sort), _]; s':= <strip-annos> sort; debug(!"sort rhs "))> rhs* //it does not follow the bracket structure
+            
+    prod-with-illegal-brackets:
+        t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
+        where
+        	s'      := <strip-annos> s;
+            rhs     := <template-to-sdf(|["(", ")"], None())> template;
+            bracketanno := <fetch-elem(?Bracket())> attrs*;
+            <not(?[_, sort(sort), _]; s':= <strip-annos> sort)> rhs
+            
+    prod-with-illegal-brackets:
+        SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
+        where
+            bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
+            
+    prod-with-illegal-brackets:
+        TemplateProductionWithCons(sc, t, Attrs(attrs*)) -> bracketanno
+        where
+            bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
+            		
 	task-rewrite:
   	  ("match-sort-type", (e@FunType(ty*, SortType(s)), a@FunType(ty'*, SortType(s')))) -> a
   	  where

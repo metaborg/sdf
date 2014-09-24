@@ -28,7 +28,7 @@ Section.TemplateOptions = <
 	
 		<{TemplateOption "\n"}*>
 	
-	>
+	> 
 
 TemplateOption.Newlines = <newlines : <NewlineOptionValue>>
  
@@ -129,7 +129,7 @@ PlaceholderOption.Hide = <hide>
 PlaceholderOption.Wrap = <wrap>
 PlaceholderOption.Anchor = <anchor>
 //mark as deprecated
-PlaceholderOption.Separator = <separator=<StrCon>> {deprecated("Use list with separator symbol instead")}
+PlaceholderOption.Separator = <separator=<StrCon>> {deprecated("Use list with separator symbol instead: {S* \"separator\"}")}
 PlaceholderOption.Text = <text=<StrCon>>
  
 // syntax

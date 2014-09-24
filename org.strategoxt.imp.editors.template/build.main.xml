@@ -81,6 +81,42 @@
             <arg value="${include}/EditorService-pretty.pp.af"/>
         </java>
     </target>
+	
+	<!-- Don't clean the src-gen folder because of bootstraping issues -->
+	<target name="clean" description="Clean project">
+	        <delete dir="${build}" failonerror="false" />
+	        <delete dir=".cache" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.def" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}-parenthesize.str" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}-Permissive.def" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.generated.pp.af" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.packed.esv" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.pp.af" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.rtg" failonerror="false" />
+	        <delete file="${lib-gen}/${ppmodule}.jar" failonerror="false" />
+	        <delete file="${lib-gen}/${ppmodule}.rtree" failonerror="false" />
+	        <delete file="${lib-gen}/${sigmodule}.str" failonerror="false" />
+	        <delete file="${lib-gen}/${sigmodule}.ctree" failonerror="false" />
+	        <delete file="${lib-gen}/${sigmodule}.rtree" failonerror="false" />
+	        <delete file="${lib-gen}/${sigmodule}.ctree.dep" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.str" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.tbl" failonerror="false" />
+	        <delete file="${include}/${strmodule}.rtree" failonerror="false" />
+	        <delete file="${include}/${strmodule}.ctree" failonerror="false" />
+	        <delete file="${include}/${strmodule}.ctree.dep" failonerror="false" />
+	        <delete file="${include}/${strmodule}.jar" failonerror="false" />
+	        <delete dir="${src-gen}/trans" failonerror="false" />
+	        <delete file="${syntax}/${sdfmodule}.generated.esv" failonerror="false" />
+	        <delete file="${syntax}/${sdfmodule}.generated.pp" failonerror="false" />
+	        <delete file="${include}/${metasdfmodule}-Permissive.def" failonerror="false" />
+	        <delete file="${include}/${metasdfmodule}.def" failonerror="false" />
+	        <delete file="${include}/${metasdfmodule}.tbl" failonerror="false" />
+	        <delete dir="utils" failonerror="false" />
+	        <delete failonerror="false">
+	            <fileset dir="${lib}" includes="*.generated.str" erroronmissingdir="false" />
+	        </delete>
+	        <antcall target="refresh-cleaned" />
+	    </target>
     
    
 </project>
