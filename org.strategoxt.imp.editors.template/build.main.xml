@@ -65,7 +65,7 @@
 
     <!-- Main target -->
     <target depends="pppack-esv, spoofaximp.default.ctree" name="all"/>
-	<target name="generate-sources" depends="generate-sources-ctree" />
+	<target name="generate-sources" depends="pppack-esv, generate-sources-ctree" />
 	<target name="package" depends="package-ctree" />
 
 
