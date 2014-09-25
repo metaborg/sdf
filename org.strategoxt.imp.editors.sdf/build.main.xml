@@ -42,8 +42,7 @@
 		<isset property="eclipse.spoofaximp.nativeprefix" />
 	</condition>
 	<property name="build.strategoxt.stratego" location="${user.home}/.nix-profile/bin" />
-	<property name="nativepath" value="${build.strategoxt.sdf}/"/>
-    <property location="${user.home}/.nix-profile/bin" name="build.strategoxt.sdf"/>
+	<property name="nativepath" value="${eclipse.spoofaximp.nativeprefix}"/>
 
 	<import file="build.generated.xml" />
 
