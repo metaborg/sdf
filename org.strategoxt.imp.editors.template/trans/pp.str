@@ -3,7 +3,6 @@ module trans/pp
 imports
 
 	libstratego-gpp
-	lib/runtime/tmpl/pp
 	src-gen/pp/TemplateLang-pp
 	src-gen/pp/modules/Modules-pp
 	

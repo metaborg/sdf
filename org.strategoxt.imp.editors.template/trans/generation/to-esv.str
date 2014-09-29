@@ -1,7 +1,7 @@
 module generation/to-esv
 
 imports
-  include/TemplateLang-sig
+  include/TemplateLang
   lib/EditorService
   trans/utils/attributes
   trans/utils/misc
