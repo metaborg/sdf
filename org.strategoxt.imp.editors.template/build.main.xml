@@ -88,6 +88,7 @@
 	        <delete file="${include}/${sdfmodule}.def" failonerror="false" />
 	        <delete file="${include}/${sdfmodule}-parenthesize.str" failonerror="false" />
 	        <delete file="${include}/${sdfmodule}-Permissive.def" failonerror="false" />
+	        <delete file="${include}/${sdfmodule}.generated.pp" failonerror="false" />
 	        <delete file="${include}/${sdfmodule}.generated.pp.af" failonerror="false" />
 	        <delete file="${include}/${sdfmodule}.packed.esv" failonerror="false" />
 	        <delete file="${include}/${sdfmodule}.pp.af" failonerror="false" />
@@ -105,6 +106,8 @@
 	        <delete file="${include}/${strmodule}.ctree.dep" failonerror="false" />
 	        <delete file="${include}/${strmodule}.jar" failonerror="false" />
 	        <delete dir="${src-gen}/trans" failonerror="false" />
+	        <delete dir="${src-gen}/templatelang/pplib" failonerror="false" />
+	        <delete dir="${src-gen}/templatelang/siglib" failonerror="false" />
 	        <delete file="${syntax}/${sdfmodule}.generated.esv" failonerror="false" />
 	        <delete file="${syntax}/${sdfmodule}.generated.pp" failonerror="false" />
 	        <delete file="${include}/${metasdfmodule}-Permissive.def" failonerror="false" />
