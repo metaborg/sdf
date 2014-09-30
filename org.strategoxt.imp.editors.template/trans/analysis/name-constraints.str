@@ -137,15 +137,19 @@ imports
 	prod-without-constructor:
         p@SdfProduction(s, Rhs(prod-sorts), Attrs(attrs*)) -> s //production does not have a constructor
         where
+            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
+        where    
             <not(?[Sort(sort)])> prod-sorts //is not an Injection
-            ; <not(fetch-elem(?Bracket()))> attrs* //does not have the bracket annotation
+            
            
     prod-without-constructor:
         t@TemplateProduction(s, template, Attrs(attrs*)) -> s
         where
+            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
+        where
             rhs* := <template-to-sdf(|["(", ")"], None())> template;
-            <not(?[sort(sort)])> rhs* ;
-            <not(fetch-elem(?Bracket()))> attrs*
+            <not(?[sort(sort)])> rhs* 
+            
     
     prod-with-illegal-brackets:
         p@SdfProduction(SortDef(s), Rhs(rhs*), Attrs(attrs*)) -> bracketanno
