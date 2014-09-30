@@ -20,6 +20,25 @@ rules
     ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
 
+  
+  section-to-pp(|lang):
+     SDFSection(ContextFreeStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-pp)> s*        
+  
+  section-to-pp(|lang):
+     SDFSection(LexicalStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-pp)> s*      
+     
+  section-to-pp(|lang):
+     SDFSection(KernelStartSymbols(s*)) ->  Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-pp)> s*      
+     
+  start-symbol-to-pp:
+    Sort(x) -> SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[x]])))       
+  
   section-to-pp(|lang):
     SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
     with
@@ -27,9 +46,6 @@ rules
     	; s1*    := <map(sort-to-pp)> sort*
     	; s2*    := <map(sort-to-pp(|lang))> sort*
     	  
-    	  
-    	  
-      
   section-to-pp(|lang):
   	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
   	with
