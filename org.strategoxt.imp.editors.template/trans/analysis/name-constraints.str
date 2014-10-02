@@ -22,6 +22,11 @@ imports
   	nabl-check-disable-unresolved = id
   	
   	rules
+  	    
+ // 	nabl-constraint(|ctx):
+  	//    Module(Unparameterized(m), i*, s*) -> <fail>
+  //	where
+  	        
 
   	nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Nil\""))]))) -> <fail>
@@ -156,7 +161,7 @@ imports
         where
         	s' := <strip-annos> s;
             bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
-            debug(!"bracket "); <not(?[_, Sort(sort), _]; s':= <strip-annos> sort; debug(!"sort rhs "))> rhs* //it does not follow the bracket structure
+            <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> rhs* //it does not follow the bracket structure
             
     prod-with-illegal-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
@@ -164,7 +169,7 @@ imports
         	s'      := <strip-annos> s;
             rhs     := <template-to-sdf(|["(", ")"], None())> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
-            <not(?[_, sort(sort), _]; s':= <strip-annos> sort)> rhs
+            <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs
             
     prod-with-illegal-brackets:
         SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
