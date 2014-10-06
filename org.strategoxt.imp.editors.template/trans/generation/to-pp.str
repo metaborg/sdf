@@ -146,7 +146,8 @@ rules
 	    < line* := [Line([Layout(""), elem*])] 
 	    + !t => Template(line*)
       with
-      	(line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
+        <reset-counter> "pp";
+      	line'*      := <map(introduce-labels-line)> line*;
         output      := <map(template-line-to-stratego)> line'*;
         arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
         WldArg*     := <map(!Wld())> arg*;
@@ -166,7 +167,8 @@ rules
 	    < line* := [Line([Layout(""), elem*])] 
 	    + !t => Template(line*)
       with
-      (line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
+      <reset-counter> "pp";
+      line'*      := <map(introduce-labels-line)> line*;
       output      := <map(template-line-to-stratego)> line'*;
       arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
       if !arg* => [arg] then
@@ -192,31 +194,30 @@ rules
   extract-app :
     (t@App(_, _), e*) -> (Var(x), [e*, WithClause(Assign(Var(x), t))]) 
     where 
-    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")    
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !$[t[<next-counter> "pp"]__]> t, "'")    
     	
    extract-app-where :
     (t@App(_, _), e*) -> (Var(x), [e*, WhereClause(Assign(Var(x), t))]) 
     where 
-    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")  	
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !$[t[<next-counter> "pp"]__]> t, "'")  	
       	
   introduce-labels-line:
-    (Line(elem*), index) -> (Line(elem'*), index')
+    Line(elem*) -> Line(elem'*)
     with
-      (elem'*, index') := <thread-map(try(introduce-labels))> (elem*, index)
+      elem'* := <map(try(introduce-labels))> elem*
       
   introduce-labels:
-     (Placeholder(symbol, c), i) -> (Placeholder(Label(l, symbol), c), i')
+     Placeholder(symbol, c) -> Placeholder(Label(l, symbol), c)
      where
      	<not(?Label(_, _))> symbol
      with
-       l  := $[t[i]__];
-       i' := <inc> i
+       l  := $[t[<next-counter> "pp"]__]      
   
   introduce-labels:
-     (Placeholder(Label(Unquoted(l), symbol), c), i) -> (Placeholder(Label($[[l]__], symbol), c), i)
+     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label($[[l]__], symbol), c)
   
   introduce-labels:
-     (Placeholder(Label(Quoted(l), symbol), c), i) -> (Placeholder(Label($[[l']__], symbol), c), i)
+     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label($[[l']__], symbol), c)
      with
      	l' := <un-double-quote> l
    
