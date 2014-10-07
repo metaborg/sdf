@@ -23,9 +23,13 @@ imports
   	
   	rules
   	    
- // 	nabl-constraint(|ctx):
-  	//    Module(Unparameterized(m), i*, s*) -> <fail>
-  //	where
+  	nabl-constraint(|ctx):
+  	    Module(Unparameterized(m), i*, s*) -> <fail>
+  	where
+  	    m' := <strip-annos> m;
+  	    <base-filename; remove-extension; not(?m')> ctx;
+  	    msg := "Module name does not correspond to file name";
+        <task-create-error(|ctx, msg)> m
   	        
 
   	nabl-constraint(|ctx):
@@ -119,7 +123,9 @@ imports
             weird-symbols* := <filter(check-for-weird-symbols); flatten-list> p'*;
             prods-wo-cons* := <filter(prod-without-constructor)> p'*;
             illegal-brackets* := <filter(prod-with-illegal-brackets)> p'*;
-            <map(task-create-warning(|ctx, $[Missing constructor name]))> prods-wo-cons*;
+            maybe-brackets*   := <filter(prod-maybe-brackets)> p'*;
+            <map(task-create-error(|ctx, $[Missing constructor name]))> prods-wo-cons*;
+            <map(task-create-error(|ctx, $[Missing bracket attribute or constructor name]))> maybe-brackets*;
             <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*;
             <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*		
   	
@@ -140,25 +146,41 @@ imports
 
 	
 	prod-without-constructor:
-        p@SdfProduction(s, Rhs(prod-sorts), Attrs(attrs*)) -> s //production does not have a constructor
+        p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s 
         where
-            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
-        where    
-            <not(?[Sort(sort)])> prod-sorts //is not an Injection
-            
+            <not(?[Sort(sort)] + ?[])> prod-sorts;
+            s'      := <strip-annos> s;
+            <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> prod-sorts
+            ; <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
            
     prod-without-constructor:
-        t@TemplateProduction(s, template, Attrs(attrs*)) -> s
-        where
-            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
+        t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
             rhs* := <template-to-sdf(|["(", ")"], None())> template;
-            <not(?[sort(sort)])> rhs* 
-            
+            <not(?[sort(sort)] + ?[])> rhs* ;
+            s'      := <strip-annos> s;
+            <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs*;
+            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
+    
+    prod-maybe-brackets:
+        p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
+        where
+            s' := <strip-annos> s;
+            <?[_, Sort(sort), _]; <strip-annos; ?s'> sort> prod-sorts;
+            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
+    
+     prod-maybe-brackets:
+        t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
+        where
+            rhs* := <template-to-sdf(|["(", ")"], None())> template;
+            s'   := <strip-annos> s; 
+            <?[_, sort(sort), _]; <strip-annos; ?s'> sort> rhs*;
+            <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
     
     prod-with-illegal-brackets:
         p@SdfProduction(SortDef(s), Rhs(rhs*), Attrs(attrs*)) -> bracketanno
         where
+        	<not(fetch-elem(?Reject()))> attrs*;
         	s' := <strip-annos> s;
             bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
             <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> rhs* //it does not follow the bracket structure
@@ -166,6 +188,7 @@ imports
     prod-with-illegal-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
         where
+        	<not(fetch-elem(?Reject()))> attrs*;
         	s'      := <strip-annos> s;
             rhs     := <template-to-sdf(|["(", ")"], None())> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
@@ -174,11 +197,13 @@ imports
     prod-with-illegal-brackets:
         SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
         where
+        	<not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
             
     prod-with-illegal-brackets:
         TemplateProductionWithCons(sc, t, Attrs(attrs*)) -> bracketanno
         where
+        	<not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
             		
 	task-rewrite:
