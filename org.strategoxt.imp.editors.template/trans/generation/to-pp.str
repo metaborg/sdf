@@ -351,7 +351,7 @@ rules
                s := Call(SVar("pp-V-list"), [ppx])
              case ?(_, "", "0"):
               // separator is multiple line breaks => vertical box with vs option
-               s := CallT(SVar("pp-V-list"), [ppx], [literals'])
+               s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs))])
              otherwise:
                // separator has mixed line breaks and literals => vertical box with vs and sep options
                s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
