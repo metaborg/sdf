@@ -67,7 +67,7 @@ rules
   		
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*]
+  	  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*, restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
   		//content complete prods
@@ -79,7 +79,26 @@ rules
         	inj* := []
         else
           inj* := [context-free-syntax(<term-translation> cc*)]
-        end
+                end;
+        // lexical restrictions
+        x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
+  		let
+	  		chars-end-with-identifier-char =
+	            where(reverse; ?[<is-alphanum + '_'> | _])
+	
+	          string-ends-with-identifier-char =
+	            where(explode-string; chars-end-with-identifier-char)
+  		in
+  			r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>)); 
+  			   flatten-list; 
+               filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
+	        if !r* => [] + !kfr => None() then
+	          restr* := []
+	        else
+	          restr* := [lexical-restrictions([follow(r*, kfr)])] 
+	        end
+  		end
+
   
   //reductive productions section
   // section-to-sdf(|chars, newline, kfr):
@@ -282,8 +301,9 @@ rules
 	          string-ends-with-identifier-char =
 	            where(explode-string; chars-end-with-identifier-char)
   		in
-  			r* := <collect-om(?String(<string-ends-with-identifier-char>));
-               filter(string-to-sdf(|chars); last)> x;
+  			r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>)); 
+  			   flatten-list; 
+               filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
 	        if !r* => [] + !kfr => None() then
 	          restr* := []
 	        else
