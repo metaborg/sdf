@@ -1,0 +1,42 @@
+module coq-semantics/skeleton
+
+rules
+  
+    build-module(|language):
+    (sent_sorts, sent_constructors, sent_get_sig) -> |[
+Require Import Program.
+Require Import Lists.List.
+Require Import Peano_dec.
+Require Import sdf_definition.
+
+Module ident_sdf_gen <: SDF_Sig.
+
+sent_sorts
+
+Definition Ident : Set := nat.
+
+Definition sort : Set := sorts.
+
+Definition Ident_Sort : Set  := ID_S.
+
+sent_constructors
+
+Definition constructors : Set := Constructors.
+
+sent_get_sig
+
+  Definition id_eq_dec := eq_nat_dec.
+
+  Lemma sort_eq_dec : forall (x y : sort), sumbool (x=y) (x <> y).
+  Proof.
+    induction x; destruct y; 
+    first [ left; reflexivity | (right; discriminate) ].
+  Qed.
+  Definition key := list nat.
+  Definition signature c ls s := get_sig c = (ls,s).
+
+  Definition Main_Sort := Exp_S.
+End ident_sdf_gen.
+      ]|
+      where
+        ident_sdf_gen  := $[SDF_[language]_gen]

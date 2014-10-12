@@ -21,3 +21,4 @@ utils
 !trans/utils
 include
 lib-gen
+/target/

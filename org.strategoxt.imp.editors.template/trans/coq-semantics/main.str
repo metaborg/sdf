@@ -1,14 +1,17 @@
 module coq-semantics/main
 
 imports
-  src-gen/signatures/TemplateLang-sig
+  src-gen/signatures/-
+  src-gen/signatures/modules/-
+  src-gen/signatures/sorts/-
   libstratego-gpp
-  coq-semantics/Coq
-  coq-semantics/Vernacular.pp.generated
-  coq-semantics/Coq-parenthesize
+  lib/Coq/-
+  lib/Coq/pp/-
+  lib/Coq/signatures/-
   lib/runtime/index/-
   lib/runtime/nabl/-
   analysis/names
+  coq-semantics/skeleton
   
 rules
   
@@ -16,10 +19,10 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"v")> path
-    ; coq-file := <strip-annos; module-to-coq> ast
+    ; coq-file := <strip-annos; module-to-coq; debug(!"Testing: ")> ast
     with
-       result := <parenthesize-Coq; prettyprint-CoqFile; box2text-string(|100)> coq-file
-    <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprint-example) ; debug(!"cannot pp ")))> coq-file
+       result := <parenthesize-Coq; prettyprintCoq-CoqFile; box2text-string(|100)> coq-file
+    <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprintCoq-example) ; debug(!"cannot pp ")))> coq-file
     ;  result := ""
   
   generate-coq-abstract:
@@ -31,96 +34,48 @@ rules
 rules
   
   module-to-coq:
-    ast -> Sent([sort*, const*])
+    Module(name, imps, ast) -> <build-module(|<base-filename> name)> (sort, constr, get_sig)
     where
-     	sort* := <collect-all(?Sort(<id>)
-    	                     + ?TemplateProduction(<id>, _, _)
-    	                     + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
-    	                     ); nub; sorts-to-coq> ast
-    ; const* := <collect-all(where(?TemplateProductionWithCons(_,_,_))); template-productions-to-coq> ast
-
+     	sort := <collect-all( ?TemplateProduction(<id>, _, _)
+    	                    + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
+    	                    ); sorts-to-coq> ast
+    ; (constr, get_sig) := <collect-all(where(?TemplateProductionWithCons(_,_,_))); template-productions-to-coq> ast
+    
 rules // sorts
   
   sorts-to-coq:
-    sort* ->
-  	 [ Inductive(Ind([Induc("sorts", [], Type(Sort(Set())), ListDeclBar(cdec*))]))
-  	 , Assumption(Assuption("Parameter", Term(["Ident"], Sort(Set()))))
-  	 , Definition(Def("sort", [], None(), Ref("sorts")))
-  	 , Definition(Def("Ident_Sort", [], None(), Ref("ID_S")))]
+    sort* -> S|[Inductive sorts : Set := decls.]|
   	with
-  	  cdec* := <!["ID", "INT" | <id>]; nub; map(sort-to-coq)> sort*
+  		defs* := [ D|[ID_S]|, D|[INT_S]| ]
+  	; decls := <map(sort-to-coq); nub; !ListDeclBar(<id>)> sort*
   	  
-  sort-to-coq: // Waiting for more complex examples
-    n -> ConsDecl($[[n]_S], [], None())
-    where <is-string> n
+  sort-to-coq:
+    SortDef(n) -> ConsDecl($[[n]_S], None(), None())
 
 rules // Template productions (i.e. constructors)
   
   template-productions-to-coq:
     template* ->
-     [ Inductive(Ind([Induc("Constructors", [], None(), ListDeclBar([def-signame*, signame*]))]))
-     , Definition(Def("constructors", [], None(), Ref("Constructors")))
-     , Fixpoint(
-         Fixpoint(
-           [
-             FixBody(
-	             "get_sig"
-	           , [ Binds(["x"], Ref("constructors")) ]
-	           , None()
-	           , Type(
-                 Apply(
-				           Apply(Ref("prod"), Apply(Ref("list"), Ref("sort")))
-				         , Ref("sort")
-				         )
-				       )
-	           , Match(
-	               [ MatchItem(
-	                   Ref("x")
-	                 , None()
-	                 , None())
-	               ]
-	             , None()
-	             , ListEqBar([def-const*, eq*])
-	             )
-	           )
-           ]
-         )
-       )
-     ]
+      (
+      	S|[Inductive Constructors : Set := decl_constr.]|,
+      	S|[Fixpoint get_sig (x: constructors) : ((list sort), sort) := match x : Set with equations_match end. ]|
+      )
      where
-       eq* := <map(template-production-to-coq)> template*
-     ; signame* := <map(\ Eq([[x]],_) -> ConsDecl(x, [], None()) \)> eq*
-     ; def-const* := [
-         Eq(
-           [[QidPattern("INTC", ["n"])]]
-         , Apply(Apply(Ref("pair"), Ref("nil")), Ref("INT_S"))
-         )
-       ]
-     ; def-signame* := [
-	       ConsDecl(
-           "INTC"
-         , [Binds(["n"], Ref("nat"))]
-         , None()
-         )
-       ]
+       equations_match := <map(template-production-to-coq)> template*
+     ; decl_constr     := <map(\ Eq([[ident_x]],_) -> D|[ident_x]| \); listdecl> equations_match
   
   template-production-to-coq:
-    TemplateProductionWithCons(SortCons(s,c),Template(template*),_) -> eq
+    TemplateProductionWithCons(SortCons(SortDef(s),Constructor(c)),TemplateSquare(template*),_) -> eq
     where
-      template-cdec := <mapconcat(?Line(<id>)); template-to-coq> template*
+      term_template := <collect-all(?Placeholder(Sort(<id>),_); !Ref( $[[<id>]_S] )); !List(<id>)> template*
+    ; ident_return  := $[[s]_S]
     ; eq :=
       Eq(
         [[ $[[c]C] ]]
-      , Apply(
-          Apply(
-            Ref("pair")
-          , template-cdec
-          )
-        , Ref( $[[s]_S] )
-        )
+      , T|[(term_template, ident_return)]|
       )
   
-  template-to-coq =
-  	  filter(?Placeholder(<id>,_))
-    ; map(!Apply(Ref("cons"), Ref( $[[<id>]_S] )))
-    ; foldr(!Ref("nil"), \ (x,y) -> Apply(x, y) \ )
+rules
+  
+  listdecl: [] -> ListDecl([])
+  listdecl: list@[_ | _] -> ListDeclBar(list)
