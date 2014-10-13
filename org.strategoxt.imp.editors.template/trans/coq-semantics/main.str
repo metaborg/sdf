@@ -19,7 +19,7 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"v")> path
-    ; coq-file := <strip-annos; module-to-coq; debug(!"Testing: ")> ast
+    ; coq-file := <strip-annos; module-to-coq> ast
     with
        result := <parenthesize-Coq; prettyprintCoq-CoqFile; box2text-string(|100)> coq-file
     <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprintCoq-example) ; debug(!"cannot pp ")))> coq-file
@@ -34,7 +34,7 @@ rules
 rules
   
   module-to-coq:
-    Module(name, imps, ast) -> <build-module(|<base-filename> name)> (sort, constr, get_sig)
+    Module(Unparameterized(name), imps, ast) -> <build-module(|<base-filename> name)> (sort, constr, get_sig)
     where
      	sort := <collect-all( ?TemplateProduction(<id>, _, _)
     	                    + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
@@ -47,7 +47,7 @@ rules // sorts
     sort* -> S|[Inductive sorts : Set := decls.]|
   	with
   		defs* := [ D|[ID_S]|, D|[INT_S]| ]
-  	; decls := <map(sort-to-coq); nub; !ListDeclBar(<id>)> sort*
+  	; decls := <map(sort-to-coq); ![defs* | <id>]; nub; !ListDeclBar(<id>)> sort*
   	  
   sort-to-coq:
     SortDef(n) -> ConsDecl($[[n]_S], None(), None())
@@ -58,11 +58,14 @@ rules // Template productions (i.e. constructors)
     template* ->
       (
       	S|[Inductive Constructors : Set := decl_constr.]|,
-      	S|[Fixpoint get_sig (x: constructors) : ((list sort), sort) := match x : Set with equations_match end. ]|
+      	S|[Fixpoint get_sig (x: constructors) : ((list sort), sort) := match x with equations_match end. ]|
       )
      where
-       equations_match := <map(template-production-to-coq)> template*
-     ; decl_constr     := <map(\ Eq([[ident_x]],_) -> D|[ident_x]| \); listdecl> equations_match
+       equations       := <map(template-production-to-coq)> template*
+     ; decl_constr     := <map(\ Eq([[ident_x]],_) -> D|[ident_x]| \);
+                          !ListDeclBar([D|[INTC (n: nat)]| | <id>])> equations
+     ; intc_eq         := Eq([[QidPattern("INTC", ["n"])]], T|[([],INT_S)]|)
+     ; equations_match := ListEqBar([intc_eq | equations])
   
   template-production-to-coq:
     TemplateProductionWithCons(SortCons(SortDef(s),Constructor(c)),TemplateSquare(template*),_) -> eq
@@ -75,7 +78,3 @@ rules // Template productions (i.e. constructors)
       , T|[(term_template, ident_return)]|
       )
   
-rules
-  
-  listdecl: [] -> ListDecl([])
-  listdecl: list@[_ | _] -> ListDeclBar(list)
