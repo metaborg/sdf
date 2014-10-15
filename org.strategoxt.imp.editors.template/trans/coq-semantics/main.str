@@ -18,8 +18,8 @@ rules
   generate-coq-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"v")> path
-    ; coq-file := <strip-annos; module-to-coq> ast
+      filename := "src-gen/verification/syntax.v"
+    ; coq-file := <strip-annos; module-to-coq(|"syntax")> ast
     with
        result := <parenthesize-Coq; prettyprintCoq-CoqFile; box2text-string(|100)> coq-file
     <+ <bottomup(try(not(is-string) ; not(is-list) ; not(prettyprintCoq-example) ; debug(!"cannot pp ")))> coq-file
@@ -28,13 +28,13 @@ rules
   generate-coq-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"coq.aterm")> path
-    ; result := <strip-annos; module-to-coq> ast
+      filename := "src-gen/verification/syntax.aterm"
+    ; result := <strip-annos; module-to-coq(|"syntax")> ast
 
 rules
   
-  module-to-coq:
-    Module(Unparameterized(name), imps, ast) -> <build-module(|<base-filename> name)> (sort, constr, get_sig)
+  module-to-coq(|filename):
+    Module(Unparameterized(name), imps, ast) -> <build-module(|filename)> (sort, constr, get_sig)
     where
      	sort := <collect-all( ?TemplateProduction(<id>, _, _)
     	                    + ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
