@@ -17,7 +17,7 @@ Definition Ident : Set := nat.
 
 Definition sort : Set := sorts.
 
-Definition Ident_Sort : Set  := ID_S.
+Definition Ident_Sort : sort := ID_S.
 
 sent_constructors
 

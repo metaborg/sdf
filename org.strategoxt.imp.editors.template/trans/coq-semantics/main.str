@@ -58,7 +58,7 @@ rules // Template productions (i.e. constructors)
     template* ->
       (
       	S|[Inductive Constructors : Set := decl_constr.]|,
-      	S|[Fixpoint get_sig (x: constructors) : ((list sort), sort) := match x with equations_match end. ]|
+      	S|[Fixpoint get_sig (x: constructors) : ((list sort) * sort) := match x with equations_match end. ]|
       )
      where
        equations       := <map(template-production-to-coq)> template*
