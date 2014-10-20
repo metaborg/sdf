@@ -27,7 +27,7 @@ sent_get_sig
 
   Definition id_eq_dec := eq_nat_dec.
 
-  Lemma sort_eq_dec : forall (x y : sort), sumbool (x=y) (x <> y).
+  Lemma sort_eq_dec : (forall (x y : sort), sumbool (x=y) (x <> y)).
   Proof.
     induction x; destruct y; 
     first [ left; reflexivity | (right; discriminate) ].
