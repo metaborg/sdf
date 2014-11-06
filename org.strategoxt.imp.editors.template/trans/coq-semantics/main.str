@@ -70,7 +70,7 @@ rules // Template productions (i.e. constructors)
   template-production-to-coq:
     TemplateProductionWithCons(SortCons(SortDef(s),Constructor(c)),TemplateSquare(template*),_) -> eq
     where
-      term_template := <collect-all(?Placeholder(Sort(<id>),_); !Ref( $[[<id>]_S] )); !List(<id>)> template*
+      term_template := <collect-om(?Placeholder(Sort(<id>),_); ![Ref( $[[<id>]_S] )], conc); concat; !List(<id>)> template*
     ; ident_return  := $[[s]_S]
     ; eq :=
       Eq(
