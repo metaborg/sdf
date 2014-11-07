@@ -93,15 +93,15 @@ exports
     "bracket"           -> Reserved
     "sorts"             -> Reserved
     "restrictions"      -> Reserved
-  	"as"								-> Reserved
- 		"main"							-> Reserved
- 		"__default"					-> Reserved
- 		"__internal"				-> Reserved
- 		"template"          -> Reserved
- 		"templates"         -> Reserved
+  	"as"				-> Reserved
+	"main"				-> Reserved
+	"__default"			-> Reserved
+	"__internal"		-> Reserved
+	"template"     		-> Reserved
+	"templates"     	-> Reserved
 
- 		Reserved 						-> ReservedName[[ESV]]
- 		ReservedName[[ESV]]	-> ID {reject}
+ 	Reserved 			-> ReservedName[[ESV]]
+ 	ReservedName[[ESV]]	-> ID {reject}
 
 
 	lexical syntax

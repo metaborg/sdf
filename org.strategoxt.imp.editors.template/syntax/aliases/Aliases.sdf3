@@ -1,0 +1,22 @@
+module aliases/Aliases
+
+imports kernel/Kernel
+		symbols/Symbols
+  
+context-free syntax 
+
+// HACK: incremental parsing annotation
+// Symbols "->" result:Symbol Attributes -> Production  {cons("prod"), incremental}
+Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes> > {incremental}
+	 
+context-free syntax  
+
+Grammar.Aliases = <
+	aliases 
+	
+		<Aliases>
+		
+	>
+	//Symbol arrow:"->" alias:Symbol -> Alias    {cons("alias")}
+Alias.Alias = <<Symbol> -\> <alias:Symbol>>
+Aliases     = <<list:Alias*>> 

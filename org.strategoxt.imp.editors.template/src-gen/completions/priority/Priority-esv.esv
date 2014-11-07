@@ -1,0 +1,33 @@
+
+module src-gen/completions/priority/Priority-esv
+
+imports
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/constants/NatCon-esv
+  src-gen/completions/TemplateLang-esv
+
+completions
+  completion template Associativity : "left" =
+    "left"                                            
+  completion template Associativity : "right" =
+    "right"                                          
+  completion template Associativity : "non-assoc" =
+    "non-assoc"                                  
+  completion template Associativity : "assoc" =
+    "assoc"                                          
+  completion template Attribute : "bracket" =
+    "bracket"                                          
+  completion template ArgumentIndicator : "<NatCon>" =
+    "<" <NatCon:NatCon> ">"                   
+  completion template Group : "Group ArgumentIndicator" =
+    <Group:Group> " " <ArgumentIndicator:ArgumentIndicator>  
+  completion template Group : "Group." =
+    <Group:Group> "."                                       
+  completion template Group : "{PriorityProductions}" =
+    "{" <PriorityProductions:PriorityProductions> "}"  
+  completion template Group : "{Associativity: PriorityProductions}" =
+    "{" <Associativity:Associativity> ":\n\t" <PriorityProductions:PriorityProductions> "}" (blank)  
+  completion template Priority : "Group Associativity Group" =
+    <Group:Group> " " <Associativity:Associativity> " " <Group:Group>  
+  completion template Grammar : "priorities Priorities " =
+    "priorities\n\n\t" <Priorities:Priorities> "\n" (blank)  

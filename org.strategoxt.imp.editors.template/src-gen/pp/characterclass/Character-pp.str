@@ -1,0 +1,90 @@
+module src-gen/pp/characterclass/Character-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/characterclass/Character-sig
+
+
+strategies
+  prettyprint-NumChar =
+    ![S(<is-string>)]
+
+  prettyprint-ShortChar =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-NumChar
+
+  prettyprint-example =
+    prettyprint-ShortChar
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Character
+
+  prettyprint-Character :
+    Numeric(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [t0__']
+                       )
+                     ]
+    with t0__' := <pp-one-Z(prettyprint-NumChar)> t0__
+
+  is-Character =
+    ?Numeric(_)
+
+  prettyprint-Character :
+    Short(t0__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t0__']
+                     )
+                   ]
+    with t0__' := <pp-one-Z(prettyprint-ShortChar)> t0__
+
+  is-Character =
+    ?Short(_)
+
+  prettyprint-Character :
+    Top() -> [ H(
+                 [SOpt(HS(), "0")]
+               , [S("\\TOP")]
+               )
+             ]
+
+  is-Character =
+    ?Top()
+
+  prettyprint-Character :
+    Eof() -> [ H(
+                 [SOpt(HS(), "0")]
+               , [S("\\EOF")]
+               )
+             ]
+
+  is-Character =
+    ?Eof()
+
+  prettyprint-Character :
+    Bot() -> [ H(
+                 [SOpt(HS(), "0")]
+               , [S("\\BOT")]
+               )
+             ]
+
+  is-Character =
+    ?Bot()
+
+  prettyprint-Character :
+    LabelStart() -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [S("\\LABEL_START")]
+                      )
+                    ]
+
+  is-Character =
+    ?LabelStart()
+
+  is-Character =
+    fail

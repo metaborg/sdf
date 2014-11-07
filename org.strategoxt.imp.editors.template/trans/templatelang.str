@@ -7,7 +7,7 @@ imports
   libstratego-sglr
   libstrc
   include/TemplateLang
-  include/libtemplatelang
+  include/TemplateLang-parenthesize
   editor/TemplateLang-Outliner
   lib/EditorService
   lib/editor-common.generated
@@ -15,27 +15,34 @@ imports
   lib/runtime/nabl/-
   lib/runtime/task/-
   lib/runtime/index/-
-  lib/runtime/tmpl/-
   lib/runtime/properties/-
   lib/runtime/types/-
   lib/runtime/editor/-
-	analyze
-	names
-	name-desugar
-	name-check
-	check
+     
+  trans/analysis/-
+  trans/generation/-
+  trans/editor/-
+	//analyze
+	//names
+	//name-desugar
+//	name-check
+	//check
     
 rules // Analysis
+  
+  // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
   
   editor-analyze = analysis-default-editor
   
   analysis-single-default-interface = 
-  	analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
+  	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
+  	analysis-single-default(normalization, id, id|<language>)
   	
   analysis-multiple-default-interface = 
-  	analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
+  	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
+  analysis-multiple-default(parse-file <+ !(), normalization, id, id|<language>, <project-path>)
   
-  editor-save = generate-all; analysis-save-default(|<language>)
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       
 rules // Editor services
 
@@ -64,8 +71,8 @@ rules // Debugging
   debug-show-desugared:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"analyzed.aterm")> path;
-      result   := <analyze> selected
+      filename := <guarantee-extension(|"desugared.aterm")> path;
+      result   := <desugar-templates> selected
       
   debug-show-analyzed:
     (selected, position, ast, path, project-path) -> (filename, selected)
@@ -97,154 +104,7 @@ rules // Debugging
 
 rules
 
-  collect-sections =
-    (collect-sections-1
-    <+ collect-sections-2)
-    ; with(filterconcat(?TemplateSection(<id>)); 
-           map(declare-syntax-template 
-               <+ declare-syntax-template-no-cons 
-               <+ debug(!"declare-syntax-template failed: "); fail))
-
-  declare-syntax-template :
-    d@Desugared(
-	  TemplateProduction(
-	    c#([])
-	  , _
-	  , attrs(
-	      [term(
-	         default(appl(_, [fun(quoted(consstring))]))
-	       ),xs*]
-	    )
-	  )
-	)
-	-> <create-template-production-dr> ((<un-double-quote>c, <un-double-quote> consstring), d)
-		
-  //todo:    figure out if this variant can be referred to and needs to be declared
-  //example: ReturnType   = <: <Type>>
-  declare-syntax-template-no-cons =
-    ?d@Desugared(
-	  TemplateProduction(
-	    c#([])
-	  , _
-	  , _
-	  )
-	)
-	//-> <create-template-production-dr> ((<un-double-quote>c, ?), d) 
-
-  collect-sections-1:
-    selection -> section*
-    where
-      section* := <collect-om(?TemplateSection(_) + ?SDFSection(_))> selection;
-      ?[_ | _]
-
-  collect-sections-2:
-    selection ->
-      [ TemplateSection(tp*)
-        , SDFSection(context-free-syntax(cp*))
-        , SDFSection(lexical-syntax(lp*)) ]
-    with
-      tp* := <collect-om(?Desugared(_))> selection;
-      p*  := <collect-om(?prod(_, _, _))> selection;
-      (cp*, lp*) := <partition(where(?prod(_, _, <fetch-cons + is-bracket>)))> p*
-
-rules
-
-  // Prints the abstract syntax ATerm of a selection.
-  generate-aterm(s):
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"aterm")> path;
-      result := <s> selected
-
-  // Expanded templates (input to completion template generator)
-  generate-expanded =
-    generate-aterm(
-      collect-om(?Desugared(<id>));
-      map(expand-multi-line-template-production)
-    )
-
-  // Generate completion templates
-  generate-esv(|path) =
-    collect-sections;
-    template-sections-to-esv;
-    !Module($[[<base-filename ; remove-extension> path].generated], NoImports(), <id>);
-    topdown(try(pp-fix-string-quotes))
-
-  generate-esv-abstract =
-    generate-aterm(generate-esv(|""))
-
-  generate-esv-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := $[[project-path]/editor/[<guarantee-extension(|"generated.esv"); base-filename> path]];
-      result   := <generate-esv(|path); pp-descriptor-to-string> selected
-
-  // Generate SDF
-  generate-sdf(|mn, i*) =
-    collect-sections;
-    template-sections-to-sdf;
-    !'module(unparameterized(mn), i*, [exports(<list-to-conc-grammars>)])
-
-  generate-sdf-abstract:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-       <?'module(unparameterized(mn), i*, _)> ast 
-    <+ mn := $[[<base-filename ; remove-extension> path]generated];
-       i* := []
-    with
-      filename := <guarantee-extension(|"aterm")> path;
-      result   := <generate-sdf(|mn, i*)> selected
-      
-  generate-sdf-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-       <?'module(unparameterized(mn), i*, _)> ast ;
-       filename := <guarantee-extension(|"sdf")> path
-    <+ filename := <conc-strings> (<remove-extension> path, "generated.sdf");
-       mn := $[[<base-filename ; remove-extension> path]generated];
-       i* := []
-    with
-      result   := <generate-sdf(|mn, i*); pp-sdf-to-string> selected
-
-  // Generate pretty printer (BOX-based)
-  generate-box-pp(|path) =
-    collect-sections;
-    template-sections-to-stratego(|"example");
-    !Module($[[<base-filename ; remove-extension> path].pp.generated], <id>)
-
-  generate-box-pp-abstract =
-    generate-aterm(generate-box-pp(|""))
-
-  generate-box-pp-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := $[[project-path]/trans/[<guarantee-extension(|"pp.generated.str"); base-filename> path]];
-      result   := <generate-box-pp(|path); pp-stratego-string> selected
-
-  generate-signature =
-    collect-om(?Desugared(_));
-    map(templatelang-production-to-signature);
-    !Specification([Signature([Constructors(<id>)])])
-
-  generate-signature-abstract =
-    generate-aterm(generate-signature)
-
-  generate-signature-concrete:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"generated.str")> path;
-      result   := <generate-signature; pp-stratego-string> selected
-
-  // On-save handler
-  generate-all:
-    (selected, position, ast, path, project-path) -> <id>
-    with
-      generate-esv-concrete; write-string-to-file
-    with
-      generate-sdf-concrete; write-string-to-file
-    with
-      generate-box-pp-concrete; write-string-to-file
-
+ 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
   	?(filename, string);

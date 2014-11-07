@@ -1,0 +1,23 @@
+module src-gen/signatures/restrictions/Restrictions-sig
+
+imports
+  src-gen/signatures/characterclass/CC-sig
+  src-gen/signatures/characterclass/Character-Class-sig
+  src-gen/signatures/symbols/Symbols-sig
+  src-gen/signatures/constants/StrCon-sig
+
+
+signature
+  constructors
+    CharClass    : CharClass -> Lookahead
+    Seq          : CharClass * Lookaheads -> Lookahead
+    Single       : Lookahead -> Lookaheads
+    Alt          : Lookaheads * Lookaheads -> Lookaheads
+    List         : List(Lookahead) -> Lookaheads
+    Follow       : RestrictionSymbols * Lookaheads -> Restriction
+                 : List(Symbol) -> RestrictionSymbols
+                 : List(Restriction) -> Restrictions
+    Restrictions : Restrictions -> Grammar
+    Reject       : Attribute
+    Prefer       : Attribute
+    Avoid        : Attribute

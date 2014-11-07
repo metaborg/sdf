@@ -12,6 +12,8 @@ imports
   completion
   check
   editor/SDF-Outliner
+  trans/editor/-
+  //names
 
 rules
 

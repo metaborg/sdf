@@ -1,0 +1,53 @@
+module modules/Modules
+
+imports kernel/Kernel 
+        renaming/Renaming
+        symbols/Symbols
+ 
+lexical syntax
+    //letters:[A-Za-z0-9\_\-]+ -> ModuleWord  {cons("word")}
+	ModuleWord.Word = [A-Za-z0-9\_\-]+
+	
+    ModuleId.Leaf =  ModuleWord
+    //sep:"/" basename:ModuleId            -> ModuleId  {cons("root")}
+    ModuleId.Root = "/" ModuleId
+    //dirname:ModuleWord sep:"/" basename:ModuleId -> ModuleId  {cons("path")}
+    ModuleId.Path = ModuleWord "/" ModuleId
+    
+context-free syntax
+	//Definition = <<list:Module*>>
+	
+	Module.Module = <
+	module <ModuleName>
+	
+	<list:ImpSection*>
+	
+	<Sections>>
+	
+	//Section.Exports = <exports <Grammar>>
+	//Section.Hiddens = <hiddens <Grammar>>
+	
+    Sections = <
+    
+    <{Section "\n"}*>>
+    
+    Section.SDFSection = <<Grammar>>
+	
+	ModuleName.Unparameterized = <<ModuleId>>
+	ModuleName.Parameterized = <<ModuleId> [<params:Symbols>]>
+	
+	Attribute.Id = <id (<ModuleName>) >
+	
+	ImpSection.Imports = <imports <list:Imports>>
+	
+	//Grammar.ImpSection = <<ImpSection>> IGNORED PRODUCTION
+	 
+	Imports = <<list:{Import "\n\t"}*>>
+	
+	Import.Module = <<ModuleName>>
+	//Import.RenamedModule = <<ModuleName> <Renamings>> IGNORED PRODUCTION
+	Import = <(<Import>)> {bracket}
+
+  lexical restrictions
+    ModuleWord -/- [A-Za-z0-9\_\-]
+    ModuleId -/- [\/]

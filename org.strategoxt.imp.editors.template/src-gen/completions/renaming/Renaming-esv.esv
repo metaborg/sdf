@@ -1,0 +1,13 @@
+module src-gen/completions/renaming/Renaming-esv
+
+imports
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/symbols/Symbols-esv
+
+completions
+  completion template Renamings : "[]" =
+    "[" <:Renaming> "]"  
+  completion template Renaming : "Symbol => Symbol" =
+    <Symbol:Symbol> " => " <Symbol:Symbol>  
+  completion template Renaming : "Production => Production" =
+    <Production:Production> " => " <Production:Production>  

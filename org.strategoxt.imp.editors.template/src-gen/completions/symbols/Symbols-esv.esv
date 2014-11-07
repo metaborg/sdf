@@ -1,0 +1,8 @@
+module src-gen/completions/symbols/Symbols-esv
+
+imports
+  src-gen/completions/layout/Comments-esv
+
+completions
+  completion template Symbol : "(Symbol)" =
+    "(" <Symbol:Symbol> ")"  

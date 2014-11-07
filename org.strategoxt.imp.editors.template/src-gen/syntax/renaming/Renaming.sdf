@@ -1,0 +1,12 @@
+module renaming/Renaming
+imports kernel/Kernel symbols/Symbols
+
+exports
+  context-free syntax
+    "[" list:Renaming* "]"                       -> Renamings {cons("Renamings")}
+    from:Symbol "=>" to:Symbol                   -> Renaming  {cons("Symbol")}
+    from-prod:Production "=>" to-prod:Production -> Renaming  {cons("Production")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Renamings {cons("COMPLETION-Renamings")}
+    CONTENTCOMPLETE -> Renaming  {cons("COMPLETION-Renaming")}

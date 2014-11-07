@@ -1,0 +1,36 @@
+
+module priority/Priority
+imports kernel/Kernel constants/NatCon TemplateLang
+
+exports
+  context-free syntax
+    "left"                                        -> Associativity       {cons("Left")}
+    "right"                                       -> Associativity       {cons("Right")}
+    "non-assoc"                                   -> Associativity       {cons("NonAssoc")}
+    "assoc"                                       -> Associativity       {cons("Assoc")}
+    "bracket"                                     -> Attribute           {cons("Bracket")}
+    Associativity                                 -> Attribute           {cons("Assoc")}
+    "<" arguments:{NatCon ","}+ ">"               -> ArgumentIndicator   {cons("Default")}
+    Group ArgumentIndicator                       -> Group               {cons("WithArguments"), non-assoc}
+    Group "."                                     -> Group               {cons("NonTransitive"), non-assoc}
+    PriorityProduction                            -> Group               {cons("SimpleGroup")}
+    "{" PriorityProductions "}"                   -> Group               {cons("ProdsGroup")}
+    "{" Associativity ":" PriorityProductions "}" -> Group               {cons("AssocGroup")}
+    SdfProduction                                 -> PriorityProduction  
+    Production                                    -> PriorityProduction  
+    list:PriorityProduction*                      -> PriorityProductions 
+    list:{Group ">"}+                             -> Priority            {cons("Chain")}
+    Group Associativity Group                     -> Priority            {cons("Assoc")}
+    list:{Priority ","}*                          -> Priorities          
+    "priorities" Priorities                       -> Grammar             {cons("Priorities")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Associativity       {cons("COMPLETION-Associativity")}
+    CONTENTCOMPLETE -> Attribute           {cons("COMPLETION-Attribute")}
+    CONTENTCOMPLETE -> ArgumentIndicator   {cons("COMPLETION-ArgumentIndicator")}
+    CONTENTCOMPLETE -> Group               {cons("COMPLETION-Group")}
+    CONTENTCOMPLETE -> PriorityProduction  {cons("COMPLETION-PriorityProduction")}
+    CONTENTCOMPLETE -> PriorityProductions {cons("COMPLETION-PriorityProductions")}
+    CONTENTCOMPLETE -> Priority            {cons("COMPLETION-Priority")}
+    CONTENTCOMPLETE -> Priorities          {cons("COMPLETION-Priorities")}
+    CONTENTCOMPLETE -> Grammar             {cons("COMPLETION-Grammar")}

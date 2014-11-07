@@ -1,0 +1,12 @@
+module src-gen/signatures/renaming/Renaming-sig
+
+imports
+  src-gen/signatures/kernel/Kernel-sig
+  src-gen/signatures/symbols/Symbols-sig
+
+
+signature
+  constructors
+    Renamings  : List(Renaming) -> Renamings
+    Symbol     : Symbol * Symbol -> Renaming
+    Production : Production * Production -> Renaming

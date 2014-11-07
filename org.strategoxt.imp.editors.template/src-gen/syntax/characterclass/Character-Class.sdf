@@ -1,0 +1,30 @@
+module characterclass/Character-Class
+imports characterclass/Character
+
+exports
+  context-free syntax
+    Character                         -> CharRange     
+    start:Character "-" end:Character -> CharRange     {cons("Range")}
+    CharRange                         -> CharRanges    
+    CharRanges CharRanges             -> CharRanges    {cons("Conc"), right, memo}
+    "(" CharRanges ")"                -> CharRanges    {bracket}
+                                      -> OptCharRanges {cons("Absent")}
+    CharRanges                        -> OptCharRanges {cons("Present")}
+    "[" OptCharRanges "]"             -> CharClass     {cons("Simple")}
+    "~" CharClass                     -> CharClass     {cons("Comp")}
+    CharClass "/" CharClass           -> CharClass     {cons("Diff"), left, memo}
+    CharClass "/\\" CharClass         -> CharClass     {cons("Isect"), left, memo}
+    CharClass "\\/" CharClass         -> CharClass     {cons("Union"), left}
+    "(" CharClass ")"                 -> CharClass     {bracket, avoid}
+
+  context-free syntax
+    CONTENTCOMPLETE -> CharRange     {cons("COMPLETION-CharRange")}
+    CONTENTCOMPLETE -> CharRanges    {cons("COMPLETION-CharRanges")}
+    CONTENTCOMPLETE -> OptCharRanges {cons("COMPLETION-OptCharRanges")}
+    CONTENTCOMPLETE -> CharClass     {cons("COMPLETION-CharClass")}
+
+  context-free priorities
+    "~" CharClass -> CharClass >
+    CharClass "/" CharClass -> CharClass >
+    CharClass "/\\" CharClass -> CharClass >
+    CharClass "\\/" CharClass -> CharClass

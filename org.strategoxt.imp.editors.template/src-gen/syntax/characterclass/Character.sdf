@@ -1,0 +1,17 @@
+module characterclass/Character
+exports
+  lexical syntax
+    [\\] number:[0-9]+                    -> NumChar   {cons("Digits")}
+    character:[a-zA-Z0-9]                 -> ShortChar {cons("Regular")}
+    [\\] escape:~[\0-\31A-Za-mo-qsu-z0-9] -> ShortChar {cons("Escaped")}
+
+  context-free syntax
+    NumChar         -> Character {cons("Numeric")}
+    ShortChar       -> Character {cons("Short")}
+    "\\TOP"         -> Character {cons("Top")}
+    "\\EOF"         -> Character {cons("Eof")}
+    "\\BOT"         -> Character {cons("Bot")}
+    "\\LABEL_START" -> Character {cons("LabelStart")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Character {cons("COMPLETION-Character")}

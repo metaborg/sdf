@@ -1,0 +1,9 @@
+module src-gen/completions/sdf2-core/Sdf2-esv
+
+imports
+  src-gen/completions/sdf2-core/Sdf2-Syntax-esv
+  src-gen/completions/constants/StrCon-esv
+  src-gen/completions/constants/NatCon-esv
+  src-gen/completions/priority/Priority-esv
+  src-gen/completions/characterclass/Character-esv
+  src-gen/completions/modules/Modules-esv

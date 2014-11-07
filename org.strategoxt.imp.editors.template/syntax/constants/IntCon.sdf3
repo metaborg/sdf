@@ -1,0 +1,17 @@
+module constants/IntCon
+
+imports layout/Whitespace
+	constants/NatCon
+
+context-free start-symbols 
+    IntCon
+
+context-free syntax
+ 
+	IntCon.Natural = <<NatCon>>
+	
+	//pos:"+" NatCon -> IntCon {cons("positive")}
+	IntCon.Positive = <+<NatCon>>
+	//neg:"-" NatCon -> IntCon {cons("negative")}
+	IntCon.Negative = <-<NatCon>>
+    

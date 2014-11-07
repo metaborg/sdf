@@ -1,0 +1,7 @@
+module characterclass/CC
+
+imports characterclass/Character-Class 
+        kernel/Kernel
+ 
+context-free syntax
+    Symbol.CharClass = <<CharClass>>

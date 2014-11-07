@@ -1,0 +1,186 @@
+module src-gen/pp/characterclass/Character-Class-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/characterclass/Character-Class-sig
+
+
+imports
+  src-gen/signatures/characterclass/Character-sig
+
+
+imports
+  src-gen/pp/characterclass/Character-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-CharRange
+
+  prettyprint-example =
+    prettyprint-CharRanges
+
+  prettyprint-example =
+    prettyprint-OptCharRanges
+
+  prettyprint-example =
+    prettyprint-CharClass
+
+  prettyprint-CharRange :
+    t0__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t0__']
+              )
+            ]
+    where not(is-CharRange)
+    where t0__' := <pp-one-Z(prettyprint-Character)> t0__
+
+  prettyprint-CharRange :
+    Range(start__, end__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [start__', S("-"), end__']
+                               )
+                             ]
+    with start__' := <pp-one-Z(prettyprint-Character)> start__
+    with end__' := <pp-one-Z(prettyprint-Character)> end__
+
+  is-CharRange =
+    ?Range(_, _)
+
+  prettyprint-CharRanges :
+    t0__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t0__']
+              )
+            ]
+    where not(is-CharRanges)
+    where t0__' := <pp-one-Z(prettyprint-CharRange)> t0__
+
+  prettyprint-CharRanges :
+    Conc(t0__, t1__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [t0__', t1__']
+                          )
+                        ]
+    with t0__' := <pp-one-Z(prettyprint-CharRanges)> t0__
+    with t1__' := <pp-one-Z(prettyprint-CharRanges)> t1__
+
+  is-CharRanges =
+    ?Conc(_, _)
+
+  prettyprint-CharRanges :
+    Parenthetical(t0__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("(")
+                               , t0__'
+                               , S(")")
+                               ]
+                             )
+                           ]
+    with t0__' := <pp-one-Z(prettyprint-CharRanges)> t0__
+
+  prettyprint-OptCharRanges :
+    Absent() -> [ H(
+                    []
+                  , [S("")]
+                  )
+                ]
+
+  is-OptCharRanges =
+    ?Absent()
+
+  prettyprint-OptCharRanges :
+    Present(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [t0__']
+                       )
+                     ]
+    with t0__' := <pp-one-Z(prettyprint-CharRanges)> t0__
+
+  is-OptCharRanges =
+    ?Present(_)
+
+  prettyprint-CharClass :
+    Simple(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [ S("[")
+                        , t0__'
+                        , S("]")
+                        ]
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-OptCharRanges)> t0__
+
+  is-CharClass =
+    ?Simple(_)
+
+  prettyprint-CharClass :
+    Comp(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [S("~"), t0__']
+                    )
+                  ]
+    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+
+  is-CharClass =
+    ?Comp(_)
+
+  prettyprint-CharClass :
+    Diff(t0__, t1__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [t0__', S("/"), t1__']
+                          )
+                        ]
+    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+    with t1__' := <pp-one-Z(prettyprint-CharClass)> t1__
+
+  is-CharClass =
+    ?Diff(_, _)
+
+  prettyprint-CharClass :
+    Isect(t0__, t1__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [t0__', S("/\\"), t1__']
+                           )
+                         ]
+    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+    with t1__' := <pp-one-Z(prettyprint-CharClass)> t1__
+
+  is-CharClass =
+    ?Isect(_, _)
+
+  prettyprint-CharClass :
+    Union(t0__, t1__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [t0__', S("\\/"), t1__']
+                           )
+                         ]
+    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+    with t1__' := <pp-one-Z(prettyprint-CharClass)> t1__
+
+  is-CharClass =
+    ?Union(_, _)
+
+  prettyprint-CharClass :
+    Parenthetical(t0__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("(")
+                               , t0__'
+                               , S(")")
+                               ]
+                             )
+                           ]
+    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+
+  is-CharRange =
+    fail
+
+  is-CharRanges =
+    fail
+
+  is-OptCharRanges =
+    fail
+
+  is-CharClass =
+    fail

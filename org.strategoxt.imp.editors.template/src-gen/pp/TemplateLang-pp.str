@@ -1,0 +1,986 @@
+module src-gen/pp/TemplateLang-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  src-gen/signatures/TemplateLang-sig
+
+
+imports
+  src-gen/signatures/sdf2-core/SDF-sig
+  src-gen/signatures/constants/StrCon-sig
+  src-gen/signatures/sorts/Sorts-sig
+  src-gen/signatures/symbols/Symbols-sig
+  src-gen/signatures/labels/Labels-sig
+  src-gen/signatures/constants/IdentifierCon-sig
+  src-gen/signatures/kernel/Kernel-sig
+  src-gen/signatures/restrictions/Restrictions-sig
+  src-gen/signatures/priority/Priority-sig
+  src-gen/signatures/basic/Basic-sig
+  src-gen/signatures/modules/Modules-sig
+
+
+imports
+  src-gen/pp/sdf2-core/SDF-pp
+  src-gen/pp/constants/StrCon-pp
+  src-gen/pp/sorts/Sorts-pp
+  src-gen/pp/symbols/Symbols-pp
+  src-gen/pp/labels/Labels-pp
+  src-gen/pp/constants/IdentifierCon-pp
+  src-gen/pp/kernel/Kernel-pp
+  src-gen/pp/restrictions/Restrictions-pp
+  src-gen/pp/priority/Priority-pp
+  src-gen/pp/basic/Basic-pp
+  src-gen/pp/modules/Modules-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-TemplateProduction
+
+  prettyprint-example =
+    prettyprint-PlaceholderOption
+
+  prettyprint-example =
+    prettyprint-PlaceholderOptions
+
+  prettyprint-TemplateProduction :
+    WATER(t0__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t0__']
+                     )
+                   ]
+    with t0__' := <pp-one-Z(prettyprint-CONTENTCOMPLETE)> t0__
+
+  is-TemplateProduction =
+    ?WATER(_)
+
+  prettyprint-PlaceholderOption :
+    WATER(t0__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t0__']
+                     )
+                   ]
+    with t0__' := <pp-one-Z(prettyprint-CONTENTCOMPLETE)> t0__
+
+  is-PlaceholderOption =
+    ?WATER(_)
+
+  prettyprint-PlaceholderOptions :
+    WATER(t0__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t0__']
+                     )
+                   ]
+    with t0__' := <pp-one-Z(prettyprint-CONTENTCOMPLETE)> t0__
+
+  is-PlaceholderOptions =
+    ?WATER(_)
+
+  is-TemplateProduction =
+    fail
+
+  is-PlaceholderOption =
+    fail
+
+  is-PlaceholderOptions =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Section
+
+  prettyprint-example =
+    prettyprint-NewlineOptionValue
+
+  prettyprint-example =
+    prettyprint-TemplateOption
+
+  prettyprint-Section :
+    TemplateOptions(t0__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [S("template options")]
+                               )
+                             , H(
+                                 []
+                               , [S("")]
+                               )
+                             , t0__'
+                             , H(
+                                 []
+                               , [S("")]
+                               )
+                             ]
+    with t0__' := <pp-indent(|"2")> [<pp-V-list(prettyprint-TemplateOption)> t0__]
+
+  is-Section =
+    ?TemplateOptions(_)
+
+  prettyprint-TemplateOption :
+    Newlines(t0__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [S("newlines : "), t0__']
+                        )
+                      ]
+    with t0__' := <pp-one-Z(prettyprint-NewlineOptionValue)> t0__
+
+  is-TemplateOption =
+    ?Newlines(_)
+
+  prettyprint-NewlineOptionValue :
+    None() -> [ H(
+                  [SOpt(HS(), "0")]
+                , [S("none")]
+                )
+              ]
+
+  is-NewlineOptionValue =
+    ?None()
+
+  prettyprint-NewlineOptionValue :
+    Leading() -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [S("leading")]
+                   )
+                 ]
+
+  is-NewlineOptionValue =
+    ?Leading()
+
+  prettyprint-NewlineOptionValue :
+    Trailing() -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [S("trailing")]
+                    )
+                  ]
+
+  is-NewlineOptionValue =
+    ?Trailing()
+
+  prettyprint-NewlineOptionValue :
+    Separating() -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [S("separating")]
+                      )
+                    ]
+
+  is-NewlineOptionValue =
+    ?Separating()
+
+  prettyprint-TemplateOption :
+    KeywordFollowRestriction(t0__) -> [ H(
+                                          [SOpt(HS(), "0")]
+                                        , [S("keyword -/- "), t0__']
+                                        )
+                                      ]
+    with t0__' := <pp-one-Z(prettyprint-Lookaheads)> t0__
+
+  is-TemplateOption =
+    ?KeywordFollowRestriction(_)
+
+  prettyprint-TemplateOption :
+    Tokenize(t0__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [S("tokenize : "), t0__']
+                        )
+                      ]
+    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+
+  is-TemplateOption =
+    ?Tokenize(_)
+
+  is-Section =
+    fail
+
+  is-NewlineOptionValue =
+    fail
+
+  is-TemplateOption =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Group
+
+  prettyprint-example =
+    prettyprint-SortConsRef
+
+  prettyprint-Group :
+    SimpleRefGroup(t0__) -> [ H(
+                                [SOpt(HS(), "0")]
+                              , [t0__']
+                              )
+                            ]
+    with t0__' := <pp-one-Z(prettyprint-SortConsRef)> t0__
+
+  is-Group =
+    ?SimpleRefGroup(_)
+
+  prettyprint-Group :
+    ProdsRefGroup(t0__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("{")
+                               , t0__'
+                               , S("}")
+                               ]
+                             )
+                           ]
+    with t0__' := <pp-V-list(prettyprint-SortConsRef)> t0__
+
+  is-Group =
+    ?ProdsRefGroup(_)
+
+  prettyprint-Group :
+    AssocRefGroup(t0__, t1__) -> [ H(
+                                     [SOpt(HS(), "0")]
+                                   , [ S("{")
+                                     , t0__'
+                                     , S(" :")
+                                     ]
+                                   )
+                                 , t1__'
+                                 ]
+    with t0__' := <pp-one-Z(prettyprint-Associativity)> t0__
+    with t1__' := <pp-indent(|"2")> [ <pp-V-list(prettyprint-SortConsRef)> t1__
+                                    , S("}")
+                                    ]
+
+  is-Group =
+    ?AssocRefGroup(_, _)
+
+  prettyprint-SortConsRef :
+    SortConsRef(t0__, t1__) -> [ H(
+                                   [SOpt(HS(), "0")]
+                                 , [t0__', S("."), t1__']
+                                 )
+                               ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Constructor)> t1__
+
+  is-SortConsRef =
+    ?SortConsRef(_, _)
+
+  is-Group =
+    fail
+
+  is-SortConsRef =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Section
+
+  prettyprint-example =
+    prettyprint-Grammar
+
+  prettyprint-example =
+    prettyprint-GeneralProduction
+
+  prettyprint-example =
+    prettyprint-SdfProduction
+
+  prettyprint-example =
+    prettyprint-RHS
+
+  prettyprint-example =
+    prettyprint-TemplateProduction
+
+  prettyprint-example =
+    prettyprint-Constructor
+
+  prettyprint-example =
+    prettyprint-SortCons
+
+  prettyprint-example =
+    prettyprint-TemplatePart1
+
+  prettyprint-example =
+    prettyprint-TemplatePart2
+
+  prettyprint-example =
+    prettyprint-Placeholder
+
+  prettyprint-example =
+    prettyprint-PlaceholderOptions
+
+  prettyprint-example =
+    prettyprint-PlaceholderOption
+
+  prettyprint-Section :
+    TemplateSection(t0__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [S("templates")]
+                               )
+                             , H(
+                                 []
+                               , [S("")]
+                               )
+                             , t0__'
+                             , H(
+                                 []
+                               , [S("")]
+                               )
+                             ]
+    with t0__' := <pp-indent(|"2")> [<pp-V-list(prettyprint-TemplateProduction)> t0__]
+
+  is-Section =
+    ?TemplateSection(_)
+
+  prettyprint-Grammar :
+    LexicalSyntax(t0__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [S("lexical syntax")]
+                             )
+                           , H(
+                               []
+                             , [S("")]
+                             )
+                           , t0__'
+                           , H(
+                               []
+                             , [S("")]
+                             )
+                           ]
+    with t0__' := <pp-indent(|"2")> [<pp-V-list(prettyprint-SdfProduction)> t0__]
+
+  is-Grammar =
+    ?LexicalSyntax(_)
+
+  prettyprint-Grammar :
+    ContextFreeSyntax(t0__) -> [ H(
+                                   [SOpt(HS(), "0")]
+                                 , [S("context-free syntax")]
+                                 )
+                               , H(
+                                   []
+                                 , [S("")]
+                                 )
+                               , t0__'
+                               , H(
+                                   []
+                                 , [S("")]
+                                 )
+                               ]
+    with t0__' := <pp-indent(|"2")> [<pp-V-list(prettyprint-GeneralProduction)> t0__]
+
+  is-Grammar =
+    ?ContextFreeSyntax(_)
+
+  prettyprint-Grammar :
+    Kernel(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [S("syntax")]
+                      )
+                    , H(
+                        []
+                      , [S("")]
+                      )
+                    , t0__'
+                    , H(
+                        []
+                      , [S("")]
+                      )
+                    ]
+    with t0__' := <pp-indent(|"2")> [<pp-V-list(prettyprint-SdfProduction)> t0__]
+
+  is-Grammar =
+    ?Kernel(_)
+
+  prettyprint-GeneralProduction :
+    t0__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t0__']
+              )
+            ]
+    where not(is-GeneralProduction)
+    where t0__' := <pp-one-Z(prettyprint-SdfProduction)> t0__
+
+  prettyprint-GeneralProduction :
+    t0__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t0__']
+              )
+            ]
+    where not(is-GeneralProduction)
+    where t0__' := <pp-one-Z(prettyprint-TemplateProduction)> t0__
+
+  prettyprint-SdfProduction :
+    SdfProduction(t0__, t1__, t2__) -> [ H(
+                                           [SOpt(HS(), "0")]
+                                         , [ t0__'
+                                           , S(" = ")
+                                           , t1__'
+                                           , S(" ")
+                                           , t2__'
+                                           ]
+                                         )
+                                       ]
+    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-RHS)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Attributes)> t2__
+
+  is-SdfProduction =
+    ?SdfProduction(_, _, _)
+
+  prettyprint-SdfProduction :
+    SdfProductionWithCons(t0__, t1__, t2__) -> [ H(
+                                                   [SOpt(HS(), "0")]
+                                                 , [ t0__'
+                                                   , S(" = ")
+                                                   , t1__'
+                                                   , S(" ")
+                                                   , t2__'
+                                                   ]
+                                                 )
+                                               ]
+    with t0__' := <pp-one-Z(prettyprint-SortCons)> t0__
+    with t1__' := <pp-one-Z(prettyprint-RHS)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Attributes)> t2__
+
+  is-SdfProduction =
+    ?SdfProductionWithCons(_, _, _)
+
+  prettyprint-RHS :
+    Rhs(t0__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t0__']
+                   )
+                 ]
+    with t0__' := <pp-one-Z(prettyprint-Symbols)> t0__
+
+  is-RHS =
+    ?Rhs(_)
+
+  prettyprint-TemplateProduction :
+    TemplateProduction(t0__, t1__, t2__) -> [ H(
+                                                [SOpt(HS(), "0")]
+                                              , [ t0__'
+                                                , S(" = ")
+                                                , t1__'
+                                                , S(" ")
+                                                , t2__'
+                                                ]
+                                              )
+                                            ]
+    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Template)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Attributes)> t2__
+
+  is-TemplateProduction =
+    ?TemplateProduction(_, _, _)
+
+  prettyprint-TemplateProduction :
+    TemplateProductionWithCons(t0__, t1__, t2__) -> [ H(
+                                                        [SOpt(HS(), "0")]
+                                                      , [ t0__'
+                                                        , S(" = ")
+                                                        , t1__'
+                                                        , S(" ")
+                                                        , t2__'
+                                                        ]
+                                                      )
+                                                    ]
+    with t0__' := <pp-one-Z(prettyprint-SortCons)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Template)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Attributes)> t2__
+
+  is-TemplateProduction =
+    ?TemplateProductionWithCons(_, _, _)
+
+  prettyprint-Constructor :
+    Constructor(t0__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [t0__']
+                           )
+                         ]
+    with t0__' := <pp-one-Z(prettyprint-IdCon)> t0__
+
+  is-Constructor =
+    ?Constructor(_)
+
+  prettyprint-SortCons :
+    SortCons(t0__, t1__) -> [ H(
+                                [SOpt(HS(), "0")]
+                              , [t0__', S("."), t1__']
+                              )
+                            ]
+    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Constructor)> t1__
+
+  is-SortCons =
+    ?SortCons(_, _)
+
+  prettyprint-TemplatePart1 :
+    Angled(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [ S("<")
+                        , t0__'
+                        , S(">")
+                        ]
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-Placeholder)> t0__
+
+  is-TemplatePart1 =
+    ?Angled(_)
+
+  prettyprint-TemplatePart2 :
+    Squared(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [ S("[")
+                         , t0__'
+                         , S("]")
+                         ]
+                       )
+                     ]
+    with t0__' := <pp-one-Z(prettyprint-Placeholder)> t0__
+
+  is-TemplatePart2 =
+    ?Squared(_)
+
+  prettyprint-Placeholder :
+    Placeholder(t0__, t1__) -> [ H(
+                                   [SOpt(HS(), "0")]
+                                 , [t0__', t1__']
+                                 )
+                               ]
+    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-PlaceholderOptions)> t1__
+
+  is-Placeholder =
+    ?Placeholder(_, _)
+
+  prettyprint-PlaceholderOptions :
+    NoOptions() -> [ H(
+                       []
+                     , [S("")]
+                     )
+                   ]
+
+  is-PlaceholderOptions =
+    ?NoOptions()
+
+  prettyprint-PlaceholderOptions :
+    Options(t0__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S(";"), t0__']
+                       )
+                     ]
+    with t0__' := <pp-H-list(prettyprint-PlaceholderOption|", ")> t0__
+
+  is-PlaceholderOptions =
+    ?Options(_)
+
+  prettyprint-PlaceholderOption :
+    Hide() -> [ H(
+                  [SOpt(HS(), "0")]
+                , [S("hide")]
+                )
+              ]
+
+  is-PlaceholderOption =
+    ?Hide()
+
+  prettyprint-PlaceholderOption :
+    Wrap() -> [ H(
+                  [SOpt(HS(), "0")]
+                , [S("wrap")]
+                )
+              ]
+
+  is-PlaceholderOption =
+    ?Wrap()
+
+  prettyprint-PlaceholderOption :
+    Anchor() -> [ H(
+                    [SOpt(HS(), "0")]
+                  , [S("anchor")]
+                  )
+                ]
+
+  is-PlaceholderOption =
+    ?Anchor()
+
+  prettyprint-PlaceholderOption :
+    Separator(t0__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [S("separator="), t0__']
+                         )
+                       ]
+    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+
+  is-PlaceholderOption =
+    ?Separator(_)
+
+  prettyprint-PlaceholderOption :
+    Text(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [S("text="), t0__']
+                    )
+                  ]
+    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+
+  is-PlaceholderOption =
+    ?Text(_)
+
+  is-Section =
+    fail
+
+  is-Grammar =
+    fail
+
+  is-GeneralProduction =
+    fail
+
+  is-SdfProduction =
+    fail
+
+  is-RHS =
+    fail
+
+  is-TemplateProduction =
+    fail
+
+  is-Constructor =
+    fail
+
+  is-SortCons =
+    fail
+
+  is-TemplatePart1 =
+    fail
+
+  is-TemplatePart2 =
+    fail
+
+  is-Placeholder =
+    fail
+
+  is-PlaceholderOptions =
+    fail
+
+  is-PlaceholderOption =
+    fail
+
+
+strategies
+  prettyprint-example =
+    prettyprint-TemplateLine1
+
+  prettyprint-example =
+    prettyprint-TemplatePart1
+
+  prettyprint-example =
+    prettyprint-Template
+
+  prettyprint-example =
+    prettyprint-TemplateLine2
+
+  prettyprint-example =
+    prettyprint-TemplatePart2
+
+  prettyprint-Template :
+    Template(t0__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [ S("<")
+                          , t0__'
+                          , S(">")
+                          ]
+                        )
+                      ]
+    with t0__' := <pp-H-list(prettyprint-TemplateLine1|"\n")> t0__
+
+  is-Template =
+    ?Template(_)
+
+  prettyprint-Template :
+    TemplateDeprecated(t0__) -> [ H(
+                                    [SOpt(HS(), "0")]
+                                  , [ S("<<")
+                                    , t0__'
+                                    , S(">>")
+                                    ]
+                                  )
+                                ]
+    with t0__' := <pp-H-list(prettyprint-TemplateLine1|"\n")> t0__
+
+  is-Template =
+    ?TemplateDeprecated(_)
+
+  prettyprint-TemplateLine1 :
+    Line(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t0__']
+                    )
+                  ]
+    with t0__' := <pp-H-list(prettyprint-TemplatePart1|"")> t0__
+
+  is-TemplateLine1 =
+    ?Line(_)
+
+  prettyprint-TemplatePart1 :
+    String(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateString1)> t0__
+
+  is-TemplatePart1 =
+    ?String(_)
+
+  prettyprint-TemplatePart1 :
+    Escape(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateEscape1)> t0__
+
+  is-TemplatePart1 =
+    ?Escape(_)
+
+  prettyprint-TemplatePart1 :
+    Layout(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateLayout)> t0__
+
+  is-TemplatePart1 =
+    ?Layout(_)
+
+  prettyprint-Template :
+    TemplateSquare(t0__) -> [ H(
+                                [SOpt(HS(), "0")]
+                              , [ S("[")
+                                , t0__'
+                                , S("]")
+                                ]
+                              )
+                            ]
+    with t0__' := <pp-H-list(prettyprint-TemplateLine2|"\n")> t0__
+
+  is-Template =
+    ?TemplateSquare(_)
+
+  prettyprint-Template :
+    TemplateSquareDeprecated(t0__) -> [ H(
+                                          [SOpt(HS(), "0")]
+                                        , [ S("[[")
+                                          , t0__'
+                                          , S("]]")
+                                          ]
+                                        )
+                                      ]
+    with t0__' := <pp-H-list(prettyprint-TemplateLine2|"\n")> t0__
+
+  is-Template =
+    ?TemplateSquareDeprecated(_)
+
+  prettyprint-TemplateLine2 :
+    Line(t0__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t0__']
+                    )
+                  ]
+    with t0__' := <pp-H-list(prettyprint-TemplatePart2|"")> t0__
+
+  is-TemplateLine2 =
+    ?Line(_)
+
+  prettyprint-TemplatePart2 :
+    String(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateString2)> t0__
+
+  is-TemplatePart2 =
+    ?String(_)
+
+  prettyprint-TemplatePart2 :
+    Escape(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateEscape2)> t0__
+
+  is-TemplatePart2 =
+    ?Escape(_)
+
+  prettyprint-TemplatePart2 :
+    Layout(t0__) -> [ H(
+                        [SOpt(HS(), "0")]
+                      , [t0__']
+                      )
+                    ]
+    with t0__' := <pp-one-Z(prettyprint-TemplateLayout)> t0__
+
+  is-TemplatePart2 =
+    ?Layout(_)
+
+  is-TemplateLine1 =
+    fail
+
+  is-TemplatePart1 =
+    fail
+
+  is-Template =
+    fail
+
+  is-TemplateLine2 =
+    fail
+
+  is-TemplatePart2 =
+    fail
+
+
+strategies
+  prettyprint-EOL =
+    ![S(<is-string>)]
+
+  prettyprint-CR =
+    ![S(<is-string>)]
+
+  prettyprint-LF =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-EOL
+
+  prettyprint-example =
+    prettyprint-CR
+
+  prettyprint-example =
+    prettyprint-LF
+
+
+strategies
+  prettyprint-TemplateLayout =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateString1 =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateString2 =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateStringQ =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateString1Alt =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateString2Alt =
+    ![S(<is-string>)]
+
+  prettyprint-Backslash =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-TemplateLayout
+
+  prettyprint-example =
+    prettyprint-TemplateString1
+
+  prettyprint-example =
+    prettyprint-TemplateString2
+
+  prettyprint-example =
+    prettyprint-TemplateStringQ
+
+  prettyprint-example =
+    prettyprint-TemplateString1Alt
+
+  prettyprint-example =
+    prettyprint-TemplateString2Alt
+
+  prettyprint-example =
+    prettyprint-Backslash
+
+
+strategies
+  prettyprint-CONTENTCOMPLETE =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateEscape1 =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateEscape2 =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedChar1Alt =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedChar2Alt =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedBackslashChar1 =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedBackslashChar2 =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateEscapeQ =
+    ![S(<is-string>)]
+
+  prettyprint-TemplateEscapeQAlt =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedUnicodeChar =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedChar =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedChar1 =
+    ![S(<is-string>)]
+
+  prettyprint-EscapedChar2 =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-CONTENTCOMPLETE
+
+  prettyprint-example =
+    prettyprint-TemplateEscape1
+
+  prettyprint-example =
+    prettyprint-TemplateEscape2
+
+  prettyprint-example =
+    prettyprint-EscapedChar1Alt
+
+  prettyprint-example =
+    prettyprint-EscapedChar2Alt
+
+  prettyprint-example =
+    prettyprint-EscapedBackslashChar1
+
+  prettyprint-example =
+    prettyprint-EscapedBackslashChar2
+
+  prettyprint-example =
+    prettyprint-TemplateEscapeQ
+
+  prettyprint-example =
+    prettyprint-TemplateEscapeQAlt
+
+  prettyprint-example =
+    prettyprint-EscapedUnicodeChar
+
+  prettyprint-example =
+    prettyprint-EscapedChar
+
+  prettyprint-example =
+    prettyprint-EscapedChar1
+
+  prettyprint-example =
+    prettyprint-EscapedChar2

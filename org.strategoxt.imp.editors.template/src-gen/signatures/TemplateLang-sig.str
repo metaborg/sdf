@@ -1,0 +1,105 @@
+module src-gen/signatures/TemplateLang-sig
+
+imports
+  src-gen/signatures/sdf2-core/SDF-sig
+  src-gen/signatures/constants/StrCon-sig
+  src-gen/signatures/sorts/Sorts-sig
+  src-gen/signatures/symbols/Symbols-sig
+  src-gen/signatures/labels/Labels-sig
+  src-gen/signatures/constants/IdentifierCon-sig
+  src-gen/signatures/kernel/Kernel-sig
+  src-gen/signatures/restrictions/Restrictions-sig
+  src-gen/signatures/priority/Priority-sig
+  src-gen/signatures/basic/Basic-sig
+  src-gen/signatures/modules/Modules-sig
+
+
+signature
+  constructors
+    WATER : CONTENTCOMPLETE -> TemplateProduction
+    WATER : CONTENTCOMPLETE -> PlaceholderOption
+    WATER : CONTENTCOMPLETE -> PlaceholderOptions
+
+  constructors
+    TemplateOptions          : List(TemplateOption) -> Section
+    Newlines                 : NewlineOptionValue -> TemplateOption
+    None                     : NewlineOptionValue
+    Leading                  : NewlineOptionValue
+    Trailing                 : NewlineOptionValue
+    Separating               : NewlineOptionValue
+    KeywordFollowRestriction : Lookaheads -> TemplateOption
+    Tokenize                 : StrCon -> TemplateOption
+
+  constructors
+    SimpleRefGroup : SortConsRef -> Group
+    ProdsRefGroup  : List(SortConsRef) -> Group
+    AssocRefGroup  : Associativity * List(SortConsRef) -> Group
+    SortConsRef    : Symbol * Constructor -> SortConsRef
+
+  constructors
+    TemplateSection            : List(TemplateProduction) -> Section
+    LexicalSyntax              : List(SdfProduction) -> Grammar
+    ContextFreeSyntax          : List(GeneralProduction) -> Grammar
+    Kernel                     : List(SdfProduction) -> Grammar
+                               : SdfProduction -> GeneralProduction
+                               : TemplateProduction -> GeneralProduction
+    SdfProduction              : SymbolDef * RHS * Attributes -> SdfProduction
+    SdfProductionWithCons      : SortCons * RHS * Attributes -> SdfProduction
+    Rhs                        : Symbols -> RHS
+    TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
+    TemplateProductionWithCons : SortCons * Template * Attributes -> TemplateProduction
+    Constructor                : IdCon -> Constructor
+    SortCons                   : SymbolDef * Constructor -> SortCons
+    Angled                     : Placeholder -> TemplatePart1
+    Squared                    : Placeholder -> TemplatePart2
+    Placeholder                : Symbol * PlaceholderOptions -> Placeholder
+    NoOptions                  : PlaceholderOptions
+    Options                    : List(PlaceholderOption) -> PlaceholderOptions
+    Hide                       : PlaceholderOption
+    Wrap                       : PlaceholderOption
+    Anchor                     : PlaceholderOption
+    Separator                  : StrCon -> PlaceholderOption
+    Text                       : StrCon -> PlaceholderOption
+
+  constructors
+    Template                 : List(TemplateLine1) -> Template
+    TemplateDeprecated       : List(TemplateLine1) -> Template
+    Line                     : List(TemplatePart1) -> TemplateLine1
+    String                   : TemplateString1 -> TemplatePart1
+    Escape                   : TemplateEscape1 -> TemplatePart1
+    Layout                   : TemplateLayout -> TemplatePart1
+    TemplateSquare           : List(TemplateLine2) -> Template
+    TemplateSquareDeprecated : List(TemplateLine2) -> Template
+    Line                     : List(TemplatePart2) -> TemplateLine2
+    String                   : TemplateString2 -> TemplatePart2
+    Escape                   : TemplateEscape2 -> TemplatePart2
+    Layout                   : TemplateLayout -> TemplatePart2
+
+  constructors
+     : String -> EOL
+     : String -> CR
+     : String -> LF
+
+  constructors
+     : String -> TemplateLayout
+     : String -> TemplateString1
+     : String -> TemplateString2
+     : String -> TemplateStringQ
+     : String -> TemplateString1Alt
+     : String -> TemplateString2Alt
+     : String -> Backslash
+
+  constructors
+     : String -> CONTENTCOMPLETE
+     : String -> TemplateEscape1
+     : String -> TemplateEscape2
+     : String -> EscapedChar1Alt
+     : String -> EscapedChar2Alt
+     : String -> EscapedBackslashChar1
+     : String -> EscapedBackslashChar2
+     : String -> TemplateEscapeQ
+     : String -> TemplateEscapeQAlt
+     : String -> EscapedUnicodeChar
+     : String -> EscapedChar
+     : String -> EscapedChar1
+     : String -> EscapedChar2

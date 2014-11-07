@@ -1,6 +1,9 @@
 module TemplateLang-Menus
 
 menus
+
+  
+    
   
   menu: "Syntax"                      (openeditor) (meta)
     
@@ -28,14 +31,37 @@ menus
       action: "Selection"           = debug-task-selection
     end
   
-  menu: "Generation" (openeditor) (realtime)
+   menu: "Generate" (openeditor) (realtime)
+   
+    action: "Generate all files" = generate-all
+   
+   	submenu: "SDF"
+      action: "Generate SDF (abstract)" = generate-sdf-abstract
+      action: "Generate SDF (concrete)" = generate-sdf-concrete
+    end
     
-	  action: "Show expanded templates (for selection)" = generate-expanded
-	  action: "Generate ESV (abstract, for selection)" = generate-esv-abstract
-	  action: "Generate ESV (concrete, for selection)" = generate-esv-concrete
-	  action: "Generate SDF (abstract, for selection)" = generate-sdf-abstract
-	  action: "Generate SDF (concrete, for selection)" = generate-sdf-concrete
-	  action: "Generate BOX-based PP (abstract, for selection)" = generate-box-pp-abstract
-	  action: "Generate BOX-based PP (concrete, for selection)" = generate-box-pp-concrete
-	  action: "Generate signature (abstract, for selection)" = generate-signature-abstract
-	  action: "Generate signature (concrete, for selection)" = generate-signature-concrete
+    submenu: "Signature"
+      action: "Generate Signature (abstract)" = generate-sig-abstract
+      action: "Generate Signature (concrete)" = generate-sig-concrete
+      
+     end
+     
+     submenu: "Pretty-printer"
+     	action: "Generate PP (abstract)" = generate-pp-abstract
+     	action: "Generate PP (concrete)" = generate-pp-concrete
+     end
+     
+     submenu: "Content Completion"
+     	action: "Generate ESV (abstract)" = generate-esv-abstract
+     	action: "Generate ESV (concrete)" = generate-esv-concrete
+     end
+     
+  menu: "Format" (openeditor) (realtime)
+    
+    action: "Format"             			      = pp-sdf3 (source)
+    action: "Lift (abstract)" 					  = lift-sdf3-abstract (meta)
+    action: "Lift" 								  = lift-sdf3    
+    action: "Lift (templates, abstract)"          = lift-sdf3-template-abstract (meta)
+    action: "Lift (templates)"                    = lift-sdf3-template 
+    action: "Extract productions (abstract)"	  = extract-regular-productions-abstract (meta)
+    action: "Extract productions"				  = extract-regular-productions 

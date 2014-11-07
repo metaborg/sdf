@@ -1,10 +1,11 @@
 .cache
 .settings
 bin
+target
 editor/*generated*
 editor/java/org/strategoxt/imp/editors/template/generated
 editor/java/trans
-include
+editor/java/pplib
 lib-refactoring
 lib/analysis-library-internal.generated.str
 lib/analysis-library.generated.str
@@ -18,3 +19,6 @@ syntax/*generated*
 test/*generated*
 trans/*generated*
 utils
+!trans/utils
+include
+src-gen

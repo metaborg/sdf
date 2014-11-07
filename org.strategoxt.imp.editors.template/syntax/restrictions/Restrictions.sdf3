@@ -1,0 +1,37 @@
+module restrictions/Restrictions
+  
+imports characterclass/CC 
+		characterclass/Character-Class
+		symbols/Symbols 
+		constants/StrCon
+
+context-free syntax
+  
+Lookahead.CharClass = <<CharClass>>
+Lookahead.Seq = <<CharClass>.<Lookaheads>>  
+
+Lookaheads.Single = <<Lookahead>>
+//"left":Lookaheads "|" "right":Lookaheads -> Lookaheads  {cons("alt"),right}
+Lookaheads.Alt = <<Lookaheads> | <Lookaheads>> {right}
+Lookaheads = <(<Lookaheads>)> {bracket}
+Lookaheads.List = <[[<list:{Lookahead ", "}*>]]>
+
+Restriction.Follow = <<RestrictionSymbols> -/- <Lookaheads>>
+RestrictionSymbols = <<list:{Symbol "\n"}*>>
+ 
+Restrictions = <<list:{Restriction "\n"}*>>
+ 
+Grammar.Restrictions = <
+	restrictions
+	
+		<Restrictions>
+	
+	>
+
+Attribute.Reject = <reject>
+Attribute.Prefer = <prefer>
+Attribute.Avoid = <avoid> 
+
+context-free priorities    
+    Lookahead.Seq > 
+    Lookaheads.Alt

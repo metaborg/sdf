@@ -8,7 +8,6 @@ colorer
   //
   // See the imported file for a brief introduction and examples.
 
-	PlaceholderLabel.Label: grey
 	_.String: blue
-	_.Constructor: blue
-	
+	_.Constructor: darkblue
+	Label._ : grey

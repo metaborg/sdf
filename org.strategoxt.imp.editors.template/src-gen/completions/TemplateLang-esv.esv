@@ -1,0 +1,80 @@
+module src-gen/completions/TemplateLang-esv
+
+imports
+  src-gen/completions/sdf2-core/SDF-esv
+  src-gen/completions/constants/StrCon-esv
+  src-gen/completions/sorts/Sorts-esv
+  src-gen/completions/symbols/Symbols-esv
+  src-gen/completions/labels/Labels-esv
+  src-gen/completions/constants/IdentifierCon-esv
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/restrictions/Restrictions-esv
+  src-gen/completions/priority/Priority-esv
+  src-gen/completions/basic/Basic-esv
+  src-gen/completions/modules/Modules-esv
+
+completions
+  completion template Section : "template options " =
+    "template options\n\n\t" (cursor) "\n" (blank)  
+  completion template TemplateOption : "newlines : NewlineOptionValue" =
+    "newlines : " <NewlineOptionValue:NewlineOptionValue>  
+  completion template NewlineOptionValue : "none" =
+    "none"  
+  completion template NewlineOptionValue : "leading" =
+    "leading"  
+  completion template NewlineOptionValue : "trailing" =
+    "trailing"  
+  completion template NewlineOptionValue : "separating" =
+    "separating"  
+  completion template TemplateOption : "keyword -/- Lookaheads" =
+    "keyword -/- " <Lookaheads:Lookaheads>  
+  completion template TemplateOption : "tokenize : StrCon" =
+    "tokenize : " <StrCon:StrCon>  
+
+completions
+  completion template Group : "{SortConsRef}" =
+    "{" <SortConsRef:SortConsRef> "}"  
+  completion template Group : "{Associativity : SortConsRef}" =
+    "{" <Associativity:Associativity> " :\n\t" <SortConsRef:SortConsRef> "}" (blank)  
+  completion template SortConsRef : "Symbol.Constructor" =
+    <Symbol:Symbol> "." <Constructor:Constructor>  
+
+completions
+  completion template Grammar : "lexical syntax " =
+    "lexical syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template Grammar : "context-free syntax " =
+    "context-free syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template Grammar : "syntax " =
+    "syntax\n\n\t" (cursor) "\n" (blank)  
+  completion template SdfProduction : "SymbolDef = RHS Attributes" =
+    <SymbolDef:SymbolDef> " = " <RHS:RHS> " " <Attributes:Attributes>  
+  completion template SdfProduction : "SortCons = RHS Attributes" =
+    <SortCons:SortCons> " = " <RHS:RHS> " " <Attributes:Attributes>  
+  completion template TemplateProduction : "SymbolDef = Template Attributes" =
+    <SymbolDef:SymbolDef> " = " <Template:Template> " " <Attributes:Attributes>  
+  completion template TemplateProduction : "SortCons = Template Attributes" =
+    <SortCons:SortCons> " = " <Template:Template> " " <Attributes:Attributes>  
+  completion template SortCons : "SymbolDef.Constructor" =
+    <SymbolDef:SymbolDef> "." <Constructor:Constructor>  
+  completion template TemplatePart1 : "<Placeholder>" =
+    "<" <Placeholder:Placeholder> ">"  
+  completion template TemplatePart2 : "[Placeholder]" =
+    "[" <Placeholder:Placeholder> "]"  
+  completion template Placeholder : "SymbolPlaceholderOptions" =
+    <Symbol:Symbol> <PlaceholderOptions:PlaceholderOptions>  
+  completion template PlaceholderOptions : ";PlaceholderOption" =
+    ";" <PlaceholderOption:PlaceholderOption>  
+  completion template PlaceholderOption : "hide" =
+    "hide"                    
+  completion template PlaceholderOption : "wrap" =
+    "wrap"                    
+  completion template PlaceholderOption : "anchor" =
+    "anchor"                
+  completion template PlaceholderOption : "text=StrCon" =
+    "text=" <StrCon:StrCon>  
+
+completions
+  completion template Template : "<TemplateLine1>" =
+    "<" <TemplateLine1:TemplateLine1> ">"  
+  completion template Template : "[TemplateLine2]" =
+    "[" <TemplateLine2:TemplateLine2> "]"  

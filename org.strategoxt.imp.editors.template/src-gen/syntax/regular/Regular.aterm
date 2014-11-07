@@ -1,0 +1,136 @@
+module(
+  unparameterized("regular/Regular")
+, [ imports(
+      [ module(unparameterized("kernel/Kernel"))
+      , module(unparameterized("constants/IntCon"))
+      , module(unparameterized("symbols/Symbols"))
+      , module(unparameterized("constants/StrCon"))
+      , module(unparameterized("labels/Labels"))
+      ]
+    )
+  ]
+, [ exports(
+      conc-grammars(
+        conc-grammars(
+          context-free-syntax(
+            [ prod(
+                [sort("Symbol"), lit("\"?\"")]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"Opt\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [sort("Symbol"), lit("\"+\"")]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"Iter\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [sort("Symbol"), lit("\"*\"")]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"IterStar\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [ lit("\"{\"")
+                , sort("Symbol")
+                , label(unquoted("sep"), sort("Separator"))
+                , lit("\"}+\"")
+                ]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"IterSep\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [ lit("\"{\"")
+                , sort("Symbol")
+                , label(unquoted("sep"), sort("Separator"))
+                , lit("\"}*\"")
+                ]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"IterStarSep\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [sort("StrCon")]
+              , sort("Separator")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"Lit\""))]))
+                   )]
+                )
+              )
+            ]
+          )
+        , context-free-syntax(
+            [ prod(
+                [sort("CONTENTCOMPLETE")]
+              , sort("Symbol")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"COMPLETION-Symbol\""))]))
+                   )]
+                )
+              )
+            , prod(
+                [sort("CONTENTCOMPLETE")]
+              , sort("Separator")
+              , attrs(
+                  [term(
+                     default(appl(unquoted("cons"), [fun(quoted("\"COMPLETION-Separator\""))]))
+                   )]
+                )
+              )
+            ]
+          )
+        )
+      , context-free-priorities(
+          [ chain(
+              [ prods-group(
+                  [ prod(
+                      [sort("Symbol"), lit("\"?\"")]
+                    , sort("Symbol")
+                    , no-attrs()
+                    )
+                  , prod(
+                      [sort("Symbol"), lit("\"*\"")]
+                    , sort("Symbol")
+                    , no-attrs()
+                    )
+                  , prod(
+                      [sort("Symbol"), lit("\"+\"")]
+                    , sort("Symbol")
+                    , no-attrs()
+                    )
+                  ]
+                )
+              , simple-group(
+                  prod(
+                    [sort("Label"), lit("\":\""), sort("Symbol")]
+                  , sort("Symbol")
+                  , no-attrs()
+                  )
+                )
+              ]
+            )
+          ]
+        )
+      )
+    )
+  ]
+)

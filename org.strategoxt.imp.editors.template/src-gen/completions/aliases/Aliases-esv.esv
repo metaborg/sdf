@@ -1,0 +1,15 @@
+module src-gen/completions/aliases/Aliases-esv
+
+imports
+  src-gen/completions/kernel/Kernel-esv
+  src-gen/completions/symbols/Symbols-esv
+
+completions
+  completion template Production : "Symbols -> Symbol Attributes " =
+    <Symbols:Symbols> " -> " <Symbol:Symbol> " " <Attributes:Attributes> " "  
+
+completions
+  completion template Grammar : "aliases Aliases " =
+    "aliases\n\n\t" <Aliases:Aliases> "\n" (blank)  
+  completion template Alias : "Symbol -> Symbol" =
+    <Symbol:Symbol> " -> " <Symbol:Symbol>  

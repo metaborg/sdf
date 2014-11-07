@@ -1,0 +1,27 @@
+module basic/Basic
+imports kernel/Kernel sorts/Sorts TemplateLang
+
+exports
+  context-free syntax
+    "lexical" "syntax" Productions       -> Grammar {cons("Lexical")}
+    "context-free" "syntax" Productions  -> Grammar {cons("Contextfree")}
+    "variables" Productions              -> Grammar {cons("Variables")}
+    "variables" SdfProduction*           -> Grammar {cons("VariablesProductive"), prefer}
+    "lexical" "variables" Productions    -> Grammar {cons("LexVariables")}
+    "lexical" "variables" SdfProduction* -> Grammar {cons("LexVariablesProductive"), prefer}
+    Symbol "-CF"                         -> Symbol  {cons("Cf")}
+    Symbol "-LEX"                        -> Symbol  {cons("Lex")}
+    Symbol "-VAR"                        -> Symbol  {cons("Varsym")}
+    "LAYOUT"                             -> Symbol  {cons("Layout")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
+
+  lexical syntax
+    Sort "-LEX"     -> Sort {reject}
+    Sort "-CF"      -> Sort {reject}
+    Sort "-VAR"     -> Sort {reject}
+    "LAYOUT" "-LEX" -> Sort {reject}
+    "LAYOUT" "-CF"  -> Sort {reject}
+    "LAYOUT" "-VAR" -> Sort {reject}

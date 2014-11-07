@@ -1,0 +1,52 @@
+module trans/utils/attributes
+imports
+	libstratego-lib
+	libstratego-sglr
+    include/TemplateLang
+
+signature
+  constructors
+    deprecated : String -> Term
+    deprecated : Term
+
+overlays
+  sdf-cons(x) = Term(Default(Appl(Unquoted("cons"), [Fun(Quoted(x))])))
+  sdf-deprecated() = term(default(fun(unquoted("deprecated"))))
+  sdf-deprecated(x) = term(default(appl(unquoted("deprecated"), [fun(quoted(x))])))
+
+  sdf-completion-prefer() = term(default(appl(unquoted("completion"), [fun(unquoted("prefer"))])))
+  sdf-completion-avoid() = term(default(appl(unquoted("completion"), [fun(unquoted("avoid"))])))
+  sdf-completion(x) = term(default(appl(unquoted("completion"), [x])))
+
+strategies
+
+  fetch-cons =
+    ?sdf-cons(_) + ?Constructor(_)
+
+  fetch-cons:
+    attrs(attr*) -> <getfirst(fetch-cons)> attr*
+
+  fetch-cons-name:
+    sdf-cons(cons) -> <un-double-quote> cons
+
+  fetch-cons-name:
+    Constructor(cons) -> <un-double-quote> cons
+
+  fetch-cons-name:
+    attrs(attr*) -> <getfirst(fetch-cons-name)> attr*
+
+  is-bracket:
+    attrs(attr*) -> <one(?bracket())> attr*
+
+  is-deprecated:
+    attrs(attr*) -> <one(?deprecated(_) + ?deprecated()
+                         + ?sdf-deprecated() + ?sdf-deprecated(_))> attr*
+
+  is-reject:
+    attrs(attr*) -> <one(?reject())> attr*
+
+  is-completion-prefer:
+  	attrs(attr*) -> <one(?sdf-completion-prefer())> attr*
+
+  is-completion-avoid:
+    attrs(attr*) -> <one(?sdf-completion-avoid())> attr*

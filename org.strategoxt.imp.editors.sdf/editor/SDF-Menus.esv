@@ -9,3 +9,8 @@ menus
 	  action : "Show pretty printer rules (for selection)" = generate-pp-rules
 	  // action: "Show abstract syntax signature (for selection)" = generate-rtg
 	  action: "Show syntax templates (for selection)" = generate-syntax-templates
+	  action: "Lift to SDF3 (abstract)"						  = generate-sdf3-abstract
+	  action: "Lift to SDF3 (concrete)"						  = generate-sdf3-concrete
+	  action: "Lift to SDF3 (templates)"			  = generate-sdf3-templates
+	  
+	  

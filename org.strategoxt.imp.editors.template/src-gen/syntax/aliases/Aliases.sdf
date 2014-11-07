@@ -1,0 +1,19 @@
+module aliases/Aliases
+imports kernel/Kernel symbols/Symbols
+
+exports
+  context-free syntax
+    Symbols "->" result:Symbol Attributes -> Production {cons("Prod"), incremental}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Production {cons("COMPLETION-Production")}
+
+  context-free syntax
+    "aliases" Aliases        -> Grammar {cons("Aliases")}
+    Symbol "->" alias:Symbol -> Alias   {cons("Alias")}
+    list:Alias*              -> Aliases 
+
+  context-free syntax
+    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
+    CONTENTCOMPLETE -> Alias   {cons("COMPLETION-Alias")}
+    CONTENTCOMPLETE -> Aliases {cons("COMPLETION-Aliases")}

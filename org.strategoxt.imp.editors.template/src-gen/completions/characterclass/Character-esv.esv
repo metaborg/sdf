@@ -1,0 +1,11 @@
+module src-gen/completions/characterclass/Character-esv
+
+completions
+  completion template Character : "\\TOP" =
+    "\\TOP"  
+  completion template Character : "\\EOF" =
+    "\\EOF"  
+  completion template Character : "\\BOT" =
+    "\\BOT"  
+  completion template Character : "\\LABEL_START" =
+    "\\LABEL_START"  
