@@ -35,158 +35,175 @@ strategies
     prettyprint-Symbol
 
   prettyprint-Symbol :
-    Opt(t0__) -> [ H(
+    Sequence(head__, tail__) -> [ H(
+                                    [SOpt(HS(), "0")]
+                                  , [ S("(")
+                                    , head__'
+                                    , S(" ")
+                                    , tail__'
+                                    , S(")")
+                                    ]
+                                  )
+                                ]
+    with head__' := <pp-one-Z(prettyprint-Symbol)> head__
+    with tail__' := <pp-H-list(prettyprint-Symbol)> tail__
+
+  is-Symbol =
+    ?Sequence(_, _)
+
+  prettyprint-Symbol :
+    Opt(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__', S("?")]
+                   , [t1__', S("?")]
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
 
   is-Symbol =
     ?Opt(_)
 
   prettyprint-Symbol :
-    Iter(t0__) -> [ H(
+    Iter(t1__) -> [ H(
                       [SOpt(HS(), "0")]
-                    , [t0__', S("+")]
+                    , [t1__', S("+")]
                     )
                   ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
 
   is-Symbol =
     ?Iter(_)
 
   prettyprint-Symbol :
-    IterStar(t0__) -> [ H(
+    IterStar(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [t0__', S("*")]
+                        , [t1__', S("*")]
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
 
   is-Symbol =
     ?IterStar(_)
 
   prettyprint-Symbol :
-    IterSep(t0__, sep__) -> [ H(
+    IterSep(t1__, sep__) -> [ H(
                                 [SOpt(HS(), "0")]
                               , [ S("{")
-                                , t0__'
+                                , t1__'
                                 , S(" ")
                                 , sep__'
                                 , S("}+")
                                 ]
                               )
                             ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
     with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
 
   is-Symbol =
     ?IterSep(_, _)
 
   prettyprint-Symbol :
-    IterStarSep(t0__, sep__) -> [ H(
+    IterStarSep(t1__, sep__) -> [ H(
                                     [SOpt(HS(), "0")]
                                   , [ S("{")
-                                    , t0__'
+                                    , t1__'
                                     , S(" ")
                                     , sep__'
                                     , S("}*")
                                     ]
                                   )
                                 ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
     with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
 
   is-Symbol =
     ?IterStarSep(_, _)
 
   prettyprint-SortSymbol :
-    Opt(t0__) -> [ H(
+    Opt(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__', S("?")]
+                   , [t1__', S("?")]
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
 
   is-SortSymbol =
     ?Opt(_)
 
   prettyprint-SortSymbol :
-    Iter(t0__) -> [ H(
+    Iter(t1__) -> [ H(
                       [SOpt(HS(), "0")]
-                    , [t0__', S("+")]
+                    , [t1__', S("+")]
                     )
                   ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
 
   is-SortSymbol =
     ?Iter(_)
 
   prettyprint-SortSymbol :
-    IterStar(t0__) -> [ H(
+    IterStar(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [t0__', S("*")]
+                        , [t1__', S("*")]
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
 
   is-SortSymbol =
     ?IterStar(_)
 
   prettyprint-SortSymbol :
-    IterSep(t0__, sep__) -> [ H(
+    IterSep(t1__, sep__) -> [ H(
                                 [SOpt(HS(), "0")]
                               , [ S("{")
-                                , t0__'
+                                , t1__'
                                 , S(" ")
                                 , sep__'
                                 , S("}+")
                                 ]
                               )
                             ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
     with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
 
   is-SortSymbol =
     ?IterSep(_, _)
 
   prettyprint-SortSymbol :
-    IterStarSep(t0__, sep__) -> [ H(
+    IterStarSep(t1__, sep__) -> [ H(
                                     [SOpt(HS(), "0")]
                                   , [ S("{")
-                                    , t0__'
+                                    , t1__'
                                     , S(" ")
                                     , sep__'
                                     , S("}*")
                                     ]
                                   )
                                 ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
     with sep__' := <pp-one-Z(prettyprint-Separator)> sep__
 
   is-SortSymbol =
     ?IterStarSep(_, _)
 
   prettyprint-Separator :
-    Lit(t0__) -> [ H(
+    Lit(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__']
+                   , [t1__']
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-Separator =
     ?Lit(_)
 
   prettyprint-Symbol :
-    Alt(t0__, t1__) -> [ H(
+    Alt(t1__, t2__) -> [ H(
                            [SOpt(HS(), "0")]
-                         , [t0__', S(" | "), t1__']
+                         , [t1__', S(" | "), t2__']
                          )
                        ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
     with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Symbol)> t2__
 
   is-Symbol =
     ?Alt(_, _)

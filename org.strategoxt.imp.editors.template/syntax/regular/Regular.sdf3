@@ -5,7 +5,7 @@ imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon labels/L
 context-free syntax 
 
 // Symbol.Empty = <()>
-// Symbol.Seq = <(<head:Symbol> <tail:Symbol+>)>
+Symbol.Sequence = <(<head:Symbol> <tail:Symbol+>)>
 // Symbol.Tuple = <\<<head:Symbol> , <rest:Symbol+; separator=",">\>>
 
 

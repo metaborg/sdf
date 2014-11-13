@@ -11,6 +11,7 @@ imports
 
 signature
   constructors
+    Sequence    : Symbol * List(Symbol) -> Symbol
     Opt         : Symbol -> Symbol
     Iter        : Symbol -> Symbol
     IterStar    : Symbol -> Symbol

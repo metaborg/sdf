@@ -4,6 +4,7 @@ imports kernel/Kernel constants/IntCon symbols/Symbols constants/StrCon
 
 exports
   context-free syntax
+    "(" head:Symbol tail:Symbol+ ")"  -> Symbol     {cons("Sequence")}
     Symbol "?"                        -> Symbol     {cons("Opt")}
     Symbol "+"                        -> Symbol     {cons("Iter")}
     Symbol "*"                        -> Symbol     {cons("IterStar")}

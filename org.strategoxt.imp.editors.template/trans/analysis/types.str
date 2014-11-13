@@ -20,6 +20,7 @@ signature
   	
   	Inj : Constructor
   	AltType : List(Type) -> Type 
+  	SeqType : List(Type) -> type
 
 overlays
   
@@ -145,9 +146,15 @@ rules
     Alt(symbol1, symbol2) -> <task-create-id(|ctx,[t])> t
     where 
       typable_symbols* := <filter(is-typable)> [symbol1, symbol2];
-      x26 := <type-task(|ctx)> typable_symbols*;
-      t := <type-is(|ctx)> AltType(x26)
-          
+      types := <type-task(|ctx)> typable_symbols*;
+      t := <type-is(|ctx)> AltType(types)
+   
+   create-type-task(|ctx) :
+    Sequence(symbol1, symbol2*) -> <task-create-id(|ctx,[t])> t
+    where 
+      typable_symbols* := <filter(is-typable)> [symbol1, symbol2*];
+      types := <type-task(|ctx)> typable_symbols*;
+      t := <type-is(|ctx)> SeqType(types)       
       
  
    
