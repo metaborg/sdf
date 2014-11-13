@@ -9,6 +9,8 @@ imports
   src-gen/completions/sorts/Sorts-esv
 
 completions
+  completion template Symbol : "(Symbol Symbol)" =
+    "(" <Symbol:Symbol> " " <Symbol:Symbol> ")"  
   completion template Symbol : "Symbol?" =
     <Symbol:Symbol> "?"  
   completion template Symbol : "Symbol+" =
