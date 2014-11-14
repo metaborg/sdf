@@ -1,9 +1,5 @@
 module literals/Literals
-imports kernel/Kernel
-
-imports constants/StrCon
-
-imports constants/IdentifierCon
+imports kernel/Kernel constants/StrCon constants/IdentifierCon
 
 exports
   lexical syntax
