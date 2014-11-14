@@ -8,25 +8,13 @@ imports
 
 imports
   src-gen/signatures/kernel/Kernel-sig
-
-
-imports
   src-gen/signatures/constants/StrCon-sig
-
-
-imports
   src-gen/signatures/constants/IdentifierCon-sig
 
 
 imports
   src-gen/pp/kernel/Kernel-pp
-
-
-imports
   src-gen/pp/constants/StrCon-pp
-
-
-imports
   src-gen/pp/constants/IdentifierCon-pp
 
 
@@ -49,23 +37,23 @@ strategies
     prettyprint-FunctionName
 
   prettyprint-FunctionName :
-    UnquotedFun(t0__) -> [ H(
+    UnquotedFun(t1__) -> [ H(
                              [SOpt(HS(), "0")]
-                           , [t0__']
+                           , [t1__']
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-IdCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-IdCon)> t1__
 
   is-FunctionName =
     ?UnquotedFun(_)
 
   prettyprint-FunctionName :
-    QuotedFun(t0__) -> [ H(
+    QuotedFun(t1__) -> [ H(
                            [SOpt(HS(), "0")]
-                         , [t0__']
+                         , [t1__']
                          )
                        ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-FunctionName =
     ?QuotedFun(_)
@@ -104,7 +92,7 @@ strategies
     ?CiLit(_)
 
   prettyprint-Production :
-    PrefixFun(fun__, arguments__, result__, t0__) -> [ H(
+    PrefixFun(fun__, arguments__, result__, t1__) -> [ H(
                                                          [SOpt(HS(), "0")]
                                                        , [ fun__'
                                                          , S("(")
@@ -112,14 +100,14 @@ strategies
                                                          , S(") -> ")
                                                          , result__'
                                                          , S(" ")
-                                                         , t0__'
+                                                         , t1__'
                                                          ]
                                                        )
                                                      ]
     with fun__' := <pp-one-Z(prettyprint-FunctionName)> fun__
     with arguments__' := <pp-H-list(prettyprint-Symbol|", ")> arguments__
     with result__' := <pp-one-Z(prettyprint-Symbol)> result__
-    with t0__' := <pp-one-Z(prettyprint-Attributes)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Attributes)> t1__
 
   is-Production =
     ?PrefixFun(_, _, _, _)

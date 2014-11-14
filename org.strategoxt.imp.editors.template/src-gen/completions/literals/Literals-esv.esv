@@ -3,11 +3,7 @@ module src-gen/completions/literals/Literals-esv
 
 imports
   src-gen/completions/kernel/Kernel-esv
-
-imports
   src-gen/completions/constants/StrCon-esv
-
-imports
   src-gen/completions/constants/IdentifierCon-esv
 
 completions
