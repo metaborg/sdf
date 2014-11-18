@@ -1,6 +1,6 @@
 module TemplateLang-Completions
 
-imports TemplateLang-Completions.generated
+imports src-gen/completions/TemplateLang-esv
 
 completions
 
