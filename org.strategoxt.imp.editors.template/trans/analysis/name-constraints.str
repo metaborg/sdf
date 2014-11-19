@@ -102,7 +102,7 @@ imports
   			lookup     := <nabl-lookup-lexical(|ctx)> c;
   			cons-types := <type-lookup(|ctx)> lookup;
   			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
-  			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
+  			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
   			
   	
   	nabl-constraint(|ctx):
@@ -131,7 +131,7 @@ imports
             prods-wo-cons* := <filter(prod-without-constructor)> p'*;
             illegal-brackets* := <filter(prod-with-illegal-brackets)> p'*;
             maybe-brackets*   := <filter(prod-maybe-brackets)> p'*;
-            <map(task-create-error(|ctx, $[Missing constructor name]))> prods-wo-cons*;
+            <map(task-create-warning(|ctx, $[Missing constructor name: the generated pretty printer might not work properly]))> prods-wo-cons*;
             <map(task-create-error(|ctx, $[Missing bracket attribute or constructor name]))> maybe-brackets*;
             <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*;
             <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*		
@@ -149,7 +149,7 @@ imports
   			lookup     := <nabl-lookup-lexical(|ctx)> c;
   			cons-types := <type-lookup(|ctx)> lookup;
   			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
-  			<task-create-error-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]])> c
+  			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
 	
 	prod-without-constructor:
