@@ -1,0 +1,71 @@
+module layout-constraints/Layout-Constraints
+imports constants/NatCon
+
+exports
+  lexical syntax
+    [a-zA-Z] [a-zA-Z0-9]* -> LayoutVar 
+    "all"                 -> LayoutVar {reject}
+
+  lexical restrictions
+    LayoutVar -/- [a-zA-Z0-9]
+    "all" -/- [a-zA-Z0-9]
+
+  context-free syntax
+    "layout" "(" Constraint ")"                           -> Attribute  {cons("LayoutConstraint"), prefer}
+    "ignore-layout"                                       -> Attribute  {cons("IgnoreLayout"), prefer}
+    NatCon                                                -> Constraint {cons("Tree")}
+    "num" "(" NatCon ")"                                  -> Constraint {cons("Num")}
+    LayoutVar                                             -> Constraint 
+    "all" "(" LayoutVar "," Constraint "," Constraint ")" -> Constraint {cons("All")}
+    Constraint ".first"                                   -> Constraint {cons("First")}
+    Constraint ".left"                                    -> Constraint {cons("Left")}
+    Constraint ".right"                                   -> Constraint {cons("Right")}
+    Constraint ".last"                                    -> Constraint {cons("Last")}
+    Constraint ".line"                                    -> Constraint {cons("Line")}
+    Constraint ".col"                                     -> Constraint {cons("Col")}
+    "!" Constraint                                        -> Constraint {cons("Not")}
+    Constraint "*" Constraint                             -> Constraint {cons("Mul")}
+    Constraint "/" Constraint                             -> Constraint {cons("Div")}
+    Constraint "+" Constraint                             -> Constraint {cons("Add")}
+    Constraint "-" Constraint                             -> Constraint {cons("Sub")}
+    Constraint "==" Constraint                            -> Constraint {cons("Eq")}
+    Constraint "<" Constraint                             -> Constraint {cons("Lt")}
+    Constraint "<=" Constraint                            -> Constraint {cons("Le")}
+    Constraint ">" Constraint                             -> Constraint {cons("Gt")}
+    Constraint ">=" Constraint                            -> Constraint {cons("Ge")}
+    Constraint "&&" Constraint                            -> Constraint {cons("And")}
+    Constraint "||" Constraint                            -> Constraint {cons("Or")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Attribute  {cons("COMPLETION-Attribute")}
+    CONTENTCOMPLETE -> Constraint {cons("COMPLETION-Constraint")}
+
+  context-free priorities
+    { Constraint ".first" -> Constraint
+      Constraint ".left" -> Constraint
+      Constraint ".right" -> Constraint
+      Constraint ".last" -> Constraint
+      Constraint ".line" -> Constraint
+      Constraint ".col" -> Constraint
+      "!" Constraint -> Constraint } >
+    {right:
+      Constraint "*" Constraint -> Constraint
+      Constraint "/" Constraint -> Constraint
+    } >
+    {right:
+      Constraint "+" Constraint -> Constraint
+      Constraint "-" Constraint -> Constraint
+    } >
+    {right:
+      Constraint "==" Constraint -> Constraint
+      Constraint "<" Constraint -> Constraint
+      Constraint "<=" Constraint -> Constraint
+      Constraint ">" Constraint -> Constraint
+      Constraint ">=" Constraint -> Constraint
+    } >
+    {right:
+      Constraint "&&" Constraint -> Constraint
+    } >
+    {right:
+      Constraint "||" Constraint -> Constraint
+    }
