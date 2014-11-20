@@ -2,6 +2,7 @@ module generation/to-sdf
 imports
   libstratego-lib
   libstratego-sglr
+  libstratego-gpp
   include/TemplateLang
   trans/utils/attributes
   trans/utils/misc
@@ -10,6 +11,7 @@ imports
   lib/runtime/nabl/utils
   analysis/attributes
   analysis/desugar
+  src-gen/pp/layout-constraints/Layout-Constraints-pp
 
 
 
@@ -533,6 +535,12 @@ rules //conversion of SDF3 terms into SDF2
   	
   special-term-to-sdf:
     Sequence(t1, t2*) -> seq(t1, t2*) 			
+  
+  special-term-to-sdf:
+    LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))  
+   
+  special-term-to-sdf:
+    IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
    	
  	
   		  		

@@ -11,6 +11,7 @@ imports
   priority/Priority
   basic/Basic
   modules/Modules
+  layout-constraints/Layout-Constraints
 
 context-free start-symbols
     Module
