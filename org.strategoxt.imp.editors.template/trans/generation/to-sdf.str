@@ -28,7 +28,7 @@ rules
   		then
   			exports := []
   		else
-  		    exports := exports(<filter(section-to-sdf(|chars, newline, kfr))> sections)
+  		    exports := [exports(<filter(section-to-sdf(|chars, newline, kfr))> sections)]
   		end;
   		imports := <map(imports-to-sdf)> i
   		
@@ -246,6 +246,17 @@ rules
     with
     	a' := <term-translation> a;
     	prods' := <map(prod-to-sdf)> prods
+    	
+  group-to-sdf(|chars, newline):
+    WithArguments(group, arg) -> with-arguments(group', arg')
+    with
+        arg' := <term-translation> arg;
+        group' := <group-to-sdf(|chars, newline)> group  
+        
+  group-to-sdf(|chars, newline):
+    NonTransitive(group) -> non-transitive(group')
+    with
+        group' := <group-to-sdf(|chars, newline)> group      	
   
   sortcons-to-sdf(|chars, newline):
   	SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
