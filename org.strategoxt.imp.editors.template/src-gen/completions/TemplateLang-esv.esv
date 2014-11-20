@@ -12,6 +12,7 @@ imports
   src-gen/completions/priority/Priority-esv
   src-gen/completions/basic/Basic-esv
   src-gen/completions/modules/Modules-esv
+  src-gen/completions/layout-constraints/Layout-Constraints-esv
 
 completions
   completion template Section : "template options " =

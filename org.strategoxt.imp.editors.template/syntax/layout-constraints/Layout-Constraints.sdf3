@@ -1,0 +1,61 @@
+module layout-constraints/Layout-Constraints
+
+imports constants/NatCon
+
+lexical syntax
+
+  LayoutVar = [a-zA-Z] [a-zA-Z0-9]* 
+  LayoutVar = "all" {reject}
+
+lexical restrictions
+
+  LayoutVar -/- [a-zA-Z0-9]
+  "all" -/- [a-zA-Z0-9]
+
+context-free syntax
+  
+  Attribute.LayoutConstraint = <layout(<Constraint>)> {prefer}
+  Attribute.IgnoreLayout = <ignore-layout> {prefer}
+  Constraint.Tree = NatCon 
+  Constraint.Num = <num(<NatCon>)> 
+  Constraint = LayoutVar 
+  Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> 
+  Constraint.First = <<Constraint>.first> 
+  Constraint.Left = <<Constraint>.left> 
+  Constraint.Right = <<Constraint>.right> 
+  Constraint.Last = <<Constraint>.last> 
+  Constraint.Line = <<Constraint>.line> 
+  Constraint.Col = <<Constraint>.col> 
+  Constraint.Not = <!<Constraint>> 
+  Constraint.Mul = <<Constraint> * <Constraint>> 
+  Constraint.Div = <<Constraint> / <Constraint>> 
+  Constraint.Add = <<Constraint> + <Constraint>> 
+  Constraint.Sub = <<Constraint> - <Constraint>> 
+  Constraint.Eq = <<Constraint> == <Constraint>> 
+  Constraint.Lt = <<Constraint> \< <Constraint>> 
+  Constraint.Le = <<Constraint> \<= <Constraint>> 
+  Constraint.Gt = <<Constraint> \> <Constraint>> 
+  Constraint.Ge = <<Constraint> \>= <Constraint>> 
+  Constraint.And = <<Constraint> && <Constraint>> 
+  Constraint.Or = <<Constraint> || <Constraint>> 
+
+context-free priorities
+
+  {Constraint.First
+   Constraint.Left
+   Constraint.Right
+   Constraint.Last
+   Constraint.Line
+   Constraint.Col
+   Constraint.Not} > {right:
+    Constraint.Mul
+    Constraint.Div } > {right:
+    Constraint.Add
+    Constraint.Sub} > {right:
+    Constraint.Eq 
+    Constraint.Lt 
+    Constraint.Le
+    Constraint.Gt 
+    Constraint.Ge} > {right:
+    Constraint.And} > {right:
+    Constraint.Or}

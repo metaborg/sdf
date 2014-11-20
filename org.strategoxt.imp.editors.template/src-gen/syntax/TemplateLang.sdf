@@ -2,6 +2,7 @@ module TemplateLang
 imports sdf2-core/SDF constants/StrCon sorts/Sorts symbols/Symbols labels/Labels
         constants/IdentifierCon kernel/Kernel restrictions/Restrictions
         priority/Priority basic/Basic modules/Modules
+        layout-constraints/Layout-Constraints
 
 exports
   context-free start-symbols

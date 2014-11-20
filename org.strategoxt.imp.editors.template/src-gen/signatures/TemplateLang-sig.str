@@ -12,6 +12,7 @@ imports
   src-gen/signatures/priority/Priority-sig
   src-gen/signatures/basic/Basic-sig
   src-gen/signatures/modules/Modules-sig
+  src-gen/signatures/layout-constraints/Layout-Constraints-sig
 
 
 signature
