@@ -7,14 +7,14 @@ module editor/TemplateLang-Outliner
 imports
   libstratego-sglr
   include/TemplateLang
- // include/libtemplatelang
+  trans/utils/attributes
   lib/runtime/editor/outline-library
   lib/runtime/editor/origins
   
   
 rules
 
-  outline = simple-label-outline(to-outline-label)
+  outline = custom-label-outline(to-outline-label, to-outline-node)
   
   to-outline-label = ?TemplateProduction(<id>, _, _)
   to-outline-label = ?appl(<id>, _)
@@ -28,10 +28,10 @@ rules
   
   
   
-/*
+
 rules
   
-  outline:
+  to-outline-node:
     ast -> Node(label{icon}, children)
     where
       desugared := <alltd(outline-desugar)> ast;
@@ -87,6 +87,7 @@ rules
         <Hd; explode-term; ?(<id>, _);
         string-replace(|"lexical-", "lexical ");
         string-replace(|"context-free-", "context-free ");
+        string-replace(|"ContextFreeSyntax", "context-free ");
         string-replace(|"Contextfree", "context-free ");
         string-replace(|"ContextFreeStartSymbols", "context-free starting-symbols");
         string-replace(|"KernelStartSymbols","start-symbols");
@@ -108,10 +109,8 @@ rules
     where <?lexical-syntax(_) + ?syntax(_) + ?LexicalSyntax(_) + ?Syntax(_)> section
     
   get-outline-section: section -> CF()
-    where <?context-free-syntax(_) + ?Contextfree(_) + ?TemplateSection(_)> section
-   
-    
-    
+    where <?context-free-syntax(_) + ?Contextfree(_) + ?ContextFreeSyntax(_) + ?TemplateSection(_)> section
+       
   get-outline-section: section -> Restriction()
     where <?context-free-restrictions(_)> section
   get-outline-section: section -> Other()
@@ -180,17 +179,20 @@ rules
   
   prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
   prod-to-cons: SdfProduction(_, _, attrs) -> <fetch-cons-name> attrs
-  prod-to-cons = ?TemplateProductionWithCons(SortCons(_, <id>), _, _)
+  prod-to-cons = ?TemplateProductionWithCons(SortCons(_, Constructor(<id>)), _, _)
+  prod-to-cons = ?SdfProductionWithCons(SortCons(_, Constructor(<id>)), _, _)
   
   fetch-sort = ?prod(_, <id>, _)
   fetch-sort = ?SdfProduction(<id>, _, _)
   fetch-sort = ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
   fetch-sort = ?TemplateProduction(<id>, _, _)
+  fetch-sort = ?SdfProductionWithCons(SortCons(<id>,_), _, _)
   
   fetch-lhs = ?prod(<id>, _, _)
   fetch-lhs = ?SdfProduction(_, <id>, _)
   fetch-lhs = ?TemplateProductionWithCons(_, <id>, _)
   fetch-lhs = ?TemplateProduction(_, <id>, _)
+  fetch-lhs = ?SdfProductionWithCons(_, <id>, _)
   
   prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
 
@@ -218,5 +220,3 @@ rules
   fetch-symbols = ?follow(<id>, _)
   
   restriction-has-symbols(|symbols) = ?follow(symbols, _)
-
-*/
