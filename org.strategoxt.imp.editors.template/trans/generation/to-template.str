@@ -79,7 +79,7 @@ rules // Convert regular productions to desugared syntax templates
     	//; debug(! "b")
     
     symbol-to-elem:
-    	<Cf(Layout()) + Lex(Layout())> -> Layout(" ")
+    	<Cf(Opt(Layout())) + Cf(Layout()) + Lex(Layout())> -> Layout(" ")
     	
     symbol-to-elem:
     	Lex(s) -> <symbol-to-elem> s
