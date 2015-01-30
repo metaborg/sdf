@@ -177,6 +177,17 @@ rules
     with
     	a' := <term-translation> a;
     	prods' := <map(prod-to-sdf3); flatten-list> prods
+    	
+  group-to-sdf3:
+    with-arguments(group, arg) -> WithArguments(group', arg') 
+    with
+        arg' := <term-translation> arg;
+        group' := <group-to-sdf3> group  
+        
+  group-to-sdf3:
+     non-transitive(group) -> NonTransitive(group')
+    with
+        group' := <group-to-sdf3> group     	
  
  
   //Productions
@@ -359,15 +370,6 @@ rules
   
   special-term-to-sdf:
   	non-transitive(g) -> NonTransitive(g) 
-  
-  special-term-to-sdf:
-  	simple-group(p) -> SimpleGroup(p)
-  		
-  special-term-to-sdf:
-  	prods-group(p) -> ProdsGroup(p)
-        
-  special-term-to-sdf:
-  	assoc-group(a, p) -> AssocGroup(a, p)
   
   special-term-to-sdf:
   	real-con(i, n, o) -> RealCon(i, n, o)
