@@ -65,3 +65,5 @@ menus
     action: "Lift (templates)"                    = lift-sdf3-template 
     action: "Extract productions (abstract)"	  = extract-regular-productions-abstract (meta)
     action: "Extract productions"				  = extract-regular-productions 
+    action: "to Normal Form"                      = sdf3-to-normal-form (meta)
+    action: "to Normal Form (SDF2)"               = sdf3-to-normal-form-sdf (meta)

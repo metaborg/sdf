@@ -1,0 +1,15 @@
+module minimal
+exports
+  context-free start-symbols
+    Start
+
+  context-free syntax
+     -> Start {cons("Dummy")}
+
+  context-free syntax
+    CONTENTCOMPLETE -> Start {cons("COMPLETION-Start")}
+
+  priorities
+    <LAYOUT-CF> <LAYOUT-CF> -> <LAYOUT-CF> {left}
+    <1> . >
+    <LAYOUT-CF> <LAYOUT-CF> -> <LAYOUT-CF> {left}
