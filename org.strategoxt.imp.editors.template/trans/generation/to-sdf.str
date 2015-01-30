@@ -275,11 +275,12 @@ rules
   
   //Productions
   prod-to-sdf:
-  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), Attrs(a*)) -> prod(symbols'*, symbol', a''*)
+  	SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> prod(symbols'*, symbol', a''*)
   	with
   		symbols'* := <term-translation> symbols*;
   		symbol' := <term-translation> symbol;
   		c   := <double-quote> cons; 
+  		a*  := <?Attrs(<id>) <+ ![]> attrs;
         a'* := [sdf-cons(c) , a*];
   		a''* := <term-translation> Attrs(a'*)
   		
@@ -333,11 +334,12 @@ rules
   		
   		
   prod-to-sdf(|chars, newline):
-  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, Attrs(a*)) -> prod(t', s', a''*)
+  	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, attrs) -> prod(t', s', a''*)
   	with
   		t' := <template-to-sdf(|chars, newline)> t;
   		s' := <term-translation> s;
   		c   := <double-quote> cons; 
+  		a*  := <?Attrs(<id>) <+ ![]> attrs;
         a'* := [sdf-cons(c) , a*];
   		a''* := <term-translation> Attrs(a'*)	
   
@@ -484,17 +486,17 @@ rules //conversion of SDF3 terms into SDF2
   special-term-to-sdf:
   	LabelStart() -> label_start()
   	
-  special-term-to-sdf:
-  	Empty() -> empty-grammar()
-  
-  special-term-to-sdf:
-  	UnquotedFun(s) -> unquoted-fun(s)
-  
-  special-term-to-sdf:
-  	QuotedFun(s) -> quoted-fun(s)
-  
-  special-term-to-sdf:
-  	PrefixFun(fn, syms, sym, att) -> prefix-fun(fn, syms, sym, att)	
+  // special-term-to-sdf:
+  // 	Empty() -> empty-grammar()
+  // 
+  // special-term-to-sdf:
+  // 	UnquotedFun(s) -> unquoted-fun(s)
+  // 
+  // special-term-to-sdf:
+  // 	QuotedFun(s) -> quoted-fun(s)
+  // 
+  // special-term-to-sdf:
+  // 	PrefixFun(fn, syms, sym, att) -> prefix-fun(fn, syms, sym, att)	
   
   special-term-to-sdf:
   	NonAssoc() -> non-assoc()

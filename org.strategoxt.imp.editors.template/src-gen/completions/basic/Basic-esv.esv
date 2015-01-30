@@ -13,11 +13,11 @@ completions
   completion template Grammar : "variables Productions " =
     "variables\n\n\t" <Productions:Productions> "\n" (blank)  
   completion template Grammar : "variables " =
-    "variables\n\n\t\t" (cursor) "\n" (blank)  
+    "variables\n\n\t" (cursor) "\n" (blank)  
   completion template Grammar : "lexical variables Productions " =
     "lexical variables\n\n\t" <Productions:Productions> "\n" (blank)  
   completion template Grammar : "lexical variables " =
-    "lexical variables\n\n\t\t" (cursor) "\n" (blank)  
+    "lexical variables\n\n\t" (cursor) "\n" (blank)  
   completion template Symbol : "Symbol-CF" =
     <Symbol:Symbol> "-CF"  
   completion template Symbol : "Symbol-LEX" =

@@ -5,5 +5,3 @@ imports
 
 
 signature
-  constructors
-    Empty : Grammar

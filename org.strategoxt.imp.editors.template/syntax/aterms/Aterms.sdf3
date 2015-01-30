@@ -5,9 +5,6 @@ imports constants/IntCon
 		constants/StrCon
         constants/IdentifierCon
 
-context-free start-symbols
-    ATerm
-
 context-free syntax
 	AFun.Quoted = <<StrCon>>
 	AFun.Unquoted = <<IdCon>>
@@ -18,7 +15,7 @@ context-free syntax
 	ATerm.Real = <<RealCon>>
 	ATerm.Fun = <<AFun>>
 	ATerm.Appl = <<AFun>(<{ATerm ","}+>)>
-	ATerm.PlaceHolder = <\<<ATerm>\>>
+	ATerm.Placeholder = <\<<ATerm>\>>
 	ATerm.List = <[<{ATerm ","}*>]>
 	ATerm.Annotated = <<ATerm><Annotation>>
 

@@ -18,33 +18,6 @@ imports
 
 strategies
   prettyprint-example =
-    prettyprint-Production
-
-  prettyprint-Production :
-    Prod(t0__, result__, t1__) -> [ H(
-                                      [SOpt(HS(), "0")]
-                                    , [ t0__'
-                                      , S(" -> ")
-                                      , result__'
-                                      , S(" ")
-                                      , t1__'
-                                      , S(" ")
-                                      ]
-                                    )
-                                  ]
-    with t0__' := <pp-one-Z(prettyprint-Symbols)> t0__
-    with result__' := <pp-one-Z(prettyprint-Symbol)> result__
-    with t1__' := <pp-one-Z(prettyprint-Attributes)> t1__
-
-  is-Production =
-    ?Prod(_, _, _)
-
-  is-Production =
-    fail
-
-
-strategies
-  prettyprint-example =
     prettyprint-Grammar
 
   prettyprint-example =
@@ -54,7 +27,7 @@ strategies
     prettyprint-Aliases
 
   prettyprint-Grammar :
-    Aliases(t0__) -> [ H(
+    Aliases(t1__) -> [ H(
                          [SOpt(HS(), "0")]
                        , [S("aliases")]
                        )
@@ -62,24 +35,24 @@ strategies
                          []
                        , [S("")]
                        )
-                     , t0__'
+                     , t1__'
                      , H(
                          []
                        , [S("")]
                        )
                      ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Aliases)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Aliases)> t1__]
 
   is-Grammar =
     ?Aliases(_)
 
   prettyprint-Alias :
-    Alias(t0__, alias__) -> [ H(
+    Alias(t1__, alias__) -> [ H(
                                 [SOpt(HS(), "0")]
-                              , [t0__', S(" -> "), alias__']
+                              , [t1__', S(" -> "), alias__']
                               )
                             ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
     with alias__' := <pp-one-Z(prettyprint-Symbol)> alias__
 
   is-Alias =

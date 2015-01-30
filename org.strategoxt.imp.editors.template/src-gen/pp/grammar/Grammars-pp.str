@@ -12,32 +12,3 @@ imports
 
 imports
   src-gen/pp/layout/Comments-pp
-
-
-strategies
-  prettyprint-example =
-    prettyprint-Grammar
-
-  prettyprint-Grammar :
-    Empty() -> [ H(
-                   [SOpt(HS(), "0")]
-                 , [S("(/)")]
-                 )
-               ]
-
-  is-Grammar =
-    ?Empty()
-
-  prettyprint-Grammar :
-    Parenthetical(t0__) -> [ H(
-                               [SOpt(HS(), "0")]
-                             , [ S("(")
-                               , t0__'
-                               , S(")")
-                               ]
-                             )
-                           ]
-    with t0__' := <pp-one-Z(prettyprint-Grammar)> t0__
-
-  is-Grammar =
-    fail

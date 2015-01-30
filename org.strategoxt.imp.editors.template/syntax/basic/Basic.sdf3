@@ -26,9 +26,9 @@ Grammar.Variables = <
 	>
 Grammar.VariablesProductive = <
     variables
-        
-        <{SdfProduction "\n"}*>
-
+    
+    	<{SdfProduction "\n"}*>
+    	
     >	{prefer}
 	
 Grammar.LexVariables = <
@@ -40,8 +40,8 @@ Grammar.LexVariables = <
 	
 Grammar.LexVariablesProductive = <
     lexical variables
-        
-        <{SdfProduction "\n"}*>
+    
+    	<{SdfProduction "\n"}*>
 
     > {prefer}
 

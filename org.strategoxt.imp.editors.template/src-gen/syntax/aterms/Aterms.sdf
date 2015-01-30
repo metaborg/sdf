@@ -3,9 +3,6 @@ imports constants/IntCon constants/RealCon constants/StrCon
         constants/IdentifierCon
 
 exports
-  context-free start-symbols
-    ATerm
-
   context-free syntax
     StrCon -> AFun {cons("Quoted")}
     IdCon  -> AFun {cons("Unquoted")}
@@ -18,7 +15,7 @@ exports
     RealCon                   -> ATerm {cons("Real")}
     AFun                      -> ATerm {cons("Fun")}
     AFun "(" {ATerm ","}+ ")" -> ATerm {cons("Appl")}
-    "<" ATerm ">"             -> ATerm {cons("PlaceHolder")}
+    "<" ATerm ">"             -> ATerm {cons("Placeholder")}
     "[" {ATerm ","}* "]"      -> ATerm {cons("List")}
     ATerm Annotation          -> ATerm {cons("Annotated")}
 

@@ -24,12 +24,12 @@ strategies
     prettyprint-RealCon
 
   prettyprint-OptExp :
-    Present(t0__) -> [ H(
+    Present(t1__) -> [ H(
                          [SOpt(HS(), "0")]
-                       , [S("e"), t0__']
+                       , [S("e"), t1__']
                        )
                      ]
-    with t0__' := <pp-one-Z(prettyprint-IntCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-IntCon)> t1__
 
   is-OptExp =
     ?Present(_)

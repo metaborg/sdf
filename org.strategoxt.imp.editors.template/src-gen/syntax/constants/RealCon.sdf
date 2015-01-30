@@ -2,9 +2,6 @@ module constants/RealCon
 imports constants/IntCon constants/NatCon
 
 exports
-  context-free start-symbols
-    RealCon
-
   context-free syntax
     "e" IntCon                                -> OptExp  {cons("Present")}
                                               -> OptExp  {cons("Absent")}

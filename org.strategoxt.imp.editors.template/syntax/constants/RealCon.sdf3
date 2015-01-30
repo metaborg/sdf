@@ -3,11 +3,8 @@ module constants/RealCon
 imports constants/IntCon
 		constants/NatCon
 
-context-free start-symbols 
-    RealCon
- 
 context-free syntax
-	OptExp.Present = <e<IntCon>>
+	OptExp.Present = <e<IntCon>> //Change constructor name?
 	OptExp.Absent = <>
 	//base:IntCon "." decimal:NatCon exp:OptExp  -> RealCon {cons("real-con")}
 	RealCon.RealCon = <<base:IntCon>.<decimal:NatCon><exp:OptExp>>   

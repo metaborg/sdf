@@ -21,12 +21,12 @@ strategies
     prettyprint-Group
 
   prettyprint-Group :
-    NonTransitive(t0__) -> [ H(
+    NonTransitive(t1__) -> [ H(
                                [SOpt(HS(), "0")]
-                             , [t0__', S(".")]
+                             , [t1__', S(".")]
                              )
                            ]
-    with t0__' := <pp-one-Z(prettyprint-Group)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Group)> t1__
 
   is-Group =
     ?NonTransitive(_)

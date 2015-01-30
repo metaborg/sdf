@@ -66,9 +66,6 @@ strategies
   prettyprint-example =
     prettyprint-Symbol
 
-  prettyprint-example =
-    prettyprint-Production
-
   prettyprint-Symbol :
     Lit(string__) -> [ H(
                          [SOpt(HS(), "0")]
@@ -91,29 +88,5 @@ strategies
   is-Symbol =
     ?CiLit(_)
 
-  prettyprint-Production :
-    PrefixFun(fun__, arguments__, result__, t1__) -> [ H(
-                                                         [SOpt(HS(), "0")]
-                                                       , [ fun__'
-                                                         , S("(")
-                                                         , arguments__'
-                                                         , S(") -> ")
-                                                         , result__'
-                                                         , S(" ")
-                                                         , t1__'
-                                                         ]
-                                                       )
-                                                     ]
-    with fun__' := <pp-one-Z(prettyprint-FunctionName)> fun__
-    with arguments__' := <pp-H-list(prettyprint-Symbol|", ")> arguments__
-    with result__' := <pp-one-Z(prettyprint-Symbol)> result__
-    with t1__' := <pp-one-Z(prettyprint-Attributes)> t1__
-
-  is-Production =
-    ?PrefixFun(_, _, _, _)
-
   is-Symbol =
-    fail
-
-  is-Production =
     fail

@@ -12,25 +12,3 @@ imports
 
 imports
   src-gen/pp/kernel/Kernel-pp
-
-
-strategies
-  prettyprint-example =
-    prettyprint-Symbol
-
-  prettyprint-Symbol :
-    Lifting(t0__) -> [ H(
-                         [SOpt(HS(), "0")]
-                       , [ S("`")
-                         , t0__'
-                         , S("`")
-                         ]
-                       )
-                     ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
-
-  is-Symbol =
-    ?Lifting(_)
-
-  is-Symbol =
-    fail

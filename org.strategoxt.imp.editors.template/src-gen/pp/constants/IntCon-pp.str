@@ -21,34 +21,34 @@ strategies
     prettyprint-IntCon
 
   prettyprint-IntCon :
-    Natural(t0__) -> [ H(
+    Natural(t1__) -> [ H(
                          [SOpt(HS(), "0")]
-                       , [t0__']
+                       , [t1__']
                        )
                      ]
-    with t0__' := <pp-one-Z(prettyprint-NatCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-NatCon)> t1__
 
   is-IntCon =
     ?Natural(_)
 
   prettyprint-IntCon :
-    Positive(t0__) -> [ H(
+    Positive(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [S("+"), t0__']
+                        , [S("+"), t1__']
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-NatCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-NatCon)> t1__
 
   is-IntCon =
     ?Positive(_)
 
   prettyprint-IntCon :
-    Negative(t0__) -> [ H(
+    Negative(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [S("-"), t0__']
+                        , [S("-"), t1__']
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-NatCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-NatCon)> t1__
 
   is-IntCon =
     ?Negative(_)

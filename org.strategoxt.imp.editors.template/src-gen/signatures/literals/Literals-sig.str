@@ -16,6 +16,5 @@ signature
     QuotedFun   : StrCon -> FunctionName
 
   constructors
-    Lit       : StrCon -> Symbol
-    CiLit     : SingleQuotedStrCon -> Symbol
-    PrefixFun : FunctionName * List(Symbol) * Symbol * Attributes -> Production
+    Lit   : StrCon -> Symbol
+    CiLit : SingleQuotedStrCon -> Symbol

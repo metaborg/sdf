@@ -25,23 +25,23 @@ strategies
     prettyprint-AFun
 
   prettyprint-AFun :
-    Quoted(t0__) -> [ H(
+    Quoted(t1__) -> [ H(
                         [SOpt(HS(), "0")]
-                      , [t0__']
+                      , [t1__']
                       )
                     ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-AFun =
     ?Quoted(_)
 
   prettyprint-AFun :
-    Unquoted(t0__) -> [ H(
+    Unquoted(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [t0__']
+                        , [t1__']
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-IdCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-IdCon)> t1__
 
   is-AFun =
     ?Unquoted(_)
@@ -55,90 +55,90 @@ strategies
     prettyprint-ATerm
 
   prettyprint-ATerm :
-    Int(t0__) -> [ H(
+    Int(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__']
+                   , [t1__']
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-IntCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-IntCon)> t1__
 
   is-ATerm =
     ?Int(_)
 
   prettyprint-ATerm :
-    Real(t0__) -> [ H(
+    Real(t1__) -> [ H(
                       [SOpt(HS(), "0")]
-                    , [t0__']
+                    , [t1__']
                     )
                   ]
-    with t0__' := <pp-one-Z(prettyprint-RealCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-RealCon)> t1__
 
   is-ATerm =
     ?Real(_)
 
   prettyprint-ATerm :
-    Fun(t0__) -> [ H(
+    Fun(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__']
+                   , [t1__']
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-AFun)> t0__
+    with t1__' := <pp-one-Z(prettyprint-AFun)> t1__
 
   is-ATerm =
     ?Fun(_)
 
   prettyprint-ATerm :
-    Appl(t0__, t1__) -> [ H(
+    Appl(t1__, t2__) -> [ H(
                             [SOpt(HS(), "0")]
-                          , [ t0__'
+                          , [ t1__'
                             , S("(")
-                            , t1__'
+                            , t2__'
                             , S(")")
                             ]
                           )
                         ]
-    with t0__' := <pp-one-Z(prettyprint-AFun)> t0__
-    with t1__' := <pp-H-list(prettyprint-ATerm|",")> t1__
+    with t1__' := <pp-one-Z(prettyprint-AFun)> t1__
+    with t2__' := <pp-H-list(prettyprint-ATerm|",")> t2__
 
   is-ATerm =
     ?Appl(_, _)
 
   prettyprint-ATerm :
-    PlaceHolder(t0__) -> [ H(
+    Placeholder(t1__) -> [ H(
                              [SOpt(HS(), "0")]
                            , [ S("<")
-                             , t0__'
+                             , t1__'
                              , S(">")
                              ]
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-ATerm)> t0__
+    with t1__' := <pp-one-Z(prettyprint-ATerm)> t1__
 
   is-ATerm =
-    ?PlaceHolder(_)
+    ?Placeholder(_)
 
   prettyprint-ATerm :
-    List(t0__) -> [ H(
+    List(t1__) -> [ H(
                       [SOpt(HS(), "0")]
                     , [ S("[")
-                      , t0__'
+                      , t1__'
                       , S("]")
                       ]
                     )
                   ]
-    with t0__' := <pp-H-list(prettyprint-ATerm|",")> t0__
+    with t1__' := <pp-H-list(prettyprint-ATerm|",")> t1__
 
   is-ATerm =
     ?List(_)
 
   prettyprint-ATerm :
-    Annotated(t0__, t1__) -> [ H(
+    Annotated(t1__, t2__) -> [ H(
                                  [SOpt(HS(), "0")]
-                               , [t0__', t1__']
+                               , [t1__', t2__']
                                )
                              ]
-    with t0__' := <pp-one-Z(prettyprint-ATerm)> t0__
-    with t1__' := <pp-one-Z(prettyprint-Annotation)> t1__
+    with t1__' := <pp-one-Z(prettyprint-ATerm)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Annotation)> t2__
 
   is-ATerm =
     ?Annotated(_, _)
@@ -152,15 +152,15 @@ strategies
     prettyprint-Annotation
 
   prettyprint-Annotation :
-    Default(t0__) -> [ H(
+    Default(t1__) -> [ H(
                          [SOpt(HS(), "0")]
                        , [ S("{")
-                         , t0__'
+                         , t1__'
                          , S("}")
                          ]
                        )
                      ]
-    with t0__' := <pp-H-list(prettyprint-ATerm|",")> t0__
+    with t1__' := <pp-H-list(prettyprint-ATerm|",")> t1__
 
   is-Annotation =
     ?Default(_)
