@@ -165,18 +165,18 @@ rules
   group-to-sdf3:
     simple-group(prod) -> SimpleGroup(prod')
     with
-    	[prod'] := <prod-to-sdf3; flatten-list> prod
+    	prod' := <priority-prod-to-sdf3> prod
   
   group-to-sdf3:
     prods-group(prods) -> ProdsGroup(prods')
     with
-    	prods' := <map(prod-to-sdf3); flatten-list> prods
+    	prods' := <map(priority-prod-to-sdf3)> prods
     
   group-to-sdf3:
     assoc-group(a, prods) -> AssocGroup(a', prods')
     with
     	a' := <term-translation> a;
-    	prods' := <map(prod-to-sdf3); flatten-list> prods
+    	prods' := <map(priority-prod-to-sdf3)> prods
     	
   group-to-sdf3:
     with-arguments(group, arg) -> WithArguments(group', arg') 
@@ -188,6 +188,67 @@ rules
      non-transitive(group) -> NonTransitive(group')
     with
         group' := <group-to-sdf3> group     	
+ 
+ //Priority-productions
+ priority-prod-to-sdf3:
+ 	prod(symbols*, sort(s), attrs) -> <term-translation> result
+  	where
+  		not(<?[sort("CONTENTCOMPLETE")]> symbols*)
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with   		
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		
+  		
+  		result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a'*)) 
+  		// TODO:
+  		// Generate proper priority productions in the priorities section 	
+  		// result := SortConsRef(Sort(s), c); fail 
+  	<+  result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) 
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, lex(sort(s)), attrs) -> <term-translation> result
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a'*)) 
+  		
+  		// TODO:
+  		// Generate proper priority productions in the priorities section 
+  		// result := SortConsRef(Lex(Sort(s)), c); fail 
+  	<+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, cf(sort(s)), attrs) -> <term-translation> result
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		 result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a'*)) 
+  		// TODO:
+  		// Generate proper priority productions in the priorities section 
+  		// result := SortConsRef(Cf(Sort(s)), c); fail 
+  	<+  result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, symbol, attrs) -> <term-translation> result
+  	where
+  		not(<?sort(s) + ?cf(sort(s)) + ?lex(sort(s))> symbol)
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs;
+  		symbol' := <symbol-to-sdf3> symbol	
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SdfProduction(symbol', Rhs(symbols*), Attrs(a'*)) 
+  		// TODO:
+  		// Generate proper priority productions in the priorities section 
+  		// result := SortConsRef(symbol, c); fail 
+  	<+  result := SdfProduction(symbol', Rhs(symbols*), Attrs(a*)) 
  
  
   //Productions
