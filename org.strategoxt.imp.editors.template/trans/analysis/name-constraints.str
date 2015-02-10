@@ -122,6 +122,17 @@ imports
         p -> seq*
     where
         seq* := <collect-all(?Sequence(_,_), conc)> p		
+    	    
+  	nabl-constraint(|lang, ctx, uri*):
+  		String(s) -> <fail>
+  	where
+  		[f | ls] := <explode-string> s;
+  		<is-upper> f
+  	where
+  		lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
+  		<task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Maybe nonterminal placeholder instead?])> s
+  			
+ 
   			
   	nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
@@ -218,3 +229,4 @@ imports
   	  where
   	  	<?s> s';
   	  	<eq> (<length> ty*, <length> ty'*)
+
