@@ -196,7 +196,7 @@ PlaceholderOption.Text = <text=<StrCon>>
   
   lexical restrictions
   
-    EOL -/- [\n\r]
+    EOL -/- [\n]
       
   
   lexical syntax
