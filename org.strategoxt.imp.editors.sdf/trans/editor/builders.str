@@ -35,12 +35,12 @@ imports include/SDF
     where
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-      result   := <module-to-sdf3; pp-SDF3-string> ast 	 
+      result   := <normalize-constructors; (module-to-sdf3; pp-SDF3-string) <+ id> ast 	 
          
    generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> None()
     where
-      <?definition(modules*)> ast 
+      <normalize-constructors; ?definition(modules*)> ast 
     with
     	<map(generate-sdf3-concrete(|project-path))> modules*    	 	
        
@@ -145,6 +145,25 @@ imports include/SDF
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  				
- 			
-  		
+ normalize-constructors :
+ 	ast -> ast'
+ 	where
+ 		productions := <collect-all(prod-with-constructor, conc)> ast ;
+ 		ast' := <topdown(try(replace-all-productions(|productions)))> ast		
+ 		 					
   
+ prod-with-constructor :
+ 	p@prod(symbols*, symbol, attrs) 	-> (prod(symbols*, symbol, a'*), cons)	
+ 	where
+ 		a* := <?attrs(<id>) <+ ![]> attrs;
+ 		cons := <getfirst(?Constructor(_) + ?sdf-cons(_))> a*
+ 		; a'* := <remove-all(?sdf-cons(_) + ?Constructor(_)); ?[] < !no-attrs() + !attrs(<id>)> a*  
+  
+  replace-all-productions(|productions):
+  	p@prod(symbols*, symbol, attrs) -> prod
+  	where
+  		a* := <?attrs(<id>) <+ ![]> attrs;
+  		<not(getfirst(?Constructor(_) + ?sdf-cons(_)))> a*;
+  		(_, cons) := <getfirst(?(p, _))> productions;
+  		prod := prod(symbols*, symbol, attrs([cons, a*]))
+  		
