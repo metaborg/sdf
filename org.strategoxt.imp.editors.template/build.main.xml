@@ -54,14 +54,14 @@
     <import file="build.generated.xml"/>
 
     <!-- The files for which the on-save handler is called before building. -->
-    <path id="call-onsave.files">
+    <!-- <path id="call-onsave.files">
         <fileset dir=".">
             <include name="**/*.tmpl"/>
             <include name="**/*.sdf3_"/>
             <include name="**/*.nab"/>
             <include name="**/*.ts"/>
         </fileset>
-    </path>
+    </path> -->
 
     <!-- Main target -->
     <target depends="pppack-esv, spoofaximp.default.ctree" name="all"/>
