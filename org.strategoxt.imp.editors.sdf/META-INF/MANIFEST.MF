@@ -3,23 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SDF Editor Plug-in
 Bundle-SymbolicName: org.strategoxt.imp.editors.sdf;singleton:=true
 Bundle-Version: 1.4.0.qualifier
-Bundle-Activator: org.strategoxt.imp.editors.sdf.Activator
-Import-Package: org.osgi.framework;version="1.3.0"
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.imp.runtime,
- org.eclipse.ui,
- lpg.runtime,
- org.eclipse.jface.text,
- org.eclipse.ui.editors,
- org.eclipse.ui.workbench.texteditor,
- org.strategoxt.imp.runtime,
- org.spoofax.jsglr,
- org.strategoxt.strj,
- org.spoofax.terms,
+Require-Bundle: org.strategoxt.strj,
  org.spoofax.interpreter.core,
- org.spoofax.interpreter.externaldeps,
- org.strategoxt.imp.nativebundle
+ org.spoofax.terms,
+ org.spoofax.interpreter.externaldeps
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: org.strategoxt.imp.editors.sdf
 Bundle-Vendor: Spoofax.org
