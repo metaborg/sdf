@@ -1,5 +1,0 @@
-module src-gen/signatures/constants/NatCon-sig
-
-signature
-  constructors
-     : String -> NatCon
