@@ -3,6 +3,7 @@ module trans/pp
 imports
 
 	libstratego-gpp
+	lib/runtime/refactoring/-
 	src-gen/pp/TemplateLang-pp
 	src-gen/pp/modules/Modules-pp
 	
@@ -19,7 +20,7 @@ rules
     prettyprint-Module 
     ; !V([], <id>)
       
-  pp-partial-Minimal-string =
+  pp-partial-SDF3-string =
     prettyprint-example
     ; !V([], <id>)
     ; box2text-string(|120)
@@ -32,3 +33,17 @@ rules
     ;  result := ""
 
 
+rules
+  
+  /**
+  * Given an old AST and a new AST, pretty-prints the new AST while presevering 
+  * layout (e.g. whitespacing and comments) associated with the old AST.
+  *
+  * Example:
+  *   new-text := <construct-textual-change> (old-ast, new-ast)
+  */
+  
+  resugar = id
+  parenthesize = id
+  override-reconstruction = id
+  construct-textual-change = construct-textual-change(pp-partial-SDF3-string, parenthesize, override-reconstruction, resugar)
