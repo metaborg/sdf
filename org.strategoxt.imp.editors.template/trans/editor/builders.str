@@ -20,6 +20,7 @@ imports
   lib/runtime/nabl/-
   lib/runtime/properties/-
   normalization/normalize
+  lib/ds/pp/-
   
  
   
@@ -77,6 +78,27 @@ imports
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
+        
+        
+   generate-dynsem:
+   	     (selected, position, ast, path, project-path) -> (filename, result)
+    where
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      ; filename := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
+        
+   generate-dynsem-abstract:
+   	     (selected, position, ast, path, project-path) -> (filename, result)
+    where
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-ds-sig> selected'
+      ; filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn     
    
    generate-pp-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -253,6 +275,11 @@ imports
   ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
   box2text-string(|80)
   
+  
+  pp-ds-to-string =
+  	ds-prettyprint-SDF-start-symbols
+    ; !V([], <id>)
+    ; box2text-string(|120)
   
   //pretty-printer for the generated esv
   pp-esv-to-string = 
