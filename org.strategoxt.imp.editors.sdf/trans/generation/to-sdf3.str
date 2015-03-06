@@ -8,10 +8,7 @@ overlays
   sdf-cons(x) = term(default(appl(unquoted("cons"), [fun(quoted(x))]))) 
 
 rules
- 
- to-sdf3 = 
- 	module-to-sdf3 <+ section-to-sdf3 //<+ priority-to-sdf3 <+ prod-to-sdf3
-  
+
   module-to-sdf3:
   		'module(unparameterized(mn), i*, e*) -> Module(Unparameterized(mn), i'*, sections*)
   	with
@@ -163,20 +160,80 @@ rules
   		gr2' := <group-to-sdf3 <+ term-translation> gr2
 
   group-to-sdf3:
-    simple-group(prod) -> SimpleGroup(prod')
-    with
-    	[prod'] := <prod-to-sdf3; flatten-list> prod
+    simple-group(prod) -> group
+    where
+    	group := <priority-prod-to-sdf3; !SimpleRefGroup(<id>) <+ !ProdsRefGroup([])> prod
   
   group-to-sdf3:
-    prods-group(prods) -> ProdsGroup(prods')
+    prods-group(prods) -> ProdsRefGroup(prods')
     with
-    	prods' := <map(prod-to-sdf3); flatten-list> prods
+    	prods' := <filter(priority-prod-to-sdf3)> prods
     
   group-to-sdf3:
-    assoc-group(a, prods) -> AssocGroup(a', prods')
+    assoc-group(a, prods) -> AssocRefGroup(a', prods')
     with
     	a' := <term-translation> a;
-    	prods' := <map(prod-to-sdf3); flatten-list> prods
+    	prods' := <filter(priority-prod-to-sdf3)> prods
+    	
+  group-to-sdf3:
+    with-arguments(group, arg) -> WithArguments(group', arg') 
+    with
+        arg' := <term-translation> arg;
+        group' := <group-to-sdf3> group  
+        
+  group-to-sdf3:
+     non-transitive(group) -> NonTransitive(group')
+    with
+        group' := <group-to-sdf3> group     	
+ 
+ //Priority-productions
+ priority-prod-to-sdf3:
+ 	prod(symbols*, sort(s), attrs) -> <term-translation> result
+  	where
+  		not(<?[sort("CONTENTCOMPLETE")]> symbols*)
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with   		
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SortConsRef(Sort(s), c)
+  	<+  debug(!"Production does not have a constructor, conversion failed: ")
+  	
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, lex(sort(s)), attrs) -> <term-translation> result
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SortConsRef(Lex(Sort(s)), c)
+  	<+  debug(!"Production does not have a constructor, conversion failed: ")
+  
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, cf(sort(s)), attrs) -> <term-translation> result
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SortConsRef(Cf(Sort(s)), c)
+  	<+ debug(!"Production does not have a constructor, conversion failed: ")
+  	
+ 
+ priority-prod-to-sdf3:
+  	prod(symbols*, symbol, attrs) -> <term-translation> result
+  	where
+  		not(<?sort(s) + ?cf(sort(s)) + ?lex(sort(s))> symbol)
+  	with
+  		a* := <?attrs(<id>) <+ ![]> attrs;
+  		symbol' := <symbol-to-sdf3> symbol	
+  	with 
+  		c := <getfirst(lift-constr)> a*;
+  		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
+  		result := SortConsRef(symbol, c)
+  	<+  debug(!"Production does not have a constructor, conversion failed: ") 
  
  
   //Productions
@@ -241,11 +298,7 @@ rules
   	<+  result := SdfProduction(symbol', Rhs(symbols'*), Attrs(a*)) 
   
   
-  
- 
-  
-  
-   symbol-to-sdf3:
+  symbol-to-sdf3:
    	symbol -> symbol'
    	where
    		not(is-unsupported) 	
@@ -324,9 +377,6 @@ rules
   special-term-to-sdf:
   	iter-sep(sort, lit) -> IterSep(sort, lit) 
   	
-  // special-term-to-sdf:
-  // 	Right() -> right()
-  
   special-term-to-sdf:
   	iter-star(sort) -> IterStar(sort)
   	
@@ -359,15 +409,6 @@ rules
   
   special-term-to-sdf:
   	non-transitive(g) -> NonTransitive(g) 
-  
-  special-term-to-sdf:
-  	simple-group(p) -> SimpleGroup(p)
-  		
-  special-term-to-sdf:
-  	prods-group(p) -> ProdsGroup(p)
-        
-  special-term-to-sdf:
-  	assoc-group(a, p) -> AssocGroup(a, p)
   
   special-term-to-sdf:
   	real-con(i, n, o) -> RealCon(i, n, o)
@@ -406,10 +447,7 @@ rules
 		<is-unsupported> -> <fail>
 	with
 		debug(!"Unsupported symbol ")	
- 
- 
- 	
-  		  		
+   		  		
   terms-to-sdf:
   	[term | tail] -> <id>
   		

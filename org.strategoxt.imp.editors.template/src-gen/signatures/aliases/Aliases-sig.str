@@ -7,9 +7,6 @@ imports
 
 signature
   constructors
-    Prod : Symbols * Symbol * Attributes -> Production
-
-  constructors
     Aliases : Aliases -> Grammar
     Alias   : Symbol * Symbol -> Alias
             : List(Alias) -> Aliases

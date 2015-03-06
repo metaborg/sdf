@@ -19,8 +19,10 @@ signature
   constructors
   	
   	Inj : Constructor
-  	AltType : List(Type) -> Type 
-  	SeqType : List(Type) -> type
+  	AltType  : List(Type) -> Type 
+  	SeqType  : List(Type) -> type
+  	// LiftType : Type -> Type
+
 
 overlays
   
@@ -156,6 +158,14 @@ rules
       types := <type-task(|ctx)> typable_symbols*;
       t := <type-is(|ctx)> SeqType(types)       
       
+      
+    // create-type-task(|ctx) :
+    // Lifting(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    // where 
+    //   <oncetd(?Sort(s))> symbol;
+    //   t2 :=<type-lookup(|ctx)> s;
+    //   t := <type-task(|ctx)> symbol  
+   
  
    
 rules

@@ -17,7 +17,7 @@ signature
     Real        : RealCon -> ATerm
     Fun         : AFun -> ATerm
     Appl        : AFun * List(ATerm) -> ATerm
-    PlaceHolder : ATerm -> ATerm
+    Placeholder : ATerm -> ATerm
     List        : List(ATerm) -> ATerm
     Annotated   : ATerm * Annotation -> ATerm
 

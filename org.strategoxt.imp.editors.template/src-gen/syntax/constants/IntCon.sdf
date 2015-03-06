@@ -2,9 +2,6 @@ module constants/IntCon
 imports layout/Whitespace constants/NatCon
 
 exports
-  context-free start-symbols
-    IntCon
-
   context-free syntax
     NatCon     -> IntCon {cons("Natural")}
     "+" NatCon -> IntCon {cons("Positive")}

@@ -67,17 +67,17 @@ rules // Convert templates to regular productions
   sdf2-term-to-sdf3:
   	label_start() -> LabelStart()
   	
-  sdf2-term-to-sdf3:
-  	empty-grammar() -> Empty()
-  
-  sdf2-term-to-sdf3:
-  	unquoted-fun(s) -> UnquotedFun(s)
-  
-  sdf2-term-to-sdf3:
-  	quoted-fun(s) -> QuotedFun(s)
-  
-  sdf2-term-to-sdf3:
-  	prefix-fun(fn, syms, sym, att) -> PrefixFun(fn, syms, sym, att) 
+  // sdf2-term-to-sdf3:
+  // 	empty-grammar() -> Empty()
+  // 
+  // sdf2-term-to-sdf3:
+  // 	unquoted-fun(s) -> UnquotedFun(s)
+  // 
+  // sdf2-term-to-sdf3:
+  // 	quoted-fun(s) -> QuotedFun(s)
+  // 
+  // sdf2-term-to-sdf3:
+  // 	prefix-fun(fn, syms, sym, att) -> PrefixFun(fn, syms, sym, att) 
   
   sdf2-term-to-sdf3:
   	non-assoc() -> NonAssoc()

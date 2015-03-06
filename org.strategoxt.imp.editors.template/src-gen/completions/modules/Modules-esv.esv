@@ -9,13 +9,7 @@ imports
 completions
   completion template Module : "module ModuleName Sections" =
     "module " <ModuleName:ModuleName> "\n\n" (cursor) "\n\n" <Sections:Sections> (blank)  
-  completion template Sections : " " =
-    "\n" (cursor) (blank)                          
   completion template ModuleName : "ModuleId [Symbols]" =
     <ModuleId:ModuleId> " [" <Symbols:Symbols> "]"  
-  completion template Attribute : "id (ModuleName) " =
-    "id (" <ModuleName:ModuleName> ") "  
   completion template ImpSection : "imports Imports" =
-    "imports " <Imports:Imports>   
-  completion template Import : "(Import)" =
-    "(" <Import:Import> ")"                   
+    "imports\n\t" <Imports:Imports> (blank)  

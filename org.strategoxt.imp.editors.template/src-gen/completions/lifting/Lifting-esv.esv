@@ -2,7 +2,3 @@ module src-gen/completions/lifting/Lifting-esv
 
 imports
   src-gen/completions/kernel/Kernel-esv
-
-completions
-  completion template Symbol : "`Symbol`" =
-    "`" <Symbol:Symbol> "`"  

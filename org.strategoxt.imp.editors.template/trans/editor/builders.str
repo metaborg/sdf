@@ -19,6 +19,7 @@ imports
   analysis/names
   lib/runtime/nabl/-
   lib/runtime/properties/-
+  normalization/normalize
   
  
   
@@ -183,8 +184,31 @@ imports
     	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <desugar-templates; remove-templates> ast;
-  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn		
-  	
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn	
+  		
+  sdf3-to-normal-form-sdf:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+		task-setup(|project-path);
+		index-setup(|<language>, project-path);
+		normalized   := <to-normal-form-all> selected;
+		<?Module(Unparameterized(mn), i*, sections)> ast ;
+		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+		result := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> normalized;
+		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf")> mn
+        
+        
+          			
+  sdf3-to-normal-form:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+		task-setup(|project-path);
+		index-setup(|<language>, project-path);
+		<?Module(Unparameterized(mn), i*, sections)> ast ;
+		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf3")> mn;
+		result   := <to-normal-form-all; pp-SDF3-string> selected	
   
   // On-save handler
   generate-all:

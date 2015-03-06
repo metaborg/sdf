@@ -17,7 +17,6 @@ signature
     SDFSection      : Grammar -> Section
     Unparameterized : ModuleId -> ModuleName
     Parameterized   : ModuleId * Symbols -> ModuleName
-    Id              : ModuleName -> Attribute
     Imports         : Imports -> ImpSection
                     : List(Import) -> Imports
     Module          : ModuleName -> Import

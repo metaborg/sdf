@@ -106,7 +106,7 @@ exports
     EOL   -> "\n" 
 
   lexical restrictions
-    EOL -/- [\n\r]
+    EOL -/- [\n]
 
   lexical syntax
     [\ \t]+             -> TemplateLayout     
