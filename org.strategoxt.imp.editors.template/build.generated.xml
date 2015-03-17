@@ -9,7 +9,6 @@
                         ppgen,
                         pppack,
                         sdf2imp.eclipse,
-<!--                        sdf2imp.standalone, -->
                         sdf2parenthesize,
                         stratego.aster,
                         stratego.ctree,
