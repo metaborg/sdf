@@ -65,9 +65,6 @@
 
     <!-- Main target -->
     <target depends="pppack-esv, spoofaximp.default.ctree" name="all"/>
-	<target name="generate-sources" depends="pppack-esv, generate-sources-ctree" />
-	<target name="package" depends="package-ctree" />
-
 
     <!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->
     <available file="include/EditorService-pretty.pp.af" property="pppack-esv.available"/>
