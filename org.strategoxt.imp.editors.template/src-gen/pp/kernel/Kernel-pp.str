@@ -3,6 +3,7 @@ module src-gen/pp/kernel/Kernel-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/kernel/Kernel-sig
 
 
@@ -54,12 +55,12 @@ strategies
     ?Default(_)
 
   prettyprint-Attribute :
-    Term(t0__) -> [ H(
+    Term(t1__) -> [ H(
                       [SOpt(HS(), "0")]
-                    , [t0__']
+                    , [t1__']
                     )
                   ]
-    with t0__' := <pp-one-Z(prettyprint-ATermAttribute)> t0__
+    with t1__' := <pp-one-Z(prettyprint-ATermAttribute)> t1__
 
   is-Attribute =
     ?Term(_)
@@ -99,67 +100,77 @@ strategies
     ?Deprecated()
 
   prettyprint-Attribute :
-    Deprecated(t0__) -> [ H(
+    Deprecated(t1__) -> [ H(
                             [SOpt(HS(), "0")]
                           , [ S("deprecated(")
-                            , t0__'
+                            , t1__'
                             , S(")")
                             ]
                           )
                         ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-Attribute =
     ?Deprecated(_)
 
   prettyprint-Attribute :
-    Constructor(t0__) -> [ H(
+    Constructor(t1__) -> [ H(
                              [SOpt(HS(), "0")]
                            , [ S("cons(")
-                             , t0__'
+                             , t1__'
                              , S(")")
                              ]
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-Attribute =
     ?Constructor(_)
 
   prettyprint-Attribute :
-    t0__ -> [ H(
+    t1__ -> [ H(
                 [SOpt(HS(), "0")]
-              , [t0__']
+              , [t1__']
               )
             ]
     where not(is-Attribute)
-    where t0__' := <pp-one-Z(prettyprint-QuotedConstructor)> t0__
+    where t1__' := <pp-one-Z(prettyprint-QuotedConstructor)> t1__
 
-  prettyprint-QuotedConstructor :
-    Constructor(t0__) -> [ H(
+  prettyprint-Attribute :
+    CaseInsensitive() -> [ H(
                              [SOpt(HS(), "0")]
-                           , [t0__']
+                           , [S("case-insensitive")]
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+
+  is-Attribute =
+    ?CaseInsensitive()
+
+  prettyprint-QuotedConstructor :
+    Constructor(t1__) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [t1__']
+                           )
+                         ]
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-QuotedConstructor =
     ?Constructor(_)
 
   prettyprint-Production :
-    Prod(t0__, result__, t1__) -> [ H(
+    Prod(t1__, result__, t2__) -> [ H(
                                       [SOpt(HS(), "0")]
-                                    , [ t0__'
+                                    , [ t1__'
                                       , S(" -> ")
                                       , result__'
                                       , S(" ")
-                                      , t1__'
+                                      , t2__'
                                       ]
                                     )
                                   ]
-    with t0__' := <pp-one-Z(prettyprint-Symbols)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbols)> t1__
     with result__' := <pp-one-Z(prettyprint-Symbol)> result__
-    with t1__' := <pp-one-Z(prettyprint-Attributes)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Attributes)> t2__
 
   is-Production =
     ?Prod(_, _, _)
@@ -174,7 +185,7 @@ strategies
     where list__' := <pp-V-list(prettyprint-Production)> list__
 
   prettyprint-Grammar :
-    Syntax(t0__) -> [ H(
+    Syntax(t1__) -> [ H(
                         [SOpt(HS(), "0")]
                       , [S("syntax")]
                       )
@@ -182,13 +193,13 @@ strategies
                         []
                       , [S("")]
                       )
-                    , t0__'
+                    , t1__'
                     , H(
                         []
                       , [S("")]
                       )
                     ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Productions)> t1__]
 
   is-Grammar =
     ?Syntax(_)
@@ -213,3 +224,24 @@ strategies
 
   is-Grammar =
     fail
+
+  prettyprint-ATermAttribute :
+    amb([h|hs]) -> <prettyprint-ATermAttribute> h
+
+  prettyprint-Attributes :
+    amb([h|hs]) -> <prettyprint-Attributes> h
+
+  prettyprint-Attribute :
+    amb([h|hs]) -> <prettyprint-Attribute> h
+
+  prettyprint-QuotedConstructor :
+    amb([h|hs]) -> <prettyprint-QuotedConstructor> h
+
+  prettyprint-Production :
+    amb([h|hs]) -> <prettyprint-Production> h
+
+  prettyprint-Productions :
+    amb([h|hs]) -> <prettyprint-Productions> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h

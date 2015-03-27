@@ -271,7 +271,8 @@ rules
   get-prod-elems(|chars, newline):
   	TemplateProductionWithCons(s, t, a) -> result
   	with
-  		result := <template-to-sdf(|chars, newline)> t
+  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+  		result := <template-to-sdf(|chars, newline, case-sensitive)> t
   
   //Productions
   prod-to-sdf:
@@ -328,7 +329,8 @@ rules
   prod-to-sdf(|chars, newline):
   	TemplateProduction(s, t, a) -> prod(t', s', a')
   	with
-  		t' := <template-to-sdf(|chars, newline)> t;
+  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+  		t' := <template-to-sdf(|chars, newline, case-sensitive)> t;
   		s' := <term-translation> s;
   		a' := <term-translation> a		
   		
@@ -336,7 +338,8 @@ rules
   prod-to-sdf(|chars, newline):
   	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, attrs) -> prod(t', s', a''*)
   	with
-  		t' := <template-to-sdf(|chars, newline)> t;
+  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> attrs ;
+  		t' := <template-to-sdf(|chars, newline, case-sensitive)> t;
   		s' := <term-translation> s;
   		c   := <double-quote> cons; 
   		a*  := <?Attrs(<id>) <+ ![]> attrs;
@@ -344,16 +347,22 @@ rules
   		a''* := <term-translation> Attrs(a'*)	
   
   //single-line template
-  template-to-sdf(|chars, newline):
+  template-to-sdf(|chars, newline, case-sensitive):
   	SingleLineTemplate(elems) -> elems'
   	with
-  	elems' := <filter(template-elem-to-sdf(|chars)); flatten-list> elems
+  	elems' := <filter(template-elem-to-sdf(|chars, case-sensitive)); flatten-list> elems
   	
-  template-elem-to-sdf(|chars):
-  	String(t) -> <string-to-sdf(|chars)> t
+  template-elem-to-sdf(|chars, case-sensitive):
+  	String(t) -> result
+  	where
+  	if CaseInsensitive() := case-sensitive then	
+  		result := <string-to-sdf-insensitive(|chars)> t
+  	else
+  		result := <string-to-sdf(|chars)> t
+  	end
   
   //removing layout from separator	
-  template-elem-to-sdf(|chars):
+  template-elem-to-sdf(|chars, case-sensitive):
   	Placeholder(symbol, option) -> symbol' 
   	where
   		<?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
@@ -377,58 +386,19 @@ rules
 	  		end
 	  	end	
   		
-  template-elem-to-sdf(|chars):
+  template-elem-to-sdf(|chars, case-sensitive):
   	Placeholder(symbol, option) -> <term-translation> symbol
   	where
   		<not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
   
   	
-  // template-elem-to-sdf(|chars):
-  // 	Placeholder(None(), Sort(x), regular, option) -> result
-  // 	where <not(one(Separator(not(string-is-layout))))> option
-  // 	with
-  // 		switch !(regular)
-  // 		case ?(Star()) : result := iter-star(sort(x))
-  // 		case ?(Option()) : result := opt(sort(x))
-  // 		case ?(Plus()) : result := iter(sort(x))
-  // 		case ?(None()) : result := sort(x)
-  // 		end
-  // 		
-  // template-elem-to-sdf(|chars):
-  // 	Placeholder(None(), Sort(x), regular, option) -> result
-  // 	where <one(Separator(not(string-is-layout)))> option
-  // 	with
-  // 		switch !(regular)
-  // 		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
-  // 		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option))
-  // 		end
-  // 	
-  // 	
-  // template-elem-to-sdf(|chars):
-  // 	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
-  // 	where <not(one(Separator(not(string-is-layout))))> option
-  // 	with
-  // 		switch !(regular)
-  // 		case ?(Star()) : result := iter-star(sort(x))
-  // 		case ?(Option()) : result := opt(sort(x))
-  // 		case ?(Plus()) : result := iter(sort(x))
-  // 		case ?(None()) : result := sort(x)  		
-  // 		end
-  // 
-  // template-elem-to-sdf(|chars):
-  // 	Placeholder(Label(Unquoted(l)), Sort(x), regular, option) -> label(unquoted(l), result)	
-  // 	where <one(Separator(not(string-is-layout)))> option
-  // 	with
-  // 		switch !(regular)
-  // 		case ?(Star()) : result := iter-star-sep(sort(x), lit(<separator-to-literal> option))
-  // 		case ?(Plus()) : result := iter-sep(sort(x), lit(<separator-to-literal> option)) 		
-  // 		end
+
   
   //multi-line template
-  template-to-sdf(|chars, newline):
+  template-to-sdf(|chars, newline, case-sensitive):
      Template(lines*) -> elems*
      with
-     	elems* := <filter(line-to-sdf(|chars)); flatten-list> lines*
+     	elems* := <filter(line-to-sdf(|chars, case-sensitive)); flatten-list> lines*
      /*with
      	[f | t] := lines;
      	l := <last> lines;
@@ -449,10 +419,10 @@ rules
   add-newline-last : 
   	Line(elem*) -> Line([elem*, String("\n")])
  
-  line-to-sdf(|chars):
+  line-to-sdf(|chars, case-sensitive):
   	Line(elems*) -> elems'*
   	where
-  		elems'* := <filter(template-elem-to-sdf(|chars)); flatten-list; not(?[])> elems*
+  		elems'* := <filter(template-elem-to-sdf(|chars, case-sensitive)); flatten-list; not(?[])> elems*
   
 
 
@@ -486,18 +456,6 @@ rules //conversion of SDF3 terms into SDF2
   special-term-to-sdf:
   	LabelStart() -> label_start()
   	
-  // special-term-to-sdf:
-  // 	Empty() -> empty-grammar()
-  // 
-  // special-term-to-sdf:
-  // 	UnquotedFun(s) -> unquoted-fun(s)
-  // 
-  // special-term-to-sdf:
-  // 	QuotedFun(s) -> quoted-fun(s)
-  // 
-  // special-term-to-sdf:
-  // 	PrefixFun(fn, syms, sym, att) -> prefix-fun(fn, syms, sym, att)	
-  
   special-term-to-sdf:
   	NonAssoc() -> non-assoc()
   	
@@ -554,6 +512,9 @@ rules //conversion of SDF3 terms into SDF2
    
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
+    
+  special-term-to-sdf:
+  	CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
    	
  	
   		  		
@@ -584,7 +545,11 @@ rules //conversion of SDF3 terms into SDF2
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<template-escape; double-quote>))
     
-  
+   string-to-sdf-insensitive(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    map(!ci-lit(<template-escape; single-quote>)) 
+    
  sort-to-contentcomplete:
      s -> prod([sort("CONTENTCOMPLETE")], sort(s), attrs([sdf-cons(c)]))
      with

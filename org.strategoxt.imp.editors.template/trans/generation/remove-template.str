@@ -27,12 +27,14 @@ rules // Convert templates to regular productions
 	template-to-prod(|chars, newline):
 	  	TemplateProduction(s, t*, a) -> SdfProduction(s, Rhs(t'*), a)
 	  	with
-	  		t'* := <template-to-sdf(|chars, newline)> t*
+	  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+	  		t'* := <template-to-sdf(|chars, newline, case-sensitive)> t*
   			
     template-to-prod(|chars, newline):
 	  	TemplateProductionWithCons(sc, t*, a*) -> SdfProductionWithCons(sc, Rhs(t'*), a*)
 	  	with
-	  		t'* := <template-to-sdf(|chars, newline)> t*
+	  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a* ;
+	  		t'* := <template-to-sdf(|chars, newline, case-sensitive)> t*
 				
 			
 		

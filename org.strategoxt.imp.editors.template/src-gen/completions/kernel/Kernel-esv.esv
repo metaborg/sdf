@@ -13,5 +13,7 @@ completions
     "deprecated"  
   completion template Attribute : "deprecated(StrCon)" =
     "deprecated(" <StrCon:StrCon> ")"  
+  completion template Attribute : "case-insensitive" =
+    "case-insensitive"  
   completion template Grammar : "syntax Productions " =
     "syntax\n\n\t" <Productions:Productions> "\n" (blank)  
