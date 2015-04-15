@@ -205,14 +205,14 @@ PlaceholderOption.Text = <text=<StrCon>>
   EscapedChar2 = "\\\\"
   
    //EscapedChar1 = "<" (EscapedBackslashChar1 | EscapedChar)* ">"
-   EscapedChar1 = "<" EscapedChar1Alt* ">"
+   EscapedChar1 = "<" EscapedChar1Alt+ ">"
    EscapedChar1Alt = EscapedBackslashChar1
    EscapedChar1Alt = EscapedChar
    
    EscapedChar1 = "<\\\\>" [\ \t\r]* [\n]
    
    //EscapedChar2 = "[" (EscapedBackslashChar2 | EscapedChar)* "]"
-   EscapedChar2 = "[" EscapedChar2Alt* "]"
+   EscapedChar2 = "[" EscapedChar2Alt+ "]"
    EscapedChar2Alt = EscapedBackslashChar2 
    EscapedChar2Alt = EscapedChar
    EscapedChar2 = "[\\\\]" [\ \t\r]* [\n]
