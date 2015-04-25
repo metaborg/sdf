@@ -6,7 +6,7 @@ imports
   libstratego-sglr
   libstratego-lib
   libstratego-gpp
-  analysis/names
+  src-gen/names/analysis/names
   libstrc
   runtime/nabl/-
   runtime/task/-

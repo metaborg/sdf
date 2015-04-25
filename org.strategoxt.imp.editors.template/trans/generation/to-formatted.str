@@ -7,7 +7,7 @@ imports
  	include/TemplateLang
  	lib/runtime/nabl/-
   	lib/runtime/properties/-
-  	analysis/names
+  	src-gen/names/analysis/names
   	trans/utils/tokenize
   	generation/to-sdf
   

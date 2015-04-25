@@ -21,4 +21,3 @@ trans/*generated*
 utils
 !trans/utils
 include
-src-gen

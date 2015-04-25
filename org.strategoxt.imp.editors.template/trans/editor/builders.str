@@ -16,7 +16,6 @@ imports
   runtime/index/-
   runtime/task/-
   trans/generation/-
-  analysis/names
   lib/runtime/nabl/-
   lib/runtime/properties/-
   normalization/normalize
