@@ -49,7 +49,6 @@
 						</goals>
 						<configuration>
 							<name>org.strategoxt.tools.main-parse-pp-table</name>
-							<!--name>main-parse-pp-table</name-->
 							<args>
 								<arg>-i</arg><arg>${lib.directory}/EditorService-pretty.pp</arg>
 								<arg>-o</arg><arg>${include.directory}/EditorService-pretty.pp.af</arg>
