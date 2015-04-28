@@ -186,14 +186,15 @@ rules
             //        if there is a cycle of injections in the grammar!
             input := arg*;
             (output', with*) := <thread-alltd(extract-app-where)> (output, []);
-            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*]
+            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*] // check whether there is a rule with constructor already defined, 
+            																// this one should only be applied when there is not
           end
       else
       	input := Tuple(arg*);
       	(output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
   
-  is-sort-fail:
+  is-sort-fail:												//needs to be generated for every sort to avoid undefined strategy
   	s -> SDefNoArgs($[is-[s]], Fail())
       
   extract-app :
