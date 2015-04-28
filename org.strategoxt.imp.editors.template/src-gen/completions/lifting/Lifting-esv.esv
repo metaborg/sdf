@@ -1,4 +1,0 @@
-module src-gen/completions/lifting/Lifting-esv
-
-imports
-  src-gen/completions/kernel/Kernel-esv
