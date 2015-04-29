@@ -2,7 +2,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-    <name>SDF</name>
+	<name>SDF</name>
 	<artifactId>org.metaborg.meta.lang.sdf</artifactId>
 	<packaging>spoofax-language</packaging>
 	<description>Spoofax meta-language for specifying concrete and abstract grammars</description>
@@ -20,11 +20,12 @@
 	</properties>
 
 	<build>
-        <resources>
-            <resource>
-                <directory>${lib.directory}/sdf3</directory>
-            </resource>
-        </resources>
+		<resources>
+			<resource>
+				<directory>${lib.directory}/sdf3</directory>
+				<targetPath>lib/sdf3</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.metaborg</groupId>
@@ -48,7 +49,7 @@
 					<dependency>
 						<groupId>org.metaborg</groupId>
 						<artifactId>org.metaborg.meta.lang.esv</artifactId>
-						<version>${metaborg-version}</version>
+						<version>${metaborg-baseline-version}</version>
 						<type>spoofax-language</type>
 					</dependency>
 				</dependencies>
