@@ -35,13 +35,8 @@
 					<sdfArgs>
 						<arg>-Idef</arg><arg>${lib.directory}/SDF.def</arg>
 					</sdfArgs>
-					<strategoArgs>
+					<strategoArgs combine.children="append">
 						<arg>-la</arg><arg>strc</arg>
-						<arg>-la</arg><arg>stratego-lib</arg>
-						<arg>-la</arg><arg>stratego-sglr</arg>
-						<arg>-la</arg><arg>stratego-gpp</arg>
-						<arg>-la</arg><arg>stratego-xtc</arg>
-						<arg>-la</arg><arg>stratego-aterm</arg>
 						<arg>-la</arg><arg>stratego-sdf</arg>
 					</strategoArgs>
 				</configuration>

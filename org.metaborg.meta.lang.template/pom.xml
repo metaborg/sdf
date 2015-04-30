@@ -30,12 +30,7 @@
 					<sdfArgs>
 						<arg>-Idef</arg><arg>${lib.directory}/SDF.def</arg>
 					</sdfArgs>
-					<strategoArgs>
-						<arg>-la</arg><arg>stratego-lib</arg>
-						<arg>-la</arg><arg>stratego-sglr</arg>
-						<arg>-la</arg><arg>stratego-gpp</arg>
-						<arg>-la</arg><arg>stratego-xtc</arg>
-						<arg>-la</arg><arg>stratego-aterm</arg>
+					<strategoArgs combine.children="append">
 						<arg>-la</arg><arg>stratego-sdf</arg>
 						<arg>-la</arg><arg>strc</arg>
 					</strategoArgs>
@@ -45,7 +40,7 @@
 						<id>ppack-esv</id>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>run</goal>
+							<goal>run-strategy</goal>
 						</goals>
 						<configuration>
 							<name>org.strategoxt.tools.main-parse-pp-table</name>
