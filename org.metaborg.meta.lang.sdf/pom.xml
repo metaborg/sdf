@@ -44,7 +44,7 @@
 					<dependency>
 						<groupId>org.metaborg</groupId>
 						<artifactId>org.metaborg.meta.lang.esv</artifactId>
-						<version>${metaborg-baseline-version}</version>
+						<version>${metaborg-version}</version>
 						<type>spoofax-language</type>
 					</dependency>
 				</dependencies>
