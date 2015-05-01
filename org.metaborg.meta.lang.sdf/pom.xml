@@ -22,7 +22,7 @@
 	<build>
 		<resources>
 			<resource>
-				<directory>${lib.directory}/sdf3</directory>
+				<directory>lib/sdf3</directory>
 				<targetPath>lib/sdf3</targetPath>
 			</resource>
 		</resources>

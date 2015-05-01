@@ -40,7 +40,7 @@
 						<id>ppack-esv</id>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>run-strategy</goal>
+							<goal>run</goal>
 						</goals>
 						<configuration>
 							<name>org.strategoxt.tools.main-parse-pp-table</name>
