@@ -1,0 +1,13 @@
+module editor/SampleGrammars-Outliner
+
+imports
+  
+  include/SampleGrammars
+  lib/runtime/editor/outline-library
+  lib/runtime/editor/origins
+  editor/SampleGrammars-Outliner.generated
+
+rules
+  
+  to-outline-label = fail
+  

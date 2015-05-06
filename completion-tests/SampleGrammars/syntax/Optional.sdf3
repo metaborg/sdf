@@ -1,0 +1,28 @@
+//Grammar8
+
+module Optional
+
+context-free syntax
+
+  Start = Mod 
+  Mod.Module = <
+  				m 
+  				<Sects>> 
+  Sects.Some = <<Sect> <Sects>> 
+  Sects.None =  
+  Sect.Section = <
+  				s 
+  				<Opt>
+  				<Rules>> 
+  Opt.Opt = <opt: <Opts>> 
+  Opt.NoOpt =
+  Rules.Some = <<Rule> <Rules>> 
+  Rules.None =  
+  Rule.Rule = <<NonT> = <NonTs>> 
+  NonTs.Some = <<NonT> <NonTs>> 
+  NonTs.None =  
+
+lexical syntax
+
+  NonT = "A" | "B" 
+  Opts = "c" | "d" 

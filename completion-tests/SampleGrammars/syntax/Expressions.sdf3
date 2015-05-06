@@ -1,0 +1,15 @@
+//Grammar4
+
+module Expressions
+
+context-free syntax
+
+	Start      = Exp
+	Exp.Add    = <<Exp> + <Exp>>
+	Exp = Term
+	Term.Paren = <(<Exp>)>
+	Term.Num = Num
+
+lexical syntax
+
+	Num = "0" | "1"  

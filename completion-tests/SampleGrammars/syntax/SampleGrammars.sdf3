@@ -1,0 +1,45 @@
+module SampleGrammars
+
+imports
+	
+//	Common
+	
+//Grammar 1
+//	SingleStm
+	
+//Grammar 2
+//	MultStm
+	
+//Grammar 3
+//	ListOfStm
+
+//Grammar 4
+//	Expressions 
+
+//Grammar 5
+//	StmsAndExpr
+	
+//Grammar 6
+//	ExprInj
+	
+//Grammar 7
+//	OverlapLists
+	
+//Grammar 8
+//	Optional
+	
+//Grammar 9
+//	Blocks
+	
+//Grammar 1 Kernel 
+	SingleStmKernel	
+	
+//Grammar 3 Kernel	
+//	ListOfStmKernel
+
+
+context-free start-symbols
+  
+  Start
+
+
