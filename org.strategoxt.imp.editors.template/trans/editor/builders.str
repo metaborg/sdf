@@ -6,6 +6,7 @@ imports
   libstratego-sdf
   libstratego-lib
   libstratego-gpp
+  libstratego-sglr
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/EditorService
@@ -20,6 +21,7 @@ imports
   lib/runtime/nabl/-
   lib/runtime/properties/-
   normalization/normalize
+  lib/ds/pp/-
   
  
   
@@ -52,6 +54,7 @@ imports
   		selected'     := <desugar-templates> selected;
         //selected' := selected ;
         filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+     //   result   := <sdf-aterm; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail>
        result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
  
   
@@ -77,6 +80,27 @@ imports
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
+        
+        
+   generate-dynsem:
+   	     (selected, position, ast, path, project-path) -> (filename, result)
+    where
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      ; filename := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
+        
+   generate-dynsem-abstract:
+   	     (selected, position, ast, path, project-path) -> (filename, result)
+    where
+    	task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-ds-sig> selected'
+      ; filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn     
    
    generate-pp-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -99,6 +123,28 @@ imports
     	result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
     	//; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn//fn
+  
+  generate-ast-checker-concrete:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	where
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+    	//; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "check", "-chk.str")> mn
+  
+   generate-ast-checker-abstract:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	where
+  		task-setup(|project-path);
+    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(mn), i*, _)> ast ;
+    	selected'     := <desugar-templates> selected;
+    	result   := <module-to-chk> selected'
+    	//; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "check", "-chk.aterm")> mn
   
   
   generate-esv-abstract:
@@ -240,7 +286,10 @@ imports
         pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
       ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
         <write-string-to-file> (pp-filename, pp-ast)  
-	
+	 where
+        chk-ast               := <module-to-chk; pp-stratego-string <+ !""; debug(!"Check files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
+      ; chk-filename          := <create-src-gen(|project-path, "check", "-chk.str")> mn;
+        <write-string-to-file> (chk-filename, chk-ast)  
   
   rules
   
@@ -253,6 +302,11 @@ imports
   ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
   box2text-string(|80)
   
+  
+  pp-ds-to-string =
+  	ds-prettyprint-SDF-start-symbols
+    ; !V([], <id>)
+    ; box2text-string(|120)
   
   //pretty-printer for the generated esv
   pp-esv-to-string = 
@@ -362,4 +416,4 @@ imports
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  			
-  
+ //sdf-aterm = !'module(unparameterized("GreenMarlKeyword"), [], [   ])

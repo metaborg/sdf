@@ -1,0 +1,94 @@
+module ds/pp/Common-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  ds/signatures/Common-sig
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-NONE
+
+  ds-prettyprint-NONE :
+    None() -> [ H(
+                  []
+                , [S("")]
+                )
+              ]
+
+  is-NONE =
+    ?None()
+
+  is-NONE =
+    fail
+
+
+strategies
+  ds-prettyprint-INFER =
+    ![S(<is-string>)]
+
+  ds-prettyprint-ID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-LID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-INFER
+
+  ds-prettyprint-example =
+    ds-prettyprint-ID
+
+  ds-prettyprint-example =
+    ds-prettyprint-LID
+
+
+strategies
+  ds-prettyprint-JID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-INT =
+    ![S(<is-string>)]
+
+  ds-prettyprint-REAL =
+    ![S(<is-string>)]
+
+  ds-prettyprint-STRING =
+    ![S(<is-string>)]
+
+  ds-prettyprint-StringChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-BackSlashChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-CommentChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-EOF =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-JID
+
+  ds-prettyprint-example =
+    ds-prettyprint-INT
+
+  ds-prettyprint-example =
+    ds-prettyprint-REAL
+
+  ds-prettyprint-example =
+    ds-prettyprint-STRING
+
+  ds-prettyprint-example =
+    ds-prettyprint-StringChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-BackSlashChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-CommentChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-EOF

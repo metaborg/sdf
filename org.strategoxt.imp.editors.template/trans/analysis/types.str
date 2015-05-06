@@ -47,28 +47,11 @@ rules
     
   ; type-is(|ctx)
     
- // create-type-task(|ctx) :
-  //  Placeholder(_, Sort(s), Option(), _) -> <task-create-id(|ctx,[t])> t
-  //  where 
-  //    t := <type-is(|ctx)> OptionType(<strip-annos> s)    
-  
-//  create-type-task(|ctx) :
- //  Placeholder(_, Sort(s), Plus(), _) -> <task-create-id(|ctx,[t])> t
-  //  where 
-  //    t := <type-is(|ctx)> ListType(<strip-annos> s)
-      
- // create-type-task(|ctx) :
-  //  Placeholder(_, Sort(s), Star(), _) -> <task-create-id(|ctx,[t])> t
-  //  where 
-   //   t := <type-is(|ctx)> ListType(<strip-annos> s)
+
       
 rules
   
-  // create-type-task(|ctx) = 
-  // 	?Rhs(<filter(is-typable < create-type-task(|ctx) + debug(!"I FAVE FAILTED "))>)
-  // ; debug(!"before ") ; type-is(|ctx) 	
-    
-  
+ 
   create-type-task(|ctx) :
   	Rhs(symbols*) -> <task-create-id(|ctx,[t])> t
   where
@@ -81,8 +64,7 @@ rules
     where 
       t' := <type-lookup(|ctx)> s;
       t  := <task-create-make-set(|ctx)> t'
-      
-      
+
   
   //Types for when symbol operators operate on a single sort
   //HACK: it is necessary to strip-annos because of the multiple definitions of Sort(s)
@@ -157,16 +139,7 @@ rules
       typable_symbols* := <filter(is-typable)> [symbol1, symbol2*];
       types := <type-task(|ctx)> typable_symbols*;
       t := <type-is(|ctx)> SeqType(types)       
-      
-      
-    // create-type-task(|ctx) :
-    // Lifting(symbol) -> <task-create-id(|ctx,[t, t2])> t
-    // where 
-    //   <oncetd(?Sort(s))> symbol;
-    //   t2 :=<type-lookup(|ctx)> s;
-    //   t := <type-task(|ctx)> symbol  
-   
- 
+
    
 rules
 	

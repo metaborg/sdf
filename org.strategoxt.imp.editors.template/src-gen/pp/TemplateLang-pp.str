@@ -3,6 +3,7 @@ module src-gen/pp/TemplateLang-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/TemplateLang-sig
 
 
@@ -92,6 +93,15 @@ strategies
 
   is-PlaceholderOptions =
     fail
+
+  prettyprint-TemplateProduction :
+    amb([h|hs]) -> <prettyprint-TemplateProduction> h
+
+  prettyprint-PlaceholderOption :
+    amb([h|hs]) -> <prettyprint-PlaceholderOption> h
+
+  prettyprint-PlaceholderOptions :
+    amb([h|hs]) -> <prettyprint-PlaceholderOptions> h
 
 
 strategies
@@ -206,6 +216,15 @@ strategies
   is-TemplateOption =
     fail
 
+  prettyprint-Section :
+    amb([h|hs]) -> <prettyprint-Section> h
+
+  prettyprint-NewlineOptionValue :
+    amb([h|hs]) -> <prettyprint-NewlineOptionValue> h
+
+  prettyprint-TemplateOption :
+    amb([h|hs]) -> <prettyprint-TemplateOption> h
+
 
 strategies
   prettyprint-example =
@@ -274,6 +293,12 @@ strategies
 
   is-SortConsRef =
     fail
+
+  prettyprint-Group :
+    amb([h|hs]) -> <prettyprint-Group> h
+
+  prettyprint-SortConsRef :
+    amb([h|hs]) -> <prettyprint-SortConsRef> h
 
 
 strategies
@@ -672,6 +697,45 @@ strategies
   is-PlaceholderOption =
     fail
 
+  prettyprint-Section :
+    amb([h|hs]) -> <prettyprint-Section> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h
+
+  prettyprint-GeneralProduction :
+    amb([h|hs]) -> <prettyprint-GeneralProduction> h
+
+  prettyprint-SdfProduction :
+    amb([h|hs]) -> <prettyprint-SdfProduction> h
+
+  prettyprint-RHS :
+    amb([h|hs]) -> <prettyprint-RHS> h
+
+  prettyprint-TemplateProduction :
+    amb([h|hs]) -> <prettyprint-TemplateProduction> h
+
+  prettyprint-Constructor :
+    amb([h|hs]) -> <prettyprint-Constructor> h
+
+  prettyprint-SortCons :
+    amb([h|hs]) -> <prettyprint-SortCons> h
+
+  prettyprint-TemplatePart1 :
+    amb([h|hs]) -> <prettyprint-TemplatePart1> h
+
+  prettyprint-TemplatePart2 :
+    amb([h|hs]) -> <prettyprint-TemplatePart2> h
+
+  prettyprint-Placeholder :
+    amb([h|hs]) -> <prettyprint-Placeholder> h
+
+  prettyprint-PlaceholderOptions :
+    amb([h|hs]) -> <prettyprint-PlaceholderOptions> h
+
+  prettyprint-PlaceholderOption :
+    amb([h|hs]) -> <prettyprint-PlaceholderOption> h
+
 
 strategies
   prettyprint-example =
@@ -848,6 +912,21 @@ strategies
   is-TemplatePart2 =
     fail
 
+  prettyprint-TemplateLine1 :
+    amb([h|hs]) -> <prettyprint-TemplateLine1> h
+
+  prettyprint-TemplatePart1 :
+    amb([h|hs]) -> <prettyprint-TemplatePart1> h
+
+  prettyprint-Template :
+    amb([h|hs]) -> <prettyprint-Template> h
+
+  prettyprint-TemplateLine2 :
+    amb([h|hs]) -> <prettyprint-TemplateLine2> h
+
+  prettyprint-TemplatePart2 :
+    amb([h|hs]) -> <prettyprint-TemplatePart2> h
+
 
 strategies
   prettyprint-EOL =
@@ -867,6 +946,15 @@ strategies
 
   prettyprint-example =
     prettyprint-LF
+
+  prettyprint-EOL :
+    amb([h|hs]) -> <prettyprint-EOL> h
+
+  prettyprint-CR :
+    amb([h|hs]) -> <prettyprint-CR> h
+
+  prettyprint-LF :
+    amb([h|hs]) -> <prettyprint-LF> h
 
 
 strategies
@@ -911,6 +999,27 @@ strategies
 
   prettyprint-example =
     prettyprint-Backslash
+
+  prettyprint-TemplateLayout :
+    amb([h|hs]) -> <prettyprint-TemplateLayout> h
+
+  prettyprint-TemplateString1 :
+    amb([h|hs]) -> <prettyprint-TemplateString1> h
+
+  prettyprint-TemplateString2 :
+    amb([h|hs]) -> <prettyprint-TemplateString2> h
+
+  prettyprint-TemplateStringQ :
+    amb([h|hs]) -> <prettyprint-TemplateStringQ> h
+
+  prettyprint-TemplateString1Alt :
+    amb([h|hs]) -> <prettyprint-TemplateString1Alt> h
+
+  prettyprint-TemplateString2Alt :
+    amb([h|hs]) -> <prettyprint-TemplateString2Alt> h
+
+  prettyprint-Backslash :
+    amb([h|hs]) -> <prettyprint-Backslash> h
 
 
 strategies
@@ -991,3 +1100,42 @@ strategies
 
   prettyprint-example =
     prettyprint-EscapedChar2
+
+  prettyprint-CONTENTCOMPLETE :
+    amb([h|hs]) -> <prettyprint-CONTENTCOMPLETE> h
+
+  prettyprint-TemplateEscape1 :
+    amb([h|hs]) -> <prettyprint-TemplateEscape1> h
+
+  prettyprint-TemplateEscape2 :
+    amb([h|hs]) -> <prettyprint-TemplateEscape2> h
+
+  prettyprint-EscapedChar1Alt :
+    amb([h|hs]) -> <prettyprint-EscapedChar1Alt> h
+
+  prettyprint-EscapedChar2Alt :
+    amb([h|hs]) -> <prettyprint-EscapedChar2Alt> h
+
+  prettyprint-EscapedBackslashChar1 :
+    amb([h|hs]) -> <prettyprint-EscapedBackslashChar1> h
+
+  prettyprint-EscapedBackslashChar2 :
+    amb([h|hs]) -> <prettyprint-EscapedBackslashChar2> h
+
+  prettyprint-TemplateEscapeQ :
+    amb([h|hs]) -> <prettyprint-TemplateEscapeQ> h
+
+  prettyprint-TemplateEscapeQAlt :
+    amb([h|hs]) -> <prettyprint-TemplateEscapeQAlt> h
+
+  prettyprint-EscapedUnicodeChar :
+    amb([h|hs]) -> <prettyprint-EscapedUnicodeChar> h
+
+  prettyprint-EscapedChar :
+    amb([h|hs]) -> <prettyprint-EscapedChar> h
+
+  prettyprint-EscapedChar1 :
+    amb([h|hs]) -> <prettyprint-EscapedChar1> h
+
+  prettyprint-EscapedChar2 :
+    amb([h|hs]) -> <prettyprint-EscapedChar2> h

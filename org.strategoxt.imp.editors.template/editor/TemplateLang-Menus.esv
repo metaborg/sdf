@@ -35,26 +35,32 @@ menus
    
     action: "Generate all files" = generate-all
    
-   	submenu: "SDF"
-      action: "Generate SDF (abstract)" = generate-sdf-abstract
+  // 	submenu: "SDF"
+      action: "Generate SDF (abstract)" = generate-sdf-abstract (meta)
       action: "Generate SDF (concrete)" = generate-sdf-concrete
-    end
+   // end
     
     submenu: "Signature"
-      action: "Generate Signature (abstract)" = generate-sig-abstract
+      action: "Generate Signature (abstract)" = generate-sig-abstract (meta)
       action: "Generate Signature (concrete)" = generate-sig-concrete
+      action: "Generate DynSem Signatures (abstract)" = generate-dynsem-abstract (meta)
+      action: "Generate DynSem Signatures" = generate-dynsem
+      
       
      end
      
-     submenu: "Pretty-printer"
-     	action: "Generate PP (abstract)" = generate-pp-abstract
-     	action: "Generate PP (concrete)" = generate-pp-concrete
-     end
+   //  submenu: "Pretty-printer"
+     	action: "Generate PP (abstract)" = generate-pp-abstract (meta)
+     	action: "Generate PP" = generate-pp-concrete
+ //    end
      
-     submenu: "Content Completion"
-     	action: "Generate ESV (abstract)" = generate-esv-abstract
-     	action: "Generate ESV (concrete)" = generate-esv-concrete
-     end
+  //   submenu: "Content Completion"
+     	action: "Generate ESV (abstract)" = generate-esv-abstract (meta)
+     	action: "Generate ESV" = generate-esv-concrete
+     	
+     	action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
+     	action: "Generate AST checker" = generate-ast-checker-concrete
+ //    end
      
   menu: "Format" (openeditor) (realtime)
     
