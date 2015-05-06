@@ -34,6 +34,9 @@
 						<arg>-la</arg><arg>stratego-sdf</arg>
 						<arg>-la</arg><arg>strc</arg>
 					</strategoArgs>
+					<pardonedLanguages>
+						<language>TypeSystemLanguage</language>
+					</pardonedLanguages>
 				</configuration>
 				<executions>
 					<execution>

@@ -39,12 +39,15 @@
 						<arg>-la</arg><arg>strc</arg>
 						<arg>-la</arg><arg>stratego-sdf</arg>
 					</strategoArgs>
+					<pardonedLanguages>
+						<language>EditorService</language>
+					</pardonedLanguages>
 				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.metaborg</groupId>
 						<artifactId>org.metaborg.meta.lang.esv</artifactId>
-						<version>${metaborg-version}</version>
+						<version>${metaborg-baseline-version}</version>
 						<type>spoofax-language</type>
 					</dependency>
 				</dependencies>
