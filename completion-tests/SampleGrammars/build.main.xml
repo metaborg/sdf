@@ -39,6 +39,62 @@
     <property name="externaljar" value="../lib.jar"/>
     <property name="externaljarflags" value="-la org.lib"/>
     -->
+	
+	<macrodef name="normalize">
+				<attribute name="input" />
+				<attribute name="output" />
+				<attribute name="main" />
+				<sequential>
+					<uptodate-io input="@{input}" output="@{output}" type="sdf2table">
+						<action>
+							<exec executable="${nativepath}/sdf2table">
+								<arg value="-t" />
+								<arg value="-i" />
+								<arg value="@{input}" />
+								<arg value="-m" />
+								<arg value="@{main}" />
+								<arg value="-o" />
+								<arg value="@{output}" />
+								<arg value="-n" /> 
+							</exec>
+						</action>
+					</uptodate-io>
+				</sequential>
+			</macrodef>
+		
+		<macrodef name="implodePT">
+					<attribute name="input" />
+					<attribute name="output" />
+					<sequential>
+						<uptodate-io input="@{input}" output="@{output}" type="implodePT">
+							<action>
+								<exec executable="${nativepath}/implodePT">
+									<arg value="-t" />
+									<arg value="-i" />
+									<arg value="@{input}" />
+									<arg value="-o" />
+									<arg value="@{output}" />
+								</exec>
+							</action>
+						</uptodate-io>
+					</sequential>
+				</macrodef>
+		
+		<target name="normalize" depends="spoofaximp.default.ctree">
+			<for param="input">
+				<path>
+					<fileset dir="${include}" includes="*-Permissive.def"/>
+				</path>
+				<sequential>
+					<local name="input-basename"/>
+					<basename file="@{input}" property="input-basename" suffix="-Permissive.def"/>
+					<normalize input="@{input}" main="${sdfmodule}" output="${include}/${input-basename}-normalized.pt"/>
+					<implodePT input="${include}/${input-basename}-normalized.pt" output="${include}/${input-basename}-normalized.aterm"/>
+					<!-- call pp-sdf to pretty print the normalized grammar and define a builder in SDF2 to generate the item-sets -->
+					
+				</sequential>
+			</for>	
+		</target>
 
     <!-- Environment configuration for command-line builds -->
     <condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
@@ -51,7 +107,7 @@
     <import file="build.generated.xml"/>   
 
     <!-- Main target -->
-    <target name="all" depends="spoofaximp.default.ctree"/>
+    <target name="all" depends="spoofaximp.default.ctree, normalize"/>
     <target name="generate-sources" depends="generate-sources-ctree" />
     <target name="package" depends="package-ctree" />
 </project>
