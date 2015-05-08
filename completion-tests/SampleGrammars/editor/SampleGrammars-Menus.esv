@@ -6,7 +6,7 @@ menus
     
     action: "Format"                 = editor-format (realtime) (source)
     action: "Show abstract syntax"   = debug-show-aterm (realtime) (meta) (source)
-    action: "Show parse tree"        = show-pt (realtime)
+//    action: "Show parse tree"        = show-pt (realtime)
     action: "Show analyzed syntax"   = debug-show-analyzed (meta)
     
   menu: "Analysis"                     (meta)

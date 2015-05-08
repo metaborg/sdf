@@ -41,53 +41,62 @@ import org.spoofax.jsglr.shared.TokenExpectedException;
 public class parse_to_pt_0_2 extends Strategy {
 
 	public static parse_to_pt_0_2 instance = new parse_to_pt_0_2();
-
-	@Override
-	public IStrategoTerm invoke(Context context, IStrategoTerm current,
-			IStrategoTerm t1, IStrategoTerm t2) {
-		context.getIOAgent().printError(
-				"Input for parse-pt: " + current + " and parameters " + t1 + "\n" + t2);
-
-		ITermFactory factory = context.getFactory();
-		
-		if (!Tools.isTermInt(current))
-			return factory.makeString("failed");
-		
-		String text;
-		try {
-			text = readFile(context.getIOAgent(), Tools.asJavaInt(current)).trim();
-		} catch (IOException e) {
-			// FIXME add more structure;
-			IStrategoTerm errorTerm = context.getFactory().makeString(e.getMessage());
-			return errorTerm;
-		}
-		
-		try {
-			ParseTable table = new ParseTable(t1, factory);
-			SGLR parser = new SGLR(new Asfix2TreeBuilder(factory), table);
-			String path = Tools.asJavaString(t2);
-			context.getIOAgent().printError("to parse " + text + " in path " + path);
-			return (IStrategoTerm) parser.parse(text);
-
-			
-
-		} catch (InvalidParseTableException | SGLRException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return factory.makeString("Exception Thrown");
-
-		}
-
-	}
 	
-	private String readFile(IOAgent io, int fd) throws IOException {
-		BufferedReader br = new BufferedReader(io.getReader(fd));
-		StringBuilder sb = new StringBuilder();
-		do {
-			sb.append(br.readLine());
-			sb.append('\n');
-		} while(br.ready());
-		return sb.toString();
-	}
+	@Override
+	  public IStrategoTerm invoke(Context context, IStrategoTerm current) {
+	    context.getIOAgent().printError("Input for java-strategy: " + current);
+	    ITermFactory factory = context.getFactory();
+	    
+	    
+	    return factory.makeString("Regards from java-strategy");
+	  }
+
+//	@Override
+//	public IStrategoTerm invoke(Context context, IStrategoTerm current,
+//			IStrategoTerm t1, IStrategoTerm t2) {
+//		context.getIOAgent().printError(
+//				"Input for parse-pt: " + current + " and parameters " + t1 + "\n" + t2);
+//
+//		ITermFactory factory = context.getFactory();
+//		
+//		if (!Tools.isTermInt(current))
+//			return factory.makeString("failed");
+//		
+//		String text;
+//		try {
+//			text = readFile(context.getIOAgent(), Tools.asJavaInt(current)).trim();
+//		} catch (IOException e) {
+//			// FIXME add more structure;
+//			IStrategoTerm errorTerm = context.getFactory().makeString(e.getMessage());
+//			return errorTerm;
+//		}
+//		
+//		try {
+//			ParseTable table = new ParseTable(t1, factory);
+//			SGLR parser = new SGLR(new Asfix2TreeBuilder(factory), table);
+//			String path = Tools.asJavaString(t2);
+//			context.getIOAgent().printError("to parse " + text + " in path " + path);
+//			return (IStrategoTerm) parser.parse(text);
+//
+//			
+//
+//		} catch (InvalidParseTableException | SGLRException | InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			return factory.makeString("Exception Thrown");
+//
+//		}
+//
+//	}
+//	
+//	private String readFile(IOAgent io, int fd) throws IOException {
+//		BufferedReader br = new BufferedReader(io.getReader(fd));
+//		StringBuilder sb = new StringBuilder();
+//		do {
+//			sb.append(br.readLine());
+//			sb.append('\n');
+//		} while(br.ready());
+//		return sb.toString();
+//	}
 
 }

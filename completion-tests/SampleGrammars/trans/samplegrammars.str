@@ -21,9 +21,9 @@ imports
 	generate
 	pp
 
-rules	
-	external parse-to-pt(|parse-table, path)
-	external java-strategy(|)
+//rules	
+	//external parse-to-pt(|parse-table, path)
+	// java-strategy(|)
 
 rules // Analysis
 	
@@ -85,13 +85,13 @@ rules // Debugging
 			filename := <guarantee-extension(|"aterm")> path;
 			result	 := selected
 			
-	show-pt:
-		(selected, position, ast, path, project-path) -> (filename, result)
-		with
-			filename := <guarantee-extension(|"pt.aterm")> path;
-			parse-table := <import-term(include/SampleGrammars.tbl)>;
-			fd := <fopen> (path, "r");
-			result   := <?Stream(<id>); parse-to-pt(|parse-table, path)> fd
+//	show-pt:
+//		(selected, position, ast, path, project-path) -> (filename, result)
+//		with
+//			filename := <guarantee-extension(|"pt.aterm")> path;
+//			parse-table := <import-term(include/SampleGrammars.tbl)>;
+//			fd := <fopen> (path, "r");
+//			result   := <?Stream(<id>); parse-to-pt(|parse-table, path)> fd
 			//result   := <parsept(|<import-term(include/SampleGrammars.tbl)>)> path
 					
 			
