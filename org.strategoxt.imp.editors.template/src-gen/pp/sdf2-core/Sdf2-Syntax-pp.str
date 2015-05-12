@@ -3,6 +3,7 @@ module src-gen/pp/sdf2-core/Sdf2-Syntax-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/sdf2-core/Sdf2-Syntax-sig
 
 
@@ -66,7 +67,7 @@ strategies
     ?FileStart()
 
   prettyprint-Grammar :
-    LexicalPriorities(t0__) -> [ H(
+    LexicalPriorities(t1__) -> [ H(
                                    [SOpt(HS(), "0")]
                                  , [S("lexical priorities")]
                                  )
@@ -74,19 +75,19 @@ strategies
                                    []
                                  , [S("")]
                                  )
-                               , t0__'
+                               , t1__'
                                , H(
                                    []
                                  , [S("")]
                                  )
                                ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t1__]
 
   is-Grammar =
     ?LexicalPriorities(_)
 
   prettyprint-Grammar :
-    ContextFreePriorities(t0__) -> [ H(
+    ContextFreePriorities(t1__) -> [ H(
                                        [SOpt(HS(), "0")]
                                      , [S("context-free priorities")]
                                      )
@@ -94,19 +95,19 @@ strategies
                                        []
                                      , [S("")]
                                      )
-                                   , t0__'
+                                   , t1__'
                                    , H(
                                        []
                                      , [S("")]
                                      )
                                    ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t1__]
 
   is-Grammar =
     ?ContextFreePriorities(_)
 
   prettyprint-Grammar :
-    LexicalRestrictions(t0__) -> [ H(
+    LexicalRestrictions(t1__) -> [ H(
                                      [SOpt(HS(), "0")]
                                    , [S("lexical restrictions")]
                                    )
@@ -114,19 +115,19 @@ strategies
                                      []
                                    , [S("")]
                                    )
-                                 , t0__'
+                                 , t1__'
                                  , H(
                                      []
                                    , [S("")]
                                    )
                                  ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t1__]
 
   is-Grammar =
     ?LexicalRestrictions(_)
 
   prettyprint-Grammar :
-    ContextFreeRestrictions(t0__) -> [ H(
+    ContextFreeRestrictions(t1__) -> [ H(
                                          [SOpt(HS(), "0")]
                                        , [S("context-free restrictions")]
                                        )
@@ -134,13 +135,13 @@ strategies
                                          []
                                        , [S("")]
                                        )
-                                     , t0__'
+                                     , t1__'
                                      , H(
                                          []
                                        , [S("")]
                                        )
                                      ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t1__]
 
   is-Grammar =
     ?ContextFreeRestrictions(_)
@@ -150,3 +151,9 @@ strategies
 
   is-Grammar =
     fail
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h

@@ -245,8 +245,6 @@ imports
 		result := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> normalized;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf")> mn
         
-        
-          			
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
@@ -255,6 +253,25 @@ imports
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf3")> mn;
 		result   := <to-normal-form-all; pp-SDF3-string> selected	
+  
+  generate-item-sets:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		task-setup(|project-path);
+		index-setup(|<language>, project-path);
+		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		filename := <create-src-gen(|project-path, "parse-table",  "-item-sets.aterm")> mn;
+		result   := <to-item-sets <+ debug(!"Grammar is not normalized "); fail> selected
+  
+  generate-parse-table:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with
+  		task-setup(|project-path);
+		index-setup(|<language>, project-path);
+		<?Module(Unparameterized(mn), i*, sections)> ast ;
+  		filename := <create-src-gen(|project-path, "parse-table",  "-item-sets.aterm")> mn;
+		result   := <to-parse-table <+ debug(!"Grammar is not normalized "); fail > selected
+  
   
   // On-save handler
   generate-all:

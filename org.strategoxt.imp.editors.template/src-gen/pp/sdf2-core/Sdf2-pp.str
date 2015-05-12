@@ -3,6 +3,7 @@ module src-gen/pp/sdf2-core/Sdf2-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/sdf2-core/Sdf2-sig
 
 
@@ -22,3 +23,8 @@ imports
   src-gen/pp/priority/Priority-pp
   src-gen/pp/characterclass/Character-pp
   src-gen/pp/modules/Modules-pp
+
+
+strategies
+  prettyprint-SDF-start-symbols =
+    prettyprint-Module

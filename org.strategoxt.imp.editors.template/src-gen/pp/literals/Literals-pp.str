@@ -3,6 +3,7 @@ module src-gen/pp/literals/Literals-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/literals/Literals-sig
 
 
@@ -30,6 +31,12 @@ strategies
 
   prettyprint-example =
     prettyprint-SingleQuotedStrCon
+
+  prettyprint-SingleQuotedStrChar :
+    amb([h|hs]) -> <prettyprint-SingleQuotedStrChar> h
+
+  prettyprint-SingleQuotedStrCon :
+    amb([h|hs]) -> <prettyprint-SingleQuotedStrCon> h
 
 
 strategies
@@ -61,6 +68,9 @@ strategies
   is-FunctionName =
     fail
 
+  prettyprint-FunctionName :
+    amb([h|hs]) -> <prettyprint-FunctionName> h
+
 
 strategies
   prettyprint-example =
@@ -90,3 +100,6 @@ strategies
 
   is-Symbol =
     fail
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h

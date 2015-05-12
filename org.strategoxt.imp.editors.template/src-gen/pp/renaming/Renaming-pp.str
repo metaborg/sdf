@@ -3,6 +3,7 @@ module src-gen/pp/renaming/Renaming-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/renaming/Renaming-sig
 
 
@@ -66,3 +67,9 @@ strategies
 
   is-Renaming =
     fail
+
+  prettyprint-Renamings :
+    amb([h|hs]) -> <prettyprint-Renamings> h
+
+  prettyprint-Renaming :
+    amb([h|hs]) -> <prettyprint-Renaming> h

@@ -1,0 +1,67 @@
+module to-parse-table
+
+imports
+	include/TemplateLang
+	libstratego-sglr
+	libstratego-lib
+    libstratego-gpp
+signature 
+	constructors
+	
+	ItemSets : List(ItemSet) -> ItemSets
+	ItemSet  : List(Item) -> ItemSet
+	Item : List(Symbol) * List(Symbol) * Symbol * SdfProduction -> Item
+	
+// are theses constructors in some stratego library?	
+// TODO: Define a syntax definition for the parse-table
+signature
+   constructors	
+   
+   parse-table  : version * initialState * List(Label) * states * priorities -> ParseTable
+   states       : List(State) -> States
+   priorities   : List * Priorities -> Priorities
+   arg-gtr-prio : Label * Arg * Label -> arg-gtr-prio
+   grt-prio     : Label * Label -> arg-gtr-prio
+   
+	
+rules
+	
+	to-parse-table:
+		m@Module(Unparameterized(mn), [], sections*) -> parse-table(version, initialstate, labels*, states, priorities(priorities'))
+		with
+			version := 6 ; //maybe 7, then?
+			initialstate := 0;
+			productions* := <get-normalized-productions> sections*;
+			labels*      := <map(create-label)> productions*;
+			item-sets*   := <to-item-sets> m;
+			states      := <create-states> item-sets*;
+			priorities   := <get-normalized-priorities> sections*;
+			priorities'  := <map(priority-to-label)> priorities
+			
+	
+	create-label:
+		prod@SdfProduction(symbol, rhs*, attrs*) -> label(prod, label-num)
+		with
+			prod'     := <prod-to-sdf> prod; //does the production in here need to be in SDF2 format?
+			label-num := <get-next-label>
+	
+	priority-to-label:
+		Chain(priorities*) -> arg-gtr-prio(label1, arg, label2)
+		with
+		priorities'* := <map(chain-to-label)> priorities*
+	
+	chain-to-label:
+		
+			
+	create-states:
+		ItemSets(item-set*) -> states(states*)
+		with
+		states* := <![]>
+	
+	get-normalized-productions = oncetd(?Kernel(prods*)); !prods*
+	get-normalized-priorities  = oncetd(?Priorities(priorities*)); !priorities*
+	
+	to-item-sets:
+		'module(unparameterized(mn), i*, e*) -> ItemSets(items*)
+		with
+			items* := <![]>

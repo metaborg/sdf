@@ -3,6 +3,7 @@ module src-gen/pp/labels/Labels-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/labels/Labels-sig
 
 
@@ -26,35 +27,35 @@ strategies
     prettyprint-Symbol
 
   prettyprint-Label :
-    Quoted(t0__) -> [ H(
+    Quoted(t1__) -> [ H(
                         [SOpt(HS(), "0")]
-                      , [t0__']
+                      , [t1__']
                       )
                     ]
-    with t0__' := <pp-one-Z(prettyprint-StrCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-StrCon)> t1__
 
   is-Label =
     ?Quoted(_)
 
   prettyprint-Label :
-    Unquoted(t0__) -> [ H(
+    Unquoted(t1__) -> [ H(
                           [SOpt(HS(), "0")]
-                        , [t0__']
+                        , [t1__']
                         )
                       ]
-    with t0__' := <pp-one-Z(prettyprint-IdCon)> t0__
+    with t1__' := <pp-one-Z(prettyprint-IdCon)> t1__
 
   is-Label =
     ?Unquoted(_)
 
   prettyprint-Symbol :
-    Label(t0__, t1__) -> [ H(
+    Label(t1__, t2__) -> [ H(
                              [SOpt(HS(), "0")]
-                           , [t0__', S(":"), t1__']
+                           , [t1__', S(":"), t2__']
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-Label)> t0__
-    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
+    with t1__' := <pp-one-Z(prettyprint-Label)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Symbol)> t2__
 
   is-Symbol =
     ?Label(_, _)
@@ -64,3 +65,9 @@ strategies
 
   is-Symbol =
     fail
+
+  prettyprint-Label :
+    amb([h|hs]) -> <prettyprint-Label> h
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h

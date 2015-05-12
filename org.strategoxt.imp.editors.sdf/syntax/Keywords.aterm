@@ -1,0 +1,99 @@
+module(
+  unparameterized("Keywords")
+, [imports([module(unparameterized("languages/sdf2/syntax/Sdf2"))])]
+, [ exports(
+      context-free-syntax(
+        [ prod(
+            [sort("Constructor")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("cons"), [fun(quoted("\"Constructor\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"recover\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(fun(unquoted(\\\"recover\\\"))))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"completion\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(fun(unquoted(\\\"completion\\\"))))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"incremental\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(fun(unquoted(\\\"incremental\\\"))))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"deprecated\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(fun(unquoted(\\\"deprecated\\\"))))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"deprecated\""), lit("\"(\""), sort("StrCon"), lit("\")\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(appl(unquoted(\\\"deprecated\\\"), [fun(quoted(<1>))])))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"ast\""), lit("\"(\""), sort("StrCon"), lit("\")\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(appl(unquoted(\\\"ast\\\"), [fun(quoted(<1>))])))\""))]))
+                )
+              ]
+            )
+          )
+        , prod(
+            [lit("\"cons\""), lit("\"(\""), sort("Constructor"), lit("\")\"")]
+          , sort("Attribute")
+          , attrs(
+              [ prefer()
+              , term(
+                  default(appl(unquoted("ast"), [fun(quoted("\"term(default(appl(unquoted(\\\"cons\\\"), [fun(quoted(<1>))])))\""))]))
+                )
+              ]
+            )
+          )
+        , prod([sort("StrCon")], sort("Constructor"), no-attrs())
+        ]
+      )
+    )
+  ]
+)

@@ -3,6 +3,7 @@ module src-gen/pp/restrictions/Restrictions-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/restrictions/Restrictions-sig
 
 
@@ -43,61 +44,61 @@ strategies
     prettyprint-Attribute
 
   prettyprint-Lookahead :
-    CharClass(t0__) -> [ H(
+    CharClass(t1__) -> [ H(
                            [SOpt(HS(), "0")]
-                         , [t0__']
+                         , [t1__']
                          )
                        ]
-    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
+    with t1__' := <pp-one-Z(prettyprint-CharClass)> t1__
 
   is-Lookahead =
     ?CharClass(_)
 
   prettyprint-Lookahead :
-    Seq(t0__, t1__) -> [ H(
+    Seq(t1__, t2__) -> [ H(
                            [SOpt(HS(), "0")]
-                         , [t0__', S("."), t1__']
+                         , [t1__', S("."), t2__']
                          )
                        ]
-    with t0__' := <pp-one-Z(prettyprint-CharClass)> t0__
-    with t1__' := <pp-one-Z(prettyprint-Lookaheads)> t1__
+    with t1__' := <pp-one-Z(prettyprint-CharClass)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Lookaheads)> t2__
 
   is-Lookahead =
     ?Seq(_, _)
 
   prettyprint-Lookaheads :
-    Single(t0__) -> [ H(
+    Single(t1__) -> [ H(
                         [SOpt(HS(), "0")]
-                      , [t0__']
+                      , [t1__']
                       )
                     ]
-    with t0__' := <pp-one-Z(prettyprint-Lookahead)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Lookahead)> t1__
 
   is-Lookaheads =
     ?Single(_)
 
   prettyprint-Lookaheads :
-    Alt(t0__, t1__) -> [ H(
+    Alt(t1__, t2__) -> [ H(
                            [SOpt(HS(), "0")]
-                         , [t0__', S(" | "), t1__']
+                         , [t1__', S(" | "), t2__']
                          )
                        ]
-    with t0__' := <pp-one-Z(prettyprint-Lookaheads)> t0__
     with t1__' := <pp-one-Z(prettyprint-Lookaheads)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Lookaheads)> t2__
 
   is-Lookaheads =
     ?Alt(_, _)
 
   prettyprint-Lookaheads :
-    Parenthetical(t0__) -> [ H(
+    Parenthetical(t1__) -> [ H(
                                [SOpt(HS(), "0")]
                              , [ S("(")
-                               , t0__'
+                               , t1__'
                                , S(")")
                                ]
                              )
                            ]
-    with t0__' := <pp-one-Z(prettyprint-Lookaheads)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Lookaheads)> t1__
 
   prettyprint-Lookaheads :
     List(list__) -> [ H(
@@ -114,13 +115,13 @@ strategies
     ?List(_)
 
   prettyprint-Restriction :
-    Follow(t0__, t1__) -> [ H(
+    Follow(t1__, t2__) -> [ H(
                               [SOpt(HS(), "0")]
-                            , [t0__', S(" -/- "), t1__']
+                            , [t1__', S(" -/- "), t2__']
                             )
                           ]
-    with t0__' := <pp-one-Z(prettyprint-RestrictionSymbols)> t0__
-    with t1__' := <pp-one-Z(prettyprint-Lookaheads)> t1__
+    with t1__' := <pp-one-Z(prettyprint-RestrictionSymbols)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Lookaheads)> t2__
 
   is-Restriction =
     ?Follow(_, _)
@@ -144,7 +145,7 @@ strategies
     where list__' := <pp-V-list(prettyprint-Restriction)> list__
 
   prettyprint-Grammar :
-    Restrictions(t0__) -> [ H(
+    Restrictions(t1__) -> [ H(
                               [SOpt(HS(), "0")]
                             , [S("restrictions")]
                             )
@@ -152,13 +153,13 @@ strategies
                               []
                             , [S("")]
                             )
-                          , t0__'
+                          , t1__'
                           , H(
                               []
                             , [S("")]
                             )
                           ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Restrictions)> t1__]
 
   is-Grammar =
     ?Restrictions(_)
@@ -213,3 +214,24 @@ strategies
 
   is-Attribute =
     fail
+
+  prettyprint-Lookahead :
+    amb([h|hs]) -> <prettyprint-Lookahead> h
+
+  prettyprint-Lookaheads :
+    amb([h|hs]) -> <prettyprint-Lookaheads> h
+
+  prettyprint-Restriction :
+    amb([h|hs]) -> <prettyprint-Restriction> h
+
+  prettyprint-RestrictionSymbols :
+    amb([h|hs]) -> <prettyprint-RestrictionSymbols> h
+
+  prettyprint-Restrictions :
+    amb([h|hs]) -> <prettyprint-Restrictions> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h
+
+  prettyprint-Attribute :
+    amb([h|hs]) -> <prettyprint-Attribute> h
