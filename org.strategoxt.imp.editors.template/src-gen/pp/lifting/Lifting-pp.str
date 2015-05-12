@@ -3,6 +3,7 @@ module src-gen/pp/lifting/Lifting-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/lifting/Lifting-sig
 
 

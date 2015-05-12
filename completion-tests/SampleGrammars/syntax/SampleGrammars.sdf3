@@ -1,6 +1,6 @@
 module SampleGrammars
 
-imports
+//imports
 	
 //	Common
 	
@@ -32,14 +32,33 @@ imports
 //	Blocks
 	
 //Grammar 1 Kernel 
-	SingleStmKernel	
+//	SingleStmKernel	
 	
 //Grammar 3 Kernel	
 //	ListOfStmKernel
 
-
-context-free start-symbols
+start-symbols
   
   Start
+  
+  
+syntax 
+
+	Start.Expression = E
+	E = "(" E ")" {bracket}
+	E.Minus = "-" E 
+	E.Expon = E "^" E {right} 
+	E.Times = E "*" E {left}
+	E.Plus = E "+" E {assoc}
+	E.Sub = E "-" E
+	E.Name = "a"
+	
+priorities
+	E.Minus
+	> E.Expon
+	> E.Times
+	> {left:
+		E.Plus
+		E.Sub} 
 
 

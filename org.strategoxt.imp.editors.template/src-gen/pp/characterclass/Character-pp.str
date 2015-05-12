@@ -3,6 +3,7 @@ module src-gen/pp/characterclass/Character-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/characterclass/Character-sig
 
 
@@ -19,29 +20,35 @@ strategies
   prettyprint-example =
     prettyprint-ShortChar
 
+  prettyprint-NumChar :
+    amb([h|hs]) -> <prettyprint-NumChar> h
+
+  prettyprint-ShortChar :
+    amb([h|hs]) -> <prettyprint-ShortChar> h
+
 
 strategies
   prettyprint-example =
     prettyprint-Character
 
   prettyprint-Character :
-    Numeric(t0__) -> [ H(
+    Numeric(t1__) -> [ H(
                          [SOpt(HS(), "0")]
-                       , [t0__']
+                       , [t1__']
                        )
                      ]
-    with t0__' := <pp-one-Z(prettyprint-NumChar)> t0__
+    with t1__' := <pp-one-Z(prettyprint-NumChar)> t1__
 
   is-Character =
     ?Numeric(_)
 
   prettyprint-Character :
-    Short(t0__) -> [ H(
+    Short(t1__) -> [ H(
                        [SOpt(HS(), "0")]
-                     , [t0__']
+                     , [t1__']
                      )
                    ]
-    with t0__' := <pp-one-Z(prettyprint-ShortChar)> t0__
+    with t1__' := <pp-one-Z(prettyprint-ShortChar)> t1__
 
   is-Character =
     ?Short(_)
@@ -88,3 +95,6 @@ strategies
 
   is-Character =
     fail
+
+  prettyprint-Character :
+    amb([h|hs]) -> <prettyprint-Character> h

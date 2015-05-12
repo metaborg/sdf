@@ -71,6 +71,14 @@ imports include/SDF
    	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
    	  result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
       <write-string-to-file> (filename, result) 	
+      
+  generate-item-sets:
+  	(selected, position, ast, path, project-path) -> (filename, result)
+  	with  	    
+  		<?'module(unparameterized(mn), i*, e*)> ast;
+  		<check-normalized <+ debug(!"Grammar is not in normal form "); fail> mn;
+  		filename := <create-src-gen(|project-path, "item-sets", ".aterm")> mn;
+  		result   := <grammar-to-item-sets> ast    
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
@@ -166,4 +174,8 @@ imports include/SDF
   		<not(getfirst(?Constructor(_) + ?sdf-cons(_)))> a*;
   		(_, cons) := <getfirst(?(p, _))> productions;
   		prod := prod(symbols*, symbol, attrs([cons, a*]))
+  
+  //TODO: Fix checking if a grammar is in its normal form		
+  check-normalized = is-substring(!"-normalized")
+  			
   		

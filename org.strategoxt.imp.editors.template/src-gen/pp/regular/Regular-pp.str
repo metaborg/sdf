@@ -3,6 +3,7 @@ module src-gen/pp/regular/Regular-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/regular/Regular-sig
 
 
@@ -216,3 +217,12 @@ strategies
 
   is-Symbol =
     fail
+
+  prettyprint-SortSymbol :
+    amb([h|hs]) -> <prettyprint-SortSymbol> h
+
+  prettyprint-Separator :
+    amb([h|hs]) -> <prettyprint-Separator> h
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h

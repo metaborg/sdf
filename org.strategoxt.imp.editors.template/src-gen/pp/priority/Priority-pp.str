@@ -3,6 +3,7 @@ module src-gen/pp/priority/Priority-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/priority/Priority-sig
 
 
@@ -97,12 +98,12 @@ strategies
     ?Bracket()
 
   prettyprint-Attribute :
-    Assoc(t0__) -> [ H(
+    Assoc(t1__) -> [ H(
                        [SOpt(HS(), "0")]
-                     , [t0__']
+                     , [t1__']
                      )
                    ]
-    with t0__' := <pp-one-Z(prettyprint-Associativity)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Associativity)> t1__
 
   is-Attribute =
     ?Assoc(_)
@@ -122,65 +123,65 @@ strategies
     ?Default(_)
 
   prettyprint-Group :
-    WithArguments(t0__, t1__) -> [ H(
+    WithArguments(t1__, t2__) -> [ H(
                                      [SOpt(HS(), "0")]
-                                   , [t0__', S(" "), t1__']
+                                   , [t1__', S(" "), t2__']
                                    )
                                  ]
-    with t0__' := <pp-one-Z(prettyprint-Group)> t0__
-    with t1__' := <pp-one-Z(prettyprint-ArgumentIndicator)> t1__
+    with t1__' := <pp-one-Z(prettyprint-Group)> t1__
+    with t2__' := <pp-one-Z(prettyprint-ArgumentIndicator)> t2__
 
   is-Group =
     ?WithArguments(_, _)
 
   prettyprint-Group :
-    NonTransitive(t0__) -> [ H(
+    NonTransitive(t1__) -> [ H(
                                [SOpt(HS(), "0")]
-                             , [t0__', S(".")]
+                             , [t1__', S(".")]
                              )
                            ]
-    with t0__' := <pp-one-Z(prettyprint-Group)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Group)> t1__
 
   is-Group =
     ?NonTransitive(_)
 
   prettyprint-Group :
-    SimpleGroup(t0__) -> [ H(
+    SimpleGroup(t1__) -> [ H(
                              [SOpt(HS(), "0")]
-                           , [t0__']
+                           , [t1__']
                            )
                          ]
-    with t0__' := <pp-one-Z(prettyprint-PriorityProduction)> t0__
+    with t1__' := <pp-one-Z(prettyprint-PriorityProduction)> t1__
 
   is-Group =
     ?SimpleGroup(_)
 
   prettyprint-Group :
-    ProdsGroup(t0__) -> [ H(
+    ProdsGroup(t1__) -> [ H(
                             [SOpt(HS(), "0")]
                           , [ S("{")
-                            , t0__'
+                            , t1__'
                             , S("}")
                             ]
                           )
                         ]
-    with t0__' := <pp-one-Z(prettyprint-PriorityProductions)> t0__
+    with t1__' := <pp-one-Z(prettyprint-PriorityProductions)> t1__
 
   is-Group =
     ?ProdsGroup(_)
 
   prettyprint-Group :
-    AssocGroup(t0__, t1__) -> [ H(
+    AssocGroup(t1__, t2__) -> [ H(
                                   [SOpt(HS(), "0")]
                                 , [ S("{")
-                                  , t0__'
+                                  , t1__'
                                   , S(":")
                                   ]
                                 )
-                              , t1__'
+                              , t2__'
                               ]
-    with t0__' := <pp-one-Z(prettyprint-Associativity)> t0__
-    with t1__' := <pp-indent(|"2")> [ <pp-one-Z(prettyprint-PriorityProductions)> t1__
+    with t1__' := <pp-one-Z(prettyprint-Associativity)> t1__
+    with t2__' := <pp-indent(|"2")> [ <pp-one-Z(prettyprint-PriorityProductions)> t2__
                                     , S("}")
                                     ]
 
@@ -188,22 +189,22 @@ strategies
     ?AssocGroup(_, _)
 
   prettyprint-PriorityProduction :
-    t0__ -> [ H(
+    t1__ -> [ H(
                 [SOpt(HS(), "0")]
-              , [t0__']
+              , [t1__']
               )
             ]
     where not(is-PriorityProduction)
-    where t0__' := <pp-one-Z(prettyprint-SdfProduction)> t0__
+    where t1__' := <pp-one-Z(prettyprint-SdfProduction)> t1__
 
   prettyprint-PriorityProduction :
-    t0__ -> [ H(
+    t1__ -> [ H(
                 [SOpt(HS(), "0")]
-              , [t0__']
+              , [t1__']
               )
             ]
     where not(is-PriorityProduction)
-    where t0__' := <pp-one-Z(prettyprint-Production)> t0__
+    where t1__' := <pp-one-Z(prettyprint-Production)> t1__
 
   prettyprint-PriorityProductions :
     list__ -> [ H(
@@ -226,19 +227,19 @@ strategies
     ?Chain(_)
 
   prettyprint-Priority :
-    Assoc(t0__, t1__, t2__) -> [ H(
+    Assoc(t1__, t2__, t3__) -> [ H(
                                    [SOpt(HS(), "0")]
-                                 , [ t0__'
-                                   , S(" ")
-                                   , t1__'
+                                 , [ t1__'
                                    , S(" ")
                                    , t2__'
+                                   , S(" ")
+                                   , t3__'
                                    ]
                                  )
                                ]
-    with t0__' := <pp-one-Z(prettyprint-Group)> t0__
-    with t1__' := <pp-one-Z(prettyprint-Associativity)> t1__
-    with t2__' := <pp-one-Z(prettyprint-Group)> t2__
+    with t1__' := <pp-one-Z(prettyprint-Group)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Associativity)> t2__
+    with t3__' := <pp-one-Z(prettyprint-Group)> t3__
 
   is-Priority =
     ?Assoc(_, _, _)
@@ -253,7 +254,7 @@ strategies
     where list__' := <pp-V-list(prettyprint-Priority|"0", ",")> list__
 
   prettyprint-Grammar :
-    Priorities(t0__) -> [ H(
+    Priorities(t1__) -> [ H(
                             [SOpt(HS(), "0")]
                           , [S("priorities")]
                           )
@@ -261,13 +262,13 @@ strategies
                             []
                           , [S("")]
                           )
-                        , t0__'
+                        , t1__'
                         , H(
                             []
                           , [S("")]
                           )
                         ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Priorities)> t1__]
 
   is-Grammar =
     ?Priorities(_)
@@ -298,3 +299,30 @@ strategies
 
   is-Grammar =
     fail
+
+  prettyprint-Associativity :
+    amb([h|hs]) -> <prettyprint-Associativity> h
+
+  prettyprint-Attribute :
+    amb([h|hs]) -> <prettyprint-Attribute> h
+
+  prettyprint-ArgumentIndicator :
+    amb([h|hs]) -> <prettyprint-ArgumentIndicator> h
+
+  prettyprint-Group :
+    amb([h|hs]) -> <prettyprint-Group> h
+
+  prettyprint-PriorityProduction :
+    amb([h|hs]) -> <prettyprint-PriorityProduction> h
+
+  prettyprint-PriorityProductions :
+    amb([h|hs]) -> <prettyprint-PriorityProductions> h
+
+  prettyprint-Priority :
+    amb([h|hs]) -> <prettyprint-Priority> h
+
+  prettyprint-Priorities :
+    amb([h|hs]) -> <prettyprint-Priorities> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h

@@ -39,3 +39,6 @@ rules
   */
   construct-textual-change = construct-textual-change(pp-partial-SampleGrammars-string, parenthesize, override-reconstruction, resugar)
 
+prettyprint-example = fail
+prettyprint-SDF-start-symbols = fail
+prettyprint-Start = fail

@@ -6,6 +6,7 @@ imports
 
 overlays
   sdf-cons(x) = term(default(appl(unquoted("cons"), [fun(quoted(x))]))) 
+  sdf-cons-norm(x) = default(appl(unquoted("cons"),[[fun(quoted(x))]]))
 
 rules
 
@@ -139,14 +140,67 @@ rules
   section-to-sdf3:
   	lexical-priorities(priorities*) -> SDFSection(LexicalPriorities(priorities'*))
   	with
-  		priorities'* := <map(priority-to-sdf3)> priorities*
+  		priorities'* := <map(regular-priority-to-sdf3)> priorities*
   
   //kernel priorities
   section-to-sdf3:
   	priorities(priorities*) -> SDFSection(Priorities(priorities'*))
   	with
-  		priorities'* := <map(priority-to-sdf3)> priorities*
+  		priorities'* := <map(regular-priority-to-sdf3)> priorities*
+  		
+  regular-priority-to-sdf3:
+  	chain(groups) -> Chain(groups')
+  	with
+  		groups' := <map(regular-group-to-sdf3 <+ term-translation)> groups
+  
+  regular-priority-to-sdf3:
+  	assoc(gr1, associativity, gr2) -> Assoc(gr1', associativity', gr2')
+  	with
+  		gr1' := <regular-group-to-sdf3 <+ term-translation> gr1;
+  		associativity' := <term-translation> associativity;
+  		gr2' := <regular-group-to-sdf3 <+ term-translation> gr2			
  
+  regular-group-to-sdf3:
+    simple-group(prod) -> SimpleGroup(prod')
+    where
+    	prod' := <regular-priority-prod-to-sdf3> prod
+  
+  regular-group-to-sdf3:
+    prods-group(prods) -> ProdsGroup(prods')
+    with
+    	prods' := <filter(regular-priority-prod-to-sdf3)> prods
+    
+  regular-group-to-sdf3:
+    assoc-group(a, prods) -> AssocGroup(a', prods')
+    with
+    	a' := <term-translation> a;
+    	prods' := <filter(regular-priority-prod-to-sdf3)> prods
+    	
+  regular-group-to-sdf3:
+    with-arguments(group, arg) -> WithArguments(group', arg') 
+    with
+        arg' := <term-translation> arg;
+        group' := <regular-group-to-sdf3> group  
+        
+  regular-group-to-sdf3:
+     non-transitive(group) -> NonTransitive(group')
+    with
+        group' := <regular-group-to-sdf3> group  
+ 
+ 
+   //is this true? remove the constructors?
+  regular-priority-prod-to-sdf3 :
+  	prod(symbols*, Symbol, attrs) -> <term-translation> result
+  	with
+  	    debug(!"here ") ;
+  	    a* := <?attrs(<id>) <+ ![]> attrs;
+  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
+  		p* := <collect-om(new-prods)> symbols*;
+   		a'* := <remove-all(?sdf-cons(_) + ?sdf-cons-norm(_) + ?Constructor(_))> a* ;
+   		result := SdfProduction(Symbol, Rhs(symbols'*), Attrs(a*)) 
+   		; debug(!"result ")
+  	
+  
   priority-to-sdf3:
   	chain(groups) -> Chain(groups')
   	with
@@ -287,6 +341,7 @@ rules
   	where
   		not(<?sort(s) + ?cf(sort(s)) + ?lex(sort(s))> symbol)
   	with
+  	    debug(!"regular symbol production" ); 
   		a* := <?attrs(<id>) <+ ![]> attrs;
   		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
   		symbol' := <symbol-to-sdf3> symbol;
@@ -459,6 +514,11 @@ rules
   	
  lift-constr: 		
  	sdf-cons(c) ->  Constructor(<un-double-quote; try(to-first-upper)> c)
+ 	
+ lift-constr:
+ 	sdf-cons-norm(c) -> 	Constructor(<un-double-quote; try(to-first-upper)> c)
+ 	
+ 	
  	
  to-first-upper:
  	name -> name'

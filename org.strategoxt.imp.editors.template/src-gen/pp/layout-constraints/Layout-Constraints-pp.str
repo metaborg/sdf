@@ -3,6 +3,7 @@ module src-gen/pp/layout-constraints/Layout-Constraints-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/layout-constraints/Layout-Constraints-sig
 
 
@@ -20,6 +21,9 @@ strategies
 
   prettyprint-example =
     prettyprint-LayoutVar
+
+  prettyprint-LayoutVar :
+    amb([h|hs]) -> <prettyprint-LayoutVar> h
 
 
 strategies
@@ -321,3 +325,9 @@ strategies
 
   is-Constraint =
     fail
+
+  prettyprint-Attribute :
+    amb([h|hs]) -> <prettyprint-Attribute> h
+
+  prettyprint-Constraint :
+    amb([h|hs]) -> <prettyprint-Constraint> h
