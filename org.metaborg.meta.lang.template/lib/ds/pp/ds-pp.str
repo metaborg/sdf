@@ -93,7 +93,7 @@ strategies
   ds-prettyprint-Rule :
     Axiom(t1__) -> [ H(
                        [SOpt(HS(), "0")]
-                     , [t1__']
+                     , [t1__', S(".")]
                      )
                    ]
     with t1__' := <pp-one-Z(ds-prettyprint-Formula)> t1__
@@ -115,7 +115,7 @@ strategies
                                 , [t3__']
                                 )
                               ]
-    with t1__' := <pp-V-list(ds-prettyprint-Premise|"0", ",")> t1__
+    with t1__' := <pp-V-list(ds-prettyprint-Premise|"0", ";")> t1__
     with t2__' := <pp-one-Z(ds-prettyprint-INFER)> t2__
     with t3__' := <pp-one-Z(ds-prettyprint-Relation)> t3__
 
@@ -134,7 +134,8 @@ strategies
                          , t2__'
                          ]
     with t1__' := <pp-one-Z(ds-prettyprint-Relation)> t1__
-    with t2__' := <pp-indent(|"2")> [ <pp-V-list(ds-prettyprint-Premise|"0", ",")> t2__
+    with t2__' := <pp-indent(|"2")> [ <pp-V-list(ds-prettyprint-Premise|"0", ";")> t2__
+                                    , S(".")
                                     ]
 
   is-Rule =
@@ -169,7 +170,7 @@ strategies
                           , t1__'
                           , t2__'
                           ]
-    with t1__' := <pp-indent(|"4")> [ <pp-V-list(ds-prettyprint-Premise|"0", ",")> t1__
+    with t1__' := <pp-indent(|"4")> [ <pp-V-list(ds-prettyprint-Premise|"0", ";")> t1__
                                     ]
     with t2__' := <pp-indent(|"2")> [S("}")]
 
@@ -379,7 +380,7 @@ strategies
                      , [t1__', S(" |- ")]
                      )
                    ]
-    with t1__' := <pp-H-list(ds-prettyprint-LabelComp|" ")> t1__
+    with t1__' := <pp-H-list(ds-prettyprint-LabelComp|", ")> t1__
 
   is-Reads =
     ?Reads(_)
@@ -402,7 +403,7 @@ strategies
                             )
                           ]
     with t1__' := <pp-one-Z(ds-prettyprint-Term)> t1__
-    with t2__' := <pp-H-list(ds-prettyprint-LabelComp|" ")> t2__
+    with t2__' := <pp-H-list(ds-prettyprint-LabelComp|", ")> t2__
 
   is-Source =
     ?Source(_, _)
@@ -421,15 +422,11 @@ strategies
   ds-prettyprint-Target :
     Target(t1__, t2__) -> [ H(
                               [SOpt(HS(), "0")]
-                            , [ t1__'
-                              , S(" :: ")
-                              , t2__'
-                              , S(".")
-                              ]
+                            , [t1__', S(" :: "), t2__']
                             )
                           ]
     with t1__' := <pp-one-Z(ds-prettyprint-Term)> t1__
-    with t2__' := <pp-H-list(ds-prettyprint-LabelComp|" ")> t2__
+    with t2__' := <pp-H-list(ds-prettyprint-LabelComp|", ")> t2__
 
   is-Target =
     ?Target(_, _)
@@ -459,28 +456,11 @@ strategies
     ?NamedDynamic(_)
 
   ds-prettyprint-Rel :
-    NamedDynamicParametric(t1__, t2__) -> [ H(
-                                              [SOpt(HS(), "0")]
-                                            , [ S("-")
-                                              , t1__'
-                                              , S("(")
-                                              , t2__'
-                                              , S(")->")
-                                              ]
-                                            )
-                                          ]
-    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
-    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
-
-  is-Rel =
-    ?NamedDynamicParametric(_, _)
-
-  ds-prettyprint-Rel :
     DynamicEmitted(t1__) -> [ H(
                                 [SOpt(HS(), "0")]
                               , [ S("-")
                                 , t1__'
-                                , S("->")
+                                , S("-->")
                                 ]
                               )
                             ]
@@ -506,26 +486,6 @@ strategies
   is-Rel =
     ?NamedDynamicEmitted(_, _)
 
-  ds-prettyprint-Rel :
-    NamedDynamicEmittedParametric(t1__, t2__, t3__) -> [ H(
-                                                           [SOpt(HS(), "0")]
-                                                         , [ S("-")
-                                                           , t1__'
-                                                           , S("-")
-                                                           , t2__'
-                                                           , S("(")
-                                                           , t3__'
-                                                           , S(")->")
-                                                           ]
-                                                         )
-                                                       ]
-    with t1__' := <pp-H-list(ds-prettyprint-LabelComp|", ")> t1__
-    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
-    with t3__' := <pp-one-Z(ds-prettyprint-ID)> t3__
-
-  is-Rel =
-    ?NamedDynamicEmittedParametric(_, _, _)
-
   ds-prettyprint-LabelComp :
     LabelComp(t1__, t2__) -> [ H(
                                  [SOpt(HS(), "0")]
@@ -537,6 +497,17 @@ strategies
 
   is-LabelComp =
     ?LabelComp(_, _)
+
+  ds-prettyprint-LabelComp :
+    VarLabelComp(t1__) -> [ H(
+                              [SOpt(HS(), "0")]
+                            , [t1__']
+                            )
+                          ]
+    with t1__' := <pp-one-Z(ds-prettyprint-Var)> t1__
+
+  is-LabelComp =
+    ?VarLabelComp(_)
 
   is-Relation =
     fail
@@ -561,11 +532,22 @@ strategies
 
 
 strategies
+  ds-prettyprint-TermCon =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-TermCon
+
+
+strategies
   ds-prettyprint-example =
     ds-prettyprint-Var
 
   ds-prettyprint-example =
     ds-prettyprint-Cast
+
+  ds-prettyprint-example =
+    ds-prettyprint-List
 
   ds-prettyprint-example =
     ds-prettyprint-Entry
@@ -599,7 +581,7 @@ strategies
                           , [t1__', S(" : "), t2__']
                           )
                         ]
-    with t1__' := <pp-one-Z(ds-prettyprint-Var)> t1__
+    with t1__' := <pp-one-Z(ds-prettyprint-Term)> t1__
     with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
 
   is-Cast =
@@ -679,13 +661,13 @@ strategies
                            ]
                          )
                        ]
-    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t1__' := <pp-one-Z(ds-prettyprint-TermCon)> t1__
     with t2__' := <pp-H-list(ds-prettyprint-Term|", ")> t2__
 
   is-Term =
     ?Con(_, _)
 
-  ds-prettyprint-Term :
+  ds-prettyprint-List :
     List(t1__) -> [ H(
                       [SOpt(HS(), "0")]
                     , [ S("[ ")
@@ -696,10 +678,10 @@ strategies
                   ]
     with t1__' := <pp-H-list(ds-prettyprint-Term|", ")> t1__
 
-  is-Term =
+  is-List =
     ?List(_)
 
-  ds-prettyprint-Term :
+  ds-prettyprint-List :
     ListTail(t1__, t2__) -> [ H(
                                 [SOpt(HS(), "0")]
                               , [ S("[ ")
@@ -713,8 +695,17 @@ strategies
     with t1__' := <pp-H-list(ds-prettyprint-Term|", ")> t1__
     with t2__' := <pp-one-Z(ds-prettyprint-Term)> t2__
 
-  is-Term =
+  is-List =
     ?ListTail(_, _)
+
+  ds-prettyprint-Term :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-Term)
+    where t1__' := <pp-one-Z(ds-prettyprint-List)> t1__
 
   ds-prettyprint-Term :
     Fresh() -> [ H(
@@ -858,6 +849,9 @@ strategies
     fail
 
   is-Cast =
+    fail
+
+  is-List =
     fail
 
   is-Entry =
