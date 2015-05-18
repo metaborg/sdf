@@ -17,7 +17,7 @@ rules
 	module-to-sig:
 		Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, s'])
 		with
-			m'  := <conc-strings> ("src-gen/", "signatures/", m, "-sig")
+			m'  := <conc-strings> ("signatures/", m, "-sig")
 		; is* := <map(to-str-import(|"-sig", "signatures"))> i*
 	  ; s'  := Signature(<filter(section-to-sig)> s*)
  

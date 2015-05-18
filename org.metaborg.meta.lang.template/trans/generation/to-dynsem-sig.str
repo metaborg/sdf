@@ -20,10 +20,10 @@ rules
 	
 	module-to-ds-sig:
 		Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([signatures*])])
-		with
-			m'  := <conc-strings> ("src-gen/", "ds-signatures/", m, "-sig")
-		;   is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*
-        ;   signatures* := <filter(section-to-ds-sig)> s*
+	with
+	  m'  := <conc-strings> ("ds-signatures", m, "-sig")
+	; is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*
+	; signatures* := <filter(section-to-ds-sig)> s*
             
             
     collect-sorts = ?TemplateProduction(SortDef(<id>),_,_) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _) <+ ?SdfProduction(SortDef(<id>),_,_) <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
@@ -71,13 +71,15 @@ rules
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
     	
-        
     cons-to-ds-decl:
-    Constructor(c) -> ConsDecl(c, rhs*, sort)
+    Constructor(c) -> ds-decl
     with
       	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
       	sort := SimpleSort(sort-type);
-        rhs* := <map(get-sort-name)> rhs-type*
+        rhs* := <map(get-sort-name)> rhs-type*;
+        ( !rhs* => []
+        < !NullaryConsDecl(c, sort, NoAnnos())
+        + !ConsDecl(c, rhs*, sort, NoAnnos())) => ds-decl
     
     get-sort-name:     
     ConstType(SortNoArgs(t)) -> SimpleSort(t)
@@ -86,4 +88,4 @@ rules
     ConstType(Sort("List",[SortNoArgs(s)])) -> ListSort(SimpleSort(s))
     
     check-fun-type: FunType([], t) -> t
-    	    
+ 

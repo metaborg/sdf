@@ -18,6 +18,10 @@ language General properties
   provider : include/templatelang.ctree
   provider : include/templatelang-java.jar
   
+  EditorService sources : src-gen
+  Stratego sources      : src-gen
+  SDF sources           : src-gen/syntax
+  ds sources            : src-gen
 
   observer : editor-analyze (multifile)
   on save : editor-save

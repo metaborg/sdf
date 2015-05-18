@@ -4,8 +4,8 @@ imports
 
 	libstratego-gpp
 	lib/runtime/refactoring/-
-	src-gen/pp/TemplateLang-pp
-	src-gen/pp/modules/Modules-pp
+	pp/TemplateLang-pp
+	pp/modules/Modules-pp
 	
 
 rules
