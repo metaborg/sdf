@@ -1,0 +1,200 @@
+module EmbeddedSDF3[E]
+imports
+  TemplateLang
+
+exports
+
+%% Quotations
+ 
+  context-free syntax
+
+        "|[" Module "]|" -> E {cons("ToTerm")}
+    "m" "|[" Module "]|" -> E {cons("ToTerm")}
+    "Mn" "|[" ModuleName "]|" -> E {cons("ToTerm")}
+
+    "i" "|[" Import "]|" -> E {cons("ToTerm")}
+
+        "|[" Section  "]|" -> E {cons("ToTerm")}
+    "s" "|[" Section  "]|" -> E {cons("ToTerm")}
+
+    "is" "|[" ImpSection "]|" -> E {cons("ToTerm")}
+
+        "|[" Attributes "]|" -> E {cons("ToTerm")}
+    "$" "|[" Attributes "]|" -> E {cons("ToTerm")}
+
+       	"|[" SdfProduction  "]|" -> E {cons("ToTerm")}
+    "p" "|[" SdfProduction  "]|" -> E {cons("ToTerm")}
+    
+        "|[" TemplateProduction  "]|" -> E {cons("ToTerm")}
+    "t" "|[" TemplateProduction  "]|" -> E {cons("ToTerm")}    	
+    
+        "|[" SortCons  "]|" -> E {cons("ToTerm")}
+    "sc" "|[" SortCons  "]|" -> E {cons("ToTerm")}   
+    
+        "|[" Restriction "]|" -> E {cons("ToTerm")}
+    "r" "|[" Restriction "]|" -> E {cons("ToTerm")}
+    
+        "|[" Placeholder  "]|" -> E {cons("ToTerm")}
+    "pl" "|[" Placeholder  "]|" -> E {cons("ToTerm")}
+    
+        "|[" Group  "]|" -> E {cons("ToTerm")}
+    "g" "|[" Group  "]|" -> E {cons("ToTerm")}    	
+
+         "|[" Symbol      "]|" -> E {cons("ToTerm")}
+    "A"  "|[" Symbol      "]|" -> E {cons("ToTerm")}
+
+    "cc" "|[" CharClass "]|" -> E {cons("ToTerm")}
+
+%% Anti Quotations
+    
+  context-free syntax  
+    "~"     E -> Symbol {cons("FromTerm")}
+    "~sym:" E -> Symbol {cons("FromTerm")}
+    "~syms:" E -> Symbols {cons("FromTerm")}
+    
+    "~"         E -> ModuleName {cons("FromTerm")}
+    "~modName:" E -> ModuleName {cons("FromTerm")}
+    
+    "~"        E -> Import {cons("FromTerm")}
+    "~import:" E -> Import {cons("FromTerm")}
+    
+    "~"        E -> ImpSection {cons("FromTerm")}
+    "~impSec:" E -> ImpSection {cons("FromTerm")}
+    "~impSec*:" E -> ImpSection* {cons("FromTerm")}
+        
+    "~"        E -> Section {cons("FromTerm")}
+    "~sec:"    E -> Section {cons("FromTerm")}
+    
+     "~sec*:"    E -> Section* {cons("FromTerm")}
+    
+    "~"         E -> SdfProduction {cons("FromTerm")}
+    "~prod:"    E -> SdfProduction {cons("FromTerm")}
+    
+     "~"         E -> TemplateProduction {cons("FromTerm")}
+    "~tmpl:"     E -> TemplateProduction {cons("FromTerm")}
+    
+    "~"        E -> Placeholder {cons("FromTerm")}
+    "~pl:"     E -> Placeholder {cons("FromTerm")}
+    
+    "~"        E -> SortCons {cons("FromTerm")}
+    "~sc:"     E -> Sortcons {cons("FromTerm")}
+    
+    
+    
+%% Variables for Symbols    
+
+  variables
+    SymbolMetaVar      -> Symbol
+    SymbolMetaVar "*"  -> Symbol*
+    SymbolMetaVar "+"  -> Symbol+
+
+    SymbolMetaVar "*"  -> {Symbol ","}*
+    SymbolMetaVar "+"  -> {Symbol ","}+
+
+  lexical syntax
+    [ABC][0-9\']* -> SymbolMetaVar
+    SymbolMetaVar -> MetaVar
+
+  lexical restrictions
+    SymbolMetaVar -/- [A-Za-z0-9\']
+
+
+%%%
+ %% Productions and attributes
+ %%%
+
+  variables
+    "attr" [0-9\']*     -> Attribute
+    "attr" [0-9\']* "*" -> {Attribute ","}*
+    "attr" [0-9\']* "+" -> {Attribute ","}+
+    "attrs" [0-9\']*        -> Attributes
+
+    "p" [0-9\']*     -> SdfProduction
+    "p" [0-9\']* "*" -> SdfProduction*
+    "p" [0-9\']* "+" -> SdfProduction+
+    
+    "tmpl" [0-9\']*     -> TemplateProduction
+    "tmpl" [0-9\']* "*" -> TemplateProduction*
+    "tmpl" [0-9\']* "+" -> TemplateProduction+
+
+%%%
+ %% Sorts and placeholders
+ %%%
+
+  variables
+     SortMetaVar -> Sort
+     PlaceHolderMetaVar -> Placeholder
+
+  lexical syntax
+    "S" [0-9\']* -> SortMetaVar
+    "PL" [0-9\']* -> PlaceHolderMetaVar
+    SortMetaVar -> MetaVar
+    PlaceHolderMetaVar -> MetaVar
+
+  lexical restrictions
+    SortMetaVar -/- [A-Za-z0-9\']
+
+%%%
+ %% CharClass
+ %%%
+
+  variables
+    "cc" [0-9\']* -> CharClass {prefer}
+
+
+%%%
+ %% Groups and priorities
+ %%%
+
+  variables 
+    "g" [0-9\']*      -> Group
+    "gg" [0-9\']* "*" -> {Group ">"}*
+    "gg" [0-9\']* "+" -> {Group ">"}+
+
+    "pr" [0-9\']*     -> Priority
+    "pr" [0-9\']* "*" -> {Priority ","}*
+    "pr" [0-9\']* "+" -> {Priority ","}+
+
+    AssocMetaVar -> Associativity
+
+  lexical syntax
+    "as" [0-9\']* -> AssocMetaVar
+
+  lexical restrictions
+    AssocMetaVar -/- [A-Za-z0-9\']
+
+  variables 
+    "restr" [0-9\']*     -> Restriction
+    "restr" [0-9\']* "*" -> Restriction*
+    "restr" [0-9\']* "+" -> Restriction+
+
+  variables
+    "ro" [0-9\']*     -> Renaming
+    "ro" [0-9\']* "*" -> Renaming*
+    "ro" [0-9\']* "+" -> Renaming+
+
+  variables 
+    "al" [0-9\']*     -> Alias
+    "al" [0-9\']* "*" -> Alias*
+    "al" [0-9\']* "+" -> Alias+
+
+  variables 
+    "Mid" [0-9\']* -> ModuleId
+    "M"   [0-9\']* -> ModuleName
+
+    "s" [0-9\']*     -> Section
+    "s" [0-9\']* "*" -> Section*
+    "s" [0-9\']* "+" -> Section+
+
+    "m" [0-9\']*     -> Module
+    "m" [0-9\']* "*" -> Module*
+    "m" [0-9\']* "+" -> Module+
+
+    "d" [0-9\']*     -> Definition
+
+    "i" [0-9\']*     -> Import
+    "i" [0-9\']* "*" -> Import*
+    "i" [0-9\']* "+" -> Import+
+
+    "is" [0-9\']*     -> ImpSection
+    "is" [0-9\']* "*" -> ImpSection*

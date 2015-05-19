@@ -57,6 +57,9 @@ menus
   //   submenu: "Content Completion"
      	action: "Generate ESV (abstract)" = generate-esv-abstract (meta)
      	action: "Generate ESV" = generate-esv-concrete
+     	
+     	action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
+     	action: "Generate AST checker" = generate-ast-checker-concrete
  //    end
      
   menu: "Format" (openeditor) (realtime)
