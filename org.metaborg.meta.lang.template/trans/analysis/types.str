@@ -7,11 +7,11 @@ imports
 
 imports
   
-  lib/runtime/nabl/-
-  lib/runtime/task/-
-  lib/runtime/types/-
-  lib/runtime/properties/-
-  lib/runtime/relations/-
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  runtime/properties/-
+  runtime/relations/-
   analysis/desugar
 
   

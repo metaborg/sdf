@@ -5,10 +5,10 @@ imports
 	runtime/index/-
  	runtime/task/-
  	include/TemplateLang
- 	lib/runtime/nabl/-
-  	lib/runtime/properties/-
+ 	runtime/nabl/-
+  	runtime/properties/-
   	analysis/names
-  	trans/utils/tokenize
+  	utils/tokenize
   	generation/to-sdf
   
 

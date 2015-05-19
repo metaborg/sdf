@@ -6,21 +6,21 @@ imports
   libstratego-sdf
   libstratego-lib
   libstratego-gpp
-  lib/sdf-desugar
-  lib/sdf-parenthesize
-  lib/EditorService
+  sdf-desugar
+  sdf-parenthesize
+  EditorService
   include/TemplateLang
   analysis/desugar
   editor-common.generated
-  trans/pp
+  pp
   runtime/index/-
   runtime/task/-
-  trans/generation/-
+  generation/-
   analysis/names
-  lib/runtime/nabl/-
-  lib/runtime/properties/-
+  runtime/nabl/-
+  runtime/properties/-
   normalization/normalize
-  lib/ds/pp/-
+  ds/pp/-
   
  
   

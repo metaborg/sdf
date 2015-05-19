@@ -9,19 +9,19 @@ imports
   include/TemplateLang
   include/TemplateLang-parenthesize
   editor/TemplateLang-Outliner
-  lib/EditorService
-  lib/editor-common.generated
-  lib/runtime/analysis/-
-  lib/runtime/nabl/-
-  lib/runtime/task/-
-  lib/runtime/index/-
-  lib/runtime/properties/-
-  lib/runtime/types/-
-  lib/runtime/editor/-
+  EditorService
+  editor-common.generated
+  runtime/analysis/-
+  runtime/nabl/-
+  runtime/task/-
+  runtime/index/-
+  runtime/properties/-
+  runtime/types/-
+  runtime/editor/-
      
-  trans/analysis/-
-  trans/generation/-
-  trans/editor/-
+  analysis/-
+  generation/-
+  editor/-
 	//analyze
 	//names
 	//name-desugar

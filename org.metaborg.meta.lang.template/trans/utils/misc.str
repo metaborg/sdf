@@ -1,4 +1,4 @@
-module trans/utils/misc
+module utils/misc
 
 imports
   include/TemplateLang

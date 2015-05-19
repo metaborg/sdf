@@ -7,9 +7,9 @@ module editor/TemplateLang-Outliner
 imports
   libstratego-sglr
   include/TemplateLang
-  trans/utils/attributes
-  lib/runtime/editor/outline-library
-  lib/runtime/editor/origins
+  utils/attributes
+  runtime/editor/outline-library
+  runtime/editor/origins
   
   
 rules

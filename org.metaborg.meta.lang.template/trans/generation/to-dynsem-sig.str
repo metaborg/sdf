@@ -10,8 +10,8 @@ imports
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
-  lib/ds/signatures/-
-  lib/ds/pp/-
+  ds/signatures/-
+  ds/pp/-
   
   generation/to-str
   

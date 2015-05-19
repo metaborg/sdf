@@ -4,7 +4,7 @@ imports
   analysis
   libstratego-sglr
   include/SDF
-  lib/editor-common.generated
+  editor-common.generated
 
 strategies
 

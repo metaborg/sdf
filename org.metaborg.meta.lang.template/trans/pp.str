@@ -1,9 +1,9 @@
-module trans/pp
+module pp
 
 imports
 
 	libstratego-gpp
-	lib/runtime/refactoring/-
+	runtime/refactoring/-
 	pp/TemplateLang-pp
 	pp/modules/Modules-pp
 	

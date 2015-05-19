@@ -1,9 +1,9 @@
 module editor/builders
 
 imports include/SDF
-		trans/generation/-
+		generation/-
 		editor-common.generated
-		lib/sdf3/TemplateLang-pp
+		sdf3/TemplateLang-pp
 		libstratego-gpp
 		libstratego-aterm
 

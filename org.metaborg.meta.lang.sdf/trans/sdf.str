@@ -7,12 +7,12 @@ imports
   libstrc
   analysis
   generate-syntax-templates
-  lib/editor-common.generated
+  editor-common.generated
   include/SDF
   completion
   check
   editor/SDF-Outliner
-  trans/editor/-
+  editor/-
   //names
 
 rules

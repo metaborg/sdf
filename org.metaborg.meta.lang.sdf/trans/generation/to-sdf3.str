@@ -1,7 +1,7 @@
 module generation/to-sdf3
 imports
   include/SDF
-  lib/sdf3/TemplateLang-pp
+  sdf3/TemplateLang-pp
 
 
 overlays

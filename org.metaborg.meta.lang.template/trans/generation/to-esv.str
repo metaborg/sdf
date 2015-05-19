@@ -2,9 +2,9 @@ module generation/to-esv
 
 imports
   include/TemplateLang
-  lib/EditorService
-  trans/utils/attributes
-  trans/utils/misc
+  EditorService
+  utils/attributes
+  utils/misc
   analysis/desugar
  // templatelang/expand
   generation/to-str

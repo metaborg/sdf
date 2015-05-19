@@ -4,7 +4,7 @@ imports
   libstratego-lib
   libstratego-sdf
   libstratego-sglr
-  lib/editor-common.generated
+  editor-common.generated
 
 strategies
 

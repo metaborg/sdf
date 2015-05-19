@@ -7,7 +7,7 @@ imports
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
-  lib/runtime/properties/-
+  runtime/properties/-
   
 rules
 	

@@ -7,5 +7,4 @@ src-gen
 syntax/*.generated.*
 target
 trans/*.pp.generated.str
-lib/runtime
 lib/*.generated.*
