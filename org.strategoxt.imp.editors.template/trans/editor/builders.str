@@ -122,7 +122,7 @@ imports
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
     	//; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "pp", "-pp.str")> mn//fn
+      ; filename := <create-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn//fn
   
   generate-ast-checker-concrete:
   	(selected, position, ast, path, project-path) -> (filename, result)
@@ -260,7 +260,7 @@ imports
   		task-setup(|project-path);
 		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		filename := <create-src-gen(|project-path, "parse-table",  "-item-sets.aterm")> mn;
+  		filename := <create-src-gen(|project-path, "parse-table",  ".aterm")> "item-sets" ;
 		result   := <to-item-sets <+ debug(!"Grammar is not normalized "); fail> selected
   
   generate-parse-table:
@@ -269,7 +269,7 @@ imports
   		task-setup(|project-path);
 		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
-  		filename := <create-src-gen(|project-path, "parse-table",  "-item-sets.aterm")> mn;
+  		filename := <create-src-gen(|project-path, "parse-table",  "-parse-table.tbl")> mn;
 		result   := <to-parse-table <+ debug(!"Grammar is not normalized "); fail > selected
   
   
