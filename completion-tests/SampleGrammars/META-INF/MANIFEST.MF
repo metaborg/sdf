@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Require-Bundle: org.spoofax.interpreter.core,
+ org.metaborg.spoofax.eclipse,
+ org.spoofax.terms,
+ org.strategoxt.strj,
+ org.spoofax.interpreter.externaldeps,
+ org.spoofax.jsglr
+Bundle-ActivationPolicy: lazy
+Bundle-Version: 1.0.0.qualifier
+Bundle-Name: SampleGrammars Plug-in
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: SampleGrammars;singleton:=true
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+

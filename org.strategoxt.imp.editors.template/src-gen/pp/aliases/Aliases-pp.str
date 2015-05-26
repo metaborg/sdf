@@ -3,6 +3,7 @@ module src-gen/pp/aliases/Aliases-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/aliases/Aliases-sig
 
 
@@ -75,3 +76,12 @@ strategies
 
   is-Aliases =
     fail
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h
+
+  prettyprint-Alias :
+    amb([h|hs]) -> <prettyprint-Alias> h
+
+  prettyprint-Aliases :
+    amb([h|hs]) -> <prettyprint-Aliases> h

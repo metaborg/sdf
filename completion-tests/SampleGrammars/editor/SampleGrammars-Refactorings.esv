@@ -1,0 +1,7 @@
+module SampleGrammars-Refactorings
+
+imports SampleGrammars-Refactorings.generated
+
+refactorings
+
+  text reconstruction : construct-textual-change

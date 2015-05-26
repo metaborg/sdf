@@ -3,6 +3,7 @@ module src-gen/pp/symbols/Symbols-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/symbols/Symbols-sig
 
 
@@ -25,15 +26,15 @@ strategies
     prettyprint-SymbolDef
 
   prettyprint-Symbol :
-    Parenthetical(t0__) -> [ H(
+    Parenthetical(t1__) -> [ H(
                                [SOpt(HS(), "0")]
                              , [ S("(")
-                               , t0__'
+                               , t1__'
                                , S(")")
                                ]
                              )
                            ]
-    with t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
 
   prettyprint-Symbols :
     list__ -> [ H(
@@ -45,13 +46,13 @@ strategies
     where list__' := <pp-H-list(prettyprint-Symbol)> list__
 
   prettyprint-SymbolDef :
-    t0__ -> [ H(
+    t1__ -> [ H(
                 [SOpt(HS(), "0")]
-              , [t0__']
+              , [t1__']
               )
             ]
     where not(is-SymbolDef)
-    where t0__' := <pp-one-Z(prettyprint-Symbol)> t0__
+    where t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
 
   is-Symbol =
     fail
@@ -61,3 +62,12 @@ strategies
 
   is-SymbolDef =
     fail
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h
+
+  prettyprint-Symbols :
+    amb([h|hs]) -> <prettyprint-Symbols> h
+
+  prettyprint-SymbolDef :
+    amb([h|hs]) -> <prettyprint-SymbolDef> h

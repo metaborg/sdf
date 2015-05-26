@@ -3,6 +3,7 @@ module src-gen/pp/constants/RealCon-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/constants/RealCon-sig
 
 
@@ -62,3 +63,9 @@ strategies
 
   is-RealCon =
     fail
+
+  prettyprint-OptExp :
+    amb([h|hs]) -> <prettyprint-OptExp> h
+
+  prettyprint-RealCon :
+    amb([h|hs]) -> <prettyprint-RealCon> h

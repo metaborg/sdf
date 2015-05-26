@@ -35,10 +35,10 @@ menus
    
     action: "Generate all files" = generate-all
    
-  // 	submenu: "SDF"
+  	submenu: "SDF"
       action: "Generate SDF (abstract)" = generate-sdf-abstract (meta)
       action: "Generate SDF (concrete)" = generate-sdf-concrete
-   // end
+    end
     
     submenu: "Signature"
       action: "Generate Signature (abstract)" = generate-sig-abstract (meta)
@@ -60,6 +60,9 @@ menus
      	
      	action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
      	action: "Generate AST checker" = generate-ast-checker-concrete
+     	
+     	action: "Generate Parse Table" = generate-parse-table (meta)
+     	action: "Generate Item-sets"   = generate-item-sets (meta)
  //    end
      
   menu: "Format" (openeditor) (realtime)
