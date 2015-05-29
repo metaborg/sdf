@@ -2,6 +2,8 @@ module sorts/Sorts
 
 imports kernel/Kernel
 symbols/Symbols
+basic/Basic
+regular/Regular
 
 lexical syntax
 	//head:[A-Z] -> Sort {cons("one-char")}
@@ -26,3 +28,7 @@ Grammar.Sorts = <
  
 lexical restrictions
     Sort -/- [A-Za-z0-9]
+
+context-free priorities
+
+Symbol.Alt > { SymbolDef.Cf SymbolDef.Lex SymbolDef.Var Symbol.Cf Symbol.Lex Symbol.Varsym}

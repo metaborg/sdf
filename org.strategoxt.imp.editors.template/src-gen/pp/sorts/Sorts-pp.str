@@ -10,11 +10,15 @@ imports
 imports
   src-gen/signatures/kernel/Kernel-sig
   src-gen/signatures/symbols/Symbols-sig
+  src-gen/signatures/basic/Basic-sig
+  src-gen/signatures/regular/Regular-sig
 
 
 imports
   src-gen/pp/kernel/Kernel-pp
   src-gen/pp/symbols/Symbols-pp
+  src-gen/pp/basic/Basic-pp
+  src-gen/pp/regular/Regular-pp
 
 
 strategies

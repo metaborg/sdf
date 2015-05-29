@@ -298,8 +298,8 @@ rules
   		not(<?[sort("CONTENTCOMPLETE")]> symbols*)
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
-  		p* := <collect-om(new-prods)> symbols*
+  		symbols'* := <filter(symbol-to-sdf3)> symbols*;
+  		p* := <filter(new-prods)> symbols*
   	with   		
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -313,8 +313,8 @@ rules
   	prod(symbols*, lex(sort(s)), attrs) -> [<term-translation> result, p*]
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
-  		p* := <collect-om(new-prods)> symbols*
+  		symbols'* := <filter(symbol-to-sdf3)> symbols*;
+  		p* := <filter(new-prods)> symbols*
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -326,8 +326,8 @@ rules
   	prod(symbols*, cf(sort(s)), attrs) -> [<term-translation> result, p*]
   	with
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <map(symbol-to-sdf3)> symbols*;
-  		p* := <collect-om(new-prods)> symbols*
+  		symbols'* := <filter(symbol-to-sdf3)> symbols*;
+  		p* := <filter(new-prods)> symbols*
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -343,9 +343,9 @@ rules
   	with
   	    debug(!"regular symbol production" ); 
   		a* := <?attrs(<id>) <+ ![]> attrs;
-  		symbols'* := <topdown(try(symbol-to-sdf3))> symbols*;
+  		symbols'* := <filter(symbol-to-sdf3)> symbols*;
   		symbol' := <symbol-to-sdf3> symbol;
-  		p* := <collect-om(new-prods)> symbols*		
+  		p* := <filter(new-prods)> symbols*		
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
