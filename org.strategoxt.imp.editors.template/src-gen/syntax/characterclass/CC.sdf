@@ -4,6 +4,3 @@ imports characterclass/Character-Class kernel/Kernel
 exports
   context-free syntax
     CharClass -> Symbol {cons("CharClass")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}

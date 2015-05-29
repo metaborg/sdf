@@ -17,12 +17,6 @@ exports
     CharClass "\\/" CharClass         -> CharClass     {cons("Union"), left}
     "(" CharClass ")"                 -> CharClass     {bracket, avoid}
 
-  context-free syntax
-    CONTENTCOMPLETE -> CharRange     {cons("COMPLETION-CharRange")}
-    CONTENTCOMPLETE -> CharRanges    {cons("COMPLETION-CharRanges")}
-    CONTENTCOMPLETE -> OptCharRanges {cons("COMPLETION-OptCharRanges")}
-    CONTENTCOMPLETE -> CharClass     {cons("COMPLETION-CharClass")}
-
   context-free priorities
     "~" CharClass -> CharClass >
     CharClass "/" CharClass -> CharClass >

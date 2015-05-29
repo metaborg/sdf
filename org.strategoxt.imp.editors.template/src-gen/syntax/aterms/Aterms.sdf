@@ -8,9 +8,6 @@ exports
     IdCon  -> AFun {cons("Unquoted")}
 
   context-free syntax
-    CONTENTCOMPLETE -> AFun {cons("COMPLETION-AFun")}
-
-  context-free syntax
     IntCon                    -> ATerm {cons("Int")}
     RealCon                   -> ATerm {cons("Real")}
     AFun                      -> ATerm {cons("Fun")}
@@ -20,10 +17,4 @@ exports
     ATerm Annotation          -> ATerm {cons("Annotated")}
 
   context-free syntax
-    CONTENTCOMPLETE -> ATerm {cons("COMPLETION-ATerm")}
-
-  context-free syntax
     "{" {ATerm ","}+ "}" -> Annotation {cons("Default")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Annotation {cons("COMPLETION-Annotation")}

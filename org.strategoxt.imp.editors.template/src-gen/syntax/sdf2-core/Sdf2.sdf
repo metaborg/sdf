@@ -53,12 +53,6 @@ exports
     "bracket"                              -> ATermAttribute {reject}
     "id" "(" ModuleName ")"                -> ATermAttribute {reject}
 
-  context-free syntax
-    CONTENTCOMPLETE -> ModuleName     {cons("COMPLETION-ModuleName")}
-    CONTENTCOMPLETE -> Symbols        {cons("COMPLETION-Symbols")}
-    CONTENTCOMPLETE -> Label          {cons("COMPLETION-Label")}
-    CONTENTCOMPLETE -> ATermAttribute {cons("COMPLETION-ATermAttribute")}
-
   restrictions
     <Sort-CF> "aliases" "lexical" "priorities" "context-free" "definition"
     "syntax" "variables" "module" "imports" "exports" "hiddens" "left" "right"

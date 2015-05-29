@@ -23,11 +23,6 @@ exports
     "{" SortSymbol sep:Separator "}*" -> Symbol     {reject}
     Symbol "|" Symbol                 -> Symbol     {cons("Alt"), right}
 
-  context-free syntax
-    CONTENTCOMPLETE -> SortSymbol {cons("COMPLETION-SortSymbol")}
-    CONTENTCOMPLETE -> Separator  {cons("COMPLETION-Separator")}
-    CONTENTCOMPLETE -> Symbol     {cons("COMPLETION-Symbol")}
-
   context-free priorities
     { Symbol "?" -> Symbol
       Symbol "*" -> Symbol

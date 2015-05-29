@@ -4,6 +4,3 @@ imports sdf2-core/Sdf2 modules/Modules
 exports
   context-free syntax
     Group "." -> Group {cons("NonTransitive"), non-assoc}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Group {cons("COMPLETION-Group")}

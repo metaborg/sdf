@@ -16,11 +16,5 @@ exports
     StrCon -> FunctionName {cons("QuotedFun")}
 
   context-free syntax
-    CONTENTCOMPLETE -> FunctionName {cons("COMPLETION-FunctionName")}
-
-  context-free syntax
     string:StrCon                -> Symbol {cons("Lit")}
     ci-string:SingleQuotedStrCon -> Symbol {cons("CiLit")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Symbol {cons("COMPLETION-Symbol")}

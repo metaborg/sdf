@@ -6,6 +6,3 @@ exports
     NatCon     -> IntCon {cons("Natural")}
     "+" NatCon -> IntCon {cons("Positive")}
     "-" NatCon -> IntCon {cons("Negative")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> IntCon {cons("COMPLETION-IntCon")}

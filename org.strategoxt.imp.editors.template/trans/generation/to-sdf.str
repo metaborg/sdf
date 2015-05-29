@@ -69,20 +69,10 @@ rules
   		
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-  	  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*, restr*]
+  	  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-  		//content complete prods
-  		cc* := < filter(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
-             ; nub 
-             ; map(sort-to-contentcomplete)> prods*;	
-        if [] := cc*
-        then
-        	inj* := []
-        else
-          inj* := [context-free-syntax(<term-translation> cc*)]
-                end;
-        // lexical restrictions
+  		// lexical restrictions
         x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
   		let
 	  		chars-end-with-identifier-char =
@@ -295,19 +285,9 @@ rules
   
   //TemplateSection
   section-to-sdf(|chars, newline, kfr):
-  	TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
+  	TemplateSection(x) -> [context-free-syntax(p*), restr*]
   	with
   		p* := <map(prod-to-sdf(|chars, newline))> x;
-  		//content complete prods
-  		cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
-             ; nub 
-             ; map(sort-to-contentcomplete)> x;	
-        if [] := cc*
-        then
-        	inj* := []
-        else
-          inj* := [context-free-syntax(<term-translation> cc*)]
-        end;
   		// lexical restrictions
   		let
 	  		chars-end-with-identifier-char =

@@ -23,14 +23,3 @@ exports
     Group Associativity Group                     -> Priority            {cons("Assoc")}
     list:{Priority ","}*                          -> Priorities          
     "priorities" Priorities                       -> Grammar             {cons("Priorities")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Associativity       {cons("COMPLETION-Associativity")}
-    CONTENTCOMPLETE -> Attribute           {cons("COMPLETION-Attribute")}
-    CONTENTCOMPLETE -> ArgumentIndicator   {cons("COMPLETION-ArgumentIndicator")}
-    CONTENTCOMPLETE -> Group               {cons("COMPLETION-Group")}
-    CONTENTCOMPLETE -> PriorityProduction  {cons("COMPLETION-PriorityProduction")}
-    CONTENTCOMPLETE -> PriorityProductions {cons("COMPLETION-PriorityProductions")}
-    CONTENTCOMPLETE -> Priority            {cons("COMPLETION-Priority")}
-    CONTENTCOMPLETE -> Priorities          {cons("COMPLETION-Priorities")}
-    CONTENTCOMPLETE -> Grammar             {cons("COMPLETION-Grammar")}

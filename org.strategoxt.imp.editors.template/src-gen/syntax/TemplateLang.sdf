@@ -14,11 +14,6 @@ exports
     CONTENTCOMPLETE -> PlaceholderOptions {cons("WATER"), recover}
 
   context-free syntax
-    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
-    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
-    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
-
-  context-free syntax
     "template" "options" TemplateOption* -> Section            {cons("TemplateOptions")}
     "newlines" ":" NewlineOptionValue    -> TemplateOption     {cons("Newlines")}
     "none"                               -> NewlineOptionValue {cons("None")}
@@ -29,19 +24,10 @@ exports
     "tokenize" ":" StrCon                -> TemplateOption     {cons("Tokenize")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
-    CONTENTCOMPLETE -> NewlineOptionValue {cons("COMPLETION-NewlineOptionValue")}
-    CONTENTCOMPLETE -> TemplateOption     {cons("COMPLETION-TemplateOption")}
-
-  context-free syntax
     SortConsRef                            -> Group       {cons("SimpleRefGroup")}
     "{" SortConsRef+ "}"                   -> Group       {cons("ProdsRefGroup")}
     "{" Associativity ":" SortConsRef+ "}" -> Group       {cons("AssocRefGroup")}
     Symbol "." Constructor                 -> SortConsRef {cons("SortConsRef")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Group       {cons("COMPLETION-Group")}
-    CONTENTCOMPLETE -> SortConsRef {cons("COMPLETION-SortConsRef")}
 
   context-free syntax
     "templates" TemplateProduction*            -> Section            {cons("TemplateSection"), deprecated("Use context-free syntax section instead")}
@@ -67,21 +53,6 @@ exports
     "anchor"                                   -> PlaceholderOption  {cons("Anchor")}
     "separator" "=" StrCon                     -> PlaceholderOption  {cons("Separator"), deprecated("Use list with separator symbol instead: {S* \"separator\"}")}
     "text" "=" StrCon                          -> PlaceholderOption  {cons("Text")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
-    CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
-    CONTENTCOMPLETE -> GeneralProduction  {cons("COMPLETION-GeneralProduction")}
-    CONTENTCOMPLETE -> SdfProduction      {cons("COMPLETION-SdfProduction")}
-    CONTENTCOMPLETE -> RHS                {cons("COMPLETION-RHS")}
-    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
-    CONTENTCOMPLETE -> Constructor        {cons("COMPLETION-Constructor")}
-    CONTENTCOMPLETE -> SortCons           {cons("COMPLETION-SortCons")}
-    CONTENTCOMPLETE -> TemplatePart1      {cons("COMPLETION-TemplatePart1")}
-    CONTENTCOMPLETE -> TemplatePart2      {cons("COMPLETION-TemplatePart2")}
-    CONTENTCOMPLETE -> Placeholder        {cons("COMPLETION-Placeholder")}
-    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
-    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
 
   syntax
     "<" {<TemplateLine1-CF> "\n"}+ ">"   -> <Template-CF>      {cons("Template")}

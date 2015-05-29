@@ -14,10 +14,6 @@ exports
     Symbol "-VAR"                        -> Symbol  {cons("Varsym")}
     "LAYOUT"                             -> Symbol  {cons("Layout")}
 
-  context-free syntax
-    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
-    CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
-
   lexical syntax
     Sort "-LEX"     -> Sort {reject}
     Sort "-CF"      -> Sort {reject}

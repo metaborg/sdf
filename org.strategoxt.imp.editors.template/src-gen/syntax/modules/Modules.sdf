@@ -18,15 +18,6 @@ exports
     list:Import*                                  -> Imports    
     ModuleName                                    -> Import     {cons("Module")}
 
-  context-free syntax
-    CONTENTCOMPLETE -> Module     {cons("COMPLETION-Module")}
-    CONTENTCOMPLETE -> Sections   {cons("COMPLETION-Sections")}
-    CONTENTCOMPLETE -> Section    {cons("COMPLETION-Section")}
-    CONTENTCOMPLETE -> ModuleName {cons("COMPLETION-ModuleName")}
-    CONTENTCOMPLETE -> ImpSection {cons("COMPLETION-ImpSection")}
-    CONTENTCOMPLETE -> Imports    {cons("COMPLETION-Imports")}
-    CONTENTCOMPLETE -> Import     {cons("COMPLETION-Import")}
-
   lexical restrictions
     ModuleWord -/- [A-Za-z0-9\_\-]
     ModuleId -/- [\/]

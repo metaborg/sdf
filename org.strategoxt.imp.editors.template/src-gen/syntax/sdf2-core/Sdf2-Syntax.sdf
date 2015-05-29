@@ -1,3 +1,4 @@
+
 module sdf2-core/Sdf2-Syntax
 imports kernel/Kernel basic/Basic modules/Modules regular/Regular
         lifting/Lifting priority/Priority characterclass/CC sorts/Sorts
@@ -12,7 +13,3 @@ exports
     "context-free" "priorities" Priorities     -> Grammar {cons("ContextFreePriorities")}
     "lexical" "restrictions" Restrictions      -> Grammar {cons("LexicalRestrictions")}
     "context-free" "restrictions" Restrictions -> Grammar {cons("ContextFreeRestrictions")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Symbol  {cons("COMPLETION-Symbol")}
-    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}

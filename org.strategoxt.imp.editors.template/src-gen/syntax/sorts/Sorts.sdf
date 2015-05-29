@@ -1,5 +1,5 @@
 module sorts/Sorts
-imports kernel/Kernel symbols/Symbols
+imports kernel/Kernel symbols/Symbols basic/Basic regular/Regular
 
 exports
   lexical syntax
@@ -15,10 +15,14 @@ exports
     SymbolDef "-VAR"                        -> SymbolDef {cons("Var"), prefer}
     "sorts" Symbols                         -> Grammar   {cons("Sorts")}
 
-  context-free syntax
-    CONTENTCOMPLETE -> Symbol    {cons("COMPLETION-Symbol")}
-    CONTENTCOMPLETE -> SymbolDef {cons("COMPLETION-SymbolDef")}
-    CONTENTCOMPLETE -> Grammar   {cons("COMPLETION-Grammar")}
-
   lexical restrictions
     Sort -/- [A-Za-z0-9]
+
+  context-free priorities
+    Symbol "|" Symbol -> Symbol >
+    { SymbolDef "-CF" -> SymbolDef
+      SymbolDef "-LEX" -> SymbolDef
+      SymbolDef "-VAR" -> SymbolDef
+      Symbol "-CF" -> Symbol
+      Symbol "-LEX" -> Symbol
+      Symbol "-VAR" -> Symbol }

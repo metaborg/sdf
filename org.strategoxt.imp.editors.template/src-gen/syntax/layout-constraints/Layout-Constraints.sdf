@@ -36,10 +36,6 @@ exports
     Constraint "&&" Constraint                            -> Constraint {cons("And")}
     Constraint "||" Constraint                            -> Constraint {cons("Or")}
 
-  context-free syntax
-    CONTENTCOMPLETE -> Attribute  {cons("COMPLETION-Attribute")}
-    CONTENTCOMPLETE -> Constraint {cons("COMPLETION-Constraint")}
-
   context-free priorities
     { Constraint ".first" -> Constraint
       Constraint ".left" -> Constraint

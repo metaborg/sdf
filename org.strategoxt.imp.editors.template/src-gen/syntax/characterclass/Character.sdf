@@ -12,6 +12,3 @@ exports
     "\\EOF"         -> Character {cons("Eof")}
     "\\BOT"         -> Character {cons("Bot")}
     "\\LABEL_START" -> Character {cons("LabelStart")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> Character {cons("COMPLETION-Character")}

@@ -6,8 +6,3 @@ exports
     "aliases" Aliases        -> Grammar {cons("Aliases")}
     Symbol "->" alias:Symbol -> Alias   {cons("Alias")}
     list:Alias*              -> Aliases 
-
-  context-free syntax
-    CONTENTCOMPLETE -> Grammar {cons("COMPLETION-Grammar")}
-    CONTENTCOMPLETE -> Alias   {cons("COMPLETION-Alias")}
-    CONTENTCOMPLETE -> Aliases {cons("COMPLETION-Aliases")}

@@ -1,3 +1,4 @@
+
 module kernel/Kernel
 imports aterms/Aterms symbols/Symbols grammar/Grammars constants/StrCon
 
@@ -16,12 +17,3 @@ exports
     Symbols "->" result:Symbol Attributes -> Production        {cons("Prod"), deprecated("Use productive form instead")}
     list:Production*                      -> Productions       
     "syntax" Productions                  -> Grammar           {cons("Syntax")}
-
-  context-free syntax
-    CONTENTCOMPLETE -> ATermAttribute    {cons("COMPLETION-ATermAttribute")}
-    CONTENTCOMPLETE -> Attributes        {cons("COMPLETION-Attributes")}
-    CONTENTCOMPLETE -> Attribute         {cons("COMPLETION-Attribute")}
-    CONTENTCOMPLETE -> QuotedConstructor {cons("COMPLETION-QuotedConstructor")}
-    CONTENTCOMPLETE -> Production        {cons("COMPLETION-Production")}
-    CONTENTCOMPLETE -> Productions       {cons("COMPLETION-Productions")}
-    CONTENTCOMPLETE -> Grammar           {cons("COMPLETION-Grammar")}
