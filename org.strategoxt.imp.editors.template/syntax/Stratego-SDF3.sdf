@@ -1,0 +1,11 @@
+module Stratego-SDF3
+
+imports
+  TemplateLang
+  StrategoMix[StrategoHost]
+  EmbeddedSDF3[Term[[StrategoHost]]]
+  
+exports
+  context-free start-symbols Module[[StrategoHost]]
+  
+ 
