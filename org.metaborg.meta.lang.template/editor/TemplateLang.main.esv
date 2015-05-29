@@ -1,0 +1,27 @@
+module TemplateLang.main
+
+imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
+
+language General properties
+
+  name          : TemplateLang
+  id            : org.metaborg.meta.lang.template
+  extends       : Root
+
+  description   : "Spoofax/IMP-generated editor for the TemplateLang language"
+  url           : http://strategoxt.org
+
+  extensions    : tmpl, sdf3
+  table         : include/TemplateLang.tbl
+  start symbols : Module
+
+  provider : include/templatelang.ctree
+  provider : include/templatelang-java.jar
+  
+  EditorService sources : src-gen
+  Stratego sources      : src-gen
+  SDF sources           : src-gen/syntax
+  ds sources            : src-gen
+
+  observer : editor-analyze (multifile)
+  on save : editor-save
