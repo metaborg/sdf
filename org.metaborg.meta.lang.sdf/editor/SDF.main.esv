@@ -2,6 +2,7 @@ module SDF.main
 
 imports
 
+  SDF.generated
   SDF-Menus
   SDF-Views
   SDF-Colorer
@@ -12,8 +13,7 @@ imports
 
 language General properties
                   
-  name          : SDF
-  id            : org.strategoxt.imp.editors.sdf
+  name          : SDF // TODO : remove after next bootstrap
   extends       : Root
                   
   description   : "Spoofax/IMP-generated editor for the SDF language"

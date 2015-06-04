@@ -1,11 +1,10 @@
 module TemplateLang.main
 
-imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
+imports TemplateLang.generated TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
 
 language General properties
 
-  name          : TemplateLang
-  id            : org.metaborg.meta.lang.template
+  name          : TemplateLang // TODO: remove after next bootstrap
   extends       : Root
 
   description   : "Spoofax/IMP-generated editor for the TemplateLang language"
