@@ -4,7 +4,6 @@ imports TemplateLang.generated TemplateLang-Menus TemplateLang-Views TemplateLan
 
 language General properties
 
-  name          : TemplateLang // TODO: remove after next bootstrap
   extends       : Root
 
   description   : "Spoofax/IMP-generated editor for the TemplateLang language"

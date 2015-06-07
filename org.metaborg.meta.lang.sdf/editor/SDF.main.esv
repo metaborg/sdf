@@ -13,7 +13,6 @@ imports
 
 language General properties
                   
-  name          : SDF // TODO : remove after next bootstrap
   extends       : Root
                   
   description   : "Spoofax/IMP-generated editor for the SDF language"
