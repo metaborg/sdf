@@ -1,0 +1,28 @@
+module SDF.main
+
+imports
+
+  SDF.generated
+  SDF-Menus
+  SDF-Views
+  SDF-Colorer
+  SDF-Folding
+  SDF-References
+  SDF-Syntax
+  SDF-Completions
+
+language General properties
+                  
+  extends       : Root
+                  
+  description   : "Spoofax/IMP-generated editor for the SDF language"
+  url           : http://strategoxt.org
+                  
+  extensions    : sdf, def
+  table         : include/SDF.tbl
+  start symbols : Module
+
+  provider : include/sdf.ctree
+  provider : lib/sdf3/TemplateLang-pp.jar
+  
+  observer : editor-analyze
