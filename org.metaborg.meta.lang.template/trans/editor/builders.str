@@ -278,7 +278,6 @@ imports
     (selected, position, ast, path, project-path) -> None() 
     with
     	filename := <base-filename> path;
-    	debug(!"generating for ");
     	task-setup(|project-path);
     	index-setup(|<language>, project-path);
     	ast'     := <desugar-templates> ast;
