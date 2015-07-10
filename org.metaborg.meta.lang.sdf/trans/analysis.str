@@ -44,7 +44,7 @@ rules
     unparameterized(x) -> unparameterized(x)
     where
       <open-import(
-        resolve-import
+        resolve-import-decl
       , parse-sdf-file
       , declare-globals-top
       )> x
@@ -57,15 +57,24 @@ rules
       <declare-globals> unparameterized(x);
       <alltd(declare-simple-global)> y
 
-  resolve-import =
-    // TODO: better import handling
-    \x -> $[[<ProjectDir>]/[x].sdf]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/syntax/[x].sdf]\; file-exists
-  <+
-    \x -> $[[<ProjectDir>]/lib/[x].def]\; file-exists
-  <+
-    \x -> $[[<CurrentDir>]/[x].sdf]\; file-exists
+  resolve-import-decl:
+    x -> full-path
+    where
+      full-path := <resolve-import-path> $[[x].sdf]
+    <+
+      full-path := <resolve-import-path> $[[x].def]
+
+  expand-relative-path :
+    x -> $[[<ProjectDir>]/[x]]
+    where
+    <is-relpath> x
+
+  resolve-import-path:
+    x -> full-path
+    where
+      sdf-source-and-include-locations
+    ; includes := <map(try(expand-relative-path))>
+    ; full-path := <fetch-elem(\ path -> <file-exists> $[[path]/[x]] \)> includes
 
   declare-globals:
     prod @ prod(lhs, sort, _) -> <id>
@@ -140,16 +149,10 @@ strategies
     ?parameterized(mname, _);
     rules(ModuleName : mname -> mname)
   
-  record-all-definitions(record, parse|ext) =
-    <readdir> ".";
+  record-all-definitions(record, parse|ext) = 
+    sdf-source-and-include-files;
     list-loop(
-      if <isdir> <filemode> then
-        chdir;
-        record-all-definitions(record, parse|ext);
-        <chdir> ".."
-      else
-        try(record-definitions(record, parse|ext))
-      end
+      try(record-definitions(record, parse|ext))
     )
   
   record-definitions(record, parse|ext):

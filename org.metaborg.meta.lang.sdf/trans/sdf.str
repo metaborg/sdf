@@ -47,7 +47,7 @@ rules
   editor-resolve:
     (unparameterized(x), position, ast, path, project-path) -> target
     where
-      target := <parse-sdf-file> <resolve-import> x
+      target := <parse-sdf-file> <resolve-import-decl> x
 
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 
