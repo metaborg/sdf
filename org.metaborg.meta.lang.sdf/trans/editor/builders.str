@@ -12,6 +12,7 @@ imports include/SDF
    generate-sdf3-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
+      <reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
       result   := <module-to-sdf3> ast
@@ -21,6 +22,7 @@ imports include/SDF
     where
       <?definition(modules*)> ast 
     with
+    	<reset-counter> "SDF3";
     	<map(generate-sdf3-abstract(|project-path))> modules*
     	   
    generate-sdf3-abstract(|project-path):
@@ -33,6 +35,7 @@ imports include/SDF
    generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
+      <reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
       result   := <normalize-constructors; (module-to-sdf3; pp-SDF3-string) <+ id> ast 	 
@@ -40,6 +43,7 @@ imports include/SDF
    generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> None()
     where
+      <reset-counter> "SDF3";
       <normalize-constructors; ?definition(modules*)> ast 
     with
     	<map(generate-sdf3-concrete(|project-path))> modules*    	 	
@@ -54,6 +58,7 @@ imports include/SDF
     generate-sdf3-templates:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
+    	<reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
       result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast 	 
@@ -61,6 +66,7 @@ imports include/SDF
    generate-sdf3-templates:
     (selected, position, ast, path, project-path) -> None()
     where
+    	<reset-counter> "SDF3";
       <?definition(modules*)> ast 
     with
     	<map(generate-sdf3-templates(|project-path))> modules*    	 	
