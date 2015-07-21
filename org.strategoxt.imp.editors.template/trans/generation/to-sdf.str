@@ -17,7 +17,7 @@ imports
 
 rules
  
- to-sdf(|chars, newline, kfr) = 
+  to-sdf(|chars, newline, kfr) = 
  	module-to-sdf(|chars, newline, kfr) <+ section-to-sdf(|chars, newline, kfr) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
   
   module-to-sdf(|chars, newline, kfr):
@@ -38,16 +38,13 @@ rules
   module-to-sdf:
   	Module(Parameterized(mn, symbols)) -> 'module(parameterized(mn, symbols'))
   	with
-  		symbols' := <term-translation> symbols
-  		
+  		symbols' := <term-translation> symbols  		
   
-   imports-to-sdf: 
+  imports-to-sdf: 
   	Imports(mod) -> imports(i)
   	with
   		i := <map(module-to-sdf)> mod
-  		
-  
-  
+  	
   /* SDF3 sections */
   //Context-free Start Symbols
   section-to-sdf(|chars, newline, kfr): 
@@ -261,8 +258,8 @@ rules
   get-prod-elems(|chars, newline):
   	TemplateProductionWithCons(s, t, a) -> result
   	with
-  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
-  		result := <template-to-sdf(|chars, newline, case-sensitive)> t
+  		case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+  		result := <template-to-sdf(|chars, newline, case)> t
   
   //Productions
   prod-to-sdf:
@@ -309,8 +306,8 @@ rules
   prod-to-sdf(|chars, newline):
   	TemplateProduction(s, t, a) -> prod(t', s', a')
   	with
-  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
-  		t' := <template-to-sdf(|chars, newline, case-sensitive)> t;
+  		case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+  		t' := <template-to-sdf(|chars, newline, case)> t;
   		s' := <term-translation> s;
   		a' := <term-translation> a		
   		
@@ -318,8 +315,8 @@ rules
   prod-to-sdf(|chars, newline):
   	TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, attrs) -> prod(t', s', a''*)
   	with
-  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> attrs ;
-  		t' := <template-to-sdf(|chars, newline, case-sensitive)> t;
+  		case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> attrs ;
+  		t' := <template-to-sdf(|chars, newline, case)> t;
   		s' := <term-translation> s;
   		c   := <double-quote> cons; 
   		a*  := <?Attrs(<id>) <+ ![]> attrs;
@@ -327,22 +324,22 @@ rules
   		a''* := <term-translation> Attrs(a'*)	
   
   //single-line template
-  template-to-sdf(|chars, newline, case-sensitive):
+  template-to-sdf(|chars, newline, case):
   	SingleLineTemplate(elems) -> elems'
   	with
-  	elems' := <filter(template-elem-to-sdf(|chars, case-sensitive)); flatten-list> elems
+  	elems' := <filter(template-elem-to-sdf(|chars, case)); flatten-list> elems
   	
-  template-elem-to-sdf(|chars, case-sensitive):
+  template-elem-to-sdf(|chars, case):
   	String(t) -> result
   	where
-  	if CaseInsensitive() := case-sensitive then	
+  	if CaseInsensitive() := case then	
   		result := <string-to-sdf-insensitive(|chars)> t
   	else
   		result := <string-to-sdf(|chars)> t
   	end
   
   //removing layout from separator	
-  template-elem-to-sdf(|chars, case-sensitive):
+  template-elem-to-sdf(|chars, case):
   	Placeholder(symbol, option) -> symbol' 
   	where
   		<?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
@@ -366,7 +363,7 @@ rules
 	  		end
 	  	end	
   		
-  template-elem-to-sdf(|chars, case-sensitive):
+  template-elem-to-sdf(|chars, case):
   	Placeholder(symbol, option) -> <term-translation> symbol
   	where
   		<not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
@@ -375,10 +372,10 @@ rules
 
   
   //multi-line template
-  template-to-sdf(|chars, newline, case-sensitive):
+  template-to-sdf(|chars, newline, case):
      Template(lines*) -> elems*
      with
-     	elems* := <filter(line-to-sdf(|chars, case-sensitive)); flatten-list> lines*
+     	elems* := <filter(line-to-sdf(|chars, case)); flatten-list> lines*
      /*with
      	[f | t] := lines;
      	l := <last> lines;
@@ -399,10 +396,10 @@ rules
   add-newline-last : 
   	Line(elem*) -> Line([elem*, String("\n")])
  
-  line-to-sdf(|chars, case-sensitive):
+  line-to-sdf(|chars, case):
   	Line(elems*) -> elems'*
   	where
-  		elems'* := <filter(template-elem-to-sdf(|chars, case-sensitive)); flatten-list; not(?[])> elems*
+  		elems'* := <filter(template-elem-to-sdf(|chars, case)); flatten-list; not(?[])> elems*
   
 
 
@@ -496,8 +493,6 @@ rules //conversion of SDF3 terms into SDF2
   special-term-to-sdf:
   	CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
    	
- 	
-  		  		
   terms-to-sdf:
   	[term | tail] -> <id>
   		
@@ -540,5 +535,4 @@ template-escape =
     string-replace(|"\t", "\\t");
     string-replace(|"\r", "\\r");
     string-replace(|"\n", "\\n");
-    //string-replace(|"'", "\\'");
     string-replace(|"\"", "\\\"")
