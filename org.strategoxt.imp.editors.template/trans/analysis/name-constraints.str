@@ -55,7 +55,6 @@ imports
     where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> c
-
   	
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
@@ -78,8 +77,6 @@ imports
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
   	
-  	
-  	
   	nabl-constraint(|ctx):
   		Module(Unparameterized(m)) -> <fail>
   		where
@@ -93,8 +90,7 @@ imports
   			<has-annotation(?Use(task))> s;
   			msg := $[Unresolved reference to sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
-  	
-  	
+  	  	
   	nabl-constraint(|ctx):
   		TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
   		where
@@ -112,16 +108,29 @@ imports
   	        sequences*    := <filter(check-for-sequences); flatten-list> p*;
   	        <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
   	        <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*
+  	        
+  	nabl-constraint(|ctx):
+        SDFSection(Kernel(p*)) -> <fail>
+        where
+            alternatives* := <filter(check-for-alternatives); flatten-list> p*;
+            sequences*    := <filter(check-for-sequences); flatten-list> p*;
+            <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
+            <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*        
   	
   	check-for-alternatives:
   	    p -> alt*
   	where
-  	    alt* := <collect-all(?Alt(_,_), conc)> p
+  	    alt* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Alt(_,_)); filter(?Alt(_,_))> p
   			
   	check-for-sequences:
         p -> seq*
     where
-        seq* := <collect-all(?Sequence(_,_), conc)> p		
+        seq* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Sequence(_,_)); filter(?Sequence(_,_))> p
+    
+   
+    
+    
+    
     	    
   	nabl-constraint(|lang, ctx, uri*):
   		String(s) -> <fail>
@@ -131,9 +140,7 @@ imports
   	where
   		lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
   		<task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Maybe nonterminal placeholder instead?])> s
-  			
- 
-  			
+  			  			
   	nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
         where
