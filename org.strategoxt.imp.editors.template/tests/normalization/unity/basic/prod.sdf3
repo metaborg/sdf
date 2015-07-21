@@ -1,0 +1,8 @@
+module prod
+
+syntax
+
+A.A = "a" "b" B
+B = 
+C.AB = A B
+C.C = "c"

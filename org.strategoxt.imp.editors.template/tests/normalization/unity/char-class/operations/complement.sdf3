@@ -1,0 +1,11 @@
+module complement
+
+lexical syntax
+
+ID = ~[\0-\10]
+
+lexical restrictions
+
+ID -/- ~[]
+ID -/- [\0-\TOP]
+ID -/- ~[a-z]

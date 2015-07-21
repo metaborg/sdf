@@ -1,0 +1,21 @@
+module lexicalstartsymbols-normalized
+
+
+syntax
+
+  <START> = A-LEX 
+  <START> = B-LEX 
+  <START> = C-LEX 
+  A-LEX =  
+  B-LEX =  
+  C-LEX =  
+  C-CF = C-LEX 
+  B-CF = B-LEX 
+  A-CF = A-LEX 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

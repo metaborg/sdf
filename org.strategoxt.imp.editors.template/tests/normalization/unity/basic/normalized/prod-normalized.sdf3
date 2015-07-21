@@ -1,0 +1,16 @@
+module prod-normalized
+
+
+syntax
+
+  A.A = "a" "b" B 
+  B =  
+  C.AB = A B 
+  C.C = "c" 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

@@ -1,0 +1,17 @@
+module lexicalstartsymbols
+
+lexical start-symbols
+
+A B
+
+lexical start-symbols
+
+lexical start-symbols 
+
+C
+
+lexical syntax
+
+A =
+B =
+C =

@@ -17,39 +17,36 @@ rules
     	SimpleGroup(prod) ->  SimpleRefGroup(sc)
     where
     	sortdef 	:= <?SdfProduction(SortDef(<id>), Rhs(rhs), _)> prod;
-    	rhs'        := <topdown(try(strip-annos))> rhs;
+    	rhs'        := <strip-annos> rhs;
     	const  		:= <get-properties(|NablProp_constructorName())> sortdef;
-    	temps*  	:= <map(get-def); try(desugar-templates); topdown(try(strip-annos))> const;
+    	temps*  	:= <map(get-def); try(desugar-templates); strip-annos> const;
     	p*          := <map(get-prod-elems)> temps*;
         [sc]	 	:= <filter(?(<id>, rhs'))> p*
     
     
     get-prod-elems:
-  	SdfProductionWithCons(SortCons(SortDef(s),c), Rhs(symbols*), a*) -> (SortConsRef(Sort(s), c), symbols*)		
+  		SdfProductionWithCons(SortCons(SortDef(s),c), Rhs(symbols*), a*) -> (SortConsRef(Sort(s), c), symbols*)		
   	
     get-prod-elems:
-  	TemplateProductionWithCons(SortCons(SortDef(s),c), t, a) -> (SortConsRef(Sort(s), c), result)
+  		TemplateProductionWithCons(SortCons(SortDef(s),c), t, a) -> (SortConsRef(Sort(s), c), result)
   	with
   		result := <template-to-prod> t
-    
-    
-    	
     	
     remove-attrs:
     	SdfProductionWithCons(sc, rhs, attrs) -> SdfProductionWithCons(sc, rhs, NoAttrs()) 
     
     //single-line template
-  template-to-prod:
-  	SingleLineTemplate(elems) -> elems'
+    template-to-prod:
+  	    SingleLineTemplate(elems) -> elems'
   	with
-  	elems' := <filter(template-elem-to-prod); flatten-list> elems
+  	    elems' := <filter(template-elem-to-prod); flatten-list> elems
   	
-  template-elem-to-prod:
-  	String(t) -> <string-to-prod> t
+    template-elem-to-prod:
+  	    String(t) -> <string-to-prod> t
   
-  //removing layout from separator	
-  template-elem-to-prod:
-  	Placeholder(symbol, option) -> symbol' 
+    //removing layout from separator	
+    template-elem-to-prod:
+  	    Placeholder(symbol, option) -> symbol' 
   	where
   		<?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
   	with
@@ -74,13 +71,13 @@ rules
   		
   template-elem-to-prod:
   	Placeholder(symbol, option) -> symbol
-  	where
-  		<not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
+  where
+  	<not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
   
   	
   //multi-line template
   template-to-prod:
-     Template(lines) -> elems
+    Template(lines) -> elems
      with
      	elems := <map(line-to-prod)> lines
    

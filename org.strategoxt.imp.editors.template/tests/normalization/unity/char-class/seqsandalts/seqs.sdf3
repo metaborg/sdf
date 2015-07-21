@@ -1,0 +1,14 @@
+module seqs
+
+lexical syntax
+
+ID =
+
+lexical restrictions
+
+ID -/- [\0] . [\1] . [\2] \/ [\3]
+
+ID -/- [[[\0].[[[\1].[[[\2-\3]]]]]]]
+
+
+

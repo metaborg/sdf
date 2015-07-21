@@ -1,0 +1,80 @@
+Module(
+  Unparameterized("singlechainSortCons")
+, []
+, [ SDFSection(
+      ContextFreeSyntax(
+        [ SdfProductionWithCons(
+            SortCons(SortDef("A"), Constructor("A"))
+          , Rhs([Lit("\"a\"")])
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("B"), Constructor("B"))
+          , Rhs([Lit("\"b\"")])
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      ContextFreePriorities(
+        [ Chain(
+            [ SimpleRefGroup(SortConsRef(Sort("A"), Constructor("A")))
+            , SimpleRefGroup(SortConsRef(Sort("B"), Constructor("B")))
+            ]
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(SortDef("C"), Rhs([Lit("\"c\"")]), NoAttrs())
+        , SdfProduction(SortDef("D"), Rhs([Lit("\"d\"")]), NoAttrs())
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalPriorities(
+        [ Chain(
+            [ SimpleGroup(
+                SdfProduction(SortDef("C"), Rhs([Lit("\"c\"")]), NoAttrs())
+              )
+            , SimpleGroup(
+                SdfProduction(SortDef("D"), Rhs([Lit("\"d\"")]), NoAttrs())
+              )
+            ]
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      Kernel(
+        [ SdfProductionWithCons(
+            SortCons(SortDef("E"), Constructor("E"))
+          , Rhs([Lit("\"e\"")])
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("F"), Constructor("F"))
+          , Rhs([Lit("\"f\"")])
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      Priorities(
+        [ Chain(
+            [ AssocRefGroup(
+                Left()
+              , [ SortConsRef(Sort("E"), Constructor("E"))
+                , SortConsRef(Sort("F"), Constructor("F"))
+                ]
+              )
+            ]
+          )
+        ]
+      )
+    )
+  ]
+)

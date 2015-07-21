@@ -1,0 +1,10 @@
+module samechar
+
+lexical syntax
+
+//same char in range
+B = [a-bZ-A]
+
+
+
+    

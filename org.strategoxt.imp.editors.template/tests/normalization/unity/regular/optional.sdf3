@@ -1,0 +1,16 @@
+module optional
+
+context-free syntax
+
+A.MaybeB = B?
+B.B = "b"
+
+lexical syntax
+
+C = D?
+D = "d"
+
+syntax
+
+E = F?
+F = "f"

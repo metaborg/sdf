@@ -1,0 +1,27 @@
+module optional-normalized
+
+
+syntax
+
+  A-CF.MaybeB = B?-CF 
+  B-CF.B = "b" 
+  C-LEX = D?-LEX 
+  D-LEX = "d" 
+  D-CF = D-LEX 
+  D?-CF = D?-LEX 
+  C-CF = C-LEX 
+  E = F? 
+  F = "f" 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+  B?-CF = B-CF 
+  B?-CF =  
+  D?-LEX = D-LEX 
+  D?-LEX =  
+  F? = F 
+  F? =  
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

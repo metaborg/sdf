@@ -1,0 +1,9 @@
+module cfprod
+
+context-free syntax
+
+A.A = "a" "b" B
+B = 
+C.AB = <<A> <B>>
+C.C = <c>
+

@@ -1,0 +1,18 @@
+module iterstar
+
+
+context-free syntax
+
+A.ListOfB = B*
+B.b = "b"
+
+lexical syntax
+
+C = D*
+D = "d"
+
+
+syntax
+
+E = F*
+F = "f"

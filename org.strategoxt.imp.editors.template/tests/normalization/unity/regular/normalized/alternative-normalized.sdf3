@@ -1,0 +1,30 @@
+module alternative-normalized
+
+
+syntax
+
+  S-LEX = (A | B | C | D?)-LEX 
+  A-LEX = "a" 
+  B-LEX = "b" 
+  C-LEX = "c" 
+  D-LEX =  
+  D-CF = D-LEX 
+  C-CF = C-LEX 
+  B-CF = B-LEX 
+  A-CF = A-LEX 
+  (A | B | C | D?)-CF = (A | B | C | D?)-LEX 
+  S-CF = S-LEX 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+  (A | B | C | D?)-LEX = A-LEX 
+  (A | B | C | D?)-LEX = B-LEX 
+  (A | B | C | D?)-LEX = C-LEX 
+  (A | B | C | D?)-LEX = D?-LEX 
+  D?-CF = D?-LEX 
+  D?-LEX = D-LEX 
+  D?-LEX =  
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

@@ -3,9 +3,9 @@ module analysis/analyze
 imports
   include/TemplateLang
   analysis/desugar
-  analysis/normalization
+  analysis/lifting
 
 strategies
 
-  normalization =
-    normalize-all      
+  lifting =
+    lift-all      

@@ -1,0 +1,16 @@
+module cfprio-normalized
+
+
+syntax
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+
+priorities
+
+  A-CF =   > B-CF = A-CF LAYOUT?-CF "b" ,
+  B-CF = A-CF LAYOUT?-CF "b"  > C-CF =  ,
+  D-CF = "d"  <0>. > B-CF = A-CF LAYOUT?-CF "b" ,
+  B-CF = A-CF LAYOUT?-CF "b"  <2>. > D-CF = "d" ,
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

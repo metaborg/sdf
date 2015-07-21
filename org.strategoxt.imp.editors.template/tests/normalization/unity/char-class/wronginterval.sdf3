@@ -1,0 +1,6 @@
+module wronginterval
+
+lexical syntax
+
+//wrong interval
+B = [z-a]
