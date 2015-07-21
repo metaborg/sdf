@@ -31,4 +31,4 @@ lexical restrictions
 
 context-free priorities
 
-Symbol.Alt > { SymbolDef.Cf SymbolDef.Lex SymbolDef.Var Symbol.Cf Symbol.Lex Symbol.Varsym}
+{ SymbolDef.Cf SymbolDef.Lex SymbolDef.Var Symbol.Cf Symbol.Lex Symbol.Varsym} > Symbol.Alt

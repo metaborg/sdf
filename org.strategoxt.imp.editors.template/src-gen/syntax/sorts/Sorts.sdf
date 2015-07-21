@@ -19,10 +19,10 @@ exports
     Sort -/- [A-Za-z0-9]
 
   context-free priorities
-    Symbol "|" Symbol -> Symbol >
     { SymbolDef "-CF" -> SymbolDef
       SymbolDef "-LEX" -> SymbolDef
       SymbolDef "-VAR" -> SymbolDef
       Symbol "-CF" -> Symbol
       Symbol "-LEX" -> Symbol
-      Symbol "-VAR" -> Symbol }
+      Symbol "-VAR" -> Symbol } >
+    Symbol "|" Symbol -> Symbol
