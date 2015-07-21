@@ -3,9 +3,14 @@ module editor/builders
 imports include/SDF
 		trans/generation/-
 		editor-common.generated
-		lib/sdf3/TemplateLang-pp
+		lib/sdf3/src-gen/pp/modules/Modules-pp
+		lib/sdf3/src-gen/pp/TemplateLang-pp
+		lib/sdf3/src-gen/signatures/kernel/Kernel-sig
+		lib/sdf3/TemplateLang-parenthesize
 		libstratego-gpp
 		libstratego-aterm
+		lib/runtime/nabl/utils
+		
 
   rules
   	
@@ -70,15 +75,7 @@ imports include/SDF
    	with
    	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
    	  result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
-      <write-string-to-file> (filename, result) 	
-      
-  generate-item-sets:
-  	(selected, position, ast, path, project-path) -> (filename, result)
-  	with  	    
-  		<?'module(unparameterized(mn), i*, e*)> ast;
-  		<check-normalized <+ debug(!"Grammar is not in normal form "); fail> mn;
-  		filename := <create-src-gen(|project-path, "item-sets", ".aterm")> mn;
-  		result   := <grammar-to-item-sets> ast    
+      <write-string-to-file> (filename, result) 	    
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
@@ -107,13 +104,10 @@ imports include/SDF
  		with
  			names := <strip-annos; string-tokenize(|['/'])> s;
  			names' := <at-last(![])> names;
- 		//	debug(!"names ");
  			if [h | tl] := names'
  			then 			
 	 			first := <concat-strings> [path, "/" , h]; 
-	 		//	debug(!"get-dir ");
 	 			<create-dirs(|first)> tl;
-	 			//debug(!"create-dirs ");
 	 			s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
 	 			
  		    else
@@ -128,24 +122,22 @@ imports include/SDF
    	where
    		<create-dir> dir;
 	   	new-dir := <concat-strings> [dir, "/", h];
-	 //  	debug(!"create-dirs new dir ");
 	   	<create-dirs(|new-dir)> tl
    	
    	create-dirs(|dir):
    	[] -> None()
    	where
    		<create-dir> dir
-   	//	; debug(!"create-dirs empty ")
-  
+ 
  	get-filename :
  		s -> s'
  		with
  			names := <strip-annos; string-tokenize(|['/'])> s;
- 			//debug(!"names ");
  			s' := <last> names
  			
   
   	pp-SDF3-string =
+  	parenthesize-TemplateLang;
     prettyprint-Module 
     ; !V([], <id>)
     ; box2text-string(|120)

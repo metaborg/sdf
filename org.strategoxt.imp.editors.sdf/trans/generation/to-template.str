@@ -2,7 +2,29 @@ module to-template
 
 imports
   libstratego-sglr
-  lib/sdf3/TemplateLang-pp
+  
+  lib/sdf3/src-gen/signatures/-
+  lib/sdf3/src-gen/signatures/aliases/-
+  lib/sdf3/src-gen/signatures/aterms/-
+  lib/sdf3/src-gen/signatures/basic/-
+  lib/sdf3/src-gen/signatures/characterclass/-
+  lib/sdf3/src-gen/signatures/constants/-
+  lib/sdf3/src-gen/signatures/grammar/-
+  lib/sdf3/src-gen/signatures/kernel/-
+  lib/sdf3/src-gen/signatures/labels/-
+  lib/sdf3/src-gen/signatures/layout/-
+  lib/sdf3/src-gen/signatures/layout-constraints/-
+  lib/sdf3/src-gen/signatures/lifting/-
+  lib/sdf3/src-gen/signatures/literals/-
+  lib/sdf3/src-gen/signatures/modules/-
+  lib/sdf3/src-gen/signatures/priority/-
+  lib/sdf3/src-gen/signatures/regular/-
+  lib/sdf3/src-gen/signatures/renaming/-
+  lib/sdf3/src-gen/signatures/restrictions/-
+  lib/sdf3/src-gen/signatures/sdf2-core/-
+  lib/sdf3/src-gen/signatures/sorts/-
+  lib/sdf3/src-gen/signatures/symbols/-
+
   
 
   
@@ -67,7 +89,7 @@ rules // Convert regular productions to desugared syntax templates
 		a* := <?Attrs(<id>) <+ ![]> attrs
     with
     	elem* := <map(symbol-to-elem)> symbols*
-    	//;debug(!"a")
+
     
     cf-prod-to-template:
     	SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), attrs) -> 
@@ -76,7 +98,7 @@ rules // Convert regular productions to desugared syntax templates
 		a* := <?Attrs(<id>) <+ ![]> attrs
     with
     	elem* := <map(symbol-to-elem)> symbols*
-    	//; debug(! "b")
+
     
     symbol-to-elem:
     	<Cf(Layout()) + Lex(Layout())> -> Layout(" ")

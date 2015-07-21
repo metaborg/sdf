@@ -12,6 +12,5 @@ menus
 	  action: "Lift to SDF3 (abstract)"						  = generate-sdf3-abstract (source)
 	  action: "Lift to SDF3 (concrete)"						  = generate-sdf3-concrete (source)
 	  action: "Lift to SDF3 (templates)"			  = generate-sdf3-templates (source)
-	  action: "Generate item-sets (abstract)"         = generate-item-sets (source)
 	  
 	  
