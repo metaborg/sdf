@@ -6,11 +6,12 @@ imports
 	lib/runtime/refactoring/-
 	src-gen/pp/TemplateLang-pp
 	src-gen/pp/modules/Modules-pp
-	
+	include/TemplateLang-parenthesize
 
 rules
 	
   pp-SDF3-string =
+    parenthesize-TemplateLang;
     prettyprint-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
