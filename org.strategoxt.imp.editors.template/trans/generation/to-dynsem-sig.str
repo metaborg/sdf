@@ -35,6 +35,14 @@ rules
 	sort-to-ds-sig-sort = !SortDecl(<id>)
 	
 	section-to-ds-sig:
+	  SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
+	  where
+	    sig* := <filter(get-sort-from-prod); nub; map(lexsort-to-ds-implicitcon); not(?[])> p* 
+	
+	lexsort-to-ds-implicitcon:
+    s -> ConsDecl($[__String2[s]__], [SimpleSort("String")], SimpleSort(s), Annos([ImplicitAnno()]))
+	
+	section-to-ds-sig:
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
   		where
   		sig* := <filter(cfg-to-ds-sig <+ template-to-ds-sig); not(?[])> p*
