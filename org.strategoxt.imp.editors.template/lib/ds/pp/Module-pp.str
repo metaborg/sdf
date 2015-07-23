@@ -3,6 +3,7 @@ module ds/pp/Module-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   ds/signatures/Module-sig
 
 
@@ -78,6 +79,15 @@ strategies
   is-ImportModule =
     fail
 
+  ds-prettyprint-Module :
+    amb([h|hs]) -> <ds-prettyprint-Module> h
+
+  ds-prettyprint-ModuleSection :
+    amb([h|hs]) -> <ds-prettyprint-ModuleSection> h
+
+  ds-prettyprint-ImportModule :
+    amb([h|hs]) -> <ds-prettyprint-ImportModule> h
+
 
 strategies
   ds-prettyprint-ModuleID =
@@ -91,3 +101,9 @@ strategies
 
   ds-prettyprint-example =
     ds-prettyprint-ModuleIDPart
+
+  ds-prettyprint-ModuleID :
+    amb([h|hs]) -> <ds-prettyprint-ModuleID> h
+
+  ds-prettyprint-ModuleIDPart :
+    amb([h|hs]) -> <ds-prettyprint-ModuleIDPart> h

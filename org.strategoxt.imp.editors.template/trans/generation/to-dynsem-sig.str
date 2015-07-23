@@ -72,7 +72,7 @@ rules
     	
         
     cons-to-ds-decl:
-    Constructor(c) -> ConsDecl(c, rhs*, sort)
+    Constructor(c) -> ConsDecl(c, rhs*, sort, NoAnnos())
     with
       	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
       	sort := SimpleSort(sort-type);
