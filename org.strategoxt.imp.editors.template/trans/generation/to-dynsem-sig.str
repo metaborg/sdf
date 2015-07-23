@@ -78,13 +78,18 @@ rules
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
     	
-        
-    cons-to-ds-decl:
-    Constructor(c) -> ConsDecl(c, rhs*, sort, NoAnnos())
+  cons-to-ds-decl:
+    Constructor(c) -> cons-decl
     with
-      	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
-      	sort := SimpleSort(sort-type);
-        rhs* := <map(get-sort-name)> rhs-type*
+    	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
+    	sort := SimpleSort(sort-type);
+      rhs* := <map(get-sort-name)> rhs-type*;
+      if <not(?[])> rhs*
+      then
+        cons-decl := ConsDecl(c, rhs*, sort, NoAnnos())
+      else
+        cons-decl := NullaryConsDecl(c, sort, NoAnnos())
+      end
     
     get-sort-name:     
     ConstType(SortNoArgs(t)) -> SimpleSort(t)
