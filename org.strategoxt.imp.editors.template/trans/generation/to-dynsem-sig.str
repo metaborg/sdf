@@ -14,29 +14,38 @@ imports
   lib/ds/pp/-
   
   generation/to-str
-  
+  generation/to-sig
   
 rules 
 	
 	module-to-ds-sig:
-		Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([Sorts(sorts*), 
-          signatures*])])
+		Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([Sorts(sorts*), signatures*])])
 		with
-			m'  := <conc-strings> ("src-gen/", "ds-signatures/", m, "-sig")
-		;   is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*
-		;   sorts* :=  <collect-all(collect-sorts)
-             			; nub
-             			; map(sort-to-ds-sig-sort)> s*
-        ;   signatures* := <filter(section-to-ds-sig)> s*
+		  m'  := <conc-strings> ("src-gen/", "ds-signatures/", m, "-sig");
+		  is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*;
+		  sorts* :=  <collect-all(collect-sorts); nub; map(sort-to-ds-sig-sort)> s*;
+		  signatures* := <filter(section-to-ds-sig)> s*
             
             
-    collect-sorts = ?TemplateProduction(SortDef(<id>),_,_) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _) <+ ?SdfProduction(SortDef(<id>),_,_) <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+  collect-sorts =
+    ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
+    <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+    <+ ?SdfProduction(SortDef(<id>),_,_)
+    <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
     	    	        	 
 	sort-to-ds-sig-sort = !SortDecl(<id>)
 	
 	section-to-ds-sig:
+	  SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
+	  where
+	    sig* := <filter(get-sort-from-prod); nub; map(lexsort-to-ds-implicitcon); not(?[])> p* 
+	
+	lexsort-to-ds-implicitcon:
+    s -> ConsDecl($[__String2[s]__], [SimpleSort("String")], SimpleSort(s), Annos([ImplicitAnno()]))
+	
+	section-to-ds-sig:
   	SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
-  		where
+		where
   		sig* := <filter(cfg-to-ds-sig <+ template-to-ds-sig); not(?[])> p*
 	
 	section-to-ds-sig:
@@ -44,45 +53,57 @@ rules
   	where
   		sig* := <filter(cfg-to-ds-sig); not(?[])> p*		
   		
-  	section-to-ds-sig:
-    TemplateSection(t*) -> Constructors(sig*)
-    with
-      sig* := <filter(template-to-ds-sig); not(?[])> t*	
-  			
-			
+	section-to-ds-sig:
+	  TemplateSection(t*) -> Constructors(sig*)
+	  with
+	    sig* := <filter(template-to-ds-sig); not(?[])> t*
+
+  cfg-to-ds-sig:			
+    SdfProduction(SortDef(s1), Rhs([Sort(s2)]), Attrs(a*)) -> <inj-to-ds-decl> (s1, s2)
+    where
+      <not(fetch-elem(?Reject()))> a*
+
 	cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
    
-     cfg-to-ds-sig:
+  cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a*	
      	
-    cfg-to-ds-sig:
+  cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a* 
-   
-    template-to-ds-sig:
+  
+  template-to-ds-sig:
     TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-    	
-        
-    cons-to-ds-decl:
-    Constructor(c) -> ConsDecl(c, rhs*, sort)
+  
+  inj-to-ds-decl:
+    (s1, s2) -> ConsDecl($[__[s2]2[s1]__], [SimpleSort(s2)], SimpleSort(s1), Annos([ImplicitAnno()]))
+  
+  cons-to-ds-decl:
+    Constructor(c) -> cons-decl
     with
-      	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
-      	sort := SimpleSort(sort-type);
-        rhs* := <map(get-sort-name)> rhs-type*
+    	FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
+    	sort := SimpleSort(sort-type);
+      rhs* := <map(get-sort-name)> rhs-type*;
+      if <not(?[])> rhs*
+      then
+        cons-decl := ConsDecl(c, rhs*, sort, NoAnnos())
+      else
+        cons-decl := NullaryConsDecl(c, sort, NoAnnos())
+      end
     
-    get-sort-name:     
+  get-sort-name:     
     ConstType(SortNoArgs(t)) -> SimpleSort(t)
     
-    get-sort-name:
+  get-sort-name:
     ConstType(Sort("List",[SortNoArgs(s)])) -> ListSort(SimpleSort(s))
     
-    check-fun-type: FunType([], t) -> t
+  check-fun-type: FunType([], t) -> t
     	    
