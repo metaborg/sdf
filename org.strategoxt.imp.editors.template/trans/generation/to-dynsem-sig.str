@@ -28,7 +28,7 @@ rules
             
             
   collect-sorts =
-    ?TemplateProduction(SortDef(<id>),_,_)
+    ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
     <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
     <+ ?SdfProduction(SortDef(<id>),_,_)
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
