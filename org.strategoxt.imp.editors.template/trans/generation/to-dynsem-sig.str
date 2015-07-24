@@ -56,8 +56,13 @@ rules
 	section-to-ds-sig:
 	  TemplateSection(t*) -> Constructors(sig*)
 	  with
-	    sig* := <filter(template-to-ds-sig); not(?[])> t*	
-			
+	    sig* := <filter(template-to-ds-sig); not(?[])> t*
+
+  cfg-to-ds-sig:			
+    SdfProduction(SortDef(s1), Rhs([Sort(s2)]), Attrs(a*)) -> <inj-to-ds-decl> (s1, s2)
+    where
+      <not(fetch-elem(?Reject()))> a*
+
 	cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
@@ -72,12 +77,15 @@ rules
     SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
     	<not(fetch-elem(?Reject() + ?Bracket()))> a* 
-   
+  
   template-to-ds-sig:
     TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-    	
+  
+  inj-to-ds-decl:
+    (s1, s2) -> ConsDecl($[__[s2]2[s1]__], [SimpleSort(s2)], SimpleSort(s1), Annos([ImplicitAnno()]))
+  
   cons-to-ds-decl:
     Constructor(c) -> cons-decl
     with
