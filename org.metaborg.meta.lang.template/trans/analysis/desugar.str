@@ -1,0 +1,155 @@
+module analysis/desugar
+imports
+  libstratego-lib
+  include/TemplateLang
+  utils/attributes
+  utils/misc
+  runtime/editor/origins
+  runtime/editor/annotations
+
+signature constructors
+SingleLineTemplate            : List(TemplateElement) -> Template
+
+
+strategies
+
+  desugar-templates =
+    alltd(origin-track-forced(preserve-annotations-attachments(desugar-template)))
+
+rules
+  
+  desugar-template:
+    SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
+    with
+      elem'* := <desugar-elements> elem* 
+
+  //desugar templates with one line into a single line template
+  desugar-template:
+    <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])> -> SingleLineTemplate(elem'*)
+    with
+      elem'* := <desugar-elements; concatenate-consecutive-strings> elem* 
+
+  desugar-template:
+  	TemplateSquare(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)
+  		
+  desugar-template:
+  	TemplateDeprecated(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)
+  	
+  desugar-template: 
+  	TemplateSquareDeprecated(lines*) -> result
+  	with
+  		result := <desugar-template> Template(lines*)  
+
+  //desugar template contents
+  desugar-template:
+    Template(line*) -> Template(line'*)
+    where
+      not(!line* => [_])
+   with
+      let line-is-empty =
+            ?Line([]) + ?Line([Layout(_)])
+
+          remove-head-if-empty =
+            try(\[<line-is-empty> | t] -> t\)
+
+          remove-last-if-empty =
+            try(at-last(\[<line-is-empty>] -> []\))
+
+          line-remove-trailing-layout =
+            try(Line(at-last(\[Layout(_)] -> []\)))
+
+          line-ensure-leading-layout =
+            ?Line([Layout(_) | _]) <+ Line(![Layout("") | <id>])
+
+          line-get-indent =
+            // Only non-blank lines matter.
+            ?Line([Layout(<string-length>), _ | _])
+
+          get-indent =
+            filter(line-get-indent);
+            list-min
+
+          string-unindent(|n) =
+            ?"" <+ origin-track-forced(string-as-chars(drop(|n)))
+
+          line-unindent(|n) =
+            Line([origin-track-forced(Layout(string-unindent(|n))) | id])
+
+          unindent =
+            if get-indent => n then
+              map(line-unindent(|n))
+            end
+      in
+        !line*;
+        remove-head-if-empty;
+        remove-last-if-empty;
+        desugar-elements;
+        map(line-remove-trailing-layout; line-ensure-leading-layout);
+        unindent;
+        map(Line(concatenate-consecutive-strings));
+        ?line'*
+      end 
+
+  desugar-elements =
+    alltd(origin-track-forced(desugar-brackets)) ; alltd(origin-track-forced(desugar-element))
+
+  desugar-element:
+    NoOptions() -> []
+
+  desugar-element:
+    Options(x) -> <alltd(origin-track-forced(desugar-option))> x
+
+  desugar-option:
+    Text(x) -> Text(<origin-track-forced(un-double-quote; unescape)> x)
+ 
+  desugar-element:
+    Escape(t) -> String(t')
+    with
+      let parse-unicode =
+            {before*, mid, after*:
+               split-fetch-keep(not(is-hexnum)) => (before*, mid, after*);
+               ![<hex-chars-to-int> before*, mid | after*]
+            <+ ![<hex-chars-to-int>]
+            }
+
+          unescape =
+            string-as-chars(rec x(
+               \['\', ' ' | tail] -> [' '  | <x> tail]\
+            <+ \['\', '\' | tail] -> ['\'  | <x> tail]\
+            <+ \['\', '"' | tail] -> ['"'  | <x> tail]\
+            <+ \['\', '\''| tail] -> ['\'' | <x> tail]\
+            <+ \['\', 't' | tail] -> ['\t' | <x> tail]\
+            <+ \['\', 'r' | tail] -> ['\r' | <x> tail]\
+            <+ \['\', 'n' | tail] -> ['\n' | <x> tail]\
+            <+ \['\', '<' | tail] -> ['<'  | <x> tail]\
+            <+ \['\', '>' | tail] -> ['>'  | <x> tail]\
+            <+ \['\', '[' | tail] -> ['['  | <x> tail]\
+            <+ \['\', ']' | tail] -> [']'  | <x> tail]\
+            <+ \['\', 'u' | tail] -> <parse-unicode; [id | x]> tail\
+            <+ \['<', '\', '\', '>' | tail] -> <x> tail\
+            <+ \['[', '\', '\', ']' | tail] -> <x> tail\
+            <+ \[_ | tail] -> <x> tail\
+            <+ []
+            ))
+      in
+        t' := <origin-track-forced(unescape)> t
+      end
+      
+
+  desugar-element:
+    Layout(t) -> Layout(t')
+    with
+      t' := <origin-track-forced(string-replace(|"\t", "  "))> t
+     
+
+  desugar-brackets:
+  	Squared(p) ->  p
+  
+  desugar-brackets:
+  	Angled(p) ->  p
+  
+  

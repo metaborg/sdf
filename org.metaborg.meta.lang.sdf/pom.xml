@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+  <modelVersion>4.0.0</modelVersion>
+  <name>SDF</name>
+  <artifactId>org.metaborg.meta.lang.sdf</artifactId>
+  <packaging>spoofax-language</packaging>
+  <description>Spoofax meta-language for specifying concrete and abstract grammars</description>
+  <url>https://github.com/metaborg/sdf</url>
+
+  <parent>
+    <groupId>org.metaborg</groupId>
+    <artifactId>org.metaborg.maven.parent.language</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
+    <relativePath>../../spoofax-deploy/org.metaborg.maven.parent.language</relativePath>
+  </parent>
+
+  <properties>
+    <lib.directory>${basedir}/lib</lib.directory>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.spoofax.meta.runtime.libraries</artifactId>
+      <version>${metaborg-version}</version>
+      <type>spoofax-language</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>lib/sdf3</directory>
+        <targetPath>lib/sdf3</targetPath>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.metaborg</groupId>
+        <artifactId>spoofax-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <sdfArgs>
+            <arg>-Idef</arg>
+            <arg>${lib.directory}/SDF.def</arg>
+          </sdfArgs>
+          <strategoArgs combine.children="append">
+            <arg>-la</arg>
+            <arg>strc</arg>
+            <arg>-la</arg>
+            <arg>stratego-sdf</arg>
+          </strategoArgs>
+          <pardonedLanguages>
+            <language>EditorService</language>
+          </pardonedLanguages>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.metaborg</groupId>
+            <artifactId>org.metaborg.meta.lang.esv</artifactId>
+            <version>${metaborg-baseline-version}</version>
+            <type>spoofax-language</type>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+
+  <developers>
+    <developer>
+      <name>Eduardo Amorim</name>
+      <email>l.e.desouzaamorim-1@tudelft.nl</email>
+      <organization>Delft University of Technology</organization>
+      <organizationUrl>http://www.ewi.tudelft.nl/en</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:metaborg/sdf.git</connection>
+    <developerConnection>scm:git:git@github.com:metaborg/sdf.git</developerConnection>
+    <url>https://github.com/metaborg/sdf</url>
+  </scm>
+</project>

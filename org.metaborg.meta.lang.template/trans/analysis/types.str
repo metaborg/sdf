@@ -1,0 +1,148 @@
+module analysis/types
+
+imports 
+  include/TemplateLang
+  libstrc
+  runtime/types/collect
+
+imports
+  
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  runtime/properties/-
+  runtime/relations/-
+  analysis/desugar
+
+  
+signature
+  constructors
+  	
+  	Inj : Constructor
+  	AltType  : List(Type) -> Type 
+  	SeqType  : List(Type) -> type
+  	// LiftType : Type -> Type
+
+
+overlays
+  
+  SortType(t)    = ConstType(SortNoArgs(t))
+  OptionType(t)  = ConstType(Sort("Option", [SortNoArgs(t)]))
+  ListType(t)    = ConstType(Sort("List", [SortNoArgs(t)]))
+ 
+ 
+
+
+rules
+  
+  create-type-task(|ctx) =
+    ?SingleLineTemplate(<filter(is-template-placeholder); map(create-type-task(|ctx))>)//; debug(!"singleline")
+  ; type-is(|ctx)
+    
+  create-type-task(|ctx) =
+    ?Template(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquare(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateDeprecated(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>) +
+    ?TemplateSquareDeprecated(<mapconcat(?Line(<filter(is-template-placeholder); map(create-type-task(|ctx))>))>)
+    
+  ; type-is(|ctx)
+    
+
+      
+rules
+  
+ 
+  create-type-task(|ctx) :
+  	Rhs(symbols*) -> <task-create-id(|ctx,[t])> t
+  where
+  	symbols'* := <filter(is-typable)> symbols*;
+  	t         := <type-task(|ctx)> symbols'* 
+  
+  
+  create-type-task(|ctx) :
+    Sort(s) -> <task-create-id(|ctx,[t])> t
+    where 
+      t' := <type-lookup(|ctx)> s;
+      t  := <task-create-make-set(|ctx)> t'
+
+  
+  //Types for when symbol operators operate on a single sort
+  //HACK: it is necessary to strip-annos because of the multiple definitions of Sort(s)
+  create-type-task(|ctx) :
+    o@Opt(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;  
+      t := <type-is(|ctx)> OptionType(<strip-annos> s)
+        
+  
+  create-type-task(|ctx) :
+    IterStar(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+       <oncetd(?Sort(s))> symbol;  
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+      
+  create-type-task(|ctx) :
+    Iter(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+       <oncetd(?Sort(s))> symbol;  
+      t2 :=<type-lookup(|ctx)> s;	
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+ 
+  create-type-task(|ctx) :
+    IterSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+  
+  create-type-task(|ctx) :
+    IterStarSep(symbol, Lit(x)) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-is(|ctx)> ListType(<strip-annos> s)    
+   
+      
+   create-type-task(|ctx) :
+    Label(l, symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-task(|ctx)> symbol   
+   
+   create-type-task(|ctx) :   
+    Lex(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-task(|ctx)> symbol   
+    	
+    create-type-task(|ctx) :   
+    Cf(symbol) -> <task-create-id(|ctx,[t, t2])> t
+    where 
+      <oncetd(?Sort(s))> symbol;
+      t2 :=<type-lookup(|ctx)> s;
+      t := <type-task(|ctx)> symbol
+      
+   create-type-task(|ctx) :
+    Alt(symbol1, symbol2) -> <task-create-id(|ctx,[t])> t
+    where 
+      typable_symbols* := <filter(is-typable)> [symbol1, symbol2];
+      types := <type-task(|ctx)> typable_symbols*;
+      t := <type-is(|ctx)> AltType(types)
+   
+   create-type-task(|ctx) :
+    Sequence(symbol1, symbol2*) -> <task-create-id(|ctx,[t])> t
+    where 
+      typable_symbols* := <filter(is-typable)> [symbol1, symbol2*];
+      types := <type-task(|ctx)> typable_symbols*;
+      t := <type-is(|ctx)> SeqType(types)       
+
+   
+rules
+	
+	is-typable = oncetd(?Sort(_))
+	is-template-placeholder = ?Angled(<id>) + ?Squared(<id>)
+	
