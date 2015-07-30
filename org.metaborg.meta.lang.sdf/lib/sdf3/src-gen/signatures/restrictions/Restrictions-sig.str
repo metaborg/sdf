@@ -1,10 +1,10 @@
-module src-gen/signatures/restrictions/Restrictions-sig
+module lib/sdf3/src-gen/signatures/restrictions/Restrictions-sig
 
 imports
-  src-gen/signatures/characterclass/CC-sig
-  src-gen/signatures/characterclass/Character-Class-sig
-  src-gen/signatures/symbols/Symbols-sig
-  src-gen/signatures/constants/StrCon-sig
+  lib/sdf3/src-gen/signatures/characterclass/CC-sig
+  lib/sdf3/src-gen/signatures/characterclass/Character-Class-sig
+  lib/sdf3/src-gen/signatures/symbols/Symbols-sig
+  lib/sdf3/src-gen/signatures/constants/StrCon-sig
 
 
 signature

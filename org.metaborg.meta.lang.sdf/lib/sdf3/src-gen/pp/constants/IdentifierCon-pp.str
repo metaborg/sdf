@@ -1,10 +1,10 @@
-module src-gen/pp/constants/IdentifierCon-pp
+module lib/sdf3/src-gen/pp/constants/IdentifierCon-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/constants/IdentifierCon-sig
+  lib/sdf3/src-gen/signatures/constants/IdentifierCon-sig
 
 
 strategies

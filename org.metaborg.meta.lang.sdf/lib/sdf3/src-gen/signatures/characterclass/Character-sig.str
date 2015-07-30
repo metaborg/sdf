@@ -1,4 +1,4 @@
-module src-gen/signatures/characterclass/Character-sig
+module lib/sdf3/src-gen/signatures/characterclass/Character-sig
 
 signature
   constructors

@@ -1,10 +1,10 @@
-module src-gen/pp/constants/StrCon-pp
+module lib/sdf3/src-gen/pp/constants/StrCon-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/constants/StrCon-sig
+  lib/sdf3/src-gen/signatures/constants/StrCon-sig
 
 
 strategies

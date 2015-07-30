@@ -1,18 +1,18 @@
-module src-gen/pp/symbols/Symbols-pp
+module lib/sdf3/src-gen/pp/symbols/Symbols-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/symbols/Symbols-sig
+  lib/sdf3/src-gen/signatures/symbols/Symbols-sig
 
 
 imports
-  src-gen/signatures/layout/Comments-sig
+  lib/sdf3/src-gen/signatures/layout/Comments-sig
 
 
 imports
-  src-gen/pp/layout/Comments-pp
+  lib/sdf3/src-gen/pp/layout/Comments-pp
 
 
 strategies

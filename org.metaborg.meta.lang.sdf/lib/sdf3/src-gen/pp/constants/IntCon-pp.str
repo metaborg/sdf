@@ -1,20 +1,20 @@
-module src-gen/pp/constants/IntCon-pp
+module lib/sdf3/src-gen/pp/constants/IntCon-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/constants/IntCon-sig
+  lib/sdf3/src-gen/signatures/constants/IntCon-sig
 
 
 imports
-  src-gen/signatures/layout/Whitespace-sig
-  src-gen/signatures/constants/NatCon-sig
+  lib/sdf3/src-gen/signatures/layout/Whitespace-sig
+  lib/sdf3/src-gen/signatures/constants/NatCon-sig
 
 
 imports
-  src-gen/pp/layout/Whitespace-pp
-  src-gen/pp/constants/NatCon-pp
+  lib/sdf3/src-gen/pp/layout/Whitespace-pp
+  lib/sdf3/src-gen/pp/constants/NatCon-pp
 
 
 strategies

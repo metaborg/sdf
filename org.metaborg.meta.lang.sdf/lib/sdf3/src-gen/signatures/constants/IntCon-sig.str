@@ -1,8 +1,8 @@
-module src-gen/signatures/constants/IntCon-sig
+module lib/sdf3/src-gen/signatures/constants/IntCon-sig
 
 imports
-  src-gen/signatures/layout/Whitespace-sig
-  src-gen/signatures/constants/NatCon-sig
+  lib/sdf3/src-gen/signatures/layout/Whitespace-sig
+  lib/sdf3/src-gen/signatures/constants/NatCon-sig
 
 
 signature

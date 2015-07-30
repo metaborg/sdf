@@ -1,7 +1,7 @@
-module src-gen/signatures/characterclass/Character-Class-sig
+module lib/sdf3/src-gen/signatures/characterclass/Character-Class-sig
 
 imports
-  src-gen/signatures/characterclass/Character-sig
+  lib/sdf3/src-gen/signatures/characterclass/Character-sig
 
 
 signature

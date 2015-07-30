@@ -1,7 +1,7 @@
-module src-gen/signatures/layout-constraints/Layout-Constraints-sig
+module lib/sdf3/src-gen/signatures/layout-constraints/Layout-Constraints-sig
 
 imports
-  src-gen/signatures/constants/NatCon-sig
+  lib/sdf3/src-gen/signatures/constants/NatCon-sig
 
 
 signature

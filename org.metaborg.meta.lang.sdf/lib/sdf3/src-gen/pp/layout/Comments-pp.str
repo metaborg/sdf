@@ -1,18 +1,18 @@
-module src-gen/pp/layout/Comments-pp
+module lib/sdf3/src-gen/pp/layout/Comments-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/layout/Comments-sig
+  lib/sdf3/src-gen/signatures/layout/Comments-sig
 
 
 imports
-  src-gen/signatures/layout/Whitespace-sig
+  lib/sdf3/src-gen/signatures/layout/Whitespace-sig
 
 
 imports
-  src-gen/pp/layout/Whitespace-pp
+  lib/sdf3/src-gen/pp/layout/Whitespace-pp
 
 
 strategies

@@ -1,8 +1,8 @@
-module src-gen/signatures/sdf2-core/SDF-sig
+module lib/sdf3/src-gen/signatures/sdf2-core/SDF-sig
 
 imports
-  src-gen/signatures/sdf2-core/Sdf2-sig
-  src-gen/signatures/modules/Modules-sig
+  lib/sdf3/src-gen/signatures/sdf2-core/Sdf2-sig
+  lib/sdf3/src-gen/signatures/modules/Modules-sig
 
 
 signature

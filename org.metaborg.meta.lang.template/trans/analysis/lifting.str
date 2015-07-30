@@ -1,9 +1,9 @@
-module analysis/normalization
+module analysis/lifting
 imports
   libstratego-lib
   include/TemplateLang
-  utils/attributes
-  utils/misc
+  trans/utils/attributes
+  trans/utils/misc
   runtime/editor/origins
   analysis/names
   
@@ -13,28 +13,14 @@ imports
   
   strategies
   
-  normalize-all = bottomup(try(normalize))
+  lift-all = bottomup(try(lift-terms))
      
   rules
   	
-  normalize: 
+  lift-terms: 
   	NoAttrs() -> Attrs([])
   	
-  // normalize:
-  //   SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a*)) ->
-  //     SdfProductionWithCons(SortCons(s, Constructor(cons)), symbols*, Attrs(a'*))
-  //   with
-  //   	c   := <double-quote> cons; 
-  //       a'* := [sdf-cons(c) , a*]
-  //   
-  // normalize: 
-  // 	TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a*)) ->
-  //     TemplateProductionWithCons(SortCons(s, Constructor(cons)), template, Attrs(a'*))
-  //    with
-  //    	c   := <double-quote> cons; 
-  //       a'* := [sdf-cons(c) , a*]
-  
-   normalize:
+  lift-terms:
   	Placeholder(symbol, Options(options*)) -> Placeholder(symbol', options'*)
   	where
   		<?Iter(_) + ?IterStar(_) + ?Label(_, Iter(_)) + ?Label(_, IterStar(_))> symbol;
@@ -48,16 +34,22 @@ imports
     	end;  	
     	options'* := <remove-all(?Separator(_)); not(?[]) <+ !NoOptions()> options*  	
   
-  normalize:
+  lift-terms:
   	SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->
   		SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
   	where
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?Constructor(_))> a* 
   		
+  lift-terms:
+    SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*)) ->
+        SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
+    where
+        a'* := <remove-all(?Constructor(_))> a*		
+  		
   
   //regular sdf2 productions become sdf3 productions with or without constructors     	
-  normalize:
+  lift-terms:
   	Prod(symbols*, Sort(s), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
@@ -67,7 +59,7 @@ imports
   
   
   //Lexical kernel sdf2 productions become sdf3 productions with or without constructors     	
-  normalize:
+  lift-terms:
   	Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
@@ -76,7 +68,7 @@ imports
   	<+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
   
   //Cf kernel sdf2 productions become sdf3 productions with or without constructors     	
-  normalize:
+  lift-terms:
   	Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
   	with 
   		c := <getfirst(lift-constr)> a*;
@@ -86,7 +78,7 @@ imports
   
   
   //sdf2 productions that does not define a sort become sdf3 productions with or without constructors     	
-  normalize:
+  lift-terms:
   	Prod(symbols*, symbol, Attrs(a*)) -> result
   	where
   		not(<?Sort(s) + ?Lex(Sort(_)) + ?Cf(Sort(_))> symbol)
@@ -98,55 +90,23 @@ imports
   
   
   //normalize reductive productions section to productive productions section
-  normalize:
+  lift-terms:
   	Contextfree(p*) -> ContextFreeSyntax(p*)
   	
-  normalize:
+  lift-terms:
   	Lexical(p*) -> LexicalSyntax(p*)
   	
-  normalize:
+  lift-terms:
   	Syntax(p*) -> Kernel(p*)
   	
-  normalize:
+  lift-terms:
     Variables(p*) -> VariablesProductive(p*)
     
-  normalize:
+  lift-terms:
     LexVariables(p*) -> LexVariablesProductive(p*)  		
   	
-  normalize:
+  lift-terms:
   	TemplateSection(t*) -> SDFSection(ContextFreeSyntax(t*))	
-  	  	
-  /*normalize:
-  	TemplateSection(t) -> [TemplateSection(t), contentcompletion*]
-  	with
-  		p* := < map(?TemplateProduction(<id>, _, _) <+ ?TemplateProductionWithCons(SortCons(<id>, Constructor(_)), _, _))
-             ; nub 
-             ; map(sort-to-contentcomplete)> t;	
-        if [] := p*
-        then
-        	contentcompletion* := []
-        else
-          contentcompletion* := [SDFSection(ContextFreeSyntax(p*))]
-        end
-  
-  
-  normalize:
-  	Module(m, i, sections) -> Module(m, i, sections')
-  	with
-  		sections' := <flatten-list> sections
-*/  
-        
-  /*sort-to-contentcomplete:
-     sort@Sort(s) -> SdfProductionWithCons(SortCons(sort, Constructor($[COMPLETION-[s]])), [Sort("CONTENTCOMPLETE")], Attrs([sdf-cons(c)]))
-     with
-     	c := <double-quote> $[COMPLETION-[s]]
-   */  	
-     	
-  //normalize:
-  	//SimpleRefGroup(SortCons(sort, Constructor(c))) -> <id> //SimpleGroup(prod')
-  //	with
- // 		prod' := <get-def> c
- // 		; debug(!"a")
   	
   lift-constr:
   	Constructor(c) -> Constructor(<unquote>  c)

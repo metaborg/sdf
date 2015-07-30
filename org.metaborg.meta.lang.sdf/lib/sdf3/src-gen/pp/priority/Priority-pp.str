@@ -1,22 +1,22 @@
-module src-gen/pp/priority/Priority-pp
+module lib/sdf3/src-gen/pp/priority/Priority-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/priority/Priority-sig
+  lib/sdf3/src-gen/signatures/priority/Priority-sig
 
 
 imports
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/constants/NatCon-sig
-  src-gen/signatures/TemplateLang-sig
+  lib/sdf3/src-gen/signatures/kernel/Kernel-sig
+  lib/sdf3/src-gen/signatures/constants/NatCon-sig
+  lib/sdf3/src-gen/signatures/TemplateLang-sig
 
 
 imports
-  src-gen/pp/kernel/Kernel-pp
-  src-gen/pp/constants/NatCon-pp
-  src-gen/pp/TemplateLang-pp
+  lib/sdf3/src-gen/pp/kernel/Kernel-pp
+  lib/sdf3/src-gen/pp/constants/NatCon-pp
+  lib/sdf3/src-gen/pp/TemplateLang-pp
 
 
 strategies

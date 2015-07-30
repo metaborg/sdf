@@ -1,4 +1,4 @@
-module src-gen/signatures/constants/IdentifierCon-sig
+module lib/sdf3/src-gen/signatures/constants/IdentifierCon-sig
 
 signature
   constructors

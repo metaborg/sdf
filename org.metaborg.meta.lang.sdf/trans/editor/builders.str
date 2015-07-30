@@ -9,7 +9,6 @@ imports include/SDF
 		lib/sdf3/TemplateLang-parenthesize
 		libstratego-gpp
 		libstratego-aterm
-		lib/runtime/nabl/utils
 		
 
   rules

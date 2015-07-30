@@ -1,18 +1,18 @@
-module src-gen/pp/layout-constraints/Layout-Constraints-pp
+module lib/sdf3/src-gen/pp/layout-constraints/Layout-Constraints-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/layout-constraints/Layout-Constraints-sig
+  lib/sdf3/src-gen/signatures/layout-constraints/Layout-Constraints-sig
 
 
 imports
-  src-gen/signatures/constants/NatCon-sig
+  lib/sdf3/src-gen/signatures/constants/NatCon-sig
 
 
 imports
-  src-gen/pp/constants/NatCon-pp
+  lib/sdf3/src-gen/pp/constants/NatCon-pp
 
 
 strategies

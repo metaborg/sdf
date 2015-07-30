@@ -18,8 +18,8 @@ imports
   runtime/task/-
   trans/generation/-
   analysis/names
-  lib/runtime/nabl/-
-  lib/runtime/properties/-
+  runtime/nabl/-
+  runtime/properties/-
   normalization/to-normal-form
   lib/ds/pp/-
   

@@ -1,40 +1,40 @@
-module src-gen/pp/TemplateLang-pp
+module lib/sdf3/src-gen/pp/TemplateLang-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/TemplateLang-sig
+  lib/sdf3/src-gen/signatures/TemplateLang-sig
 
 
 imports
-  src-gen/signatures/sdf2-core/SDF-sig
-  src-gen/signatures/constants/StrCon-sig
-  src-gen/signatures/sorts/Sorts-sig
-  src-gen/signatures/symbols/Symbols-sig
-  src-gen/signatures/labels/Labels-sig
-  src-gen/signatures/constants/IdentifierCon-sig
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/restrictions/Restrictions-sig
-  src-gen/signatures/priority/Priority-sig
-  src-gen/signatures/basic/Basic-sig
-  src-gen/signatures/modules/Modules-sig
-  src-gen/signatures/layout-constraints/Layout-Constraints-sig
+  lib/sdf3/src-gen/signatures/sdf2-core/SDF-sig
+  lib/sdf3/src-gen/signatures/constants/StrCon-sig
+  lib/sdf3/src-gen/signatures/sorts/Sorts-sig
+  lib/sdf3/src-gen/signatures/symbols/Symbols-sig
+  lib/sdf3/src-gen/signatures/labels/Labels-sig
+  lib/sdf3/src-gen/signatures/constants/IdentifierCon-sig
+  lib/sdf3/src-gen/signatures/kernel/Kernel-sig
+  lib/sdf3/src-gen/signatures/restrictions/Restrictions-sig
+  lib/sdf3/src-gen/signatures/priority/Priority-sig
+  lib/sdf3/src-gen/signatures/basic/Basic-sig
+  lib/sdf3/src-gen/signatures/modules/Modules-sig
+  lib/sdf3/src-gen/signatures/layout-constraints/Layout-Constraints-sig
 
 
 imports
-  src-gen/pp/sdf2-core/SDF-pp
-  src-gen/pp/constants/StrCon-pp
-  src-gen/pp/sorts/Sorts-pp
-  src-gen/pp/symbols/Symbols-pp
-  src-gen/pp/labels/Labels-pp
-  src-gen/pp/constants/IdentifierCon-pp
-  src-gen/pp/kernel/Kernel-pp
-  src-gen/pp/restrictions/Restrictions-pp
-  src-gen/pp/priority/Priority-pp
-  src-gen/pp/basic/Basic-pp
-  src-gen/pp/modules/Modules-pp
-  src-gen/pp/layout-constraints/Layout-Constraints-pp
+  lib/sdf3/src-gen/pp/sdf2-core/SDF-pp
+  lib/sdf3/src-gen/pp/constants/StrCon-pp
+  lib/sdf3/src-gen/pp/sorts/Sorts-pp
+  lib/sdf3/src-gen/pp/symbols/Symbols-pp
+  lib/sdf3/src-gen/pp/labels/Labels-pp
+  lib/sdf3/src-gen/pp/constants/IdentifierCon-pp
+  lib/sdf3/src-gen/pp/kernel/Kernel-pp
+  lib/sdf3/src-gen/pp/restrictions/Restrictions-pp
+  lib/sdf3/src-gen/pp/priority/Priority-pp
+  lib/sdf3/src-gen/pp/basic/Basic-pp
+  lib/sdf3/src-gen/pp/modules/Modules-pp
+  lib/sdf3/src-gen/pp/layout-constraints/Layout-Constraints-pp
 
 
 strategies

@@ -1,28 +1,28 @@
-module src-gen/pp/regular/Regular-pp
+module lib/sdf3/src-gen/pp/regular/Regular-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
   libstratego-sglr
-  src-gen/signatures/regular/Regular-sig
+  lib/sdf3/src-gen/signatures/regular/Regular-sig
 
 
 imports
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/constants/IntCon-sig
-  src-gen/signatures/symbols/Symbols-sig
-  src-gen/signatures/constants/StrCon-sig
-  src-gen/signatures/labels/Labels-sig
-  src-gen/signatures/sorts/Sorts-sig
+  lib/sdf3/src-gen/signatures/kernel/Kernel-sig
+  lib/sdf3/src-gen/signatures/constants/IntCon-sig
+  lib/sdf3/src-gen/signatures/symbols/Symbols-sig
+  lib/sdf3/src-gen/signatures/constants/StrCon-sig
+  lib/sdf3/src-gen/signatures/labels/Labels-sig
+  lib/sdf3/src-gen/signatures/sorts/Sorts-sig
 
 
 imports
-  src-gen/pp/kernel/Kernel-pp
-  src-gen/pp/constants/IntCon-pp
-  src-gen/pp/symbols/Symbols-pp
-  src-gen/pp/constants/StrCon-pp
-  src-gen/pp/labels/Labels-pp
-  src-gen/pp/sorts/Sorts-pp
+  lib/sdf3/src-gen/pp/kernel/Kernel-pp
+  lib/sdf3/src-gen/pp/constants/IntCon-pp
+  lib/sdf3/src-gen/pp/symbols/Symbols-pp
+  lib/sdf3/src-gen/pp/constants/StrCon-pp
+  lib/sdf3/src-gen/pp/labels/Labels-pp
+  lib/sdf3/src-gen/pp/sorts/Sorts-pp
 
 
 strategies
