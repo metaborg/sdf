@@ -1,0 +1,10 @@
+module src-gen/signatures/symbols/Symbols-sig
+
+imports
+  src-gen/signatures/layout/Comments-sig
+
+
+signature
+  constructors
+     : List(Symbol) -> Symbols
+     : Symbol -> SymbolDef

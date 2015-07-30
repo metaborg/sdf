@@ -1,0 +1,14 @@
+module src-gen/signatures/characterclass/Character-sig
+
+signature
+  constructors
+     : String -> NumChar
+     : String -> ShortChar
+
+  constructors
+    Numeric    : NumChar -> Character
+    Short      : ShortChar -> Character
+    Top        : Character
+    Eof        : Character
+    Bot        : Character
+    LabelStart : Character

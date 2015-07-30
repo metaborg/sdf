@@ -1,0 +1,6 @@
+module src-gen/signatures/constants/StrCon-sig
+
+signature
+  constructors
+     : String -> StrChar
+     : String -> StrCon

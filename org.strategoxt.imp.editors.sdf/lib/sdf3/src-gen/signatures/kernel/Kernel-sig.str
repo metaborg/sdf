@@ -1,0 +1,24 @@
+module src-gen/signatures/kernel/Kernel-sig
+
+imports
+  src-gen/signatures/aterms/Aterms-sig
+  src-gen/signatures/symbols/Symbols-sig
+  src-gen/signatures/grammar/Grammars-sig
+  src-gen/signatures/constants/StrCon-sig
+
+
+signature
+  constructors
+    Default         : ATerm -> ATermAttribute
+    Term            : ATermAttribute -> Attribute
+    Attrs           : List(Attribute) -> Attributes
+    NoAttrs         : Attributes
+    Deprecated      : Attribute
+    Deprecated      : StrCon -> Attribute
+    Constructor     : StrCon -> Attribute
+                    : QuotedConstructor -> Attribute
+    CaseInsensitive : Attribute
+    Constructor     : StrCon -> QuotedConstructor
+    Prod            : Symbols * Symbol * Attributes -> Production
+                    : List(Production) -> Productions
+    Syntax          : Productions -> Grammar

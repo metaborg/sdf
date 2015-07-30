@@ -1,0 +1,73 @@
+module src-gen/pp/symbols/Symbols-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  src-gen/signatures/symbols/Symbols-sig
+
+
+imports
+  src-gen/signatures/layout/Comments-sig
+
+
+imports
+  src-gen/pp/layout/Comments-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Symbol
+
+  prettyprint-example =
+    prettyprint-Symbols
+
+  prettyprint-example =
+    prettyprint-SymbolDef
+
+  prettyprint-Symbol :
+    Parenthetical(t1__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("(")
+                               , t1__'
+                               , S(")")
+                               ]
+                             )
+                           ]
+    with t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
+
+  prettyprint-Symbols :
+    list__ -> [ H(
+                  [SOpt(HS(), "0")]
+                , [list__']
+                )
+              ]
+    where not(is-Symbols)
+    where list__' := <pp-H-list(prettyprint-Symbol)> list__
+
+  prettyprint-SymbolDef :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-SymbolDef)
+    where t1__' := <pp-one-Z(prettyprint-Symbol)> t1__
+
+  is-Symbol =
+    fail
+
+  is-Symbols =
+    fail
+
+  is-SymbolDef =
+    fail
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h
+
+  prettyprint-Symbols :
+    amb([h|hs]) -> <prettyprint-Symbols> h
+
+  prettyprint-SymbolDef :
+    amb([h|hs]) -> <prettyprint-SymbolDef> h

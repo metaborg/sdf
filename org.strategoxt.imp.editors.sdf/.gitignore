@@ -5,7 +5,7 @@ target
 editor/*generated*
 editor/java/trans
 editor/java/pplib
-src-gen
+/src-gen
 include
 lib-refactoring
 lib/analysis-library-internal.generated.str

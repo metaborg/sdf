@@ -1,0 +1,333 @@
+module src-gen/pp/layout-constraints/Layout-Constraints-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  src-gen/signatures/layout-constraints/Layout-Constraints-sig
+
+
+imports
+  src-gen/signatures/constants/NatCon-sig
+
+
+imports
+  src-gen/pp/constants/NatCon-pp
+
+
+strategies
+  prettyprint-LayoutVar =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-LayoutVar
+
+  prettyprint-LayoutVar :
+    amb([h|hs]) -> <prettyprint-LayoutVar> h
+
+
+strategies
+  prettyprint-example =
+    prettyprint-Attribute
+
+  prettyprint-example =
+    prettyprint-Constraint
+
+  prettyprint-Attribute :
+    LayoutConstraint(t1__) -> [ H(
+                                  [SOpt(HS(), "0")]
+                                , [ S("layout(")
+                                  , t1__'
+                                  , S(")")
+                                  ]
+                                )
+                              ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Attribute =
+    ?LayoutConstraint(_)
+
+  prettyprint-Attribute :
+    IgnoreLayout() -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [S("ignore-layout")]
+                        )
+                      ]
+
+  is-Attribute =
+    ?IgnoreLayout()
+
+  prettyprint-Constraint :
+    Tree(t1__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t1__']
+                    )
+                  ]
+    with t1__' := <pp-one-Z(prettyprint-NatCon)> t1__
+
+  is-Constraint =
+    ?Tree(_)
+
+  prettyprint-Constraint :
+    Num(t1__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [ S("num(")
+                     , t1__'
+                     , S(")")
+                     ]
+                   )
+                 ]
+    with t1__' := <pp-one-Z(prettyprint-NatCon)> t1__
+
+  is-Constraint =
+    ?Num(_)
+
+  prettyprint-Constraint :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-Constraint)
+    where t1__' := <pp-one-Z(prettyprint-LayoutVar)> t1__
+
+  prettyprint-Constraint :
+    All(t1__, t2__, t3__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [ S("all(")
+                                 , t1__'
+                                 , S(", ")
+                                 , t2__'
+                                 , S(", ")
+                                 , t3__'
+                                 , S(" )")
+                                 ]
+                               )
+                             ]
+    with t1__' := <pp-one-Z(prettyprint-LayoutVar)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+    with t3__' := <pp-one-Z(prettyprint-Constraint)> t3__
+
+  is-Constraint =
+    ?All(_, _, _)
+
+  prettyprint-Constraint :
+    First(t1__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t1__', S(".first")]
+                     )
+                   ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?First(_)
+
+  prettyprint-Constraint :
+    Left(t1__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t1__', S(".left")]
+                    )
+                  ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Left(_)
+
+  prettyprint-Constraint :
+    Right(t1__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [t1__', S(".right")]
+                     )
+                   ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Right(_)
+
+  prettyprint-Constraint :
+    Last(t1__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t1__', S(".last")]
+                    )
+                  ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Last(_)
+
+  prettyprint-Constraint :
+    Line(t1__) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [t1__', S(".line")]
+                    )
+                  ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Line(_)
+
+  prettyprint-Constraint :
+    Col(t1__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [t1__', S(".col")]
+                   )
+                 ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Col(_)
+
+  prettyprint-Constraint :
+    Not(t1__) -> [ H(
+                     [SOpt(HS(), "0")]
+                   , [S("!"), t1__']
+                   )
+                 ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+
+  is-Constraint =
+    ?Not(_)
+
+  prettyprint-Constraint :
+    Mul(t1__, t2__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t1__', S(" * "), t2__']
+                         )
+                       ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Mul(_, _)
+
+  prettyprint-Constraint :
+    Div(t1__, t2__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t1__', S(" / "), t2__']
+                         )
+                       ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Div(_, _)
+
+  prettyprint-Constraint :
+    Add(t1__, t2__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t1__', S(" + "), t2__']
+                         )
+                       ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Add(_, _)
+
+  prettyprint-Constraint :
+    Sub(t1__, t2__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t1__', S(" - "), t2__']
+                         )
+                       ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Sub(_, _)
+
+  prettyprint-Constraint :
+    Eq(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" == "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Eq(_, _)
+
+  prettyprint-Constraint :
+    Lt(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" < "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Lt(_, _)
+
+  prettyprint-Constraint :
+    Le(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" <= "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Le(_, _)
+
+  prettyprint-Constraint :
+    Gt(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" > "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Gt(_, _)
+
+  prettyprint-Constraint :
+    Ge(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" >= "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Ge(_, _)
+
+  prettyprint-Constraint :
+    And(t1__, t2__) -> [ H(
+                           [SOpt(HS(), "0")]
+                         , [t1__', S(" && "), t2__']
+                         )
+                       ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?And(_, _)
+
+  prettyprint-Constraint :
+    Or(t1__, t2__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__', S(" || "), t2__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(prettyprint-Constraint)> t1__
+    with t2__' := <pp-one-Z(prettyprint-Constraint)> t2__
+
+  is-Constraint =
+    ?Or(_, _)
+
+  is-Attribute =
+    fail
+
+  is-Constraint =
+    fail
+
+  prettyprint-Attribute :
+    amb([h|hs]) -> <prettyprint-Attribute> h
+
+  prettyprint-Constraint :
+    amb([h|hs]) -> <prettyprint-Constraint> h

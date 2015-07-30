@@ -1,0 +1,71 @@
+module src-gen/pp/constants/RealCon-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  src-gen/signatures/constants/RealCon-sig
+
+
+imports
+  src-gen/signatures/constants/IntCon-sig
+  src-gen/signatures/constants/NatCon-sig
+
+
+imports
+  src-gen/pp/constants/IntCon-pp
+  src-gen/pp/constants/NatCon-pp
+
+
+strategies
+  prettyprint-example =
+    prettyprint-OptExp
+
+  prettyprint-example =
+    prettyprint-RealCon
+
+  prettyprint-OptExp :
+    Present(t1__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S("e"), t1__']
+                       )
+                     ]
+    with t1__' := <pp-one-Z(prettyprint-IntCon)> t1__
+
+  is-OptExp =
+    ?Present(_)
+
+  prettyprint-OptExp :
+    Absent() -> [ H(
+                    []
+                  , [S("")]
+                  )
+                ]
+
+  is-OptExp =
+    ?Absent()
+
+  prettyprint-RealCon :
+    RealCon(base__, decimal__, exp__) -> [ H(
+                                             [SOpt(HS(), "0")]
+                                           , [base__', S("."), decimal__', exp__']
+                                           )
+                                         ]
+    with base__' := <pp-one-Z(prettyprint-IntCon)> base__
+    with decimal__' := <pp-one-Z(prettyprint-NatCon)> decimal__
+    with exp__' := <pp-one-Z(prettyprint-OptExp)> exp__
+
+  is-RealCon =
+    ?RealCon(_, _, _)
+
+  is-OptExp =
+    fail
+
+  is-RealCon =
+    fail
+
+  prettyprint-OptExp :
+    amb([h|hs]) -> <prettyprint-OptExp> h
+
+  prettyprint-RealCon :
+    amb([h|hs]) -> <prettyprint-RealCon> h

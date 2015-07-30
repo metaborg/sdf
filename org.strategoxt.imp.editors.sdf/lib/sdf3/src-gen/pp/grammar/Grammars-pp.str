@@ -1,0 +1,15 @@
+module src-gen/pp/grammar/Grammars-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  src-gen/signatures/grammar/Grammars-sig
+
+
+imports
+  src-gen/signatures/layout/Comments-sig
+
+
+imports
+  src-gen/pp/layout/Comments-pp

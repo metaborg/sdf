@@ -1,0 +1,5 @@
+module src-gen/signatures/constants/IdentifierCon-sig
+
+signature
+  constructors
+     : String -> IdCon

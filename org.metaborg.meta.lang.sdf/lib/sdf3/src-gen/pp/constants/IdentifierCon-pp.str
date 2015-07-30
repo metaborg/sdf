@@ -1,0 +1,18 @@
+module src-gen/pp/constants/IdentifierCon-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  src-gen/signatures/constants/IdentifierCon-sig
+
+
+strategies
+  prettyprint-IdCon =
+    ![S(<is-string>)]
+
+  prettyprint-example =
+    prettyprint-IdCon
+
+  prettyprint-IdCon :
+    amb([h|hs]) -> <prettyprint-IdCon> h
