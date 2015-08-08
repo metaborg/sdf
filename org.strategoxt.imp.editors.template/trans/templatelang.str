@@ -22,6 +22,7 @@ imports
   trans/analysis/-
   trans/generation/-
   trans/editor/-
+  src-gen/types/analysis/types-ts
 	//analyze
 	//names
 	//name-desugar
