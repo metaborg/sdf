@@ -3,6 +3,7 @@ module src-gen/pp/constants/StrCon-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/constants/StrCon-sig
 
 
@@ -18,3 +19,9 @@ strategies
 
   prettyprint-example =
     prettyprint-StrCon
+
+  prettyprint-StrChar :
+    amb([h|hs]) -> <prettyprint-StrChar> h
+
+  prettyprint-StrCon :
+    amb([h|hs]) -> <prettyprint-StrCon> h

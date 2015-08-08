@@ -150,6 +150,8 @@
 		<eclipse.refreshLocal resource="${projectdir}/editor/${sdfmodule}-Syntax.generated.esv" depth="infinite" />
 		<eclipse.convertPath fileSystemPath="${src-gen}" property="eclipse.path.src-gen" />
 		<eclipse.refreshLocal resource="${eclipse.path.src-gen}" depth="infinite" />
+		<eclipse.convertPath fileSystemPath="${sdf-src-gen}" property="eclipse.path.sdf-src-gen" />
+		<eclipse.refreshLocal resource="${eclipse.path.sdf-src-gen}" depth="infinite" />
 		<eclipse.convertPath fileSystemPath="${build}" property="eclipse.path.build" />
 		<eclipse.refreshLocal resource="${eclipse.path.build}" depth="infinite" />
 	</target>

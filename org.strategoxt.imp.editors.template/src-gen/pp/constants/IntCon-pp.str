@@ -3,6 +3,7 @@ module src-gen/pp/constants/IntCon-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/constants/IntCon-sig
 
 
@@ -55,3 +56,6 @@ strategies
 
   is-IntCon =
     fail
+
+  prettyprint-IntCon :
+    amb([h|hs]) -> <prettyprint-IntCon> h

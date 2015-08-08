@@ -3,6 +3,7 @@ module src-gen/pp/sorts/Sorts-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/sorts/Sorts-sig
 
 
@@ -23,6 +24,9 @@ strategies
   prettyprint-example =
     prettyprint-Sort
 
+  prettyprint-Sort :
+    amb([h|hs]) -> <prettyprint-Sort> h
+
 
 strategies
   prettyprint-example =
@@ -35,78 +39,78 @@ strategies
     prettyprint-Grammar
 
   prettyprint-Symbol :
-    Sort(t0__) -> [ H(
+    Sort(t1__) -> [ H(
                       [SOpt(HS(), "0")]
-                    , [t0__']
+                    , [t1__']
                     )
                   ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
 
   is-Symbol =
     ?Sort(_)
 
   prettyprint-Symbol :
-    ParameterizedSort(t0__, parameters__) -> [ H(
+    ParameterizedSort(t1__, parameters__) -> [ H(
                                                  [SOpt(HS(), "0")]
-                                               , [ t0__'
+                                               , [ t1__'
                                                  , S(" [[")
                                                  , parameters__'
                                                  , S("]]")
                                                  ]
                                                )
                                              ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
     with parameters__' := <pp-H-list(prettyprint-Symbol|", ")> parameters__
 
   is-Symbol =
     ?ParameterizedSort(_, _)
 
   prettyprint-SymbolDef :
-    SortDef(t0__) -> [ H(
+    SortDef(t1__) -> [ H(
                          [SOpt(HS(), "0")]
-                       , [t0__']
+                       , [t1__']
                        )
                      ]
-    with t0__' := <pp-one-Z(prettyprint-Sort)> t0__
+    with t1__' := <pp-one-Z(prettyprint-Sort)> t1__
 
   is-SymbolDef =
     ?SortDef(_)
 
   prettyprint-SymbolDef :
-    Cf(t0__) -> [ H(
+    Cf(t1__) -> [ H(
                     [SOpt(HS(), "0")]
-                  , [t0__', S("-CF")]
+                  , [t1__', S("-CF")]
                   )
                 ]
-    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-SymbolDef)> t1__
 
   is-SymbolDef =
     ?Cf(_)
 
   prettyprint-SymbolDef :
-    Lex(t0__) -> [ H(
+    Lex(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__', S("-LEX")]
+                   , [t1__', S("-LEX")]
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-SymbolDef)> t1__
 
   is-SymbolDef =
     ?Lex(_)
 
   prettyprint-SymbolDef :
-    Var(t0__) -> [ H(
+    Var(t1__) -> [ H(
                      [SOpt(HS(), "0")]
-                   , [t0__', S("-VAR")]
+                   , [t1__', S("-VAR")]
                    )
                  ]
-    with t0__' := <pp-one-Z(prettyprint-SymbolDef)> t0__
+    with t1__' := <pp-one-Z(prettyprint-SymbolDef)> t1__
 
   is-SymbolDef =
     ?Var(_)
 
   prettyprint-Grammar :
-    Sorts(t0__) -> [ H(
+    Sorts(t1__) -> [ H(
                        [SOpt(HS(), "0")]
                      , [S("sorts")]
                      )
@@ -114,13 +118,13 @@ strategies
                        []
                      , [S("")]
                      )
-                   , t0__'
+                   , t1__'
                    , H(
                        []
                      , [S("")]
                      )
                    ]
-    with t0__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Symbols)> t0__]
+    with t1__' := <pp-indent(|"2")> [<pp-one-Z(prettyprint-Symbols)> t1__]
 
   is-Grammar =
     ?Sorts(_)
@@ -133,3 +137,12 @@ strategies
 
   is-Grammar =
     fail
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h
+
+  prettyprint-SymbolDef :
+    amb([h|hs]) -> <prettyprint-SymbolDef> h
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h

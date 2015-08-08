@@ -3,6 +3,7 @@ module src-gen/pp/basic/Basic-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/basic/Basic-sig
 
 
@@ -193,3 +194,9 @@ strategies
 
   is-Symbol =
     fail
+
+  prettyprint-Grammar :
+    amb([h|hs]) -> <prettyprint-Grammar> h
+
+  prettyprint-Symbol :
+    amb([h|hs]) -> <prettyprint-Symbol> h

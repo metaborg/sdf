@@ -3,6 +3,7 @@ module src-gen/pp/constants/NatCon-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/constants/NatCon-sig
 
 
@@ -12,3 +13,6 @@ strategies
 
   prettyprint-example =
     prettyprint-NatCon
+
+  prettyprint-NatCon :
+    amb([h|hs]) -> <prettyprint-NatCon> h

@@ -3,6 +3,7 @@ module src-gen/pp/aterms/Aterms-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/aterms/Aterms-sig
 
 
@@ -48,6 +49,9 @@ strategies
 
   is-AFun =
     fail
+
+  prettyprint-AFun :
+    amb([h|hs]) -> <prettyprint-AFun> h
 
 
 strategies
@@ -146,6 +150,9 @@ strategies
   is-ATerm =
     fail
 
+  prettyprint-ATerm :
+    amb([h|hs]) -> <prettyprint-ATerm> h
+
 
 strategies
   prettyprint-example =
@@ -167,3 +174,6 @@ strategies
 
   is-Annotation =
     fail
+
+  prettyprint-Annotation :
+    amb([h|hs]) -> <prettyprint-Annotation> h

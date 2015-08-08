@@ -3,6 +3,7 @@ module src-gen/pp/layout/Comments-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   src-gen/signatures/layout/Comments-sig
 
 
@@ -38,3 +39,15 @@ strategies
 
   prettyprint-example =
     prettyprint-EOF
+
+  prettyprint-LayoutNewlineAlt :
+    amb([h|hs]) -> <prettyprint-LayoutNewlineAlt> h
+
+  prettyprint-LayoutCommentAlt :
+    amb([h|hs]) -> <prettyprint-LayoutCommentAlt> h
+
+  prettyprint-CommentChar :
+    amb([h|hs]) -> <prettyprint-CommentChar> h
+
+  prettyprint-EOF :
+    amb([h|hs]) -> <prettyprint-EOF> h
