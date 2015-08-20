@@ -29,6 +29,7 @@
       <artifactId>org.spoofax.meta.runtime.libraries</artifactId>
       <version>${metaborg-version}</version>
       <type>spoofax-language</type>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
 
     <dependency>
@@ -36,14 +37,14 @@
       <artifactId>org.metaborg.meta.lang.template</artifactId>
       <version>${metaborg-baseline-version}</version>
       <type>spoofax-language</type>
-      <scope>provided</scope>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
       <artifactId>org.metaborg.meta.lang.nabl</artifactId>
       <version>${metaborg-baseline-version}</version>
       <type>spoofax-language</type>
-      <scope>provided</scope>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
@@ -66,6 +67,7 @@
       <plugin>
         <groupId>org.metaborg</groupId>
         <artifactId>spoofax-maven-plugin</artifactId>
+        <version>${metaborg-version}</version>
         <extensions>true</extensions>
         <configuration>
           <sdfArgs>
