@@ -51,14 +51,14 @@
       <artifactId>org.metaborg.meta.lang.ts</artifactId>
       <version>${metaborg-baseline-version}</version>
       <type>spoofax-language</type>
-      <scope>provided</scope>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
       <artifactId>org.metaborg.meta.lang.esv</artifactId>
       <version>${metaborg-baseline-version}</version>
       <type>spoofax-language</type>
-      <scope>provided</scope>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
   </dependencies>
 
