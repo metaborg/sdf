@@ -131,6 +131,10 @@ rules
     
   get-sort-name:
     ConstType(Sort("List",[SortNoArgs(s)])) -> ListSort(SimpleSort(<ds-escape-sortname> s))
+  
+  // FIXME: this is not entirely true
+  get-sort-name:
+    ConstType(Sort("Option",[SortNoArgs(t)])) -> SimpleSort(<ds-escape-sortname>t)
     
   check-fun-type: FunType([], t) -> t
     	    
