@@ -29,12 +29,12 @@
 
     <!-- Imports -->
     <property name="build.sdf.imports" value="-Idef ${lib}/SDF.def"/>
-    <property name="build.stratego.args" value="        --library        -I &quot;${basedir}&quot;        -I &quot;${trans}&quot;        -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm             -la stratego-sdf -la strc"/>
+    <property name="build.stratego.args" value="        --library                        -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm             -la stratego-sdf -la strc"/>
 
     <!--property name="build.stratego.args" value="
       - -library
-      -I &quot;${basedir}&quot;
-      -I &quot;${trans}&quot;
+      
+      
       -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm   
       -la stratego-sdf -la strc -la org.strategoxt.imp.editors.template.generated" /-->
 
