@@ -35,8 +35,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path  	     
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
@@ -53,8 +51,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
    where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
        <?Module(Unparameterized(mn), i*, sections)> ast ;
      	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
@@ -73,8 +69,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The signature file could not be generated.\n"); fail> path
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	
@@ -90,8 +84,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The signature file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
@@ -105,8 +97,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ds signature file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The ds signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
@@ -119,8 +109,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ds signature file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-ds-sig> selected'
@@ -133,8 +121,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The pp file could not be generated.\n"); fail> path
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   :=  <module-to-pp> selected'
@@ -148,8 +134,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The pp file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
@@ -163,8 +147,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
   	where
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
@@ -178,8 +160,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
   	where
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-chk> selected'
@@ -194,8 +174,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The esv file could not be generated.\n"); fail> path
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected'
@@ -208,8 +186,6 @@ imports
     	m' := <strip-annos; string-tokenize(|['/']); last> m;
   	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The esv file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-esv; pp-esv-to-string <+ !""; debug(!"The esv file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n")> selected'
@@ -219,8 +195,6 @@ imports
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
@@ -237,8 +211,6 @@ imports
   lift-sdf3:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
@@ -255,8 +227,6 @@ imports
    lift-sdf3-template:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
@@ -265,8 +235,6 @@ imports
   extract-regular-productions:		
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <desugar-templates; remove-templates; pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
@@ -274,8 +242,6 @@ imports
   extract-regular-productions-abstract:		
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <desugar-templates; remove-templates> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn	
@@ -283,8 +249,6 @@ imports
   sdf3-to-normal-form-sdf:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		normalized   := <to-normal-form-all> selected;
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
@@ -296,8 +260,6 @@ imports
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf3")> mn;
 		result   := <to-normal-form-all; pp-SDF3-string> selected	
@@ -305,8 +267,6 @@ imports
   generate-item-sets:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		filename := <create-src-gen(|project-path, "parse-table",  ".aterm")> "item-sets" ;
 		result   := <to-item-sets <+ debug(!"Grammar is not normalized "); fail> selected
@@ -314,8 +274,6 @@ imports
   generate-parse-table:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		filename := <create-src-gen(|project-path, "parse-table",  "-parse-table.tbl")> mn;
 		result   := <to-parse-table <+ debug(!"Grammar is not normalized "); fail > selected
@@ -326,8 +284,6 @@ imports
     (selected, position, ast, path, project-path) -> None() 
     with
     	filename := <base-filename> path;
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	ast'     := <desugar-templates> ast;
     	<?Module(Unparameterized(mn), i*, sections)> ast 
     	//; fn       :=  <get-filename> mn    	  

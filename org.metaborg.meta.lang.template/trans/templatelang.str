@@ -32,29 +32,21 @@ rules // Analysis
   
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
   
-  editor-analyze = analysis-default-editor
+  editor-analyze = analyze-all(normalization, id, id|<language>, <project-path>)
   
-  analysis-single-default-interface = 
-  	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
-  	analysis-single-default(normalization, id, id|<language>)
-  	
-  analysis-multiple-default-interface = 
-  	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
-  analysis-multiple-default(parse-file <+ !(), normalization, id, id|<language>, <project-path>)
-  
-  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
+  editor-save =  generate-all
       
 rules // Editor services
 
   editor-resolve:
     (node, position, ast, path, project-path) -> definition
     where
-    	definition := <analysis-resolve(|<language>, project-path, path)> node
+    	definition := <analysis-resolve(|<language>, project-path)> node
   
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-    	proposals := <analysis-propose-completions(|<language>, project-path, path)> ast
+    	proposals := <analysis-propose-completions(|<language>, project-path)> ast
     	
   editor-outline:
     (node, position, ast, path, project-path) -> outline
@@ -95,9 +87,6 @@ rules // Debugging
 		analysis-debug-project(|<language>)
 	debug-partition =
 		analysis-debug-partition(|<language>)
-		
-	debug-reanalyze = 
-		analysis-debug-reanalyze(|<language>)
 		
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
