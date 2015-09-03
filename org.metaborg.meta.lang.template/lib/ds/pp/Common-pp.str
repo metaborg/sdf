@@ -3,6 +3,7 @@ module ds/pp/Common-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   ds/signatures/Common-sig
 
 
@@ -23,6 +24,9 @@ strategies
   is-NONE =
     fail
 
+  ds-prettyprint-NONE :
+    amb([h|hs]) -> <ds-prettyprint-NONE> h
+
 
 strategies
   ds-prettyprint-INFER =
@@ -42,6 +46,15 @@ strategies
 
   ds-prettyprint-example =
     ds-prettyprint-LID
+
+  ds-prettyprint-INFER :
+    amb([h|hs]) -> <ds-prettyprint-INFER> h
+
+  ds-prettyprint-ID :
+    amb([h|hs]) -> <ds-prettyprint-ID> h
+
+  ds-prettyprint-LID :
+    amb([h|hs]) -> <ds-prettyprint-LID> h
 
 
 strategies
@@ -92,3 +105,27 @@ strategies
 
   ds-prettyprint-example =
     ds-prettyprint-EOF
+
+  ds-prettyprint-JID :
+    amb([h|hs]) -> <ds-prettyprint-JID> h
+
+  ds-prettyprint-INT :
+    amb([h|hs]) -> <ds-prettyprint-INT> h
+
+  ds-prettyprint-REAL :
+    amb([h|hs]) -> <ds-prettyprint-REAL> h
+
+  ds-prettyprint-STRING :
+    amb([h|hs]) -> <ds-prettyprint-STRING> h
+
+  ds-prettyprint-StringChar :
+    amb([h|hs]) -> <ds-prettyprint-StringChar> h
+
+  ds-prettyprint-BackSlashChar :
+    amb([h|hs]) -> <ds-prettyprint-BackSlashChar> h
+
+  ds-prettyprint-CommentChar :
+    amb([h|hs]) -> <ds-prettyprint-CommentChar> h
+
+  ds-prettyprint-EOF :
+    amb([h|hs]) -> <ds-prettyprint-EOF> h

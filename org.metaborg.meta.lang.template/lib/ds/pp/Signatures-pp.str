@@ -3,6 +3,7 @@ module ds/pp/Signatures-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   ds/signatures/Signatures-sig
 
 
@@ -34,6 +35,9 @@ strategies
 
   is-ModuleSection =
     fail
+
+  ds-prettyprint-ModuleSection :
+    amb([h|hs]) -> <ds-prettyprint-ModuleSection> h
 
 
 strategies
@@ -72,6 +76,12 @@ strategies
   is-SortDecl =
     fail
 
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-SortDecl :
+    amb([h|hs]) -> <ds-prettyprint-SortDecl> h
+
 
 strategies
   ds-prettyprint-example =
@@ -109,6 +119,56 @@ strategies
 
   is-VariableScheme =
     fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-VariableScheme :
+    amb([h|hs]) -> <ds-prettyprint-VariableScheme> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-AliasDecl
+
+  ds-prettyprint-SignatureSection :
+    Aliases(t1__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S("aliases")]
+                       )
+                     , t1__'
+                     ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-AliasDecl)> t1__]
+
+  is-SignatureSection =
+    ?Aliases(_)
+
+  ds-prettyprint-AliasDecl :
+    AliasDecl(t1__, t2__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [t1__', S(" : "), t2__']
+                               )
+                             ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-AliasDecl =
+    ?AliasDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-AliasDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-AliasDecl :
+    amb([h|hs]) -> <ds-prettyprint-AliasDecl> h
 
 
 strategies
@@ -302,43 +362,23 @@ strategies
   is-MapType =
     fail
 
-
-strategies
-  ds-prettyprint-example =
-    ds-prettyprint-SignatureSection
-
-  ds-prettyprint-example =
-    ds-prettyprint-SemanticCompDecl
-
   ds-prettyprint-SignatureSection :
-    SemanticComponents(t1__) -> [ H(
-                                    [SOpt(HS(), "0")]
-                                  , [S("semantic components")]
-                                  )
-                                , t1__'
-                                ]
-    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-SemanticCompDecl)> t1__]
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
 
-  is-SignatureSection =
-    ?SemanticComponents(_)
+  ds-prettyprint-ConsAnnos :
+    amb([h|hs]) -> <ds-prettyprint-ConsAnnos> h
 
-  ds-prettyprint-SemanticCompDecl :
-    SemanticComponent(t1__, t2__) -> [ H(
-                                         [SOpt(HS(), "0")]
-                                       , [t1__', S(" -> "), t2__']
-                                       )
-                                     ]
-    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
-    with t2__' := <pp-one-Z(ds-prettyprint-MapType)> t2__
+  ds-prettyprint-ConsAnno :
+    amb([h|hs]) -> <ds-prettyprint-ConsAnno> h
 
-  is-SemanticCompDecl =
-    ?SemanticComponent(_, _)
+  ds-prettyprint-ConsDecl :
+    amb([h|hs]) -> <ds-prettyprint-ConsDecl> h
 
-  is-SignatureSection =
-    fail
+  ds-prettyprint-Type :
+    amb([h|hs]) -> <ds-prettyprint-Type> h
 
-  is-SemanticCompDecl =
-    fail
+  ds-prettyprint-MapType :
+    amb([h|hs]) -> <ds-prettyprint-MapType> h
 
 
 strategies
@@ -458,6 +498,18 @@ strategies
   is-NativeFunctionDecl =
     fail
 
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-JSNIPPET :
+    amb([h|hs]) -> <ds-prettyprint-JSNIPPET> h
+
+  ds-prettyprint-NativeTypeDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeTypeDecl> h
+
+  ds-prettyprint-NativeFunctionDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeFunctionDecl> h
+
 
 strategies
   ds-prettyprint-example =
@@ -514,6 +566,12 @@ strategies
   is-NativeOpDecl =
     fail
 
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-NativeOpDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeOpDecl> h
+
 
 strategies
   ds-prettyprint-example =
@@ -569,6 +627,12 @@ strategies
 
   is-NativeConsDecl =
     fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-NativeConsDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeConsDecl> h
 
 
 strategies
@@ -640,3 +704,12 @@ strategies
 
   is-ArrowDeclaration =
     fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-DeclaredArrow :
+    amb([h|hs]) -> <ds-prettyprint-DeclaredArrow> h
+
+  ds-prettyprint-ArrowDeclaration :
+    amb([h|hs]) -> <ds-prettyprint-ArrowDeclaration> h
