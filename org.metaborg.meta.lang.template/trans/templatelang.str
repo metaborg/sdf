@@ -18,7 +18,7 @@ imports
   runtime/properties/-
   runtime/types/-
   runtime/editor/-
-     
+
   analysis/-
   generation/-
   editor/-
@@ -27,34 +27,35 @@ imports
 	//name-desugar
 //	name-check
 	//check
-    
+	names/analysis/names
+
 rules // Analysis
-  
+
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
-  
+
   editor-analyze = analyze-all(normalization, id, id|<language>, <project-path>)
-  
+
   editor-save =  generate-all
-      
+
 rules // Editor services
 
   editor-resolve:
     (node, position, ast, path, project-path) -> definition
     where
     	definition := <analysis-resolve(|<language>, project-path)> node
-  
+
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
     	proposals := <analysis-propose-completions(|<language>, project-path)> ast
-    	
+
   editor-outline:
     (node, position, ast, path, project-path) -> outline
     where
       outline := <outline> ast
 
 rules // Debugging
-  
+
   debug-show-aterm:
     (selected, position, ast, path, project-path) -> (filename, selected)
     with
@@ -65,7 +66,7 @@ rules // Debugging
     with
       filename := <guarantee-extension(|"desugared.aterm")> path;
       result   := <desugar-templates> selected
-      
+
   debug-show-analyzed:
     (selected, position, ast, path, project-path) -> (filename, selected)
     with
@@ -82,18 +83,18 @@ rules // Debugging
 		analysis-debug-task-partition(|<language>)
 	debug-task-selection =
 		analysis-debug-task-selection(|<language>)
-		
+
 	debug-project =
 		analysis-debug-project(|<language>)
 	debug-partition =
 		analysis-debug-partition(|<language>)
-		
+
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
 
 rules
 
- 
+
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
   	?(filename, string);
