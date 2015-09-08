@@ -3,15 +3,15 @@ module analysis/names-hack
 imports
 
   include/TemplateLang
-  analysis/names
+  names/analysis/names
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
   runtime/properties/-
-  
+
 rules
-	
-  
+
+
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@SdfProductionWithCons(
          SortCons(SortDef(s), Constructor(c))
@@ -35,7 +35,7 @@ rules
          , id
          ))
     ; fail
-      
+
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@SdfProductionWithCons(
          SortCons(Lex(SortDef(s)), Constructor(c))
@@ -59,7 +59,7 @@ rules
          , id
          ))
     ; fail
-      
+
     nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@SdfProductionWithCons(
          SortCons(Cf(SortDef(s)), Constructor(c))
@@ -82,9 +82,9 @@ rules
          , id
          , id
          ))
-    ; fail  
-         
-      
+    ; fail
+
+
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@TemplateProductionWithCons(
          SortCons(SortDef(s), Constructor(c))
@@ -107,18 +107,16 @@ rules
          , id
          ))
     ; fail
-      
-  
-      
+
+
+
 rules // Library
-	
+
   nabl-store-props-raw(|partition, prop*):
   	name -> name
   	where
   	  uri := <nabl-collect-def; nabl-uri> name
 	  ; <map(nabl-store-prop-raw(|partition, uri, name))> prop*
-	
+
   nabl-store-prop-raw(|partition, uri, name):
     Prop(kind, prop, dep*) -> <new-prop(|partition, uri, kind, prop)> name
-
-    	

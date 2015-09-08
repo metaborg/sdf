@@ -7,13 +7,13 @@ imports
   utils/attributes
   utils/misc
   runtime/editor/origins
-  analysis/names
+  names/analysis/names
   generation/remove-template
   analysis/desugar
-  
+
 
 rules
-    
+
   to-normal-form-all = desugar-templates; remove-templates; bottomup(try(module-to-normal-form))
 
 

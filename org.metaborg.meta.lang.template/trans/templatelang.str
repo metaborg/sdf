@@ -28,6 +28,7 @@ imports
 //	name-check
 	//check
 	names/analysis/names
+  types/analysis/types-ts
 
 rules // Analysis
 
