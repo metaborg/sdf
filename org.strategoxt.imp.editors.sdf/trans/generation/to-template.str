@@ -1,4 +1,4 @@
-module to-template
+module generation/to-template
 
 imports
   libstratego-sglr
