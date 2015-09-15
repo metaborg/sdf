@@ -47,8 +47,8 @@
 	<import file="build.generated.xml" />
 
   <!-- Main target -->
-  <target name="all" depends="spoofaximp.default.ctree" />
-  <target name="generate-sources" depends="generate-sources-ctree" />
-  <target name="package" depends="package-ctree" />
+  <target name="all" depends="spoofaximp.default.jar" />
+  <target name="generate-sources" depends="generate-sources-java" />
+  <target name="package" depends="package-java" />
 	
 </project>

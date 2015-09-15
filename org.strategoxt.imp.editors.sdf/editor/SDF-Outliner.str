@@ -1,4 +1,4 @@
-module editor/SDF-Outliner
+module SDF-Outliner
 
 rules
   

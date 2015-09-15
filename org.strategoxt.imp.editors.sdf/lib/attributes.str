@@ -1,4 +1,4 @@
-module templatelang/utils/attributes
+module attributes
 imports
 	libstratego-lib
 	libstratego-sglr
