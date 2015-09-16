@@ -1,4 +1,4 @@
-module editor/TemplateLang-Outliner
+module TemplateLang-Outliner
 
 /*
  * This file defines an outliner that is used by both the SDF2 and SDF3 (Template language) editors.
