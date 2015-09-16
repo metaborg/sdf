@@ -3,15 +3,15 @@ imports
   libstratego-lib
   libstratego-sglr
   libstratego-gpp
-  include/TemplateLang
-  trans/utils/attributes
-  trans/utils/misc
-  trans/utils/tokenize
+  TemplateLang
+  utils/attributes
+  utils/misc
+  utils/tokenize
   analysis/names
-  lib/runtime/nabl/utils
+  runtime/nabl/utils
   analysis/attributes
   analysis/desugar
-  src-gen/pp/layout-constraints/Layout-Constraints-pp
+  pp/layout-constraints/Layout-Constraints-pp
 
 
 

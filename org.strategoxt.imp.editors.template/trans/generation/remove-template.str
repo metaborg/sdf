@@ -1,8 +1,8 @@
-module remove-template
+module generation/remove-template
 
 imports
   libstratego-sglr
-  include/TemplateLang
+  TemplateLang
   analysis/desugar
   analysis/attributes
   generation/to-sdf

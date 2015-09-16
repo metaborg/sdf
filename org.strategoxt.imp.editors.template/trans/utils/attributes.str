@@ -1,8 +1,8 @@
-module trans/utils/attributes
+module utils/attributes
 imports
 	libstratego-lib
 	libstratego-sglr
-    include/TemplateLang
+    TemplateLang
 
 signature
   constructors

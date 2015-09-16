@@ -4,11 +4,11 @@ imports
 	analysis/-
 	runtime/index/-
  	runtime/task/-
- 	include/TemplateLang
- 	lib/runtime/nabl/-
-  	lib/runtime/properties/-
+ 	TemplateLang
+ 	runtime/nabl/-
+  	runtime/properties/-
   	analysis/names
-  	trans/utils/tokenize
+  	utils/tokenize
   	generation/to-sdf
   
 

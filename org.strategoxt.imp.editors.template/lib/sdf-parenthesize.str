@@ -1,4 +1,4 @@
-module lib/sdf-parenthesize // core-sdf-parenthesize
+module sdf-parenthesize // core-sdf-parenthesize
 
 imports
   libstratego-lib

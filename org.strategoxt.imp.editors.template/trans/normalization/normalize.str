@@ -1,11 +1,11 @@
-module normalize
+module normalization/normalize
 
 imports
   libstratego-lib
   libstratego-sglr
-  include/TemplateLang
-  trans/utils/attributes
-  trans/utils/misc
+  TemplateLang
+  utils/attributes
+  utils/misc
   runtime/editor/origins
   analysis/names
   generation/remove-template

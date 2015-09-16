@@ -1,9 +1,9 @@
 module analysis/desugar
 imports
   libstratego-lib
-  include/TemplateLang
-  trans/utils/attributes
-  trans/utils/misc
+  TemplateLang
+  utils/attributes
+  utils/misc
   runtime/editor/origins
   runtime/editor/annotations
 

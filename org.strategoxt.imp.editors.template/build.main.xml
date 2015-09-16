@@ -64,9 +64,9 @@
     </path>
 
     <!-- Main target -->
-    <target depends="pppack-esv, spoofaximp.default.ctree" name="all"/>
-	<target name="generate-sources" depends="pppack-esv, generate-sources-ctree" />
-	<target name="package" depends="package-ctree" />
+    <target depends="pppack-esv, spoofaximp.default.jar" name="all"/>
+	<target name="generate-sources" depends="pppack-esv, generate-sources-java" />
+	<target name="package" depends="package-java" />
 
 
     <!-- Target to create EditorService-pretty.pp.af from EditorService-pretty.pp -->

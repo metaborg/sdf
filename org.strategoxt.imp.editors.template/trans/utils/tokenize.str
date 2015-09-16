@@ -1,4 +1,4 @@
-module trans/utils/tokenize
+module utils/tokenize
 
 imports
   libstratego-lib

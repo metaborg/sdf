@@ -1,7 +1,7 @@
 module analysis/analyze
 
 imports
-  include/TemplateLang
+  TemplateLang
   analysis/desugar
   analysis/normalization
 

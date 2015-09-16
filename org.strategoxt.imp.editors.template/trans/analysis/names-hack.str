@@ -2,12 +2,12 @@ module analysis/names-hack
 
 imports
 
-  include/TemplateLang
+  TemplateLang
   analysis/names
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
-  lib/runtime/properties/-
+  runtime/properties/-
   
 rules
 	
