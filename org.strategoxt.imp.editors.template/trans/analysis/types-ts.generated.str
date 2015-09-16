@@ -1,4 +1,4 @@
-module trans/analysis/types-ts.generated
+module analysis/types-ts.generated
 
 imports
   
