@@ -277,7 +277,7 @@
 					<arg value="--rule-prefix"/>
 					<arg value="${sdfmodule}"/>
 					<arg value="--sig-module"/>
-					<arg value="${lib-gen.rel}/${sdfmodule}"/>
+					<arg value="${sdfmodule}"/>
 				</args>
 				</sdf2parenthesize>
 			</try>
