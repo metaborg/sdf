@@ -1,10 +1,10 @@
 
-module src-gen/completions/priority/Priority-esv
+module completions/priority/Priority-esv
 
 imports
-  src-gen/completions/kernel/Kernel-esv
-  src-gen/completions/constants/NatCon-esv
-  src-gen/completions/TemplateLang-esv
+  completions/kernel/Kernel-esv
+  completions/constants/NatCon-esv
+  completions/TemplateLang-esv
 
 completions
   completion template Associativity : "left" =

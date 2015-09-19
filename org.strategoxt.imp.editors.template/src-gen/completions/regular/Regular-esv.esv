@@ -1,12 +1,12 @@
-module src-gen/completions/regular/Regular-esv
+module completions/regular/Regular-esv
 
 imports
-  src-gen/completions/kernel/Kernel-esv
-  src-gen/completions/constants/IntCon-esv
-  src-gen/completions/symbols/Symbols-esv
-  src-gen/completions/constants/StrCon-esv
-  src-gen/completions/labels/Labels-esv
-  src-gen/completions/sorts/Sorts-esv
+  completions/kernel/Kernel-esv
+  completions/constants/IntCon-esv
+  completions/symbols/Symbols-esv
+  completions/constants/StrCon-esv
+  completions/labels/Labels-esv
+  completions/sorts/Sorts-esv
 
 completions
   completion template Symbol : "(Symbol Symbol)" =

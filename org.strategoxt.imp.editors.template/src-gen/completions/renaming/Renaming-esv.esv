@@ -1,8 +1,8 @@
-module src-gen/completions/renaming/Renaming-esv
+module completions/renaming/Renaming-esv
 
 imports
-  src-gen/completions/kernel/Kernel-esv
-  src-gen/completions/symbols/Symbols-esv
+  completions/kernel/Kernel-esv
+  completions/symbols/Symbols-esv
 
 completions
   completion template Renamings : "[]" =

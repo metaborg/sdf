@@ -1,4 +1,4 @@
-module src-gen/completions/characterclass/Character-esv
+module completions/characterclass/Character-esv
 
 completions
   completion template Character : "\\TOP" =

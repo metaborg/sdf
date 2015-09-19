@@ -1,9 +1,9 @@
-module src-gen/signatures/priority/Priority-sig
+module signatures/priority/Priority-sig
 
 imports
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/constants/NatCon-sig
-  src-gen/signatures/TemplateLang-sig
+  signatures/kernel/Kernel-sig
+  signatures/constants/NatCon-sig
+  signatures/TemplateLang-sig
 
 
 signature

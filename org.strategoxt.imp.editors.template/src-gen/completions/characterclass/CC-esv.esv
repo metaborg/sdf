@@ -1,5 +1,5 @@
-module src-gen/completions/characterclass/CC-esv
+module completions/characterclass/CC-esv
 
 imports
-  src-gen/completions/characterclass/Character-Class-esv
-  src-gen/completions/kernel/Kernel-esv
+  completions/characterclass/Character-Class-esv
+  completions/kernel/Kernel-esv

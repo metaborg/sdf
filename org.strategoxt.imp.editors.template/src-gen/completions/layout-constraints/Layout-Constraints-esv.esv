@@ -1,8 +1,8 @@
 
-module src-gen/completions/layout-constraints/Layout-Constraints-esv
+module completions/layout-constraints/Layout-Constraints-esv
 
 imports
-  src-gen/completions/constants/NatCon-esv
+  completions/constants/NatCon-esv
 
 completions
   completion template Attribute : "layout(Constraint)" =

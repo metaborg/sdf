@@ -1,8 +1,8 @@
-module src-gen/completions/symbols/Start-Symbols-esv
+module completions/symbols/Start-Symbols-esv
 
 imports
-  src-gen/completions/kernel/Kernel-esv
-  src-gen/completions/symbols/Symbols-esv
+  completions/kernel/Kernel-esv
+  completions/symbols/Symbols-esv
 
 completions
   completion template Grammar : "start-symbols Symbols " =

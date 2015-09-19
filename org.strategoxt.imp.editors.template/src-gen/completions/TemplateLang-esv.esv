@@ -1,18 +1,18 @@
-module src-gen/completions/TemplateLang-esv
+module completions/TemplateLang-esv
 
 imports
-  src-gen/completions/sdf2-core/SDF-esv
-  src-gen/completions/constants/StrCon-esv
-  src-gen/completions/sorts/Sorts-esv
-  src-gen/completions/symbols/Symbols-esv
-  src-gen/completions/labels/Labels-esv
-  src-gen/completions/constants/IdentifierCon-esv
-  src-gen/completions/kernel/Kernel-esv
-  src-gen/completions/restrictions/Restrictions-esv
-  src-gen/completions/priority/Priority-esv
-  src-gen/completions/basic/Basic-esv
-  src-gen/completions/modules/Modules-esv
-  src-gen/completions/layout-constraints/Layout-Constraints-esv
+  completions/sdf2-core/SDF-esv
+  completions/constants/StrCon-esv
+  completions/sorts/Sorts-esv
+  completions/symbols/Symbols-esv
+  completions/labels/Labels-esv
+  completions/constants/IdentifierCon-esv
+  completions/kernel/Kernel-esv
+  completions/restrictions/Restrictions-esv
+  completions/priority/Priority-esv
+  completions/basic/Basic-esv
+  completions/modules/Modules-esv
+  completions/layout-constraints/Layout-Constraints-esv
 
 completions
   completion template Section : "template options " =

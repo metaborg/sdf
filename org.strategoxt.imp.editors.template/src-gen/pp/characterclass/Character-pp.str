@@ -1,9 +1,9 @@
-module src-gen/pp/characterclass/Character-pp
+module pp/characterclass/Character-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
-  src-gen/signatures/characterclass/Character-sig
+  signatures/characterclass/Character-sig
 
 
 strategies

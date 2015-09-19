@@ -1,19 +1,19 @@
-module src-gen/pp/aliases/Aliases-pp
+module pp/aliases/Aliases-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
-  src-gen/signatures/aliases/Aliases-sig
+  signatures/aliases/Aliases-sig
 
 
 imports
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/symbols/Symbols-sig
+  signatures/kernel/Kernel-sig
+  signatures/symbols/Symbols-sig
 
 
 imports
-  src-gen/pp/kernel/Kernel-pp
-  src-gen/pp/symbols/Symbols-pp
+  pp/kernel/Kernel-pp
+  pp/symbols/Symbols-pp
 
 
 strategies

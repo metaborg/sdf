@@ -1,3 +1,3 @@
-module src-gen/signatures/layout/Whitespace-sig
+module signatures/layout/Whitespace-sig
 
 signature

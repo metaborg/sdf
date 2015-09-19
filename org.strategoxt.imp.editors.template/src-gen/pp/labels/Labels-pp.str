@@ -1,21 +1,21 @@
-module src-gen/pp/labels/Labels-pp
+module pp/labels/Labels-pp
 
 imports
   libstratego-gpp
   runtime/tmpl/pp
-  src-gen/signatures/labels/Labels-sig
+  signatures/labels/Labels-sig
 
 
 imports
-  src-gen/signatures/kernel/Kernel-sig
-  src-gen/signatures/constants/StrCon-sig
-  src-gen/signatures/constants/IdentifierCon-sig
+  signatures/kernel/Kernel-sig
+  signatures/constants/StrCon-sig
+  signatures/constants/IdentifierCon-sig
 
 
 imports
-  src-gen/pp/kernel/Kernel-pp
-  src-gen/pp/constants/StrCon-pp
-  src-gen/pp/constants/IdentifierCon-pp
+  pp/kernel/Kernel-pp
+  pp/constants/StrCon-pp
+  pp/constants/IdentifierCon-pp
 
 
 strategies
