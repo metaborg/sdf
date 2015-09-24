@@ -18,7 +18,7 @@ imports
 rules
 
   editor-analyze:
-    (ast, path, project-path) -> (<flatten-list> error'*, <flatten-list> warning'*, [])
+    (ast, path, project-path) -> (ast, <flatten-list> error'*, <flatten-list> warning'*, [])
     with
       editor-init;
       analyze-ast;
