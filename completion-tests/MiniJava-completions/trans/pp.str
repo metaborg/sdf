@@ -3,9 +3,9 @@ module pp
 imports
 
 	libstratego-gpp
-	lib/runtime/refactoring/-
+	runtime/refactoring/-
 	include/MiniJava-completions-parenthesize
-	src-gen/pp/MiniJava-completions-pp
+	pp/MiniJava-completions-pp
 
 rules
 	
