@@ -1,6 +1,6 @@
 module TemplateLang 
 imports
-  sdf2-core/SDF
+  sdf2-core/Sdf2
   constants/StrCon
   sorts/Sorts
   symbols/Symbols
