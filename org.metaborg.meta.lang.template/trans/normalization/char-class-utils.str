@@ -1,0 +1,230 @@
+module char-class-utils
+
+imports
+    include/TemplateLang
+    libstratego-sglr
+    libstratego-lib
+    libstratego-gpp
+    normalization/to-normal-form
+
+rules
+
+    char-class-to-pt-format:
+        Absent() -> []
+    
+    char-class-to-pt-format:
+        Numeric(n) -> [n']
+        with 
+            int := <ltrim-chars(?'\')> n;
+            n'  := <string-to-int> int
+    
+    char-class-to-pt-format:
+        Range(Numeric(n1), Numeric(n2)) -> [range(n1', n2')]
+        with
+            int1 := <ltrim-chars(?'\')> n1;
+            n1'  := <string-to-int> int1;
+            int2 := <ltrim-chars(?'\')> n2;
+            n2'  := <string-to-int> int2
+        
+    char-class-to-pt-format:
+        Conc(cc1, cc2) -> [cc1*, cc2*]
+        with
+            cc1* := <char-class-to-pt-format> cc1;
+            cc2* := <char-class-to-pt-format> cc2
+            
+
+    to-sdf3-char-class:
+        [] -> Absent()
+        
+    to-sdf3-char-class:
+        [n] -> Numeric($[\[n]])
+        where
+            <is-int> n
+    
+    to-sdf3-char-class:
+        [range(n1, n2)] -> Range(Numeric($[\[n1]]), Numeric($[\[n2]])) 
+        
+    to-sdf3-char-class:
+        [h | tl] -> Conc(h', tl') 
+        with
+            h'  := <to-sdf3-char-class> [h];
+            tl' := <to-sdf3-char-class> tl      
+
+    cc-intersec:
+       (cc1, cc2) -> <cc-difference> (cc1, <cc-difference> (cc1, cc2))
+    
+    cc-difference:
+       (Absent(), cc) -> Absent()
+       
+    cc-difference:
+       (cc, Absent()) -> cc
+           
+    cc-difference:
+        (Numeric(c1), Numeric(c2)) -> result
+        where
+            
+            if <?c1> c2 then
+                result := Absent()
+            else
+                result := Numeric(c1)
+            end       
+    
+    cc-difference:
+        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> result
+        where
+            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
+            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
+            c4-int := <ltrim-chars(?'\'); string-to-int> c4;            
+            if <geq> (c1-int, c3-int); <geq> (c4-int, c1-int)  then
+                result := Absent()
+            else
+                result := Numeric(c1)
+            end 
+    
+    cc-difference:
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> result
+        where
+            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
+            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
+            c3-int := <ltrim-chars(?'\'); string-to-int> c3;            
+            if <geq> (c3-int, c1-int); <geq> (c2-int, c3-int)  then
+                result := <try(merge-overlapping-cc)> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
+                                            , <try(pre-char-class-norm)> Range(Numeric(<cc-succ> c3), Numeric(c2)))
+            else
+                result := Range(Numeric(c1), Numeric(c2))
+            end       
+    
+    cc-difference:
+        (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> result
+        where
+            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
+            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
+            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
+            c4-int := <ltrim-chars(?'\'); string-to-int> c4;
+            c4'    := <cc-succ> c4;
+            c4-int':= <ltrim-chars(?'\'); string-to-int> c4';
+            if <geq> (c2-int, c3-int); <geq> (c4-int', c1-int)  then
+                result := <try(merge-overlapping-cc)> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
+                                            , <try(pre-char-class-norm)> Range(Numeric(c4'), Numeric(c2)))
+            else
+                result := Range(Numeric(c1), Numeric(c2))
+            end   
+            
+    cc-difference:
+        (cr1, cr2) -> result
+        where
+            <?Conc(_, _)> cr1 <+
+            <?Conc(_, _)> cr2
+        where
+            <smaller> (<cc-head> cr2, <cc-head> cr1);
+            result-tail-cr2 := <cc-tail> cr2;
+            result :=  <cc-difference> (cr1, result-tail-cr2)        
+    
+    cc-difference:
+        (cr1, cr2) -> result
+        where
+            <?Conc(_, _)> cr1 <+
+            <?Conc(_, _)> cr2
+        where
+            <smaller> (<cc-head> cr1, <cc-head> cr2);
+            result-tail-cc1 := <cc-tail> cr1;
+            result :=  <cc-union> (<cc-head> cr1, <cc-difference> (result-tail-cc1, cr2))         
+    
+    cc-difference:
+        (cr1, cr2) -> result
+        where
+            <?Conc(_, _)> cr1 <+
+            <?Conc(_, _)> cr2
+        where
+            cr1-head := <cc-head> cr1;
+            cr2-head := <cc-head> cr2;
+            not(<smaller> (cr1-head, cr2-head) <+ <smaller> (cr2-head, cr1-head));
+            tail-cr1 := <cc-tail> cr1;
+            tail-cr2 := <cc-tail> cr2;
+            result := <cc-difference> (<cc-union> (<cc-difference> (cr1-head, cr2-head), tail-cr1), <cc-union> (<cc-difference> (cr2-head, cr1-head), tail-cr2))   
+     
+    cc-union:
+        (r1, r2) -> result
+        where
+            cr1       := <cc-head> r1;
+            <strictly-smaller> (cr1, <cc-head> r2);
+            tail-cr1  := <cc-tail> r1;
+            cr2cr3    := <cc-union> (tail-cr1, r2);
+            result    := Conc(cr1, cr2cr3)
+      
+    cc-union:
+        (r1, r2) -> <try(cc-union)> (r2, r1)
+        where
+            <left-smaller> (<cc-head> r2, <cc-head> r1)
+        
+    cc-union:
+        (r1, r2) -> <try(cc-union)> (<try(cc-union)> (r3, result-tail-r1), result-tail-r2)
+        where
+            result-tail-r1 := <cc-tail> r1;
+            result-tail-r2 := <cc-tail> r2;
+            r3             := <merge-cc> (<cc-head> r1, <cc-head> r2)
+                  
+    cc-union:
+        (r1, Absent()) -> r1
+        
+    cc-union:
+        (Absent(), r2) -> r2
+        
+    cc-union:
+        (Absent(), Absent()) -> Absent() 
+        
+    compute-partitioning:
+       (ccs1, ccs2) -> partitioned-cc*
+       with
+           partitioned-cc* := <concat-cc-set> (<concat-cc-set> (<intersec-cc-set> (ccs1, ccs2), <diff-cc-set> (ccs1, ccs2)), <diff-cc-set> (ccs2, ccs1))
+    
+    concat-cc-set :
+       (cc1*, cc2*)  ->  <flatten-list> [<filter(not(?Absent()))> cc1*, <filter(not(?Absent()))> cc2*]
+       
+    diff-cc-set:
+       (ccs1, []) -> ccs1
+       where
+          <not(?[])> ccs1
+          
+       
+    diff-cc-set:
+       ([], ccs1) -> []
+       
+    diff-cc-set:
+       ([cc], [cc']) -> [<cc-difference> (cc, cc')]
+    
+    diff-cc-set:
+       (ccs, [h | hs]) -> <diff-cc-set> (<diff-cc-set> (ccs, [h]), hs)
+       where
+           <?[h']> ccs;
+           <not(?[])> hs
+           
+    diff-cc-set:
+       ([h | hs], ccs) -> <concat-cc-set> (<diff-cc-set> ([h], ccs) , <diff-cc-set> (hs, ccs))
+       where
+           <not(?[])>  hs
+       
+    intersec-cc-set:
+        (ccs1, []) -> []
+        where
+          <not(?[])> ccs1
+       
+    intersec-cc-set:
+        ([], ccs1) -> []
+          
+       
+    intersec-cc-set:
+       ([cc], [cc']) -> [<cc-intersec> (cc, cc')]
+       
+    intersec-cc-set:
+       (ccs, [h | hs]) -> <concat-cc-set> (<intersec-cc-set> (ccs, [h]), <intersec-cc-set> (ccs, hs))
+       where            
+           <?[h']> ccs;
+           <not(?[])>  hs
+    
+    intersec-cc-set:
+       ([h | hs], ccs) -> <concat-cc-set> (<intersec-cc-set> ([h], ccs) , <intersec-cc-set> (hs, ccs))   
+       where
+           <not(?[])> hs
+        
+        

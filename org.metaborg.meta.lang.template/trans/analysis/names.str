@@ -24,13 +24,18 @@ signature
   constructors
     NablProp_def             : Property
     NablProp_sort            : Property
+    NablProp_ast             : Property
     NablProp_constructorName : Property
 
 
 rules
 
   nabl-custom-properties(add-properties) =
-    ![NablProp_def(), NablProp_sort(), NablProp_constructorName()]
+    ![ NablProp_def()
+     , NablProp_sort()
+     , NablProp_ast()
+     , NablProp_constructorName()
+     ]
     ; add-properties
 
   def-is(|ctx__) =
@@ -129,6 +134,54 @@ rules
     term -> <create-sort-task(|ctx__)> term
     where NablProp_sort() := kind
 
+  ast-is(|ctx__) =
+    nabl-prop-calc(|ctx__, [])
+
+  ast-is(|ctx__, dep*) =
+    nabl-prop-calc(|ctx__, dep*)
+
+  ast-task(|ctx__) =
+    get-or-create-property-task(|ctx__, NablProp_ast())
+
+  ast-list(|ctx__) =
+    nabl-prop-list(|ctx__, [])
+
+  ast-list(|ctx__, dep*) =
+    nabl-prop-list(|ctx__, dep*)
+
+  ast-lookup(|ctx__) =
+    nabl-prop-lookup(|NablProp_ast(), ctx__, [])
+
+  ast-lookup(|ctx__, dep*) =
+    nabl-prop-lookup(|NablProp_ast(), ctx__, dep*)
+
+  ast-match(|ctx__, expected) =
+    nabl-prop-match(
+    | NablProp_ast()
+    , ctx__
+    , Eq()
+    , expected
+    )
+
+  ast-match(|ctx__, relation, expected) =
+    nabl-prop-match(|NablProp_ast(), ctx__, relation, expected)
+
+  create-ast-task(|ctx__) =
+    fail
+
+  get-ast(|) =
+    get-property(|NablProp_ast())
+
+  store-ast(|ctx__, prop) =
+    nabl-store-prop(
+    | ctx__
+    , Prop(NablProp_ast(), prop, [])
+    )
+
+  create-property-task(|ctx__, kind):
+    term -> <create-ast-task(|ctx__)> term
+    where NablProp_ast() := kind
+
   constructorName-is(|ctx__) =
     nabl-prop-calc(|ctx__, [])
 
@@ -181,43 +234,44 @@ rules
 rules
 
   nabl-get-scope =
-    ?Module(Unparameterized(m), i*, s*)
+    ?mod@Module(Unparameterized(m), i*, s*)
     ; ![NablNsSort(), NablNsConstructor()]
 
   nabl-get-name :
-    Module(Unparameterized(m), i*, s*) -> m
+    mod@Module(Unparameterized(m), i*, s*) -> m
 
   nabl-name-apply(s) =
-    Module(Unparameterized(s), id, id)
+    id ; Module(Unparameterized(s), id, id)
 
   nabl-def-site(child-uris__, sibl-uris__, implicits__|lang__, ctx__, uniques__, uri__, states__) =
-    ?Module(Unparameterized(m), i*, s*)
-    ; origin-track-forced(
-        Module(
-          origin-track-forced(
-            Unparameterized(
-              nabl-def(
-                ?c-uri1__
-              , ?s-uri1__
-              | lang__
-              , ctx__
-              , uniques__
-              , uri__
-              , uri__
-              , NablNsModule()
-              , Unique()
-              , Current()
-              , [NablNsSort(), NablNsConstructor()]
-              , []
-              )
-            )
-          |
-          )
-        , id
-        , id
-        )
-      |
-      )
+    ?mod@Module(Unparameterized(m), i*, s*)
+    ; (id
+       ; origin-track-forced(
+           Module(
+             origin-track-forced(
+               Unparameterized(
+                 nabl-def(
+                   ?c-uri1__
+                 , ?s-uri1__
+                 | lang__
+                 , ctx__
+                 , uniques__
+                 , uri__
+                 , uri__
+                 , NablNsModule()
+                 , Unique()
+                 , Current()
+                 , [NablNsSort(), NablNsConstructor()]
+                 , []
+                 )
+               )
+             |
+             )
+           , id
+           , id
+           )
+         |
+         ))
     ; match(child-uris__|c-uri1__)
     ; match(sibl-uris__|s-uri1__)
     ; match(implicits__|[])

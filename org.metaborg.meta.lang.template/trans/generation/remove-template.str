@@ -4,6 +4,7 @@ imports
   libstratego-sglr
   include/TemplateLang
   analysis/analyze
+  analysis/desugar
   libstrc
   generation/to-sdf
   trans/utils/-
@@ -18,7 +19,7 @@ rules // Convert templates to regular productions
 		SDFSection(ContextFreeSyntax(prods*)) ->  SDFSection(ContextFreeSyntax(prods'*))
 		where
 			prods'* := <map(try(template-to-sdf3-prod(|chars)))> prods*
-		
+		 
 	template-to-sdf3-prod(|chars):
 	  	TemplateProduction(s, t*, a) -> SdfProduction(s, Rhs(t'*), a')
 	  	with

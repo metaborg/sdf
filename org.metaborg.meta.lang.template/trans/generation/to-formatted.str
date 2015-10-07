@@ -51,7 +51,6 @@ rules
   		<?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
   	with
   		lit' := <separator-to-literal> lit;
-  		//debug(!"lit' = ");
   		if "" := lit'
   		then
   			switch !symbol

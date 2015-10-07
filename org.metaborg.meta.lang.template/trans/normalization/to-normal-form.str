@@ -8,59 +8,184 @@ imports
   analysis/lifting
   generation/remove-template
   editor/builders
-
+  runtime/nabl/utils
+  analysis/names
+  normalization/to-parse-table
+  editor-common.generated
+  runtime/analysis/core
+  
 rules
     
     // m[def](m) is missing here. Basically expand imports for a determined top module (current one?)
-    to-normal-form = module-to-normal-form
+    to-normal-form(|path) = module-to-normal-form(|path)
     
-    module-to-normal-form :
-        m@Module(Unparameterized(mn), i*, sections) -> result
+    module-to-normal-form(|path) :
+        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-normalized]), [], new-sections)
         with
+            <debug(!"normalizing grammar ")> mn;
+            mn'  := <strip-annos> mn;
+            rules(expanded-module: mn' -> <id>);
+            where(before-normalizing := <cputime>);
             //TODO: Only one tokenize section works per file, have proper granularity for this
-            tokenize-chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
-            non-template-m := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> m;
-            lifted-cons    := <lift-constructors-norm> non-template-m;
-            expanded-prio  := <expand-priorities> lifted-cons;
-            basic-m        := <basic-norm> expanded-prio;
-            top-sorts      := <top-sorts> basic-m;
-            regular-m      := <regular-norm> top-sorts;
-            priority-m     := <priority-norm> regular-m;
-            literal-m      := <literal-norm> priority-m;
-            char-class-m   := <char-class-norm> literal-m;
-            restrict-m     := <restrictions-norm> char-class-m;
-            result         := restrict-m
+            tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
+            non-template-sections*     := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
+            
+            // TODO: Expand imports and concatenate with the result
+            //<debug(!"imports ")> i*;
+            import-names*              := <collect(?Module(Unparameterized(<id>)))> i*; 
+            //debug(!"all names ");
+            imported-modules*          := <filter(expand-import(|path))> import-names*;
+            //debug(!"imported modules ");
+            imported-kernel*           := <map(?Module(_, _, <fetch-elem(?SDFSection(Kernel(<id>)))>)); flatten-list; make-set> imported-modules*;
+            //debug(!"imported kernels ");
+            imported-restr*            := <map(?Module(_, _, <fetch-elem(?SDFSection(Restrictions(<id>))) <+ ![]>)); flatten-list; make-set> imported-modules*;
+            //debug(!"imported rest ");
+            imported-prio*             := <map(?Module(_, _, <fetch-elem(?SDFSection(Priorities(<id>))) <+ ![]>)); flatten-list; make-set> imported-modules*;
+            //debug(!"imported prio ");
+            
+            // keeping Sort.Cons in the normalized grammar
+            // lifted-cons    := <lift-constructors-norm> non-template-m;
+            
+            // change priority norm to handle Sort.Cons priorities
+            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections*;
+            
+            
+            //basic normalization
+            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections*;
+            new-basic-prods*           := [new-basic-prods'*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))];
+            new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> expanded-prio;
+           
+           
+            // basic + restrictions
+            cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections*;
+            lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections*;
+            kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections*;
+      
+         
+            // top sorts
+            lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections*;
+            cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections*;
+            start-symbols*             := <filter(?SDFSection(KernelStartSymbols(<id>))); flatten-list> non-template-sections*; 
+            lexical-start-prods*       := <map(lex-start-prod)> lex-start-symbols*;
+            start-prods*               := <map(kernel-start-prod)> start-symbols*;
+            cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
+            new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())];
+            
+            
+            // regular 
+            cf-symbols*                := <bagof-get-cf-sorts; make-set> "cf-symbols";
+            lex-symbols*               := <bagof-get-lexical-sorts; make-set> "lexical-symbols";
+            kernel-symbols*            := <bagof-get-kernel-sorts; make-set> "kernel-symbols";
+            new-regular-prods*         := <filter(regular-norm-symbol); flatten-list> [cf-symbols*, lex-symbols*, kernel-symbols*];
+            new-regular-priorities*    := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, kernel-symbols*];
+            
+           
+            // priorities
+            new-kernel-priorities*     := <map(try(norm-prio-fun)); flatten-list> [new-basic-priorities*, new-regular-priorities*];            
+            assoc-prio-from-prods*     := <filter(assoc-prio-fun)> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];       
+            new-normalized-priorities* := [new-kernel-priorities*, assoc-prio-from-prods*];
+            
+            
+            // literals            
+            literals*                  := <collect(?Lit(_) + ?CiLit(_)); make-set> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
+            new-literal-prods*         := <map(make-prod-from-lit)> literals*;
+       
+             
+            // char-class
+            new-char-class-prio*       := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> new-normalized-priorities*;
+            new-char-class-prods*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [new-literal-prods*, new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
+            new-char-class-restr*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [cf-restrictions*, lex-restrictions*, kernel-restrictions*];
+            
+            new-priorities-section     := SDFSection(Priorities(<make-set> [new-char-class-prio*, imported-prio*]));
+            // TODO: proper merge of productions (same production = merge attributes)
+            new-kernel-section         := SDFSection(Kernel(<make-set> [new-char-class-prods*, imported-kernel*]));
+            
+            // restrictions
+            new-restrictions-section   := SDFSection(Restrictions(<merge-restrictions; make-set> [imported-restr*, new-char-class-restr*])); //SDFSection(Restrictions(<merge-restrictions> new-char-class-restr*))
+            
+            if <?SDFSection(Restrictions([]))> new-restrictions-section then
+                new-sections := [new-kernel-section, new-priorities-section]
+            else
+                new-sections := [new-kernel-section, new-restrictions-section, new-priorities-section]
+            end  
+            
+            where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
+     
+    expand-import(|path):
+        name -> ast
+        where
+            name'  := <strip-annos> name;  
+            <not(expanded-module)> name';
+            rules(
+                expanded-module:
+                    name' -> <id>
+            );
+            debug(!"name ");
+            ast    := <get-ast; module-to-normal-form(|path)> name;
+            debug(!"ast ")          
+            //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
+            
+    open-import-custom(resolve-path, parse-file, record-declarations):
+    import -> result
+    where
+      if not(!import => COMPLETION(_)) then
+        path       := <resolve-path> import;
+        cache-path := <import-cache-path> path;
+        if not(<IsImported> path) then
+          rules(
+            IsImported: path
+          );
+          ( <is-newer> (cache-path, path);
+            file := <ReadFromFile> cache-path
+          <+
+            file := <parse-file> path;
+            if <file-exists> path then
+              // Only cache if on filesystem (e.g., ignore libstratego-lib)
+              <WriteToBinaryFile> (cache-path, file)
+            end        
+          );
+          {| CurrentFile:
+            rules(CurrentFile := path);
+            result := <record-declarations> file
+          |}
+        end
+      end        
     
+    resolve-path(|path):
+        name -> resolved-name
+        where
+            resolved-name := $[[path]/[name].sdf3]    
+  
     lift-constructors-norm = topdown(try(lift-cons-fun))
     
     lift-cons-fun:
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProduction(symbol, Rhs(symbols*), attrs')
-    with
-        new-cons := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
-        attrs'   := <(?Attrs([]) + ?NoAttrs()); !Attrs([new-cons]) <+ ?Attrs(attrs*); !Attrs([new-cons, attrs*])> attrs
+        with
+            new-cons := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
+            attrs'   := <(?Attrs([]) + ?NoAttrs()); !Attrs([new-cons]) <+ ?Attrs(attrs*); !Attrs([new-cons, attrs*])> attrs
         
     
-    expand-priorities = topdown(try(expand-priority))
+    expand-priorities(|tokenize-chars) = topdown(try(expand-priority(|tokenize-chars)))
     
-    expand-priority:
+    expand-priority(|tokenize-chars):
         SimpleRefGroup(ref) -> SimpleGroup(ref')
-    with
-        ref' := <sortcons-to-prod> ref
+        with
+            ref' := <sortcons-to-prod(|tokenize-chars)> ref
         
-    expand-priority:
+    expand-priority(|tokenize-chars):
         ProdsRefGroup(ref) -> ProdsGroup(ref')
-     with
-        ref' := <map(sortcons-to-prod)> ref
+         with
+            ref' := <map(sortcons-to-prod(|tokenize-chars))> ref
     
-    expand-priority:
+    expand-priority(|tokenize-chars):
         AssocRefGroup(a, ref) -> AssocGroup(a, ref')
-    with
-        ref' := <map(sortcons-to-prod)> ref
+        with
+            ref' := <map(sortcons-to-prod(|tokenize-chars))> ref
         
-    sortcons-to-prod:
+    sortcons-to-prod(|tokenize-chars):
         SortConsRef(Sort(s), Constructor(c)) -> prod
-    with
-        prod := <get-def; try(desugar-templates); remove-constructor> c    
+        with
+            prod := <get-def; try(desugar-templates); try(template-to-sdf3-prod(|tokenize-chars)); try(remove-constructor)> c    
         
     basic-norm :
         Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
@@ -109,14 +234,20 @@ rules
         with
             symbol'   := <try(cf-basic-norm-symb)> symbol;
             symbols'* := <map(try(cf-basic-norm-symb)); separate-by(!Cf(Opt(Layout())))> symbols*; 
-            attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
+            attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs;
+            if <not(?[st] <+ ?[])> symbols* then
+                rules(get-cf-sorts:+ "cf-symbols" -> Cf(Opt(Layout()))) 
+            end
         
     cf-basic-norm-prod:
         SdfProduction(symbol, Rhs(symbols*), attrs) -> SdfProduction(symbol', Rhs(symbols'*), attrs')
         with
             symbol'   := <try(cf-basic-norm-symb)> symbol;
             symbols'* := <map(try(cf-basic-norm-symb)); separate-by(!Cf(Opt(Layout())))> symbols*; 
-            attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
+            attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs;
+            if <not(?[st] <+ ?[])> symbols* then
+                rules(get-cf-sorts:+ "cf-symbols" -> Cf(Opt(Layout()))) 
+            end
         
     cf-basic-norm-symb:
         s -> Cf(s)
@@ -229,7 +360,10 @@ rules
        s -> SdfProduction(Start(), Rhs([Lex(s)]), NoAttrs())
        
     cf-start-prod:
-        s -> SdfProduction(Start(), Rhs([Cf(Opt(Layout())), Cf(s), Cf(Opt(Layout()))]), NoAttrs())   
+        s -> SdfProduction(Start(), Rhs([Cf(Opt(Layout())), Cf(s), Cf(Opt(Layout()))]), NoAttrs())
+        with
+            rules(get-cf-sorts:+ "cf-symbols" -> Cf(Opt(Layout()))) 
+           
        
     regular-norm:
         Module(Unparameterized(mn), i*, sections*@[SDFSection(Kernel(prods*)) | ss*]) -> Module(Unparameterized(mn), i*, [SDFSection(Kernel([prods*, new-prods*])), ss*, SDFSection(Priorities([new-priorities*]))])
@@ -690,7 +824,7 @@ rules
             kernel-priorities*     := <filter(?SDFSection(Priorities(<id>))); flatten-list> sections*;
             new-kernel-priorities* := <map(try(norm-prio-fun)); flatten-list> kernel-priorities*;
             assoc-prio*            := <filter(?SDFSection(Kernel(<id>))); flatten-list; filter(assoc-prio-fun)> sections*;        
-            new-priorities*        := <id> [new-cf-priorities*, new-lex-priorities*, new-kernel-priorities*, assoc-prio*]
+            new-priorities*        := [new-cf-priorities*, new-lex-priorities*, new-kernel-priorities*, assoc-prio*]
             
      //left or assoc associativity productions       
      assoc-prio-fun:
@@ -929,10 +1063,10 @@ rules
                 result := CharClass(Simple(Present(Conc(Numeric($[\[c1]]), Numeric($[\[c2]])))))
             end
             
-     char-class-norm:
-        m@Module(Unparameterized(mn), i*, sections*) -> m'
-        with
-            m' := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm); char-class-norm-fun)> m
+     //char-class-norm:
+     //   m@Module(Unparameterized(mn), i*, sections*) -> m'
+     //   with
+     //       m' := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations)) > m
         
      character-norm-fun:
         Short(c) -> Numeric($[\[c']])
@@ -964,6 +1098,45 @@ rules
             
      pre-char-class-norm:
         Present(Absent()) -> Absent()       
+        
+     is-member:
+        (Numeric(c), Numeric(c2)) -> <id>
+        where
+            <?c> c2
+     
+     is-member:
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
+        where
+            c-int  := <ltrim-chars(?'\'); string-to-int> c;
+            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
+            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
+            <geq> (c-int, c1-int);
+            <geq> (c2-int, c-int)
+            
+     is-member:
+        (c1@Numeric(c), Conc(cr1, cr2)) -> <id>
+        where
+            <is-member> (c1, cr1) <+ <is-member> (c1, cr2)      
+            
+     is-member:
+        (Range(cr1@Numeric(c1), cr2@Numeric(c2)), cr) -> <id>
+        where
+            <is-member> (cr1, cr);
+            <is-member> (Range(Numeric(<cc-succ> c1), Numeric(c2)), cr)
+            
+     is-member:
+        (Range(cr1@Numeric(c1), Numeric(c1)), cr) -> <id>
+        where
+            <is-member> (cr1, cr)
+            
+     is-member:
+        (Conc(cr1, cr2), cr) -> <id>
+        where
+            <is-member> (cr1, cr);
+            <is-member> (cr2, cr)    
+            
+     is-member:
+        (Absent(), cr) -> <id>         
      
      left-smaller:
         (Numeric(c1), Numeric(c3)) -> <id>
@@ -1049,20 +1222,18 @@ rules
             c3-int := <ltrim-chars(?'\'); string-to-int> c3;
             <gt> (c3-int, <inc> c2-int)                                     
       
-     char-class-norm-fun = bottomup(try(order-ranges)); bottomup(try(merge-overlapping-cc)); bottomup(try(cc-set-operations))
+     char-class-norm-fun = bottomup(try(order-ranges)); bottomup(try(merge-overlapping-cc))
       
      order-ranges:
         Conc(r1, r2) -> Conc(r2, r1)
         where
-            <?Range(_, _) + ?Numeric(_)> r1;
-            <?Range(_, _) + ?Numeric(_)> r2
+            <not(?Conc(_, _))> r2
         where
             <left-smaller> (r2, r1)     
             
      order-ranges:
-        Conc(r1, rt) -> Conc(r2, Conc(r1, rtt))
+        Conc(r1, rt) -> Conc(r2, <try(order-ranges)> Conc(r1, rtt))
         where
-            <?Range(_, _) + ?Numeric(_)> r1;
             <?Conc(r2, rtt)> rt
         where
             <left-smaller> (r2, r1)          
@@ -1070,15 +1241,13 @@ rules
      merge-overlapping-cc:
         Conc(r1, r2) -> r3
         where
-            <?Range(_, _) + ?Numeric(_)> r1;
-            <?Range(_, _) + ?Numeric(_)> r2
+            <not(?Conc(_, _))> r2
         where
             r3 := <merge-cc> (r1, r2)
             
      merge-overlapping-cc:
-        Conc(r1, rt) -> Conc(r3, rtt)
+        Conc(r1, rt) -> <try(merge-overlapping-cc)> Conc(r3, rtt)
         where
-            <?Range(_, _) + ?Numeric(_)> r1;
             <?Conc(r2, rtt)> rt
         where
             r3 := <merge-cc> (r1, r2)   
@@ -1278,12 +1447,12 @@ rules
       concatenate-cc:
         p@(Simple(Present(r1)), cr3@Simple(Present(r2))) -> result
         where
-            cr1 := <cc-head> r1;
+            cr1       := <cc-head> r1;
             <strictly-smaller> (cr1, <cc-head> r2);
-            tail-cr1 := <cc-tail; (?Absent(); !Simple(<id>) <+ !Simple(Present(<id>)))> r1;
-            cr2cr3 := <concatenate-cc> (tail-cr1, cr3);
+            tail-cr1  := <cc-tail; (?Absent(); !Simple(<id>) <+ !Simple(Present(<id>)))> r1;
+            cr2cr3    := <concatenate-cc> (tail-cr1, cr3);
             remainder := <?Simple(Present(<id>))> cr2cr3;
-            result := Simple(Present(Conc(cr1, remainder)))
+            result    := Simple(Present(Conc(cr1, remainder)))
       
       concatenate-cc:
         (Simple(Present(r1)), Simple(Present(r2))) -> <try(concatenate-cc)> (Simple(Present(r2)), Simple(Present(r1)))
@@ -1353,19 +1522,31 @@ rules
      make-new-restrictions(|restrictions*):
         symbol -> new-restriction
         where
-            char-set        := <filter(char-set-from-restr(|symbol)); try(flatten-list); create-char-set-from-list; bottomup(try(cc-set-operations))> restrictions*;
-            seqs*           := <filter(seq-from-restr(|symbol)); flatten-list; bottomup(try(add-lists-to-sequences))> restrictions*;
+            char-set                := <filter(char-set-from-restr(|symbol)); try(flatten-list); create-char-set-from-list; bottomup(try(cc-set-operations))> restrictions*;
+            seqs*                   := <filter(seq-from-restr(|symbol)); flatten-list; bottomup(try(add-lists-to-sequences))> restrictions*;
+            seqs-symbols*           := <map(?Seq(<id>,_)); flatten-list; make-set> seqs*;
+            merged-seqs*            := <map(make-new-seqs(|seqs*))> seqs-symbols*;
             if <?[]> seqs* then
-                new-restriction := Follow([symbol], List([CharClass(char-set)]))
+                new-restriction     := Follow([symbol], List([CharClass(char-set)]))
             else
                 if <?Simple(Absent())> char-set then
-                    new-restriction := Follow([symbol], List(<make-set> seqs*))
+                    new-restriction := Follow([symbol], List(merged-seqs*))
                 else
-                    new-restriction := Follow([symbol], List(<make-set> [CharClass(char-set), seqs*]))
+                    new-restriction := Follow([symbol], List(<make-set> [CharClass(char-set), merged-seqs*]))
                 end
             end
+            
+     make-new-seqs(|seqs*):
+        symbol -> new-seq
+        with
+            list-elems* := <filter(elems-from-seq-list(|symbol)); flatten-list> seqs*;
+            new-seq     := Seq(symbol, List(<make-set> list-elems*))
+     
+     elems-from-seq-list(|s):
+        Seq(h, List(elems*)) -> elems*
+        where
+            <?s> h         
                     
-    
      char-set-from-restr(|s):
         Follow(symbols*, la) -> result
         where
@@ -1386,6 +1567,9 @@ rules
 	      
      char-set-from-la:
         Single(c@CharClass(_)) -> [c]
+        
+     char-set-from-la:
+        c@CharClass(_) -> [c]   
     
      char-set-from-la:
         Alt(a1, a2) -> result
@@ -1401,22 +1585,18 @@ rules
      add-lists-to-sequences:
         Seq(h, tl) -> Seq(h, List([tl']))
         where
-            debug(!"seq ");
             <not(?List(_))> tl;
-            tl' := <debug(!"tl "); try(char-set-from-la; flatten-list; create-char-set-from-list; bottomup(try(cc-set-operations)); !CharClass(<id>)); debug(!"tl' ")> tl
+            tl' := <try(char-set-from-la; flatten-list; create-char-set-from-list; bottomup(try(cc-set-operations)); !CharClass(<id>))> tl
             
      add-lists-to-sequences:
         Seq(h, tl) -> Seq(h, tl)
         where
-            debug(!"seq w/ list ");
             <?List(_)> tl         
-               
-      
+                  
      create-char-set-from-list:
         [h | hs] -> Union(result, <?CharClass(<id>)> h)
         where
-            result := <create-char-set-from-list> hs
-            
+            result := <create-char-set-from-list> hs            
      
      create-char-set-from-list:
         [] -> Simple(Absent())

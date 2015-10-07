@@ -1,0 +1,128 @@
+module first-follow-interface
+
+imports
+    include/TemplateLang
+    libstratego-sglr
+    libstratego-lib
+    libstratego-gpp
+
+/*
+rules
+
+    //retrieve-first-set : SYMBOL -> CHARS* (SET)
+    
+    //retrieve-follow-set : PROD_LABEL -> CHARS* (SET)
+    
+    //belongs-to-set : SYMBOL * SET -> {TRUE, FALSE}
+    
+    //adds-to-set : SYMBOL * SET -> ID
+    
+    //adds-to-follow-set : SYMBOL * SET -> ID
+    
+    //is-nullable = fail
+    
+    belongs-to-set :
+        (symbol, set) -> <id>
+        where
+            <fetch(?symbol)> set
+    //check if symbol belongs to set, fail otherwise
+    
+    adds-to-set :
+        (symbol, set) -> <id>
+    //adds symbol to first set
+    
+    adds-to-follow-set:
+        (symbol, set) -> <id>
+    
+    retrieve-first-set = calculate-first-set-cc <+ get-first-set-symbol
+    
+    retrieve-follow-set = ![]  
+        
+    get-first-set-symbol = ![] //get-first-set of sort S
+    
+    calculate-first-set-cc:
+        char-class(cc*) -> [] //get first-set of a CC (consider ranges and single characters) 
+     */   
+        
+rules
+
+    //retrieve-first-set : SYMBOL -> SET
+    
+    //retrieve-follow-set : PROD_LABEL -> SET+
+    
+    //retrieve-first-set-symbols : SET -> CHARS*
+    
+    //retrieve-follow-set-symbols : SET -> CHARS*
+    
+    //belongs-to-set : SYMBOL * SET -> {TRUE, FALSE}
+    
+    //adds-to-set(symbol-orig) : SYMBOL * SET -> ID
+    
+    //adds-to-follow-set(prod-orig) : SYMBOL * SET -> ID
+    
+    //is-nullable = fail
+    
+    belongs-to-set :
+        (symbol, set) -> <id>
+        where
+            <iset-contains(|symbol)> set
+    //check if symbol belongs to set, fail otherwise
+    
+    adds-to-set(|symbol-orig) :
+        (symbol, set) -> <id>
+        where
+            <iset-add(id|symbol)> set
+            
+    
+    adds-to-follow-set(|prod-orig):
+        (symbol, set) -> <id>
+        where
+            <iset-add(id|symbol)> set
+            
+            
+    retrieve-first-set-symbols = calculate-first-set-cc <+ (retrieve-first-set; iset-elements)
+    
+    retrieve-follow-set-symbols = retrieve-follow-set; iset-elements
+    
+    retrieve-follow-set :
+        prod-label -> follow-set
+        where
+            if <not(get-iset-from-prod)> prod-label then                
+                follow-set := <new-iset>;
+                rules(
+                    get-iset-from-prod:
+                        prod-label -> follow-set
+                )                
+            else
+                follow-set := <get-iset-from-prod> prod-label
+            end  
+        
+    retrieve-first-set :
+        symbol -> first-set
+        where
+            if <not(get-iset-from-symbol)> symbol then
+                first-set := <new-iset>;
+                rules(
+                    get-iset-from-symbol:
+                        symbol -> first-set
+                )    
+            else
+                first-set := <get-iset-from-symbol> symbol
+            end
+                    
+    
+    calculate-first-set-cc:
+        char-class(cc*) -> <map(explode-cc); flatten-list> cc* //get first-set of a CC (consider ranges and single characters)
+    
+    explode-cc:
+        c -> c
+        where
+            not(?range(_, _))
+    
+    explode-cc:
+        range(a, b) -> [a, <explode-cc> range(<inc> a, b)]
+        where
+            <gt> (b, a)
+    
+    explode-cc:
+        range(b, b) -> b                     
