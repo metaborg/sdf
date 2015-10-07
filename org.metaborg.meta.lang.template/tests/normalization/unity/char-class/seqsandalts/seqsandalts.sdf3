@@ -1,0 +1,18 @@
+module seqsandalts 
+
+lexical syntax
+
+INT =
+ID =
+EOF =
+A =
+B =
+C =
+
+
+lexical restrictions
+
+
+B -/- [\0] | [\1] | [\2] . [\3] . [\4] | [\10]
+
+ // B-LEX -/- [[[\0-\1\10], [\2].[[[\3].[[[\4]]]]]]]

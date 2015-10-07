@@ -1,0 +1,16 @@
+//Grammar1
+
+module SingleStm
+
+context-free start-symbols 
+    Start
+
+context-free syntax
+
+	Start = Stm
+	Stm.Print = <p<Num>> {case-insensitive}
+
+lexical syntax
+
+	Num = "0"
+	Num = "1"

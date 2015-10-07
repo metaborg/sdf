@@ -1,0 +1,72 @@
+Module(
+  Unparameterized("regularcc")
+, []
+, [ SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(
+            SortDef("C")
+          , Rhs(
+              [ CharClass(
+                  Simple(
+                    Present(
+                      Conc(
+                        Range(Numeric("\\48"), Numeric("\\57"))
+                      , Conc(
+                          Range(Numeric("\\65"), Numeric("\\90"))
+                        , Conc(
+                            Numeric("\\95")
+                          , Conc(
+                              Range(Numeric("\\97"), Numeric("\\122"))
+                            , Conc(
+                                Numeric("\\42")
+                              , Conc(
+                                  Range(Numeric("\\123"), Numeric("\\255"))
+                                , Conc(
+                                    Numeric("\\96")
+                                  , Conc(
+                                      Range(Numeric("\\91"), Numeric("\\94"))
+                                    , Conc(
+                                        Range(Numeric("\\58"), Numeric("\\64"))
+                                      , Conc(
+                                          Range(Numeric("\\43"), Numeric("\\47"))
+                                        , Conc(
+                                            Range(Numeric("\\33"), Numeric("\\41"))
+                                          , Conc(
+                                              Range(Numeric("\\14"), Numeric("\\31"))
+                                            , Conc(
+                                                Numeric("\\11")
+                                              , Conc(
+                                                  Range(Numeric("\\0"), Numeric("\\8"))
+                                                , Conc(
+                                                    Numeric("\\124")
+                                                  , Conc(
+                                                      Numeric("\\49")
+                                                    , Conc(Numeric("\\48"), Conc(Numeric("\\112"), Numeric("\\256")))
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ]
+            )
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  ]
+)

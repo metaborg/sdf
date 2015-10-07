@@ -1,0 +1,24 @@
+module sequence-normalized
+
+
+syntax
+
+  A-LEX.Seq = (B C D E)-LEX 
+  B-LEX =  
+  C-LEX =  
+  D-LEX =  
+  E-LEX =  
+  E-CF = E-LEX 
+  D-CF = D-LEX 
+  C-CF = C-LEX 
+  B-CF = B-LEX 
+  (B C D E)-CF = (B C D E)-LEX 
+  A-CF = A-LEX 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+  (B C D E)-LEX = B-LEX C-LEX D-LEX E-LEX 
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

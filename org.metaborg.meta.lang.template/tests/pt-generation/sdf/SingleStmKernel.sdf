@@ -1,0 +1,10 @@
+module SingleStmKernel
+exports
+  context-free start-symbols
+    Start
+
+  syntax
+    <Stm-CF>          -> <Start-CF> 
+    "print" <Num-LEX> -> <Stm-CF>   {cons("Print")}
+    "0"               -> <Num-LEX>  
+    "1"               -> <Num-LEX>  

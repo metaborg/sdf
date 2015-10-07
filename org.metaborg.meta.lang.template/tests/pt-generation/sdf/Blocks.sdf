@@ -1,0 +1,20 @@
+module Blocks
+exports
+  context-free start-symbols
+    Start
+
+  context-free syntax
+    Class                  -> Start 
+    "c" Name "{" Meths "}" -> Class {cons("Class")}
+    Meth Meths             -> Meths {cons("Some")}
+                           -> Meths {cons("None")}
+    "m" Name "{" Stms "}"  -> Meth  {cons("Method")}
+    Stm Stms               -> Stms  {cons("Some")}
+                           -> Stms  {cons("None")}
+    "p" Num                -> Stm   {cons("Print")}
+    "r" Var                -> Stm   {cons("Read")}
+
+  lexical syntax
+    "0" | "1" -> Num  
+    "a" | "b" -> Var  
+    "A" | "B" -> Name 

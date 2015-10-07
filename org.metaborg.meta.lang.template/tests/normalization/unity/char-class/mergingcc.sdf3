@@ -1,0 +1,8 @@
+module mergingcc
+
+lexical syntax 
+
+A = [ab-c]
+A = [a-bc]
+
+

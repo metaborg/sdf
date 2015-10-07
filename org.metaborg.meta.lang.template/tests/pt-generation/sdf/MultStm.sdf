@@ -1,0 +1,13 @@
+module MultStm
+exports
+  context-free start-symbols
+    Start
+
+  context-free syntax
+    Stm     -> Start 
+    "p" Num -> Stm   {cons("Print")}
+    "r" Var -> Stm   {cons("Read")}
+
+  lexical syntax
+    "0" | "1" -> Num 
+    "a" | "b" -> Var 

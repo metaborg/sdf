@@ -1,0 +1,24 @@
+module basicrestrictions
+
+lexical syntax
+
+    EOF =
+    BackSlashChar =
+    A = 
+
+context-free restrictions
+
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\/].[\/]
+    LAYOUT? -/- [\/].[\*]
+
+
+lexical restrictions
+    
+    EOF           -/- ~[]
+    BackSlashChar -/- [\"]
+
+restrictions
+    
+    A -/- [a]
+    

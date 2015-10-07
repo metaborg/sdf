@@ -1,0 +1,15 @@
+module ListOfStmKernel
+exports
+  context-free start-symbols
+    Start
+
+  syntax
+    <Stms-CF>          -> <Start-CF> 
+    <Stm-CF> <Stms-CF> -> <Stms-CF>  {cons("Some")}
+                       -> <Stms-CF>  {cons("None")}
+    "p" <Num-LEX>      -> <Stm-CF>   {cons("Print")}
+    "r" <Var-LEX>      -> <Stm-CF>   {cons("Read")}
+    "0"                -> <Num-LEX>  
+    "1"                -> <Num-LEX>  
+    "a"                -> <Var-LEX>  
+    "b"                -> <Var-LEX>  

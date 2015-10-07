@@ -1,0 +1,19 @@
+//Grammar3
+
+module ListOfStm
+
+context-free start-symbols
+    Start
+    
+context-free syntax
+
+	Start = Stms
+	Stms.Some  = Stm Stms
+	Stms.None  = 
+    Stm.Print = <p <Num>>
+	Stm.Read  = <r <Var>>
+	
+lexical syntax
+	
+	Num = "0" | "1"
+	Var = "a" | "b"

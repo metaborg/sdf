@@ -1,0 +1,24 @@
+module seqrestrictions
+
+lexical syntax
+
+    EOF =
+    BackSlashChar =
+    A = 
+
+context-free restrictions
+
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\/].[\/].[\/]
+    LAYOUT? -/- [\/].[\*].[\*]
+
+
+lexical restrictions
+    
+    EOF           -/- ~[].[a].[b]
+    BackSlashChar -/- [\"]
+
+restrictions
+    
+    A -/- [a].[b].[c].[d]
+    

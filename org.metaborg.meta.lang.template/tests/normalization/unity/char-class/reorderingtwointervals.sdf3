@@ -1,0 +1,10 @@
+module reorderingtwointervals
+
+lexical syntax
+
+//reordering two ranges
+B = [c-da-be-f]
+B = [ca-b]
+B = [c-db]
+B = [ca]
+

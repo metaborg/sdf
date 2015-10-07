@@ -1,0 +1,15 @@
+module singlechain-normalized
+
+
+syntax
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+
+priorities
+
+  A-CF.A = "a"  > B-CF.B = "b" ,
+  C-LEX = "c"  > D-LEX = "d" ,
+  E = "e"  > F = "f" ,
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

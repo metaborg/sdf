@@ -1,0 +1,30 @@
+module listrestrictions
+
+
+
+lexical syntax
+
+    EOF =
+    BackSlashChar =
+    A = 
+    
+context-free syntax
+
+    A.AS = "a"    
+
+context-free restrictions
+
+    LAYOUT? -/- [[[\ \t\n\r]]]
+    LAYOUT? -/- [[[\/].[\/].[\/]]]
+    LAYOUT? -/- [\/].[\*].[\*]
+
+
+lexical restrictions
+    
+    EOF           -/- ~[].[a].[b]
+    BackSlashChar -/- [[[\"]]]
+
+restrictions
+    
+    A -/- [[[a]]]
+    

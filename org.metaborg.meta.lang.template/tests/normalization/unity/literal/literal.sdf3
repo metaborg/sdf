@@ -1,0 +1,18 @@
+module literal
+
+
+context-free syntax
+
+A.A       = "exampleofliteral"
+A.B       = "b"
+A.CsB     = 'b'
+A.CsComma = ','
+
+lexical syntax
+
+A      = "lexicalliteral"
+A      = [a-zA-Z][b]
+
+syntax
+
+D-LEX = "kernelliteral"

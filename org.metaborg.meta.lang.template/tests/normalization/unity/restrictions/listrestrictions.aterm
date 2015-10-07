@@ -1,0 +1,95 @@
+Module(
+  Unparameterized("listrestrictions")
+, []
+, [ SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(SortDef("EOF"), Rhs([]), NoAttrs())
+        , SdfProduction(SortDef("BackSlashChar"), Rhs([]), NoAttrs())
+        , SdfProduction(SortDef("A"), Rhs([]), NoAttrs())
+        ]
+      )
+    )
+  , SDFSection(
+      ContextFreeRestrictions(
+        [ Follow(
+            [Opt(Layout())]
+          , List(
+              [ CharClass(
+                  Simple(
+                    Present(
+                      Conc(
+                        Short("\\ ")
+                      , Conc(Short("\\t"), Conc(Short("\\n"), Short("\\r")))
+                      )
+                    )
+                  )
+                )
+              ]
+            )
+          )
+        , Follow(
+            [Opt(Layout())]
+          , List(
+              [ Seq(
+                  Simple(Present(Short("\\/")))
+                , Single(
+                    Seq(
+                      Simple(Present(Short("\\/")))
+                    , Single(CharClass(Simple(Present(Short("\\/")))))
+                    )
+                  )
+                )
+              ]
+            )
+          )
+        , Follow(
+            [Opt(Layout())]
+          , Single(
+              Seq(
+                Simple(Present(Short("\\/")))
+              , Single(
+                  Seq(
+                    Simple(Present(Short("\\*")))
+                  , Single(CharClass(Simple(Present(Short("\\*")))))
+                  )
+                )
+              )
+            )
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalRestrictions(
+        [ Follow(
+            [Sort("EOF")]
+          , Single(
+              Seq(
+                Comp(Simple(Absent()))
+              , Single(
+                  Seq(
+                    Simple(Present(Short("a")))
+                  , Single(CharClass(Simple(Present(Short("b")))))
+                  )
+                )
+              )
+            )
+          )
+        , Follow(
+            [Sort("BackSlashChar")]
+          , List([CharClass(Simple(Present(Short("\\\""))))])
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      Restrictions(
+        [ Follow(
+            [Sort("A")]
+          , List([CharClass(Simple(Present(Short("a"))))])
+          )
+        ]
+      )
+    )
+  ]
+)

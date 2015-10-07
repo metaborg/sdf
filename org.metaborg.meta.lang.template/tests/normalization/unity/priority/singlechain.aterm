@@ -1,0 +1,49 @@
+Module(
+  Unparameterized("singlechain")
+, []
+, [ SDFSection(
+      ContextFreePriorities(
+        [ Chain(
+            [ NonTransitive(
+                SimpleGroup(
+                  SdfProduction(SortDef("A"), Rhs([Lit("\"a\"")]), NoAttrs())
+                )
+              )
+            , SimpleGroup(
+                SdfProduction(SortDef("B"), Rhs([Lit("\"b\"")]), NoAttrs())
+              )
+            ]
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalPriorities(
+        [ Chain(
+            [ SimpleGroup(
+                SdfProduction(SortDef("C"), Rhs([Lit("\"c\"")]), NoAttrs())
+              )
+            , SimpleGroup(
+                SdfProduction(SortDef("D"), Rhs([Lit("\"d\"")]), NoAttrs())
+              )
+            ]
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      Priorities(
+        [ Chain(
+            [ SimpleGroup(
+                SdfProduction(SortDef("E"), Rhs([Lit("\"e\"")]), NoAttrs())
+              )
+            , SimpleGroup(
+                SdfProduction(SortDef("F"), Rhs([Lit("\"f\"")]), NoAttrs())
+              )
+            ]
+          )
+        ]
+      )
+    )
+  ]
+)

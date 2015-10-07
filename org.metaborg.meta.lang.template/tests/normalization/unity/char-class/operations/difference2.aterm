@@ -1,0 +1,97 @@
+Module(
+  Unparameterized("difference2")
+, []
+, [ SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(
+            SortDef("ID")
+          , Rhs(
+              [ CharClass(
+                  Simple(
+                    Present(
+                      Conc(
+                        Range(Short("a"), Short("b"))
+                      , Range(Short("d"), Short("e"))
+                      )
+                    )
+                  )
+                )
+              ]
+            )
+          , NoAttrs()
+          )
+        , SdfProduction(
+            SortDef("ID")
+          , Rhs(
+              [ CharClass(
+                  Simple(
+                    Present(
+                      Conc(Range(Numeric("\\9"), Numeric("\\10")), Numeric("\\32"))
+                    )
+                  )
+                )
+              , CharClass(
+                  Simple(
+                    Present(
+                      Conc(
+                        Range(Numeric("\\65"), Numeric("\\90"))
+                      , Range(Numeric("\\97"), Numeric("\\122"))
+                      )
+                    )
+                  )
+                )
+              , CharClass(Simple(Present(Numeric("\\116"))))
+              ]
+            )
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalRestrictions(
+        [ Follow(
+            [Sort("ID")]
+          , Single(
+              CharClass(
+                Diff(
+                  Simple(
+                    Present(
+                      Conc(
+                        Range(Numeric("\\0"), Numeric("\\8"))
+                      , Conc(
+                          Numeric("\\42")
+                        , Conc(
+                            Numeric("\\11")
+                          , Conc(
+                              Range(Numeric("\\14"), Numeric("\\31"))
+                            , Conc(
+                                Range(Numeric("\\33"), Numeric("\\41"))
+                              , Range(Numeric("\\43"), Numeric("\\256"))
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                , Simple(
+                    Present(
+                      Conc(
+                        Range(Numeric("\\48"), Numeric("\\57"))
+                      , Conc(
+                          Range(Numeric("\\65"), Numeric("\\90"))
+                        , Conc(Numeric("\\95"), Range(Numeric("\\97"), Numeric("\\122")))
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ]
+      )
+    )
+  ]
+)

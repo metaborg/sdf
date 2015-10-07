@@ -1,0 +1,12 @@
+module alts
+
+
+lexical syntax
+
+ID =
+
+lexical restrictions
+
+
+ID -/- [[ [\0] . [\1\4] ]]
+

@@ -1,0 +1,30 @@
+module singlechainSortCons
+
+context-free syntax
+
+	A.A = "a"
+	B.B = "b"
+	C.C = <c <A>>
+	
+
+context-free priorities
+	
+	A.A > B.B > C.C
+
+lexical syntax
+    
+    C = "c" 
+    D = "d"
+
+lexical priorities
+    
+    C = "c" > D = "d"
+
+syntax
+
+    E.E = "e"
+    F.F = "f"
+
+priorities
+    
+    {left: E.E  F.F}

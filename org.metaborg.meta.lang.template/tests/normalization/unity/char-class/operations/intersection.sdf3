@@ -1,0 +1,12 @@
+module intersection
+
+
+lexical syntax
+
+ID =
+
+lexical restrictions
+
+ID -/- [a-b] /\ [a-z]
+
+ID -/- [a-b] / ([a-b] / [a-z])

@@ -1,0 +1,9 @@
+module lexprio
+
+lexical priorities
+
+A = >
+B = A "b"
+>
+C =,
+D = "d" left B = A "b"

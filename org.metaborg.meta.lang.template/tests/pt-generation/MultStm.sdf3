@@ -1,0 +1,17 @@
+//Grammar2
+
+module MultStm
+
+context-free start-symbols
+    Start
+
+context-free syntax
+
+	Start = Stm
+	Stm.Print = <p <Num>>
+	Stm.Read  = <r <Var>>
+	
+lexical syntax
+	
+	Num = "0" | "1"
+	Var = "a" | "b"

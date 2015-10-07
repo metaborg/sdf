@@ -1,0 +1,18 @@
+module itersep
+
+
+context-free syntax
+
+A.ListOfB = {B "litCF"}+
+B.b = "b"
+
+lexical syntax
+
+C = {D "litLEX"}+
+D = "d"
+
+
+syntax
+
+E = {F "litKER"}+
+F = "f"

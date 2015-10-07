@@ -1,0 +1,24 @@
+module listrestrictions-norm-sdf2table
+
+
+syntax
+
+  A-CF = A-LEX 
+  A-LEX =  
+  BackSlashChar-CF = BackSlashChar-LEX 
+  BackSlashChar-LEX =  
+  EOF-CF = EOF-LEX 
+  EOF-LEX =  
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  <Start> = <START> [\256] 
+
+restrictions
+
+  LAYOUT?-CF -/- [[[\9-\10\13\32], [\47].[[[\47].[[[\47]]], [\42].[[[\42]]]]]]]
+  EOF-LEX -/- [[[\0-\255].[[[\97].[[[\98]]]]]]]
+  BackSlashChar-LEX -/- [[[\34]]]
+  A -/- [[[\97]]]
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}

@@ -1,0 +1,884 @@
+parse-table(
+  6
+, 0
+, [ label(
+      prod(
+        [sort("<START>"), char-class([256])]
+      , sort("<Start>")
+      , no-attrs()
+      )
+    , 291
+    )
+  , label(
+      prod(
+        [cf(opt(layout())), cf(sort("Start")), cf(opt(layout()))]
+      , sort("<START>")
+      , no-attrs()
+      )
+    , 290
+    )
+  , label(
+      prod(
+        [cf(layout()), cf(layout())]
+      , cf(layout())
+      , attrs([assoc(left())])
+      )
+    , 289
+    )
+  , label(
+      prod(
+        [lex(sort("NonT"))]
+      , cf(sort("NonT"))
+      , no-attrs()
+      )
+    , 288
+    )
+  , label(
+      prod(
+        [lex(alt(lit("A"), lit("B")))]
+      , cf(alt(lit("A"), lit("B")))
+      , no-attrs()
+      )
+    , 287
+    )
+  , label(
+      prod(
+        [lex(sort("Opts"))]
+      , cf(sort("Opts"))
+      , no-attrs()
+      )
+    , 286
+    )
+  , label(
+      prod(
+        [lex(alt(lit("c"), lit("d")))]
+      , cf(alt(lit("c"), lit("d")))
+      , no-attrs()
+      )
+    , 285
+    )
+  , label(
+      prod(
+        [lex(alt(lit("c"), lit("d")))]
+      , lex(sort("Opts"))
+      , no-attrs()
+      )
+    , 284
+    )
+  , label(
+      prod(
+        [lex(alt(lit("A"), lit("B")))]
+      , lex(sort("NonT"))
+      , no-attrs()
+      )
+    , 283
+    )
+  , label(
+      prod(
+        []
+      , cf(sort("NonTs"))
+      , attrs([term(cons("None"))])
+      )
+    , 282
+    )
+  , label(
+      prod(
+        [cf(sort("NonT")), cf(opt(layout())), cf(sort("NonTs"))]
+      , cf(sort("NonTs"))
+      , attrs([term(cons("Some"))])
+      )
+    , 281
+    )
+  , label(
+      prod(
+        [ cf(sort("NonT"))
+        , cf(opt(layout()))
+        , lit("=")
+        , cf(opt(layout()))
+        , cf(sort("NonTs"))
+        ]
+      , cf(sort("Rule"))
+      , attrs([term(cons("Rule"))])
+      )
+    , 280
+    )
+  , label(
+      prod(
+        []
+      , cf(sort("Rules"))
+      , attrs([term(cons("None"))])
+      )
+    , 279
+    )
+  , label(
+      prod(
+        [cf(sort("Rule")), cf(opt(layout())), cf(sort("Rules"))]
+      , cf(sort("Rules"))
+      , attrs([term(cons("Some"))])
+      )
+    , 278
+    )
+  , label(
+      prod(
+        []
+      , cf(sort("Opt"))
+      , attrs([term(cons("NoOpt"))])
+      )
+    , 277
+    )
+  , label(
+      prod(
+        [lit("opt:"), cf(opt(layout())), cf(sort("Opts"))]
+      , cf(sort("Opt"))
+      , attrs([term(cons("Opt"))])
+      )
+    , 276
+    )
+  , label(
+      prod(
+        [ lit("s")
+        , cf(opt(layout()))
+        , cf(sort("Opt"))
+        , cf(opt(layout()))
+        , cf(sort("Rules"))
+        ]
+      , cf(sort("Sect"))
+      , attrs([term(cons("Section"))])
+      )
+    , 275
+    )
+  , label(
+      prod(
+        []
+      , cf(sort("Sects"))
+      , attrs([term(cons("None"))])
+      )
+    , 274
+    )
+  , label(
+      prod(
+        [cf(sort("Sect")), cf(opt(layout())), cf(sort("Sects"))]
+      , cf(sort("Sects"))
+      , attrs([term(cons("Some"))])
+      )
+    , 273
+    )
+  , label(
+      prod(
+        [lit("m"), cf(opt(layout())), cf(sort("Sects"))]
+      , cf(sort("Mod"))
+      , attrs([term(cons("Module"))])
+      )
+    , 272
+    )
+  , label(
+      prod(
+        [cf(sort("Mod"))]
+      , cf(sort("Start"))
+      , no-attrs()
+      )
+    , 271
+    )
+  , label(
+      prod(
+        [lit("B")]
+      , lex(alt(lit("A"), lit("B")))
+      , no-attrs()
+      )
+    , 270
+    )
+  , label(
+      prod(
+        [lit("A")]
+      , lex(alt(lit("A"), lit("B")))
+      , no-attrs()
+      )
+    , 269
+    )
+  , label(
+      prod(
+        [lit("d")]
+      , lex(alt(lit("c"), lit("d")))
+      , no-attrs()
+      )
+    , 268
+    )
+  , label(
+      prod(
+        [lit("c")]
+      , lex(alt(lit("c"), lit("d")))
+      , no-attrs()
+      )
+    , 267
+    )
+  , label(prod([], cf(opt(layout())), no-attrs()), 266)
+  , label(
+      prod([cf(layout())], cf(opt(layout())), no-attrs())
+    , 265
+    )
+  , label(
+      prod([char-class([66])], lit("B"), no-attrs())
+    , 264
+    )
+  , label(
+      prod([char-class([65])], lit("A"), no-attrs())
+    , 263
+    )
+  , label(
+      prod([char-class([100])], lit("d"), no-attrs())
+    , 262
+    )
+  , label(
+      prod([char-class([99])], lit("c"), no-attrs())
+    , 261
+    )
+  , label(
+      prod([char-class([61])], lit("="), no-attrs())
+    , 260
+    )
+  , label(
+      prod(
+        [ char-class([111])
+        , char-class([112])
+        , char-class([116])
+        , char-class([58])
+        ]
+      , lit("opt:")
+      , no-attrs()
+      )
+    , 259
+    )
+  , label(
+      prod([char-class([115])], lit("s"), no-attrs())
+    , 258
+    )
+  , label(
+      prod([char-class([109])], lit("m"), no-attrs())
+    , 257
+    )
+  ]
+, states(
+    [ state-rec(
+        0
+      , [ goto([289], 1)
+        , goto([265], 2)
+        , goto([266], 2)
+        , goto([290], 3)
+        , goto([291], 4)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        1
+      , []
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(1, 265, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        2
+      , [ goto([257], 5)
+        , goto([272], 6)
+        , goto([271], 7)
+        , goto([109], 8)
+        ]
+      , [action([109], [shift(8)])]
+      )
+    , state-rec(
+        3
+      , [goto([256], 52)]
+      , [action([256], [accept()])]
+      )
+    , state-rec(4, [], [])
+    , state-rec(
+        5
+      , [ goto([289], 1)
+        , goto([265], 9)
+        , goto([266], 9)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        6
+      , []
+      , [action([256], [reduce(1, 271, 0)])]
+      )
+    , state-rec(
+        7
+      , [ goto([289], 1)
+        , goto([265], 51)
+        , goto([266], 51)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        8
+      , []
+      , [action(
+           [115, 256]
+         , [reduce(1, 257, 0)]
+         )]
+      )
+    , state-rec(
+        9
+      , [ goto([258], 10)
+        , goto([275], 11)
+        , goto([273], 12)
+        , goto([274], 12)
+        , goto([115], 13)
+        ]
+      , [ action([115], [shift(13)])
+        , action([256], [reduce(0, 274, 0)])
+        ]
+      )
+    , state-rec(
+        10
+      , [ goto([289], 1)
+        , goto([265], 14)
+        , goto([266], 14)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        11
+      , [ goto([289], 1)
+        , goto([265], 49)
+        , goto([266], 49)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        12
+      , []
+      , [action([256], [reduce(3, 272, 0)])]
+      )
+    , state-rec(
+        13
+      , []
+      , [ action(
+            [range(65, 66), 111, 115, 256]
+          , [reduce(1, 258, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        14
+      , [ goto([259], 15)
+        , goto([276], 16)
+        , goto([277], 16)
+        , goto([111], 17)
+        ]
+      , [ action([111], [shift(17)])
+        , action(
+            [range(65, 66), 115, 256]
+          , [reduce(0, 277, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        15
+      , [ goto([289], 1)
+        , goto([265], 18)
+        , goto([266], 18)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        16
+      , [ goto([289], 1)
+        , goto([265], 26)
+        , goto([266], 26)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        17
+      , [goto([112], 46)]
+      , [action([112], [shift(46)])]
+      )
+    , state-rec(
+        18
+      , [ goto([262], 19)
+        , goto([261], 20)
+        , goto([267], 21)
+        , goto([268], 21)
+        , goto([284], 22)
+        , goto([286], 23)
+        , goto([99], 24)
+        , goto([100], 25)
+        ]
+      , [ action([99], [shift(24)])
+        , action([100], [shift(25)])
+        ]
+      )
+    , state-rec(
+        19
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 268, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        20
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 267, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        21
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 284, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        22
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 286, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        23
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(3, 276, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        24
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 261, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        25
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 262, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        26
+      , [ goto([264], 27)
+        , goto([263], 28)
+        , goto([269], 29)
+        , goto([270], 29)
+        , goto([283], 30)
+        , goto([288], 31)
+        , goto([280], 32)
+        , goto([278], 33)
+        , goto([279], 33)
+        , goto([65], 34)
+        , goto([66], 35)
+        ]
+      , [ action([65], [shift(34)])
+        , action([66], [shift(35)])
+        , action(
+            [115, 256]
+          , [reduce(0, 279, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        27
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 270, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        28
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 269, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        29
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 283, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        30
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 288, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        31
+      , [ goto([289], 1)
+        , goto([265], 36)
+        , goto([266], 36)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        32
+      , [ goto([289], 1)
+        , goto([265], 44)
+        , goto([266], 44)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        33
+      , []
+      , [action(
+           [115, 256]
+         , [reduce(5, 275, 0)]
+         )]
+      )
+    , state-rec(
+        34
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 263, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        35
+      , []
+      , [ action(
+            [61, range(65, 66), 115, 256]
+          , [reduce(1, 264, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        36
+      , [goto([260], 37), goto([61], 38)]
+      , [action([61], [shift(38)])]
+      )
+    , state-rec(
+        37
+      , [ goto([289], 1)
+        , goto([265], 39)
+        , goto([266], 39)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        38
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(1, 260, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        39
+      , [ goto([264], 27)
+        , goto([263], 28)
+        , goto([269], 29)
+        , goto([270], 29)
+        , goto([283], 30)
+        , goto([288], 40)
+        , goto([281], 41)
+        , goto([282], 41)
+        , goto([65], 34)
+        , goto([66], 35)
+        ]
+      , [ action(
+            [65]
+          , [shift(34), reduce(0, 282, 0)]
+          )
+        , action(
+            [66]
+          , [shift(35), reduce(0, 282, 0)]
+          )
+        , action(
+            [115, 256]
+          , [reduce(0, 282, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        40
+      , [ goto([289], 1)
+        , goto([265], 42)
+        , goto([266], 42)
+        ]
+      , [ action(
+            [ 61
+            , range(65, 66)
+            , range(99, 100)
+            , 109
+            , 111
+            , 115
+            , 256
+            ]
+          , [reduce(0, 266, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        41
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(5, 280, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        42
+      , [ goto([264], 27)
+        , goto([263], 28)
+        , goto([269], 29)
+        , goto([270], 29)
+        , goto([283], 30)
+        , goto([288], 40)
+        , goto([281], 43)
+        , goto([282], 43)
+        , goto([65], 34)
+        , goto([66], 35)
+        ]
+      , [ action(
+            [65]
+          , [shift(34), reduce(0, 282, 0)]
+          )
+        , action(
+            [66]
+          , [shift(35), reduce(0, 282, 0)]
+          )
+        , action(
+            [115, 256]
+          , [reduce(0, 282, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        43
+      , []
+      , [ action(
+            [range(65, 66), 115, 256]
+          , [reduce(3, 281, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        44
+      , [ goto([264], 27)
+        , goto([263], 28)
+        , goto([269], 29)
+        , goto([270], 29)
+        , goto([283], 30)
+        , goto([288], 31)
+        , goto([280], 32)
+        , goto([278], 45)
+        , goto([279], 45)
+        , goto([65], 34)
+        , goto([66], 35)
+        ]
+      , [ action([65], [shift(34)])
+        , action([66], [shift(35)])
+        , action(
+            [115, 256]
+          , [reduce(0, 279, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        45
+      , []
+      , [action(
+           [115, 256]
+         , [reduce(3, 278, 0)]
+         )]
+      )
+    , state-rec(
+        46
+      , [goto([116], 47)]
+      , [action([116], [shift(47)])]
+      )
+    , state-rec(
+        47
+      , [goto([58], 48)]
+      , [action([58], [shift(48)])]
+      )
+    , state-rec(
+        48
+      , []
+      , [ action(
+            [range(99, 100)]
+          , [reduce(4, 259, 0)]
+          )
+        ]
+      )
+    , state-rec(
+        49
+      , [ goto([258], 10)
+        , goto([275], 11)
+        , goto([273], 50)
+        , goto([274], 50)
+        , goto([115], 13)
+        ]
+      , [ action([115], [shift(13)])
+        , action([256], [reduce(0, 274, 0)])
+        ]
+      )
+    , state-rec(
+        50
+      , []
+      , [action([256], [reduce(3, 273, 0)])]
+      )
+    , state-rec(
+        51
+      , []
+      , [action([256], [reduce(3, 290, 0)])]
+      )
+    , state-rec(52, [], [])
+    ]
+  )
+, priorities([arg-gtr-prio(289, 1, 289)])
+)

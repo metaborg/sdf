@@ -1,0 +1,21 @@
+module lexprod-normalized
+
+
+syntax
+
+  A-LEX.A = "a" "b" B-LEX 
+  B-LEX =  
+  C-LEX.AB = A-LEX B-LEX 
+  C-LEX.C = "c" 
+  D-LEX = [a-z] 
+  D-CF = D-LEX 
+  C-CF = C-LEX 
+  B-CF = B-LEX 
+  A-CF = A-LEX 
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
+  LAYOUT?-CF = LAYOUT-CF 
+  LAYOUT?-CF =  
+
+priorities
+
+  LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left} <1>. > LAYOUT-CF = LAYOUT-CF LAYOUT-CF {left}
