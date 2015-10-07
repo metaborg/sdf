@@ -1,9 +1,6 @@
 module TemplateLang-Menus
 
 menus
-
-  
-    
   
   menu: "Syntax"                      (openeditor) (meta)
     
@@ -41,30 +38,31 @@ menus
     end
     
     submenu: "Signature"
-      action: "Generate Signature (abstract)" = generate-sig-abstract (meta)
-      action: "Generate Signature (concrete)" = generate-sig-concrete
+      action: "Generate Signature (abstract)"         = generate-sig-abstract (meta)
+      action: "Generate Signature (concrete)"         = generate-sig-concrete
       action: "Generate DynSem Signatures (abstract)" = generate-dynsem-abstract (meta)
-      action: "Generate DynSem Signatures" = generate-dynsem
-      
-      
-     end
+      action: "Generate DynSem Signatures"            = generate-dynsem 
+    end
+    
+    submenu: "Parse Table" (meta)
+      action: "Normalize and generate Parse Table"     = normalize-and-generate-pt
+      action: "Generate Parse Table (NF required)"     = generate-parse-table 
+      action: "Generate Item-sets (NF required)"       = generate-item-sets 
+      action: "Generate Parse Table sdf2table format"  = generate-parse-table-sdf2table-format
+      action: "to Normal Form"                         = sdf3-to-normal-form 
+      action: "to Normal Form (abstract)"              = sdf3-to-normal-form-abstract 
+      action: "to Normal Form (SDF2)"                  = sdf3-to-normal-form-sdf 
+    end
+    
+    action: "Generate PP (abstract)" = generate-pp-abstract (meta)
+    action: "Generate PP"            = generate-pp-concrete
      
-   //  submenu: "Pretty-printer"
-     	action: "Generate PP (abstract)" = generate-pp-abstract (meta)
-     	action: "Generate PP" = generate-pp-concrete
- //    end
-     
-  //   submenu: "Content Completion"
-     	action: "Generate ESV (abstract)" = generate-esv-abstract (meta)
-     	action: "Generate ESV" = generate-esv-concrete
+    action: "Generate ESV (abstract)" = generate-esv-abstract (meta)
+    action: "Generate ESV"            = generate-esv-concrete
      	
-     	action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
-     	action: "Generate AST checker" = generate-ast-checker-concrete
+    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
+    action: "Generate AST checker"            = generate-ast-checker-concrete
      	
-     	action: "Generate Parse Table" = generate-parse-table (meta)
-     	action: "Generate Item-sets"   = generate-item-sets (meta)
- //    end
-     
   menu: "Format" (openeditor) (realtime)
     
     action: "Format"             			      = pp-sdf3 (source)
@@ -74,9 +72,6 @@ menus
     action: "Lift (templates)"                    = lift-sdf3-template 
     action: "Extract productions (abstract)"	  = extract-regular-productions-abstract (meta)
     action: "Extract productions"				  = extract-regular-productions 
-  
-  menu: "Normalize" (openeditor) (realtime)
+
     
-    action: "to Normal Form"                      = sdf3-to-normal-form (meta)
-    action: "to Normal Form (abstract)"           = sdf3-to-normal-form-abstract (meta)
-    action: "to Normal Form (SDF2)"               = sdf3-to-normal-form-sdf (meta)
+    
