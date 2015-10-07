@@ -1,0 +1,33 @@
+module MiniJava-completions.main
+
+imports
+  MiniJava-completions-Colorer
+  MiniJava-completions-Completions
+  MiniJava-completions-Folding
+  MiniJava-completions-Menus
+  MiniJava-completions-Refactorings
+  MiniJava-completions-References
+  MiniJava-completions-Syntax
+  MiniJava-completions-Views
+
+language General properties
+  
+  name:          MiniJava-completions
+  id:            MiniJavacompletions
+  extends:       Root
+  
+  description:   "Spoofax-generated editor for the MiniJava-completions language"
+  url:           http://strategoxt.org
+  
+  extensions:    mjv
+  table:         include/MiniJava-completions.tbl
+  start symbols: Start
+  
+  provider:      include/minijava_completions.ctree
+  provider:      include/minijava_completions-java.jar
+  
+  observer:      editor-analyze (multifile)
+  
+  on save:       editor-save
+  
+  jvm opts:      -server -Xss8m -Xmx1024m

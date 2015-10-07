@@ -1,0 +1,41 @@
+module MiniJava/Classes
+
+imports 
+
+  MiniJava/Statements	
+  MiniJava/Lexical	
+  MiniJava/Expressions
+
+sorts
+
+  ClassDecl ParentDecl FieldDecl MethodDecl VarDecl ParamDecl Type ID INT
+  
+context-free syntax
+
+  ClassDecl.Class = <
+    class <ID> <ParentDecl;hide>{ 
+      <{FieldDecl "\n"}*>
+       
+      <{MethodDecl "\n"}*> 
+    }> 
+  ParentDecl.None = <> 
+  ParentDecl.Parent = <extends <ID> > 
+  FieldDecl.Field = <<Type> <ID>;> 
+  MethodDecl.Method = <
+    public <Type> <ID>(<{ParamDecl ", "}*>) { 
+      <{VarDecl "\n"}*> 
+      
+      <{Statement "\n"}*>
+      return <Exp>; 
+    }> 
+  VarDecl.Var = <<Type> <ID>;> 
+  ParamDecl.Param = <<Type> <ID>> 
+  Type.Int = <int> 
+  Type.Bool = <boolean> 
+  Type.IntArray = <int[]> 
+  Type.ClassType = <<ID>> 
+
+template options
+
+  tokenize : "["
+  keyword  -/- [a-zA-Z]

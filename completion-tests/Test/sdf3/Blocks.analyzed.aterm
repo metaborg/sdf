@@ -1,0 +1,269 @@
+Module(
+  Unparameterized("Blocks"{ Def(
+                              URI(
+                                Language("TemplateLang")
+                              , [ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                              )
+                            )
+                          })
+, []
+, [ SDFSection(ContextFreeStartSymbols([Sort("Start"{Use(Result(90))}){(Type(), Result(94))}]))
+  , SDFSection(
+      ContextFreeSyntax(
+        [ SdfProduction(
+            SortDef("Start"{ Def(
+                               URI(
+                                 Language("TemplateLang")
+                               , [ID(NablNsSort(), "Start", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                               )
+                             )
+                           })
+          , Rhs([Sort("Class"{Use(Result(96))}){(Type(), Result(100))}]){(Type(), Result(102))}
+          , Attrs([])
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Class"{ Def(
+                                        URI(
+                                          Language("TemplateLang")
+                                        , [ID(NablNsSort(), "Class", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                        )
+                                      )
+                                    }), Constructor("Class"{ Def(
+                                                               URI(
+                                                                 Language("TemplateLang")
+                                                               , [ ID(NablNsConstructor(), "Class", Unique("sdf3/Blocks.sdf3/0"))
+                                                                 , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                                 ]
+                                                               )
+                                                             )
+                                                           }))
+          , Template(
+              [ Line([])
+              , Line(
+                  [ Layout("\t\t\t\t")
+                  , String("c")
+                  , Layout(" ")
+                  , Angled(Placeholder(Sort("Name"{Use(Result(104))}){(Type(), Result(108))}, NoOptions()){(Type(), Result(110))})
+                  , Layout(" ")
+                  , String("{")
+                  ]
+                )
+              , Line(
+                  [Layout("\t\t\t\t\t"), Angled(Placeholder(Sort("Meths"{Use(Result(111))}){(Type(), Result(115))}, NoOptions()){(Type(), Result(117))})]
+                )
+              , Line([Layout("\t\t\t\t"), String("}")])
+              ]
+            ){(Type(), [Result(110), Result(117)])}
+          , Attrs([])
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Meths"{ Def(
+                                        URI(
+                                          Language("TemplateLang")
+                                        , [ID(NablNsSort(), "Meths", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                        )
+                                      )
+                                    }), Constructor("Some"{ Def(
+                                                              URI(
+                                                                Language("TemplateLang")
+                                                              , [ ID(NablNsConstructor(), "Some", Unique("sdf3/Blocks.sdf3/0"))
+                                                                , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                                ]
+                                                              )
+                                                            )
+                                                          }))
+          , Rhs([Sort("Meth"{Use(Result(130))}){(Type(), Result(134))}, Sort("Meths"{Use(Result(111))}){(Type(), Result(115))}]){(Type(), Result(137))}
+          , Attrs([])
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Meths"{ Def(
+                                        URI(
+                                          Language("TemplateLang")
+                                        , [ID(NablNsSort(), "Meths", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                        )
+                                      )
+                                    }), Constructor("None"{ Def(
+                                                              URI(
+                                                                Language("TemplateLang")
+                                                              , [ ID(NablNsConstructor(), "None", Unique("sdf3/Blocks.sdf3/0"))
+                                                                , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                                ]
+                                                              )
+                                                            )
+                                                          }))
+          , Rhs([]){(Type(), Result(6))}
+          , Attrs([])
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Meth"{ Def(
+                                       URI(
+                                         Language("TemplateLang")
+                                       , [ID(NablNsSort(), "Meth", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                       )
+                                     )
+                                   }), Constructor("Method"{ Def(
+                                                               URI(
+                                                                 Language("TemplateLang")
+                                                               , [ ID(NablNsConstructor(), "Method", Unique("sdf3/Blocks.sdf3/0"))
+                                                                 , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                                 ]
+                                                               )
+                                                             )
+                                                           }))
+          , Template(
+              [ Line([])
+              , Line(
+                  [ Layout("\t\t\t\t")
+                  , String("m")
+                  , Layout(" ")
+                  , Angled(Placeholder(Sort("Name"{Use(Result(104))}){(Type(), Result(108))}, NoOptions()){(Type(), Result(110))})
+                  , String("{")
+                  ]
+                )
+              , Line(
+                  [Layout("\t\t\t\t\t"), Angled(Placeholder(Sort("Stms"{Use(Result(160))}){(Type(), Result(164))}, NoOptions()){(Type(), Result(166))})]
+                )
+              , Line([Layout("\t\t\t\t"), String("}")])
+              ]
+            ){(Type(), [Result(110), Result(166)])}
+          , Attrs([])
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Stms"{ Def(
+                                       URI(
+                                         Language("TemplateLang")
+                                       , [ID(NablNsSort(), "Stms", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                       )
+                                     )
+                                   }), Constructor("Some"{ Def(
+                                                             URI(
+                                                               Language("TemplateLang")
+                                                             , [ ID(NablNsConstructor(), "Some", Unique("sdf3/Blocks.sdf3/1"))
+                                                               , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                               ]
+                                                             )
+                                                           )
+                                                         }))
+          , Rhs([Sort("Stm"{Use(Result(178))}){(Type(), Result(182))}, Sort("Stms"{Use(Result(160))}){(Type(), Result(164))}]){(Type(), Result(185))}
+          , Attrs([])
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Stms"{ Def(
+                                       URI(
+                                         Language("TemplateLang")
+                                       , [ID(NablNsSort(), "Stms", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                       )
+                                     )
+                                   }), Constructor("None"{ Def(
+                                                             URI(
+                                                               Language("TemplateLang")
+                                                             , [ ID(NablNsConstructor(), "None", Unique("sdf3/Blocks.sdf3/1"))
+                                                               , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                               ]
+                                                             )
+                                                           )
+                                                         }))
+          , Rhs([]){(Type(), Result(6))}
+          , Attrs([])
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Stm"{ Def(
+                                      URI(
+                                        Language("TemplateLang")
+                                      , [ID(NablNsSort(), "Stm", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                      )
+                                    )
+                                  }), Constructor("Print"{ Def(
+                                                             URI(
+                                                               Language("TemplateLang")
+                                                             , [ ID(NablNsConstructor(), "Print", Unique("sdf3/Blocks.sdf3/0"))
+                                                               , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                               ]
+                                                             )
+                                                           )
+                                                         }))
+          , Template(
+              [ Line(
+                  [String("p"), Layout(" "), Angled(Placeholder(Sort("Num"{Use(Result(200))}){(Type(), Result(204))}, NoOptions()){(Type(), Result(206))})]
+                )
+              ]
+            ){(Type(), [Result(206)])}
+          , Attrs([])
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Stm"{ Def(
+                                      URI(
+                                        Language("TemplateLang")
+                                      , [ID(NablNsSort(), "Stm", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                                      )
+                                    )
+                                  }), Constructor("Read"{ Def(
+                                                            URI(
+                                                              Language("TemplateLang")
+                                                            , [ ID(NablNsConstructor(), "Read", Unique("sdf3/Blocks.sdf3/0"))
+                                                              , ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))
+                                                              ]
+                                                            )
+                                                          )
+                                                        }))
+          , Template(
+              [ Line(
+                  [String("r"), Layout(" "), Angled(Placeholder(Sort("Var"{Use(Result(218))}){(Type(), Result(222))}, NoOptions()){(Type(), Result(224))})]
+                )
+              ]
+            ){(Type(), [Result(224)])}
+          , Attrs([])
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(
+            SortDef("Num"{ Def(
+                             URI(
+                               Language("TemplateLang")
+                             , [ID(NablNsSort(), "Num", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                             )
+                           )
+                         })
+          , Rhs([Alt(Lit("\"0\""), Lit("\"1\"")){(Type(), Result(236))}]){(Type(), Result(6))}
+          , Attrs([])
+          )
+        , SdfProduction(
+            SortDef("Var"{ Def(
+                             URI(
+                               Language("TemplateLang")
+                             , [ID(NablNsSort(), "Var", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                             )
+                           )
+                         })
+          , Rhs([Alt(Lit("\"a\""), Lit("\"b\"")){(Type(), Result(236))}]){(Type(), Result(6))}
+          , Attrs([])
+          )
+        , SdfProduction(
+            SortDef("Name"{ Def(
+                              URI(
+                                Language("TemplateLang")
+                              , [ID(NablNsSort(), "Name", NonUnique()), ID(NablNsModule(), "Blocks", Unique("sdf3/Blocks.sdf3/0"))]
+                              )
+                            )
+                          })
+          , Rhs([Alt(Lit("\"A\""), Lit("\"B\"")){(Type(), Result(236))}]){(Type(), Result(6))}
+          , Attrs([])
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      ContextFreePriorities(
+        [ Chain(
+            [ SimpleRefGroup(SortConsRef(Sort("Meths"{Use(Result(111))}){(Type(), Result(115))}, Constructor("Some"{Use(Result(427))})))
+            , SimpleRefGroup(SortConsRef(Sort("Meths"{Use(Result(111))}){(Type(), Result(115))}, Constructor("None"{Use(Result(430))})))
+            ]
+          )
+        ]
+      )
+    )
+  ]
+)

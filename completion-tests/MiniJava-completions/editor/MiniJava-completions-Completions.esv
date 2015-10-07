@@ -1,0 +1,20 @@
+module MiniJava-completions-Completions
+
+imports src-gen/completions/MiniJava-completions-esv
+
+completions
+                                                                   
+  // This file is used to define content completion.               
+  //                                                               
+  // See the imported file for a brief introduction and examples.  
+                                                                   
+
+completions
+    
+
+completions
+  // Semantic (identifier) completion:   
+                                         
+  completion proposer                  : editor-complete
+                                         
+  completion trigger                   : "."

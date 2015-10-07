@@ -1,0 +1,10 @@
+module names
+
+imports
+	
+	include/MiniJava-completions
+	
+namespaces
+	
+binding rules
+

@@ -1,0 +1,13 @@
+module editor/Completions-Outliner
+
+imports
+  
+  include/Completions
+  runtime/editor/outline-library
+  runtime/editor/origins
+  editor/Completions-Outliner.generated
+
+rules
+  
+  to-outline-label = fail
+  

@@ -1,0 +1,10 @@
+module MiniJava-completions-Refactorings
+
+imports MiniJava-completions-Refactorings.generated
+
+refactorings
+
+  text reconstruction : construct-textual-change
+  
+  refactoring : "Expand Placeholder " = expand-placeholder-refactoring (cursor)
+  	shortcut : Shift  +  Alt  +  R

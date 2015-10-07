@@ -1,0 +1,8 @@
+Module(
+  "Completions-Colorer"
+, Imports([Import("Completions-Colorer.generated")])
+, [Colorer(
+     ""
+   , [ColorRule(ConstructorOnly(Constructor("Plhr")), AttributeRef("gray"))]
+   )]
+)

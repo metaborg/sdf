@@ -1,0 +1,534 @@
+ItemSets(
+  [ label(
+      prod(
+        [sort("<START>"), char-class([256])]
+      , sort("<Start>")
+      , no-attrs()
+      )
+    , 269
+    )
+  , label(
+      prod(
+        [cf(opt(layout())), cf(sort("Start")), cf(opt(layout()))]
+      , sort("<START>")
+      , no-attrs()
+      )
+    , 268
+    )
+  , label(
+      prod(
+        [cf(layout()), cf(layout())]
+      , cf(layout())
+      , attrs([assoc(left())])
+      )
+    , 267
+    )
+  , label(
+      prod(
+        [lex(sort("Num"))]
+      , cf(sort("Num"))
+      , no-attrs()
+      )
+    , 266
+    )
+  , label(
+      prod([lit("1")], lex(sort("Num")), no-attrs())
+    , 265
+    )
+  , label(
+      prod([lit("0")], lex(sort("Num")), no-attrs())
+    , 264
+    )
+  , label(
+      prod(
+        [lit("print"), cf(opt(layout())), cf(sort("Num"))]
+      , cf(sort("Stm"))
+      , attrs([term(cons("Print"))])
+      )
+    , 263
+    )
+  , label(
+      prod(
+        [cf(sort("Stm"))]
+      , cf(sort("Start"))
+      , no-attrs()
+      )
+    , 262
+    )
+  , label(prod([], cf(opt(layout())), no-attrs()), 261)
+  , label(
+      prod([cf(layout())], cf(opt(layout())), no-attrs())
+    , 260
+    )
+  , label(
+      prod([char-class([49])], lit("1"), no-attrs())
+    , 259
+    )
+  , label(
+      prod([char-class([48])], lit("0"), no-attrs())
+    , 258
+    )
+  , label(
+      prod(
+        [ char-class([112])
+        , char-class([114])
+        , char-class([105])
+        , char-class([110])
+        , char-class([116])
+        ]
+      , lit("print")
+      , no-attrs()
+      )
+    , 257
+    )
+  ]
+, [ ItemSet(
+      0
+    , [ Item(
+          []
+        , [cf(layout()), cf(layout())]
+        , cf(layout())
+        , 267
+        )
+      , Item(
+          []
+        , [cf(layout())]
+        , cf(opt(layout()))
+        , 260
+        )
+      , Item([], [], cf(opt(layout())), 261)
+      , Item(
+          []
+        , [cf(opt(layout())), cf(sort("Start")), cf(opt(layout()))]
+        , sort("<START>")
+        , 268
+        )
+      , Item(
+          []
+        , [sort("<START>"), char-class([256])]
+        , sort("<Start>")
+        , 269
+        )
+      ]
+    , [ goto([267], 1)
+      , goto([260], 2)
+      , goto([261], 2)
+      , goto([268], 3)
+      , goto([269], 4)
+      ]
+    , Completions([])
+    )
+  , ItemSet(
+      1
+    , [ Item(
+          [cf(layout())]
+        , [cf(layout())]
+        , cf(layout())
+        , 267
+        )
+      , Item(
+          [cf(layout())]
+        , []
+        , cf(opt(layout()))
+        , 260
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      2
+    , [ Item(
+          []
+        , [ char-class([112])
+          , char-class([114])
+          , char-class([105])
+          , char-class([110])
+          , char-class([116])
+          ]
+        , lit("print")
+        , 257
+        )
+      , Item(
+          []
+        , [lit("print"), cf(opt(layout())), cf(sort("Num"))]
+        , cf(sort("Stm"))
+        , 263
+        )
+      , Item(
+          []
+        , [cf(sort("Stm"))]
+        , cf(sort("Start"))
+        , 262
+        )
+      , Item(
+          [cf(opt(layout()))]
+        , [cf(sort("Start")), cf(opt(layout()))]
+        , sort("<START>")
+        , 268
+        )
+      ]
+    , [ goto([257], 5)
+      , goto([263], 6)
+      , goto([262], 7)
+      , goto([112], 8)
+      ]
+    , Completions(
+        [ Completion(
+            lit("print")
+          , char-class([112])
+          , "print"
+          , [String("print")]
+          )
+        , Completion(
+            cf(sort("Stm"))
+          , lit("print")
+          , "print Num"
+          , [String("print "), PlaceholderWithSort("Num", "Num")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      3
+    , [ Item(
+          [sort("<START>")]
+        , [char-class([256])]
+        , sort("<Start>")
+        , 269
+        )
+      ]
+    , [goto([256], 21)]
+    , Completions([])
+    )
+  , ItemSet(4, [], [], Completions([]))
+  , ItemSet(
+      5
+    , [ Item(
+          []
+        , [cf(layout()), cf(layout())]
+        , cf(layout())
+        , 267
+        )
+      , Item(
+          []
+        , [cf(layout())]
+        , cf(opt(layout()))
+        , 260
+        )
+      , Item([], [], cf(opt(layout())), 261)
+      , Item(
+          [lit("print")]
+        , [cf(opt(layout())), cf(sort("Num"))]
+        , cf(sort("Stm"))
+        , 263
+        )
+      ]
+    , [ goto([267], 1)
+      , goto([260], 9)
+      , goto([261], 9)
+      ]
+    , Completions(
+        [ Completion(
+            cf(sort("Stm"))
+          , cf(opt(layout()))
+          , "print Num"
+          , [String(" "), PlaceholderWithSort("Num", "Num")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      6
+    , [ Item(
+          [cf(sort("Stm"))]
+        , []
+        , cf(sort("Start"))
+        , 262
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      7
+    , [ Item(
+          []
+        , [cf(layout()), cf(layout())]
+        , cf(layout())
+        , 267
+        )
+      , Item(
+          []
+        , [cf(layout())]
+        , cf(opt(layout()))
+        , 260
+        )
+      , Item([], [], cf(opt(layout())), 261)
+      , Item(
+          [cf(opt(layout())), cf(sort("Start"))]
+        , [cf(opt(layout()))]
+        , sort("<START>")
+        , 268
+        )
+      ]
+    , [ goto([267], 1)
+      , goto([260], 16)
+      , goto([261], 16)
+      ]
+    , Completions([])
+    )
+  , ItemSet(
+      8
+    , [ Item(
+          [[112]]
+        , [ char-class([114])
+          , char-class([105])
+          , char-class([110])
+          , char-class([116])
+          ]
+        , lit("print")
+        , 257
+        )
+      ]
+    , [goto([114], 17)]
+    , Completions(
+        [ Completion(
+            lit("print")
+          , char-class([114])
+          , "rint"
+          , [String("rint")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      9
+    , [ Item(
+          []
+        , [char-class([49])]
+        , lit("1")
+        , 259
+        )
+      , Item(
+          []
+        , [char-class([48])]
+        , lit("0")
+        , 258
+        )
+      , Item(
+          []
+        , [lit("0")]
+        , lex(sort("Num"))
+        , 264
+        )
+      , Item(
+          []
+        , [lit("1")]
+        , lex(sort("Num"))
+        , 265
+        )
+      , Item(
+          []
+        , [lex(sort("Num"))]
+        , cf(sort("Num"))
+        , 266
+        )
+      , Item(
+          [lit("print"), cf(opt(layout()))]
+        , [cf(sort("Num"))]
+        , cf(sort("Stm"))
+        , 263
+        )
+      ]
+    , [ goto([259], 10)
+      , goto([258], 11)
+      , goto([264], 12)
+      , goto([265], 12)
+      , goto([266], 13)
+      , goto([48], 14)
+      , goto([49], 15)
+      ]
+    , Completions(
+        [ Completion(
+            lit("1")
+          , char-class([49])
+          , "1"
+          , [String("1")]
+          )
+        , Completion(
+            lit("0")
+          , char-class([48])
+          , "0"
+          , [String("0")]
+          )
+        , Completion(
+            cf(sort("Stm"))
+          , cf(sort("Num"))
+          , "print Num"
+          , [PlaceholderWithSort("Num", "Num")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      10
+    , [Item(
+         [lit("1")]
+       , []
+       , lex(sort("Num"))
+       , 265
+       )]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      11
+    , [Item(
+         [lit("0")]
+       , []
+       , lex(sort("Num"))
+       , 264
+       )]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      12
+    , [ Item(
+          [lex(sort("Num"))]
+        , []
+        , cf(sort("Num"))
+        , 266
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      13
+    , [ Item(
+          [lit("print"), cf(opt(layout())), cf(sort("Num"))]
+        , []
+        , cf(sort("Stm"))
+        , 263
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      14
+    , [Item([[48]], [], lit("0"), 258)]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      15
+    , [Item([[49]], [], lit("1"), 259)]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      16
+    , [ Item(
+          [cf(opt(layout())), cf(sort("Start")), cf(opt(layout()))]
+        , []
+        , sort("<START>")
+        , 268
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      17
+    , [ Item(
+          [[112], [114]]
+        , [char-class([105]), char-class([110]), char-class([116])]
+        , lit("print")
+        , 257
+        )
+      ]
+    , [goto([105], 18)]
+    , Completions(
+        [ Completion(
+            lit("print")
+          , char-class([105])
+          , "int"
+          , [String("int")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      18
+    , [ Item(
+          [[112], [114], [105]]
+        , [char-class([110]), char-class([116])]
+        , lit("print")
+        , 257
+        )
+      ]
+    , [goto([110], 19)]
+    , Completions(
+        [ Completion(
+            lit("print")
+          , char-class([110])
+          , "nt"
+          , [String("nt")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      19
+    , [ Item(
+          [[112], [114], [105], [110]]
+        , [char-class([116])]
+        , lit("print")
+        , 257
+        )
+      ]
+    , [goto([116], 20)]
+    , Completions(
+        [ Completion(
+            lit("print")
+          , char-class([116])
+          , "t"
+          , [String("t")]
+          )
+        ]
+      )
+    )
+  , ItemSet(
+      20
+    , [ Item(
+          [ [112]
+          , [114]
+          , [105]
+          , [110]
+          , [116]
+          ]
+        , []
+        , lit("print")
+        , 257
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  , ItemSet(
+      21
+    , [ Item(
+          [sort("<START>"), [256]]
+        , []
+        , sort("<Start>")
+        , 269
+        )
+      ]
+    , []
+    , Completions([])
+    )
+  ]
+)

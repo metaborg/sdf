@@ -1,0 +1,36 @@
+module MiniJava/MiniJava
+
+imports
+ 
+  MiniJava/Lexical	
+  MiniJava/Expressions	
+  MiniJava/Statements	
+  MiniJava/Classes
+
+context-free start-symbols
+
+  Start Program ClassDecl Exp FieldDecl MainClass MethodDecl Statement Type VarDecl ParamDecl ID INT
+
+sorts
+
+  Program MainClass
+
+context-free syntax
+
+  Start = <<Program>> 
+  Program.Program = <
+    <MainClass>
+
+    <{ClassDecl "\n\n"}*>
+  > 
+  MainClass.MainClass = <
+    class <ID> { 
+      public static void main (String[] <ID>) { 
+      	<Statement> 
+    	}
+    }> 
+
+template options
+
+  keyword -/- [A-Za-z]
+  tokenize : "[()"
