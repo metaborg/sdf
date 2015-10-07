@@ -13,9 +13,9 @@
 
   <parent>
     <groupId>org.metaborg</groupId>
-    <artifactId>org.metaborg.maven.parent.language</artifactId>
+    <artifactId>parent.language</artifactId>
     <version>1.5.0-SNAPSHOT</version>
-    <relativePath>../../spoofax-deploy/org.metaborg.maven.parent.language</relativePath>
+    <relativePath>../../releng/parent/language</relativePath>
   </parent>
 
   <properties>
@@ -25,9 +25,18 @@
   <dependencies>
     <dependency>
       <groupId>org.metaborg</groupId>
-      <artifactId>org.spoofax.meta.runtime.libraries</artifactId>
+      <artifactId>org.metaborg.meta.lib.analysis</artifactId>
       <version>${metaborg-version}</version>
       <type>spoofax-language</type>
+      <scope>${metaborg-meta-lang-scope}</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.meta.lang.esv</artifactId>
+      <version>${metaborg-baseline-version}</version>
+      <type>spoofax-language</type>
+      <scope>${metaborg-meta-lang-scope}</scope>
     </dependency>
   </dependencies>
 
@@ -42,6 +51,7 @@
       <plugin>
         <groupId>org.metaborg</groupId>
         <artifactId>spoofax-maven-plugin</artifactId>
+        <version>${metaborg-version}</version>
         <extensions>true</extensions>
         <configuration>
           <sdfArgs>
@@ -58,14 +68,6 @@
             <language>EditorService</language>
           </pardonedLanguages>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.metaborg</groupId>
-            <artifactId>org.metaborg.meta.lang.esv</artifactId>
-            <version>${metaborg-baseline-version}</version>
-            <type>spoofax-language</type>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>

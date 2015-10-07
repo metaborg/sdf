@@ -5,12 +5,12 @@ imports
   trans/utils/attributes
   trans/utils/misc
   runtime/editor/origins
-  analysis/names
-  
+  names/analysis/names
+
    rules
   external unquote(|)
-  
-  
+
+
   strategies
   
   lift-all = bottomup(try(lift-terms))
@@ -25,7 +25,7 @@ imports
   	where
   		<?Iter(_) + ?IterStar(_) + ?Label(_, Iter(_)) + ?Label(_, IterStar(_))> symbol;
   		<getfirst(?Separator(sep))> options*
-    with    	
+    with
     	switch !symbol
     	case ?Iter(s) : symbol' := IterSep(s, Lit(sep))
     	case ?IterStar(s) : symbol' := IterStarSep(s, Lit(sep))
@@ -51,7 +51,7 @@ imports
   //regular sdf2 productions become sdf3 productions with or without constructors     	
   lift-terms:
   	Prod(symbols*, Sort(s), Attrs(a*)) -> result
-  	with 
+  	with
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a'*))
@@ -61,7 +61,7 @@ imports
   //Lexical kernel sdf2 productions become sdf3 productions with or without constructors     	
   lift-terms:
   	Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
-  	with 
+  	with
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
@@ -70,7 +70,7 @@ imports
   //Cf kernel sdf2 productions become sdf3 productions with or without constructors     	
   lift-terms:
   	Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
-  	with 
+  	with
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
@@ -82,13 +82,13 @@ imports
   	Prod(symbols*, symbol, Attrs(a*)) -> result
   	where
   		not(<?Sort(s) + ?Lex(Sort(_)) + ?Cf(Sort(_))> symbol)
-  	with 
+  	with
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?Constructor(_))> a* ;
   		result := SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), Attrs(a'*))
-  	<+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*)) 
-  
-  
+  	<+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*))
+
+
   //normalize reductive productions section to productive productions section
   lift-terms:
   	Contextfree(p*) -> ContextFreeSyntax(p*)

@@ -1,7 +1,7 @@
 module editor/builders
 
 imports
-  
+
   libstrc
   libstratego-sdf
   libstratego-lib
@@ -16,8 +16,8 @@ imports
   trans/pp
   runtime/index/-
   runtime/task/-
-  trans/generation/-
-  analysis/names
+  generation/-
+  names/analysis/names
   runtime/nabl/-
   runtime/properties/-
   normalization/to-normal-form
@@ -29,9 +29,11 @@ rules
   	
   generate-sdf-abstract:
     (selected, position, ast, path, project-path)	-> (filename, result)
+    where
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
@@ -40,12 +42,14 @@ rules
     	//selected' := selected ;
     	filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
     	result := <to-sdf(|chars, newline, kfr)> selected'
-    	  	 	
+
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
    where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+   where
        <?Module(Unparameterized(mn), i*, sections)> ast ;
      	chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
@@ -55,123 +59,129 @@ rules
         filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
      //   result   := <sdf-aterm; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail>
        result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
- 
-  
+
+
   generate-sig-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
-    	
+
     	result   := <module-to-sig> selected'
       ; filename := <create-src-gen(|project-path, "signatures", ".sig.aterm")> mn
-  
-  
-  
+
+
+
   generate-sig-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The signature file could not be generated.\n"); fail> path
+    where
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
-        
-        
+
+
    generate-dynsem:
    	     (selected, position, ast, path, project-path) -> (filename, result)
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ds signature file could not be generated.\n"); fail> path
+    where
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
-        
+
    generate-dynsem-abstract:
    	     (selected, position, ast, path, project-path) -> (filename, result)
+   	where
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ds signature file could not be generated.\n"); fail> path
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-ds-sig> selected'
-      ; filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn     
-   
+      ; filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn
+
    generate-pp-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   :=  <module-to-pp> selected'
      // ; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn 	
-  
+      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
+
    generate-pp-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The pp file could not be generated.\n"); fail> path
+    where
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
     	//; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn//fn
-  
+
   generate-ast-checker-concrete:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	where
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
+  	where
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
     	//; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "check", "-chk.str")> mn
-  
+
    generate-ast-checker-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	where
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
+  	where
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-chk> selected'
     	//; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "check", "-chk.aterm")> mn
-  
-  
+
+
   generate-esv-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
     	<?Module(Unparameterized(mn), i*, _)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected'
-      ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn 	
-  
+      ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn
+
    generate-esv-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-    	task-setup(|project-path);
-    	index-setup(|<language>, project-path);
+    	<?Module(Unparameterized(m), i*, sections)> ast ;
+    	m' := <strip-annos; string-tokenize(|['/']); last> m;
+  	    <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The esv file could not be generated.\n"); fail> path
+    where
     	<?Module(Unparameterized(mn), i*, sections)> ast ;
     	selected'     := <desugar-templates> selected;
     	result   := <module-to-esv; pp-esv-to-string <+ !""; debug(!"The esv file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n")> selected'
       ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
-  
-  
+
+
   lift-sdf3-abstract:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
@@ -182,12 +192,10 @@ rules
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
-  
+
   lift-sdf3:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
@@ -197,13 +205,11 @@ rules
   	with
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := <module-to-template> ast;
-  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn		
-  		
+  		filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
+
    lift-sdf3-template:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
   		filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn		
@@ -211,8 +217,6 @@ rules
   extract-regular-productions:		
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
@@ -221,8 +225,6 @@ rules
   extract-regular-productions-abstract:		
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-    	index-setup(|<language>, project-path);
   		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
   		result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
@@ -240,12 +242,10 @@ rules
 		kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
 		result := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> normalized;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf")> mn
-        
+
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf3")> mn;
 		result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> selected	
@@ -262,17 +262,13 @@ rules
   generate-item-sets:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		filename := <create-src-gen(|project-path, "parse-table",  ".aterm")> "item-sets" ;
 		result   := <to-item-sets <+ debug(!"Grammar is not normalized "); fail> selected
-  
+
   generate-parse-table:
   	(selected, position, ast, path, project-path) -> (filename, result)
   	with
-  		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
   		filename := <create-src-gen(|project-path, "parse-table",  "-parse-table.tbl")> mn;
 		result   := <to-parse-table <+ debug(!"Grammar is not normalized "); fail > selected
@@ -300,7 +296,7 @@ rules
   
   // On-save handler
   generate-all:
-    (selected, position, ast, path, project-path) -> None() 
+    (selected, position, ast, path, project-path) -> None()
     with
         filename := <base-filename> path;
         debug(!"generating for ");
@@ -355,33 +351,33 @@ rules
   sdf-ppfix;
   ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
   box2text-string(|80)
-  
-  
+
+
   pp-ds-to-string =
   	ds-prettyprint-SDF-start-symbols
     ; !V([], <id>)
     ; box2text-string(|120)
-  
+
   //pretty-printer for the generated esv
-  pp-esv-to-string = 
+  pp-esv-to-string =
   	topdown(try(pp-fix-string-quotes));
     ast2box(|[<esv-pp-table>]);
     box2text-string(|80)
-    
+
   pp-fix-string-quotes:
     String(string) -> String(string')
     where
       <not(string-starts-with(|"\""))> string
     with
       string' := <conc-strings> ("\"", string, "\"")
-  
+
   pp-fix-string-quotes:
     Placeholder(string) -> Placeholder(string')
     where
       <not(string-starts-with(|"<"))> string
     with
-      string' := <conc-strings> ("<", string, ">")  
-    
+      string' := <conc-strings> ("<", string, ">")
+
   esv-pp-table =
     DescriptorPPTable
   <+
@@ -422,17 +418,17 @@ rules
  		    else
  		    	s' := path
  		    end
- 			
-   
+
+
    create-dir  = not( file-exists ; filemode ; isdir) < mkdir + id
-   
+
    create-dirs(|dir):
    	[h | tl] -> None()
    	where
    		<create-dir> dir;
 	   	new-dir := <concat-strings> [dir, "/", h];
 	   	<create-dirs(|new-dir)> tl
-   	
+
    	create-dirs(|dir):
    	[] -> None()
    	where
@@ -443,7 +439,7 @@ rules
  		with
  			names := <strip-annos; string-tokenize(|['/'])> s;
  			s' := <last> names
- 			
+
  sugar-attributes:
  	Attrs([]) -> NoAttrs() 			
  			

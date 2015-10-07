@@ -3,6 +3,7 @@ module ds/pp/ds-pp
 imports
   libstratego-gpp
   runtime/tmpl/pp
+  libstratego-sglr
   ds/signatures/ds-sig
 
 
@@ -225,6 +226,18 @@ strategies
 
   is-Premise =
     fail
+
+  ds-prettyprint-ModuleSection :
+    amb([h|hs]) -> <ds-prettyprint-ModuleSection> h
+
+  ds-prettyprint-Rule :
+    amb([h|hs]) -> <ds-prettyprint-Rule> h
+
+  ds-prettyprint-PremisesBlock :
+    amb([h|hs]) -> <ds-prettyprint-PremisesBlock> h
+
+  ds-prettyprint-Premise :
+    amb([h|hs]) -> <ds-prettyprint-Premise> h
 
 
 strategies
@@ -529,6 +542,38 @@ strategies
 
   is-LabelComp =
     fail
+
+  ds-prettyprint-Relation :
+    amb([h|hs]) -> <ds-prettyprint-Relation> h
+
+  ds-prettyprint-Formula :
+    amb([h|hs]) -> <ds-prettyprint-Formula> h
+
+  ds-prettyprint-Reads :
+    amb([h|hs]) -> <ds-prettyprint-Reads> h
+
+  ds-prettyprint-Source :
+    amb([h|hs]) -> <ds-prettyprint-Source> h
+
+  ds-prettyprint-Target :
+    amb([h|hs]) -> <ds-prettyprint-Target> h
+
+  ds-prettyprint-Rel :
+    amb([h|hs]) -> <ds-prettyprint-Rel> h
+
+  ds-prettyprint-LabelComp :
+    amb([h|hs]) -> <ds-prettyprint-LabelComp> h
+
+
+strategies
+  ds-prettyprint-TermCon =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-TermCon
+
+  ds-prettyprint-TermCon :
+    amb([h|hs]) -> <ds-prettyprint-TermCon> h
 
 
 strategies
@@ -859,3 +904,18 @@ strategies
 
   is-Term =
     fail
+
+  ds-prettyprint-Var :
+    amb([h|hs]) -> <ds-prettyprint-Var> h
+
+  ds-prettyprint-Cast :
+    amb([h|hs]) -> <ds-prettyprint-Cast> h
+
+  ds-prettyprint-List :
+    amb([h|hs]) -> <ds-prettyprint-List> h
+
+  ds-prettyprint-Entry :
+    amb([h|hs]) -> <ds-prettyprint-Entry> h
+
+  ds-prettyprint-Term :
+    amb([h|hs]) -> <ds-prettyprint-Term> h

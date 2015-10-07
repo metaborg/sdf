@@ -6,7 +6,7 @@ imports
   libstratego-sglr
   libstratego-lib
   libstratego-gpp
-  analysis/names
+  names/analysis/names
   libstrc
   runtime/nabl/-
   runtime/task/-
@@ -15,14 +15,14 @@ imports
   generation/to-sdf
   analysis/desugar
   runtime/properties/-
-  
+
   strategies
-  	
+
   	nabl-check-disable-duplicate(|uri, ns) = id
   	nabl-check-disable-unresolved = id
-  	
+
   	rules
-  	    
+
   	nabl-constraint(|ctx):
   	    Module(Unparameterized(m), i*, s*) -> <fail>
   	where
@@ -30,7 +30,7 @@ imports
   	    <base-filename; remove-extension; not(?m')> ctx;
   	    msg := "Module name does not correspond to file name";
         <task-create-error(|ctx, msg)> m
-  	        
+
 
   	nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Nil\""))]))) -> <fail>
@@ -43,7 +43,7 @@ imports
     where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
-  	
+
   	nabl-constraint(|ctx):
     SortCons(s, c@Constructor("Nil")) -> <fail>
     where
@@ -62,14 +62,14 @@ imports
   			<has-annotation(?Use(task))> c;
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-  	
+
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Cf(Sort(s)), Constructor(c)) -> <fail>
   		where
   			<has-annotation(?Use(task))> c;
   			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
   			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-  	
+
   	nabl-constraint(|ctx):
   		sc@SortConsRef(Lex(Sort(s)), Constructor(c)) -> <fail>
   		where
@@ -83,7 +83,7 @@ imports
   		<has-annotation(?Use(task))> m;
   		msg := $[Unresolved reference to module '[m]'];
   		<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
-  					
+
   	nabl-constraint(|ctx):
   		 Sort(s) -> <fail>
   		where
@@ -99,8 +99,8 @@ imports
   			cons-types := <type-lookup(|ctx)> lookup;
   			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
   			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
-  			
-  	
+
+
   	nabl-constraint(|ctx):
   	    SDFSection(ContextFreeSyntax(p*)) -> <fail>
   	    where
@@ -152,14 +152,14 @@ imports
             <map(task-create-warning(|ctx, $[Missing constructor name: the generated pretty printer might not work properly]))> prods-wo-cons*;
             <map(task-create-error(|ctx, $[Missing bracket attribute or constructor name]))> maybe-brackets*;
             <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*;
-            <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*		
-  	
+            <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*
+
   	check-for-weird-symbols:
         p -> weird-symbols*
         where
             symbols* := <collect-all(?Iter(<id>) + ?IterStar(<id>) + ?Opt(<id>), conc)> p;
-            weird-symbols* := <filter(not(?Sort(_)))> symbols*  
-  			
+            weird-symbols* := <filter(not(?Sort(_)))> symbols*
+
     nabl-constraint(|ctx):
   		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
   		where
@@ -169,15 +169,15 @@ imports
   			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
   			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
-	
+
 	prod-without-constructor:
-        p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s 
+        p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
         where
             <not(?[Sort(sort)] + ?[])> prod-sorts;
             s'      := <strip-annos> s;
             <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> prod-sorts
             ; <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
-           
+
     prod-without-constructor:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
@@ -186,22 +186,22 @@ imports
             s'      := <strip-annos> s;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs*;
             <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
-    
+
     prod-maybe-brackets:
         p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
         where
             s' := <strip-annos> s;
             <?[_, Sort(sort), _]; <strip-annos; ?s'> sort> prod-sorts;
             <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
-    
+
      prod-maybe-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
             rhs* := <template-to-sdf(|["(", ")"], None(), "")> template;
-            s'   := <strip-annos> s; 
+            s'   := <strip-annos> s;
             <?[_, sort(sort), _]; <strip-annos; ?s'> sort> rhs*;
             <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
-    
+
     prod-with-illegal-brackets:
         p@SdfProduction(SortDef(s), Rhs(rhs*), Attrs(attrs*)) -> bracketanno
         where
@@ -209,7 +209,7 @@ imports
         	s' := <strip-annos> s;
             bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
             <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> rhs* //it does not follow the bracket structure
-            
+
     prod-with-illegal-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
         where
@@ -218,22 +218,21 @@ imports
             rhs     := <template-to-sdf(|["(", ")"], None(), "")> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs
-            
+
     prod-with-illegal-brackets:
         SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
         where
         	<not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
-            
+
     prod-with-illegal-brackets:
         TemplateProductionWithCons(sc, t, Attrs(attrs*)) -> bracketanno
         where
         	<not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
-            		
+
 	task-rewrite:
   	  ("match-sort-type", (e@FunType(ty*, SortType(s)), a@FunType(ty'*, SortType(s')))) -> a
   	  where
   	  	<?s> s';
   	  	<eq> (<length> ty*, <length> ty'*)
-

@@ -7,10 +7,10 @@ imports
  	include/TemplateLang
  	runtime/nabl/-
   	runtime/properties/-
-  	analysis/names
+  	names/analysis/names
   	utils/tokenize
   	generation/to-sdf
-  
+
 
 rules
     sugar-priorities:
@@ -22,8 +22,8 @@ rules
     	temps*  	:= <map(get-def); try(desugar-templates); strip-annos> const;
     	p*          := <map(get-prod-elems)> temps*;
         [sc]	 	:= <filter(?(<id>, rhs'))> p*
-    
-    
+
+
     get-prod-elems:
   		SdfProductionWithCons(SortCons(SortDef(s),c), Rhs(symbols*), a*) -> (SortConsRef(Sort(s), c), symbols*)		
   	
@@ -33,8 +33,8 @@ rules
   		result := <template-to-prod> t
     	
     remove-attrs:
-    	SdfProductionWithCons(sc, rhs, attrs) -> SdfProductionWithCons(sc, rhs, NoAttrs()) 
-    
+    	SdfProductionWithCons(sc, rhs, attrs) -> SdfProductionWithCons(sc, rhs, NoAttrs())
+
     //single-line template
     template-to-prod:
   	    SingleLineTemplate(elems) -> elems'
@@ -59,15 +59,15 @@ rules
 	  			case ?Label(l, IterSep(sym, _)) : symbol' :=  Label(l, Iter(sym))
 	  			case ?Label(l, IterStarSep(sym, _)) : symbol' :=  Label(l, IterStar(sym))
   			end
-  		else	
+  		else
 	  		switch !symbol
 	  			case ?IterSep(sym, _) : symbol' :=  IterSep(sym, Lit(lit'))
 	  			case ?IterStarSep(sym, _) : symbol' :=  IterStarSep(sym, Lit(lit'))
 	  			case ?Label(l, IterSep(sym, _)) : symbol' :=  Label(l, IterSep(sym, Lit(lit')))
 	  			case ?Label(l, IterStarSep(sym, _)) : symbol' :=  Label(l, IterStarSep(sym, Lit(lit')))
 	  		end
-	  	end	
-  		
+	  	end
+
   template-elem-to-prod:
   	Placeholder(symbol, option) -> symbol
   where
@@ -79,13 +79,10 @@ rules
     Template(lines) -> elems
      with
      	elems := <map(line-to-prod)> lines
-   
+
  line-to-prod:
   	Line(elems) -> elems'
   	with
-  		elems' := <filter(template-elem-to-prod); flatten-list> elems	
- 
+  		elems' := <filter(template-elem-to-prod); flatten-list> elems
+
 string-to-prod =  string-edge-tokenize(where({x: ?x; <one(?x)> ['(', ')']})); map(!Lit(<template-escape; double-quote>))
- 
- 
- 
