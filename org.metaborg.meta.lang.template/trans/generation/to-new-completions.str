@@ -1,0 +1,81 @@
+module generation/to-new-completions
+
+imports
+  libstratego-lib
+  libstrc
+  include/TemplateLang
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  analysis/desugar
+  generation/to-str
+  
+rules
+	
+  module-to-new-cmp:
+	Module(Unparameterized(m), i*, s*) -> Module(m',  [i0, i1, is*, s'])
+	with
+		m'  := <conc-strings> ("src-gen/", "new-completions/", m, "-ncp");
+        i0  := Imports([Import("libstratego-gpp"), Import("trans/refactorings")]);
+        i1  := Imports([Import($[src-gen/signatures/[m]-sig])]); 
+        is* := <map(to-str-import(|"-ncp", "new-completions"))> i*; 
+        s'  := Strategies(<filter(section-to-new-cmp); flatten-list> s*)
+ 
+  section-to-new-cmp:
+  	SDFSection(ContextFreeSyntax(p*)) -> cc-str*
+  	where
+  		cc-str* := <filter(prod-to-new-cmp)> p*
+  		
+  prod-to-new-cmp:
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
+    																									 App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Op(constructor, rhs-placeholders* ))]), Fail()), Var("completions"))))		
+	    where not (
+	      <fetch-elem(?Reject())> attrs
+	    )
+	    where <not(?Sort(x))> rhs*
+	    with
+	    	rhs-placeholders* := <filter(to-new-cmp-elem)> rhs*
+      		    	
+  prod-to-new-cmp:
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
+    App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Op(constructor, rhs-placeholders* ))]), Fail()), Var("completions"))))		
+	    where not (
+	      <fetch-elem(?Reject())> attrs
+	    )
+	    with
+	    	rhs-placeholders* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template
+	    	
+   //injections
+   prod-to-new-cmp:
+     SdfProduction(SortDef(sort), Rhs([Sort(x)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+     																Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+     																Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Op($[[sort]-Plhdr], []))), 
+     																GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), RootApp(Id())))]))))
+    	
+   prod-to-new-cmp:
+     TemplateProduction(SortDef(sort), SingleLineTemplate([Placeholder(Sort(x), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+     																Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+     																Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Op($[[sort]-Plhdr], []))), 
+     																GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), RootApp(Id())))]))))		    	
+	
+   to-new-cmp-elem(|sort):
+     Sort(x) ->  App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))
+
+   to-new-cmp-elem(|sort):
+     Iter(Sort(x)) -> NoAnnoList(List([App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))]))
+   
+   to-new-cmp-elem(|sort):
+     IterSep(Sort(x), sep) -> NoAnnoList(List([App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))]))
+      
+   to-new-cmp-elem(|sort):
+     IterStar(x) -> NoAnnoList(List([]))
+   
+   to-new-cmp-elem(|sort):
+     IterStarSep(x, sep) -> NoAnnoList(List([]))
+        
+   to-new-cmp-elem(|sort):
+   	 Line(elems*) -> <filter(to-new-cmp-elem(|sort))> elems*   
+   
+   to-new-cmp-elem(|sort):
+   	 Placeholder(s, options) -> <to-new-cmp-elem(|sort)> s	 
