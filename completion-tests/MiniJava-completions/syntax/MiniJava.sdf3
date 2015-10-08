@@ -11,7 +11,7 @@ context-free start-symbols
 
   Start Program ClassDecl Exp FieldDecl MainClass MethodDecl Statement Type VarDecl ParamDecl ID INT
 
-sorts
+sorts 
 
   Program MainClass
 

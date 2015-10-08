@@ -1,6 +1,6 @@
 module MiniJava-completions-Completions
 
-imports src-gen/completions/MiniJava-completions-esv
+imports completions/MiniJava-completions-esv
 
 completions
                                                                    

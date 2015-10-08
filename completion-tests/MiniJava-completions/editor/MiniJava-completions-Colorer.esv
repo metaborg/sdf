@@ -1,7 +1,7 @@
 module MiniJava-completions-Colorer
 
 imports MiniJava-completions-Colorer.generated
-		src-gen/new-completions/colorer/MiniJava-completions-cc-esv
+		//new-completions/colorer/MiniJava-completions-cc-esv
 
 colorer
                                                                       
