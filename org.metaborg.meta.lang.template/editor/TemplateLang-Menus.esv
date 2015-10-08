@@ -13,8 +13,6 @@ menus
     
   menu: "Analysis"                    (meta)
     
-    action: "Reset and reanalyze"   = debug-reanalyze   
-
     submenu: "Show analysis"          (openeditor)
       action: "Project"             = debug-project
       action: "Partition"           = debug-partition

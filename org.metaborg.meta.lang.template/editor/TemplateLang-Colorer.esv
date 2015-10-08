@@ -1,12 +1,10 @@
 module TemplateLang-Colorer
 
-imports TemplateLang-Colorer.generated
+imports 
+
+  editor/Colorer.generated
 
 colorer
-
-  // This file can be used for custom colorer rules.
-  //
-  // See the imported file for a brief introduction and examples.
 
 	_.String: blue
 	_.Constructor: darkblue

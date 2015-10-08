@@ -1,14 +1,5 @@
 module TemplateLang-References
 
-imports TemplateLang-References.generated
-
-references
-
-  // This file can be used to specify reference resolving and hover help, and content completion.
-  //
-  // See the imported file for a brief introduction and examples.
-
-
 references
 
   reference _ : editor-resolve
