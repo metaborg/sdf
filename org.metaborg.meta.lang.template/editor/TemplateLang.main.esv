@@ -1,13 +1,10 @@
 module TemplateLang.main
 
-imports TemplateLang.generated TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-Folding TemplateLang-References TemplateLang-Syntax
+imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-References TemplateLang-Syntax
 
 language General properties
 
-  extends       : Root
-
-  description   : "Spoofax/IMP-generated editor for the TemplateLang language"
-  url           : http://strategoxt.org
+  name : TemplateLang
 
   extensions    : tmpl, sdf3
   table         : include/TemplateLang.tbl

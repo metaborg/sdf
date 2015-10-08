@@ -2,7 +2,6 @@ module SDF.main
 
 imports
 
-  SDF.generated
   SDF-Menus
   SDF-Views
   SDF-Colorer
@@ -13,10 +12,7 @@ imports
 
 language General properties
                   
-  extends       : Root
-                  
-  description   : "Spoofax/IMP-generated editor for the SDF language"
-  url           : http://strategoxt.org
+  name: SDF
                   
   extensions    : sdf, def
   table         : include/SDF.tbl

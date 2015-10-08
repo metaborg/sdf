@@ -1,7 +1,5 @@
 module TemplateLang-Completions
 
-imports completions/TemplateLang-esv
-
 completions
 
   completion proposer : editor-complete
