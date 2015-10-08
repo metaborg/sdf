@@ -35,15 +35,10 @@ rules // Analysis
 
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
   
-  editor-analyze = analysis-default-editor
   
-  analysis-single-default-interface = 
-  	//analysis-single-default(analyze; name-sugar-all, name-desugar-all, id|<language>)
-  	analysis-single-default(lifting, id, id|<language>)
-  	
-  analysis-multiple-default-interface = 
-  	//analysis-multiple-default(parse-file <+ !(), analyze; name-sugar-all, name-desugar-all, id|<language>, <project-path>)
-  analysis-multiple-default(parse-file <+ !(), lifting, id, id|<language>, <project-path>)
+
+  editor-analyze = analyze-all(lifting, id, id|<language>)
+
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       

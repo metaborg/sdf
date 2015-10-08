@@ -233,8 +233,6 @@ rules
   sdf3-to-normal-form-sdf:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		normalized   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected;
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
@@ -253,8 +251,6 @@ rules
   sdf3-to-normal-form-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-		task-setup(|project-path);
-		index-setup(|<language>, project-path);
 		<?Module(Unparameterized(mn), i*, sections)> ast ;
 		filename := <create-src-gen(|project-path, "syntax",  "-normalized.aterm")> mn;
 		result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected
@@ -276,8 +272,6 @@ rules
   generate-parse-table-sdf2table-format:
     (selected, position, ast, path, project-path) -> (filename, result')
     with
-        task-setup(|project-path);
-        index-setup(|<language>, project-path);
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         filename := <create-src-gen(|project-path, "parse-table",  "-parse-table.tbl")> mn;
         ref-file := <remove-extension> path;
@@ -288,8 +282,6 @@ rules
   normalize-and-generate-pt:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-        task-setup(|project-path);
-        index-setup(|<language>, project-path);
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         filename := <create-src-gen(|project-path, "syntax",  "-parse-table.tbl")> mn;
         result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); to-parse-table> selected
@@ -300,8 +292,6 @@ rules
     with
         filename := <base-filename> path;
         debug(!"generating for ");
-        task-setup(|project-path);
-        index-setup(|<language>, project-path);
         ast'     := <desugar-templates> ast;
         <?Module(Unparameterized(mn), i*, sections)> ast 
         //; fn       :=  <get-filename> mn        
@@ -316,7 +306,7 @@ rules
     where
       ncp-ast              := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       ncp-filename         := <create-src-gen(|project-path, "new-completions", "-ncp.str")> mn;
-      <write-string-to-file> (ncp-filename, ncp-ast)                
+      <write-string-to-file> (ncp-filename, ncp-ast)             
     where
       sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;

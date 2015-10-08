@@ -18,7 +18,7 @@ rules
 	with
 		m'  := <conc-strings> ("src-gen/", "new-completions/", m, "-ncp");
         i0  := Imports([Import("libstratego-gpp"), Import("trans/refactorings")]);
-        i1  := Imports([Import($[src-gen/signatures/[m]-sig])]); 
+        i1  := Imports([Import($[signatures/[m]-sig])]); 
         is* := <map(to-str-import(|"-ncp", "new-completions"))> i*; 
         s'  := Strategies(<filter(section-to-new-cmp); flatten-list> s*)
  
