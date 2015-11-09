@@ -14,11 +14,11 @@ context-free syntax
 
   ClassDecl.Class = <
     class <ID> <ParentDecl;hide>{ 
-      <{FieldDecl "\n"}+>
+      <{FieldDecl "\n"}*>
        
       <{MethodDecl "\n"}*> 
     }> 
-  ParentDecl.None = <> 
+  ParentDecl.NoParent = <> 
   ParentDecl.Parent = <extends <ID> > 
   FieldDecl.Field = <<Type> <ID>;> 
   MethodDecl.Method = <

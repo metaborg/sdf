@@ -5,7 +5,7 @@ imports
 	libstratego-gpp
 	runtime/refactoring/-
 	include/MiniJava-completions-parenthesize
-	pp/MiniJava-completions-pp
+	pp/-
 
 rules
 	
@@ -37,5 +37,5 @@ rules
   * Example:
   *   new-text := <construct-textual-change> (old-ast, new-ast)
   */
-  construct-textual-change = construct-textual-change(pp-partial-MiniJava-completions-string, parenthesize, override-reconstruction, resugar)
+  construct-textual-change = construct-textual-change(pp-partial-MiniJava-completions-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar)
 

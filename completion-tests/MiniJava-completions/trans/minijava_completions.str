@@ -19,7 +19,7 @@ imports
 	check
 	generate
 	pp
-	refactorings
+	completions
 
 rules // Analysis
 	

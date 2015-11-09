@@ -1,5 +1,15 @@
 class [[ID]] {
-  public static void main (String[] [[ID]]) {
+  public static void main (String[] fdgadf) {
     [[Statement]]
   }
+}
+
+[[ClassDecl]]
+
+class [[ID]] bla{
+
+}
+
+class [[ID]] bla{
+
 }

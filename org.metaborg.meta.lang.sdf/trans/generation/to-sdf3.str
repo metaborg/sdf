@@ -364,7 +364,7 @@ rules
   		a* := <?attrs(<id>) <+ ![]> attrs;
   		symbols'* := <filter(symbol-to-sdf3)> symbols*;
   		symbol' := <symbol-to-sdf3> symbol;
-  		p* := <filter(new-prods)> symbols*		
+  		p* := <topdown(try(new-prods))> symbols*		
   	with 
   		c := <getfirst(lift-constr)> a*;
   		a'* := <remove-all(?sdf-cons(_) + ?Constructor(_))> a* ;
@@ -375,9 +375,25 @@ rules
   symbol-to-sdf3:
    	symbol -> symbol'
    	where
-   		not(is-unsupported) 	
+   		not(is-unsupported);
+   		not(?iter(_) + ?iter-star(_) + ?iter-star-sep(_, _) + ?iter-sep(_, _) + ?opt(_))	
    	with
    		symbol' := <try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf )> symbol
+   		
+  symbol-to-sdf3:
+    iter(x) -> Iter(<try(symbol-to-sdf3)> x) 
+    
+  symbol-to-sdf3:
+    iter-star(x) -> IterStar(<try(symbol-to-sdf3)> x)  	
+    
+  symbol-to-sdf3:
+    iter-sep(x, lit) -> IterSep(<try(symbol-to-sdf3)> x, <try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf )> lit)  	
+    
+  symbol-to-sdf3:
+    iter-star-sep(x, lit) -> IterStarSep(<try(symbol-to-sdf3)> x, <try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf )> lit)  
+  
+  symbol-to-sdf3:
+    opt(x) -> Opt(<try(symbol-to-sdf3)> x)  
    	
   symbol-to-sdf3:
    	symbol -> symbol'
@@ -387,9 +403,9 @@ rules
    		symbol' := <lift-symbol> symbol
   
   lift-symbol:
-  	alt(s1, s2) -> newsymbol
+  	a@alt(s1, s2) -> newsymbol
   	with
-  		newsymbol := Sort($[Alt[<next-counter> "SDF3"]])
+  		newsymbol := Sort(<to-sort-name> a)
   
   lift-symbol:
   	empty() -> newsymbol
@@ -416,8 +432,44 @@ rules
   	with
   		newsymbol := Sort($[Strategy[<next-counter> "SDF3"]])		
   		
+  to-sort-name:
+    sort(x) -> x		
+    
+  to-sort-name:
+    opt(x) -> $[[x]Opt]
+    
+  to-sort-name:
+    iter(x) -> $[[x]Plus]
+    
+  to-sort-name:
+    iter-star(x) -> $[[x]Star]  
+      
+  to-sort-name:
+    iter-star-sep(x, lit) -> $[[x]StarSep]
+    
+  to-sort-name:
+    iter-sep(x, lit) -> $[[x]PlusSep]
+    
+  to-sort-name:
+    alt(x, y) -> <concat-strings> [<to-sort-name> x, "Or", <to-sort-name> y]    
+    
   new-prods:
-  	alt(s1, s2) -> [<prod-to-sdf3> prod([s1], sort($[Alt[<get-counter> "SDF3"]]), no-attrs()), <prod-to-sdf3> prod([s2], sort($[Alt[<get-counter> "SDF3"]]), no-attrs())] 	
+    iter(x) -> <new-prods> x
+    
+  new-prods:
+    iter-star(x) -> <new-prods> x   
+    
+  new-prods:
+    iter-sep(x, lit) -> <new-prods> x   
+    
+  new-prods:
+    iter-star-sep(x, lit) -> <new-prods> x  
+  
+  new-prods:
+    opt(x) -> <new-prods> x  
+  		
+  new-prods:
+  	a@alt(s1, s2) -> [<prod-to-sdf3> prod([s1], sort(<to-sort-name> a), no-attrs()), <prod-to-sdf3> prod([s2], sort(<to-sort-name> a), no-attrs())] 	
   
   new-prods:
   	empty() -> <prod-to-sdf3> prod([], sort("Empty"), no-attrs())

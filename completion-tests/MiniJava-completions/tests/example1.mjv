@@ -1,10 +1,62 @@
+
 class [[ID]] {
   public static void main (String[] [[ID]]) {
     [[Statement]]
   }
 }
 
-class [[ID]] {
+
+
+/*class [[ID]] {
+  public static void main (String[] [[ID]]) {
+    [[Statement]]
+  }
+}
+
+//interest position for completions should propose ClassDecl]] 
+
+
+class [[ID]] extends [[ID]] {
+
   [[Type]] [[ID]];
 
-}
+  
+            
+
+} 
+
+
+
+class [[ID]] {
+    int x;
+    public int m(){
+        //should propose VarDecl]] and Statement]] here, but skip the
+        //comments region
+        //The old spoofax would propose completions in comments 
+        
+        int a; 
+        [[Type]] [[ID]]; 
+        [[Statement]] 
+        if([[Exp]]) [[Statement]]
+        else [[Statement]]
+        
+        
+        return 0;
+        
+    }
+  
+} 
+
+        
+
+class [[ID]] extends [[ID]] {
+  [[Type]] [[ID]];
+
+} 
+
+
+
+[[ClassDecl]]
+
+//should also propose ClassDecl]]  (end of the list of ClassDecl)
+*/

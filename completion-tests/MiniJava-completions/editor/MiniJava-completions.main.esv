@@ -10,7 +10,7 @@ imports
   MiniJava-completions-Syntax
   MiniJava-completions-Views
 
-language General properties
+language General properties  
   
   name:          MiniJava-completions
   id:            MiniJavacompletions

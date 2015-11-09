@@ -1,7 +1,5 @@
 module MiniJava-completions-Folding
 
-imports MiniJava-completions-Folding.generated
-
 folding
   
   // This file can be used for custom folding rules.
