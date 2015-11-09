@@ -1,3 +1,4 @@
+
 module kernel/Kernel
 imports aterms/Aterms symbols/Symbols grammar/Grammars constants/StrCon
 
@@ -12,16 +13,21 @@ exports
     "cons" "(" StrCon ")"                 -> Attribute         {cons("Constructor"), prefer, deprecated("Use 'Sort.Cons' notation instead")}
     QuotedConstructor                     -> Attribute         {prefer, deprecated("Use 'Sort.Cons' notation instead")}
     "case-insensitive"                    -> Attribute         {cons("CaseInsensitive"), prefer}
+    "no-completion"                       -> Attribute         {cons("NoCompletion"), prefer}
     StrCon                                -> QuotedConstructor {cons("Constructor")}
     Symbols "->" result:Symbol Attributes -> Production        {cons("Prod"), deprecated("Use productive form instead")}
     list:Production*                      -> Productions       
     "syntax" Productions                  -> Grammar           {cons("Syntax")}
 
   context-free syntax
-    CONTENTCOMPLETE -> ATermAttribute    {cons("COMPLETION-ATermAttribute")}
-    CONTENTCOMPLETE -> Attributes        {cons("COMPLETION-Attributes")}
-    CONTENTCOMPLETE -> Attribute         {cons("COMPLETION-Attribute")}
-    CONTENTCOMPLETE -> QuotedConstructor {cons("COMPLETION-QuotedConstructor")}
-    CONTENTCOMPLETE -> Production        {cons("COMPLETION-Production")}
-    CONTENTCOMPLETE -> Productions       {cons("COMPLETION-Productions")}
-    CONTENTCOMPLETE -> Grammar           {cons("COMPLETION-Grammar")}
+    "[[ATerm]]"             -> ATerm             {cons("ATerm-Plhdr")}
+    "[[ATermAttribute]]"    -> ATermAttribute    {cons("ATermAttribute-Plhdr")}
+    "[[Attribute]]"         -> Attribute         {cons("Attribute-Plhdr")}
+    "[[QuotedConstructor]]" -> QuotedConstructor {cons("QuotedConstructor-Plhdr")}
+    "[[StrCon]]"            -> StrCon            {cons("StrCon-Plhdr")}
+    "[[Symbols]]"           -> Symbols           {cons("Symbols-Plhdr")}
+    "[[Symbol]]"            -> Symbol            {cons("Symbol-Plhdr")}
+    "[[Attributes]]"        -> Attributes        {cons("Attributes-Plhdr")}
+    "[[Production]]"        -> Production        {cons("Production-Plhdr")}
+    "[[Grammar]]"           -> Grammar           {cons("Grammar-Plhdr")}
+    "[[Productions]]"       -> Productions       {cons("Productions-Plhdr")}

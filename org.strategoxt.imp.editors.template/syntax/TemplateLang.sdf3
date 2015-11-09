@@ -32,6 +32,7 @@ Section.TemplateOptions = <
 	> 
 
 TemplateOption.Newlines = <newlines : <NewlineOptionValue>>
+TemplateOption.NoCompletions = <no-completions>
  
 NewlineOptionValue.None = <none>
 NewlineOptionValue.Leading = <leading>

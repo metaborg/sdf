@@ -17,6 +17,7 @@ Attribute.Deprecated = <deprecated(<StrCon>)> {prefer}
 Attribute.Constructor = <cons(<StrCon>)> {prefer, deprecated("Use 'Sort.Cons' notation instead")}
 Attribute = <<QuotedConstructor>> {prefer, deprecated("Use 'Sort.Cons' notation instead") }
 Attribute.CaseInsensitive = <case-insensitive> {prefer}
+Attribute.NoCompletion = <no-completion> {prefer}
 QuotedConstructor.Constructor = <<StrCon>>
 
 Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes>> {deprecated("Use productive form instead")}
@@ -28,4 +29,4 @@ Grammar.Syntax = <
 
 		<Productions>
 		
-		>
+		> 

@@ -14,13 +14,15 @@ exports
     CONTENTCOMPLETE -> PlaceholderOptions {cons("WATER"), recover}
 
   context-free syntax
-    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
-    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
-    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
+    "[[TemplateProduction]]" -> TemplateProduction {cons("TemplateProduction-Plhdr")}
+    "[[PlaceholderOption]]"  -> PlaceholderOption  {cons("PlaceholderOption-Plhdr")}
+    "[[PlaceholderOptions]]" -> PlaceholderOptions {cons("PlaceholderOptions-Plhdr")}
+    "[[CONTENTCOMPLETE]]"    -> CONTENTCOMPLETE    {cons("CONTENTCOMPLETE-Plhdr")}
 
   context-free syntax
     "template" "options" TemplateOption* -> Section            {cons("TemplateOptions")}
     "newlines" ":" NewlineOptionValue    -> TemplateOption     {cons("Newlines")}
+    "no-completions"                     -> TemplateOption     {cons("NoCompletions")}
     "none"                               -> NewlineOptionValue {cons("None")}
     "leading"                            -> NewlineOptionValue {cons("Leading")}
     "trailing"                           -> NewlineOptionValue {cons("Trailing")}
@@ -29,9 +31,11 @@ exports
     "tokenize" ":" StrCon                -> TemplateOption     {cons("Tokenize")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
-    CONTENTCOMPLETE -> NewlineOptionValue {cons("COMPLETION-NewlineOptionValue")}
-    CONTENTCOMPLETE -> TemplateOption     {cons("COMPLETION-TemplateOption")}
+    "[[Section]]"            -> Section            {cons("Section-Plhdr")}
+    "[[NewlineOptionValue]]" -> NewlineOptionValue {cons("NewlineOptionValue-Plhdr")}
+    "[[Lookaheads]]"         -> Lookaheads         {cons("Lookaheads-Plhdr")}
+    "[[TemplateOption]]"     -> TemplateOption     {cons("TemplateOption-Plhdr")}
+    "[[StrCon]]"             -> StrCon             {cons("StrCon-Plhdr")}
 
   context-free syntax
     SortConsRef                            -> Group       {cons("SimpleRefGroup")}
@@ -40,8 +44,11 @@ exports
     Symbol "." Constructor                 -> SortConsRef {cons("SortConsRef")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Group       {cons("COMPLETION-Group")}
-    CONTENTCOMPLETE -> SortConsRef {cons("COMPLETION-SortConsRef")}
+    "[[Group]]"         -> Group         {cons("Group-Plhdr")}
+    "[[Associativity]]" -> Associativity {cons("Associativity-Plhdr")}
+    "[[SortConsRef]]"   -> SortConsRef   {cons("SortConsRef-Plhdr")}
+    "[[Symbol]]"        -> Symbol        {cons("Symbol-Plhdr")}
+    "[[Constructor]]"   -> Constructor   {cons("Constructor-Plhdr")}
 
   context-free syntax
     "templates" TemplateProduction*            -> Section            {cons("TemplateSection"), deprecated("Use context-free syntax section instead")}
@@ -69,19 +76,26 @@ exports
     "text" "=" StrCon                          -> PlaceholderOption  {cons("Text")}
 
   context-free syntax
-    CONTENTCOMPLETE -> Section            {cons("COMPLETION-Section")}
-    CONTENTCOMPLETE -> Grammar            {cons("COMPLETION-Grammar")}
-    CONTENTCOMPLETE -> GeneralProduction  {cons("COMPLETION-GeneralProduction")}
-    CONTENTCOMPLETE -> SdfProduction      {cons("COMPLETION-SdfProduction")}
-    CONTENTCOMPLETE -> RHS                {cons("COMPLETION-RHS")}
-    CONTENTCOMPLETE -> TemplateProduction {cons("COMPLETION-TemplateProduction")}
-    CONTENTCOMPLETE -> Constructor        {cons("COMPLETION-Constructor")}
-    CONTENTCOMPLETE -> SortCons           {cons("COMPLETION-SortCons")}
-    CONTENTCOMPLETE -> TemplatePart1      {cons("COMPLETION-TemplatePart1")}
-    CONTENTCOMPLETE -> TemplatePart2      {cons("COMPLETION-TemplatePart2")}
-    CONTENTCOMPLETE -> Placeholder        {cons("COMPLETION-Placeholder")}
-    CONTENTCOMPLETE -> PlaceholderOptions {cons("COMPLETION-PlaceholderOptions")}
-    CONTENTCOMPLETE -> PlaceholderOption  {cons("COMPLETION-PlaceholderOption")}
+    "[[Section]]"            -> Section            {cons("Section-Plhdr")}
+    "[[Grammar]]"            -> Grammar            {cons("Grammar-Plhdr")}
+    "[[GeneralProduction]]"  -> GeneralProduction  {cons("GeneralProduction-Plhdr")}
+    "[[SdfProduction]]"      -> SdfProduction      {cons("SdfProduction-Plhdr")}
+    "[[RHS]]"                -> RHS                {cons("RHS-Plhdr")}
+    "[[Symbols]]"            -> Symbols            {cons("Symbols-Plhdr")}
+    "[[TemplateProduction]]" -> TemplateProduction {cons("TemplateProduction-Plhdr")}
+    "[[Template]]"           -> Template           {cons("Template-Plhdr")}
+    "[[Attributes]]"         -> Attributes         {cons("Attributes-Plhdr")}
+    "[[IdCon]]"              -> IdCon              {cons("IdCon-Plhdr")}
+    "[[SortCons]]"           -> SortCons           {cons("SortCons-Plhdr")}
+    "[[SymbolDef]]"          -> SymbolDef          {cons("SymbolDef-Plhdr")}
+    "[[Constructor]]"        -> Constructor        {cons("Constructor-Plhdr")}
+    "[[TemplatePart1]]"      -> TemplatePart1      {cons("TemplatePart1-Plhdr")}
+    "[[TemplatePart2]]"      -> TemplatePart2      {cons("TemplatePart2-Plhdr")}
+    "[[Placeholder]]"        -> Placeholder        {cons("Placeholder-Plhdr")}
+    "[[Symbol]]"             -> Symbol             {cons("Symbol-Plhdr")}
+    "[[PlaceholderOptions]]" -> PlaceholderOptions {cons("PlaceholderOptions-Plhdr")}
+    "[[PlaceholderOption]]"  -> PlaceholderOption  {cons("PlaceholderOption-Plhdr")}
+    "[[StrCon]]"             -> StrCon             {cons("StrCon-Plhdr")}
 
   syntax
     "<" {<TemplateLine1-CF> "\n"}+ ">"   -> <Template-CF>      {cons("Template")}
