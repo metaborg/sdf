@@ -45,7 +45,7 @@ rules
     where
       <open-import(
         resolve-import
-      , parse-sdf-file
+      , parse-sdf-main-file
       , declare-globals-top
       )> x
     <+
@@ -128,7 +128,7 @@ strategies
   record-all-module-names =
     record-all-definitions(
         alltd(record-module-name)
-      , parse-sdf-string
+      , parse-sdf-main-string
       | "sdf"
     )
   
