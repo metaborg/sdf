@@ -80,7 +80,7 @@
             <arg>-la</arg>
             <arg>strc</arg>
           </strategoArgs>
-          <pardonedLanguages>
+          <pardonedLanguages combine.children="append">
             <language>TypeSystemLanguage</language>
           </pardonedLanguages>
         </configuration>
