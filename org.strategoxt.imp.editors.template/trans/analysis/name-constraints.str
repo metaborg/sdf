@@ -174,7 +174,7 @@ imports
     prod-without-constructor:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
-            rhs* := <template-to-sdf(|["(", ")"], None())> template;
+            rhs* := <template-to-sdf(|["(", ")"], None(), "")> template;
             <not(?[sort(sort)] + ?[])> rhs* ;
             s'      := <strip-annos> s;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs*;
@@ -190,7 +190,7 @@ imports
      prod-maybe-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
-            rhs* := <template-to-sdf(|["(", ")"], None())> template;
+            rhs* := <template-to-sdf(|["(", ")"], None(), "")> template;
             s'   := <strip-annos> s; 
             <?[_, sort(sort), _]; <strip-annos; ?s'> sort> rhs*;
             <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
@@ -208,7 +208,7 @@ imports
         where
         	<not(fetch-elem(?Reject()))> attrs*;
         	s'      := <strip-annos> s;
-            rhs     := <template-to-sdf(|["(", ")"], None())> template;
+            rhs     := <template-to-sdf(|["(", ")"], None(), "")> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs
             

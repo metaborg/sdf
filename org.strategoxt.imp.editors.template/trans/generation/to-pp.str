@@ -15,7 +15,7 @@ rules
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])//Module(m', [i0, s'*])
     with
       m'  := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import("trans/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
    ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
     ; s'* := <filter(section-to-pp(|"example"))> s*
@@ -40,22 +40,24 @@ rules
     Sort(x) -> SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[x]])))       
   
   section-to-pp(|lang):
-    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
+    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
     with
     	sort* := <filter(productive-sort); make-set> p*
     	; s1*    := <map(sort-to-pp)> sort*
     	; s2*    := <map(sort-to-pp(|lang))> sort*
+    	; s3*    := <map(sort-to-pp-amb)> sort*
     	  
   section-to-pp(|lang):
-  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
+  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*])
   	with
   		sort* := <filter(productive-sort); make-set> p*
   		; s1*   := <map(sort-to-pp(|lang))> sort*
     	; s2*   := <filter(prod-to-template; desugar-templates;template-to-pp <+ template-to-pp); flatten-list> p*
     	; s3*   := <map(is-sort-fail)> sort*  
+    	; s4*   := <map(sort-to-pp-amb)> sort*
   		    
    section-to-pp(|lang):
-  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*])
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, s6*])
   	with
   		sort*            := <filter(cf-productive-sort); make-set> p*
   		; s1*            := <map(sort-to-pp(|lang))> sort*  
@@ -64,16 +66,18 @@ rules
     	; lexical-sorts* := <filter(lex-productive-sort); make-set> p*
     	; s4*            := <map(sort-to-pp)> lexical-sorts*
         ; s5*            := <map(sort-to-pp(|lang))> lexical-sorts* 
+        ; s6*            := <map(sort-to-pp-amb)> [sort*, lexical-sorts*]  
     	  
   		 
     	   
   section-to-pp(|lang):
-    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*])
+    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*, s4*])
     with
       	sort* := <filter(productive-sort); make-set> t*
     	; s1*   := <map(sort-to-pp(|lang))> sort*
     	; s2*   := <filter(template-to-pp); flatten-list> t*
     	; s3*   := <map(is-sort-fail)> sort*
+    	; s4*   := <map(sort-to-pp-amb)> sort*
     	  
   productive-sort:
     TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s
@@ -130,7 +134,8 @@ rules
     sort-to-pp:
     x -> SDefNoArgs($[prettyprint-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))))
     
- 
+    sort-to-pp-amb:
+    	x -> RDefNoArgs($[prettyprint-[x]], RuleNoCond(NoAnnoList(Op("amb", [NoAnnoList(ListTail([Var("h")], Var("hs")))])), App(CallNoArgs(SVar($[prettyprint-[x]])), Var("h"))))
   
   template-to-pp:
     TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
@@ -181,14 +186,15 @@ rules
             //        if there is a cycle of injections in the grammar!
             input := arg*;
             (output', with*) := <thread-alltd(extract-app-where)> (output, []);
-            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*]
+            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*] // check whether there is a rule with constructor already defined, 
+            																// this one should only be applied when there is not
           end
       else
       	input := Tuple(arg*);
       	(output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
   
-  is-sort-fail:
+  is-sort-fail:												//needs to be generated for every sort to avoid undefined strategy
   	s -> SDefNoArgs($[is-[s]], Fail())
       
   extract-app :
@@ -370,161 +376,3 @@ rules
       <+ ?[]
     )
   
-/*
-rules
-
-  template-to-pp:
-    TemplateProduction(Sort(s), t, attrs(a*)) ->
-      RDefNoArgs(
-        $[prettyprint-[s]]
-      , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
-      )
-    with
-      !t => SingleLineTemplate(elem*)
-    < line* := [Line([Layout(""), elem*])]
-    + !t => Template(line*)
-    with
-      (line'*, _) := <thread-map(introduce-labels-line)> (line*, 0);
-      output      := <map(template-line-to-stratego)> line'*;
-      arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
-      (output', with*) := <thread-alltd(extract-app)> (output, []);
-      if <?Constr(c')> c then
-        input := Op(c', arg*)
-      else
-        if !arg* => [arg] then
-          if <fetch-elem(?bracket())> a* then
-            input := Op("Parenthetical", arg*)
-          else
-            // injection
-            // FIXME: this may result in infinite loop in pretty printer
-            //        if there is a cycle of injections in the grammar!
-            input := Var("t__")
-          end
-        else
-          input := Tuple(arg*)
-        end
-      end
-    
-  extract-app :
-    (t@App(_, _), e*) -> (Var(x), [e*, WithClause(Assign(Var(x), t))]) 
-    where 
-    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !"t__"> t, "'")
-    
-rules
-
-  introduce-labels-line:
-    (Line(elem*), index) -> (Line(elem'*), index')
-    with
-      (elem'*, index') := <thread-map(try(introduce-labels))> (elem*, index)
-
-  introduce-labels:
-    (Placeholder(None(), a, b, c), i) -> (Placeholder(Label(l), a, b, c), i')
-    with
-      l  := $[t[i]__];
-      i' := <inc> i
-
-rules
-
-  template-line-to-stratego:
-    Line([Layout(indent) | elem*]) ->
-      App(
-          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])
-        , NoAnnoList(List(elem'*))
-      )
-    where
-      not(!indent => "");
-      not(!elem* => []);
-      is := <string-length; int-to-string; double-quote> indent;
-      elem'* := <template-line-elements-to-stratego> elem*
-
-  //template-line-to-stratego:
-   // Line([Layout("") | elem*]) -> Term |[ H([SOpt(HS(), "0")], [t*]) ]|
-  //  where
-  //    not(!elem* => []);
-  //    t* := <template-line-elements-to-stratego> elem*
-
-//  template-line-to-stratego:
-    // Include empty string element to prevent BOX from removing the empty H box!
-//    Line([Layout(_)]) -> Term |[ H([], [S("")]) ]|
-
-  template-line-elements-to-stratego =
-    // 1. Convert Layout to String.
-    map(try(\Layout(t) -> String(t)\));
-    // 2. Collapse consecutive Strings into single String.
-    // (Optional, improves readability and performance of generated code.)
-    concatenate-consecutive-strings;
-    // 3. Map template elements to strings of Stratego code and String cons,
-    //    while removing empty strings.
-    // (The latter is necessary to prevent spurious blank lines:
-    // BOX removes empty lists, but not empty string elements.)
-    filter(template-element-to-stratego)
-
-  template-element-to-stratego:
-    String(t) -> Op("S", [NoAnnoList(Str(t'))])
-    where
-      not(!t => "");
-      t' := <escape; double-quote> t
-
-  template-element-to-stratego:
-    Placeholder(Label(l), sort(x), None(), _) -> App(s, Var(l))
-    with
-      placeholder-to-pp-one => s
-    
-  template-element-to-stratego:
-    Placeholder(Label(l), sort(x), Option(), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
-    with
-      placeholder-to-pp-one => s
-    
-  placeholder-to-pp-one:
-    Placeholder(_, sort(s), _, option*) -> Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))])
-    with
-      if <fetch-elem(?Anchor())> option* then
-        ppo := "pp-one-V"
-      else
-        ppo := "pp-one-Z"
-      end
-      
-  template-element-to-stratego:
-    Placeholder(Label(l), sort(x), <Star() + Plus()>, option*) -> App(s, Var(l))
-    with
-      <fetch-elem(?Wrap())> option*
-    < <fetch-elem(?Anchor())> option*
-    < ppl := SVar("pp-HV-list")
-    + ppl := SVar("pp-HZ-list")
-    + ppl := SVar("pp-H-list")
-    with 
-      ppx := CallNoArgs(SVar($[prettyprint-[x]]))
-    ; if <getfirst(?Separator(<id>))> option* => sep then
-        vs := <explode-string; occurrences(?'\n'); dec> sep;
-        literals  := <escape; string-replace(|"\\n", "")> sep;
-        literals' := NoAnnoList(Str(<double-quote> literals));
-        switch !(vs, literals)
-          case ?(-1, _):
-            // separator with literals only => horizontal box with sep option
-            s    := CallT(ppl, [ppx], [literals'])
-          case ?(0, ""):
-            // separator is a line break => vertical box
-            s := Call(SVar("pp-V-list"), [ppx])
-          case ?(_, ""):
-            // separator is multiple line breaks => vertical box with vs option
-            s := CallT(SVar("pp-V-list"), [ppx], [literals'])
-          otherwise:
-            // separator has mixed line breaks and literals => vertical box with vs and sep options
-            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
-        end
-      else
-        // no separator => horizontal box
-        s := Call(ppl, [ppx])
-      end
-  
-  placeholder-to-var: 
-  	Placeholder(Label(l), _, _, _) -> Var(l)
-      
-  concatenate-consecutive-strings =
-    rec r(
-         ?[String("") | <r>]
-      <+ \[String(a), String(b) | tail] -> <r> [String(<conc-strings> (a, b)) | tail]\
-      <+ [id | r]
-      <+ ?[]
-    )
-*/

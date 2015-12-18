@@ -11,6 +11,7 @@ exports
     "deprecated" "(" StrCon ")"           -> Attribute         {cons("Deprecated"), prefer}
     "cons" "(" StrCon ")"                 -> Attribute         {cons("Constructor"), prefer, deprecated("Use 'Sort.Cons' notation instead")}
     QuotedConstructor                     -> Attribute         {prefer, deprecated("Use 'Sort.Cons' notation instead")}
+    "case-insensitive"                    -> Attribute         {cons("CaseInsensitive"), prefer}
     StrCon                                -> QuotedConstructor {cons("Constructor")}
     Symbols "->" result:Symbol Attributes -> Production        {cons("Prod"), deprecated("Use productive form instead")}
     list:Production*                      -> Productions       

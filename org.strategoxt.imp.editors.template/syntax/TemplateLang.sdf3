@@ -105,20 +105,6 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
 TemplatePart1.Angled = <\<<Placeholder>\>>
 TemplatePart2.Squared = <[<Placeholder>]>
 
-
-//Old Placeholder Style
-//Placeholder.Placeholder = <<PlaceholderLabel> <PlaceholderSort> <PlaceholderSuffix> <PlaceholderOptions>>
-
-//PlaceholderSort.Sort = <<Sort>>
-
-//PlaceholderLabel.None = <>
-//PlaceholderLabel.Label = <<Label>:>
- 
-// PlaceholderSuffix.None = <>
-// PlaceholderSuffix.Star = <*>
-// PlaceholderSuffix.Plus = <+>
-// PlaceholderSuffix.Option = <?>
-
 Placeholder.Placeholder = <<Symbol><PlaceholderOptions>>
 
 
@@ -132,28 +118,6 @@ PlaceholderOption.Anchor = <anchor>
 //mark as deprecated
 PlaceholderOption.Separator = <separator=<StrCon>> {deprecated("Use list with separator symbol instead: {S* \"separator\"}")}
 PlaceholderOption.Text = <text=<StrCon>>
- 
-// syntax
-//     %% template parts
-//     "<" {<TemplateLine1-CF> "\n"}+ ">" -> <Template-CF> {cons("Template")}
-//     "<<" {<TemplateLine1-CF> "\n"}+ ">>" -> <Template-CF> {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
-//     <TemplatePart1-CF>* -> <TemplateLine1-CF> {cons("Line")}
-//     <TemplateString1-LEX> -> <TemplatePart1-CF> {cons("String")}
-//     <TemplateEscape1-LEX> -> <TemplatePart1-CF> {cons("Escape")}
-//     <TemplateLayout-LEX>  -> <TemplatePart1-CF> {cons("Layout")}
-// 
-//     "[" {<TemplateLine2-CF> "\n"}+ "]" -> <Template-CF> {cons("Template")}
-//     "[[" {<TemplateLine2-CF> "\n"}+ "]]" -> <Template-CF> {cons("Template"), avoid, deprecated("Use single brackets to delimit the template")}
-//     <TemplatePart2-CF>* -> <TemplateLine2-CF> {cons("Line")}
-//     <TemplateString2-LEX> -> <TemplatePart2-CF> {cons("String")}
-//     <TemplateEscape2-LEX> -> <TemplatePart2-CF> {cons("Escape")}
-//     <TemplateLayout-LEX>  -> <TemplatePart2-CF> {cons("Layout")}
-// 
-//     %% special: no placeholders, no newlines
-//     '"' <TemplatePartQ-CF>* '"' -> <Template-CF> {cons("SingleLineTemplate")}
-//     <TemplateStringQ-LEX> -> <TemplatePartQ-CF> {cons("String")}
-//     <TemplateEscapeQ-LEX> -> <TemplatePartQ-CF> {cons("Escape")}
-//     <TemplateLayout-LEX>  -> <TemplatePartQ-CF> {cons("Layout")}
   
   syntax
   
@@ -173,14 +137,6 @@ PlaceholderOption.Text = <text=<StrCon>>
   
   TemplatePart2-CF.Escape = TemplateEscape2-LEX
   TemplatePart2-CF.Layout = TemplateLayout-LEX
-   
- // Template-CF.SingleLineTemplate = '"' TemplatePartQ-CF* '"'
- // TemplatePartQ-CF.String = TemplateStringQ-LEX
- // TemplatePartQ-CF.Escape = TemplateEscapeQ-LEX
- // TemplatePartQ-CF.Layout = TemplateLayout-LEX
-   
-  
-  
   
   
   lexical syntax
@@ -249,14 +205,14 @@ PlaceholderOption.Text = <text=<StrCon>>
   EscapedChar2 = "\\\\"
   
    //EscapedChar1 = "<" (EscapedBackslashChar1 | EscapedChar)* ">"
-   EscapedChar1 = "<" EscapedChar1Alt* ">"
+   EscapedChar1 = "<" EscapedChar1Alt+ ">"
    EscapedChar1Alt = EscapedBackslashChar1
    EscapedChar1Alt = EscapedChar
    
    EscapedChar1 = "<\\\\>" [\ \t\r]* [\n]
    
    //EscapedChar2 = "[" (EscapedBackslashChar2 | EscapedChar)* "]"
-   EscapedChar2 = "[" EscapedChar2Alt* "]"
+   EscapedChar2 = "[" EscapedChar2Alt+ "]"
    EscapedChar2Alt = EscapedBackslashChar2 
    EscapedChar2Alt = EscapedChar
    EscapedChar2 = "[\\\\]" [\ \t\r]* [\n]

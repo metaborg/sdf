@@ -9,15 +9,16 @@ imports
 
 signature
   constructors
-    Default     : ATerm -> ATermAttribute
-    Term        : ATermAttribute -> Attribute
-    Attrs       : List(Attribute) -> Attributes
-    NoAttrs     : Attributes
-    Deprecated  : Attribute
-    Deprecated  : StrCon -> Attribute
-    Constructor : StrCon -> Attribute
-                : QuotedConstructor -> Attribute
-    Constructor : StrCon -> QuotedConstructor
-    Prod        : Symbols * Symbol * Attributes -> Production
-                : List(Production) -> Productions
-    Syntax      : Productions -> Grammar
+    Default         : ATerm -> ATermAttribute
+    Term            : ATermAttribute -> Attribute
+    Attrs           : List(Attribute) -> Attributes
+    NoAttrs         : Attributes
+    Deprecated      : Attribute
+    Deprecated      : StrCon -> Attribute
+    Constructor     : StrCon -> Attribute
+                    : QuotedConstructor -> Attribute
+    CaseInsensitive : Attribute
+    Constructor     : StrCon -> QuotedConstructor
+    Prod            : Symbols * Symbol * Attributes -> Production
+                    : List(Production) -> Productions
+    Syntax          : Productions -> Grammar

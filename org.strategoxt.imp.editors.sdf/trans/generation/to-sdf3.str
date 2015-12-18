@@ -13,8 +13,8 @@ rules
   		'module(unparameterized(mn), i*, e*) -> Module(Unparameterized(mn), i'*, sections*)
   	with
   		sections* := <filter(section-to-sdf3); try(flatten-list)> e*;
-  		i'* := <map(imports-to-sdf)> i*;
-  		<reset-counter> "SDF3"  
+  		i'* := <map(imports-to-sdf)> i*
+
   		
   module-to-sdf:
   	'module(unparameterized(mn)) -> Module(Unparameterized(mn)) 

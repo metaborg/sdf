@@ -1,0 +1,715 @@
+module ds/pp/Signatures-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  ds/signatures/Signatures-sig
+
+
+imports
+  ds/signatures/Common-sig
+  ds/signatures/ds-sig
+
+
+imports
+  ds/pp/Common-pp
+  ds/pp/ds-pp
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-ModuleSection
+
+  ds-prettyprint-ModuleSection :
+    Signatures(t1__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [S("signature")]
+                          )
+                        , t1__'
+                        ]
+    with t1__' := <pp-indent(|"4")> [<pp-V-list(ds-prettyprint-SignatureSection)> t1__]
+
+  is-ModuleSection =
+    ?Signatures(_)
+
+  is-ModuleSection =
+    fail
+
+  ds-prettyprint-ModuleSection :
+    amb([h|hs]) -> <ds-prettyprint-ModuleSection> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-SortDecl
+
+  ds-prettyprint-SignatureSection :
+    Sorts(t1__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [S("sorts")]
+                     )
+                   , t1__'
+                   ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-SortDecl)> t1__]
+
+  is-SignatureSection =
+    ?Sorts(_)
+
+  ds-prettyprint-SortDecl :
+    SortDecl(t1__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [t1__']
+                        )
+                      ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+
+  is-SortDecl =
+    ?SortDecl(_)
+
+  is-SignatureSection =
+    fail
+
+  is-SortDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-SortDecl :
+    amb([h|hs]) -> <ds-prettyprint-SortDecl> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-VariableScheme
+
+  ds-prettyprint-SignatureSection :
+    VariableSchemes(t1__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [S("variables")]
+                               )
+                             , t1__'
+                             ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-VariableScheme)> t1__]
+
+  is-SignatureSection =
+    ?VariableSchemes(_)
+
+  ds-prettyprint-VariableScheme :
+    VariableScheme(t1__, t2__) -> [ H(
+                                      [SOpt(HS(), "0")]
+                                    , [t1__', S(" : "), t2__']
+                                    )
+                                  ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-VariableScheme =
+    ?VariableScheme(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-VariableScheme =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-VariableScheme :
+    amb([h|hs]) -> <ds-prettyprint-VariableScheme> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-AliasDecl
+
+  ds-prettyprint-SignatureSection :
+    Aliases(t1__) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [S("aliases")]
+                       )
+                     , t1__'
+                     ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-AliasDecl)> t1__]
+
+  is-SignatureSection =
+    ?Aliases(_)
+
+  ds-prettyprint-AliasDecl :
+    AliasDecl(t1__, t2__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [t1__', S(" : "), t2__']
+                               )
+                             ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-AliasDecl =
+    ?AliasDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-AliasDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-AliasDecl :
+    amb([h|hs]) -> <ds-prettyprint-AliasDecl> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-ConsAnnos
+
+  ds-prettyprint-example =
+    ds-prettyprint-ConsAnno
+
+  ds-prettyprint-example =
+    ds-prettyprint-ConsDecl
+
+  ds-prettyprint-example =
+    ds-prettyprint-Type
+
+  ds-prettyprint-example =
+    ds-prettyprint-MapType
+
+  ds-prettyprint-SignatureSection :
+    Constructors(t1__) -> [ H(
+                              [SOpt(HS(), "0")]
+                            , [S("constructors")]
+                            )
+                          , t1__'
+                          ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-ConsDecl)> t1__]
+
+  is-SignatureSection =
+    ?Constructors(_)
+
+  ds-prettyprint-ConsDecl :
+    NullaryConsDecl(t1__, t2__, t3__) -> [ H(
+                                             [SOpt(HS(), "0")]
+                                           , [ t1__'
+                                             , S(" : ")
+                                             , t2__'
+                                             , S(" ")
+                                             , t3__'
+                                             ]
+                                           )
+                                         ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-ConsAnnos)> t3__
+
+  is-ConsDecl =
+    ?NullaryConsDecl(_, _, _)
+
+  ds-prettyprint-ConsDecl :
+    ConsDecl(t1__, t2__, t3__, t4__) -> [ H(
+                                            [SOpt(HS(), "0")]
+                                          , [ t1__'
+                                            , S(" : ")
+                                            , t2__'
+                                            , S(" -> ")
+                                            , t3__'
+                                            , S(" ")
+                                            , t4__'
+                                            ]
+                                          )
+                                        ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-H-list(ds-prettyprint-Type|" * ")> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+    with t4__' := <pp-one-Z(ds-prettyprint-ConsAnnos)> t4__
+
+  is-ConsDecl =
+    ?ConsDecl(_, _, _, _)
+
+  ds-prettyprint-ConsAnnos :
+    NoAnnos() -> [ H(
+                     []
+                   , [S("")]
+                   )
+                 ]
+
+  is-ConsAnnos =
+    ?NoAnnos()
+
+  ds-prettyprint-ConsAnnos :
+    Annos(t1__) -> [ H(
+                       [SOpt(HS(), "0")]
+                     , [ S("{")
+                       , t1__'
+                       , S("}")
+                       ]
+                     )
+                   ]
+    with t1__' := <pp-H-list(ds-prettyprint-ConsAnno|",")> t1__
+
+  is-ConsAnnos =
+    ?Annos(_)
+
+  ds-prettyprint-ConsAnno :
+    ImplicitAnno() -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [S("implicit")]
+                        )
+                      ]
+
+  is-ConsAnno =
+    ?ImplicitAnno()
+
+  ds-prettyprint-ConsDecl :
+    FunDecl(t1__, t2__, t3__) -> [ H(
+                                     [SOpt(HS(), "0")]
+                                   , [ t1__'
+                                     , S(" : ")
+                                     , t2__'
+                                     , S(" --> ")
+                                     , t3__'
+                                     ]
+                                   )
+                                 ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-H-list(ds-prettyprint-Type|" * ")> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+
+  is-ConsDecl =
+    ?FunDecl(_, _, _)
+
+  ds-prettyprint-Type :
+    SimpleSort(t1__) -> [ H(
+                            [SOpt(HS(), "0")]
+                          , [t1__']
+                          )
+                        ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+
+  is-Type =
+    ?SimpleSort(_)
+
+  ds-prettyprint-Type :
+    ListSort(t1__) -> [ H(
+                          [SOpt(HS(), "0")]
+                        , [ S("List(")
+                          , t1__'
+                          , S(")")
+                          ]
+                        )
+                      ]
+    with t1__' := <pp-one-Z(ds-prettyprint-Type)> t1__
+
+  is-Type =
+    ?ListSort(_)
+
+  ds-prettyprint-Type :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-Type)
+    where t1__' := <pp-one-Z(ds-prettyprint-MapType)> t1__
+
+  ds-prettyprint-MapType :
+    MapSort(t1__, t2__) -> [ H(
+                               [SOpt(HS(), "0")]
+                             , [ S("Map<")
+                               , t1__'
+                               , S(",")
+                               , t2__'
+                               , S(">")
+                               ]
+                             )
+                           ]
+    with t1__' := <pp-one-Z(ds-prettyprint-Type)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-MapType =
+    ?MapSort(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-ConsAnnos =
+    fail
+
+  is-ConsAnno =
+    fail
+
+  is-ConsDecl =
+    fail
+
+  is-Type =
+    fail
+
+  is-MapType =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-ConsAnnos :
+    amb([h|hs]) -> <ds-prettyprint-ConsAnnos> h
+
+  ds-prettyprint-ConsAnno :
+    amb([h|hs]) -> <ds-prettyprint-ConsAnno> h
+
+  ds-prettyprint-ConsDecl :
+    amb([h|hs]) -> <ds-prettyprint-ConsDecl> h
+
+  ds-prettyprint-Type :
+    amb([h|hs]) -> <ds-prettyprint-Type> h
+
+  ds-prettyprint-MapType :
+    amb([h|hs]) -> <ds-prettyprint-MapType> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-JSNIPPET
+
+  ds-prettyprint-example =
+    ds-prettyprint-NativeTypeDecl
+
+  ds-prettyprint-example =
+    ds-prettyprint-NativeFunctionDecl
+
+  ds-prettyprint-SignatureSection :
+    NativeDataTypes(t1__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [S("native datatypes")]
+                               )
+                             , t1__'
+                             ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-NativeTypeDecl)> t1__]
+
+  is-SignatureSection =
+    ?NativeDataTypes(_)
+
+  ds-prettyprint-JSNIPPET :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-JSNIPPET)
+    where t1__' := <pp-one-Z(ds-prettyprint-STRING)> t1__
+
+  ds-prettyprint-NativeTypeDecl :
+    NativeBaseTypeDecl(t1__, t2__, t3__) -> [ H(
+                                                [SOpt(HS(), "0")]
+                                              , [ t1__'
+                                                , S(" as ")
+                                                , t2__'
+                                                , S(" { ")
+                                                , t3__'
+                                                , S(" } ")
+                                                ]
+                                              )
+                                            ]
+    with t1__' := <pp-one-Z(ds-prettyprint-JSNIPPET)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
+    with t3__' := <pp-V-list(ds-prettyprint-NativeFunctionDecl)> t3__
+
+  is-NativeTypeDecl =
+    ?NativeBaseTypeDecl(_, _, _)
+
+  ds-prettyprint-NativeTypeDecl :
+    NativeSubTypeDecl(t1__, t2__, t3__, t4__) -> [ H(
+                                                     [SOpt(HS(), "0")]
+                                                   , [ t1__'
+                                                     , S(" as ")
+                                                     , t2__'
+                                                     , S(" -> ")
+                                                     , t3__'
+                                                     , S(" { ")
+                                                     , t4__'
+                                                     , S(" } ")
+                                                     ]
+                                                   )
+                                                 ]
+    with t1__' := <pp-one-Z(ds-prettyprint-JSNIPPET)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-ID)> t3__
+    with t4__' := <pp-V-list(ds-prettyprint-NativeFunctionDecl)> t4__
+
+  is-NativeTypeDecl =
+    ?NativeSubTypeDecl(_, _, _, _)
+
+  ds-prettyprint-NativeFunctionDecl :
+    NativeFunctionDecl(t1__, t2__, t3__) -> [ H(
+                                                [SOpt(HS(), "0")]
+                                              , [ t1__'
+                                                , S(" : ")
+                                                , t2__'
+                                                , S(" -> ")
+                                                , t3__'
+                                                ]
+                                              )
+                                            ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-H-list(ds-prettyprint-Type|" * ")> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+
+  is-NativeFunctionDecl =
+    ?NativeFunctionDecl(_, _, _)
+
+  ds-prettyprint-NativeFunctionDecl :
+    NativeNoArgFunctionDecl(t1__, t2__) -> [ H(
+                                               [SOpt(HS(), "0")]
+                                             , [t1__', S(" : "), t2__']
+                                             )
+                                           ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-NativeFunctionDecl =
+    ?NativeNoArgFunctionDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-JSNIPPET =
+    fail
+
+  is-NativeTypeDecl =
+    fail
+
+  is-NativeFunctionDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-JSNIPPET :
+    amb([h|hs]) -> <ds-prettyprint-JSNIPPET> h
+
+  ds-prettyprint-NativeTypeDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeTypeDecl> h
+
+  ds-prettyprint-NativeFunctionDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeFunctionDecl> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-NativeOpDecl
+
+  ds-prettyprint-SignatureSection :
+    NativeOperators(t1__) -> [ H(
+                                 [SOpt(HS(), "0")]
+                               , [S("native operators")]
+                               )
+                             , t1__'
+                             ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-NativeOpDecl)> t1__]
+
+  is-SignatureSection =
+    ?NativeOperators(_)
+
+  ds-prettyprint-NativeOpDecl :
+    NativeOpDecl(t1__, t2__, t3__) -> [ H(
+                                          [SOpt(HS(), "0")]
+                                        , [ t1__'
+                                          , S(" : ")
+                                          , t2__'
+                                          , S(" -> ")
+                                          , t3__'
+                                          ]
+                                        )
+                                      ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-H-list(ds-prettyprint-Type|" * ")> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+
+  is-NativeOpDecl =
+    ?NativeOpDecl(_, _, _)
+
+  ds-prettyprint-NativeOpDecl :
+    NullaryNativeOpDecl(t1__, t2__) -> [ H(
+                                           [SOpt(HS(), "0")]
+                                         , [t1__', S(" : "), t2__']
+                                         )
+                                       ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-NativeOpDecl =
+    ?NullaryNativeOpDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-NativeOpDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-NativeOpDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeOpDecl> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-NativeConsDecl
+
+  ds-prettyprint-SignatureSection :
+    NativeConstructors(t1__) -> [ H(
+                                    [SOpt(HS(), "0")]
+                                  , [S("native constructors")]
+                                  )
+                                , t1__'
+                                ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-NativeConsDecl)> t1__]
+
+  is-SignatureSection =
+    ?NativeConstructors(_)
+
+  ds-prettyprint-NativeConsDecl :
+    NativeConsDecl(t1__, t2__, t3__) -> [ H(
+                                            [SOpt(HS(), "0")]
+                                          , [ t1__'
+                                            , S(" : ")
+                                            , t2__'
+                                            , S(" -> ")
+                                            , t3__'
+                                            ]
+                                          )
+                                        ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-H-list(ds-prettyprint-Type|" * ")> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+
+  is-NativeConsDecl =
+    ?NativeConsDecl(_, _, _)
+
+  ds-prettyprint-NativeConsDecl :
+    NullaryNativeConsDecl(t1__, t2__) -> [ H(
+                                             [SOpt(HS(), "0")]
+                                           , [t1__', S(" : "), t2__']
+                                           )
+                                         ]
+    with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-NativeConsDecl =
+    ?NullaryNativeConsDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-NativeConsDecl =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-NativeConsDecl :
+    amb([h|hs]) -> <ds-prettyprint-NativeConsDecl> h
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-SignatureSection
+
+  ds-prettyprint-example =
+    ds-prettyprint-DeclaredArrow
+
+  ds-prettyprint-example =
+    ds-prettyprint-ArrowDeclaration
+
+  ds-prettyprint-SignatureSection :
+    ArrowDeclarations(t1__) -> [ H(
+                                   [SOpt(HS(), "0")]
+                                 , [S("arrows")]
+                                 )
+                               , t1__'
+                               ]
+    with t1__' := <pp-indent(|"2")> [<pp-V-list(ds-prettyprint-DeclaredArrow)> t1__]
+
+  is-SignatureSection =
+    ?ArrowDeclarations(_)
+
+  ds-prettyprint-DeclaredArrow :
+    t1__ -> [ H(
+                [SOpt(HS(), "0")]
+              , [t1__']
+              )
+            ]
+    where not(is-DeclaredArrow)
+    where t1__' := <pp-one-Z(ds-prettyprint-ArrowDeclaration)> t1__
+
+  ds-prettyprint-ArrowDeclaration :
+    ArrowDecl(t1__, t2__, t3__) -> [ H(
+                                       [SOpt(HS(), "0")]
+                                     , [ t1__'
+                                       , S(" -")
+                                       , t2__'
+                                       , S("-> ")
+                                       , t3__'
+                                       ]
+                                     )
+                                   ]
+    with t1__' := <pp-one-Z(ds-prettyprint-Type)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
+    with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
+
+  is-ArrowDeclaration =
+    ?ArrowDecl(_, _, _)
+
+  ds-prettyprint-ArrowDeclaration :
+    DefaultArrowDecl(t1__, t2__) -> [ H(
+                                        [SOpt(HS(), "0")]
+                                      , [t1__', S(" --> "), t2__']
+                                      )
+                                    ]
+    with t1__' := <pp-one-Z(ds-prettyprint-Type)> t1__
+    with t2__' := <pp-one-Z(ds-prettyprint-Type)> t2__
+
+  is-ArrowDeclaration =
+    ?DefaultArrowDecl(_, _)
+
+  is-SignatureSection =
+    fail
+
+  is-DeclaredArrow =
+    fail
+
+  is-ArrowDeclaration =
+    fail
+
+  ds-prettyprint-SignatureSection :
+    amb([h|hs]) -> <ds-prettyprint-SignatureSection> h
+
+  ds-prettyprint-DeclaredArrow :
+    amb([h|hs]) -> <ds-prettyprint-DeclaredArrow> h
+
+  ds-prettyprint-ArrowDeclaration :
+    amb([h|hs]) -> <ds-prettyprint-ArrowDeclaration> h

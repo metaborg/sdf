@@ -18,7 +18,7 @@ rules
   	with
   		m'  := <to-str-module-name(|"-esv", "completions")> Module(m);
   		//i'* := <debug(!"before "); map(to-str-import(|"-esv", "completions"))> i*;
-  		i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-esv", "completions")) <+ id> i*;
+  		i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-esv", "completions")) <+ ![]> i*;
   		c*  := <filter(template-section-to-esv)> s*
   		
   template-section-to-esv:
