@@ -3,7 +3,7 @@ module analysis/names-hack
 imports
 
   include/TemplateLang
-  analysis/names
+  src-gen/names/analysis/names
   runtime/nabl/-
   runtime/task/-
   runtime/types/-

@@ -7,7 +7,7 @@ imports
   trans/utils/attributes
   trans/utils/misc
   trans/utils/tokenize
-  analysis/names
+  src-gen/names/analysis/names
   lib/runtime/nabl/utils
   analysis/attributes
   analysis/desugar

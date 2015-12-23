@@ -1,4 +1,4 @@
-module analysis/names
+module src-gen/names/analysis/names
 
 imports
   lib/runtime/nabl/-

@@ -19,6 +19,9 @@ imports
   lib/runtime/types/-
   lib/runtime/editor/-
      
+  src-gen/names/analysis/-
+  src-gen/types/analysis/-
+  
   trans/analysis/-
   trans/generation/-
   trans/editor/-

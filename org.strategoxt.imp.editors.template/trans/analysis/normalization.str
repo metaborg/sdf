@@ -5,7 +5,7 @@ imports
   trans/utils/attributes
   trans/utils/misc
   runtime/editor/origins
-  analysis/names
+  src-gen/names/analysis/names
   
    rules
   external unquote(|)
