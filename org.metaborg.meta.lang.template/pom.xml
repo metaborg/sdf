@@ -70,16 +70,10 @@
         <version>${metaborg-version}</version>
         <extensions>true</extensions>
         <configuration>
-          <sdfArgs>
+          <sdfArgs combine.children="append">
             <arg>-Idef</arg>
             <arg>${lib.directory}/SDF.def</arg>
           </sdfArgs>
-          <strategoArgs combine.children="append">
-            <arg>-la</arg>
-            <arg>stratego-sdf</arg>
-            <arg>-la</arg>
-            <arg>strc</arg>
-          </strategoArgs>
           <pardonedLanguages combine.children="append">
             <language>TypeSystemLanguage</language>
           </pardonedLanguages>
