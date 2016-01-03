@@ -23,7 +23,7 @@ language General properties
   table         : include/SDF.tbl
   start symbols : Module
 
-  provider : include/sdf-java.jar
+  provider : include/sdf.jar
   provider : lib/sdf3/TemplateLang-pp.jar
   
   observer : editor-analyze
