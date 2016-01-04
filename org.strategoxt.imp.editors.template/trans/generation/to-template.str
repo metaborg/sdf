@@ -110,11 +110,11 @@ rules // Convert regular productions to desugared syntax templates
         
     
 	symbol-to-elem:
-   		Lit(t) -> String(<un-double-quote> t)
+   		Lit(t) -> String(<un-double-quote; unescape> t)
 		
 	
 	symbol-to-elem:
-		CiLit(s) -> String(<un-single-quote> s)
+		CiLit(s) -> String(<un-single-quote; unescape> s)
 		
 	symbol-to-elem:
 		Label(l, s) -> Placeholder(Label(l, s), NoOptions())
