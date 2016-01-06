@@ -21,7 +21,7 @@ rules
 	module-to-ds-sig:
 		Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([Sorts(sorts*), signatures*])])
 		with
-		  m'  := <conc-strings> ("src-gen/", "ds-signatures/", m, "-sig");
+		  m'  := <conc-strings> ( "ds-signatures/", m, "-sig");
 		  is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*;
 		  sorts* := <collect-all(collect-sorts); nub; map(sort-to-ds-sig-sort)> s*;
 		  signatures* := <filter(section-to-ds-sig)> s*
