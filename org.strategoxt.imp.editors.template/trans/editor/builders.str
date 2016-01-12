@@ -324,7 +324,8 @@ imports
       sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
       <write-string-to-file> (sig-filename, sig-ast)
     where
-      ds-sig-ast           := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The ds signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+   	  where(<debug> ["MODULE-TO-DS_SIG:",ast']);
+      ds-sig-ast           := <module-to-ds-sig; debug; pp-ds-to-string  <+ !""; debug(!"The ds signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       ds-sig-filename      := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn;
       <write-string-to-file> (ds-sig-filename, ds-sig-ast)
     where
