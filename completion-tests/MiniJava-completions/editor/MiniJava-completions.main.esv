@@ -8,7 +8,7 @@ imports
   MiniJava-completions-Refactorings
   MiniJava-completions-References
   MiniJava-completions-Syntax
-  MiniJava-completions-Views
+  MiniJava-completions-Views 
 
 language General properties  
   
@@ -20,13 +20,13 @@ language General properties
   url:           http://strategoxt.org
   
   extensions:    mjv
-  table:         include/MiniJava-completions.tbl
-  start symbols: Start
+  table:         include/MiniJava-completions-Permissive-Custom.tbl
+  start symbols: Start 
   
   provider:      include/minijava_completions.ctree
   provider:      include/minijava_completions-java.jar
   
   observer:      editor-analyze (multifile)
-  
+   
  
   jvm opts:      -server -Xss8m -Xmx1024m

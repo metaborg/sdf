@@ -47,5 +47,8 @@ rules
   resugar = id
   parenthesize = id
   override-reconstruction = id
+  get-indent = id
+  get-separator = id
+  get-leading-ws = id
   construct-textual-change = construct-textual-change(pp-partial-SDF3-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) <+ construct-textual-change(pp-partial-SDF3-string, parenthesize, override-reconstruction, resugar)
   construct-textual-change(pp-partial-SDF3-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) = fail

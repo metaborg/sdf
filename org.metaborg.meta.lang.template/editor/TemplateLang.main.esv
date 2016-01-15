@@ -4,7 +4,7 @@ imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-
 
 language General properties
 
-  name : TemplateLang
+  name : TemplateLang 
 
   extensions    : tmpl, sdf3
   table         : include/TemplateLang.tbl
@@ -15,8 +15,9 @@ language General properties
   
   EditorService sources  : src-gen
   Stratego-Sugar sources : src-gen
-  SDF sources            : src-gen/syntax
-  ds sources             : src-gen
+  SDF sources            : src-gen/syntax 
+  ds sources             : src-gen 
 
   observer : editor-analyze (multifile)
   on save : editor-save
+ 

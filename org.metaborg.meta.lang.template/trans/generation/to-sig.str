@@ -45,22 +45,22 @@ rules
   	s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
         
   section-to-sig:
-    SDFSection(ContextFreeSyntax(p*)) -> [sig*, cc-sig*]
+    SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*]
     where
-        cc-sig* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-             ; nub 
+        cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+             ;debug(!"sorts cf syntax "); nub 
              ; map(sort-to-contentcomplete-sig)> p*
     where
-        sig*    := <filter(cfg-to-sig <+ template-to-sig); not(?[])> p*
+        sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
   	
   section-to-sig:
-  	SDFSection(Kernel(p*)) -> [sig*, cc-sig*]
+  	SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*]
   	where
-        cc-sig* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-             ; nub 
+        cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+             ;debug(!"sorts kernel "); nub 
              ; map(sort-to-contentcomplete-sig)> p*
   	where
-  		sig* := <filter(cfg-to-sig); not(?[])> p*		
+  		sig* := <filter(cfg-to-sig)> p*		
  
   sort-to-sig:
     Sort(s) -> SortNoArgs(s)

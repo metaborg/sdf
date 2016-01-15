@@ -1,6 +1,6 @@
 module Expressions
 
-imports Lexical Classes
+imports Lexical
 
 sorts
 
@@ -11,8 +11,7 @@ context-free syntax
   Exp.True = <true> 
   Exp.False = <false> 
   Exp.This = <this> 
-  VarRef.VarRef = Foo
-  Foo.Bar = VarDecl
+  VarRef.VarRef = ID 
   Exp = <<VarRef>> 
   Exp.IntValue = <<INT>> 
   Exp.Not = <!<Exp>> 
@@ -28,6 +27,11 @@ context-free syntax
   Exp.Length = <<Exp>.length> 
   Exp.NewObject = <new <ID>()> 
   Exp = <(<Exp>)> {bracket}
+
+// manual completion recovery rules
+  
+  VarRef.VarRef-Plhdr = {placeholder-insertion}
+
 
 context-free priorities
 

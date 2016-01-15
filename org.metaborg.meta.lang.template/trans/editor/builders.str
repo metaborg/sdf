@@ -302,6 +302,23 @@ rules
         result   := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
         filename := <create-src-gen(|project-path, "new-completions", "-ncp.str")> mn
   
+  generate-permissive-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.aterm")> mn;
+        ast'     := <desugar-templates> selected;
+        result := <module-to-permissive(|$[[project-path]/[<dirname> path]])> ast'
+  
+  generate-permissive-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.sdf3")> mn;
+        ast'     := <desugar-templates> selected;
+        result   := <module-to-permissive(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> ast'
+         
+  
   // On-save handler
   generate-all:
     (selected, position, ast, path, project-path) -> None()

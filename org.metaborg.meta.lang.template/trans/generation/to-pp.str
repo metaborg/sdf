@@ -153,6 +153,10 @@ rules
       ]
     where
       	not(<fetch-elem(?Reject())> a*)
+    where
+        not(<fetch-elem(?Term(Default(Fun(Unquoted("placeholder-insertion")))))> a*)
+    where
+         not(<fetch-elem(?Term(Default(Fun(Unquoted("literal-completion")))))> a*)
     with
       	!t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
 	    < line* := [Line([Layout(""), elem*])] 
@@ -172,12 +176,12 @@ rules
         switch-sep*      := <map(get-sep-template-line); flatten-list> line'*;
         <reset-counter> "switch";
         <set-current-layout> "";
-        switch-ws*       := <map(get-leading-ws); flatten-list> line'*
+        switch-ws*       := <map(get-leading-ws-pp); flatten-list> line'*
   
   
   set-current-layout = ?l; rules(current-layout: "current" -> l) 
   
-  get-leading-ws:
+  get-leading-ws-pp:
     Line(elem*) -> switch*
     where
         switch* := <map(get-leading-ws-elems)> elem*;
@@ -187,7 +191,7 @@ rules
     Layout(l) ->  []
     where
         <set-current-layout> <conc-strings> (<current-layout> "current", l)
-       
+      
   get-leading-ws-elems:
     String(l) -> [] 
     where

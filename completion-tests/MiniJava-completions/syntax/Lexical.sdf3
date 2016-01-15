@@ -35,6 +35,7 @@ context-free restrictions
   LAYOUT? -/- [\/].[\/]
   LAYOUT? -/- [\/].[\*]
 
+
 lexical syntax
 
   ID = "abstract" {reject}
@@ -59,7 +60,7 @@ lexical syntax
   ID = "float" {reject}
   ID = "for" {reject}
   ID = "goto" {reject}
-  ID = "if" {reject}
+  ID = [i][f] {reject}
   ID = "implements" {reject}
   ID = "import" {reject}
   ID = "instanceof" {reject}
@@ -89,4 +90,4 @@ lexical syntax
   ID = "while" {reject}
   ID = "true" {reject}
   ID = "false" {reject}
-  ID = "null" {reject}
+  ID = "null" {reject} 

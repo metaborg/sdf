@@ -65,6 +65,9 @@ menus
      	
     action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
     action: "Generate AST checker"            = generate-ast-checker-concrete
+         
+    action: "Generate Permissive Grammar (abstract, starting from current)" = generate-permissive-abstract
+    action: "Generate Permissive Grammar (starting from current)" = generate-permissive-concrete
      	
   menu: "Format" (openeditor) (realtime)
     

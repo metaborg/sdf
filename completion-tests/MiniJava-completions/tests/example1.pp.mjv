@@ -1,15 +1,19 @@
-class [[ID]] {
-  public static void main (String[] fdgadf) {
+class Main {
+  public static void main (String[] a) {
     [[Statement]]
-  }
-}
+  } 
+}  
 
-[[ClassDecl]]
+class Foo {  
+     
+     i a     
+         
+     public int m(){ 
+         
+        
+          
+        
+        return 0;
+     }
 
-class [[ID]] bla{
-
-}
-
-class [[ID]] bla{
-
-}
+}   

@@ -474,6 +474,17 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
   	CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
+  	
+  special-term-to-sdf:
+    Placeholder() -> term(default(fun(unquoted("placeholder"))))  
+    
+  special-term-to-sdf:
+    PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))  
+    
+  special-term-to-sdf:
+    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))      	
+  	
+  	
    	
   terms-to-sdf:
   	[term | tail] -> <id>
@@ -508,7 +519,7 @@ rules //conversion of SDF3 terms into SDF2
     map(!ci-lit(<template-escape; single-quote>))
 
  sort-to-contentcomplete:
-    s -> prod([rhs], sort(s), attrs([sdf-cons(c)]))
+    s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
     with
       rhs := lit(<concat-strings> ["[[", s, "]]"]);
       c := <double-quote> $[[s]-Plhdr]

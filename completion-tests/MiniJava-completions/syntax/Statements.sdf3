@@ -1,6 +1,6 @@
 module Statements
 
-imports Expressions
+imports Expressions Lexical
 
 sorts
 
@@ -20,6 +20,29 @@ context-free syntax
   Statement.While = <
   	while(<Exp;text="true">) <Statement;text="{}">> 
   Statement.Print = <System.out.println(<Exp>);> 
+
+
+
+// manual completion recovery rules
+  
+  Exp.Exp-Plhdr = {placeholder-insertion}
+
+//  Statement.Statement-Plhdr = {new-completion}
+
+lexical syntax
+  
+ // "if"   = {new-completion}
+ // "if"   = [i] {new-completion}
+ // "else" = {new-completion}
+ // "else" = [e] {new-completion}
+ // "else" = [e] [l] {new-completion}
+ // "else" = [e] [l] [s] {new-completion}
+ // ")"    = {new-completion}
+ // "("    = {new-completion}
+  "="    = {literal-completion}
+  ";"    = {literal-completion}
+
+
 
 template options
 
