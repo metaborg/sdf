@@ -40,44 +40,35 @@ rules
     Sort(x) -> SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[x]])))       
   
   section-to-pp(|lang):
-    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
+    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> s*)
     with
     	sort* := <filter(productive-sort); make-set> p*
-    	; s1*    := <map(sort-to-pp)> sort*
-    	; s2*    := <map(sort-to-pp(|lang))> sort*
-    	; s3*    := <map(sort-to-pp-amb)> sort*
+    	; s*  := <mapconcat(lex-sort-to-pp(|lang))> sort*
     	  
   section-to-pp(|lang):
-  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*])
+  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*])
   	with
   		sort* := <filter(productive-sort); make-set> p*
-  		; s1*   := <map(sort-to-pp(|lang))> sort*
-    	; s2*   := <filter(prod-to-template; desugar-templates;template-to-pp <+ template-to-pp); flatten-list> p*
-    	; s3*   := <map(is-sort-fail)> sort*  
-    	; s4*   := <map(sort-to-pp-amb)> sort*
+  		; s1* := <mapconcat(cf-sort-to-pp(|lang))> sort*
+    	; s2* := <filter(prod-to-template; desugar-templates;template-to-pp <+ template-to-pp); flatten-list> p*
   		    
    section-to-pp(|lang):
-  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, s6*])
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
   	with
   		sort*            := <filter(cf-productive-sort); make-set> p*
-  		; s1*            := <map(sort-to-pp(|lang))> sort*  
+  		; s1*            := <mapconcat(cf-sort-to-pp(|lang))> sort*  
     	; s2*            := <filter(cf-prod-to-template; desugar-templates; template-to-pp); flatten-list> p*
-    	; s3*            := <map(is-sort-fail)> sort*
     	; lexical-sorts* := <filter(lex-productive-sort); make-set> p*
-    	; s4*            := <map(sort-to-pp)> lexical-sorts*
-        ; s5*            := <map(sort-to-pp(|lang))> lexical-sorts* 
-        ; s6*            := <map(sort-to-pp-amb)> [sort*, lexical-sorts*]  
+    	; s3*            := <mapconcat(lex-sort-to-pp(|lang))> lexical-sorts* 
     	  
   		 
     	   
   section-to-pp(|lang):
-    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*, s4*])
+    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*])
     with
       	sort* := <filter(productive-sort); make-set> t*
-    	; s1*   := <map(sort-to-pp(|lang))> sort*
+    	; s1*   := <mapconcat(cf-sort-to-pp(|lang))> sort*
     	; s2*   := <filter(template-to-pp); flatten-list> t*
-    	; s3*   := <map(is-sort-fail)> sort*
-    	; s4*   := <map(sort-to-pp-amb)> sort*
     	  
   productive-sort:
     TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s
@@ -126,21 +117,34 @@ rules
     where not (
       <fetch-elem(?Reject())> attrs
     )
-        
     
-    sort-to-pp(|lang):
-    x -> SDefNoArgs($[prettyprint-[lang]], CallNoArgs(SVar($[prettyprint-[x]])))
-  
-    sort-to-pp:
-    x -> SDefNoArgs($[prettyprint-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))))
-    
-    sort-to-pp-amb:
-    	x -> RDefNoArgs($[prettyprint-[x]], RuleNoCond(NoAnnoList(Op("amb", [NoAnnoList(ListTail([Var("h")], Var("hs")))])), App(CallNoArgs(SVar($[prettyprint-[x]])), Var("h"))))
-  
+    lex-sort-to-pp(|lang):
+    	s -> [ SDefNoArgs(pp-lang, CallNoArgs(SVar(pp-s)))
+    		 , SDefNoArgs(pp-s, LChoice(CallNoArgs(SVar(pp-c)), LChoice(Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))), Match(NoAnnoList(Op("amb", [RootApp(Seq(CallNoArgs(SVar("Hd")), CallNoArgs(SVar(pp-s))))]))))))
+    	     , SDefNoArgs(pp-c, Fail())
+    		 ]
+    	with
+    		pp-lang := $[prettyprint-[lang]]
+    	;	pp-s    := $[prettyprint-[s]]
+    	;   pp-c    := $[prettyprint-[s]-custom]
+    	;	pp-g	:= $[prettyprint-[s]-gen]
+    	
+    cf-sort-to-pp(|lang):
+    	s -> [ SDefNoArgs(pp-lang, CallNoArgs(SVar(pp-s)))
+    		 , SDefNoArgs(pp-s, LChoice(CallNoArgs(SVar(pp-c)), LChoice(CallNoArgs(SVar(pp-g)), Match(NoAnnoList(Op("amb", [RootApp(Seq(CallNoArgs(SVar("Hd")), CallNoArgs(SVar(pp-s))))]))))))
+    		 , SDefNoArgs(pp-c, Fail())
+    		 , SDefNoArgs($[is-[s]], Fail())
+    	     ]
+    	with
+    		pp-lang := $[prettyprint-[lang]]
+    	;	pp-s    := $[prettyprint-[s]]
+    	;   pp-c    := $[prettyprint-[s]-custom]
+    	;	pp-g	:= $[prettyprint-[s]-gen]
+    	  
   template-to-pp:
     TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
       [RDefNoArgs(
-        $[prettyprint-[s]]
+        $[prettyprint-[s]-gen]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
       ), SDefNoArgs($[is-[s]], Match(NoAnnoList(Op(c, WldArg*))))
       ]
@@ -162,7 +166,7 @@ rules
   template-to-pp:
     TemplateProduction(SortDef(s), t, Attrs(a*)) ->
       RDefNoArgs(
-        $[prettyprint-[s]]
+        $[prettyprint-[s]-gen]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
       )
       where
@@ -193,10 +197,7 @@ rules
       	input := Tuple(arg*);
       	(output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
-  
-  is-sort-fail:												//needs to be generated for every sort to avoid undefined strategy
-  	s -> SDefNoArgs($[is-[s]], Fail())
-      
+        
   extract-app :
     (t@App(_, _), e*) -> (Var(x), [e*, WithClause(Assign(Var(x), t))]) 
     where 
