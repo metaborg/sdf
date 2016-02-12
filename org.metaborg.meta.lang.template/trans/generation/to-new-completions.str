@@ -17,7 +17,7 @@ rules
 	Module(Unparameterized(m), i*, s*) -> Module(m',  [i0, i1, is*, s'])
 	with
 		m'  := <conc-strings> ("src-gen/", "new-completions/", m, "-ncp");
-        i0  := Imports([Import("libstratego-gpp"), Import("trans/completions")]);
+        i0  := Imports([Import("libstratego-gpp"), Import("trans/completions/-")]);
         i1  := Imports([Import($[signatures/[m]-sig])]); 
         is* := <map(to-str-import(|"-ncp", "new-completions"))> i*; 
         s'  := Strategies(<filter(section-to-new-cmp); flatten-list> s*)
@@ -33,7 +33,10 @@ rules
 	    where not (
 	      <fetch-elem(?Reject())> attrs
 	    )
-	    //where <not(?[Sort(x)])> rhs*
+	    where <not(?[])> rhs*
+	    where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
 	    with
 	    	rhs-placeholders* := <filter(to-new-cmp-elem(|sort))> rhs*
       		    	
@@ -43,6 +46,10 @@ rules
 	    where not (
 	      <fetch-elem(?Reject())> attrs
 	    )
+	    where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+        where <not(?SingleLineTemplate([]))> template
 	    with
 	    	rhs-placeholders* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template
 	
@@ -91,7 +98,7 @@ rules
         
    //TODO: lift optionals to alternatives
    to-new-cmp-elem(|sort):
-     Opt(x) -> NoAnnoList(List([]))
+     Opt(x) -> NoAnnoList(Op("None", []))
         
         
    to-new-cmp-elem(|sort):
