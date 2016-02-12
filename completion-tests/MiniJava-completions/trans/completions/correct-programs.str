@@ -1,0 +1,170 @@
+module correct-programs
+
+imports
+    include/MiniJava-completions
+    editor-common.generated
+    new-completions/-
+    pp
+    runtime/refactoring/-
+    runtime/editor/origins
+    src-gen/pp/-
+    completions/completions
+
+
+rules
+
+    get-proposals-placeholder:
+       (placeholder, ast, cursor-position) -> proposal* 
+       where
+         suggestion-is := <new-iset>;
+         position      := <my-position-of-term(check-placeholder-origin(|placeholder))> ast;
+         debug(!"position of term ");
+         suggestion*   := <try(suggest-completions(|suggestion-is)); <iset-elements> suggestion-is> placeholder;
+         debug(!"suggestions ");
+         proposal*     := <map(get-text-from-expand(|ast, position))> suggestion*   
+         ; debug(!"proposals ")     
+         
+    get-text-from-expand(|old-ast, position) :
+      (description, expanded-term) -> (description, full-text)
+      where
+        new-ast           := <at-position(!expanded-term|position)> old-ast;    
+        debug(!"new ast");               
+        (_, _, full-text) := <construct-textual-change> (old-ast, new-ast)          
+        ; debug(!"full text ")     
+         
+    check-placeholder-origin(|placeholder):
+        term -> <id>
+        where            
+            <?placeholder> term;
+            (start-offset-term, end-offset-term)    := <origin-offset> term; 
+            (origin-offset-plhdr, end-offset-plhdr) := <origin-offset; ?(start-offset-term, end-offset-term)> placeholder     
+    
+    get-proposals-list:
+     (list, placeholder, ast, cursor-position) -> proposal* 
+     where
+        suggestion-is := <new-iset>;
+        position      := <my-position-of-term(check-placeholder-origin(|list))> ast;
+        suggestion*   := <try(suggest-completions(|suggestion-is)); <iset-elements; debug(!"suggestions ")> suggestion-is> placeholder;
+        proposal*     := <map(get-proposals-from-list(|list, cursor-position, position, ast))> suggestion*      
+                
+    get-proposals-from-list(|list, cursor-pos, position, ast):
+        (name, new-elem) -> (name, description, change)
+        where
+            debug(!"desc, new-elem ");
+            new-list          := <add-list-pos(|new-elem, cursor-pos); flatten-list; debug(!"new list ")> list; 
+            new-ast           := <at-position(add-list-pos(|new-elem, cursor-pos); flatten-list|position)> ast;
+            changes           := <collect-ast-changes(override-reconstruction, resugar)> (ast, new-ast);
+            <?[change] <+ debug(!"invalid completion, more than one change in the AST ")> changes;
+            description       := <debug(!"change "); build-description> change
+            ; <debug(!"description ")> Foo(description)
+    
+    add-list-pos(|new-elem, pos):
+        [] -> [new-elem]
+                
+    add-list-pos(|new-elem, pos):
+        list@[h | hs] -> [new-elem | list]            
+        where
+            (start-offset, end-offset) := <origin-offset> h;
+            <geq> (start-offset, pos)
+            
+    add-list-pos(|new-elem, pos):
+        list@[h | hs] -> [h, <add-list-pos(|new-elem, pos)>  hs]            
+        where
+            (start-offset, end-offset) := <origin-offset> h;
+            <geq> (pos, end-offset)         
+            
+    get-proposals-optional:
+       (term, placeholder) -> proposal*
+       where
+         suggestion-is := <new-iset>;
+         suggestion*   := <try(suggest-completions(|suggestion-is)); <iset-elements> suggestion-is> placeholder;
+         debug(!"suggestions ");
+         proposal*     := <map(get-proposals-from-optional(|term))> suggestion*   
+         ; debug(!"proposals ")        
+         
+    get-proposals-from-optional(|old-term):
+       (name, new-elem) -> (name, description, change)
+       where
+       change      := REPLACE_TERM(old-term, new-elem);
+       description := <build-description> change
+       ; <debug(!"description ")> Foo(description)
+            
+
+//build description for completion inside lists in correct programs
+rules
+
+  build-description:
+      INSERT_AT_END(old-list, [completion-term]) -> <debug(!"description text ")> text
+      where
+        <?[]> old-list
+      with
+         parent             := <get-parent> old-list; debug(!"parent ");
+         index              := <find-position> (old-list, parent); debug(!"index ");
+         leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws);
+         indent             := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);
+         parent-indent      := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+         if <is-substring(!"\n")> leading-ws then
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|parent-indent)> reconstructed-text]
+         else
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, "")> reconstructed-text]
+         end
+   
+   build-description:
+      INSERT_AT_END(old-list, [completion-term]) -> <debug(!"description text ")> text
+      where
+        <not(?[])> old-list
+      with
+         parent        := <get-parent> old-list; debug(!"parent ");
+         index         := <find-position> (old-list, parent); debug(!"index ");
+         sep           := <get-separator> (parent, index);  <debug(!"separator ")> Foo(sep);
+         indent        := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);     
+         parent-indent := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+         separator     := <concat-strings> [sep, indent];
+         if <is-substring(!"\n")> separator then
+            text := <concat-strings> [sep, <prefix-lines(|<conc-strings> (indent, parent-indent))> reconstructed-text]
+         else
+            text := <concat-strings> [sep, <prefix-lines(|indent)> reconstructed-text]
+         end
+   
+   build-description:
+      INSERT_BEFORE(old-node, [completion-term]) -> <debug(!"description text ")> text
+      where
+        parent                := <get-parent> old-node; debug(!"parent ");// the list in which old node is
+        grandparent           := <get-parent> parent; debug(!"grandparent ");// the node in which the list is (to get separator, indent and leading ws)
+        index-old-term        := <get-index-origin(|1)> (old-node, parent); debug(!"index old node ");
+        index-parent          := <find-position> (parent, grandparent); debug(!"index ");
+        sep                   := <get-separator> (grandparent, index-parent);  <debug(!"separator ")> Foo(sep);
+        indent                := <get-indent> (grandparent, index-parent); <debug(!"parent indent ")> Foo(indent);  
+        leading-ws            := <get-leading-ws> (grandparent, index-parent); <debug(!"leading ws ")> Foo(leading-ws);   
+        grandparent-indent    := <origin-indent <+ !""> grandparent; <debug(!"origin indent ")> Foo(grandparent-indent);
+        reconstructed-text    := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+        // indent according to the parent in case there is a new line in the leading ws
+        if <is-substring(!"\n")> leading-ws then
+           leading-ws-indent := grandparent-indent
+        else
+           leading-ws-indent := ""
+        end;
+        //indent according to the parent in case the separator has a new line
+        if <is-substring(!"\n")> sep then
+           separator-indent := <concat-strings> [indent, grandparent-indent]
+        else
+           separator-indent := <concat-strings> [indent]
+        end;       
+        if <?1> index-old-term then // inserting at the beginning of the list
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|leading-ws-indent)> reconstructed-text, sep, separator-indent]
+        else //inserting in the middle of the list
+            text := <concat-strings> [sep, <prefix-lines(|separator-indent)> reconstructed-text, sep, separator-indent]
+        end
+        
+  build-description:
+    REPLACE_TERM(optional, completion-term) -> text
+    where
+        parent             := <get-parent> optional; debug(!"parent ");
+        index              := <find-position> (optional, parent); debug(!"index completion node ");
+        leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws); 
+        reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term; debug(!"reconstructed text ");
+        text               := <conc-strings> (leading-ws, reconstructed-text)      
+    
+    

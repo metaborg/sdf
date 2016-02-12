@@ -1,0 +1,128 @@
+module incorrect-programs
+
+imports
+    include/MiniJava-completions
+    editor-common.generated
+    new-completions/-
+    pp
+    runtime/refactoring/-
+    runtime/editor/origins
+    src-gen/pp/-
+    completions/completions
+
+signature constructors
+   Foo : String -> Foo
+
+signature constructors 
+   INSERTION_TERM : NewTerm -> AST_CHANGE //Inserting a new term in the completed AST
+
+rules
+   
+   get-proposals-erroneous-programs:
+       (new-ast, completion-term) -> (name, description, change) 
+       where
+         debug(!"input "); 
+         change := <calculate-completion-change <+ !INSERTION_TERM(<try(wrap-optional)> completion-term)> completion-term;
+         <debug(!"change ")> change;        
+         description       := <build-description-incorrect-programs> change;
+         <debug(!"description ")> Foo(description);
+         name := <get-constructor> completion-term 
+   
+   wrap-optional = get-parent; ?Some(_)
+   
+   calculate-completion-change:
+      completion-term -> change
+      where
+         parent := <get-parent; debug(!"parent "); is-list> completion-term; //is inside a list
+         index  := <get-index-origin(|1)> (completion-term, parent); debug(!"index ");
+         length := <length> parent; debug(!"parent lenght ");
+         if <geq> (index, length) then
+            change := INSERT_AT_END(parent, completion-term)
+         else
+            change := INSERT_BEFORE(<index(|<inc> index)> parent, completion-term)
+         end  
+
+//build description for completion inside lists in incorrect programs
+rules
+         
+  build-description-incorrect-programs:
+      INSERT_AT_END(old-list, completion-term) -> text
+      where
+        <?[_]> old-list
+      with
+         parent             := <get-parent> old-list; debug(!"parent ");
+         index              := <find-position> (old-list, parent); debug(!"index ");
+         leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws);
+         indent             := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);
+         parent-indent      := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+         if <is-substring(!"\n")> leading-ws then
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|parent-indent)> reconstructed-text]
+         else
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, "")> reconstructed-text]
+         end
+   
+   build-description-incorrect-programs:
+      INSERT_AT_END(old-list, completion-term) -> <debug(!"description text ")> text
+      where
+        <not(?[_])> old-list
+      with
+         parent        := <get-parent> old-list; debug(!"parent ");
+         index         := <find-position> (old-list, parent); debug(!"index ");
+         sep           := <get-separator> (parent, index);  <debug(!"separator ")> Foo(sep);
+         indent        := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);     
+         parent-indent := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+         separator     := <concat-strings> [sep, indent];
+         if <is-substring(!"\n")> separator then
+            text := <concat-strings> [sep, <prefix-lines(|<conc-strings> (indent, parent-indent))> reconstructed-text]; <debug(!"insert at end text newline ")> Foo(text)
+         else
+            text := <concat-strings> [sep, <prefix-lines(|indent)> reconstructed-text]; <debug(!"insert at end text no newline ")> Foo(text)
+         end
+   
+   build-description-incorrect-programs:
+      INSERT_BEFORE(old-node, completion-term) -> <debug(!"description text ")> text
+      where
+        parent                := <get-parent> old-node; debug(!"parent ");// the list in which old node is
+        grandparent           := <get-parent> parent; debug(!"grandparent ");// the node in which the list is (to get separator, indent and leading ws)
+        index-completion-term := <get-index-origin(|1)> (completion-term, parent); debug(!"index old node ");
+        index-parent          := <find-position> (parent, grandparent); debug(!"index ");
+        sep                   := <get-separator> (grandparent, index-parent);  <debug(!"separator ")> Foo(sep);
+        indent                := <get-indent> (grandparent, index-parent); <debug(!"parent indent ")> Foo(indent);  
+        leading-ws            := <get-leading-ws> (grandparent, index-parent); <debug(!"leading ws ")> Foo(leading-ws);   
+        grandparent-indent    := <origin-indent <+ !""> grandparent; <debug(!"origin indent ")> Foo(grandparent-indent);
+        reconstructed-text    := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+        // indent according to the parent in case there is a new line in the leading ws
+        if <is-substring(!"\n")> leading-ws then
+           leading-ws-indent := grandparent-indent
+        else
+           leading-ws-indent := ""
+        end;
+        //indent according to the parent in case the separator has a new line
+        if <is-substring(!"\n")> sep then
+           separator-indent := <concat-strings> [indent, grandparent-indent]
+        else
+           separator-indent := <concat-strings> [indent]
+        end;       
+        if <?1> index-completion-term then // inserting at the beginning of the list
+            text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|leading-ws-indent)> reconstructed-text, sep, separator-indent]
+        else //inserting in the middle of the list
+            text := <concat-strings> [sep, <prefix-lines(|separator-indent)> reconstructed-text, sep, separator-indent]
+        end 
+        
+  build-description-incorrect-programs:
+    INSERTION_TERM(completion-term) -> text
+    where
+        parent             := <get-parent> completion-term; debug(!"parent ");
+        index              := <find-position> (completion-term, parent); debug(!"index completion node ");
+        leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws); 
+        reconstructed-text := <(?Some(<id>) <+ id); construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term; debug(!"reconstructed text ");
+        text               := <conc-strings> (leading-ws, reconstructed-text)
+  
+  build-description-incorrect-programs:
+    INSERTION_TERM(completion-term) -> reconstructed-text
+    where //the term is in the root
+       <not(get-parent)> completion-term;
+       reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term
+    
+              
