@@ -21,21 +21,18 @@ rules
    get-proposals-erroneous-programs:
        (new-ast, completion-term) -> (name, description, change) 
        where
-         debug(!"input "); 
-         change := <calculate-completion-change <+ !INSERTION_TERM(<try(wrap-optional)> completion-term)> completion-term;
-         <debug(!"change ")> change;        
-         description       := <build-description-incorrect-programs> change;
-         <debug(!"description ")> Foo(description);
-         name := <get-constructor> completion-term 
+         change      := <calculate-completion-change <+ !INSERTION_TERM(<try(wrap-optional)> completion-term)> completion-term;
+         description := <build-description-incorrect-programs> change;
+         name        := <get-constructor> completion-term 
    
    wrap-optional = get-parent; ?Some(_)
    
    calculate-completion-change:
       completion-term -> change
       where
-         parent := <get-parent; debug(!"parent "); is-list> completion-term; //is inside a list
-         index  := <get-index-origin(|1)> (completion-term, parent); debug(!"index ");
-         length := <length> parent; debug(!"parent lenght ");
+         parent := <get-parent; is-list> completion-term; //is inside a list
+         index  := <get-index-origin(|1)> (completion-term, parent);
+         length := <length> parent;
          if <geq> (index, length) then
             change := INSERT_AT_END(parent, completion-term)
          else
@@ -50,11 +47,11 @@ rules
       where
         <?[_]> old-list
       with
-         parent             := <get-parent> old-list; debug(!"parent ");
-         index              := <find-position> (old-list, parent); debug(!"index ");
-         leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws);
-         indent             := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);
-         parent-indent      := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         parent             := <get-parent> old-list;
+         index              := <find-position> (old-list, parent);
+         leading-ws         := <get-leading-ws> (parent, index);
+         indent             := <get-indent> (parent, index);
+         parent-indent      := <origin-indent <+ !""> parent;
          reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
          if <is-substring(!"\n")> leading-ws then
             text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|parent-indent)> reconstructed-text]
@@ -63,34 +60,34 @@ rules
          end
    
    build-description-incorrect-programs:
-      INSERT_AT_END(old-list, completion-term) -> <debug(!"description text ")> text
+      INSERT_AT_END(old-list, completion-term) -> text
       where
         <not(?[_])> old-list
       with
-         parent        := <get-parent> old-list; debug(!"parent ");
-         index         := <find-position> (old-list, parent); debug(!"index ");
-         sep           := <get-separator> (parent, index);  <debug(!"separator ")> Foo(sep);
-         indent        := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);     
-         parent-indent := <origin-indent <+ !""> parent; <debug(!"origin indent ")> Foo(parent-indent);
+         parent        := <get-parent> old-list;
+         index         := <find-position> (old-list, parent);
+         sep           := <get-separator> (parent, index);
+         indent        := <get-indent> (parent, index);
+         parent-indent := <origin-indent <+ !""> parent;
          reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
          separator     := <concat-strings> [sep, indent];
          if <is-substring(!"\n")> separator then
-            text := <concat-strings> [sep, <prefix-lines(|<conc-strings> (indent, parent-indent))> reconstructed-text]; <debug(!"insert at end text newline ")> Foo(text)
+            text := <concat-strings> [sep, <prefix-lines(|<conc-strings> (indent, parent-indent))> reconstructed-text]
          else
-            text := <concat-strings> [sep, <prefix-lines(|indent)> reconstructed-text]; <debug(!"insert at end text no newline ")> Foo(text)
+            text := <concat-strings> [sep, <prefix-lines(|indent)> reconstructed-text]
          end
    
    build-description-incorrect-programs:
-      INSERT_BEFORE(old-node, completion-term) -> <debug(!"description text ")> text
+      INSERT_BEFORE(old-node, completion-term) -> text
       where
-        parent                := <get-parent> old-node; debug(!"parent ");// the list in which old node is
-        grandparent           := <get-parent> parent; debug(!"grandparent ");// the node in which the list is (to get separator, indent and leading ws)
-        index-completion-term := <get-index-origin(|1)> (completion-term, parent); debug(!"index old node ");
-        index-parent          := <find-position> (parent, grandparent); debug(!"index ");
-        sep                   := <get-separator> (grandparent, index-parent);  <debug(!"separator ")> Foo(sep);
-        indent                := <get-indent> (grandparent, index-parent); <debug(!"parent indent ")> Foo(indent);  
-        leading-ws            := <get-leading-ws> (grandparent, index-parent); <debug(!"leading ws ")> Foo(leading-ws);   
-        grandparent-indent    := <origin-indent <+ !""> grandparent; <debug(!"origin indent ")> Foo(grandparent-indent);
+        parent                := <get-parent> old-node; // the list in which old node is
+        grandparent           := <get-parent> parent; // the node in which the list is (to get separator, indent and leading ws)
+        index-completion-term := <get-index-origin(|1)> (completion-term, parent);
+        index-parent          := <find-position> (parent, grandparent);
+        sep                   := <get-separator> (grandparent, index-parent);
+        indent                := <get-indent> (grandparent, index-parent);  
+        leading-ws            := <get-leading-ws> (grandparent, index-parent); 
+        grandparent-indent    := <origin-indent <+ !""> grandparent;
         reconstructed-text    := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
         // indent according to the parent in case there is a new line in the leading ws
         if <is-substring(!"\n")> leading-ws then
@@ -113,10 +110,10 @@ rules
   build-description-incorrect-programs:
     INSERTION_TERM(completion-term) -> text
     where
-        parent             := <get-parent> completion-term; debug(!"parent ");
-        index              := <find-position> (completion-term, parent); debug(!"index completion node ");
-        leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws); 
-        reconstructed-text := <(?Some(<id>) <+ id); construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term; debug(!"reconstructed text ");
+        parent             := <get-parent> completion-term;
+        index              := <find-position> (completion-term, parent);
+        leading-ws         := <get-leading-ws> (parent, index);
+        reconstructed-text := <(?Some(<id>) <+ id); construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
         text               := <conc-strings> (leading-ws, reconstructed-text)
   
   build-description-incorrect-programs:

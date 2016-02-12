@@ -67,7 +67,7 @@ rules
    find-position: 
       (term, parent) -> index
       where
-       args := <get-arguments> parent; debug(!"arguments ");
+       args := <get-arguments> parent;
        index := <get-index-origin(|1)> (term, args)
        
    get-index-origin(|idx):
@@ -83,6 +83,19 @@ rules
        
    get-index-origin(|idx):
       (term, []) -> -1
+      
+   get-index-cursor-position(|idx):
+      (position, [h | hs]) -> index
+      where       
+       (start-offset, end-offset)           := <origin-offset> h;
+       if <leq> (position, start-offset) then
+            index := idx
+       else
+            index := <get-index-cursor-position(|<inc> idx)> (position, hs)
+       end
+       
+   get-index-cursor-position(|idx):
+      (position, []) -> idx   
                          
     my-position-of-term(is-term|start-index):
         [] -> <fail>
