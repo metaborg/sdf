@@ -154,9 +154,9 @@ rules
     where
       	not(<fetch-elem(?Reject())> a*)
     where
-        not(<fetch-elem(?Term(Default(Fun(Unquoted("placeholder-insertion")))))> a*)
+        not(<fetch-elem(?PlaceholderInsertion())> a*)
     where
-         not(<fetch-elem(?Term(Default(Fun(Unquoted("literal-completion")))))> a*)
+         not(<fetch-elem(?LiteralCompletion())> a*)
     with
       	!t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
 	    < line* := [Line([Layout(""), elem*])] 
@@ -390,7 +390,8 @@ rules
        s := <placeholder-to-pp-one> p
       
   placeholder-to-pp-one:
-    Placeholder(symbol, option*) -> Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))])
+    Placeholder(symbol, option*) -> LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+                                              , Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))]))
     where
      	<collect-om(?Sort(s))> symbol
     with
@@ -402,7 +403,8 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego:
-    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(s, Var(l))
+    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+                                                                                           , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
         	<fetch-elem(?Anchor())> option* < 
@@ -415,7 +417,8 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego:
-    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(s, Var(l))
+    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+                                                                                           , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
         	<fetch-elem(?Anchor())> option* < 
