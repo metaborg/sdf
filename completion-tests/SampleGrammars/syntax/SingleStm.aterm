@@ -1,0 +1,29 @@
+Module(
+  Unparameterized("SingleStm")
+, []
+, [ SDFSection(
+      ContextFreeSyntax(
+        [ SdfProduction(SortDef("Start"), Rhs([Sort("Stm")]), NoAttrs())
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Stm"), Constructor("Print"))
+          , Template(
+              [ Line(
+                  [String("p"), Angled(Placeholder(Sort("Num"), NoOptions())), String(");")]
+                )
+              ]
+            )
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  , TemplateOptions([Tokenize("\";\"")])
+  , SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(SortDef("Num"), Rhs([Lit("\"0\"")]), NoAttrs())
+        , SdfProduction(SortDef("Num"), Rhs([Lit("\"1\"")]), NoAttrs())
+        ]
+      )
+    )
+  ]
+)

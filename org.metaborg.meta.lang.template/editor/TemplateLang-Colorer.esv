@@ -1,0 +1,11 @@
+module TemplateLang-Colorer
+
+imports 
+
+  editor/Colorer.generated
+
+colorer
+
+	_.String: blue
+	_.Constructor: darkblue
+	Label._ : grey

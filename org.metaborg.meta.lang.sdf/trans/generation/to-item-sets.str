@@ -1,0 +1,61 @@
+module to-item-sets
+
+imports
+  include/SDF
+  libstratego-lib
+  libstratego-sglr
+  libstratego-gpp
+
+signature constructors
+	
+	ItemSets : List(ItemSet) -> DFA
+	ItemSet  : List(Item)
+	Item     : prod * Position -> Item
+	
+	Item : List(Symbol) * List(Symbol) * Symbol * prod -> Item
+	
+	Position : String
+	ItemDot  : Symbol
+
+	
+rules
+	
+	grammar-to-item-sets:
+		'module(unparameterized(mn), i*, e*) -> ItemSets(items*)
+	where		
+		productions*  := <get-productions; debug(!"prods ")> e*;
+		items*        := productions*
+		//; initial-item  :=  <get-initial-prod; add-dot-beginning; debug(!"initial item ") > productions*
+		
+	get-productions = oncetd(?syntax(prods)); !prods	
+		
+		
+	
+	
+		
+    /*shift(|prod) : 
+      Item(A*, [B | C*], A, prod') -> Item([A*, B], [C*], A, prod')
+      where <return-sort> prod => B;
+            <lower-priority> (prod, prod') 
+            
+    return-sort :
+      prod(A*, A, _) -> A
+      
+    lower-priority :
+      
+    shift(|prod) : 
+      ItemSet(item*) -> ItemSet(<filter(shift(|B))> item*)
+      
+      
+      
+      
+	
+
+	
+	add-dot-beginning:
+		 prod(lhs*, sort, attrs*) -> Item(prod(lhs*, sort, attrs*), 0) 
+	
+	// is the initial prod always the last?
+	get-initial-prod = last
+	
+	//shift-dot: */

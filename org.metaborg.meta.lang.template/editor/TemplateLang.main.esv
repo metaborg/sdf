@@ -1,0 +1,22 @@
+module TemplateLang.main
+
+imports TemplateLang-Menus TemplateLang-Views TemplateLang-Colorer TemplateLang-Completions TemplateLang-References TemplateLang-Syntax
+
+language General properties
+
+  name : TemplateLang
+
+  extensions    : tmpl, sdf3
+  table         : include/TemplateLang.tbl
+  start symbols : Module
+
+  provider : include/templatelang.ctree
+  provider : include/templatelang-java.jar
+  
+  EditorService sources  : src-gen
+  Stratego-Sugar sources : src-gen
+  SDF sources            : src-gen/syntax
+  ds sources             : src-gen
+
+  observer : editor-analyze (multifile)
+  on save : editor-save

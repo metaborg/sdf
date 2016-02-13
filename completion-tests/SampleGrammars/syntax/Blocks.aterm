@@ -1,0 +1,112 @@
+Module(
+  Unparameterized("Blocks")
+, []
+, [ SDFSection(
+      ContextFreeSyntax(
+        [ SdfProduction(SortDef("Start"), Rhs([Sort("Class")]), NoAttrs())
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Class"), Constructor("Class"))
+          , Template(
+              [ Line([])
+              , Line(
+                  [ Layout("\t\t\t\t")
+                  , String("c")
+                  , Layout(" ")
+                  , Angled(Placeholder(Sort("Name"), NoOptions()))
+                  , Layout(" ")
+                  , String("{")
+                  ]
+                )
+              , Line(
+                  [Layout("\t\t\t\t\t"), Angled(Placeholder(Sort("Meths"), NoOptions()))]
+                )
+              , Line([Layout("\t\t\t\t"), String("}")])
+              ]
+            )
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Meths"), Constructor("Some"))
+          , Rhs([Sort("Meth"), Sort("Meths")])
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Meths"), Constructor("None"))
+          , Rhs([])
+          , NoAttrs()
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Meth"), Constructor("Method"))
+          , Template(
+              [ Line([])
+              , Line(
+                  [ Layout("\t\t\t\t")
+                  , String("m")
+                  , Layout(" ")
+                  , Angled(Placeholder(Sort("Name"), NoOptions()))
+                  , String("{")
+                  ]
+                )
+              , Line(
+                  [Layout("\t\t\t\t\t"), Angled(Placeholder(Sort("Stms"), NoOptions()))]
+                )
+              , Line([Layout("\t\t\t\t"), String("}")])
+              ]
+            )
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Stms"), Constructor("Some"))
+          , Rhs([Sort("Stm"), Sort("Stms")])
+          , NoAttrs()
+          )
+        , SdfProductionWithCons(
+            SortCons(SortDef("Stms"), Constructor("None"))
+          , Rhs([])
+          , NoAttrs()
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Stm"), Constructor("Print"))
+          , Template(
+              [ Line(
+                  [String("p"), Layout(" "), Angled(Placeholder(Sort("Num"), NoOptions()))]
+                )
+              ]
+            )
+          , NoAttrs()
+          )
+        , TemplateProductionWithCons(
+            SortCons(SortDef("Stm"), Constructor("Read"))
+          , Template(
+              [ Line(
+                  [String("r"), Layout(" "), Angled(Placeholder(Sort("Var"), NoOptions()))]
+                )
+              ]
+            )
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  , SDFSection(
+      LexicalSyntax(
+        [ SdfProduction(
+            SortDef("Num")
+          , Rhs([Alt(Lit("\"0\""), Lit("\"1\""))])
+          , NoAttrs()
+          )
+        , SdfProduction(
+            SortDef("Var")
+          , Rhs([Alt(Lit("\"a\""), Lit("\"b\""))])
+          , NoAttrs()
+          )
+        , SdfProduction(
+            SortDef("Name")
+          , Rhs([Alt(Lit("\"A\""), Lit("\"B\""))])
+          , NoAttrs()
+          )
+        ]
+      )
+    )
+  ]
+)

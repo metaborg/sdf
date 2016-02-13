@@ -1,0 +1,11 @@
+//Grammar1
+
+module SingleStmKernel
+
+
+syntax
+
+	Start-CF = Stm-CF
+	Stm-CF.Print = "print" Num-LEX
+	Num-LEX = "0"
+	Num-LEX = "1"

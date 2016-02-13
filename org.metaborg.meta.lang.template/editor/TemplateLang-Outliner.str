@@ -1,0 +1,222 @@
+module editor/TemplateLang-Outliner
+
+/*
+ * This file defines an outliner that is used by both the SDF2 and SDF3 (Template language) editors.
+ */
+
+imports
+  libstratego-sglr
+  include/TemplateLang
+  utils/attributes
+  runtime/editor/outline-library
+  runtime/editor/origins
+  
+  
+rules
+
+  outline = custom-label-outline(to-outline-label, to-outline-node)
+  
+  to-outline-label = ?TemplateProduction(<id>, _, _)
+  to-outline-label = ?appl(<id>, _)
+  to-outline-label = ?parameterized(<id>, _)
+  to-outline-label = ?parameterized-sort(<id>, _)
+  to-outline-label = ?SdfProduction(<id>, _, _)
+  to-outline-label = ?prod(_, <id>, _)
+  to-outline-label = ?prefix-fun(<id>, _, _, _)
+  to-outline-label = ?follow(_, <id>)
+
+  
+  
+  
+
+rules
+  
+  to-outline-node:
+    ast -> Node(label{icon}, children)
+    where
+      desugared := <alltd(outline-desugar)> ast;
+      label := <get-module-name> desugared;
+      icon :=  <icon-module>;
+      sections := <collect-om(is-outline-section, conc)> desugared;
+      children := <collect-om(get-outline-section); map(outline-section-to-node(|sections))> sections
+      
+  outline-expand-to-level = !3
+  
+rules
+  
+  outline-desugar = ?label(_, <id>)
+  outline-desugar = ?unparameterized(<id>)
+  outline-desugar = ?parameterized(<id>, _)
+  outline-desugar = ?Label(_, <id>)
+  outline-desugar = ?Unparameterized(<id>)
+  outline-desugar = ?Parameterized(<id>, _)
+  
+rules
+  
+  // icons
+  icon-module = !"icons/module.png"
+  icon-start = !"icons/start.png"
+  icon-exports = !"icons/exports.png"
+  icon-layout = !"icons/layout.png"
+  icon-restriction = !"icons/follow-restriction.png"
+  
+  icon-prod = ?Lex(); !"icons/prod-lex.png"
+  icon-prod = ?CF(); !"icons/prod-cf.png"
+  icon-prod-cons = ?Lex(); !"icons/prod-lex-cons.png"
+  icon-prod-cons = ?CF(); !"icons/prod-cf-cons.png"
+  icon-prod-injection = ?Lex(); !"icons/prod-lex-injection.png" 
+  icon-prod-injection = ?CF(); !"icons/prod-cf-injection.png" 
+  
+  
+signature constructors
+  
+  // outline sections
+  Start:           OutlineSection
+  Lex:             OutlineSection
+  CF:              OutlineSection
+  Restriction:     OutlineSection
+  Other:           OutlineSection
+  
+rules
+  
+  outline-section-to-node(|sections):
+    outline-section -> Node(label{icon}, children)
+    where
+      sections' := <collect-om(has-outline-section(|outline-section), conc)> sections;
+      label := <literals-to-outline-label(|<Hd> sections')>
+        <Hd; explode-term; ?(<id>, _);
+        string-replace(|"lexical-", "lexical ");
+        string-replace(|"context-free-", "context-free ");
+        string-replace(|"ContextFreeSyntax", "context-free ");
+        string-replace(|"Contextfree", "context-free ");
+        string-replace(|"ContextFreeStartSymbols", "context-free starting-symbols");
+        string-replace(|"KernelStartSymbols","start-symbols");
+        string-replace(|"LexicalStartSymbols","lexical start-symbols");
+        string-replace(|"TemplateSection", "templates");
+        string-replace(|"LexicalSyntax", "lexical syntax");
+        string-replace(|"Syntax", "syntax");
+        string-replace(|"TemplateOptions", "template options")> sections';
+      icon := <icon-exports>;
+      children := <to-outline-nodes(|outline-section) <+ collect-om(to-outline-label(|outline-section), conc); map(label-to-outline-node)> sections'
+  
+  label-to-outline-node = ?label; !Node(label, [])
+  
+  get-outline-section: section -> Start()
+    where <?kernel-start-symbols(_) + ?lexical-start-symbols(_) + 
+    ?context-free-start-symbols(_) + ?KernelStartSymbols(_) + ?LexicalStartSymbols(_) + ?ContextFreeStartSymbols(_) > section
+  
+  get-outline-section: section -> Lex()
+    where <?lexical-syntax(_) + ?syntax(_) + ?LexicalSyntax(_) + ?Syntax(_)> section
+    
+  get-outline-section: section -> CF()
+    where <?context-free-syntax(_) + ?Contextfree(_) + ?ContextFreeSyntax(_) + ?TemplateSection(_)> section
+       
+  get-outline-section: section -> Restriction()
+    where <?context-free-restrictions(_)> section
+  get-outline-section: section -> Other()
+    where <?variables(_) + ?lexical-variables(_) + ?lexical-priorities(_) + ?context-free-priorities(_) + ?aliases(_) + ?restrictions(_) + ?TemplateOptions(_)> section
+  
+  is-outline-section = ?section; get-outline-section; !section
+  
+  has-outline-section(|outline-section) = ?section; get-outline-section; ?outline-section; !section
+
+rules
+	
+  // module
+  get-module-name: Module(name, _, _) -> name
+  get-module-name: 'module(name, _, _) -> name
+  get-module-name =  origin-file; base-filename; remove-extension
+  
+  // start
+  to-outline-label(|outline-section):
+    sort(s) -> s{<icon-start>}
+    where
+      Start() := outline-section
+  
+  to-outline-label(|outline-section):
+    Sort(s) -> s{<icon-start>}
+    where
+      Start() := outline-section
+  
+  // lexical and context-free productions
+  to-outline-nodes(|outline-section):
+    sections -> nodes
+    where
+      <?Lex() + ?CF()> outline-section;
+      'sorts := <collect-om(fetch-sort, conc); reverse; make-set; reverse> sections; // HACK => collect-om returns the last element in case of duplicates; we want the first, for its origin
+      nodes := <map(sort-to-outline-node(|outline-section, sections))> 'sorts
+  
+  sort-to-outline-node(|outline-section, sections):
+    sort -> Node(label{icon}, children)
+    where
+      prods := <collect-om(prod-has-sort(|sort), conc)> sections;
+      label := <Hd; fetch-sort; origin-text> prods;
+      if layout() := sort
+      then icon := <icon-layout>
+      else icon := <icon-prod> outline-section
+      end;
+      children := <map(prod-to-outline-node(|outline-section))> prods
+  
+  prod-to-outline-node(|outline-section):
+  	prod -> Node(label{icon}, [])
+  	where
+      sort := <fetch-sort> prod;
+      lhs := <fetch-lhs> prod;
+      lhs-as-label := <origin-text; guarantee-one-space-separation> lhs;
+      <origin-location-offset-set(|<origin-location-offset> lhs)> lhs-as-label;
+      switch !prod
+        case prod-to-cons; ?cons-name:
+          label := cons-name;
+          icon := <icon-prod-cons> outline-section
+        // case <is-injection> prod: TODO
+        otherwise:
+        	label := lhs-as-label;
+	        if layout() := sort
+	        then icon := <icon-layout>
+	        else icon := <icon-prod> outline-section
+	        end
+  	  end
+  
+  prod-to-cons: prod(_, _, attrs) -> <fetch-cons-name> attrs
+  prod-to-cons: SdfProduction(_, _, attrs) -> <fetch-cons-name> attrs
+  prod-to-cons = ?TemplateProductionWithCons(SortCons(_, Constructor(<id>)), _, _)
+  prod-to-cons = ?SdfProductionWithCons(SortCons(_, Constructor(<id>)), _, _)
+  
+  fetch-sort = ?prod(_, <id>, _)
+  fetch-sort = ?SdfProduction(<id>, _, _)
+  fetch-sort = ?TemplateProductionWithCons(SortCons(<id>, _), _, _)
+  fetch-sort = ?TemplateProduction(<id>, _, _)
+  fetch-sort = ?SdfProductionWithCons(SortCons(<id>,_), _, _)
+  
+  fetch-lhs = ?prod(<id>, _, _)
+  fetch-lhs = ?SdfProduction(_, <id>, _)
+  fetch-lhs = ?TemplateProductionWithCons(_, <id>, _)
+  fetch-lhs = ?TemplateProduction(_, <id>, _)
+  fetch-lhs = ?SdfProductionWithCons(_, <id>, _)
+  
+  prod-has-sort(|sort) = ?prod; fetch-sort; ?sort; !prod
+
+ // restrictions
+  to-outline-nodes(|outline-section):
+    sections -> nodes
+    where
+      <?Restriction()> outline-section;
+      symbolss := <collect-om(fetch-symbols, conc); reverse; make-set; reverse> sections; // HACK => collect-om returns the last element in case of duplicates; we want the first, for its origin
+      nodes := <map(restriction-symbols-to-outline-node(|sections))> symbolss
+  
+  restriction-symbols-to-outline-node(|sections):
+    symbols -> Node(label{<icon-restriction>}, children)
+    where
+      restrictions := <collect-om(restriction-has-symbols(|symbols), conc)> sections;
+      label := <Hd; fetch-symbols; origin-text; guarantee-one-space-separation> restrictions;
+      children := <map(restriction-to-outline-node)> restrictions
+
+  restriction-to-outline-node:
+    follow(_, lookaheads) -> Node(label'{<icon-restriction>}, [])
+    where
+      label := <origin-text; guarantee-one-space-separation> lookaheads;
+      label' := <origin-track-forced(!label)> lookaheads
+
+  fetch-symbols = ?follow(<id>, _)
+  
+  restriction-has-symbols(|symbols) = ?follow(symbols, _)

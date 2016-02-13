@@ -1,0 +1,24 @@
+module SDF.main
+
+imports
+
+  SDF-Menus
+  SDF-Views
+  SDF-Colorer
+  SDF-Folding
+  SDF-References
+  SDF-Syntax
+  SDF-Completions
+
+language General properties
+                  
+  name: SDF
+                  
+  extensions    : sdf, def
+  table         : include/SDF.tbl
+  start symbols : Module
+
+  provider : include/sdf.ctree
+  provider : lib/sdf3/TemplateLang-pp.jar
+  
+  observer : editor-analyze

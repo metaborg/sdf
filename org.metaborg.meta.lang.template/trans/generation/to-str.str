@@ -1,0 +1,15 @@
+module generation/to-str
+
+imports
+  
+  include/TemplateLang
+  libstrc
+  
+rules
+  
+  to-str-import(|ext, folder):
+    Imports(i*) -> Imports(<map(!Import(<to-str-module-name(|ext, folder)>))> i*)
+    
+  to-str-module-name(|ext, folder):
+    Module(Unparameterized(m)) -> <conc-strings> (folder, "/" , m, ext)
+    

@@ -1,0 +1,8 @@
+module TemplateLang-Syntax
+
+language
+
+  line comment  : "//"
+  block comment : "/*" * "*/"
+
+  fences        : [ ] ( ) { }

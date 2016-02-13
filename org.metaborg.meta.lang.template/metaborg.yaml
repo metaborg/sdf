@@ -1,0 +1,42 @@
+---
+id: "org.metaborg:org.metaborg.meta.lang.template:1.5.0-SNAPSHOT"
+name: "TemplateLang"
+format: "ctree"
+compileDependencies:
+- "org.metaborg:org.metaborg.meta.lang.template:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lang.nabl:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lib.analysis:1.5.0-SNAPSHOT"
+- "org.metaborg:org.metaborg.meta.lang.ts:1.5.0-baseline-20150917-172646"
+runtimeDependencies:
+- "org.metaborg:org.metaborg.meta.lang.template:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lang.nabl:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lib.analysis:1.5.0-SNAPSHOT"
+- "org.metaborg:org.metaborg.meta.lang.ts:1.5.0-baseline-20150917-172646"
+pardonedLanguages:
+- "EditorService"
+- "Stratego-Sugar"
+- "SDF"
+- "TypeSystemLanguage"
+language:
+  sdf:
+    args:
+    - "-Idef"
+    - "${path:root}/lib/SDF.def"
+  stratego:
+    args:
+    - "-la"
+    - "stratego-lib"
+    - "-la"
+    - "stratego-sglr"
+    - "-la"
+    - "stratego-gpp"
+    - "-la"
+    - "stratego-xtc"
+    - "-la"
+    - "stratego-aterm"
+    - "-la"
+    - "stratego-sdf"
+    - "-la"
+    - "strc"

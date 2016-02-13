@@ -1,0 +1,11 @@
+module SDF-Folding
+
+folding
+
+  _.context-free-syntax
+  
+  _.lexical-syntax
+  
+  _.kernel-syntax
+  
+  _.sorts
