@@ -1,13 +1,13 @@
 ---
-id: "org.metaborg:org.metaborg.meta.lang.sdf:1.5.0-SNAPSHOT"
+id: "org.metaborg:org.metaborg.meta.lang.sdf:2.0.0-SNAPSHOT"
 name: "SDF"
 format: "ctree"
 compileDependencies:
 - "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lib.analysis:1.5.0-SNAPSHOT"
+- "org.metaborg:org.metaborg.meta.lib.analysis:2.0.0-SNAPSHOT"
 runtimeDependencies:
 - "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lib.analysis:1.5.0-SNAPSHOT"
+- "org.metaborg:org.metaborg.meta.lib.analysis:2.0.0-SNAPSHOT"
 pardonedLanguages:
 - "EditorService"
 - "Stratego-Sugar"
