@@ -1,19 +1,16 @@
 ---
-id: "org.metaborg:org.metaborg.meta.lang.template:2.0.0-SNAPSHOT"
+metaborgVersion: "2.0.0-SNAPSHOT"
+metaborgBaselineVersion: "1.5.0-baseline-20150917-172646"
+id: "org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}"
 name: "TemplateLang"
 format: "ctree"
 compileDependencies:
-- "org.metaborg:org.metaborg.meta.lang.template:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lang.nabl:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lib.analysis:2.0.0-SNAPSHOT"
-- "org.metaborg:org.metaborg.meta.lang.ts:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}"
+- "org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}"
+- "org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}"
+- "org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}"
 runtimeDependencies:
-- "org.metaborg:org.metaborg.meta.lang.template:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lang.nabl:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lang.esv:1.5.0-baseline-20150917-172646"
-- "org.metaborg:org.metaborg.meta.lib.analysis:2.0.0-SNAPSHOT"
-- "org.metaborg:org.metaborg.meta.lang.ts:1.5.0-baseline-20150917-172646"
+- "org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}"
 pardonedLanguages:
 - "EditorService"
 - "Stratego-Sugar"
