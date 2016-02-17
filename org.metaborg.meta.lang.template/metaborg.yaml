@@ -1,39 +1,62 @@
 ---
-metaborgVersion: "2.0.0-SNAPSHOT"
-metaborgBaselineVersion: "1.5.0-baseline-20150917-172646"
-id: "org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}"
-name: "TemplateLang"
-format: "ctree"
-compileDependencies:
-- "org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}"
-- "org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}"
-- "org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}"
-- "org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}"
-runtimeDependencies:
-- "org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}"
+id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
+name: TemplateLang
+metaborgVersion: 2.0.0-SNAPSHOT
+metaborgBaselineVersion: 1.5.0-baseline-20150917-172646
+dependencies:
+  compile:
+  - org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
+  source:
+  - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
+generates:
+- generate:
+    language: EditorService
+    directory: src-gen
+- generate:
+    language: Stratego-Sugar
+    directory: src-gen
+- generate:
+    language: SDF
+    directory: src-gen/syntax
+- generate:
+    language: ds
+    directory: src-gen
 pardonedLanguages:
-- "EditorService"
-- "Stratego-Sugar"
-- "SDF"
-- "TypeSystemLanguage"
+- EditorService
+- Stratego-Sugar
+- SDF
+- TypeSystemLanguage
 language:
   sdf:
     args:
-    - "-Idef"
-    - "${path:root}/lib/SDF.def"
+    - -Idef
+    - ${path:root}/lib/SDF.def
   stratego:
+    format: ctree
     args:
-    - "-la"
-    - "stratego-lib"
-    - "-la"
-    - "stratego-sglr"
-    - "-la"
-    - "stratego-gpp"
-    - "-la"
-    - "stratego-xtc"
-    - "-la"
-    - "stratego-aterm"
-    - "-la"
-    - "stratego-sdf"
-    - "-la"
-    - "strc"
+    - -la
+    - stratego-lib
+    - -la
+    - stratego-sglr
+    - -la
+    - stratego-gpp
+    - -la
+    - stratego-xtc
+    - -la
+    - stratego-aterm
+    - -la
+    - stratego-sdf
+    - -la
+    - strc
+build:
+- stratego-cli:
+    phase: pre-compile
+    strategy: org.strategoxt.tools.main-parse-pp-table
+    args:
+    - -i
+    - ${path:root}/lib/EditorService-pretty.pp
+    - -o
+    - ${path:root}/include/EditorService-pretty.pp.af
