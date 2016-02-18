@@ -18,52 +18,6 @@
     <relativePath>../../releng/parent/language</relativePath>
   </parent>
 
-  <properties>
-    <lib.directory>${basedir}/lib</lib.directory>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.metaborg</groupId>
-      <artifactId>org.metaborg.meta.lib.analysis</artifactId>
-      <version>${metaborg-version}</version>
-      <type>spoofax-language</type>
-      <scope>${metaborg-meta-lang-scope}</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.metaborg</groupId>
-      <artifactId>org.metaborg.meta.lang.esv</artifactId>
-      <version>${metaborg-baseline-version}</version>
-      <type>spoofax-language</type>
-      <scope>${metaborg-meta-lang-scope}</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <resources>
-      <resource>
-        <directory>lib/sdf3</directory>
-        <targetPath>lib/sdf3</targetPath>
-      </resource>
-    </resources>
-
-    <plugins>
-      <plugin>
-        <groupId>org.metaborg</groupId>
-        <artifactId>spoofax-maven-plugin</artifactId>
-        <version>${metaborg-version}</version>
-        <extensions>true</extensions>
-        <configuration>
-          <sdfArgs>
-            <arg>-Idef</arg>
-            <arg>${lib.directory}/SDF.def</arg>
-          </sdfArgs>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
   <developers>
     <developer>
       <name>Eduardo Amorim</name>

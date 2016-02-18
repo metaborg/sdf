@@ -12,18 +12,14 @@ dependencies:
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
 generates:
-- generate:
-    language: EditorService
-    directory: src-gen
-- generate:
-    language: Stratego-Sugar
-    directory: src-gen
-- generate:
-    language: SDF
-    directory: src-gen/syntax
-- generate:
-    language: ds
-    directory: src-gen
+- language: EditorService
+  directory: src-gen
+- language: Stratego-Sugar
+  directory: src-gen
+- language: SDF
+  directory: src-gen/syntax
+- language: ds
+  directory: src-gen
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
@@ -52,8 +48,8 @@ language:
     - -la
     - strc
 build:
-- stratego-cli:
-    phase: pre-compile
+  stratego-cli:
+  - phase: pre-compile
     strategy: org.strategoxt.tools.main-parse-pp-table
     args:
     - -i
