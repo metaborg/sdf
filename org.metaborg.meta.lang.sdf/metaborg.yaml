@@ -9,8 +9,8 @@ dependencies:
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
 exports:
-- directory: .
-  includes: lib/sdf3
+- directory: ./
+  includes: lib/sdf3/**/*
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
