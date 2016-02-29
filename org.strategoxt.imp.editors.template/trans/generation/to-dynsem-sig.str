@@ -35,10 +35,9 @@ rules
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
 		
 	todynsem-sig-collect-sorts = 
-		where(<debug> ["collect Sorts ", <id>]);
-		?SdfProduction(SortDef(d),_,_);
-		where(<debug> ["Is SDFProd with ", d]);
-		!d
+	   ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+	  <+ ?SdfProduction(SortDef(<id>),_,_)
+	  <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
   
     	    	        	 
 	sort-to-ds-sig-sort = where(<debug> "sort-to-ds-sig-sort");debug;!SortDecl(<ds-escape-sortname>); debug
