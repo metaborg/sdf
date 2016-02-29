@@ -35,7 +35,7 @@ rules
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
 		
 	collect-sorts = 
-		where(<debug> ["collect Sorts ", <id>];
+		where(<debug> ["collect Sorts ", <id>]);
 		?SdfProduction(SortDef(d));
 		where(<debug> ["Is SDFProd with ", d]);
 		!d
