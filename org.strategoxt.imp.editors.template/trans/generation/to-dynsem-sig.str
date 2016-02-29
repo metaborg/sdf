@@ -26,16 +26,10 @@ rules
 		  where(<debug> "Collect sorts");
 		  sorts* := <debug; collect-all(todynsem-sig-collect-sorts); make-set; debug; map(sort-to-ds-sig-sort); debug> s*;
 		  signatures* := <filter(section-to-ds-sig)> s*
-            
-            
-  collect-sorts =
-    ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
-    <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
-    <+ ?SdfProduction(SortDef(<id>),_,_)
-    <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
 		
 	todynsem-sig-collect-sorts = 
-	   ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+	 ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
+	  <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
 	  <+ ?SdfProduction(SortDef(<id>),_,_)
 	  <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
   
