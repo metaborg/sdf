@@ -24,7 +24,7 @@ rules
 		  m'  := <conc-strings> ( "ds-signatures/", m, "-sig");
 		  is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*;
 		  where(<debug> "Collect sorts");
-		  sorts* := <debug; collect-all(collect-sorts); debug; map(sort-to-ds-sig-sort); debug> s*;
+		  sorts* := <debug; collect-all(todynsem-sig-collect-sorts); make-set; debug; map(sort-to-ds-sig-sort); debug> s*;
 		  signatures* := <filter(section-to-ds-sig)> s*
             
             
@@ -34,7 +34,7 @@ rules
     <+ ?SdfProduction(SortDef(<id>),_,_)
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
 		
-	collect-sorts = 
+	todynsem-sig-collect-sorts = 
 		where(<debug> ["collect Sorts ", <id>]);
 		?SdfProduction(SortDef(d),_,_);
 		where(<debug> ["Is SDFProd with ", d]);
