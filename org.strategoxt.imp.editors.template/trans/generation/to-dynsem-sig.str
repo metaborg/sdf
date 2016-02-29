@@ -34,7 +34,7 @@ rules
     <+ ?SdfProduction(SortDef(<id>),_,_)
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
     	    	        	 
-	sort-to-ds-sig-sort = where(<debug> "sort-to-ds-sig-sort");debug;!SortDecl(<ds-escape-sortname>);debug
+	sort-to-ds-sig-sort = where(<debug> "sort-to-ds-sig-sort");debug;!SortDecl(<ds-escape-sortname>); debug
 	
 	section-to-ds-sig:
 	  SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
