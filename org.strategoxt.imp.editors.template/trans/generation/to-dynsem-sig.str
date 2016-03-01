@@ -23,8 +23,7 @@ rules
 		with
 		  m'  := <conc-strings> ( "ds-signatures/", m, "-sig");
 		  is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*;
-		  where(<debug> "Collect sorts");
-		  sorts* := <debug; collect-all(todynsem-sig-collect-sorts); make-set; debug; map(sort-to-ds-sig-sort); debug> s*;
+		  sorts* := <collect-all(todynsem-sig-collect-sorts); make-set; map(sort-to-ds-sig-sort)> s*;
 		  signatures* := <filter(section-to-ds-sig)> s*
 		
 	todynsem-sig-collect-sorts = 
@@ -34,7 +33,7 @@ rules
 	  <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
   
     	    	        	 
-	sort-to-ds-sig-sort = where(<debug> "sort-to-ds-sig-sort");debug;!SortDecl(<ds-escape-sortname>); debug
+	sort-to-ds-sig-sort = !SortDecl(<ds-escape-sortname>)
 	
 	section-to-ds-sig:
 	  SDFSection(LexicalSyntax(p*)) -> Constructors(sig*)
