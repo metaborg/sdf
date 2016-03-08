@@ -24,7 +24,7 @@ rules
       (name, completion-term) ->(name, description, change)
       where
         change      := REPLACE_TERM(old-term, completion-term);
-        description := <build-description> change             
+        description := <build-description-placeholder> change             
            
     get-proposals-list:
       (list, placeholder, cursor-position) -> proposal* 
@@ -144,48 +144,28 @@ rules
             text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|leading-ws-indent)> reconstructed-text, sep, separator-indent]
         else //inserting in the middle of the list
             text := <concat-strings> [sep, <prefix-lines(|separator-indent)> reconstructed-text, sep, separator-indent]
-        end
-  
-  
-  //TODO: if it's a placeholder replacement, the surrounding layout and indentation is determined by the layout and indentation from the placeholder      
-  build-description:
+        end  
+        
+  build-description:       
     REPLACE_TERM(old-term, completion-term) -> text
     where
-        parent             := <get-parent> old-term;
-        if <is-list> parent then //in case old-term is an element of a list
-            grandparent        := <get-parent> parent;
-            grandparent-indent := <origin-indent> grandparent;
-            index              := <find-position> (parent, grandparent);
-            indent             := <get-indent> (grandparent, index);
-            index-list         := <get-index-origin(|1)> (old-term, parent);
-            reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
-            if <?1> index-list then // if it is the first element, add the leading ws
-              leading-ws  := <get-leading-ws> (grandparent, index);
-              if <is-substring(!"\n")> leading-ws then
-                text := <concat-strings> [leading-ws, <replace-indentation(|indent, ""); prefix-lines(|grandparent-indent)> reconstructed-text]
-              else
-                text := <concat-strings> [leading-ws, <replace-indentation(|<conc-strings> (indent, grandparent-indent), "")> reconstructed-text]
-              end
-            else // else, add the ws after the separator
-              sep    := <get-separator> (grandparent, index);
-              ws-sep := <get-trailing-ws> sep;
-              if <is-substring(!"\n")> sep then
-                text := <concat-strings> [ws-sep, <prefix-lines(|<conc-strings> (indent, grandparent-indent))> reconstructed-text]
-              else
-                text := <concat-strings> [ws-sep, <replace-indentation(|<conc-strings> (indent, grandparent-indent), "")> reconstructed-text]
-              end
-            end            
-        else
-            index              := <find-position> (old-term, parent);
-            leading-ws         := <get-leading-ws> (parent, index); <debug(!"leading ws ")> Foo(leading-ws);
-            indent             := <get-indent> (parent, index); <debug(!"indent ")> Foo(indent);
-            reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
-            if <is-substring(!"\n")> leading-ws then
-                text := <concat-strings> [leading-ws, <replace-indentation(|indent, "")> reconstructed-text]
-             else
-                text := <concat-strings> [leading-ws, reconstructed-text]
-             end      
-        end
+      parent             := <get-parent> old-term;
+      index              := <find-position> (old-term, parent);
+      leading-ws         := <get-leading-ws> (parent, index);
+      indent             := <get-indent> (parent, index); 
+      reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+      if <is-substring(!"\n")> leading-ws then
+        text := <concat-strings> [leading-ws, <replace-indentation(|indent, "")> reconstructed-text]
+      else
+        text := <concat-strings> [leading-ws, reconstructed-text]
+      end        
+  
+  build-description-placeholder:
+    REPLACE_TERM(old-term, completion-term) -> text
+    where
+      old-indent := <origin-indent <+ ""> old-term; 
+      reconstructed-text := <construct-text-by-pp(pp-partial-MiniJava-completions-string, override-reconstruction, resugar)> completion-term;
+      text := <replace-indentation(|old-indent, "")> reconstructed-text
         
    get-trailing-ws:
     string -> ws
