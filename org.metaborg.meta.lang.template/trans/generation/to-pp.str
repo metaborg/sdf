@@ -14,11 +14,12 @@ rules
   module-to-pp:
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])
     with
-      m'  := <to-str-module-name(|"-pp", "pp")> Module(m);
-      i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))]); 
-      i1* := <map(to-str-import(|"-sig", "signatures"))> i*; 
-      i2* := <map(to-str-import(|"-pp", "pp"))> i*; 
-      s'* := <filter(section-to-pp(|"example"))> s*
+      m'  := <to-str-module-name(|"-pp", "pp")> Module(m)
+    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import("trans/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+   ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
+    ; i2* := <map(to-str-import(|"-pp", "pp"))> i*
+    ; s'* := <filter(section-to-pp(|"example"))> s*
+
   
   section-to-pp(|lang):
     SDFSection(ContextFreeStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
