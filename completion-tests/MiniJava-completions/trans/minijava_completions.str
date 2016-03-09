@@ -19,7 +19,8 @@ imports
 	check
 	generate
 	pp
-	completions/-
+	runtime/completion/-
+	completion/-
 
 rules // Analysis
 	

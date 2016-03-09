@@ -39,3 +39,7 @@ rules
   */
   construct-textual-change = construct-textual-change(pp-partial-MiniJava-completions-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) <+ construct-textual-change(pp-partial-MiniJava-completions-string, parenthesize, override-reconstruction, resugar)
   construct-textual-change(pp-partial-MiniJava-completions-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) = fail
+
+rules
+
+  pp-completion = pp-partial-MiniJava-completions-string

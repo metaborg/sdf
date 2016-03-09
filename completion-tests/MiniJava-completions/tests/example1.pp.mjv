@@ -2,18 +2,37 @@ class Main {
   public static void main (String[] a) {
     [[Statement]]
   } 
-}  
+}
 
-class Foo {  
-     
-     i a     
-         
-     public int m(){ 
-         
+class [[ID]] [[ParentDecl]]{
+  [[Type]] [[ID]];
+
+  public [[Type]] [[ID]]() {
+  
+    return [[Exp]];
+  }
+
+}
+
+class Foo {
+  [[Type]] [[ID]];
+  [[Type]] [[ID]];
+  [[Type]] [[ID]];
+                int x;              
+    int a;      
+     public int m(){
+       
+       System.out.println([[Exp]]);
+       
+             
         
           
         
         return 0;
      }
+  public [[Type]] [[ID]]() {
+  
+    return [[Exp]];
+  }
 
 }   

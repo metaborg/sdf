@@ -1,8 +1,5 @@
 module names
 
-imports
-	
-	include/MiniJava-completions
 	
 namespaces
 	
