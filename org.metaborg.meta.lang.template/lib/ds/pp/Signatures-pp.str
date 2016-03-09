@@ -137,7 +137,7 @@ strategies
   ds-prettyprint-SignatureSection :
     Aliases(t1__) -> [ H(
                          [SOpt(HS(), "0")]
-                       , [S("aliases")]
+                       , [S("sort aliases")]
                        )
                      , t1__'
                      ]
@@ -149,7 +149,7 @@ strategies
   ds-prettyprint-AliasDecl :
     AliasDecl(t1__, t2__) -> [ H(
                                  [SOpt(HS(), "0")]
-                               , [t1__', S(" : "), t2__']
+                               , [t1__', S(" = "), t2__']
                                )
                              ]
     with t1__' := <pp-one-Z(ds-prettyprint-ID)> t1__
@@ -678,7 +678,7 @@ strategies
                                      )
                                    ]
     with t1__' := <pp-one-Z(ds-prettyprint-Type)> t1__
-    with t2__' := <pp-one-Z(ds-prettyprint-ID)> t2__
+    with t2__' := <pp-one-Z(ds-prettyprint-IDNOHYPH)> t2__
     with t3__' := <pp-one-Z(ds-prettyprint-Type)> t3__
 
   is-ArrowDeclaration =
