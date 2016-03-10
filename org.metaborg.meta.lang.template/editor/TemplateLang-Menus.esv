@@ -52,17 +52,14 @@ menus
       action: "to Normal Form (SDF2)"                  = sdf3-to-normal-form-sdf 
     end
     
-    submenu: "New Completions"
-      action: "Generate Stratego files" = generate-new-completions-stratego 
-      action: "Generate ESV files"      = generate-new-completions-colorer
+    submenu: "Completion"
+      action: "Generate Stratego"         = generate-new-completions-stratego 
+      action: "Generate ESV colorer"      = generate-new-completions-colorer
     end
     
     action: "Generate PP (abstract)" = generate-pp-abstract (meta)
     action: "Generate PP"            = generate-pp-concrete
-     
-    action: "Generate ESV (abstract)" = generate-esv-abstract (meta)
-    action: "Generate ESV"            = generate-esv-concrete
-     	
+          	
     action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
     action: "Generate AST checker"            = generate-ast-checker-concrete
          

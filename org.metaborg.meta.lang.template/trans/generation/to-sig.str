@@ -48,7 +48,7 @@ rules
     SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*]
     where
         cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-             ;debug(!"sorts cf syntax "); nub 
+             ; nub 
              ; map(sort-to-contentcomplete-sig)> p*
     where
         sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
@@ -57,7 +57,7 @@ rules
   	SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*]
   	where
         cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-             ;debug(!"sorts kernel "); nub 
+             ; nub 
              ; map(sort-to-contentcomplete-sig)> p*
   	where
   		sig* := <filter(cfg-to-sig)> p*		

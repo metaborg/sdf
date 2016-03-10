@@ -291,7 +291,7 @@ rules
     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         ast'     := <desugar-templates> selected;
-        filename := <create-src-gen(|project-path, "new-completions/colorer" ,"-cc-esv.esv")> mn;
+        filename := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
         result   := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
         
   generate-new-completions-stratego:
@@ -300,7 +300,7 @@ rules
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         ast'     := <desugar-templates> selected;
         result   := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-        filename := <create-src-gen(|project-path, "new-completions", "-ncp.str")> mn
+        filename := <create-src-gen(|project-path, "completion", "-cp.str")> mn
   
   generate-permissive-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -327,18 +327,13 @@ rules
         debug(!"generating for ");
         ast'     := <desugar-templates> ast;
         <?Module(Unparameterized(mn), i*, sections)> ast 
-        //; fn       :=  <get-filename> mn        
-    where
-        esv-filename         := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn;
-        esv-ast              := <module-to-esv; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-        <write-string-to-file> (esv-filename, esv-ast) 
-    where
-        esv-cc-filename         := <create-src-gen(|project-path, "new-completions/colorer" ,"-cc-esv.esv")> mn;
+        where
+        esv-cc-filename         := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
         esv-cc-ast              := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
         <write-string-to-file> (esv-cc-filename, esv-cc-ast)   
     where
       ncp-ast              := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-      ncp-filename         := <create-src-gen(|project-path, "new-completions", "-ncp.str")> mn;
+      ncp-filename         := <create-src-gen(|project-path, "completion", "-cp.str")> mn;
       <write-string-to-file> (ncp-filename, ncp-ast)             
     where
       sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';

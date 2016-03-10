@@ -16,10 +16,10 @@ rules
   module-to-new-cmp:
 	Module(Unparameterized(m), i*, s*) -> Module(m',  [i0, i1, is*, s'])
 	with
-		m'  := <conc-strings> ("src-gen/", "new-completions/", m, "-ncp");
-        i0  := Imports([Import("libstratego-gpp"), Import("trans/completions/-")]);
+		m'  := <conc-strings> ("completion/", m, "-cp");
+        i0  := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
         i1  := Imports([Import($[signatures/[m]-sig])]); 
-        is* := <map(to-str-import(|"-ncp", "new-completions"))> i*; 
+        is* := <map(to-str-import(|"-cp", "completion"))> i*; 
         s'  := Strategies(<filter(section-to-new-cmp); flatten-list> s*)
  
   section-to-new-cmp:

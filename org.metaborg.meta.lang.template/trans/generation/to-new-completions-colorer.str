@@ -19,8 +19,8 @@ imports
   module-to-cmp-colorer:
 	Module(m, i*, s*) -> Module(m', i'*, Colorer("", c*))
 	with
-		 m'  := <to-str-module-name(|"-cc-esv", "new-completions/colorer")> Module(m);
-		 i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-cc-esv", "new-completions/colorer")) <+ ![]> i*;
+		 m'  := <to-str-module-name(|"-cc-esv", "completion/colorer")> Module(m);
+		 i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;
 		 c*  := <filter(section-to-cmp-colorer); flatten-list> s*
   	
   section-to-cmp-colorer:
