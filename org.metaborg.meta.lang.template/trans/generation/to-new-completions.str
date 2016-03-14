@@ -33,7 +33,8 @@ rules
 	    where not (
 	      <fetch-elem(?Reject())> attrs
 	    )
-	    where <not(?[])> rhs*
+	    // Generate completion for empty productions?
+	    // where <not(?[])> rhs*
 	    where not (
           <fetch-elem(?PlaceholderInsertion())> attrs
         )
@@ -49,7 +50,8 @@ rules
 	    where not (
           <fetch-elem(?PlaceholderInsertion())> attrs
         )
-        where <not(?SingleLineTemplate([]))> template
+        // Generate completion for empty productions?
+        // where <not(?SingleLineTemplate([]))> template
 	    with
 	    	rhs-placeholders* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template
 	
