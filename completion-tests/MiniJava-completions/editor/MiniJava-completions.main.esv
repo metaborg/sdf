@@ -2,7 +2,6 @@ module MiniJava-completions.main
 
 imports
   MiniJava-completions-Colorer
-  MiniJava-completions-Completions
   MiniJava-completions-Folding
   MiniJava-completions-Menus
   MiniJava-completions-Refactorings
@@ -20,7 +19,7 @@ language General properties
   url:           http://strategoxt.org
   
   extensions:    mjv
-  table:         include/MiniJava-completions-Permissive-Custom.tbl
+  table:         include/MiniJava-completions.tbl
   start symbols: Start 
   
   provider:      include/minijava_completions.ctree

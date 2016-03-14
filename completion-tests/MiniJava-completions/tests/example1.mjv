@@ -1,6 +1,6 @@
 class [[ID]] {
   public static void main (String[] [[ID]]) {
-    [[Statement]]
+    [[VarRef]] = [[Exp]];
   }
 }
 
@@ -8,4 +8,6 @@ class [[ID]] [[ParentDecl]]{
 
 }
 
+class [[ID]] extends [[ID]] {
 
+}
