@@ -377,18 +377,18 @@ rules
     regular-norm-symbol:
         s@Lex(Sequence(h, tail*)) -> [SdfProduction(s, Rhs(lex-s*), NoAttrs()), lex-injs*, regular-prods-lex-s*]
         with
-	        lex-s-injs*             := <map(lex-norm-symb <+ !(<id>, []))> [h | tail*];
-	        lex-s*                  := <map(?(<id>, _))> lex-s-injs*;
-	        lex-injs*               := <map(?(_,<id>))> lex-s-injs*;
-	        regular-prods-lex-s*    := <filter(regular-norm-symbol)> lex-s*
+          lex-s-injs*             := <map(lex-norm-symb <+ !(<id>, []))> [h | tail*];
+          lex-s*                  := <map(?(<id>, _))> lex-s-injs*;
+          lex-injs*               := <map(?(_,<id>))> lex-s-injs*;
+          regular-prods-lex-s*    := <filter(regular-norm-symbol)> lex-s*
         
     //sequences can only be used in lexical syntax 
     
     regular-norm-symbol:
         Lex(a@Alt(a1, a2)) -> new-prods*
         with
-	        new-prods*  := <alt-norm-lex; flatten-list> (a, a)
-	   
+          new-prods*  := <alt-norm-lex; flatten-list> (a, a)
+     
     alt-norm-lex:
         (a, b) -> [new-prod, lex-a-inj, lex-b-inj, regular-prods-a*] 
         where
@@ -429,12 +429,12 @@ rules
                 
     regular-norm-symbol:
         symb@Lex(Iter(s)) -> [SdfProduction(symb, Rhs([lex-s]), NoAttrs()),
-		                      SdfProduction(symb, Rhs([symb, symb]), Attrs([Assoc(Left())])),
-		                      SdfProduction(symb, Rhs([symb, lex-iter-star]), NoAttrs()),
-		                      SdfProduction(symb, Rhs([lex-iter-star, symb]), NoAttrs()),
-		                      SdfProduction(lex-iter-star, Rhs([lex-iter-star, lex-iter-star]), Attrs([Assoc(Left())])),
-		                      SdfProduction(lex-iter-star, Rhs([]), NoAttrs()),
-		                      SdfProduction(lex-iter-star, Rhs([symb]), NoAttrs()), new-inj-prod-iter, new-inj-prod-s,  new-regular-prods-lex-s*]
+                          SdfProduction(symb, Rhs([symb, symb]), Attrs([Assoc(Left())])),
+                          SdfProduction(symb, Rhs([symb, lex-iter-star]), NoAttrs()),
+                          SdfProduction(symb, Rhs([lex-iter-star, symb]), NoAttrs()),
+                          SdfProduction(lex-iter-star, Rhs([lex-iter-star, lex-iter-star]), Attrs([Assoc(Left())])),
+                          SdfProduction(lex-iter-star, Rhs([]), NoAttrs()),
+                          SdfProduction(lex-iter-star, Rhs([symb]), NoAttrs()), new-inj-prod-iter, new-inj-prod-s,  new-regular-prods-lex-s*]
         with
             (lex-iter-star, new-inj-prod-iter) := <lex-norm-symb <+ !(<id>, [])> IterStar(s);
             (lex-s, new-inj-prod-s)            := <lex-norm-symb <+ !(<id>, [])> s;
@@ -442,12 +442,12 @@ rules
             
     regular-norm-symbol:
         symb@Lex(IterStar(s)) -> [SdfProduction(lex-iter, Rhs([lex-s]), NoAttrs()),
-			                      SdfProduction(lex-iter, Rhs([lex-iter, lex-iter]), Attrs([Assoc(Left())])),
-			                      SdfProduction(lex-iter, Rhs([lex-iter, symb]), NoAttrs()),
-			                      SdfProduction(lex-iter, Rhs([symb, lex-iter]), NoAttrs()),
-			                      SdfProduction(symb, Rhs([symb, symb]), Attrs([Assoc(Left())])),
-			                      SdfProduction(symb, Rhs([]), NoAttrs()),
-			                      SdfProduction(symb, Rhs([lex-iter]), NoAttrs()), new-inj-prod-iter, new-inj-prod-s,  new-regular-prods-lex-s*]
+                            SdfProduction(lex-iter, Rhs([lex-iter, lex-iter]), Attrs([Assoc(Left())])),
+                            SdfProduction(lex-iter, Rhs([lex-iter, symb]), NoAttrs()),
+                            SdfProduction(lex-iter, Rhs([symb, lex-iter]), NoAttrs()),
+                            SdfProduction(symb, Rhs([symb, symb]), Attrs([Assoc(Left())])),
+                            SdfProduction(symb, Rhs([]), NoAttrs()),
+                            SdfProduction(symb, Rhs([lex-iter]), NoAttrs()), new-inj-prod-iter, new-inj-prod-s,  new-regular-prods-lex-s*]
         with
             (lex-iter, new-inj-prod-iter)      := <lex-norm-symb <+ !(<id>, [])> Iter(s);
             (lex-s, new-inj-prod-s)            := <lex-norm-symb <+ !(<id>, [])> s;
@@ -456,12 +456,12 @@ rules
      
      regular-norm-symbol:
         symb@Cf(Iter(s)) -> [SdfProduction(symb, Rhs([cf-s]), NoAttrs()),
-		                     SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, symb]), Attrs([Assoc(Left())])),
-		                     SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-iter-star]), NoAttrs()),
-		                     SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [cf-iter-star, symb]), NoAttrs()),
-		                     SdfProduction(cf-iter-star, Rhs(<separate-by(!Cf(Opt(Layout())))> [cf-iter-star, cf-iter-star]), Attrs([Assoc(Left())])),
-		                     SdfProduction(cf-iter-star, Rhs([]), NoAttrs()),
-		                     SdfProduction(cf-iter-star, Rhs([symb]), NoAttrs()),  new-regular-prods-cf-s*]
+                         SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, symb]), Attrs([Assoc(Left())])),
+                         SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-iter-star]), NoAttrs()),
+                         SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [cf-iter-star, symb]), NoAttrs()),
+                         SdfProduction(cf-iter-star, Rhs(<separate-by(!Cf(Opt(Layout())))> [cf-iter-star, cf-iter-star]), Attrs([Assoc(Left())])),
+                         SdfProduction(cf-iter-star, Rhs([]), NoAttrs()),
+                         SdfProduction(cf-iter-star, Rhs([symb]), NoAttrs()),  new-regular-prods-cf-s*]
         with
             cf-iter-star            := <try(cf-norm-symb)> IterStar(s);
             cf-s                    := <try(cf-norm-symb)> s;
@@ -469,12 +469,12 @@ rules
      
      regular-norm-symbol:
         symb@Cf(IterStar(s)) -> [SdfProduction(cf-iter, Rhs([cf-s]), NoAttrs()),
-			                     SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-iter]), Attrs([Assoc(Left())])),
-			                     SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, symb]), NoAttrs()),
-			                     SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-iter]), NoAttrs()),
-			                     SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, symb]), Attrs([Assoc(Left())])),
-			                     SdfProduction(symb, Rhs([]), NoAttrs()),
-			                     SdfProduction(symb, Rhs([cf-iter]), NoAttrs()), new-regular-prods-cf-s*]
+                           SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-iter]), Attrs([Assoc(Left())])),
+                           SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, symb]), NoAttrs()),
+                           SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-iter]), NoAttrs()),
+                           SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, symb]), Attrs([Assoc(Left())])),
+                           SdfProduction(symb, Rhs([]), NoAttrs()),
+                           SdfProduction(symb, Rhs([cf-iter]), NoAttrs()), new-regular-prods-cf-s*]
         with
             cf-iter                 := <try(cf-norm-symb)> Iter(s);
             cf-s                    := <try(cf-norm-symb)> s;
@@ -524,13 +524,13 @@ rules
             
      regular-norm-symbol:
         symb@Lex(IterStarSep(s, sep)) -> [SdfProduction(lex-iter-sep, Rhs([lex-s]), NoAttrs()),
-	                                      SdfProduction(lex-iter-sep, Rhs([lex-iter-sep, lex-sep, lex-iter-sep]), Attrs([Assoc(Left())])),
-	                                      SdfProduction(lex-iter-sep, Rhs([lex-iter-sep, lex-sep, symb]), NoAttrs()),
-	                                      SdfProduction(lex-iter-sep, Rhs([symb, lex-sep, lex-iter-sep]), NoAttrs()),
-	                                      SdfProduction(symb, Rhs([symb, lex-sep, symb]), Attrs([Assoc(Left())])),
-	                                      SdfProduction(symb, Rhs([]), NoAttrs()),
-	                                      SdfProduction(symb, Rhs([lex-iter-sep]), NoAttrs()),
-	                                      new-inj-prod-iter, new-inj-prod-s, new-inj-prod-sep, new-regular-prods-lex-s*]
+                                        SdfProduction(lex-iter-sep, Rhs([lex-iter-sep, lex-sep, lex-iter-sep]), Attrs([Assoc(Left())])),
+                                        SdfProduction(lex-iter-sep, Rhs([lex-iter-sep, lex-sep, symb]), NoAttrs()),
+                                        SdfProduction(lex-iter-sep, Rhs([symb, lex-sep, lex-iter-sep]), NoAttrs()),
+                                        SdfProduction(symb, Rhs([symb, lex-sep, symb]), Attrs([Assoc(Left())])),
+                                        SdfProduction(symb, Rhs([]), NoAttrs()),
+                                        SdfProduction(symb, Rhs([lex-iter-sep]), NoAttrs()),
+                                        new-inj-prod-iter, new-inj-prod-s, new-inj-prod-sep, new-regular-prods-lex-s*]
         with
             (lex-iter-sep, new-inj-prod-iter)  := <lex-norm-symb <+ !(<id>, [])> IterSep(s, sep);
             (lex-s, new-inj-prod-s)            := <lex-norm-symb <+ !(<id>, [])> s;
@@ -844,8 +844,8 @@ rules
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])
         where
             <?Attrs(<id>); fetch(?Assoc(Right()))> attrs
-	    with
-	        p := SdfProduction(symbol, rhs, attrs)
+      with
+          p := SdfProduction(symbol, rhs, attrs)
         
      assoc-prio-fun:
         p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])
@@ -900,16 +900,16 @@ rules
      norm-prio-fun :
         Chain([group, ProdsGroup(p*)]) -> new-chains
         where
-	        <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group;
-	        <not(?[])> p*
-	    where
-	        new-chains := <map(create-gt-chain(|group, SimpleGroup(<id; try(remove-constructor)>)); try(norm-prio-fun))> p*   
-	        
-	 norm-prio-fun:
-	   Chain([assocGroup@AssocGroup(_, p*), group]) -> new-chains   
-	   where
-	       new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([ProdsGroup(p*), group])]
-	       
+          <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group;
+          <not(?[])> p*
+      where
+          new-chains := <map(create-gt-chain(|group, SimpleGroup(<id; try(remove-constructor)>)); try(norm-prio-fun))> p*   
+          
+   norm-prio-fun:
+     Chain([assocGroup@AssocGroup(_, p*), group]) -> new-chains   
+     where
+         new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([ProdsGroup(p*), group])]
+         
      norm-prio-fun:
        Chain([group, assocGroup@AssocGroup(_, p*)]) -> new-chains
        where
@@ -1550,21 +1550,21 @@ rules
      char-set-from-restr(|s):
         Follow(symbols*, la) -> result
         where
-	        <fetch(?s)> symbols*
-	    where
-	        result := <char-set-from-la> la
-	        
-	 seq-from-restr(|s):
+          <fetch(?s)> symbols*
+      where
+          result := <char-set-from-la> la
+          
+   seq-from-restr(|s):
         Follow(symbols*, la) -> result
         where
             <fetch(?s)> symbols*;
             result := <collect(?Single(Seq(_, _)) <+ ?Seq(_, _))> la       
-	        
-	 char-set-from-la:
-	    List(rest*) -> result
-	    where
-	       result := <filter(char-set-from-la)> rest*
-	      
+          
+   char-set-from-la:
+      List(rest*) -> result
+      where
+         result := <filter(char-set-from-la)> rest*
+        
      char-set-from-la:
         Single(c@CharClass(_)) -> [c]
         

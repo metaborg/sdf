@@ -2,14 +2,14 @@ module trans/pp
 
 imports
 
-	libstratego-gpp
-	runtime/refactoring/-
-	pp/TemplateLang-pp
-	pp/modules/Modules-pp
-	include/TemplateLang-parenthesize
+  libstratego-gpp
+  runtime/refactoring/-
+  pp/TemplateLang-pp
+  pp/modules/Modules-pp
+  include/TemplateLang-parenthesize
 
 rules
-	
+  
   pp-SDF3-string =
     parenthesize-TemplateLang;
     prettyprint-Module 

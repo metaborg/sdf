@@ -16,33 +16,33 @@ rules
   
   module-to-sig:
     Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, s'])
-	with
-		m'    := <conc-strings> ("signatures/", m, "-sig");
-		is*   := <map(to-str-import(|"-sig", "signatures"))> i*;
-		sort* := <filter(sorts-section-to-sig)> s*;
-		cons* := <filter(section-to-sig); flatten-list> s*;
-		s'    := Signature([sort*, Constructors(cons*)])
+  with
+    m'    := <conc-strings> ("signatures/", m, "-sig");
+    is*   := <map(to-str-import(|"-sig", "signatures"))> i*;
+    sort* := <filter(sorts-section-to-sig)> s*;
+    cons* := <filter(section-to-sig); flatten-list> s*;
+    s'    := Signature([sort*, Constructors(cons*)])
  
   sorts-section-to-sig:
-  	SDFSection(Sorts(s*)) -> Sorts(s'*)
-  	with
-  		s'* := <map(sort-to-sig)> s*
-  		
+    SDFSection(Sorts(s*)) -> Sorts(s'*)
+    with
+      s'* := <map(sort-to-sig)> s*
+      
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> sig*
     where
         sig* := <filter(get-sort-from-prod)
                ; nub 
                ; map(lexsort-to-injection)
-               ; not(?[])> p*	
+               ; not(?[])> p* 
   
   get-sort-from-prod:
-  	<?SdfProduction(SortDef(sort), _, Attrs(a*)) + ?SdfProductionWithCons(SortCons(SortDef(sort), Constructor(_)), _, Attrs(a*))> -> sort
-  	where
-  		<not(fetch-elem(?Reject()))> a*
+    <?SdfProduction(SortDef(sort), _, Attrs(a*)) + ?SdfProductionWithCons(SortCons(SortDef(sort), Constructor(_)), _, Attrs(a*))> -> sort
+    where
+      <not(fetch-elem(?Reject()))> a*
   
   lexsort-to-injection:
-  	s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
         
   section-to-sig:
     SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*]
@@ -52,15 +52,15 @@ rules
              ; map(sort-to-contentcomplete-sig)> p*
     where
         sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
-  	
+    
   section-to-sig:
-  	SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*]
-  	where
+    SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*]
+    where
         cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
              ; nub 
              ; map(sort-to-contentcomplete-sig)> p*
-  	where
-  		sig* := <filter(cfg-to-sig)> p*		
+    where
+      sig* := <filter(cfg-to-sig)> p*   
  
   sort-to-sig:
     Sort(s) -> SortNoArgs(s)
@@ -68,42 +68,42 @@ rules
   cfg-to-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-    	<not(fetch-elem(?Reject() + ?Bracket()))> a*
-    	
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+      
   cfg-to-sig:
     SdfProduction(SortDef(s), rhs, Attrs(a*)) -> OpDeclInj(t')
     where
-    	<not(fetch-elem(?Reject() + ?Bracket()))> a*
-    with	
-    	rhs-type := <get-type> rhs;
-    	t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+    with  
+      rhs-type := <get-type> rhs;
+      t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
     
   // kernel productions
    cfg-to-sig:
      SdfProduction(Lex(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
-     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
-     with	
-     	rhs-type := <get-type> rhs;
-     	t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
-     	
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+     with 
+      rhs-type := <get-type> rhs;
+      t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
+      
   cfg-to-sig:
      SdfProduction(Cf(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
-     	<not(fetch-elem(?Reject() + ?Bracket()))> a*
-     with	
-     	rhs-type := <get-type> rhs;
-     	t'       := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
-     	
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+     with 
+      rhs-type := <get-type> rhs;
+      t'       := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
+      
   cfg-to-sig:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-    	<not(fetch-elem(?Reject() + ?Bracket()))> a*	
-     	
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
+      
   cfg-to-sig:
     SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-    	<not(fetch-elem(?Reject() + ?Bracket()))> a* 
+      <not(fetch-elem(?Reject() + ?Bracket()))> a* 
    
   section-to-sig:
     TemplateSection(t*) -> sig*

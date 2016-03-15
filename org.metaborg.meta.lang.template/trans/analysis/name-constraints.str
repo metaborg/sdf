@@ -18,33 +18,33 @@ imports
 
   strategies
 
-  	nabl-check-disable-duplicate(|uri, ns) = id
-  	nabl-check-disable-unresolved = id
+    nabl-check-disable-duplicate(|uri, ns) = id
+    nabl-check-disable-unresolved = id
 
-  	rules
+    rules
 
-  	nabl-constraint(|ctx):
-  	    Module(Unparameterized(m), i*, s*) -> <fail>
-  	where
-  	    m' := <strip-annos; string-tokenize(|['/']); last> m;
-  	    <base-filename; remove-extension; not(?m')> ctx;
-  	    msg := "Module name does not correspond to file name";
+    nabl-constraint(|ctx):
+        Module(Unparameterized(m), i*, s*) -> <fail>
+    where
+        m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; not(?m')> ctx;
+        msg := "Module name does not correspond to file name";
         <task-create-error(|ctx, msg)> m
 
 
-  	nabl-constraint(|ctx):
+    nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Nil\""))]))) -> <fail>
     where
       msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
 
-  	nabl-constraint(|ctx):
+    nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Cons\""))]))) -> <fail>
     where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
 
-  	nabl-constraint(|ctx):
+    nabl-constraint(|ctx):
     SortCons(s, c@Constructor("Nil")) -> <fail>
     where
       msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
@@ -55,74 +55,74 @@ imports
     where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> c
-  	
-  	nabl-constraint(|ctx):
-  		sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
-  		where
-  			<has-annotation(?Use(task))> c;
-  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
-  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+    
+    nabl-constraint(|ctx):
+      sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
+      where
+        <has-annotation(?Use(task))> c;
+        msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+        <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
 
-  	nabl-constraint(|ctx):
-  		sc@SortConsRef(Cf(Sort(s)), Constructor(c)) -> <fail>
-  		where
-  			<has-annotation(?Use(task))> c;
-  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
-  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+    nabl-constraint(|ctx):
+      sc@SortConsRef(Cf(Sort(s)), Constructor(c)) -> <fail>
+      where
+        <has-annotation(?Use(task))> c;
+        msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+        <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
 
-  	nabl-constraint(|ctx):
-  		sc@SortConsRef(Lex(Sort(s)), Constructor(c)) -> <fail>
-  		where
-  			<has-annotation(?Use(task))> c;
-  			msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
-  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-  	
-  	nabl-constraint(|ctx):
-  		Module(Unparameterized(m)) -> <fail>
-  		where
-  		<has-annotation(?Use(task))> m;
-  		msg := $[Unresolved reference to module '[m]'];
-  		<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
+    nabl-constraint(|ctx):
+      sc@SortConsRef(Lex(Sort(s)), Constructor(c)) -> <fail>
+      where
+        <has-annotation(?Use(task))> c;
+        msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
+        <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+    
+    nabl-constraint(|ctx):
+      Module(Unparameterized(m)) -> <fail>
+      where
+      <has-annotation(?Use(task))> m;
+      msg := $[Unresolved reference to module '[m]'];
+      <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
 
-  	nabl-constraint(|ctx):
-  		 Sort(s) -> <fail>
-  		where
-  			<has-annotation(?Use(task))> s;
-  			msg := $[Unresolved reference to sort '[s]'];
-  			<task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
-  	  	
-  	nabl-constraint(|ctx):
-  		TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
-  		where
-  			type       := <type-lookup(|ctx)> c;
-  			lookup     := <nabl-lookup-lexical(|ctx)> c;
-  			cons-types := <type-lookup(|ctx)> lookup;
-  			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
-  			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
+    nabl-constraint(|ctx):
+       Sort(s) -> <fail>
+      where
+        <has-annotation(?Use(task))> s;
+        msg := $[Unresolved reference to sort '[s]'];
+        <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
+        
+    nabl-constraint(|ctx):
+      TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
+      where
+        type       := <type-lookup(|ctx)> c;
+        lookup     := <nabl-lookup-lexical(|ctx)> c;
+        cons-types := <type-lookup(|ctx)> lookup;
+        same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
+        <task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
 
-  	nabl-constraint(|ctx):
-  	    SDFSection(ContextFreeSyntax(p*)) -> <fail>
-  	    where
-  	        alternatives* := <filter(check-for-alternatives); flatten-list> p*;
-  	        sequences*    := <filter(check-for-sequences); flatten-list> p*;
-  	        <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
-  	        <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*
-  	        
-  	nabl-constraint(|ctx):
+    nabl-constraint(|ctx):
+        SDFSection(ContextFreeSyntax(p*)) -> <fail>
+        where
+            alternatives* := <filter(check-for-alternatives); flatten-list> p*;
+            sequences*    := <filter(check-for-sequences); flatten-list> p*;
+            <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
+            <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*
+            
+    nabl-constraint(|ctx):
         SDFSection(Kernel(p*)) -> <fail>
         where
             alternatives* := <filter(check-for-alternatives); flatten-list> p*;
             sequences*    := <filter(check-for-sequences); flatten-list> p*;
             <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
             <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*        
-  	
-  	check-for-alternatives:
-  	    p -> alt*
-  	where
-  	    alt* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Alt(_,_)); filter(?Alt(_,_))> p
-  			
-  	check-for-sequences:
+    
+    check-for-alternatives:
+        p -> alt*
+    where
+        alt* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Alt(_,_)); filter(?Alt(_,_))> p
+        
+    check-for-sequences:
         p -> seq*
     where
         seq* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Sequence(_,_)); filter(?Sequence(_,_))> p
@@ -131,17 +131,17 @@ imports
     
     
     
-    	    
-  	nabl-constraint(|lang, ctx, uri*):
-  		String(s) -> <fail>
-  	where
-  		[f | ls] := <explode-string> s;
-  		<is-upper> f
-  	where
-  		lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
-  		<task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Maybe nonterminal placeholder instead?])> s
-  			  			
-  	nabl-constraint(|ctx):
+          
+    nabl-constraint(|lang, ctx, uri*):
+      String(s) -> <fail>
+    where
+      [f | ls] := <explode-string> s;
+      <is-upper> f
+    where
+      lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
+      <task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Maybe nonterminal placeholder instead?])> s
+                
+    nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
         where
             p'*            := <desugar-templates> p*;
@@ -154,23 +154,23 @@ imports
             <map(task-create-error(|ctx, $[Regular symbols (A*, A+ and A?) can be applied only to sorts in context-free syntax]))> weird-symbols*;
             <map(task-create-warning(|ctx, $[Illegal use of the {bracket} attribute]))> illegal-brackets*
 
-  	check-for-weird-symbols:
+    check-for-weird-symbols:
         p -> weird-symbols*
         where
             symbols* := <collect-all(?Iter(<id>) + ?IterStar(<id>) + ?Opt(<id>), conc)> p;
             weird-symbols* := <filter(not(?Sort(_)))> symbols*
 
     nabl-constraint(|ctx):
-  		SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
-  		where
-  			type       := <type-lookup(|ctx)> c;
-  			lookup     := <nabl-lookup-lexical(|ctx)> c;
-  			cons-types := <type-lookup(|ctx)> lookup;
-  			same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
-  			<task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
+      SdfProductionWithCons(SortCons(s, Constructor(c)), rhs, attrs) -> <fail>
+      where
+        type       := <type-lookup(|ctx)> c;
+        lookup     := <nabl-lookup-lexical(|ctx)> c;
+        cons-types := <type-lookup(|ctx)> lookup;
+        same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
+        <task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
 
-	prod-without-constructor:
+  prod-without-constructor:
         p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
         where
             <not(?[Sort(sort)] + ?[])> prod-sorts;
@@ -205,16 +205,16 @@ imports
     prod-with-illegal-brackets:
         p@SdfProduction(SortDef(s), Rhs(rhs*), Attrs(attrs*)) -> bracketanno
         where
-        	<not(fetch-elem(?Reject()))> attrs*;
-        	s' := <strip-annos> s;
+          <not(fetch-elem(?Reject()))> attrs*;
+          s' := <strip-annos> s;
             bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
             <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> rhs* //it does not follow the bracket structure
 
     prod-with-illegal-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
         where
-        	<not(fetch-elem(?Reject()))> attrs*;
-        	s'      := <strip-annos> s;
+          <not(fetch-elem(?Reject()))> attrs*;
+          s'      := <strip-annos> s;
             rhs     := <template-to-sdf(|["(", ")"], None(), "")> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs
@@ -222,17 +222,17 @@ imports
     prod-with-illegal-brackets:
         SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
         where
-        	<not(fetch-elem(?Reject()))> attrs*;
+          <not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
 
     prod-with-illegal-brackets:
         TemplateProductionWithCons(sc, t, Attrs(attrs*)) -> bracketanno
         where
-        	<not(fetch-elem(?Reject()))> attrs*;
+          <not(fetch-elem(?Reject()))> attrs*;
             bracketanno := <fetch-elem(?Bracket()); not(?[])> attrs*
 
-	task-rewrite:
-  	  ("match-sort-type", (e@FunType(ty*, SortType(s)), a@FunType(ty'*, SortType(s')))) -> a
-  	  where
-  	  	<?s> s';
-  	  	<eq> (<length> ty*, <length> ty'*)
+  task-rewrite:
+      ("match-sort-type", (e@FunType(ty*, SortType(s)), a@FunType(ty'*, SortType(s')))) -> a
+      where
+        <?s> s';
+        <eq> (<length> ty*, <length> ty'*)
