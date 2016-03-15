@@ -36,11 +36,11 @@ context-free syntax
   Type.ClassType = ID
   
 // custom completion recovery rules
-context-free syntax
+/*context-free syntax
 
 Type.Type-Plhdr = {placeholder-insertion}
 ID.ID-Plhdr     = {placeholder-insertion}
-VarDecl.VarDecl-Plhdr = {placeholder-insertion}
+VarDecl.VarDecl-Plhdr = {placeholder-insertion}*/
 
 template options
 

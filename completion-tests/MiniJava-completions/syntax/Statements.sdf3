@@ -25,7 +25,7 @@ context-free syntax
 
 // manual completion recovery rules
   
-  Exp.Exp-Plhdr = {placeholder-insertion}
+///  Exp.Exp-Plhdr = {placeholder-insertion}
 
 //  Statement.Statement-Plhdr = {new-completion}
 
@@ -39,8 +39,8 @@ lexical syntax
  // "else" = [e] [l] [s] {new-completion}
  // ")"    = {new-completion}
  // "("    = {new-completion}
-  "="    = {literal-completion}
-  ";"    = {literal-completion}
+ // "="    = {literal-completion}
+ // ";"    = {literal-completion}
 
 
 

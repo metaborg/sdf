@@ -30,7 +30,7 @@ context-free syntax
 
 // manual completion recovery rules
   
-  VarRef.VarRef-Plhdr = {placeholder-insertion}
+ // VarRef.VarRef-Plhdr = {placeholder-insertion}
 
 
 context-free priorities

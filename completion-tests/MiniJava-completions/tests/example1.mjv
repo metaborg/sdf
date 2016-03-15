@@ -1,13 +1,5 @@
 class [[ID]] {
   public static void main (String[] [[ID]]) {
-    [[VarRef]] = [[Exp]];
+    [[Statement]]
   }
-}
-
-class [[ID]] [[ParentDecl]]{
-
-}
-
-class [[ID]] extends [[ID]] {
-
 }
