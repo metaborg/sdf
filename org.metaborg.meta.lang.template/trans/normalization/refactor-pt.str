@@ -3,61 +3,56 @@ module refactor-pt
 imports
     normalization/to-parse-table
 
-
-rules
-    
+rules   
   
-    refactor-pt(|reference):  
-        parse-table(version, initialstate, labels*, states(states*), priorities(priorities*)) -> parse-table(version, initialstate, labels*, states(states*), priorities(priorities*))
-        where
-            <create-reference-mapping> reference;
-            rules(
-                gen-ref-mapping:
-                0 -> 0
-            );
-            <fetch-elem(?state-rec(0, _, _)); refactor-state(|states*)> states*       
-            
-               
-            
-   
-    create-reference-mapping:
-        parse-table(version, initialstate, labels*, states(states*), priorities(priorities*)) -> <id>
-        where
-            <map(create-state-mapping)> states*
-            
-    create-state-mapping:
-        state-rec(label, gotos*, actions*) -> <id>
-        where
-            <map(create-mapping-from-goto(|label))> gotos*
+  refactor-pt(|reference):  
+    parse-table(version, initialstate, labels*, states(states*), priorities(priorities*)) -> parse-table(version, initialstate, labels*, states(states*), priorities(priorities*))
+    where
+     <create-reference-mapping> reference;
+     rules(
+       gen-ref-mapping:
+       0 -> 0
+     );
+       <fetch-elem(?state-rec(0, _, _)); refactor-state(|states*)> states*       
     
-    create-mapping-from-goto(|label):
-        goto(symbol, state) -> <id>
-        where
-            rules(
-                state-symbol-to-state:
-                (label, symbol) -> state
-            )    
-        
-    refactor-state(|states*):
-        state-rec(label, gotos*, actions*) -> state-rec(label, gotos*, actions*)
-        where
-            //<debug(!"analysing state ")> label;
-            states-mapped := <filter(map-ref-result(|label))> gotos*;
-            <map(get-state-from-label(|states*); refactor-state(|states*))> states-mapped
+  create-reference-mapping:
+    parse-table(version, initialstate, labels*, states(states*), priorities(priorities*)) -> <id>
+    where
+      <map(create-state-mapping)> states*
             
-    get-state-from-label(|states*):
-        label -> state
-        where
-            state := <fetch-elem(?state-rec(label, _, _))> states*        
+  create-state-mapping:
+    state-rec(label, gotos*, actions*) -> <id>
+    where
+      <map(create-mapping-from-goto(|label))> gotos*
+    
+  create-mapping-from-goto(|label):
+    goto(symbol, state) -> <id>
+    where
+      rules(
+        state-symbol-to-state:
+          (label, symbol) -> state
+      )    
+        
+  refactor-state(|states*):
+    state-rec(label, gotos*, actions*) -> state-rec(label, gotos*, actions*)
+    where
+      //<debug(!"analysing state ")> label;
+      states-mapped := <filter(map-ref-result(|label))> gotos*;
+      <map(get-state-from-label(|states*); refactor-state(|states*))> states-mapped
+            
+  get-state-from-label(|states*):
+    label -> state
+    where
+      state := <fetch-elem(?state-rec(label, _, _))> states*        
 
-    map-ref-result(|label):
-        goto(symbol, state) -> state
-        where
-            ref-state := <state-symbol-to-state> (<gen-ref-mapping> label, symbol);
-            <not(gen-ref-mapping)> state;  
-            <debug(!"create mapping ref->gen ")> (ref-state, state);        
-            rules(
-                gen-ref-mapping:
-                state -> ref-state
-            );
-            result := ref-state 
+  map-ref-result(|label):
+    goto(symbol, state) -> state
+    where
+      ref-state := <state-symbol-to-state> (<gen-ref-mapping> label, symbol);
+      <not(gen-ref-mapping)> state;  
+      <debug(!"create mapping ref->gen ")> (ref-state, state);        
+      rules(
+        gen-ref-mapping:
+        state -> ref-state
+      );
+      result := ref-state 
