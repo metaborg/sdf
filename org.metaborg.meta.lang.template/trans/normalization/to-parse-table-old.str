@@ -4,13 +4,13 @@ imports
   include/TemplateLang
   libstratego-sglr
   libstratego-lib
-    libstratego-gpp
-    generation/to-sdf
-    runtime/nabl/-
-    src-gen/pp/TemplateLang-pp
-    trans/utils/misc
-    normalization/char-class-utils
-    normalization/to-normal-form
+  libstratego-gpp
+  generation/to-sdf
+  runtime/nabl/-
+  pp/TemplateLang-pp
+  trans/utils/misc
+  normalization/char-class-utils
+  normalization/to-normal-form
     
 overlays
   sdf-norm-constructor(s) = Term(Default(Appl(Unquoted("default"),[Appl(Unquoted("appl"),[Appl(Unquoted("unquoted"),[Fun(Quoted("\"cons\""))]),List([List([Appl(Unquoted("fun"),[Appl(Unquoted("quoted"),[Fun(Quoted(s))])])])])])])))    

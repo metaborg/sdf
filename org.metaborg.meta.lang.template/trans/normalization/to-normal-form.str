@@ -9,7 +9,7 @@ imports
   generation/remove-template
   editor/builders
   runtime/nabl/utils
-  analysis/names
+  names/analysis/names
   normalization/to-parse-table
   editor-common.generated
   runtime/analysis/core
