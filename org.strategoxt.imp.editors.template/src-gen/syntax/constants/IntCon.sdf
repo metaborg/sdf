@@ -1,8 +1,0 @@
-module constants/IntCon
-imports layout/Whitespace constants/NatCon
-
-exports
-  context-free syntax
-    NatCon     -> IntCon {cons("Natural")}
-    "+" NatCon -> IntCon {cons("Positive")}
-    "-" NatCon -> IntCon {cons("Negative")}

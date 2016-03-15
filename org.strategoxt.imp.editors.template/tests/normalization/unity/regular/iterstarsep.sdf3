@@ -1,7 +1,0 @@
-module iterstarsep
-
-
-syntax
-
-A = {B "sep"}*
-B = "b"

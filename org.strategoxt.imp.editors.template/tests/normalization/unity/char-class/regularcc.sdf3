@@ -1,6 +1,0 @@
-module regularcc
-
-lexical syntax
-
-//regular cc
-A = [a-zA-Z0-9\_]

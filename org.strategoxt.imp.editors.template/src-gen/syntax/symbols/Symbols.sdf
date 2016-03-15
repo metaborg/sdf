@@ -1,8 +1,0 @@
-module symbols/Symbols
-imports layout/Comments
-
-exports
-  context-free syntax
-    "(" Symbol ")" -> Symbol    {bracket}
-    list:Symbol*   -> Symbols   
-    Symbol         -> SymbolDef 

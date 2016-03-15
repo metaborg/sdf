@@ -1,8 +1,0 @@
-module labels/Labels
-imports kernel/Kernel constants/StrCon constants/IdentifierCon
-
-exports
-  context-free syntax
-    StrCon           -> Label  {cons("Quoted")}
-    IdCon            -> Label  {cons("Unquoted")}
-    Label ":" Symbol -> Symbol {cons("Label")}
