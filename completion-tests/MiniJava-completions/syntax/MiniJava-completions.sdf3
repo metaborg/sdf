@@ -1,6 +1,0 @@
-module MiniJava-completions
-
-imports
-	
-	MiniJava
-	

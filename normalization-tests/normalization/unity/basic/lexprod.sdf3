@@ -1,9 +1,0 @@
-module lexprod
-
-lexical syntax
-
-A.A = "a" "b" B
-B = 
-C.AB = A B
-C.C = "c"
-D = [a-z]

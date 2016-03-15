@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>SampleGrammars</name>
+	<name>MiniJavacompletions</name>
 	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
 		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.pde.ManifestBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.pde.SchemaBuilder</name>
+			<name>org.metaborg.spoofax.eclipse.meta.builder.generatesources</name>
+			<triggers>clean,full,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -26,7 +17,18 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>org.metaborg.spoofax.eclipse.meta.builder</name>
+			<name>org.metaborg.spoofax.eclipse.meta.builder.prejava</name>
+			<triggers>clean,full,</triggers>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.metaborg.spoofax.eclipse.meta.builder.postjava</name>
 			<triggers>clean,full,</triggers>
 			<arguments>
 			</arguments>
@@ -38,9 +40,8 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
-		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.metaborg.spoofax.eclipse.nature</nature>
 		<nature>org.metaborg.spoofax.eclipse.meta.nature</nature>
 	</natures>

@@ -1,5 +1,0 @@
-Module(
-  Unparameterized("SampleGrammars")
-, [Imports([Module(Unparameterized("Blocks"))])]
-, []
-)

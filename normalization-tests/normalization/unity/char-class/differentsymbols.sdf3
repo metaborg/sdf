@@ -1,9 +1,0 @@
-module differentsymbols
-
-lexical syntax
-
-//special symbols
-
-Top = [\TOP]
-Bot = [\BOT]
-LabelStart = [\LABEL_START]

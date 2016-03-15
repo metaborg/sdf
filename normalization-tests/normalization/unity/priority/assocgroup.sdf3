@@ -1,8 +1,0 @@
-module assocgroup
-
-priorities
-
-{left: Exp = Exp "*" Exp {left}
-          Exp = Exp "/" Exp {left}
-          Exp = Exp "%" Exp {left}
-   }

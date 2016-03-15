@@ -1,6 +1,0 @@
-module ccwithnumbers
-
-lexical syntax
-
-//charclass with numbers
-A.CharClassNorm = [\48-\57\65-\90\97-\122]
