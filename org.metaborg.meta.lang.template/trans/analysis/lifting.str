@@ -1,0 +1,117 @@
+module analysis/lifting
+imports
+  libstratego-lib
+  include/TemplateLang
+  trans/utils/attributes
+  trans/utils/misc
+  runtime/editor/origins
+  names/analysis/names
+
+   rules
+  external unquote(|)
+
+
+  strategies
+  
+  lift-all = bottomup(try(lift-terms))
+     
+  rules
+    
+  lift-terms: 
+    NoAttrs() -> Attrs([])
+    
+  lift-terms:
+    Placeholder(symbol, Options(options*)) -> Placeholder(symbol', options'*)
+    where
+      <?Iter(_) + ?IterStar(_) + ?Label(_, Iter(_)) + ?Label(_, IterStar(_))> symbol;
+      <getfirst(?Separator(sep))> options*
+    with
+      switch !symbol
+      case ?Iter(s) : symbol' := IterSep(s, Lit(sep))
+      case ?IterStar(s) : symbol' := IterStarSep(s, Lit(sep))
+      case ?Label(l, Iter(s)) : symbol' := Label(l, IterSep(s, Lit(sep)))
+      case ?Label(l, IterStar(s)) : symbol' := Label(l, IterStarSep(s, Lit(sep)))
+      end;    
+      options'* := <remove-all(?Separator(_)); not(?[]) <+ !NoOptions()> options*   
+  
+  lift-terms:
+    SdfProduction(s, Rhs(symbols*), Attrs(a*)) ->
+      SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
+    where
+      c := <getfirst(lift-constr)> a*;
+      a'* := <remove-all(?Constructor(_))> a* 
+      
+  lift-terms:
+    SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a*)) ->
+        SdfProductionWithCons(SortCons(s, c), Rhs(symbols*), Attrs(a'*))
+    where
+        a'* := <remove-all(?Constructor(_))> a*   
+      
+  
+  //regular sdf2 productions become sdf3 productions with or without constructors       
+  lift-terms:
+    Prod(symbols*, Sort(s), Attrs(a*)) -> result
+    with
+      c := <getfirst(lift-constr)> a*;
+      a'* := <remove-all(?Constructor(_))> a* ;
+      result := SdfProductionWithCons(SortCons(SortDef(s), c), Rhs(symbols*), Attrs(a'*))
+    <+  result := SdfProduction(SortDef(s), Rhs(symbols*), Attrs(a*)) 
+  
+  
+  //Lexical kernel sdf2 productions become sdf3 productions with or without constructors      
+  lift-terms:
+    Prod(symbols*, Lex(Sort(s)), Attrs(a*)) -> result
+    with
+      c := <getfirst(lift-constr)> a*;
+      a'* := <remove-all(?Constructor(_))> a* ;
+      result := SdfProductionWithCons(SortCons(Lex(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
+    <+  result := SdfProduction(Lex(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+  
+  //Cf kernel sdf2 productions become sdf3 productions with or without constructors       
+  lift-terms:
+    Prod(symbols*, Cf(Sort(s)), Attrs(a*)) -> result
+    with
+      c := <getfirst(lift-constr)> a*;
+      a'* := <remove-all(?Constructor(_))> a* ;
+      result := SdfProductionWithCons(SortCons(Cf(SortDef(s)), c), Rhs(symbols*), Attrs(a'*))
+    <+  result := SdfProduction(Cf(SortDef(s)), Rhs(symbols*), Attrs(a*)) 
+  
+  
+  //sdf2 productions that does not define a sort become sdf3 productions with or without constructors       
+  lift-terms:
+    Prod(symbols*, symbol, Attrs(a*)) -> result
+    where
+      not(<?Sort(s) + ?Lex(Sort(_)) + ?Cf(Sort(_))> symbol)
+    with
+      c := <getfirst(lift-constr)> a*;
+      a'* := <remove-all(?Constructor(_))> a* ;
+      result := SdfProductionWithCons(SortCons(symbol, c), Rhs(symbols*), Attrs(a'*))
+    <+  result := SdfProduction(symbol, Rhs(symbols*), Attrs(a*))
+
+
+  //normalize reductive productions section to productive productions section
+  lift-terms:
+    Contextfree(p*) -> ContextFreeSyntax(p*)
+    
+  lift-terms:
+    Lexical(p*) -> LexicalSyntax(p*)
+    
+  lift-terms:
+    Syntax(p*) -> Kernel(p*)
+    
+  lift-terms:
+    Variables(p*) -> VariablesProductive(p*)
+    
+  lift-terms:
+    LexVariables(p*) -> LexVariablesProductive(p*)      
+    
+  lift-terms:
+    TemplateSection(t*) -> SDFSection(ContextFreeSyntax(t*))  
+    
+  lift-constr:
+    Constructor(c) -> Constructor(<unquote>  c)
+    
+  
+     
+      
+      

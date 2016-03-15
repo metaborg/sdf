@@ -1,187 +1,167 @@
 module editor/builders
 
-imports include/SDF
-		generation/-
-		editor-common.generated
-		sdf3/TemplateLang-pp
-		libstratego-gpp
-		libstratego-aterm
+imports 
+  include/SDF
+  trans/generation/-
+  editor-common.generated
+  pp/modules/Modules-pp
+  pp/TemplateLang-pp
+  signatures/kernel/Kernel-sig
+  lib/sdf3/TemplateLang-parenthesize
+  libstratego-gpp
+  libstratego-aterm
 
-  rules
-  	
-   generate-sdf3-abstract:
+rules
+    
+  generate-sdf3-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      <reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
       result   := <module-to-sdf3> ast
     
-   generate-sdf3-abstract:
+  generate-sdf3-abstract:
     (selected, position, ast, path, project-path) -> None()
     where
       <?definition(modules*)> ast 
     with
-    	<reset-counter> "SDF3";
-    	<map(generate-sdf3-abstract(|project-path))> modules*
-    	   
-   generate-sdf3-abstract(|project-path):
-   	ast@'module(unparameterized(mn), i*, e*) -> None()
-   	with
-   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
+      <map(generate-sdf3-abstract(|project-path))> modules*
+         
+  generate-sdf3-abstract(|project-path):
+    ast@'module(unparameterized(mn), i*, e*) -> None()
+    with
+      filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3.aterm")> mn;
       result   := <module-to-sdf3> ast;
       <write-string-to-file> (filename, <aterm-escape-strings; pp-aterm-box; box2text-string(|100)> result)
        
-   generate-sdf3-concrete:
+  generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-      <reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-      result   := <normalize-constructors; (module-to-sdf3; pp-SDF3-string) <+ id> ast 	 
+      result   := <normalize-constructors; (module-to-sdf3; pp-SDF3-string) <+ id> ast   
          
-   generate-sdf3-concrete:
+  generate-sdf3-concrete:
     (selected, position, ast, path, project-path) -> None()
     where
-      <reset-counter> "SDF3";
       <normalize-constructors; ?definition(modules*)> ast 
     with
-    	<map(generate-sdf3-concrete(|project-path))> modules*    	 	
+      <map(generate-sdf3-concrete(|project-path))> modules*       
        
-   generate-sdf3-concrete(|project-path):
-   	ast@'module(unparameterized(mn), i*, e*) -> None()
-   	with
-   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-   	  result   := <module-to-sdf3; pp-SDF3-string> ast;
+  generate-sdf3-concrete(|project-path):
+    ast@'module(unparameterized(mn), i*, e*) -> None()
+    with
+      filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
+      result   := <module-to-sdf3; pp-SDF3-string> ast;
       <write-string-to-file> (filename, result)
    
-    generate-sdf3-templates:
+  generate-sdf3-templates:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
-    	<reset-counter> "SDF3";
       <?'module(unparameterized(mn), i*, e*)> ast ;
       filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-      result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast 	 
+      result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast    
          
-   generate-sdf3-templates:
+  generate-sdf3-templates:
     (selected, position, ast, path, project-path) -> None()
     where
-    	<reset-counter> "SDF3";
       <?definition(modules*)> ast 
     with
-    	<map(generate-sdf3-templates(|project-path))> modules*    	 	
+      <map(generate-sdf3-templates(|project-path))> modules*        
        
-   generate-sdf3-templates(|project-path):
-   	ast@'module(unparameterized(mn), i*, e*) -> None()
-   	with
-   	  filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
-   	  result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
-      <write-string-to-file> (filename, result) 	
-      
-  generate-item-sets:
-  	(selected, position, ast, path, project-path) -> (filename, result)
-  	with  	    
-  		<?'module(unparameterized(mn), i*, e*)> ast;
-  		<check-normalized <+ debug(!"Grammar is not in normal form "); fail> mn;
-  		filename := <create-src-gen(|project-path, "item-sets", ".aterm")> mn;
-  		result   := <grammar-to-item-sets> ast    
+  generate-sdf3-templates(|project-path):
+    ast@'module(unparameterized(mn), i*, e*) -> None()
+    with
+      filename := <create-src-gen(|project-path, "syntax-sdf3", ".sdf3")> mn;
+      result   := <module-to-sdf3; module-to-template; bottomup(try(sugar-attributes)); pp-SDF3-string> ast;
+      <write-string-to-file> (filename, result)       
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
-  	?(filename, string);
-  	if <dirname; readdir> filename then
-	    with(
-	      handle := <fopen> (filename, "w");
-	      <fputs> (string, handle);
-	      <fclose> handle;
-	      <refresh-workspace-file> filename
-	    )
-	  end
-	  
+    ?(filename, string);
+    if <dirname; readdir> filename then
+      with(
+        handle := <fopen> (filename, "w");
+        <fputs> (string, handle);
+        <fclose> handle;
+        <refresh-workspace-file> filename
+      )
+    end
+    
   create-src-gen(|project-path, folder, ext):
-  	filename -> filename'
-  with
-  	fn := <get-filename> filename; 
-  	src-gen-path := <concat-strings; create-dir> [project-path, "/src-gen"];
-  	src-gen-folder := <concat-strings; create-dir> [src-gen-path, "/" ,folder];
-  	file-folder := <get-dir(|src-gen-folder)> filename ;
-  	filename' := <concat-strings> [file-folder, "/" , fn, ext]
-  	
+    filename -> filename'
+    with
+      fn             := <get-filename> filename; 
+      src-gen-path   := <concat-strings; create-dir> [project-path, "/src-gen"];
+      src-gen-folder := <concat-strings; create-dir> [src-gen-path, "/" ,folder];
+      file-folder    := <get-dir(|src-gen-folder)> filename ;
+      filename'      := <concat-strings> [file-folder, "/" , fn, ext]
+    
   
-    get-dir(|path) :
- 		s -> s'
- 		with
- 			names := <strip-annos; string-tokenize(|['/'])> s;
- 			names' := <at-last(![])> names;
- 		//	debug(!"names ");
- 			if [h | tl] := names'
- 			then 			
-	 			first := <concat-strings> [path, "/" , h]; 
-	 		//	debug(!"get-dir ");
-	 			<create-dirs(|first)> tl;
-	 			//debug(!"create-dirs ");
-	 			s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
-	 			
- 		    else
- 		    	s' := path
- 		    end
- 			
+  get-dir(|path) :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      names' := <at-last(![])> names;
+      if [h | tl] := names' then      
+        first := <concat-strings> [path, "/" , h]; 
+        <create-dirs(|first)> tl;
+        s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
+      else
+        s' := path
+      end
+      
    
-   create-dir  = not( file-exists ; filemode ; isdir) < mkdir + id
+  create-dir  = not( file-exists ; filemode ; isdir) < mkdir + id
    
-   create-dirs(|dir):
-   	[h | tl] -> None()
-   	where
-   		<create-dir> dir;
-	   	new-dir := <concat-strings> [dir, "/", h];
-	 //  	debug(!"create-dirs new dir ");
-	   	<create-dirs(|new-dir)> tl
-   	
-   	create-dirs(|dir):
-   	[] -> None()
-   	where
-   		<create-dir> dir
-   	//	; debug(!"create-dirs empty ")
+  create-dirs(|dir):
+    [h | tl] -> None()
+    where
+      <create-dir> dir;
+      new-dir := <concat-strings> [dir, "/", h];
+      <create-dirs(|new-dir)> tl
+    
+  create-dirs(|dir):
+    [] -> None()
+    where
+      <create-dir> dir
+ 
+  get-filename :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      s'    := <last> names
+      
   
- 	get-filename :
- 		s -> s'
- 		with
- 			names := <strip-annos; string-tokenize(|['/'])> s;
- 			//debug(!"names ");
- 			s' := <last> names
- 			
-  
-  	pp-SDF3-string =
+  pp-SDF3-string =
+    parenthesize-TemplateLang;
     prettyprint-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
       
- sugar-attributes:
- 	Attrs([]) -> NoAttrs() 			
- 				
- normalize-constructors :
- 	ast -> ast'
- 	where
- 		productions := <collect-all(prod-with-constructor, conc)> ast ;
- 		ast' := <topdown(try(replace-all-productions(|productions)))> ast		
- 		 					
-  
- prod-with-constructor :
- 	p@prod(symbols*, symbol, attrs) 	-> (prod(symbols*, symbol, a'*), cons)	
- 	where
- 		a* := <?attrs(<id>) <+ ![]> attrs;
- 		cons := <getfirst(?Constructor(_) + ?sdf-cons(_))> a*
- 		; a'* := <remove-all(?sdf-cons(_) + ?Constructor(_)); ?[] < !no-attrs() + !attrs(<id>)> a*  
+  sugar-attributes:
+    Attrs([]) -> NoAttrs()      
+        
+  normalize-constructors :
+    ast -> ast'
+    where
+      productions := <collect-all(prod-with-constructor, conc)> ast ;
+      ast'        := <topdown(try(replace-all-productions(|productions)))> ast    
+   
+  prod-with-constructor :
+    p@prod(symbols*, symbol, attrs)   -> (prod(symbols*, symbol, a'*), cons)  
+    where
+      a* := <?attrs(<id>) <+ ![]> attrs;
+      cons := <getfirst(?Constructor(_) + ?sdf-cons(_))> a*; 
+      a'* := <remove-all(?sdf-cons(_) + ?Constructor(_)); ?[] < !no-attrs() + !attrs(<id>)> a*  
   
   replace-all-productions(|productions):
-  	p@prod(symbols*, symbol, attrs) -> prod
-  	where
-  		a* := <?attrs(<id>) <+ ![]> attrs;
-  		<not(getfirst(?Constructor(_) + ?sdf-cons(_)))> a*;
-  		(_, cons) := <getfirst(?(p, _))> productions;
-  		prod := prod(symbols*, symbol, attrs([cons, a*]))
+    p@prod(symbols*, symbol, attrs) -> prod
+    where
+      a* := <?attrs(<id>) <+ ![]> attrs;
+      <not(getfirst(?Constructor(_) + ?sdf-cons(_)))> a*;
+      (_, cons) := <getfirst(?(p, _))> productions;
+      prod := prod(symbols*, symbol, attrs([cons, a*]))
   
-  //TODO: Fix checking if a grammar is in its normal form		
+  //TODO: Fix checking if a grammar is in its normal form   
   check-normalized = is-substring(!"-normalized")
-  			
-  		

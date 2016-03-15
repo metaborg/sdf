@@ -16,12 +16,14 @@ properties
 
   def of Constructor       : SdfProduction
   sort of Constructor      : Sort
+  ast of Module            : Module
+  
   constructorName of Sort	   : Constructor
   
 binding rules
 
-  Module(Unparameterized(m), i*, s*):
-    defines Module m 
+  mod@Module(Unparameterized(m), i*, s*):
+    defines Module m
     scopes Sort, Constructor 
     
   Module(Unparameterized(m)):

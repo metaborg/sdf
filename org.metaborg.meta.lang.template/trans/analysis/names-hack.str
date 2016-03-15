@@ -10,8 +10,24 @@ imports
   runtime/properties/-
 
 rules
-
-
+	
+	
+   nabl-prop-site(|lang__, ctx__, uris__, states__, implicits__) =
+    ?mod@Module(Unparameterized(m), i*, s*)
+    ; (where(id)
+       ; id
+       ; Module(
+           Unparameterized(
+             nabl-store-props-raw(
+             | ctx__
+             , [Prop(NablProp_ast(), mod, [])]
+             )
+           )
+         , id
+         , id
+         ))
+    ; fail
+  
    nabl-prop-site(|lang__, partition__, uris__, states__, implicits__) =
     ?p@SdfProductionWithCons(
          SortCons(SortDef(s), Constructor(c))

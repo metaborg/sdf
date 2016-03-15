@@ -3,148 +3,91 @@ module remove-template
 imports
   libstratego-sglr
   include/TemplateLang
+  analysis/analyze
   analysis/desugar
-  analysis/attributes
-  generation/to-sdf
   libstrc
+  generation/to-sdf
+  trans/utils/-
   
 strategies
-	
-	remove-templates = topdown(try(remove-template(|['(', ')'], None(), None()))); sdf2-term-translation
-	
+  
+  remove-templates(|chars) = lifting; topdown(try(remove-template(|chars)))
+  
 rules // Convert templates to regular productions
-	
-	remove-template(|chars, newline, kfr) : 
-		SDFSection(ContextFreeSyntax(prods*)) ->  SDFSection(ContextFreeSyntax(prods'*))
-		where
-		prods'* := <map(try(template-to-prod(|chars, newline)))> prods*
-		
-	remove-template(|chars, newline, kfr) : 
-		TemplateSection(x) ->  SDFSection(ContextFreeSyntax(prods'*))
-		where
-		prods'* := <filter(template-to-prod(|chars, newline))> x
-		
-	template-to-prod(|chars, newline):
-	  	TemplateProduction(s, t*, a) -> SdfProduction(s, Rhs(t'*), a)
-	  	with
-	  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
-	  		t'* := <template-to-sdf(|chars, newline, case-sensitive)> t*
-  			
-    template-to-prod(|chars, newline):
-	  	TemplateProductionWithCons(sc, t*, a*) -> SdfProductionWithCons(sc, Rhs(t'*), a*)
-	  	with
-	  		case-sensitive := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a* ;
-	  		t'* := <template-to-sdf(|chars, newline, case-sensitive)> t*
-				
-			
-		
- 
- rules //conversion of SDF2 terms into SDF3
-	
-  sdf2-term-translation = topdown(try(sdf2-terms-to-sdf3 <+ sdf2-term-to-sdf3 <+ sdf2-regular-term-to-sdf3 ))
-	
-	//regular constructor conversion
-  sdf2-regular-term-to-sdf3:
-  	cons#(args) -> cons'#(args)
-  	with
-  		[f|fs] := <explode-string> cons;
-  		cons' := <implode-string> [<to-upper> f|fs]
-  		
-  //special constructors conversion		
-  sdf2-term-to-sdf3:
-  	iter-sep(sort, lit(sep)) -> IterSep(sort, Lit(<escape; double-quote> sep) ) 
-  	
-  // special-term-to-sdf:
-  // 	Right() -> right()
   
-  sdf2-term-to-sdf3:
-  	iter-star(sort) -> IterStar(sort)
-  	
-  sdf2-term-to-sdf3:
-  	simple-charclass(sort) -> Simple(sort) 
-  	
-  sdf2-term-to-sdf3:
-  	char-class(sort) -> CharClass(sort) 
-  	
-  sdf2-term-to-sdf3:
-  	label_start() -> LabelStart()
-  	
-  // sdf2-term-to-sdf3:
-  // 	empty-grammar() -> Empty()
-  // 
-  // sdf2-term-to-sdf3:
-  // 	unquoted-fun(s) -> UnquotedFun(s)
-  // 
-  // sdf2-term-to-sdf3:
-  // 	quoted-fun(s) -> QuotedFun(s)
-  // 
-  // sdf2-term-to-sdf3:
-  // 	prefix-fun(fn, syms, sym, att) -> PrefixFun(fn, syms, sym, att) 
-  
-  sdf2-term-to-sdf3:
-  	non-assoc() -> NonAssoc()
-  	
-  sdf2-term-to-sdf3:
-  	with-arguments(g, a) -> WithArguments(g, a)
-  
-  sdf2-term-to-sdf3:
-  	non-transitive(g) -> NonTransitive(g) 
-  
-  sdf2-term-to-sdf3:
-  	simple-group(p) -> SimpleGroup(p)
-  		
-  sdf2-term-to-sdf3:
-  	prods-group(p) -> ProdsGroup(p)
+  remove-template(|chars) : 
+    SDFSection(ContextFreeSyntax(prods*)) ->  SDFSection(ContextFreeSyntax(prods'*))
+    where
+      prods'* := <map(try(template-to-sdf3-prod(|chars)))> prods*
+     
+  template-to-sdf3-prod(|chars):
+      TemplateProduction(s, t*, a) -> SdfProduction(s, Rhs(t'*), a')
+      with
+        case-sensitive  := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+        t'*       := <template-to-sdf3-symbols(|chars, case-sensitive)> t*;
+        a'        := <?Attrs([]); !NoAttrs() <+ id> a
         
-  sdf2-term-to-sdf3:
-  	assoc-group(a, p) -> AssocGroup(a, p)
+    template-to-sdf3-prod(|chars):
+      TemplateProductionWithCons(sc, t*, a) -> SdfProductionWithCons(sc, Rhs(t'*), a')
+      with
+        case-sensitive  := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+        t'*       := <template-to-sdf3-symbols(|chars, case-sensitive)> t*;
+        a'        := <?Attrs([]); !NoAttrs() <+ id> a
+        
+  template-to-sdf3-symbols(|chars, case):
+    SingleLineTemplate(elems) -> elems'
+    with
+      elems' := <filter(template-elem-to-symbol(|chars, case)); flatten-list> elems
+    
+  template-elem-to-symbol(|chars, case):
+    String(t) -> result
+      where
+        if CaseInsensitive() := case then 
+          result := <string-to-symbol-insensitive(|chars)> t
+        else
+          result := <string-to-symbol(|chars)> t
+        end
+    
+  //removing layout from separator  
+    template-elem-to-symbol(|chars, case):
+      Placeholder(symbol, option) -> symbol' 
+      where
+        <?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) 
+          + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
+      with
+        lit' := <separator-to-literal> lit;
+        if "" := lit'
+        then
+          switch !symbol
+            case ?IterSep(sym, _)         : symbol' := Iter(sym)
+            case ?IterStarSep(sym, _)       : symbol' := IterStar(sym)
+            case ?Label(l, IterSep(sym, _))   : symbol' := Label(l, Iter(sym))
+            case ?Label(l, IterStarSep(sym, _)) : symbol' := Label(l, IterStar(sym))
+          end
+        else  
+          switch !symbol
+            case ?IterSep(sym, _)         : symbol' := IterSep(sym, Lit(<escape; double-quote> lit'))
+            case ?IterStarSep(sym, _)       : symbol' := IterStarSep(sym, Lit(<escape; double-quote> lit'))
+            case ?Label(l, IterSep(sym, _))   : symbol' := Label(l, IterSep(sym, Lit(<escape; double-quote> lit')))
+            case ?Label(l, IterStarSep(sym, _)) : symbol' := Label(l, IterStarSep(sym, Lit(<escape; double-quote> lit')))
+          end
+        end
   
-  sdf2-term-to-sdf3:
-  	real-con(i, n, o) -> RealCon(i, n, o)
-  
-  sdf2-term-to-sdf3:
-  	iter-star-sep(sort, lit(sep))	-> IterStarSep(sort,  Lit(<escape; double-quote> sep))
-  
-  sdf2-term-to-sdf3:
-  	 file-start() -> FileStart()
-  	
-  sdf2-term-to-sdf3:
-  	 parameterized-sort(sort, sym) -> ParameterizedSort(sort, sym)
-  		     
-  sdf2-term-to-sdf3:
-  	ci-lit(lit) -> CiLit(lit)
-  
-  sdf2-term-to-sdf3:
-  	no-attrs() -> NoAttrs()
-  
-  sdf2-term-to-sdf3:
-  	attrs([]) -> NoAttrs()
-  	
-  sdf2-term-to-sdf3:
-  	Attrs([]) -> NoAttrs()
-  	
-  
-  sdf2-term-to-sdf3:
-  	term(default(fun(unquoted("deprecated")))) -> Deprecated() 
-  	
-  sdf2-term-to-sdf3:
-  	term(default(appl(unquoted("deprecated"), [fun(quoted(s))]))) -> Deprecated(s)	
-  		  		
-  sdf2-terms-to-sdf3:
-  	[term | tail] -> <id>
-  		
-  sdf2-terms-to-sdf3:
-  	[] -> []
-  		
- lift-sdf2-constr:
-  	Constructor(c) -> Constructor(<un-double-quote; try(to-first-upper)> c)
-  	
- lift-sdf2-constr:
- 	sdf-cons(c) ->  Constructor(<un-double-quote; try(to-first-upper)> c)
- 	
- to-first-upper:
- 	name -> name'
- where
- 	[f|fs] := <explode-string> name;
-  	name' := <implode-string> [<to-upper> f|fs]	
-		
+  template-elem-to-symbol(|chars, case):
+      Placeholder(symbol, option) -> symbol
+      where
+        <not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
+ 
+  template-to-sdf3-symbols(|chars, case):
+      Template(lines*) -> elems*
+      with
+        elems* := <filter(line-to-symbols(|chars, case)); flatten-list> lines*
+    
+    line-to-symbols(|chars, case):
+      Line(elems*) -> elems'*
+      where
+        elems'* := <filter(template-elem-to-symbol(|chars, case)); flatten-list; not(?[])> elems*
+        
+  string-to-symbol(|chars) =  string-edge-tokenize(where({x: ?x; <one(?x)> chars})); map(!Lit(<template-escape; double-quote>))
+    
+  string-to-symbol-insensitive(|chars) =  string-edge-tokenize(where({x: ?x; <one(?x)> chars})); map(!CiLit(<template-escape; single-quote>))   

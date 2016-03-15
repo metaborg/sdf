@@ -19,6 +19,5 @@ language General properties
   start symbols : Module
 
   provider : include/sdf.ctree
-  provider : lib/sdf3/TemplateLang-pp.jar
   
   observer : editor-analyze

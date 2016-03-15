@@ -19,6 +19,12 @@ Attribute = <<QuotedConstructor>> {prefer, deprecated("Use 'Sort.Cons' notation 
 Attribute.CaseInsensitive = <case-insensitive> {prefer}
 QuotedConstructor.Constructor = <<StrCon>>
 
+//new completion attributes
+Attribute.Placeholder = <placeholder> {prefer}
+Attribute.PlaceholderInsertion = <placeholder-insertion> {prefer}
+Attribute.LiteralCompletion = <literal-completion> {prefer}
+
+
 Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes>> {deprecated("Use productive form instead")}
 
 Productions = <<list:{Production "\n"}*>>

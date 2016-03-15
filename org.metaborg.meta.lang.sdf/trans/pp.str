@@ -1,12 +1,11 @@
 module trans/pp
 
 imports
-
   libstratego-gpp
   runtime/refactoring/-
   pp/TemplateLang-pp
   pp/modules/Modules-pp
-  include/TemplateLang-parenthesize
+  lib/sdf3/TemplateLang-parenthesize
 
 rules
   

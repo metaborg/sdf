@@ -1,0 +1,431 @@
+module include/TemplateLang-parenthesize
+
+imports
+  libstratego-lib
+  signatures/TemplateLang-sig
+
+
+strategies
+  io-TemplateLang-parenthesize =
+    io-wrap(parenthesize-TemplateLang)
+
+  parenthesize-TemplateLang =
+    innermost(TemplateLangParenthesize)
+
+
+rules
+
+  TemplateLangParenthesize :
+    Not(t_0) -> Not(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Col(t_0) -> Col(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Line(t_0) -> Line(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Last(t_0) -> Last(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Right(t_0) -> Right(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Left(t_0) -> Left(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    First(t_0) -> First(Parenthetical(t_0))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Sub(t_0, t_1) -> Sub(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Add(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Sub(t_0, t_1) -> Sub(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Add(t_0, t_1) -> Add(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Add(t_0, t_1) -> Add(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Div(t_0, t_1) -> Div(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Mul(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Div(t_0, t_1) -> Div(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Mul(t_0, t_1) -> Mul(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + ?Div(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Mul(t_0, t_1) -> Mul(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + ?Sub(_, _)
+            + ?Add(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Comp(t_0) -> Comp(Parenthetical(t_0))
+    where <(?Union(_, _)
+            + ?Isect(_, _)
+            + ?Diff(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Ge(t_0, t_1) -> Ge(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Ge(t_0, t_1) -> Ge(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Gt(t_0, t_1) -> Gt(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Gt(t_0, t_1) -> Gt(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Le(t_0, t_1) -> Le(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Lt(_, _)
+            + ?Eq(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Le(t_0, t_1) -> Le(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Lt(t_0, t_1) -> Lt(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Eq(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Lt(t_0, t_1) -> Lt(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Eq(t_0, t_1) -> Eq(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + ?Ge(_, _)
+            + ?Gt(_, _)
+            + ?Le(_, _)
+            + ?Lt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Eq(t_0, t_1) -> Eq(t_0, Parenthetical(t_1))
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Diff(t_0, t_1) -> Diff(Parenthetical(t_0), t_1)
+    where <(?Union(_, _)
+            + ?Isect(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Diff(t_0, t_1) -> Diff(t_0, Parenthetical(t_1))
+    where <(?Union(_, _)
+            + ?Isect(_, _)
+            + ?Diff(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Varsym(t_0) -> Varsym(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Lex(t_0) -> Lex(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Cf(t_0) -> Cf(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Var(t_0) -> Var(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Iter(t_0) -> Iter(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    IterStar(t_0) -> IterStar(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Opt(t_0) -> Opt(Parenthetical(t_0))
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    And(t_0, t_1) -> And(Parenthetical(t_0), t_1)
+    where <(?Or(_, _)
+            + ?And(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    And(t_0, t_1) -> And(t_0, Parenthetical(t_1))
+    where <(?Or(_, _) + fail)> t_1
+
+  TemplateLangParenthesize :
+    Seq(t_0, t_1) -> Seq(Parenthetical(t_0), t_1)
+    where <(?Alt(_, _) + fail)> t_0
+
+  TemplateLangParenthesize :
+    Seq(t_0, t_1) -> Seq(t_0, Parenthetical(t_1))
+    where <(?Alt(_, _) + fail)> t_1
+
+  TemplateLangParenthesize :
+    Isect(t_0, t_1) -> Isect(Parenthetical(t_0), t_1)
+    where <(?Union(_, _) + fail)> t_0
+
+  TemplateLangParenthesize :
+    Isect(t_0, t_1) -> Isect(t_0, Parenthetical(t_1))
+    where <(?Union(_, _)
+            + ?Isect(_, _)
+            + fail)> t_1
+
+  TemplateLangParenthesize :
+    Alt(t_0, t_1) -> Alt(Parenthetical(t_0), t_1)
+    where <(?Label(_, _)
+            + ?Alt(_, _)
+            + fail)> t_0
+
+  TemplateLangParenthesize :
+    Alt(t_0, t_1) -> Alt(t_0, Parenthetical(t_1))
+    where <(?Label(_, _) + fail)> t_1
+
+  TemplateLangParenthesize :
+    NonTransitive(t_0) -> NonTransitive(Parenthetical(t_0))
+    where <(?NonTransitive(_) + fail)> t_0
+
+  TemplateLangParenthesize :
+    WithArguments(t_0, t_1) -> WithArguments(Parenthetical(t_0), t_1)
+    where <(?WithArguments(_, _) + fail)> t_0
+
+  TemplateLangParenthesize :
+    WithArguments(t_0, t_1) -> WithArguments(t_0, Parenthetical(t_1))
+    where <(?WithArguments(_, _) + fail)> t_1
+
+  TemplateLangParenthesize :
+    Union(t_0, t_1) -> Union(t_0, Parenthetical(t_1))
+    where <(?Union(_, _) + fail)> t_1
+
+  TemplateLangParenthesize :
+    Conc(t_0, t_1) -> Conc(Parenthetical(t_0), t_1)
+    where <(?Conc(_, _) + fail)> t_0
+
+  TemplateLangParenthesize :
+    Or(t_0, t_1) -> Or(Parenthetical(t_0), t_1)
+    where <(?Or(_, _) + fail)> t_0
+
+
+signature
+  constructors
+    Parenthetical : Unknown -> Unknown
+

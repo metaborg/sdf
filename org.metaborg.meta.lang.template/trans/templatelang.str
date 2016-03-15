@@ -21,34 +21,38 @@ imports
 
   analysis/-
   generation/-
+  editor/builders
   editor/-
-	//analyze
-	//names
-	//name-desugar
-//	name-check
-	//check
-	names/analysis/names
+  //analyze
+  //names
+  //name-desugar
+//  name-check
+  //check
+  names/analysis/names
   types/analysis/types-ts
 
 rules // Analysis
 
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
+  
+  
 
-  editor-analyze = analyze-all(normalization, id, id|<language>)
+  editor-analyze = analyze-all(lifting, id, id|<language>)
 
-  editor-save =  generate-all
-
+  
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
+      
 rules // Editor services
 
   editor-resolve:
     (node, position, ast, path, project-path) -> definition
     where
-    	definition := <analysis-resolve(|<language>, project-path)> node
+      definition := <analysis-resolve(|<language>, project-path)> node
 
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-    	proposals := <analysis-propose-completions(|<language>, project-path)> ast
+      proposals := <analysis-propose-completions(|<language>, project-path)> ast
 
   editor-outline:
     (node, position, ast, path, project-path) -> outline
@@ -73,22 +77,22 @@ rules // Debugging
     with
       filename := <guarantee-extension(|"analyzed.aterm")> path
 
-	debug-index-project =
-		analysis-debug-index-project(|<language>)
-	debug-index-partition =
-		analysis-debug-index-partition(|<language>)
+  debug-index-project =
+    analysis-debug-index-project(|<language>)
+  debug-index-partition =
+    analysis-debug-index-partition(|<language>)
 
-	debug-task-project =
-		analysis-debug-task-project(|<language>)
-	debug-task-partition =
-		analysis-debug-task-partition(|<language>)
-	debug-task-selection =
-		analysis-debug-task-selection(|<language>)
+  debug-task-project =
+    analysis-debug-task-project(|<language>)
+  debug-task-partition =
+    analysis-debug-task-partition(|<language>)
+  debug-task-selection =
+    analysis-debug-task-selection(|<language>)
 
-	debug-project =
-		analysis-debug-project(|<language>)
-	debug-partition =
-		analysis-debug-partition(|<language>)
+  debug-project =
+    analysis-debug-project(|<language>)
+  debug-partition =
+    analysis-debug-partition(|<language>)
 
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
@@ -98,12 +102,12 @@ rules
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =
-  	?(filename, string);
-  	if <dirname; readdir> filename then
-	    with(
-	      handle := <fopen> (filename, "w");
-	      <fputs> (string, handle);
-	      <fclose> handle;
-	      <refresh-workspace-file> filename
-	    )
-	  end
+    ?(filename, string);
+    if <dirname; readdir> filename then
+      with(
+        handle := <fopen> (filename, "w");
+        <fputs> (string, handle);
+        <fclose> handle;
+        <refresh-workspace-file> filename
+      )
+    end

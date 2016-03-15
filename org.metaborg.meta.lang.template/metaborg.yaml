@@ -20,6 +20,9 @@ generates:
   directory: src-gen/syntax
 - language: ds
   directory: src-gen
+exports:
+- language: Stratego-Sugar
+  directory: src-gen  
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
