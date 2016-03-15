@@ -1,7 +1,0 @@
-module lib/sdf3/src-gen/signatures/lifting/Lifting-sig
-
-imports
-  lib/sdf3/src-gen/signatures/kernel/Kernel-sig
-
-
-signature

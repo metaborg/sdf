@@ -3,9 +3,9 @@ module editor/builders
 imports include/SDF
 		trans/generation/-
 		editor-common.generated
-		lib/sdf3/src-gen/pp/modules/Modules-pp
-		lib/sdf3/src-gen/pp/TemplateLang-pp
-		lib/sdf3/src-gen/signatures/kernel/Kernel-sig
+		pp/modules/Modules-pp
+		pp/TemplateLang-pp
+		signatures/kernel/Kernel-sig
 		lib/sdf3/TemplateLang-parenthesize
 		libstratego-gpp
 		libstratego-aterm

@@ -1,5 +1,0 @@
-module lib/sdf3/src-gen/signatures/constants/NatCon-sig
-
-signature
-  constructors
-     : String -> NatCon

@@ -3,27 +3,27 @@ module to-template
 imports
   libstratego-sglr
   
-  lib/sdf3/src-gen/signatures/-
-  lib/sdf3/src-gen/signatures/aliases/-
-  lib/sdf3/src-gen/signatures/aterms/-
-  lib/sdf3/src-gen/signatures/basic/-
-  lib/sdf3/src-gen/signatures/characterclass/-
-  lib/sdf3/src-gen/signatures/constants/-
-  lib/sdf3/src-gen/signatures/grammar/-
-  lib/sdf3/src-gen/signatures/kernel/-
-  lib/sdf3/src-gen/signatures/labels/-
-  lib/sdf3/src-gen/signatures/layout/-
-  lib/sdf3/src-gen/signatures/layout-constraints/-
-  lib/sdf3/src-gen/signatures/lifting/-
-  lib/sdf3/src-gen/signatures/literals/-
-  lib/sdf3/src-gen/signatures/modules/-
-  lib/sdf3/src-gen/signatures/priority/-
-  lib/sdf3/src-gen/signatures/regular/-
-  lib/sdf3/src-gen/signatures/renaming/-
-  lib/sdf3/src-gen/signatures/restrictions/-
-  lib/sdf3/src-gen/signatures/sdf2-core/-
-  lib/sdf3/src-gen/signatures/sorts/-
-  lib/sdf3/src-gen/signatures/symbols/-
+  signatures/-
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
 
   
 

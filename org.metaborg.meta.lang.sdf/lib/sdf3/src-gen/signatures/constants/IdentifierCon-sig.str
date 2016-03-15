@@ -1,5 +1,0 @@
-module lib/sdf3/src-gen/signatures/constants/IdentifierCon-sig
-
-signature
-  constructors
-     : String -> IdCon

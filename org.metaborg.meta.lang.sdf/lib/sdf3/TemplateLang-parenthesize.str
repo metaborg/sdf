@@ -1,28 +1,8 @@
-module lib/sdf3/TemplateLang-parenthesize
+module include/TemplateLang-parenthesize
 
 imports
   libstratego-lib
-  lib/sdf3/src-gen/signatures/-
-  lib/sdf3/src-gen/signatures/aliases/-
-  lib/sdf3/src-gen/signatures/aterms/-
-  lib/sdf3/src-gen/signatures/basic/-
-  lib/sdf3/src-gen/signatures/characterclass/-
-  lib/sdf3/src-gen/signatures/constants/-
-  lib/sdf3/src-gen/signatures/grammar/-
-  lib/sdf3/src-gen/signatures/kernel/-
-  lib/sdf3/src-gen/signatures/labels/-
-  lib/sdf3/src-gen/signatures/layout/-
-  lib/sdf3/src-gen/signatures/layout-constraints/-
-  lib/sdf3/src-gen/signatures/lifting/-
-  lib/sdf3/src-gen/signatures/literals/-
-  lib/sdf3/src-gen/signatures/modules/-
-  lib/sdf3/src-gen/signatures/priority/-
-  lib/sdf3/src-gen/signatures/regular/-
-  lib/sdf3/src-gen/signatures/renaming/-
-  lib/sdf3/src-gen/signatures/restrictions/-
-  lib/sdf3/src-gen/signatures/sdf2-core/-
-  lib/sdf3/src-gen/signatures/sorts/-
-  lib/sdf3/src-gen/signatures/symbols/-
+  signatures/TemplateLang-sig
 
 
 strategies
