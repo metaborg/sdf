@@ -324,7 +324,6 @@ rules
     (selected, position, ast, path, project-path) -> None()
     with
         filename := <base-filename> path;
-        debug(!"generating for ");
         ast'     := <desugar-templates> ast;
         <?Module(Unparameterized(mn), i*, sections)> ast 
         where
