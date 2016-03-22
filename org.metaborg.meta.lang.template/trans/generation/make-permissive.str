@@ -2,11 +2,11 @@ module make-permissive
 
 imports 
   libstratego-sglr
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   analysis/lifting
-  editor-common.generated
+  stratego/metaborg
   generation/remove-template
 
 rules

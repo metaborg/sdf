@@ -5,7 +5,7 @@ metaborgVersion: 2.0.0-SNAPSHOT
 metaborgBaselineVersion: 2.0.0-baseline-20160221-213050
 dependencies:
   compile:
-  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgVersion}
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
@@ -15,6 +15,7 @@ pardonedLanguages:
 - SDF
 language:
   sdf:
+    version: sdf2
     args:
     - -Idef
     - ${path:root}/lib/SDF.def

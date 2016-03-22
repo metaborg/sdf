@@ -2,7 +2,7 @@ module analysis/name-constraints
 
 imports
 
-  include/TemplateLang
+  signatures/TemplateLang-sig
   libstratego-sglr
   libstratego-lib
   libstratego-gpp

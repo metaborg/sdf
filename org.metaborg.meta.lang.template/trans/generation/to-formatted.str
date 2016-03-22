@@ -4,7 +4,7 @@ imports
   analysis/-
   runtime/index/-
   runtime/task/-
-  include/TemplateLang
+  signatures/TemplateLang-sig
   runtime/nabl/-
     runtime/properties/-
     names/analysis/names

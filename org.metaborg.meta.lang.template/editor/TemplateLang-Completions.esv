@@ -1,5 +1,0 @@
-module TemplateLang-Completions
-
-completions
-
-  completion proposer : editor-complete

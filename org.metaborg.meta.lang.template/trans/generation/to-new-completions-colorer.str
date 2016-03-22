@@ -4,7 +4,7 @@ module generation/to-new-completions-colorer
 imports
   libstratego-lib
   libstrc
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/types
   runtime/nabl/-
   runtime/task/-

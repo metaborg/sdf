@@ -1,7 +1,7 @@
 module analysis/lifting
 imports
   libstratego-lib
-  include/TemplateLang
+  signatures/TemplateLang-sig
   trans/utils/attributes
   trans/utils/misc
   runtime/editor/origins

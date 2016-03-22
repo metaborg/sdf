@@ -6,11 +6,11 @@ imports
   libstratego-aterm
   libstratego-sglr
   libstrc
-  include/TemplateLang
-  include/TemplateLang-parenthesize
-  editor/TemplateLang-Outliner
+  signatures/TemplateLang-sig
+  pp/TemplateLang-parenthesize
+  outline
   EditorService
-  editor-common.generated
+  stratego/metaborg
   runtime/analysis/-
   runtime/nabl/-
   runtime/task/-

@@ -3,7 +3,7 @@ module generation/to-new-completions
 imports
   libstratego-lib
   libstrc
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/types
   runtime/nabl/-
   runtime/task/-

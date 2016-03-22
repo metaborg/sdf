@@ -2,7 +2,7 @@ module utils/attributes
 imports
 	libstratego-lib
 	libstratego-sglr
-    include/TemplateLang
+    signatures/TemplateLang-sig
 
 signature
   constructors

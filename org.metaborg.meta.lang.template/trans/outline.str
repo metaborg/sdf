@@ -1,4 +1,4 @@
-module editor/TemplateLang-Outliner
+module outline
 
 /*
  * This file defines an outliner that is used by both the SDF2 and SDF3 (Template language) editors.
@@ -6,7 +6,7 @@ module editor/TemplateLang-Outliner
 
 imports
   libstratego-sglr
-  include/TemplateLang
+  signatures/TemplateLang-sig
   utils/attributes
   runtime/editor/outline-library
   runtime/editor/origins

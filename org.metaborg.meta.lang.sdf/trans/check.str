@@ -3,7 +3,7 @@ module check
 imports
   libstratego-sglr
   analysis
-  include/SDF
+  signatures/SDF
 
 strategies
   
