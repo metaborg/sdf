@@ -3,7 +3,7 @@ module generation/to-template
 imports
   libstratego-sglr
   sdf3/TemplateLang-pp
-  
+  generation/template-pp
 
   
 

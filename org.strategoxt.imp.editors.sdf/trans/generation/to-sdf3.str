@@ -2,14 +2,11 @@ module generation/to-sdf3
 imports
   SDF
   sdf3/TemplateLang-pp
+  generation/template-pp
 
 
 overlays
   sdf-cons(x) = term(default(appl(unquoted("cons"), [fun(quoted(x))]))) 
-  
-signature constructors
-	// Hack: Replaced TemplateLang-pp and new does not contains this constructure
-	Lex: SymbolDef -> SymbolDef
 
 rules
 

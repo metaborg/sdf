@@ -1,0 +1,5 @@
+module generation/template-pp
+
+signature constructors
+	// Hack: Replaced TemplateLang-pp and new does not contains this constructure
+	Lex: SymbolDef -> SymbolDef
