@@ -23,3 +23,5 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.strategoxt.imp.editors.sdf
 Bundle-Vendor: Spoofax.org
+Bundle-ClassPath: lib/sdf3/TemplateLang-pp.jar,
+ .
