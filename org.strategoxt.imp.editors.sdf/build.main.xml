@@ -29,13 +29,15 @@
 	<property name="build.stratego.args" value="--library
                    
                   -la strc -la stratego-lib -la stratego-sglr -la stratego-gpp -la stratego-xtc -la stratego-aterm
-                  -la stratego-sdf" />
+                  -la stratego-sdf
+		          -la pp.TemplateLang-pp" />
 
 	<!-- External .def and .jar locations
 	      <property name="externaldef" location="syntax/SDF.def"/>
         <property name="externaljar" value="../lib.jar"/>
         <property name="externaljarflags" value="-la org.lib"/>
         -->
+	<property name="externaljar" value="../lib/sdf3/TemplateLang-pp.jar"/>
 
 	<!-- Environment configuration for command-line builds -->
 	<condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
