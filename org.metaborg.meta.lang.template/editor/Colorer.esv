@@ -1,4 +1,4 @@
-module TemplateLang-Colorer
+module Colorer
 
 imports 
 

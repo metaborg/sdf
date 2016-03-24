@@ -1,7 +1,7 @@
 module generation/to-esv
 
 imports
-  include/TemplateLang
+  signatures/TemplateLang-sig
   EditorService
   utils/attributes
   utils/misc

@@ -1,7 +1,7 @@
 module analysis/types
 
 imports 
-  include/TemplateLang
+  signatures/TemplateLang-sig
   libstrc
   runtime/types/collect
 

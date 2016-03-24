@@ -2,7 +2,7 @@ module to-normal-form
 
 imports 
   libstratego-sglr
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   analysis/lifting
@@ -11,7 +11,7 @@ imports
   runtime/nabl/utils
   names/analysis/names
   normalization/to-parse-table
-  editor-common.generated
+  stratego/metaborg
   runtime/analysis/core
   
 rules

@@ -1,7 +1,7 @@
 module utils/misc
 
 imports
-  include/TemplateLang
+  signatures/TemplateLang-sig
 
 strategies
 

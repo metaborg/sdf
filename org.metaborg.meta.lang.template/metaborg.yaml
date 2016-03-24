@@ -59,4 +59,4 @@ build:
     - -i
     - ${path:root}/lib/EditorService-pretty.pp
     - -o
-    - ${path:root}/include/EditorService-pretty.pp.af
+    - ${path:root}/target/metaborg/EditorService-pretty.pp.af

@@ -3,7 +3,7 @@ module normalize
 imports
   libstratego-lib
   libstratego-sglr
-  include/TemplateLang
+  signatures/TemplateLang-sig
   utils/attributes
   utils/misc
   runtime/editor/origins

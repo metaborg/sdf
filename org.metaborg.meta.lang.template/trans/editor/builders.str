@@ -10,9 +10,9 @@ imports
   lib/sdf-desugar
   lib/sdf-parenthesize
   lib/EditorService
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/desugar
-  editor-common.generated
+  stratego/metaborg
   trans/pp
   runtime/index/-
   runtime/task/-
@@ -398,7 +398,7 @@ rules
   esv-pp-table =
     DescriptorPPTable
   <+
-    tbl := <import-term(include/EditorService-pretty.pp.af)>;
+    tbl := <import-term(target/metaborg/EditorService-pretty.pp.af)>;
     rules(DescriptorPPTable := tbl)
     
     // When given a tuple (path, string) this writes string into path.

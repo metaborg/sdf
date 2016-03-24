@@ -1,7 +1,7 @@
 module analysis/analyze
 
 imports
-  include/TemplateLang
+  signatures/TemplateLang-sig
   analysis/desugar
   analysis/lifting
 
