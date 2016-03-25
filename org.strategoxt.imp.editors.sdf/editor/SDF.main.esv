@@ -25,5 +25,6 @@ language General properties
 
   provider : include/sdf.jar
   provider : lib/sdf3/TemplateLang-pp.jar
+  provider : lib/sdf3/templatelang-java.jar
   
   observer : editor-analyze
