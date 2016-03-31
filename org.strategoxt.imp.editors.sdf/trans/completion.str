@@ -30,7 +30,7 @@ strategies
   new-module-name-proposals(|path):
     ast -> proposals
     where
-      <get-module-name; ?COMPLETION(_)> ast;
+      <sdf-get-module-name; ?COMPLETION(_)> ast;
       proposals := [
         <base-filename; remove-extension> path,
         <remove-extension> path

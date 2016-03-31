@@ -20,11 +20,11 @@ strategies
       )
     with
       ast' := <declare-globals-top> ast;
-      if <get-module-name; not(ModuleName)> ast then 
+      if <sdf-get-module-name; not(ModuleName)> ast then 
         record-all-module-names
       end
 
-  get-module-name:
+  sdf-get-module-name:
     ast -> mname
     where
       mname := <get-arguments; Hd; get-arguments; Hd> ast
