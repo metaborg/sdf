@@ -99,6 +99,7 @@ rules // Debugging
 
 rules
 
+  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =

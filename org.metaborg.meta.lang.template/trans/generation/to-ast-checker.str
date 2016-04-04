@@ -4,22 +4,25 @@ imports
   libstratego-lib
   libstratego-sglr
   libstrc
-  signatures/TemplateLang-sig
+  signatures/sdf2-core/-
   analysis/desugar
   generation/to-template
   generation/to-str
   generation/to-pp
+  templatelang
   
 rules
 
   module-to-chk:
-    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, s'*])//Module(m', [i0, s'*])
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g, s'*])//Module(m', [i0, s'*])
     with
-      m'  := <to-str-module-name(|"-chk", "check")> Module(m)
-    ; i0  := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
-   ; i1* := <map(to-str-import(|"-sig", "signatures"))> i*
-    ; i2* := <map(to-str-import(|"-chk", "check"))> i*
-    ; s'* := <filter(section-to-check(|"example"))> s*
+      m'   := <to-str-module-name(|"-chk", "check")> Module(m)
+    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
+    ; i2*  := <map(to-str-import(|"-chk", "check"))> i*
+    ; lang := <language-spec-name>
+    ; g    := Strategies([SDefNoArgs($[check-example], CallNoArgs(SVar($[check-[lang]])))])
+    ; s'*  := <filter(section-to-check(|lang))> s*
 
   
   section-to-check(|lang):
