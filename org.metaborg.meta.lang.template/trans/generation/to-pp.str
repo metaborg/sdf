@@ -13,34 +13,35 @@ imports
 rules
 
   module-to-pp:
-    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g, s'*])
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
     ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import("trans/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
     ; lang := <language-spec-name>
-    ; g    := Strategies([SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))])
+    ; g1   := Strategies([SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))])
+    ; g2   := Strategies([SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-start-symbols])))])
     ; s'*  := <filter(section-to-pp(|lang))> s*
 
   
   section-to-pp(|lang):
     SDFSection(ContextFreeStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
     with
-       s1* := <map(start-symbol-to-pp)> s*        
+       s1* := <map(start-symbol-to-pp(|lang))> s*
   
   section-to-pp(|lang):
     SDFSection(LexicalStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
     with
-       s1* := <map(start-symbol-to-pp)> s*      
+       s1* := <map(start-symbol-to-pp(|lang))> s*
      
   section-to-pp(|lang):
     SDFSection(KernelStartSymbols(s*)) ->  Strategies(<not(?[])> [s1*])
     with
-       s1* := <map(start-symbol-to-pp)> s*      
+       s1* := <map(start-symbol-to-pp(|lang))> s*
      
-  start-symbol-to-pp:
-    Sort(x) -> SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[x]])))       
+  start-symbol-to-pp(|lang):
+    Sort(x) -> SDefNoArgs($[prettyprint-[lang]-start-symbols], CallNoArgs(SVar($[prettyprint-[x]])))
   
   section-to-pp(|lang):
     SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
@@ -465,8 +466,9 @@ rules
     )
     
   sort-to-contentcomplete-pp:
-    sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(List(
+    sort -> [ RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(List(
                   [ NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
                   , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> ["\"[[", sort,"]]\""] ))]))]))]))]))))
-                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [])))) ]
-  
+            , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], []))))
+            , SDefNoArgs("is-SDF-placeholder", Match(NoAnnoList(Op($[[sort]-Plhdr], []))))
+            ]
