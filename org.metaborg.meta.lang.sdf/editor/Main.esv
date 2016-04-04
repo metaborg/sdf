@@ -1,6 +1,6 @@
-module TemplateLang.main
+module Main
 
-imports 
+imports
 
   Menus
   Views
@@ -8,19 +8,15 @@ imports
   Syntax
 
 language
-
-  name : TemplateLang
-
-  extensions : tmpl, sdf3
+   
+  extensions : sdf, def
   
   table         : target/metaborg/sdf.tbl
   start symbols : Module
 
   provider : target/metaborg/stratego.ctree
-  provider : target/metaborg/stratego-javastrat.jar
-  observer : editor-analyze (multifile)
-  on save  : editor-save
+  observer : editor-analyze
 
 references
-
+  
   reference _ : editor-resolve

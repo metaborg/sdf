@@ -4,7 +4,7 @@ imports
   libstratego-lib
   libstratego-sdf
   libstratego-sglr
-  editor-common.generated
+  stratego/metaborg
 
 strategies
 

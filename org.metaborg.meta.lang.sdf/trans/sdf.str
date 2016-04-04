@@ -7,13 +7,11 @@ imports
   libstrc
   analysis
   generate-syntax-templates
-  editor-common.generated
-  include/SDF
-  completion
+  stratego/metaborg
+  signatures/SDF
+  editor/builders
   check
-  editor/SDF-Outliner
-  editor/-
-  //names
+  outline
 
 rules
 

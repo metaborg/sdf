@@ -1,6 +1,6 @@
 module generation/to-sdf3
 imports
-  include/SDF
+  signatures/SDF
   
   signatures/-
   signatures/aliases/-

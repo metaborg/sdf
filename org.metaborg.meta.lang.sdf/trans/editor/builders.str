@@ -1,9 +1,9 @@
 module editor/builders
 
 imports 
-  include/SDF
-  trans/generation/-
-  editor-common.generated
+  signatures/SDF
+  generation/-
+  stratego/metaborg
   pp/modules/Modules-pp
   pp/TemplateLang-pp
   signatures/kernel/Kernel-sig

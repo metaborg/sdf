@@ -35,6 +35,9 @@ strategies
   ds-prettyprint-ID =
     ![S(<is-string>)]
 
+  ds-prettyprint-IDNOHYPH =
+    ![S(<is-string>)]
+
   ds-prettyprint-LID =
     ![S(<is-string>)]
 
@@ -45,6 +48,9 @@ strategies
     ds-prettyprint-ID
 
   ds-prettyprint-example =
+    ds-prettyprint-IDNOHYPH
+
+  ds-prettyprint-example =
     ds-prettyprint-LID
 
   ds-prettyprint-INFER :
@@ -52,6 +58,9 @@ strategies
 
   ds-prettyprint-ID :
     amb([h|hs]) -> <ds-prettyprint-ID> h
+
+  ds-prettyprint-IDNOHYPH :
+    amb([h|hs]) -> <ds-prettyprint-IDNOHYPH> h
 
   ds-prettyprint-LID :
     amb([h|hs]) -> <ds-prettyprint-LID> h
