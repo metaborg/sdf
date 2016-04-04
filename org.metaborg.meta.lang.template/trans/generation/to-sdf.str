@@ -64,17 +64,25 @@ rules
 
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-    SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*, restr*]
-    with
-      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-      //content complete prods
-        cc* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-             ; nub 
-             ; map(sort-to-contentcomplete)> prods*;    
-        if [] := cc* then
-            inj* := []
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), plhdr-prods*, lit-prods*, restr*]
+  	with
+  		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+  		//content complete prods
+        sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+        lits*        := <collect(?lit(_)); nub> prods';
+        lit-ins*  := <map(lit-to-lit-insertion-prod); term-translation> lits*;
+        if [] := lits* then
+            lit-prods* := []
         else
-            inj* := [context-free-syntax(<term-translation> cc*)]
+            lit-prods* := [lexical-syntax([lit-ins*])]
+        end;                
+        plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
+        plhdr-ins* := <map(sort-to-plhdr-ins-prod); term-translation> sorts*;      
+        if [] := sorts* then
+            plhdr-prods* := []
+        else
+            plhdr-prods* := [context-free-syntax([plhdr*, plhdr-ins*])]
         end;
       // lexical restrictions
         x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
@@ -278,7 +286,7 @@ rules
         //content complete prods
         cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
              ; nub 
-             ; map(sort-to-contentcomplete)> x; 
+             ; map(sort-to-plhdr-prod)> x;
         if [] := cc*
         then
             inj* := []
@@ -518,12 +526,20 @@ rules //conversion of SDF3 terms into SDF2
     //debug(!"stringtosdf");
     map(!ci-lit(<template-escape; single-quote>))
 
- sort-to-contentcomplete:
+  sort-to-plhdr-prod:
     s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
     with
       rhs := lit(<concat-strings> ["[[", s, "]]"]);
       c := <double-quote> $[[s]-Plhdr]
-
+      
+  sort-to-plhdr-ins-prod:
+    s -> prod([sort("COMPLETION-INSERTION")], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder-insertion"))))]))
+    with
+       c := <double-quote> $[[s]-Plhdr]     
+       
+  lit-to-lit-insertion-prod:
+    lit -> prod([sort("COMPLETION-INSERTION")], lit, attrs([term(default(fun(unquoted("literal-completion"))))]))
+    
 template-escape =
     string-replace(|"\\", "\\\\");
     string-replace(|"\t", "\\t");
