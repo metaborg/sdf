@@ -139,7 +139,7 @@ imports
       <is-upper> f
     where
       lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
-      <task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Maybe nonterminal placeholder instead?])> s
+      <task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Possible use of nonterminal placeholder as terminal (use &lt;&lt;[s]&gt;&gt; instead?)])> s
                 
     nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
