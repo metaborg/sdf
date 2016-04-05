@@ -1,0 +1,80 @@
+module Menus
+
+menus
+  
+  menu: "Syntax"                      (openeditor) (meta)
+    
+    action: "Show abstract syntax"  = debug-show-aterm (realtime) (source)
+    action: "Show desugared syntax" = debug-show-desugared (realtime) (source)
+    action: "Show analyzed syntax"  = debug-show-analyzed
+    
+  menu: "Analysis"                    (meta)
+    
+    submenu: "Show analysis"          (openeditor)
+      action: "Project"             = debug-project
+      action: "Partition"           = debug-partition
+    end
+    
+    submenu: "Show index"             (openeditor)
+      action: "Project"             = debug-index-project
+      action: "Partition"           = debug-index-partition
+    end
+    
+    submenu: "Show tasks"             (openeditor)
+      action: "Project"             = debug-task-project
+      action: "Partition"           = debug-task-partition
+      action: "Selection"           = debug-task-selection
+    end
+  
+   menu: "Generate" (openeditor) (realtime)
+   
+    action: "Generate all files" = generate-all
+   
+  	submenu: "SDF"
+      action: "Generate SDF (abstract)" = generate-sdf-abstract (meta)
+      action: "Generate SDF (concrete)" = generate-sdf-concrete
+    end
+    
+    submenu: "Signature"
+      action: "Generate Signature (abstract)"         = generate-sig-abstract (meta)
+      action: "Generate Signature (concrete)"         = generate-sig-concrete
+      action: "Generate DynSem Signatures (abstract)" = generate-dynsem-abstract (meta)
+      action: "Generate DynSem Signatures"            = generate-dynsem 
+    end
+    
+    submenu: "Parse Table" (meta)
+      action: "Normalize and generate Parse Table"     = normalize-and-generate-pt
+      action: "Generate Parse Table (NF required)"     = generate-parse-table 
+      action: "Generate Item-sets (NF required)"       = generate-item-sets 
+      action: "Generate Parse Table sdf2table format"  = generate-parse-table-sdf2table-format
+      action: "to Normal Form"                         = sdf3-to-normal-form 
+      action: "to Normal Form (abstract)"              = sdf3-to-normal-form-abstract 
+      action: "to Normal Form (SDF2)"                  = sdf3-to-normal-form-sdf 
+    end
+    
+    submenu: "Completion"
+      action: "Generate Stratego"         = generate-new-completions-stratego 
+      action: "Generate ESV colorer"      = generate-new-completions-colorer
+    end
+    
+    action: "Generate PP (abstract)" = generate-pp-abstract (meta)
+    action: "Generate PP"            = generate-pp-concrete
+          	
+    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
+    action: "Generate AST checker"            = generate-ast-checker-concrete
+         
+    action: "Generate Permissive Grammar (abstract, starting from current)" = generate-permissive-abstract
+    action: "Generate Permissive Grammar (starting from current)" = generate-permissive-concrete
+     	
+  menu: "Format" (openeditor) (realtime)
+    
+    action: "Format"             			      = pp-sdf3 (source)
+    action: "Lift (abstract)" 					  = lift-sdf3-abstract (meta)
+    action: "Lift" 								  = lift-sdf3    
+    action: "Lift (templates, abstract)"          = lift-sdf3-template-abstract (meta)
+    action: "Lift (templates)"                    = lift-sdf3-template 
+    action: "Extract productions (abstract)"	  = extract-regular-productions-abstract (meta)
+    action: "Extract productions"				  = extract-regular-productions 
+
+    
+    

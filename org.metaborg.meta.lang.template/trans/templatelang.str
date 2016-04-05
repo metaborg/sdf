@@ -1,0 +1,114 @@
+module templatelang
+
+imports
+  libstratego-lib
+  libstratego-gpp
+  libstratego-aterm
+  libstratego-sglr
+  libstrc
+  signatures/TemplateLang-sig
+  pp/TemplateLang-parenthesize
+  outline
+  EditorService
+  stratego/metaborg
+  runtime/analysis/-
+  runtime/nabl/-
+  runtime/task/-
+  runtime/index/-
+  runtime/properties/-
+  runtime/types/-
+  runtime/editor/-
+
+  analysis/-
+  generation/-
+  editor/builders
+  editor/-
+  //analyze
+  //names
+  //name-desugar
+//  name-check
+  //check
+  names/analysis/names
+  types/analysis/types-ts
+
+rules // Analysis
+
+  // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
+  
+  
+
+  editor-analyze = analyze-all(lifting, id, id|<language>)
+
+  
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
+      
+rules // Editor services
+
+  editor-resolve:
+    (node, position, ast, path, project-path) -> definition
+    where
+      definition := <analysis-resolve(|<language>, project-path)> node
+
+  editor-complete:
+    (node, position, ast, path, project-path) -> proposals
+    where
+      proposals := <analysis-propose-completions(|<language>, project-path)> ast
+
+  editor-outline:
+    (node, position, ast, path, project-path) -> outline
+    where
+      outline := <outline> ast
+
+rules // Debugging
+
+  debug-show-aterm:
+    (selected, position, ast, path, project-path) -> (filename, selected)
+    with
+      filename := <guarantee-extension(|"aterm")> path
+
+  debug-show-desugared:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"desugared.aterm")> path;
+      result   := <desugar-templates> selected
+
+  debug-show-analyzed:
+    (selected, position, ast, path, project-path) -> (filename, selected)
+    with
+      filename := <guarantee-extension(|"analyzed.aterm")> path
+
+  debug-index-project =
+    analysis-debug-index-project(|<language>)
+  debug-index-partition =
+    analysis-debug-index-partition(|<language>)
+
+  debug-task-project =
+    analysis-debug-task-project(|<language>)
+  debug-task-partition =
+    analysis-debug-task-partition(|<language>)
+  debug-task-selection =
+    analysis-debug-task-selection(|<language>)
+
+  debug-project =
+    analysis-debug-project(|<language>)
+  debug-partition =
+    analysis-debug-partition(|<language>)
+
+  // analysis-default-debug-interface(msg) = debug(msg)
+  // analysis-default-debug-interface = debug
+
+rules
+
+  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"
+
+  // When given a tuple (path, string) this writes string into path.
+  write-string-to-file =
+    ?(filename, string);
+    if <dirname; readdir> filename then
+      with(
+        handle := <fopen> (filename, "w");
+        <fputs> (string, handle);
+        <fclose> handle;
+        <refresh-workspace-file> filename
+      )
+    end

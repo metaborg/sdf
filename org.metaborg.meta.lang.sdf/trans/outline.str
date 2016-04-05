@@ -1,0 +1,6 @@
+module outline
+
+rules
+  
+  editor-outline = foreign-call(|"TemplateLang", "editor-outline")
+  foreign-call(|lang,strategy) = prim("SSL_EXT_foreigncall", lang, strategy)

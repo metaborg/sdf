@@ -1,0 +1,24 @@
+module Main
+
+imports 
+
+  Menus
+  Views
+  Colorer
+  Syntax
+
+language
+
+  extensions : tmpl, sdf3
+  
+  table         : target/metaborg/sdf.tbl
+  start symbols : Module
+
+  provider : target/metaborg/stratego.ctree
+  provider : target/metaborg/stratego-javastrat.jar
+  observer : editor-analyze (multifile)
+  on save  : editor-save
+
+references
+
+  reference _ : editor-resolve

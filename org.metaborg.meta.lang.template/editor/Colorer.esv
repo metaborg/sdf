@@ -1,0 +1,13 @@
+module Colorer
+
+imports 
+
+  editor/Colorer.generated
+
+colorer
+
+	_.String: blue
+	_.Constructor: darkblue
+	_.Lit: blue
+	_.CiLit: blue
+	Label._ : grey

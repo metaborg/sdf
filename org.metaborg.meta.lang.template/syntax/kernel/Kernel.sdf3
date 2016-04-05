@@ -1,0 +1,37 @@
+module kernel/Kernel
+
+imports aterms/Aterms 
+        symbols/Symbols 
+        grammar/Grammars
+        constants/StrCon
+ 
+context-free syntax
+
+ATermAttribute.Default = <<aterm:ATerm>>
+Attribute.Term = <<ATermAttribute>>
+
+Attributes.Attrs = <{<list:{Attribute ", "}*>}>
+Attributes.NoAttrs = <>
+Attribute.Deprecated = <deprecated> {prefer}
+Attribute.Deprecated = <deprecated(<StrCon>)> {prefer}
+Attribute.Constructor = <cons(<StrCon>)> {prefer, deprecated("Use 'Sort.Cons' notation instead")}
+Attribute = <<QuotedConstructor>> {prefer, deprecated("Use 'Sort.Cons' notation instead") }
+Attribute.CaseInsensitive = <case-insensitive> {prefer}
+QuotedConstructor.Constructor = <<StrCon>>
+
+//new completion attributes
+Attribute.Placeholder = <placeholder> {prefer}
+Attribute.PlaceholderInsertion = <placeholder-insertion> {prefer}
+Attribute.LiteralCompletion = <literal-completion> {prefer}
+
+
+Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes>> {deprecated("Use productive form instead")}
+
+Productions = <<list:{Production "\n"}*>>
+
+Grammar.Syntax = <
+	syntax 
+
+		<Productions>
+		
+		>

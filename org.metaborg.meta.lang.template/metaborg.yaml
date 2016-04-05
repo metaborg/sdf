@@ -1,0 +1,62 @@
+---
+id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
+name: TemplateLang
+metaborgVersion: 2.0.0-SNAPSHOT
+metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
+dependencies:
+  compile:
+  - org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
+  source:
+  - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
+generates:
+- language: EditorService
+  directory: src-gen
+- language: Stratego-Sugar
+  directory: src-gen
+- language: SDF
+  directory: src-gen/syntax
+- language: ds
+  directory: src-gen
+exports:
+- language: Stratego-Sugar
+  directory: src-gen  
+pardonedLanguages:
+- EditorService
+- Stratego-Sugar
+- SDF
+- TypeSystemLanguage
+- NameBindingLanguage
+language:
+  sdf:
+    args:
+    - -Idef
+    - ${path:root}/lib/SDF.def
+  stratego:
+    format: ctree
+    args:
+    - -la
+    - stratego-lib
+    - -la
+    - stratego-sglr
+    - -la
+    - stratego-gpp
+    - -la
+    - stratego-xtc
+    - -la
+    - stratego-aterm
+    - -la
+    - stratego-sdf
+    - -la
+    - strc
+build:
+  stratego-cli:
+  - phase: preJava
+    strategy: org.strategoxt.tools.main-parse-pp-table
+    args:
+    - -i
+    - ${path:root}/lib/EditorService-pretty.pp
+    - -o
+    - ${path:root}/target/metaborg/EditorService-pretty.pp.af

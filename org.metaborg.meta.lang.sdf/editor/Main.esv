@@ -1,0 +1,22 @@
+module Main
+
+imports
+
+  Menus
+  Views
+  Colorer
+  Syntax
+
+language
+   
+  extensions : sdf, def
+  
+  table         : target/metaborg/sdf.tbl
+  start symbols : Module
+
+  provider : target/metaborg/stratego.ctree
+  observer : editor-analyze
+
+references
+  
+  reference _ : editor-resolve

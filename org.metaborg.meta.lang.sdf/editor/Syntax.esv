@@ -1,0 +1,18 @@
+module Syntax
+
+language
+  
+  indent after:
+    imports
+    exports
+    hiddens
+    syntax
+    sorts
+    restrictions
+    priorities
+  	
+  fences : ( ) { }
+  
+  line comment: "%%"
+  
+  block comment: % % %

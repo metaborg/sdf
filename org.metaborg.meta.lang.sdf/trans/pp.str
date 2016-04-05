@@ -1,0 +1,53 @@
+module trans/pp
+
+imports
+  libstratego-gpp
+  runtime/refactoring/-
+  pp/TemplateLang-pp
+  pp/modules/Modules-pp
+  lib/sdf3/TemplateLang-parenthesize
+
+rules
+  
+  pp-SDF3-string =
+    parenthesize-TemplateLang;
+    prettyprint-Module 
+    ; !V([], <id>)
+    ; box2text-string(|120)
+  
+  
+  pp-SDF3-string-abstract =
+    prettyprint-Module 
+    ; !V([], <id>)
+      
+  pp-partial-SDF3-string =
+    prettyprint-example
+    ; !V([], <id>)
+    ; box2text-string(|120)
+      
+  pp-debug :
+    ast -> result
+    with
+       result := <pp-SDF3-string> ast
+    <+ <bottomup(try(not(is-string); not(is-list); not(pp-SDF3-string); debug(!"cannot pp ")))> ast
+    ;  result := ""
+
+
+rules
+  
+  /**
+  * Given an old AST and a new AST, pretty-prints the new AST while presevering 
+  * layout (e.g. whitespacing and comments) associated with the old AST.
+  *
+  * Example:
+  *   new-text := <construct-textual-change> (old-ast, new-ast)
+  */
+  
+  resugar = id
+  parenthesize = id
+  override-reconstruction = id
+  get-indent = id
+  get-separator = id
+  get-leading-ws = id
+  construct-textual-change = construct-textual-change(pp-partial-SDF3-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) <+ construct-textual-change(pp-partial-SDF3-string, parenthesize, override-reconstruction, resugar)
+  construct-textual-change(pp-partial-SDF3-string, get-indent, get-separator, get-leading-ws, parenthesize, override-reconstruction, resugar) = fail

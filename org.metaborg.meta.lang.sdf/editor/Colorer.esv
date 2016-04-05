@@ -1,0 +1,17 @@
+module Colorer
+
+imports 
+
+  editor/Colorer.generated
+
+colorer
+
+  Label : gray
+    
+  _.Constructor : 64 64 255 bold
+  Namespace     : darkgreen 
+  Label         : gray
+  
+  _.namespaceref  : 0   96  96 italic
+  _.namespaceref2 : 0   96  96 italic
+  _.namespacedef  : 0   96  96 italic

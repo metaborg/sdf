@@ -1,0 +1,1035 @@
+module to-parse-table-old
+
+imports
+  signatures/TemplateLang-sig
+  libstratego-sglr
+  libstratego-lib
+  libstratego-gpp
+  generation/to-sdf
+  runtime/nabl/-
+  pp/TemplateLang-pp
+  trans/utils/misc
+  normalization/char-class-utils
+  normalization/to-normal-form
+    
+overlays
+  sdf-norm-constructor(s) = Term(Default(Appl(Unquoted("default"),[Appl(Unquoted("appl"),[Appl(Unquoted("unquoted"),[Fun(Quoted("\"cons\""))]),List([List([Appl(Unquoted("fun"),[Appl(Unquoted("quoted"),[Fun(Quoted(s))])])])])])])))    
+    
+signature 
+  constructors
+  
+  ItemSets            : List(Label) * List(ItemSet) -> ItemSets
+  ItemSet             : Label * List(Item) * List(goto) * Completions -> ItemSet
+  Completions         : List(CompletionItem) -> Completions
+  Completion          : ProducedSort * ExpectedSort * Description * List(CompletionItem) -> CompletionItem
+  PlaceholderWithSort : Name * Sort -> CompletionItem
+  String              : Text -> CompletionItem
+  Cursor              : CompletionItem
+  CompletionSort      : Name -> CompletionSort
+  Item                : List(Symbol) * List(Symbol) * Symbol * Label -> Item
+  Changed             : Status
+  NotChanged          : Status
+  
+  
+// are theses constructors in some stratego library?  
+// TODO: Define a syntax definition for the parse-table
+signature
+   constructors 
+   
+   parse-table  : version * initialState * List(Label) * states * priorities -> ParseTable
+   states       : List(State) -> States
+   priorities   : List(priority) -> Priorities
+   arg-gtr-prio : Label * Arg * Label -> arg-gtr-prio
+   gtr-prio     : Label * Label -> gtr-prio
+   goto         : List(Int) * Label -> goto
+   state-rec    : Label * List(goto) * List(action) -> state-rec
+   action       : List(Int) * List(actions) -> action
+   shift        : Int -> shift
+   reduce       : Arity * Label * Status -> reduce 
+   reduce       : Arity * Label * Status * Lookahead -> reduce 
+   accept       : accept
+   recover      : recover
+   completion   : completion
+   look         : term * List(terms) -> look
+
+
+//couldn't import those from the runtime libraries (why?)
+rules
+
+    cputime = prim("SSL_cputime")
+    
+    cputime-to-seconds:
+        cputime -> <div> (cputime, 1000000000)
+    
+    measure-time(s, match) =
+        where(before := <cputime>);
+        s;
+        where(after := <cputime>; !(after, before); subt; match)  
+
+   
+rules
+  
+  to-parse-table:
+    m@Module(Unparameterized(mn), [], sections*) -> parse-table(version, initialstate, labels*, states, priorities(priorities'))
+    with
+        <debug(!"generating parse table ")> "";
+        where(before-total := <cputime>);
+        <set-counter> ("labels", 256);
+      version := <!6> ; //maybe 7, then?
+      initialstate := <!0>;
+      prods* := <get-normalized-productions> sections*;
+      <debug(!"formatting productions and mapping follow restrictions ")> "";
+      where(before-formatting := <cputime>);
+      
+      labels* := <filter(prod-to-pt-format); ?table-prods*; map(create-label); reverse> prods*;
+        <get-normalized-restrictions <+ ![]; map(mapping-follow-restriction)> sections*;
+        
+        where(after-formatting := <cputime>; !(after-formatting, before-formatting); subt; cputime-to-seconds; debug(!"time spent formatting productions "));
+        <debug(!"calculating priorities transitive closure ")> "";
+        where(before-prio := <cputime>);
+        
+        priorities   := <get-normalized-priorities; make-set> sections*;
+            priorities'  := <map(priority-to-label); transitive-closure> priorities;
+            
+            where(after-prio := <cputime>; !(after-prio, before-prio); subt; cputime-to-seconds; debug(!"time spent calculating priorities transitive closure "));
+            <debug(!"calculating symbol sets ")> "";
+            where(before-symbol-sets := <cputime>);
+            
+            <create-symbols-sets(|table-prods*)> table-prods*;
+            
+            where(after-symbol-sets := <cputime>; !(after-symbol-sets, before-symbol-sets); subt; cputime-to-seconds; debug(!"time spent calculating symbol sets "));
+            <debug(!"calculating DFA ")> "";
+            where(before-dfa := <cputime>);
+            
+      item-sets*   := <to-item-sets(|labels*, table-prods*)> m;
+      
+      where(after-dfa := <cputime>; !(after-dfa, before-dfa); subt; cputime-to-seconds; debug(!"time spent calculating DFA "));
+            <debug(!"creating actions and states ")> "";
+            where(before-actions := <cputime>);
+      
+      states       := <create-states> item-sets*;
+      
+      where(after-actions := <cputime>; !(after-actions, before-actions); subt; cputime-to-seconds; debug(!"time spent creating actions and states "))
+      where(after-total := <cputime>; !(after-total, before-total); subt; cputime-to-seconds; debug(!"time spent generating parse table "))
+        
+     
+    get-normalized-productions = oncetd(?Kernel(prods*)); !prods*
+    
+    get-normalized-priorities  = oncetd(?Priorities(prios*)); !prios*
+  
+  get-normalized-restrictions = oncetd(?Restrictions(rest*)); !rest*
+  
+  mapping-follow-restriction :
+     Follow([s], List(rest*)) -> <id>
+     where
+         s' := <symbol-to-pt-format> s;
+         rules(
+            get-follow-rest :
+                  s' -> rest*                         
+           )
+     
+      
+  create-symbols-sets(|p*) = set-flag-true; repeat(calculate-sets-prods(|p*)) 
+  
+  //while flag-is-true calculate first-sets for each production 
+  calculate-sets-prods(|p*) = where(check-flag; set-flag-false; map(calculate-sets(|p*)))   
+  
+  check-flag = where(get-flag; ?Changed())
+  
+  set-flag-false = where(rules(get-flag : t -> NotChanged()))
+  
+  set-flag-true = where(rules(get-flag : t -> Changed()))
+  
+  calculate-sets(|prods*):
+        p@prod(rhs*, symbol, attrs*) -> <id>
+        where
+            // k=0 then symbol is nullable
+            if [] := rhs* then
+                if not("true" := <is-nullable> symbol) then
+                    set-flag-true;
+                    rules(
+                        is-nullable:
+                            symbol -> "true"                                            
+                    )
+                end
+            end;
+            
+            // if rhs* are all nullable
+            if <check-all-symbols-nullable> rhs* then
+                if not("true" := <is-nullable> symbol) then
+                    set-flag-true;
+                    rules(
+                        is-nullable:
+                            symbol -> "true"
+                        )
+                end
+            end;
+            
+            
+            first-set := <bagof-get-first-set-symbol> symbol;
+            // try to add the first set of the first symbol on the rhs to symbol
+            <add-first-from-list(|first-set, symbol)> rhs*;         
+            //try to add the first set of the nullable following symbols
+            <add-first-nullable(|first-set, symbol)> rhs*;
+            <filter(calculate-follow(|p, symbol))> prods*
+             
+    
+            
+    calculate-follow(|orig, s):
+        new@prod(rhs*, symbol, attrs*) -> <id>
+        where
+            label-new  := <remove-attrs; get-label-from-prod> new; 
+            <check-for-priority-conflict(|label-new)> orig; 
+            <follow-from-production(|orig, s, new, 0)> rhs*
+    
+    follow-from-production(|orig, s, new, arg):
+        [h | hs] -> <id>
+        where
+            if <?s> h then
+                if <check-all-symbols-nullable> hs then
+                    label-new  := <remove-attrs; get-label-from-prod> new; 
+                    <check-for-priority-conflict(|label-new, arg)> orig; 
+                    //if all symbols are nullable, then add follow from prod that produced this rhs
+                    <add-follow-from-prod(|orig)> new
+                end;
+                    //add the next symbol and the followings if the next is nullable 
+                <add-follow-nullable(|orig)> hs
+            end;
+            <follow-from-production(|orig, s, new, <inc> arg)> hs
+    
+    //if there is no symbol do nothing      
+    add-follow-nullable(|orig):
+        [] -> <id>
+        
+    add-follow-nullable(|orig):
+        [h | hs] -> <id>
+        where
+            symbols* := <get-first-set> h; //add-first-h
+            <filter(add-symbols-to-follow-set(|orig))> symbols*;
+            if <is-nullable> h then
+                <add-follow-nullable(|orig)> hs
+            end
+            
+    add-symbols-to-follow-set(|orig):
+        symbol -> <id>
+        where
+            label-orig := <remove-attrs; get-label-from-prod> orig;
+            follow-set := <bagof-get-follow-set-from-prod> label-orig;
+            if <not(fetch(?symbol))> follow-set then
+                set-flag-true;
+                rules(              
+                get-follow-set-from-prod:+
+                    label-orig -> symbol                            
+                )
+            end
+            
+    add-follow-from-prod(|orig):
+        new -> <id>
+        where
+            label-new := <remove-attrs; get-label-from-prod> new;
+            symbols* := <bagof-get-follow-set-from-prod> label-new;
+            <filter(add-symbols-to-follow-set(|orig))> symbols*     
+                
+    
+    //if there is no symbol do nothing
+    add-first-nullable(|first-set, s):
+        [] -> <id>
+    
+    //if there is a symbol  
+    add-first-nullable(|first-set, s):
+        [h | hs] -> <id>
+        where
+        if <is-nullable> h then
+            <add-first-from-list(|first-set, s)> hs;
+            <add-first-nullable(|first-set, s)> hs
+        end
+        
+    //if there is no symbol do nothing
+    add-first-from-list(|first-set, s):
+        [] -> <id>
+        
+    //if there is a symbol
+    add-first-from-list(|first-set, s):
+        [h | hs] -> <id>
+        where
+        //get first set of symbol h
+        symbols* := <get-first-set> h;      
+        //try to add new symbols to first-set of s
+        <filter(add-symbols-to-first-set(|first-set, s))> symbols*
+         
+    add-symbols-to-first-set(|first-set, s):
+        symbol -> <id> 
+    where
+        if <not(fetch(?symbol))> first-set then
+            set-flag-true;
+            rules(              
+                get-first-set-symbol:+
+                    s -> symbol                         
+            )
+        end 
+    
+    get-first-set = calculate-first-set-cc <+ bagof-get-first-set-symbol  
+    
+    calculate-first-set-cc:
+        char-class(cc*) -> result
+        where
+            result := <map(explode-cc); flatten-list> cc*;
+            rules(
+                get-first-set-cc :
+                    char-class(cc*) -> result
+            )
+    
+    explode-cc:
+        c -> c
+        where
+            not(?range(_, _))
+    
+    explode-cc:
+        range(a, b) -> [a, <explode-cc> range(<inc> a, b)]
+        where
+            <gt> (b, a)
+    
+    explode-cc:
+        range(b, b) -> b        
+        
+        
+    check-all-symbols-nullable = map(is-nullable)       
+    
+    calculate-symbols-first-set:
+        [h | s] -> symbols'*
+        with
+            symbols* := <get-first-set> h;
+            if <is-nullable> h then
+                remainder* := <calculate-symbols-first-set> s;
+                symbols'*  := [symbols*, remainder*]
+            else
+                symbols'* := symbols*
+            end
+            
+    calculate-symbols-first-set:
+        [] -> []    
+  
+  create-label:
+    prod@prod(rhs*, symbol, attrs) -> label(prod, label-num)
+    with      
+      label-num     := <next-counter> "labels";
+      attrs*        := <?attrs(<id>) <+ ![]> attrs;
+      status        := <get-status-from-attrs <+ !0> attrs*;
+      prod-no-attrs := <remove-attrs> prod;
+      //remove constructor before creating dr
+      rules(
+        get-label-from-prod:
+        prod-no-attrs -> label-num
+        
+        get-prod-from-label:
+        label-num -> prod-no-attrs
+        
+        get-prods-from-symbol:+
+        symbol -> prod-no-attrs
+        
+        //TODO: Figure out which status numbers correspond to avoid, prefer, reject 
+        get-status-from-label:
+        label-num -> status
+        )
+        
+  remove-attrs:
+     prod(rhs*, symbol, attrs) -> prod(rhs*, symbol, no-attrs())          
+
+    get-status-from-attrs :
+        attrs -> 4
+        where
+            fetch(?avoid())
+    
+    get-status-from-attrs :
+        attrs -> 2
+        where
+            fetch(?prefer())    
+            
+    get-status-from-attrs :
+        attrs -> 1
+        where
+            fetch(?reject())            
+    
+    
+    //FIXME: Implemented in the parser but not totally implemented by the parse table
+    /*get-status-from-attrs :
+        attrs -> 3
+        where
+            fetch(?bracket())
+    */
+     
+            
+    //does the production in here need to be in that specific format?
+  prod-to-pt-format :
+    sdfprod@SdfProduction(symbol, Rhs(rhs*), attrs) -> table-prod
+    with
+      rhs'*               := <map(symbol-to-pt-format)> rhs*;
+      symbol'             := <symbol-to-pt-format> symbol;
+      attrs'              := <(?Attrs([]) + ?NoAttrs()); !no-attrs() <+ ?Attrs(<id>); !attrs(<filter(attrs-to-pt-format)>)> attrs;
+      table-prod          := prod(rhs'*, symbol', attrs');
+      table-prod-no-attrs := <remove-attrs> table-prod;
+      attrs-sdf           := <?Attrs([]); !NoAttrs() <+ id> attrs;
+      rules(
+        get-sdf-prod-from-prod :
+          table-prod-no-attrs -> SdfProduction(symbol, Rhs(rhs*), attrs-sdf)
+      )
+  
+  //translating productions with constructors
+    prod-to-pt-format :
+        sdfprod@SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(rhs*), attrs) -> table-prod
+        with
+            rhs'*               := <map(symbol-to-pt-format)> rhs*;
+            symbol'             := <symbol-to-pt-format> symbol;
+            new-cons            := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
+            attrs'*             := <?Attrs(<id>) <+ ![]> attrs;
+            new-attrs           := <filter(attrs-to-pt-format); !attrs(<id>)> [attrs'*, new-cons];
+            table-prod          := prod(rhs'*, symbol', new-attrs);
+            table-prod-no-attrs := <remove-attrs> table-prod;
+            attrs-sdf           := <?Attrs([]); !NoAttrs() <+ id> attrs;
+            rules(
+                get-sdf-prod-from-prod :
+                    table-prod-no-attrs-> SdfProductionWithCons(SortCons(symbol, cons), Rhs(rhs*), attrs-sdf)
+            )
+  
+  prod-to-pt-format-no-dr :
+        sdfprod@SdfProduction(symbol, Rhs(rhs*), attrs) -> table-prod
+        with
+            rhs'*      := <map(symbol-to-pt-format)> rhs*;
+            symbol'    := <symbol-to-pt-format> symbol;
+            attrs'     := <(?Attrs([]) + ?NoAttrs()); !no-attrs() <+ ?Attrs(<id>); !attrs(<filter(attrs-to-pt-format)>)> attrs;
+            table-prod := prod(rhs'*, symbol', attrs');
+            attrs-sdf  := <?Attrs([]); !NoAttrs() <+ id> attrs
+    
+    prod-to-pt-format-no-dr :
+        sdfprod@SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(rhs*), attrs) -> table-prod
+        with
+            rhs'*      := <map(symbol-to-pt-format)> rhs*;
+            symbol'    := <symbol-to-pt-format> symbol;
+            new-cons   := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
+            attrs'*    := <?Attrs(<id>) <+ ![]> attrs;
+            new-attrs  := <filter(attrs-to-pt-format); !attrs(<id>)> [attrs'*, new-cons];
+            table-prod := prod(rhs'*, symbol', new-attrs);
+            attrs-sdf  := <?Attrs([]); !NoAttrs() <+ id> attrs
+            
+  
+  symbol-to-pt-format = special-symbol-to-pt-format <+ term-to-pt-format
+  
+  special-symbol-to-pt-format:
+    FileStart() -> sort("<Start>")
+    
+  special-symbol-to-pt-format:
+    Start() -> sort("<START>")  
+    
+  special-symbol-to-pt-format:
+    Lit(s) -> lit(<un-double-quote; unescape> s)  
+    
+  special-symbol-to-pt-format:
+    CiLit(s) -> ci-lit(<un-double-quote; unescape> s)
+    
+  special-symbol-to-pt-format:
+    Lex(s) -> lex(<symbol-to-pt-format> s)
+    
+  special-symbol-to-pt-format:
+    Cf(s) -> cf(<symbol-to-pt-format> s)    
+  
+  special-symbol-to-pt-format:
+    Opt(s) -> opt(<symbol-to-pt-format> s)
+  
+  special-symbol-to-pt-format:
+    Alt(s1, s2) -> alt(<symbol-to-pt-format> s1, <symbol-to-pt-format> s2)
+    
+    special-symbol-to-pt-format:
+      IterSep(sort, lit) -> iter-sep(<symbol-to-pt-format> sort, <symbol-to-pt-format> lit)
+    
+    special-symbol-to-pt-format:
+        Iter(sort) -> iter(<symbol-to-pt-format> sort )
+    
+    special-symbol-to-pt-format:
+      Right() -> right()
+  
+    special-symbol-to-pt-format:
+      IterStar(sort) -> iter-star(<symbol-to-pt-format>  sort)
+    
+    special-symbol-to-pt-format:
+      Simple(sort) -> simple-charclass(<symbol-to-pt-format> sort)
+    
+    special-symbol-to-pt-format:
+      LabelStart() -> label_start()
+    
+    special-symbol-to-pt-format:
+      NonAssoc() -> non-assoc()
+    
+    special-symbol-to-pt-format:
+      WithArguments(g, a) -> with-arguments(<symbol-to-pt-format>  g, <symbol-to-pt-format>  a)
+  
+    special-symbol-to-pt-format:
+      NonTransitive(g) -> non-transitive(<symbol-to-pt-format> g)
+  
+    special-symbol-to-pt-format:
+      SimpleGroup(p) -> simple-group(<symbol-to-pt-format> p)
+      
+    special-symbol-to-pt-format:
+      ProdsGroup(p) -> prods-group(<symbol-to-pt-format> p) 
+        
+    special-symbol-to-pt-format:
+      AssocGroup(a, p) -> assoc-group(<symbol-to-pt-format> a, <symbol-to-pt-format> p)
+  
+    special-symbol-to-pt-format:
+      RealCon(i, n, o) -> real-con(<symbol-to-pt-format> i, <symbol-to-pt-format> n, <symbol-to-pt-format> o) 
+  
+    special-symbol-to-pt-format:
+      IterStarSep(sort, sep) -> iter-star-sep(<symbol-to-pt-format> sort, <symbol-to-pt-format> sep)  
+  
+    special-symbol-to-pt-format:
+      ParameterizedSort(sort, sym) -> parameterized-sort(<symbol-to-pt-format> sort, <symbol-to-pt-format> sym) 
+           
+  special-symbol-to-pt-format:
+      NoAttrs() -> no-attrs()
+  
+  special-symbol-to-pt-format:
+    SortDef(s) -> sort(<symbol-to-pt-format> s)
+    
+    special-symbol-to-pt-format:
+    Deprecated() -> term(default(fun(unquoted("deprecated"))))
+    
+    special-symbol-to-pt-format:
+      Deprecated(s) -> term(default(appl(unquoted("deprecated"), [fun(quoted(s))])))    
+    
+  special-symbol-to-pt-format:
+      Constructor(s) -> term(default(appl(unquoted("cons"), [fun(quoted(s))])))
+    
+    special-symbol-to-pt-format:
+      Sequence(t1, t2*) -> seq(<symbol-to-pt-format> t1, <map(symbol-to-pt-format)> t2*)      
+  
+    special-symbol-to-pt-format:
+      LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))  
+   
+    special-symbol-to-pt-format:
+      IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
+    
+    special-symbol-to-pt-format:
+        CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))   
+            
+  special-symbol-to-pt-format:
+    CharClass(Simple(Present(cc))) -> char-class([n'*])
+    with
+    n'* := <char-class-to-pt-format> cc
+    
+  term-to-pt-format:
+        cons#(args) -> cons'#(<strip-annos> args)
+        with
+          [f|fs] := <explode-string> cons;
+          cons'  := <implode-string> [<to-lower> f|fs]
+  
+  attrs-to-pt-format = special-attrs-to-pt-format <+ term-translation
+    
+  special-attrs-to-pt-format:
+    Term(Default(Appl(Unquoted("default"),[Appl(Unquoted("appl"),[Appl(Unquoted("unquoted"),[Fun(Quoted("\"cons\""))]),List([List([Appl(Unquoted("fun"),[Appl(Unquoted("quoted"),[Fun(Quoted(s))])])])])])])))  
+ -> term(cons(<un-double-quote; unescape> s))
+    
+    special-attrs-to-pt-format:    
+        Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("fun"), [Appl(Unquoted("unquoted"), [Fun(Quoted("\"completion\""))])])]))) -> term(completion())
+        
+    special-attrs-to-pt-format:    
+        Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("fun"), [Appl(Unquoted("unquoted"), [Fun(Quoted("\"recover\""))])])]))) -> term(recover())    
+ 
+  special-attrs-to-pt-format:
+        Term(Default(Fun(Unquoted("recover")))) -> term(recover())
+        
+    special-attrs-to-pt-format:    
+        Term(Default(Fun(Unquoted("completion")))) -> term(completion())
+  
+    
+  priority-to-label:
+    Chain([group1, group2]) -> result
+      where
+        oncetd(?WithArguments(_, Default([arg])));
+        not(oncetd(?NonTransitive(_)))
+      with
+          arg'   := <string-to-int> arg ;
+        label1 := <get-label-from-group> group1;
+        label2 := <get-label-from-group> group2;
+        result := arg-gtr-prio(label1, arg', label2);
+        rules( get-priorities-from-label :+ label1 -> result );
+        rules( get-priorities-from-label-transitive :+ label1 -> result);
+        rules( get-all-prios :+ "all-priorities" -> result )    
+    
+  priority-to-label:
+        Chain([group1, group2]) -> result
+        where
+            not(oncetd(?WithArguments(_, Default([arg]))));
+            not(oncetd(?NonTransitive(_)))
+        with
+            label1 := <get-label-from-group> group1;
+            label2 := <get-label-from-group> group2;
+            result := gtr-prio(label1, label2);
+            rules( get-priorities-from-label :+ label1 -> result )  ;
+            rules( get-priorities-from-label-transitive :+ label1 -> result);
+            rules( get-all-prios :+ "all-priorities" -> result )    
+  
+  priority-to-label:
+        Chain([group1, group2]) -> result
+        where
+            oncetd(?WithArguments(_, Default([arg])));
+            oncetd(?NonTransitive(_))
+        with
+            arg'   := <string-to-int> arg ;
+            label1 := <get-label-from-group> group1;
+            label2 := <get-label-from-group> group2;
+            result := arg-gtr-prio(label1, arg', label2);
+            rules( get-priorities-from-label :+ label1 -> result );
+            rules( get-all-prios :+ "all-priorities" -> result )    
+        
+        
+    priority-to-label:
+        Chain([group1, group2]) -> result
+        where
+            not(oncetd(?WithArguments(_, Default([arg]))));
+            oncetd(?NonTransitive(_))
+        with
+            label1 := <get-label-from-group> group1;
+            label2 := <get-label-from-group> group2;
+            result := gtr-prio(label1, label2);
+            rules( get-priorities-from-label :+ label1 -> result );
+            rules( get-all-prios :+ "all-priorities" -> result )    
+       
+  
+  
+  get-label-from-group :
+    NonTransitive(WithArguments(g, Default([arg]))) -> label
+    with
+        label := <get-label-from-group> g
+  
+  get-label-from-group :
+        WithArguments(g, Default([arg])) -> label
+        with
+            label := <get-label-from-group> g
+  
+  get-label-from-group :
+    SimpleGroup(prod) -> label
+    with
+        label := <prod-to-pt-format-no-dr; remove-attrs; get-label-from-prod> prod
+  
+  get-label-from-group :
+        NonTransitive(SimpleGroup(prod)) -> label
+        with
+            label := <prod-to-pt-format-no-dr; remove-attrs; get-label-from-prod> prod
+  
+  transitive-closure :
+     priorities* -> priorities'*
+     with
+         priorities'* := <set-trans-flag-true; repeat(<bagof-get-all-prios> "all-priorities"; calculate-transitive-closure)> 
+         
+  calculate-transitive-closure = where(check-trans-flag; set-trans-flag-false; filter(calculate-closure))
+         
+  check-trans-flag = where(get-trans-flag; ?Changed())
+    
+    set-trans-flag-false = where(rules(get-trans-flag : t -> NotChanged()))
+    
+    set-trans-flag-true = where(rules(get-trans-flag : t -> Changed()))       
+  
+  calculate-closure:
+     p@gtr-prio(label1, label2) -> <id>
+     where
+         trans-prios-label2*      := <bagof-get-priorities-from-label-transitive; make-set> label2;
+         trans-prios-label1*      := <bagof-get-priorities-from-label-transitive; make-set> label1;
+         <fetch(?p)> trans-prios-label1*;
+         <filter(check-for-gtr-prio(|label1))> trans-prios-label2*
+  
+  check-for-gtr-prio(|label1) :
+     gtr-prio(label2, label3) -> result
+     where
+         all-prios* := <bagof-get-all-prios> "all-priorities";
+         <not(fetch(?gtr-prio(label1, label3)))> all-prios*;
+         result     := gtr-prio(label1, label3);
+         set-trans-flag-true;
+         rules( get-priorities-from-label :+ label1 -> result );
+           rules( get-priorities-from-label-transitive :+ label1 -> result);
+           rules( get-all-prios :+ "all-priorities" -> result )    
+  
+  check-for-gtr-prio(|label1, p-label1*) :
+       arg-gtr-prio(label2, arg, label3) -> result
+       where
+           all-prios* := <bagof-get-all-prios> "all-priorities";
+           <not(fetch(?gtr-prio(label1, label3)))> all-prios*;
+           result     := gtr-prio(label1, label3);
+           set-trans-flag-true;
+           rules( get-priorities-from-label :+ label1 -> result );
+           rules( get-priorities-from-label-transitive :+ label1 -> result);
+           rules( get-all-prios :+ "all-priorities" -> result )
+  
+  calculate-closure:
+       p@arg-gtr-prio(label1, arg, label2) -> <id>
+       where
+           trans-prios-label2*  := <bagof-get-priorities-from-label-transitive; make-set> label2;
+           trans-prios-label1*  := <bagof-get-priorities-from-label-transitive; make-set> label1;
+           <fetch(?p)> trans-prios-label1*;
+           transitive-prios*    := <filter(check-for-arg-gtr-prio(|label1, arg))> trans-prios-label2*
+    
+    check-for-arg-gtr-prio(|label1, arg) :
+       g@gtr-prio(label2, label3) -> result
+       where
+           all-prios* := <bagof-get-all-prios> "all-priorities";
+           <not(fetch(?arg-gtr-prio(label1, arg, label3)))> all-prios*;
+           result     := arg-gtr-prio(label1, arg, label3);
+           set-trans-flag-true;
+           rules( get-priorities-from-label :+ label1 -> result );
+           rules( get-priorities-from-label-transitive :+ label1 -> result);
+           rules( get-all-prios :+ "all-priorities" -> result )
+    
+    check-for-arg-gtr-prio(|label1, arg) :
+       g@arg-gtr-prio(label2, arg2, label3) -> arg-gtr-prio(label1, arg, label3)
+       where
+           all-prios* := <bagof-get-all-prios> "all-priorities";
+           <not(fetch(?arg-gtr-prio(label1, arg, label3)))> all-prios*;
+           result     := arg-gtr-prio(label1, arg, label3);
+           set-trans-flag-true;
+           rules( get-priorities-from-label :+ label1 -> result );
+           rules( get-priorities-from-label-transitive :+ label1 -> result);
+           rules( get-all-prios :+ "all-priorities" -> result )
+          
+  create-states:
+    ItemSets(labels*, item-set*) -> states(states'*)
+    with
+        actions-hash := <new-hashtable>;
+        states*      := <filter(create-state-from-itemset(|actions-hash))> item-set*;
+        states'*     := <isort-list(LSort(compare-states))> states*
+    
+  compare-states = ?(s1@state-rec(label1, _, _), s2@state-rec(label2, _, _)); !(label1, label2); gt
+    
+  create-state-from-itemset(|actions-hash):
+    ItemSet(label, items*, gotos*, completions) -> state-rec(label, gotos*, actions*)
+    with
+       <hashtable-clear> actions-hash;
+       <filter(create-accept-action-from-item(|gotos*, actions-hash))> items*;
+       <filter(create-shift-actions-from-item(|actions-hash))> gotos*;
+       <filter(create-reduce-actions-from-item(|gotos*, actions-hash))> items*;
+       keys*    := <hashtable-keys> actions-hash;
+       actions* := <map(create-action-from-key(|actions-hash))> keys*
+          
+  create-action-from-key(|actions-hash):
+    key -> action(key, value)
+    with
+        value := <hashtable-get(|key)> actions-hash
+  
+  create-shift-actions-from-item(|actions-hash):
+     goto(cc, state) -> action(cc, [shift(state)])
+     where
+         <?[int | hs]> cc;
+         <not(gt)> (int, 256);
+         if <eq> (int, 256) then
+             values := <hashtable-get(|int)> actions-hash;
+             <not(fetch(?accept()))> values
+         end;
+         <hash-multimap-putlist(|cc, [shift(state)])> actions-hash
+       
+  create-shift-actions-from-item(|gotos*, actions-hash):
+    Item(beforeDot, [char-class(cc) | hs], symbol, label) -> action(cc, [shift(state)])
+    where
+      not(<?([sort("<START>")], char-class(cc))> (beforeDot, char-class([256])))
+    with
+      goto := <fetch(?goto(cc, state))> gotos* ;
+      <hash-multimap-putlist(|cc, [shift(state)])> actions-hash
+         
+  create-accept-action-from-item(|gotos*, actions-hash):
+    Item([sort("<START>")], [char-class([256])], symbol, label) -> action([256], [accept()])
+    with
+      <hash-multimap-putlist(|[256], [accept()])> actions-hash
+  
+  create-reduce-actions-from-item(|gotos*, actions-hash):
+    Item(beforeDot*, [], symbol, label) -> action(followset, [reduce(length, label, status)])
+    where
+      not(<?[sort("<START>"), char-class([256])]> beforeDot*)
+    with
+        status                  := <get-status-from-label> label;
+        size                     := <length> beforeDot*;
+        followset                := <debug(!"label "); bagof-get-follow-set-from-prod; debug(!"follow-set ")> label;
+        followset-cc             := <to-sdf3-char-class; char-class-norm-fun> followset;
+        length                   := <length> beforeDot*;
+        keys*                    := <hashtable-keys> actions-hash; //previously computed shifts
+        follow-set-no-shift      := <foldl(add-reduce-action-to-previous-actions(|followset-cc, actions-hash, length, label, status))> (keys*, followset-cc);
+        //reduce action should be only on not previously computed characters
+        follow-set-pt-no-rest    := <try(apply-follow-restrictions(|symbol))> follow-set-no-shift;
+        follow-set-pt-no-la-rest := <try(apply-la-follow-restrictions(|symbol, size, label, status, actions-hash)); char-class-to-pt-format> follow-set-pt-no-rest;
+        if <not(?[])> follow-set-pt-no-la-rest then
+          <hash-multimap-putlist(|follow-set-pt-no-la-rest, [reduce(size, label, <get-status-from-label> label)])> actions-hash
+          end
+  
+  add-reduce-action-to-previous-actions(|original-fs, actions-hash, length, label, status):
+     (key, followset) -> new-followset
+     where 
+         key-sdf := <to-sdf3-char-class> key;
+         if <is-member> (key-sdf, original-fs) then
+             <hash-multimap-putlist(|key, [reduce(length, label, <get-status-from-label> label)])> actions-hash;
+             new-followset := <cc-difference> (followset, key-sdf)
+         else
+             new-followset := followset
+         end
+         
+  apply-follow-restrictions(|symbol) :
+      follow-set -> new-follow-set
+      where         
+          rest           := <get-follow-rest; ?[CharClass(Simple(Present(s-rest))) | d-rest]> symbol;
+          new-follow-set := <cc-difference> (follow-set, s-rest)
+  
+  apply-la-follow-restrictions(|symbol, size, label, status, actions-hash):
+      follow-set -> new-follow-set
+      where
+          rest*          := <get-follow-rest> symbol;
+          seq            := <fetch-elem(?Seq(Simple(Present(first)), tail))> rest*;
+          key            := <char-class-to-pt-format> first;
+          tail-la        := <calculate-lookahead> tail;
+          <hash-multimap-putlist(|key, [reduce(size, label, <get-status-from-label> label, tail-la)])> actions-hash;
+          new-follow-set := <cc-difference> (follow-set, first)
+         
+          
+  
+  calculate-lookahead:
+     List(elems*) -> <map(calculate-lookahead); flatten-list> elems*
+  
+  calculate-lookahead:   
+     Single(elem) -> <calculate-lookahead> elem
+    
+    calculate-lookahead:
+       CharClass(Simple(Present(cc))) -> [look(char-class(<char-class-to-pt-format> cc), [])]
+       
+    calculate-lookahead:
+       Seq(Simple(Present(cc)), tail) -> [look(char-class(<char-class-to-pt-format> cc), <calculate-lookahead> tail)]   
+              
+    
+  to-item-sets(|labels*, prods*):
+    Module(Unparameterized(mn), i*, sections*) -> ItemSets(labels*, items*)
+    with
+      initial-item   :=  <get-initial-prod; make-new-item-from-prod> prods*;
+      <set-counter> ("state-labels", -1);
+      initial-items* := <calculate-closure-for-item; flatten-list> initial-item;
+      initial-state  := ItemSet(<next-counter> "state-labels", initial-items*, [], Completions([]));
+      items*         := <calculate-item-sets> initial-state 
+  
+  get-initial-prod = !prod([sort("<START>"), char-class([256])], sort("<Start>"), no-attrs()) 
+  
+  to-item-sets:
+    Module(Unparameterized(mn), i*, sections*) -> ItemSets(labels*, items'*)
+    with
+        <set-counter> ("labels", 256);
+        <set-counter> ("state-labels", -1);
+      prods* := <get-normalized-productions> sections*;
+      table-prods* := <filter(prod-to-pt-format)> prods*;
+      labels*      := <map(create-label); reverse> table-prods*;
+      priorities   := <get-normalized-priorities > sections*;
+            priorities'  := <map(priority-to-label); transitive-closure> priorities;
+            <create-symbols-sets(|table-prods*)> table-prods*;      
+      initial-item  :=  <get-initial-prod; debug(!"initial prod "); make-new-item-from-prod> table-prods*;
+      initial-items* := <calculate-closure-for-item; flatten-list> initial-item;
+      initial-state := ItemSet(<next-counter> "state-labels", initial-items*, [], <get-completions-from-items> initial-items*);
+      items* := <calculate-item-sets> initial-state; 
+      items'* := <isort-list(LSort(compare-item-sets))> items*
+  
+  compare-item-sets = ?(i1@ItemSet(label1, _, _, _), i2@ItemSet(label2, _, _, _)); !(label1, label2); gt
+  
+  calculate-closure-for-item :
+     item -> items*
+     with
+        pre-calculated := <bagof-get-closure-from-item> item;
+        if <not(?[])> pre-calculated then
+            items* := pre-calculated 
+        else
+            rules(get-closure-from-item :+ item -> item);
+            items* := <set-clos-flag-true; repeat(<bagof-get-closure-from-item; make-set> item; closure-for-items(|item))>
+        end
+        
+  closure-for-items(|item) = where(check-clos-flag; set-clos-flag-false; filter(closure-for-item(|item)))
+  
+  check-clos-flag = where(get-clos-flag; ?Changed())
+    
+    set-clos-flag-false = where(rules(get-clos-flag : t -> NotChanged()))
+    
+    set-clos-flag-true = where(rules(get-clos-flag : t -> Changed()))           
+         
+  closure-for-item(|i):
+     it@Item(beforeDot, [h | hs], symbol, label) -> <id>
+     where
+         prods*                := <bagof-get-prods-from-symbol; make-set> h; //get all prods for h
+           arg-number            := <length> beforeDot;           
+           prods-restrained*     := <filter(check-for-priority-conflict(|label); check-for-priority-conflict(|label, arg-number))> prods*;
+           <filter(adding-to-closure(|i))> prods-restrained*
+           
+    adding-to-closure(|i):
+        prod -> item
+        where
+            item := <make-new-item-from-prod> prod;
+            
+            all-items := <bagof-get-closure-from-item> i;
+            <not(fetch(?item))> all-items;
+            set-clos-flag-true;
+            rules (get-closure-from-item :+ i -> item)
+    
+  check-for-priority-conflict(|label, arg):
+     prod -> <id>
+     where
+         prod-label := <remove-attrs; get-label-from-prod> prod;
+         all-prio   := <bagof-get-priorities-from-label> label;
+         <not(fetch(?arg-gtr-prio(label, arg, prod-label)))> all-prio
+  
+  check-for-priority-conflict(|label):
+       prod -> <id>
+       where
+           prod-label := <remove-attrs; get-label-from-prod> prod;
+           all-prio   := <bagof-get-priorities-from-label> label;
+           <not(fetch(?gtr-prio(label, prod-label)))> all-prio
+              
+  calculate-item-sets:
+    ItemSet(label, items*, gotos, completions) -> new-states*
+      where
+        <not(expanded-state)> label;
+        rules(
+          expanded-state:
+          label -> <id>
+        )
+      with
+          new-states-goto-prods* := <filter(shift-item(|items*))> items*; //shift items* based on productions with the . in front of rhs
+          derived-states-prods*  := <filter(?(<id>, goto(_, _)))> new-states-goto-prods*;
+          derived-gotos-prods*   := <filter(?(ItemSet(_, _, _, _),<id>))> new-states-goto-prods*;
+          
+          list-of-cc*            := <filter(get-cc-from-item)> items*;
+          partitioned-cc*        := <foldl(compute-partitioning)> (list-of-cc*, []);
+          new-states-goto-cc*    := <filter(shift-cc(|items*))> partitioned-cc*;
+          derived-states-cc*     := <filter(?(<id>,goto(_,_)))> new-states-goto-cc*;
+          derived-gotos-cc*      := <filter(?(ItemSet(_, _, _, _),<id>))> new-states-goto-cc*;
+          
+          derived-states*        := [derived-states-prods*, derived-states-cc*];
+          new-item-sets*         := <filter(calculate-item-sets); flatten-list> derived-states*; 
+        new-states*            := [ItemSet(label, items*, [derived-gotos-prods*, derived-gotos-cc*], completions), new-item-sets*]
+  
+  get-cc-from-item:
+      Item(beforeDot*, [char-class(cc) | hs ], symbol, label) -> [<to-sdf3-char-class> cc]
+        
+  shift-cc(|items*):
+    cc -> (new-state, goto)
+    with
+        new-state   := <filter(shift-charclass(|cc); calculate-closure-for-item); flatten-list; make-set; make-new-state> items*;
+        state-label := <?ItemSet(<id>, _, _, _)> new-state;
+        cc'         := <char-class-to-pt-format> cc;
+        goto        := goto(cc', state-label)
+    
+  shift-charclass(|cc):
+    Item(beforeDot*, [char-class(h) | hs], symbol, label) -> Item([beforeDot*, h], hs, symbol, label)
+    where
+        h-sdf  := <to-sdf3-char-class> h;
+        <is-member> (cc, h-sdf)
+    
+  shift-item(|items*):
+    i@Item([], afterDot*, symbol, label) -> (new-state, goto)
+    where
+       new-items-shifted := <filter(shift-symbol(|symbol, label))> items*;
+       new-state   := <filter(shift-symbol(|symbol, label); calculate-closure-for-item); flatten-list; make-set; make-new-state> items*;
+       state-label := <?ItemSet(<id>, _, _, _)> new-state;
+       goto        := goto([label], state-label)
+  
+  shift-symbol(|s, prod-label):
+    Item(beforeDot*, [h | hs], symbol, label) -> Item([beforeDot*, h], hs, symbol, label)
+      where
+        <?s> h;
+        arg-number := <length> beforeDot*;
+        <get-prod-from-label; (check-for-priority-conflict(|label); check-for-priority-conflict(|label, arg-number))> prod-label
+        
+  make-new-state:
+    items* -> ItemSet(label, items*, [], completions)
+    with
+      label       := <get-label-from-items <+ <next-counter> "state-labels">;
+      completions := <get-completions-from-items> items*;
+      rules(
+        get-label-from-items:
+          items* -> label
+      )
+      
+  get-completions-from-items:
+    items* -> Completions(completions*)
+    where
+        completions* := <filter(item-to-completion)> items*
+    
+  item-to-completion :
+    Item(beforeDot*, [h | hs], symbol, label) -> Completion(symbol, h, completion-description, completion-items*)
+      where
+        sdfProd := <get-prod-from-label; get-sdf-prod-from-prod> label;
+        <?SdfProduction(_, _, Attrs(<fetch(get-norm-constructor)>)) <+ ?SdfProductionWithCons(SortCons(s,<escape; double-quote>), _, _) <+ <?lit(_)> symbol> sdfProd  //production has constructor is defining a literal (keyword completion)
+      where 
+        afterDot* := [h | hs];
+        completion-items* := <map(symbol-to-completion-string); flatten-list; concatenate-consecutive-strings> [h | hs];
+        completion-description := <filter(symbol-to-completion-description); flatten-list; concat-strings> [beforeDot*, afterDot*]
+    
+  symbol-to-completion-string:
+    sort(s) -> PlaceholderWithSort(s, s)
+  
+  symbol-to-completion-string:
+    lit(s) -> String(s)
+  
+  symbol-to-completion-string:
+    ci-lit(s) -> String(s)
+  
+  symbol-to-completion-string:
+    lex(s) -> <symbol-to-completion-string> s
+  
+  symbol-to-completion-string:
+    cf(s) -> <symbol-to-completion-string> s  
+    
+  symbol-to-completion-string:
+    layout() -> String(" ")
+    
+  symbol-to-completion-string:
+    opt(s) -> <symbol-to-completion-string> s
+    
+  symbol-to-completion-string:
+    char-class(cc) -> <map(char-class-to-string); concat-strings; !String(<id>)> cc 
+    
+  char-class-to-string:
+    cc -> <implode-string> [cc]
+      where
+        not(?range(_, _)); is-int;
+        not(<?256> cc) 
+    
+  char-class-to-string:
+    range(cc, cc2) -> <implode-string> [cc, cc2]  
+    
+  
+  symbol-to-completion-description:
+    sort(s) -> s
+  
+  symbol-to-completion-description:
+    lit(s) -> s
+  
+  symbol-to-completion-description:
+    ci-lit(s) -> s
+  
+  symbol-to-completion-description:
+    lex(s) -> <symbol-to-completion-description> s
+  
+  symbol-to-completion-description:
+    cf(s) -> <symbol-to-completion-description> s 
+    
+  symbol-to-completion-description:
+    layout() -> " "
+    
+  symbol-to-completion-description:
+    opt(s) -> <symbol-to-completion-description> s
+    
+  symbol-to-completion-description:
+    char-class(cc) -> <map(char-class-to-description)> cc 
+    
+  char-class-to-description:
+    cc -> <implode-string> [cc]
+      where
+        not(?range(_, _)); is-int;
+        not(<?256> cc) 
+    
+  char-class-to-description:
+    range(cc, cc2) -> <implode-string> [cc, cc2]
+      
+  make-new-item-from-prod:
+    p@prod(rhs*, symbol, attrs'*) -> Item([], rhs*, symbol, label)
+    with
+        label := <remove-attrs; get-label-from-prod> p
+      
+  get-norm-constructor:
+    Term(Default(Appl(Unquoted("default"),[Appl(Unquoted("appl"),[Appl(Unquoted("unquoted"),[Fun(Quoted("\"cons\""))]),List([List([Appl(Unquoted("fun"),[Appl(Unquoted("quoted"),[Fun(Quoted(s))])])])])])]))) -> s
+      

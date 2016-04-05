@@ -1,0 +1,16 @@
+module Menus
+
+menus
+  
+  menu: "Generate"                                 (realtime) (openeditor)
+    
+	  action: "Show abstract syntax (for selection)" = generate-aterm (meta) (source)
+	  // action: "Show current term (for selection)" = generate-ast
+	  action : "Show pretty printer rules (for selection)" = generate-pp-rules
+	  // action: "Show abstract syntax signature (for selection)" = generate-rtg
+	  action: "Show syntax templates (for selection)" = generate-syntax-templates
+	  action: "Lift to SDF3 (abstract)"						  = generate-sdf3-abstract (source)
+	  action: "Lift to SDF3 (concrete)"						  = generate-sdf3-concrete (source)
+	  action: "Lift to SDF3 (templates)"			  = generate-sdf3-templates (source)
+	  
+	  

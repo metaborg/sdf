@@ -1,0 +1,11 @@
+module analysis/analyze
+
+imports
+  signatures/TemplateLang-sig
+  analysis/desugar
+  analysis/lifting
+
+strategies
+
+  lifting =
+    lift-all      

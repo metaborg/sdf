@@ -1,0 +1,140 @@
+module ds/pp/Common-pp
+
+imports
+  libstratego-gpp
+  runtime/tmpl/pp
+  libstratego-sglr
+  ds/signatures/Common-sig
+
+
+strategies
+  ds-prettyprint-example =
+    ds-prettyprint-NONE
+
+  ds-prettyprint-NONE :
+    None() -> [ H(
+                  []
+                , [S("")]
+                )
+              ]
+
+  is-NONE =
+    ?None()
+
+  is-NONE =
+    fail
+
+  ds-prettyprint-NONE :
+    amb([h|hs]) -> <ds-prettyprint-NONE> h
+
+
+strategies
+  ds-prettyprint-INFER =
+    ![S(<is-string>)]
+
+  ds-prettyprint-ID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-IDNOHYPH =
+    ![S(<is-string>)]
+
+  ds-prettyprint-LID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-INFER
+
+  ds-prettyprint-example =
+    ds-prettyprint-ID
+
+  ds-prettyprint-example =
+    ds-prettyprint-IDNOHYPH
+
+  ds-prettyprint-example =
+    ds-prettyprint-LID
+
+  ds-prettyprint-INFER :
+    amb([h|hs]) -> <ds-prettyprint-INFER> h
+
+  ds-prettyprint-ID :
+    amb([h|hs]) -> <ds-prettyprint-ID> h
+
+  ds-prettyprint-IDNOHYPH :
+    amb([h|hs]) -> <ds-prettyprint-IDNOHYPH> h
+
+  ds-prettyprint-LID :
+    amb([h|hs]) -> <ds-prettyprint-LID> h
+
+
+strategies
+  ds-prettyprint-JID =
+    ![S(<is-string>)]
+
+  ds-prettyprint-INT =
+    ![S(<is-string>)]
+
+  ds-prettyprint-REAL =
+    ![S(<is-string>)]
+
+  ds-prettyprint-STRING =
+    ![S(<is-string>)]
+
+  ds-prettyprint-StringChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-BackSlashChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-CommentChar =
+    ![S(<is-string>)]
+
+  ds-prettyprint-EOF =
+    ![S(<is-string>)]
+
+  ds-prettyprint-example =
+    ds-prettyprint-JID
+
+  ds-prettyprint-example =
+    ds-prettyprint-INT
+
+  ds-prettyprint-example =
+    ds-prettyprint-REAL
+
+  ds-prettyprint-example =
+    ds-prettyprint-STRING
+
+  ds-prettyprint-example =
+    ds-prettyprint-StringChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-BackSlashChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-CommentChar
+
+  ds-prettyprint-example =
+    ds-prettyprint-EOF
+
+  ds-prettyprint-JID :
+    amb([h|hs]) -> <ds-prettyprint-JID> h
+
+  ds-prettyprint-INT :
+    amb([h|hs]) -> <ds-prettyprint-INT> h
+
+  ds-prettyprint-REAL :
+    amb([h|hs]) -> <ds-prettyprint-REAL> h
+
+  ds-prettyprint-STRING :
+    amb([h|hs]) -> <ds-prettyprint-STRING> h
+
+  ds-prettyprint-StringChar :
+    amb([h|hs]) -> <ds-prettyprint-StringChar> h
+
+  ds-prettyprint-BackSlashChar :
+    amb([h|hs]) -> <ds-prettyprint-BackSlashChar> h
+
+  ds-prettyprint-CommentChar :
+    amb([h|hs]) -> <ds-prettyprint-CommentChar> h
+
+  ds-prettyprint-EOF :
+    amb([h|hs]) -> <ds-prettyprint-EOF> h

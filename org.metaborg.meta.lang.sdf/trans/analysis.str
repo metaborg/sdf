@@ -1,0 +1,166 @@
+module analysis
+
+imports
+  libstratego-lib
+  libstratego-sdf
+  libstratego-sglr
+  stratego/metaborg
+
+strategies
+
+  analyze-ast:
+    (ast, path, project-path) -> ast'
+    with
+      current-file := $[[project-path]/[path]];
+      rules(
+        CurrentDir  := <dirname> $[[project-path]/[path]]
+        CurrentFile := <base-filename> path
+        IsImported  :  current-file
+        ProjectDir  := project-path
+      )
+    with
+      ast' := <declare-globals-top> ast;
+      if <get-module-name; not(ModuleName)> ast then 
+        record-all-module-names
+      end
+
+  get-module-name:
+    ast -> mname
+    where
+      mname := <get-arguments; Hd; get-arguments; Hd> ast
+
+
+rules
+
+  declare-globals-top =
+    alltd(declare-globals)
+
+  declare-globals:
+    renamed-module(x, renamings(y)) -> <id>
+    where
+      <all(try(?symbol(_, <id>); declare-simple-global))> y
+
+  declare-globals:
+    unparameterized(x) -> unparameterized(x)
+    where
+      <open-import(
+        resolve-import-decl
+      , parse-sdf-file
+      , declare-globals-top
+      )> x
+    <+
+      rules(IsImportFailed: _)
+
+  declare-globals:
+    parameterized(x, y) -> parameterized(x, y)
+    where
+      <declare-globals> unparameterized(x);
+      <alltd(declare-simple-global)> y
+
+  resolve-import-decl:
+    x -> full-path
+    where
+      full-path := <resolve-import-path> $[[x].sdf]
+    <+
+      full-path := <resolve-import-path> $[[x].def]
+
+  expand-relative-path :
+    x -> $[[<ProjectDir>]/[x]]
+    where
+    <is-relpath> x
+
+  resolve-import-path:
+    x -> full-path
+    where
+      sdf-source-and-include-locations
+    ; includes := <map(try(expand-relative-path))>
+    ; full-path := <fetch-elem(\ path -> <file-exists> $[[path]/[x]] \)> includes
+
+  declare-globals:
+    prod @ prod(lhs, sort, _) -> <id>
+    where
+      !sort;
+      try(?cf(<id>) + ?lex(<id>));
+      repeat(?label(_, <id>));
+      (?sort(x) + ?parameterized-sort(x, _))
+    with
+      <Declaration> x
+    <+
+      file := <CurrentFile>;
+      rules(
+        Declaration: x -> prod
+        DeclarationFile: x -> file
+      )
+    with
+      <alltd(declare-use)> lhs
+
+  declare-globals:
+    'sorts(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    context-free-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    lexical-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-globals:
+    kernel-start-symbols(_) -> <id>
+    with
+      alltd(declare-use)
+
+  declare-simple-global:
+    sort(x) -> <id>
+    with
+      rules(Declaration: x -> x)
+
+  declare-use:
+    sort(x) -> <id>
+    with
+      rules(Usage: x -> x)
+
+  declare-use:
+    parameterized-sort(x, y) -> <id>
+    where
+      if !y => [sort(y')]; <is-string> x; <is-string> y' then
+        text := ${{x}[[{y'}]]};
+        rules(Usage: text -> text)
+      end
+
+strategies
+  
+  record-all-module-names =
+    record-all-definitions(
+        alltd(record-module-name)
+      , parse-sdf-string
+      | "sdf"
+    )
+  
+  record-module-name =
+    ?unparameterized(mname);
+    rules(ModuleName : mname -> mname)
+
+  record-module-name =
+    ?parameterized(mname, _);
+    rules(ModuleName : mname -> mname)
+  
+  record-all-definitions(record, parse|ext) = 
+    sdf-source-and-include-files;
+    list-loop(
+      try(record-definitions(record, parse|ext))
+    )
+  
+  record-definitions(record, parse|ext):
+    filename -> filename
+    where
+      <has-extension(|ext)> filename;
+      <open-import(
+        abspath, 
+        parse, 
+        record
+     )> filename
