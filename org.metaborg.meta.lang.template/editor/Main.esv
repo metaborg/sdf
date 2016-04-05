@@ -1,4 +1,4 @@
-module TemplateLang.main
+module Main
 
 imports 
 
@@ -8,8 +8,6 @@ imports
   Syntax
 
 language
-
-  name : TemplateLang
 
   extensions : tmpl, sdf3
   
