@@ -37,7 +37,7 @@
         <property name="externaljarflags" value="-la org.lib"/>
         -->
 	<property name="externaljar" value="lib/sdf3/TemplateLang-pp.jar"/>
-	<property name="externaljarflags" value="-la trans.pp.TemplateLang-pp"/>
+	<property name="externaljarflags" value="-la trans2.pp.TemplateLang-pp"/>
 
 	<!-- Environment configuration for command-line builds -->
 	<condition property="build.strategoxt.sdf" value="${eclipse.spoofaximp.nativeprefix}" else="">
