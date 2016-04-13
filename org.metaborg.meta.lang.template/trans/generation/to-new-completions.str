@@ -82,6 +82,8 @@ rules
                                                                                                             , Var("completions-inj"))), BA(CallT(SVar("add-list-completions"), [], [Var(ListVar("elems*"))]), Var("completions"))))))]))  
   */
   
+   to-new-cmp-elem(|sort):
+     Label(_, x) -> <to-new-cmp-elem(|sort)> x 
   
    to-new-cmp-elem(|sort):
      Sort(x) ->  App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))

@@ -8,7 +8,29 @@ imports
   analysis/desugar
   generation/to-template
   generation/to-str
-  templatelang
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
   
 rules
 
@@ -404,8 +426,8 @@ rules
        s := <placeholder-to-pp-one> p
       
   placeholder-to-pp-one:
-    Placeholder(symbol, option*) -> LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                              , Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))]))
+    Placeholder(symbol, option*) -> LChoice(Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))]), 
+                                                             Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
     where
       <collect-om(?Sort(s))> symbol
     with
@@ -417,8 +439,8 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego:
-    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                                                                           , s), Var(l))
+    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))])
+                                                                                           ), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -431,8 +453,8 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego:
-    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                                                                           , s), Var(l))
+    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(s
+                                                                                           , Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))])), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
