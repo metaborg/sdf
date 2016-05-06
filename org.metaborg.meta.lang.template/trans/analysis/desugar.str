@@ -8,7 +8,9 @@ imports
   runtime/editor/annotations
 
 signature constructors
-SingleLineTemplate            : List(TemplateElement) -> Template
+	// fix argument type
+	SingleLineTemplate	: List(TemplatePart1) -> Template
+	SingleLineTemplate	: List(TemplatePart2) -> Template
 
 
 strategies
@@ -97,6 +99,11 @@ rules
   desugar-elements =
     alltd(origin-track-forced(desugar-brackets)) ; alltd(origin-track-forced(desugar-element))
 
+signature constructors
+	// cons-list of options replaced by list of options
+	: List(PlaceholderOption) -> PlaceholderOptions
+
+rules
   desugar-element:
     NoOptions() -> []
 
@@ -146,6 +153,12 @@ rules
       t' := <origin-track-forced(string-replace(|"\t", "  "))> t
      
 
+signature constructors
+	// Squared and Angled removed
+	: Placeholder -> TemplatePart1
+	: Placeholder -> TemplatePart2
+
+rules
   desugar-brackets:
   	Squared(p) ->  p
   
