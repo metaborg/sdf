@@ -8,7 +8,7 @@ imports
   runtime/editor/annotations
 
 signature constructors
-	// fix argument type
+	// desugar templates with one line into a single line template
 	SingleLineTemplate	: List(TemplatePart1) -> Template
 	SingleLineTemplate	: List(TemplatePart2) -> Template
 
