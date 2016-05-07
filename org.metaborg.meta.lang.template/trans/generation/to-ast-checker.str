@@ -157,7 +157,7 @@ template-to-check:
             // injection
             // FIXME: this may result in infinite loop in pretty printer
             //        if there is a cycle of injections in the grammar!
-            input := arg*;
+            input := arg;
             (output', with*) := <thread-alltd(extract-BA-where-chk)> (output, []);
             cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]-with-constructor])))), with*] // check whether there is a rule with constructor already defined, 
             																// this one should only be applied when there is not
