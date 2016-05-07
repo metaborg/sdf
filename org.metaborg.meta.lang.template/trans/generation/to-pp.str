@@ -329,17 +329,17 @@ rules
       elem'* := <map(try(introduce-labels))> elem*
       
   introduce-labels:
-     Placeholder(symbol, c) -> Placeholder(Label(l, symbol), c)
+     Placeholder(symbol, c) -> Placeholder(Label(Unquoted(l), symbol), c)
      where
       <not(?Label(_, _))> symbol
      with
        l  := $[t[<next-counter> "pp"]__]      
   
   introduce-labels:
-     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label($[[l]__], symbol), c)
+     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l]__]), symbol), c)
   
   introduce-labels:
-     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label($[[l']__], symbol), c)
+     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l']__]), symbol), c)
      with
       l' := <un-double-quote> l
    
@@ -388,13 +388,13 @@ rules
       t' := <escape; double-quote> t
       
   template-element-to-stratego:
-    p@Placeholder(Label(l, Sort(x)), _) -> App(s, Var(l))
+    p@Placeholder(Label(Unquoted(l), Sort(x)), _) -> App(s, Var(l))
     with
        s := <placeholder-to-pp-one> p 
   
   
   template-element-to-stratego:
-    p@Placeholder(Label(l, Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
+    p@Placeholder(Label(Unquoted(l), Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
     with
        s := <placeholder-to-pp-one> p
       
@@ -412,7 +412,7 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego:
-    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
                                                                                            , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
@@ -426,7 +426,7 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego:
-    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+    Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
                                                                                            , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
@@ -459,7 +459,7 @@ rules
        end
    
   placeholder-to-var: 
-    Placeholder(Label(l, _), _) -> Var(l)
+    Placeholder(Label(Unquoted(l), _), _) -> Var(l)
       
   concatenate-consecutive-strings =
     rec r(
