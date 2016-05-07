@@ -187,17 +187,17 @@ template-to-check:
       elem'* := <map(try(introduce-labels-chk))> elem*
       
   introduce-labels-chk:
-     Placeholder(symbol, c) -> Placeholder(Label(l, symbol), c)
+     Placeholder(symbol, c) -> Placeholder(Label(Unquoted(l), symbol), c)
      where
      	<not(?Label(_, _))> symbol
      with
        l  := $[t[<next-counter> "check"]__]      
   
   introduce-labels-chk:
-     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label($[[l]__], symbol), c)
+     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l]__]), symbol), c)
   
   introduce-labels-chk:
-     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label($[[l']__], symbol), c)
+     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l']__]), symbol), c)
      with
      	l' := <un-double-quote> l
    
@@ -208,13 +208,13 @@ template-to-check:
   	Line(elem*) -> <filter(template-element-to-chk)> elem*
   	
   template-element-to-chk: 
-  	p@Placeholder(Label(l, Sort(x)), _) -> BA(
+  	p@Placeholder(Label(Unquoted(l), Sort(x)), _) -> BA(
           LChoice(CallNoArgs(SVar($[check-[x]])), CallNoArgs(SVar($[error-[x]])))
         , Var(l)
         )
   	
   template-element-to-chk:
-      Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x)) + ?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> BA(
+      Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x)) + ?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> BA(
           Call(
             SVar("map")
           , [LChoice(CallNoArgs(SVar($[check-[x]])), CallNoArgs(SVar($[error-[x]])))]
