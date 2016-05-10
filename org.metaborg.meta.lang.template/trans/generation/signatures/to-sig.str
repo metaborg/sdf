@@ -1,16 +1,36 @@
-module generation/to-sig
+module generation/signatures/to-sig
 
 imports
   libstratego-lib
   libstrc
-  signatures/TemplateLang-sig
- // utils/contract
   analysis/types
   runtime/nabl/-
   runtime/task/-
-  runtime/types/-
-  
-  generation/to-str
+  runtime/types/-  
+  generation/syntax/to-str
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
   
 rules
   

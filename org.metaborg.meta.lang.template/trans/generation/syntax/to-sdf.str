@@ -1,9 +1,9 @@
-module generation/to-sdf
+module generation/syntax/to-sdf
+
 imports
   libstratego-lib
   libstratego-sglr
   libstratego-gpp
-  signatures/TemplateLang-sig
   utils/attributes
   utils/misc
   utils/tokenize
@@ -12,6 +12,32 @@ imports
   analysis/attributes
   analysis/desugar
   pp/layout-constraints/Layout-Constraints-pp
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules 
+  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
 
 rules
  
@@ -64,27 +90,10 @@ rules
 
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), plhdr-prods*, lit-prods*, restr*]
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-  		//content complete prods
-        sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-                        ; nub> prods*;
-        lits*        := <collect(?lit(_)); nub> prods';
-        lit-ins*  := <map(lit-to-lit-insertion-prod); term-translation> lits*;
-        if [] := lits* then
-            lit-prods* := []
-        else
-            lit-prods* := [lexical-syntax([lit-ins*])]
-        end;                
-        plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
-        plhdr-ins* := <map(sort-to-plhdr-ins-prod); term-translation> sorts*;      
-        if [] := sorts* then
-            plhdr-prods* := []
-        else
-            plhdr-prods* := [context-free-syntax([plhdr*, plhdr-ins*])]
-        end;
-      // lexical restrictions
+  		// lexical restrictions
         x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
       let
         chars-end-with-identifier-char =
@@ -529,7 +538,10 @@ rules //conversion of SDF3 terms into SDF2
   sort-to-plhdr-prod:
     s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
     with
-      rhs := lit(<concat-strings> ["[[", s, "]]"]);
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars;
+      rhs := lit(<concat-strings> [left-placeholder-chars, s, right-placeholder-chars]);
       c := <double-quote> $[[s]-Plhdr]
       
   sort-to-plhdr-ins-prod:

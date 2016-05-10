@@ -1,15 +1,37 @@
-module generation/to-formatted
+module generation/pp/to-formatted
 
 imports
   analysis/-
   runtime/index/-
   runtime/task/-
-  signatures/TemplateLang-sig
   runtime/nabl/-
-    runtime/properties/-
-    names/analysis/names
-    utils/tokenize
-    generation/to-sdf
+  runtime/properties/-
+  names/analysis/names
+  utils/tokenize
+  generation/syntax/to-sdf
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig    
 
 
 rules

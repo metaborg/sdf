@@ -1,20 +1,40 @@
-module to-dynsem-sig
+module generation/signatures/to-dynsem-sig
 
 
 imports
   libstratego-lib
   libstrc
-  signatures/TemplateLang-sig
- // utils/contract
   analysis/types
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
   lib/ds/signatures/-
-  lib/ds/pp/-
-  
-  generation/to-str
-  generation/to-sig
+  lib/ds/pp/-  
+  generation/syntax/to-str
+  generation/signatures/to-sig
+    
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig  
   
 rules 
   

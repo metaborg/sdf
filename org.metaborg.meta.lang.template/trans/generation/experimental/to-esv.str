@@ -1,15 +1,35 @@
-module generation/to-esv
+module generation/experimental/to-esv
 
 imports
-  signatures/TemplateLang-sig
   EditorService
   utils/attributes
   utils/misc
   analysis/desugar
- // templatelang/expand
-  generation/to-str
-  generation/to-template
-  
+  generation/syntax/to-str
+  generation/syntax/to-template
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig    
 
 rules
 

@@ -1,14 +1,36 @@
-module make-permissive
+module generation/experimental/make-permissive
 
 imports 
   libstratego-sglr
-  signatures/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   analysis/lifting
   stratego/metaborg
-  generation/remove-template
+  generation/pp/remove-template
 
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig  
+  
 rules
 
   module-to-permissive(|path):

@@ -1,0 +1,63 @@
+module editor/build-sdf
+
+imports
+  generation/syntax/-
+  editor/editor-utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig    
+  
+
+rules
+  generate-sdf-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+      kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      selected'     := <desugar-templates> selected;
+      //selected' := selected ;
+      filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
+      result := <to-sdf(|chars, newline, kfr)> selected'
+
+  generate-sdf-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+   where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+   where
+       <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+      kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      selected'     := <desugar-templates> selected;
+        //selected' := selected ;
+        filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+     //   result   := <sdf-aterm; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail>
+       result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'

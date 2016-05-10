@@ -18,18 +18,17 @@ imports
   runtime/properties/-
   runtime/types/-
   runtime/editor/-
-
   analysis/-
   generation/-
-  editor/builders
   editor/-
-  //analyze
-  //names
-  //name-desugar
-//  name-check
-  //check
   names/analysis/names
   types/analysis/types-ts
+  generation/completion/-
+  generation/pp/-
+  generation/signatures/-
+  generation/syntax/-
+
+
 
 rules // Analysis
 
@@ -98,8 +97,6 @@ rules // Debugging
   // analysis-default-debug-interface = debug
 
 rules
-
-  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =

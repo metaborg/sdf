@@ -12,7 +12,7 @@ imports
   runtime/task/-
   runtime/types/-
   analysis/types
-  generation/to-sdf
+  generation/syntax/to-sdf
   analysis/desugar
   runtime/properties/-
 

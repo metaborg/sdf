@@ -6,8 +6,8 @@ imports
   analysis/desugar
   analysis/attributes
   analysis/lifting
-  generation/remove-template
-  editor/builders
+  generation/pp/remove-template
+  editor/editor-utils
   runtime/nabl/utils
   names/analysis/names
   normalization/to-parse-table

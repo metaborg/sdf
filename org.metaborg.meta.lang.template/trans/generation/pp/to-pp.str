@@ -1,4 +1,4 @@
-module generation/to-pp
+module generation/pp/to-pp
 
 imports
   libstratego-lib
@@ -6,8 +6,8 @@ imports
   libstrc
   signatures/sdf2-core/-
   analysis/desugar
-  generation/to-template
-  generation/to-str
+  generation/syntax/to-template
+  generation/syntax/to-str
 
 imports
   signatures/aliases/-
@@ -31,6 +31,12 @@ imports
   signatures/sorts/-
   signatures/symbols/-
   signatures/TemplateLang-sig
+  
+rules
+  
+  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"    
+  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
+  
   
 rules
 
@@ -499,14 +505,22 @@ rules
   sort-to-placeholder-pp:
     sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(List(
                   [ NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
-                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> ["\"[[", sort,"]]\""] ))]))]))]))]))))
+                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> [left-placeholder-chars, sort, right-placeholder-chars] ))]))]))]))]))))
                  , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [])))) ]
+    where
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars             
                  
   sort-to-placeholder-insertion-pp:
     sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [Wld()])), NoAnnoList(List(
                   [ NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
-                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> ["\"[[", sort,"]]\""] ))]))]))]))]))))
-                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [Wld()])))) ]               
+                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> [left-placeholder-chars, sort, right-placeholder-chars] ))]))]))]))]))))
+                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [Wld()])))) ]             
+    where
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars        
   
   sort-to-opt-placeholder-pp:
     sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Opt-Plhdr], [])), NoAnnoList(List(
