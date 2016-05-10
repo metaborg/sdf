@@ -51,7 +51,7 @@ rules
       
   prod-to-new-cmp:
     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
-                                                       App(Seq(CallT(SVar("add-completions"), [], [ Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))]) ]), Fail()), Var("completions"))))    
+                                                       App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))])) ]), Fail()), Var("completions"))))    
       where not (
         <fetch-elem(?Reject())> attrs
       )
@@ -66,7 +66,7 @@ rules
                 
   prod-to-new-cmp:
     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
-                                                                                                            App(Seq(CallT(SVar("add-completions"), [], [ Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))])]), Fail()), Var("completions"))))    
+                                                                                                            App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))]))]), Fail()), Var("completions"))))    
       where not (
         <fetch-elem(?Reject())> attrs
       )

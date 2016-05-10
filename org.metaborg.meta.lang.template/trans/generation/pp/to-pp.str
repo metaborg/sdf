@@ -44,12 +44,16 @@ rules
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import("trans/pp"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
     ; lang := <language-spec-name>
-    ; g1   := Strategies([SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))])
-    ; g2   := Strategies([SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-start-symbols])))])
+    ; g1   := Strategies([ SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))
+                         , SDefNoArgs($[prettyprint-[lang]], Fail())
+                         ])
+    ; g2   := Strategies([ SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-start-symbols])))
+                         , SDefNoArgs($[prettyprint-[lang]-start-symbols], Fail())
+                         ])
     ; s'*  := <filter(section-to-pp(|lang))> s*
 
   
@@ -333,7 +337,7 @@ rules
             // injection
             // FIXME: this may result in infinite loop in pretty printer
             //        if there is a cycle of injections in the grammar!
-            input := arg*;
+            input := arg;
             (output', with*) := <thread-alltd(extract-app-where)> (output, []);
             cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]])))), with*] // check whether there is a rule with constructor already defined, 
                                             // this one should only be applied when there is not
@@ -362,17 +366,17 @@ rules
       elem'* := <map(try(introduce-labels))> elem*
       
   introduce-labels:
-     Placeholder(symbol, c) -> Placeholder(Label(l, symbol), c)
+     Placeholder(symbol, c) -> Placeholder(Label(Unquoted(l), symbol), c)
      where
       <not(?Label(_, _))> symbol
      with
        l  := $[t[<next-counter> "pp"]__]      
   
   introduce-labels:
-     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label($[[l]__], symbol), c)
+     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l]__]), symbol), c)
   
   introduce-labels:
-     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label($[[l']__], symbol), c)
+     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l']__]), symbol), c)
      with
       l' := <un-double-quote> l
    
@@ -421,13 +425,13 @@ rules
       t' := <escape; double-quote> t
       
   template-element-to-stratego:
-    p@Placeholder(Label(l, Sort(x)), _) -> App(s, Var(l))
+    p@Placeholder(Label(Unquoted(l), Sort(x)), _) -> App(s, Var(l))
     with
        s := <placeholder-to-pp-one> p 
   
   
   template-element-to-stratego:
-    p@Placeholder(Label(l, Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
+    p@Placeholder(Label(Unquoted(l), Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
     with
        s := <placeholder-to-pp-one> p
       
@@ -445,8 +449,8 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego:
-    Placeholder(Label(l, <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))])
-                                                                                           ), Var(l))
+    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+                                                                                           , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -459,8 +463,8 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego:
-    Placeholder(Label(l, <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(s
-                                                                                           , Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))])), Var(l))
+    Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
+                                                                                           , s), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -492,7 +496,7 @@ rules
        end
    
   placeholder-to-var: 
-    Placeholder(Label(l, _), _) -> Var(l)
+    Placeholder(Label(Unquoted(l), _), _) -> Var(l)
       
   concatenate-consecutive-strings =
     rec r(
