@@ -65,7 +65,7 @@ rules
         sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
         <write-string-to-file> (sdf-filename, sdf-ast)  
     where
-        sdf-completions-filename         := <create-src-gen(|project-path, "syntax", "-completions.sdf")> mn;
+        sdf-completions-filename         := <create-src-gen(|project-path, "syntax/completion", "-completions.sdf")> mn;
         sdf-completions-ast              := <module-to-sdf-completions; pp-sdf-to-string <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
         <write-string-to-file> (sdf-completions-filename, sdf-completions-ast)        
     where

@@ -40,6 +40,6 @@ rules
        <?Module(Unparameterized(mn), i*, sections)> ast ;
       selected'     := <desugar-templates> selected;
         //selected' := selected ;
-        filename := <create-src-gen(|project-path, "syntax", "-completions.sdf")> mn;
+        filename := <create-src-gen(|project-path, "syntax/completion", "-completions.sdf")> mn;
      //   result   := <sdf-aterm; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail>
        result   := <module-to-sdf-completions; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'

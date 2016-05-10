@@ -38,7 +38,7 @@ imports
 rules
     
   module-to-cmp-colorer:
-    Module(m, i*, s*) -> Module(m', i'*, Colorer("", c*))
+    Module(m, i*, s*) -> Module(m', i'*, [Colorer("", c*)])
     with
       m'  := <to-str-module-name(|"-cc-esv", "completion/colorer")> Module(m);
       i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;

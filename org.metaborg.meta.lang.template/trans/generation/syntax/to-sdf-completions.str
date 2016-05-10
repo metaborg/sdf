@@ -44,18 +44,19 @@ rules
  
   module-to-sdf-completions:
     Module(Unparameterized(mn), i, sections) ->
-      'module(unparameterized($[[mn]-completions]), [imports('module(unparameterized(mn))), imports], exports)
+      'module(unparameterized($[completion/[mn]-completions]), [imports('module(unparameterized(mn))), imports], exports)
     with
-      if [] := sections
+      exports-completion := exports(<filter(section-to-sdf-completions)> sections); 
+      if exports([]) := exports-completion
       then
-        exports := []
+        exports := [exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
       else
-          exports := [exports(<filter(section-to-sdf-completions)> sections), exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
+          exports := [exports-completion, exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
       end;
       imports := <map(imports-to-sdf-completions)> i
 
   module-to-sdf-completions:
-    Module(Unparameterized(mn)) -> 'module(unparameterized($[[mn]-completions])) 
+    Module(Unparameterized(mn)) -> 'module(unparameterized($[completion/[mn]-completions])) 
   
   imports-to-sdf-completions: 
     Imports(mod) -> imports(i)
