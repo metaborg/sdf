@@ -53,7 +53,7 @@ language:
     - strc
 build:
   stratego-cli:
-  - phase: preJava
+  - phase: compile
     strategy: org.strategoxt.tools.main-parse-pp-table
     args:
     - -i
