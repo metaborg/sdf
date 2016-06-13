@@ -1,6 +1,5 @@
-bin
-target
-
-.classpath
-.project
-.settings
+/.classpath
+/.project
+/.settings
+/META-INF
+/target
