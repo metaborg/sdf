@@ -1,8 +1,11 @@
-module to-template
+module generation/gen-utils/to-template
 
 imports
   libstratego-sglr
   signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  signatures/sorts/Sorts-sig
+  signatures/literals/Literals-sig
   
 
   

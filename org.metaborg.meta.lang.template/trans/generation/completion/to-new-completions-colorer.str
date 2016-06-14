@@ -1,4 +1,4 @@
-module generation/to-new-completions-colorer
+module generation/completion/to-new-completions-colorer
 
 
 imports
@@ -10,11 +10,11 @@ imports
   runtime/task/-
   runtime/types/-
   analysis/desugar
-  generation/to-str
+  generation/gen-utils/to-str
   lib/EditorService
+  signatures/sorts/Sorts-sig
   
-  
-  rules
+rules
     
   module-to-cmp-colorer:
   Module(m, i*, s*) -> Module(m', i'*, [Colorer("", c*)])

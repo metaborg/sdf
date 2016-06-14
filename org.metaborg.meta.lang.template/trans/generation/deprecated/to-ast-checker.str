@@ -1,4 +1,4 @@
-module generation/to-ast-checker
+module generation/deprecated/to-ast-checker
 
 imports
   libstratego-lib
@@ -6,9 +6,9 @@ imports
   libstrc
   signatures/sdf2-core/-
   analysis/desugar
-  generation/to-template
-  generation/to-str
-  generation/to-pp
+  generation/gen-utils/to-template
+  generation/gen-utils/to-str
+  generation/pp/to-pp
   templatelang
   
 rules

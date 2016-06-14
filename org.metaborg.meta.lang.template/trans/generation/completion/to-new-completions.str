@@ -1,4 +1,4 @@
-module generation/to-new-completions
+module generation/completion/to-new-completions
 
 imports
   libstratego-lib
@@ -9,7 +9,10 @@ imports
   runtime/task/-
   runtime/types/-
   analysis/desugar
-  generation/to-str
+  generation/gen-utils/to-str
+  signatures/modules/Modules-sig
+  signatures/sorts/Sorts-sig
+  signatures/sdf2-core/Sdf2-sig
   
 rules
   
