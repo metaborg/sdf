@@ -50,10 +50,11 @@ rules
         <write-string-to-file> (sdf-filename, sdf-ast)  
     where
         version             := <check-sdf2table>;
-        <?"java"> version;
-        norm-filename       := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
-        norm-ast            := <to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
-        <write-string-to-file> (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast)   
+        if <?"java"> version then
+	        norm-filename       := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
+	        norm-ast            := <to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
+	        <write-string-to-file> (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast) 
+        end  
     where
         pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
       ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
