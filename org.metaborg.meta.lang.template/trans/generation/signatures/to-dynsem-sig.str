@@ -1,10 +1,10 @@
-module to-dynsem-sig
+module generation/signatures/to-dynsem-sig
 
 
 imports
   libstratego-lib
   libstrc
-  signatures/TemplateLang-sig
+  
  // utils/contract
   analysis/types
   runtime/nabl/-
@@ -13,8 +13,14 @@ imports
   lib/ds/signatures/-
   lib/ds/pp/-
   
-  generation/to-str
-  generation/to-sig
+  generation/gen-utils/to-str
+  generation/signatures/to-sig
+
+imports
+  signatures/modules/Modules-sig
+  signatures/TemplateLang-sig
+  signatures/sorts/Sorts-sig
+  signatures/sdf2-core/Sdf2-Syntax-sig
   
 rules 
   

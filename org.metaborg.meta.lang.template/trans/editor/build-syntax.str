@@ -1,0 +1,74 @@
+module editor/build-syntax
+
+imports
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  generation/syntax/to-sdf
+  generation/syntax/make-permissive
+  normalization/to-normal-form
+  trans/pp
+  
+rules
+  generate-sdf-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+      kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      selected'     := <desugar-templates> selected;
+      //selected' := selected ;
+      filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
+      result := <to-sdf(|chars, newline, kfr)> selected'
+
+  generate-sdf-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+   where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+   where
+       <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+      kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      selected'     := <desugar-templates> selected;
+      filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+      result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
+  
+   generate-permissive-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.aterm")> mn;
+        ast'     := <desugar-templates> selected;
+        result := <module-to-permissive(|$[[project-path]/[<dirname> path]])> ast'
+  
+  generate-permissive-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.sdf3")> mn;
+        ast'     := <desugar-templates> selected;
+        result   := <module-to-permissive(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> ast'     
+        
+  sdf3-to-normal-form:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    <?Module(Unparameterized(mn), i*, sections)> ast ;
+    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3")> mn;
+    result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> selected  
+    
+  sdf3-to-normal-form-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+    <?Module(Unparameterized(mn), i*, sections)> ast ;
+    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
+    result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected      
+       

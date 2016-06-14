@@ -1,4 +1,4 @@
-module to-normal-form
+module normalization/to-normal-form
 
 imports 
   libstratego-sglr
@@ -6,13 +6,35 @@ imports
   analysis/desugar
   analysis/attributes
   analysis/lifting
-  generation/remove-template
-  editor/builders
+  generation/gen-utils/remove-template
   runtime/nabl/utils
   names/analysis/names
-  normalization/to-parse-table
   stratego/metaborg
   runtime/analysis/core
+  editor/build-utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
   
 rules
     
@@ -20,9 +42,9 @@ rules
     to-normal-form(|path) = module-to-normal-form(|path)
     
     module-to-normal-form(|path) :
-        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-normalized]), [], new-sections)
+        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-norm]), imports, new-sections)
         with
-            <debug(!"normalizing grammar ")> mn;
+            //<debug(!"normalizing grammar ")> mn;
             mn'  := <strip-annos> mn;
             rules(expanded-module: mn' -> <id>);
             where(before-normalizing := <cputime>);
@@ -30,18 +52,8 @@ rules
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
             non-template-sections*     := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
             
-            // TODO: Expand imports and concatenate with the result
-            //<debug(!"imports ")> i*;
-            import-names*              := <collect(?Module(Unparameterized(<id>)))> i*; 
-            //debug(!"all names ");
-            imported-modules*          := <filter(expand-import(|path))> import-names*;
-            //debug(!"imported modules ");
-            imported-kernel*           := <map(?Module(_, _, <fetch-elem(?SDFSection(Kernel(<id>)))>)); flatten-list; make-set> imported-modules*;
-            //debug(!"imported kernels ");
-            imported-restr*            := <map(?Module(_, _, <fetch-elem(?SDFSection(Restrictions(<id>))) <+ ![]>)); flatten-list; make-set> imported-modules*;
-            //debug(!"imported rest ");
-            imported-prio*             := <map(?Module(_, _, <fetch-elem(?SDFSection(Priorities(<id>))) <+ ![]>)); flatten-list; make-set> imported-modules*;
-            //debug(!"imported prio ");
+            import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<conc-strings>(<id>, "-norm"))))> i*;
+            imports                    := <?[] <+ ![Imports(<id>)]> import-names*;
             
             // keeping Sort.Cons in the normalized grammar
             // lifted-cons    := <lift-constructors-norm> non-template-m;
@@ -96,12 +108,12 @@ rules
             new-char-class-prods*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [new-literal-prods*, new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
             new-char-class-restr*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [cf-restrictions*, lex-restrictions*, kernel-restrictions*];
             
-            new-priorities-section     := SDFSection(Priorities(<make-set> [new-char-class-prio*, imported-prio*]));
+            new-priorities-section     := SDFSection(Priorities(<make-set> [new-char-class-prio*]));
             // TODO: proper merge of productions (same production = merge attributes)
-            new-kernel-section         := SDFSection(Kernel(<make-set> [new-char-class-prods*, imported-kernel*]));
+            new-kernel-section         := SDFSection(Kernel(<make-set> [new-char-class-prods*]));
             
             // restrictions
-            new-restrictions-section   := SDFSection(Restrictions(<merge-restrictions; make-set> [imported-restr*, new-char-class-restr*])); //SDFSection(Restrictions(<merge-restrictions> new-char-class-restr*))
+            new-restrictions-section   := SDFSection(Restrictions(<merge-restrictions; make-set> [new-char-class-restr*])); //SDFSection(Restrictions(<merge-restrictions> new-char-class-restr*))
             
             if <?SDFSection(Restrictions([]))> new-restrictions-section then
                 new-sections := [new-kernel-section, new-priorities-section]
@@ -109,7 +121,7 @@ rules
                 new-sections := [new-kernel-section, new-restrictions-section, new-priorities-section]
             end  
             
-            where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
+           // where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
      
     expand-import(|path):
         name -> ast

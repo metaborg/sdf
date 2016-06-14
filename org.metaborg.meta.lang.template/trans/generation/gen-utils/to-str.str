@@ -1,8 +1,9 @@
-module generation/to-str
+module generation/gen-utils/to-str
 
 imports
   
   signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
   libstrc
   
 rules

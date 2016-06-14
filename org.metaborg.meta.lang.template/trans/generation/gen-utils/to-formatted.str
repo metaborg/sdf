@@ -1,4 +1,4 @@
-module generation/to-formatted
+module generation/gen-utils/to-formatted
 
 imports
   analysis/-
@@ -6,10 +6,13 @@ imports
   runtime/task/-
   signatures/TemplateLang-sig
   runtime/nabl/-
-    runtime/properties/-
-    names/analysis/names
-    utils/tokenize
-    generation/to-sdf
+  runtime/properties/-
+  names/analysis/names
+  utils/tokenize
+  generation/syntax/to-sdf
+  signatures/basic/Basic-sig
+  signatures/priority/Priority-sig
+  
 
 
 rules

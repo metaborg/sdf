@@ -1,0 +1,65 @@
+module editor/build-format
+
+imports
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  trans/pp
+  generation/gen-utils/to-template
+  generation/gen-utils/remove-template
+  generation/gen-utils/to-formatted
+
+
+rules
+    lift-sdf3-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      result   := <bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
+  
+  pp-sdf3:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      result   := <pp-SDF3-string> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
+
+  lift-sdf3:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      result   := <bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn
+        
+  lift-sdf3-template-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      result   := <module-to-template> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn
+
+   lift-sdf3-template:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn    
+      
+  extract-regular-productions:    
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".sdf3")> mn    
+    
+  extract-regular-productions-abstract:   
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+      result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
+      filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn 
+      

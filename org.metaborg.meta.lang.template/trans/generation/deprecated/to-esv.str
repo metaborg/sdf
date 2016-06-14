@@ -7,9 +7,10 @@ imports
   utils/misc
   analysis/desugar
  // templatelang/expand
-  generation/to-str
-  generation/to-template
-  
+  generation/gen-utils/to-str
+  generation/gen-utils/to-template
+  signatures/sorts/Sorts-sig
+  signatures/sdf2-core/Sdf2-sig
 
 rules
 

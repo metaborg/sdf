@@ -1,0 +1,61 @@
+module editor/build-all
+
+imports 
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  editor/build-syntax
+  editor/build-pp
+  editor/build-sig
+  editor/build-completions
+  generation/syntax/to-sdf
+  generation/signatures/to-sig 
+  generation/pp/to-pp  
+  
+rules 
+  check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ "unknown"
+  
+rules 
+
+// On-save handler
+  generate-all:
+    (selected, position, ast, path, project-path) -> None()
+    with
+        filename := <base-filename> path;
+        ast'     := <desugar-templates> ast;
+        <?Module(Unparameterized(mn), i*, sections)> ast 
+    where
+        esv-cc-filename         := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
+        esv-cc-ast              := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+        <write-string-to-file> (esv-cc-filename, esv-cc-ast)   
+    where
+      ncp-ast              := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      ncp-filename         := <create-src-gen(|project-path, "completion", "-cp.str")> mn;
+      <write-string-to-file> (ncp-filename, ncp-ast)             
+    where
+      sig-ast              := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      sig-filename         := <create-src-gen(|project-path, "signatures", "-sig.str")> mn;
+      <write-string-to-file> (sig-filename, sig-ast)
+    where
+      ds-sig-ast           := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The ds signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      ds-sig-filename      := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn;
+      <write-string-to-file> (ds-sig-filename, ds-sig-ast)
+    where
+        chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+        newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+        kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+        sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+        sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
+        <write-string-to-file> (sdf-filename, sdf-ast)  
+    where
+        version             := <check-sdf2table>;
+        <?"java"> version;
+        norm-filename       := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
+        norm-ast            := <to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
+        <write-string-to-file> (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast)   
+    where
+        pp-ast               := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
+      ; pp-filename          := <create-src-gen(|project-path, "pp", "-pp.str")> mn;
+        <write-string-to-file> (pp-filename, pp-ast)  
+     
