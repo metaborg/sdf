@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 import org.metaborg.sdf2table.symbol.CharClass;
 import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Symbol;
@@ -19,8 +21,7 @@ public class Item{
 	/**
 	 * Production associated to this item.
 	 */
-	Production _prod;
-	List<ContextualSymbol> _symbols;
+	IProduction _prod;
 	
 	/**
 	 * Cursor position.
@@ -44,12 +45,18 @@ public class Item{
 	
 	/**
 	 * Constructor.
-	 * @param prod item production.
+	 * @param p item production.
 	 * @param position cursor position.
 	 */
-	public Item(Production prod, int position){
-		_prod = prod;
-		_pos = position;
+	public Item(IProduction p){
+		_prod = p;
+		_pos = 0;
+		_str = null;
+	}
+	
+	public Item(IProduction p, int pos){
+		_prod = p;
+		_pos = pos;
 		_str = null;
 	}
 	
@@ -57,7 +64,7 @@ public class Item{
 	 * Get the item production.
 	 * @return A production.
 	 */
-	public Production production(){
+	public IProduction production(){
 		return _prod;
 	}
 	
@@ -79,17 +86,19 @@ public class Item{
 		return _pos;
 	}
 	
-	public boolean conflicts(Production prod){
-		return _prod.conflicts(prod, _pos);
+	public boolean conflicts(IProduction p){
+		if(_prod instanceof Production && p instanceof Production)
+			((Production)_prod).conflicts((Production)p, _pos);
+		return false;
 	}
 	
-	public ItemSet closure(){
+	public ItemSet closure() throws UndefinedSymbol{
 		ItemSet set = new ItemSet();
 		close(set);
 		return set;
 	}
 	
-	public void close(ItemSet set){
+	public void close(ItemSet set) throws UndefinedSymbol{
 		Queue<Item> queue = new LinkedList<>();
 		queue.add(this);
 		while(!queue.isEmpty()){
@@ -98,16 +107,15 @@ public class Item{
 		}
 	}
 	
-	private void doClose(ItemSet set, Queue<Item> queue){
+	private void doClose(ItemSet set, Queue<Item> queue) throws UndefinedSymbol{
 		if(set.add(this)){
 			Symbol next = nextSymbol();
 			if(next != null && !next.isTerminal()){
-				List<Production> prods = next.getProductions();
+				List<IProduction> prods = next.productions();
 				if(prods.isEmpty()){
-					System.err.println("Undefined non-terminal: `"+next.toString()+"'");
-					// TODO throw error for undefined non-terminals
+					throw new UndefinedSymbol(next, _prod.asProduction());
 				}
-				for(Production p : prods){
+				for(IProduction p : prods){
 					if(!conflicts(p)){
 						Item i = new Item(p, 0);
 						queue.add(i);
@@ -140,10 +148,6 @@ public class Item{
 	
 	public boolean isReduce(){
 		return !reduceActions().isEmpty();
-	}
-	
-	public boolean isAccepting(){
-		return false; // TODO accepting items
 	}
 	
 	public Set<Reduce> reduceActions(){

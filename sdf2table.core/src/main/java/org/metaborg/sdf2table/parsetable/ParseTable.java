@@ -8,8 +8,11 @@ import java.util.Queue;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Syntax;
+import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
@@ -24,19 +27,27 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	private Syntax _syntax;
 	
 	private Queue<State> _queue  = new LinkedList<>();
+	
+	private static ParseTable _current = null;
 
 	public ParseTable(Syntax syntax){
 		_syntax = syntax;
 	}
 	
-	public void build(){
+	public static Symbol unique(Symbol symbol){
+		return _current._syntax.symbols().get(symbol, true);
+	}
+	
+	public void build() throws UndefinedSymbol{
+		_current = this;
 		Benchmark.ComposedTask task = Benchmark.newComposedTask("parse table generation");
 		task.start();
 		
 		Benchmark.SingleTask t_ff = task.newSingleTask("FIRST and FOLLOW computation");
-		Benchmark.SingleTask t_sg = task.newSingleTask("states generation");	
+		Benchmark.SingleTask t_sg = task.newSingleTask("states generation");
 		
 		Production start = _syntax.startProduction();
+		ContextualSymbol cstart = ContextualSymbol.unique(null, start.product(), null);
 			
 		t_ff.start();
 		_syntax.computeFollowSets();
@@ -44,17 +55,20 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		
 		t_sg.start();
 		State s0 = new State(this);
-		s0.addItem(new Item(start, 0));
 		
+		for(IProduction p : cstart.productions()){
+			s0.addItem(new Item(p));
+		}
 		
 		addState(s0);
 		processQueue();
 		t_sg.stop();
 		
 		task.stop();
+		_current = null;
 	}
 	
-	public State addState(State state){
+	public State addState(State state) throws UndefinedSymbol{
 		state.close();
 		
 		for(State s : _states){ // Avoid state duplication
@@ -69,14 +83,14 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return state;
 	}
 	
-	public void processQueue(){
+	public void processQueue() throws UndefinedSymbol{
 		while(!_queue.isEmpty()){
 			State state = _queue.poll();
 			state.shift();
 		}
 	}
 	
-	public static ParseTable fromSyntax(Syntax syntax){
+	public static ParseTable fromSyntax(Syntax syntax) throws UndefinedSymbol{
 		ParseTable table = new ParseTable(syntax);
 		
 		table.build();
@@ -96,9 +110,10 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		for(Production p : _syntax.productions()){
 			labels.add(p.toATerm());
 			
-			for(Priority prio : p.priorities()){
+			/*for(Priority prio : p.priorities()){
 				priorities.addAll(prio.toATerms());
-			}
+			}*/
+			// TODO Priorities to ATerm
 		}
 		
 		return new StrategoAppl(

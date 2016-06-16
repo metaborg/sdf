@@ -11,6 +11,7 @@ import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Exportable;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
+import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
@@ -123,9 +124,10 @@ public class State implements Exportable{
 	 * <p>
 	 * This method add each item of the item set closure to the state,
 	 * generate every reduce actions associated to those items.
+	 * @throws UndefinedSymbol 
 	 */
 	@SuppressWarnings("unchecked")
-	public void close(){
+	public void close() throws UndefinedSymbol{
 		if(_t_close == null)
 			_t_close = Benchmark.newDistributedTask("State.close");
 		_t_close.start();
@@ -169,8 +171,9 @@ public class State implements Exportable{
 	 * parse graph.
 	 * <p>
 	 * Be sure to call {@link #close()} before this method to get a consistent state.
+	 * @throws UndefinedSymbol 
 	 */
-	public void shift(){
+	public void shift() throws UndefinedSymbol{
 		if(_t_shift == null)
 			_t_shift = Benchmark.newDistributedTask("State.shift");
 		_t_shift.start();

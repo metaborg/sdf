@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -26,11 +27,11 @@ public class Reduce extends Action{
 		REJECT
 	}
 	
-	Production _prod;
+	IProduction _prod;
 	ReducePolicy _policy = ReducePolicy.NORMAL;
 	Sequence _lookahead;
 	
-	public Reduce(Terminal symbol, Production prod){
+	public Reduce(Terminal symbol, IProduction prod){
 		super(symbol);
 		_prod = prod;
 		
@@ -38,7 +39,7 @@ public class Reduce extends Action{
 			_policy = ReducePolicy.REJECT;
 	}
 	
-	public Reduce(Terminal symbol, Production prod, Sequence lookahead){
+	public Reduce(Terminal symbol, IProduction prod, Sequence lookahead){
 		super(symbol);
 		_prod = prod;
 		_lookahead = lookahead;
@@ -51,7 +52,7 @@ public class Reduce extends Action{
 		return (Terminal)trigger();
 	}
 	
-	public Production getProduction(){
+	public IProduction getProduction(){
 		return _prod;
 	}
 	

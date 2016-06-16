@@ -1,17 +1,15 @@
 package org.metaborg.sdf2table.symbol;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.Exportable;
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
 public abstract class Symbol implements Exportable{
-	private List<Production> _productions = new ArrayList<>();
 	private Set<CharClass> _follow_restrictions = new LinkedHashSet<>();
 	
 	protected Symbol(){
@@ -27,9 +25,13 @@ public abstract class Symbol implements Exportable{
 			return (Terminal)this;
 		
 		TerminalContainer cc = new TerminalContainer();
-		for(Production p : _productions)
+		for(IProduction p : productions())
 			cc.add(p.firstSet());
 		return cc.contents();
+	}
+	
+	public Symbol nonContextual(){
+		return this;
 	}
 	
 	/**
@@ -51,13 +53,14 @@ public abstract class Symbol implements Exportable{
 	 * Get the list of productions that produce this symbol
 	 * @return A list of productions.
 	 */
-	public List<Production> getProductions(){
-		return _productions;
-	}
+	abstract public List<IProduction> productions();
 	
-	public void addProduction(Production p){
-		if(p.product() == this)
-			_productions.add(p);
+	public boolean isEpsilon(){
+		for(IProduction p : productions()){
+			if(!p.isEpsilon())
+				return false;
+		}
+		return true;
 	}
 	
 	public abstract boolean equals(Symbol other);

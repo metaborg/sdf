@@ -1,16 +1,31 @@
 package org.metaborg.sdf2table.parsetable;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.metaborg.sdf2table.grammar.Production;
-import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoConstructor;
-import org.spoofax.terms.StrategoInt;
 
-public class Priority{ // L > R
-	static int _count = 0;
+public class Priority{
+	Production _production;
+	int _position;
+	boolean _transitive;
+	
+	public Priority(Production prod, int position, boolean transitive){
+		_production = prod;
+		_position = position;
+		_transitive = transitive;
+	}
+	
+	public Production production(){
+		return _production;
+	}
+	
+	public boolean isTransitive(){
+		return _transitive;
+	}
+	
+	public int position(){
+		return _position;
+	}
+	
+	/*static int _count = 0;
 	private static final StrategoConstructor CONS_ARG_GTR_PRIO = new StrategoConstructor("arg-gtr-prio", 3);
 	private static final StrategoConstructor CONS_GTR_PRIO = new StrategoConstructor("gtr-prio", 2);
 	
@@ -58,7 +73,7 @@ public class Priority{ // L > R
 		
 			if(_transitive){
 				for(Priority prio : _production_r.priorities()){
-					if(prio._token != token /*&& prio.getPosition() == -1*/ && prio.hasHigherPriorityRec(token, prod, position))
+					if(prio._token != token && prio.hasHigherPriorityRec(token, prod, position))
 						return true;
 				}
 			}
@@ -114,5 +129,5 @@ public class Priority{ // L > R
 			}
 		}
 		return list;
-	}
+	}*/
 }

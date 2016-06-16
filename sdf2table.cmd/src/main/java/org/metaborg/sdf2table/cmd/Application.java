@@ -146,7 +146,7 @@ public class Application{
     	try {
 			Files.write(file, pt.digraph().getBytes());
 			System.err.println("Graphiv written at: "+file.toAbsolutePath().toUri().getPath());
-		} catch (IOException e) {
+		} catch (IOException e){
 			System.err.println(e.getMessage());
 		}
     }

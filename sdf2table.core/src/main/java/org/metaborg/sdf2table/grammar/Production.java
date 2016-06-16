@@ -5,8 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Priority;
 import org.metaborg.sdf2table.parsetable.Utilities;
+import org.metaborg.sdf2table.symbol.Layout;
+import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.SymbolCollection;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -22,11 +23,15 @@ import org.spoofax.terms.StrategoString;
  * Grammar production.
  * 
  */
-public class Production extends Follower implements Exportable, Trigger{
+public class Production extends Follower implements IProduction, Exportable{
 	private static int _count = 0;
 	
 	public static void reset(){
 		_count = 0;
+	}
+	
+	public static int nextId(){
+		return 257+_count++;
 	}
 	
 	/**
@@ -46,19 +51,6 @@ public class Production extends Follower implements Exportable, Trigger{
 	private static final StrategoConstructor CONS_CONS = new StrategoConstructor("cons", 1);
 	
 	/**
-	 * Production attributes.
-	 */
-	public enum Attribute{
-		ASSOC_LEFT,
-		ASSOC_RIGHT,
-		
-		BRACKET,
-		REJECT,
-		
-		LONGEST_MATCH
-	}
-	
-	/**
 	 * Unique identifier of the production.
 	 */
 	int _id = -1;
@@ -66,7 +58,7 @@ public class Production extends Follower implements Exportable, Trigger{
 	/**
 	 * Symbol synthesized by the production.
 	 */
-	Symbol _symbol;
+	NonTerminal _symbol;
 	
 	/**
 	 * Constructor name, if any.
@@ -86,7 +78,8 @@ public class Production extends Follower implements Exportable, Trigger{
 	/**
 	 * List the priorities where this production is the direct ascendant.
 	 */
-	Set<Priority> _priorities = new HashSet<>();
+	//Set<Priority> _priorities = new HashSet<>();
+	Priorities _priorities = new Priorities(this);
 	
 	/**
 	 * FOLLOW(this).
@@ -94,6 +87,9 @@ public class Production extends Follower implements Exportable, Trigger{
 	 * This set is not computed until {@link Syntax#computeFollowSets()} has not been called.
 	 */
 	FollowSet _follow_set = new FollowSet(this);
+	
+	Set<Symbol> _left;
+	Set<Symbol> _right;
 	
 	/**
 	 * String representation of the production.
@@ -111,7 +107,7 @@ public class Production extends Follower implements Exportable, Trigger{
 	 * @param rhs A list of symbols that compose the production, from left to right.
 	 * @param attributes A list of attributes.
 	 */
-	public Production(Symbol symbol, String cons, List<Symbol> rhs, List<Attribute> attributes){
+	public Production(NonTerminal symbol, String cons, List<Symbol> rhs, List<Attribute> attributes){
 		_symbol = symbol;
 		_rhs = rhs;
 		_cons = cons;
@@ -122,8 +118,16 @@ public class Production extends Follower implements Exportable, Trigger{
 	 * Get the list of priorities.
 	 * @return The list the priorities where this production is the direct ascendant.
 	 */
-	public Set<Priority> priorities(){		
+	public Priorities priorities(){		
 		return _priorities;
+	}
+	
+	public Follower asFollower(){
+		return (Follower)this;
+	}
+	
+	public Production asProduction(){
+		return this;
 	}
 	
 	/**
@@ -147,9 +151,9 @@ public class Production extends Follower implements Exportable, Trigger{
 			if(sym instanceof Terminal){
 				addFirst((Terminal)sym);
 			}else{
-				for(Production p : sym.getProductions()){
-					if(!conflicts(p, 0))
-						addDependency(p);
+				for(IProduction p : sym.productions()){
+					if(!conflicts(p.asProduction(), 0))
+						addDependency(p.asFollower());
 				}
 			}
 		}
@@ -162,17 +166,17 @@ public class Production extends Follower implements Exportable, Trigger{
 				if(i+1 < _rhs.size())
 					next = _rhs.get(i+1);
 				
-				for(Production sp : sym.getProductions()){
-					if(!conflicts(sp, i)){
+				for(IProduction sp : sym.productions()){
+					if(!conflicts(sp.asProduction(), i)){
 						if(next == null){
 							sp.followSet().addDependency(_follow_set);
 						}else{
 							if(next instanceof Terminal){
 								sp.followSet().addFirst((Terminal)next);
 							}else{
-								for(Production np : next.getProductions()){
-									if(!conflicts(np, i+1)){
-										sp.followSet().addDependency(np);
+								for(IProduction np : next.productions()){
+									if(!conflicts(np.asProduction(), i+1)){
+										sp.followSet().addDependency(np.asFollower());
 									}
 								}
 							}
@@ -194,6 +198,44 @@ public class Production extends Follower implements Exportable, Trigger{
 		return _follow_set;
 	}
 	
+	private void computeLeftSet(Set<Symbol> set){
+		if(isEmpty())
+			return;
+		if(set.add(symbol(0))){
+			for(IProduction p : symbol(0).productions()){
+				p.asProduction().computeLeftSet(set);
+			}
+		}
+	}
+	
+	public Set<Symbol> leftSet(){
+		if(_left == null){
+			_left = new HashSet<Symbol>();
+			computeLeftSet(_left);
+		}
+		
+		return _left;
+	}
+	
+	private void computeRightSet(Set<Symbol> set){
+		if(isEmpty())
+			return;
+		if(set.add(symbol(size()-1))){
+			for(IProduction p : symbol(size()-1).productions()){
+				p.asProduction().computeRightSet(set);
+			}
+		}
+	}
+	
+	public Set<Symbol> rightSet(){
+		if(_right == null){
+			_right = new HashSet<Symbol>();
+			computeRightSet(_right);
+		}
+		
+		return _right;
+	}
+	
 	/**
 	 * @return The last symbol of the production, or null if the production is empty.
 	 */
@@ -205,19 +247,21 @@ public class Production extends Follower implements Exportable, Trigger{
 	
 	/**
 	 * 
-	 * @param prod A symbol production.
+	 * @param np A symbol production.
 	 * @param pos The position in the production.
 	 * @return true if it is not possible to use the production {@code prod} to expend the symbol at position {@code pos}.
+	 * Note : this is the old conflicts semantic.
 	 */
-	public boolean conflicts(Production prod, int pos){
+	public boolean conflicts(Production np, int pos){
 		if(pos >= _rhs.size())
 			return false;
 		Symbol next = _rhs.get(pos);
-		if(prod.product().equals(next)){
-			for(Priority prio : _priorities){
+		if(np.product().equals(next)){
+			/*for(Priority prio : _priorities){
 				if(prio.hasHigherPriority(prod, pos))
 					return true;
-			}
+			}*/
+			_priorities.conflicts(np, pos);
 		}
 		return false;
 	}
@@ -228,9 +272,9 @@ public class Production extends Follower implements Exportable, Trigger{
 	 * This method should not be directly used.
 	 * @param prio
 	 */
-	public boolean addPriority(Priority prio){
+	/*public boolean addPriority(Priority prio){
 		return _priorities.add(prio);
-	}
+	}*/
 	
 	/**
 	 * List of attributes.
@@ -244,8 +288,29 @@ public class Production extends Follower implements Exportable, Trigger{
 	 * Synthesized symbol.
 	 * @return The symbol resulting of the production.
 	 */
-	public Symbol product(){
+	public NonTerminal product(){
 		return _symbol;
+	}
+	
+	public int size(){
+		return _rhs.size();
+	}
+	
+	public boolean isEmpty(){
+		return _rhs.isEmpty();
+	}
+	
+	public boolean isEpsilon(){
+		for(Symbol s : _rhs){
+			if(!(s instanceof Layout) && !s.isEpsilon()){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public Symbol symbol(int position){
+		return _rhs.get(position);
 	}
 	
 	/**
@@ -272,7 +337,7 @@ public class Production extends Follower implements Exportable, Trigger{
 	 */
 	public int id(){
 		if(_id == -1)
-			_id = 257+_count++;
+			_id = nextId();
 		return _id;
 	}
 	
@@ -423,17 +488,17 @@ public class Production extends Follower implements Exportable, Trigger{
 			StrategoAppl app = (StrategoAppl)term;
 			boolean with_cons = false;
 			if(app.getName().equals("SdfProduction") || (with_cons = true && app.getName().equals("SdfProductionWithCons"))){
-				Symbol symbol;
+				NonTerminal symbol;
 				String cons = "";
 				List<Symbol> sym_list = new ArrayList<>();
 				StrategoAppl tattrs;
 				
 				if(with_cons){
 					// SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
-					symbol = Symbol.fromStrategoTerm(app.getSubterm(0).getSubterm(0), symbols);
+					symbol = (NonTerminal)Symbol.fromStrategoTerm(app.getSubterm(0).getSubterm(0), symbols);
 					cons = ((StrategoString)app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
 				}else{
-					symbol = Symbol.fromStrategoTerm(app.getSubterm(0), symbols);
+					symbol = (NonTerminal)Symbol.fromStrategoTerm(app.getSubterm(0), symbols);
 				}
 				
 				// Read right hand side of the equation: Rhs([<symbols>])

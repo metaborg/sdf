@@ -3,8 +3,10 @@ package org.metaborg.sdf2table.parsetable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
+import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;
 
@@ -32,7 +34,7 @@ public class ItemSet extends LinkedHashSet<Item>{
 		super(copy);
 	}
 	
-	public ItemSet closure(){
+	public ItemSet closure() throws UndefinedSymbol{
 		ItemSet nset = new ItemSet();
 		
 		for(Item i : this){
@@ -60,8 +62,8 @@ public class ItemSet extends LinkedHashSet<Item>{
 				if(next.isTerminal()){
 					map.put((Terminal)next, i.shift());
 				}else{
-					for(Production p : next.getProductions()){
-						if(!i.conflicts(p)){
+					for(IProduction p : next.productions()){
+						if(!i.conflicts(p.asProduction())){
 							map.put(p, i.shift());
 						}
 					}

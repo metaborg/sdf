@@ -106,9 +106,9 @@ public abstract class Follower{
 		}
 	}
 
-	protected void addDependency(Follower f){
-		if(_dependencies.add(f)){
-			f.addDependent(this);
+	protected void addDependency(Follower p){
+		if(_dependencies.add(p)){
+			p.addDependent(this);
 		}
 	}
 	

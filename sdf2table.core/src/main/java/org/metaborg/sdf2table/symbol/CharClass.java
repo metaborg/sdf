@@ -1,13 +1,19 @@
 package org.metaborg.sdf2table.symbol;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 
 public abstract class CharClass extends Symbol{
+	public List<IProduction> productions(){
+		return null;
+	}
+	
 	public abstract boolean contains(int c);
 	
 	public boolean intersects(CharClass cc){
