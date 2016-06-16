@@ -1,4 +1,4 @@
-module remove-template
+module generation/gen-utils/remove-template
 
 imports
   libstratego-sglr
@@ -6,8 +6,13 @@ imports
   analysis/analyze
   analysis/desugar
   libstrc
-  generation/to-sdf
+  generation/syntax/to-sdf
   trans/utils/-
+  signatures/TemplateLang-sig
+  signatures/kernel/Kernel-sig
+  signatures/basic/Basic-sig
+  signatures/literals/Literals-sig
+  signatures/modules/Modules-sig
   
 strategies
   

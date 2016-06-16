@@ -1,0 +1,26 @@
+module editor/build-completions
+
+imports
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  generation/completion/-
+  
+rules
+   generate-new-completions-colorer:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        ast'     := <desugar-templates> selected;
+        filename := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
+        result   := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
+        
+  generate-new-completions-stratego:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+        <?Module(Unparameterized(mn), i*, sections)> ast ;
+        ast'     := <desugar-templates> selected;
+        result   := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+        filename := <create-src-gen(|project-path, "completion", "-cp.str")> mn
+  

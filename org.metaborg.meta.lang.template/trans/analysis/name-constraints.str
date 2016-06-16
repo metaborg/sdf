@@ -12,39 +12,42 @@ imports
   runtime/task/-
   runtime/types/-
   analysis/types
-  generation/to-sdf
+  generation/syntax/to-sdf
   analysis/desugar
   runtime/properties/-
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  signatures/sorts/Sorts-sig
+  signatures/sdf2-core/Sdf2-sig
 
-  strategies
+strategies
 
-    nabl-check-disable-duplicate(|uri, ns) = id
-    nabl-check-disable-unresolved = id
+  nabl-check-disable-duplicate(|uri, ns) = id
+  nabl-check-disable-unresolved = id
 
-    rules
+rules
 
-    nabl-constraint(|ctx):
-        Module(Unparameterized(m), i*, s*) -> <fail>
-    where
-        m' := <strip-annos; string-tokenize(|['/']); last> m;
-        <base-filename; remove-extension; not(?m')> ctx;
-        msg := "Module name does not correspond to file name";
-        <task-create-error(|ctx, msg)> m
+  nabl-constraint(|ctx):
+      Module(Unparameterized(m), i*, s*) -> <fail>
+  where
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+      <base-filename; remove-extension; not(?m')> ctx;
+      msg := "Module name does not correspond to file name";
+      <task-create-error(|ctx, msg)> m
 
-
-    nabl-constraint(|ctx):
+  nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Nil\""))]))) -> <fail>
-    where
+  where
       msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
 
-    nabl-constraint(|ctx):
+  nabl-constraint(|ctx):
     t@Term(Default(Appl(Unquoted("cons"), [Fun(Quoted("\"Cons\""))]))) -> <fail>
-    where
+  where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> t
 
-    nabl-constraint(|ctx):
+  nabl-constraint(|ctx):
     SortCons(s, c@Constructor("Nil")) -> <fail>
     where
       msg := "In Stratego, Nil is the empty list, and Nil() does not match this constructor (use a different constructor name)";

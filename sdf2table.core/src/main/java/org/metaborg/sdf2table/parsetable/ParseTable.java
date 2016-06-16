@@ -1,5 +1,8 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -9,6 +12,8 @@ import java.util.Queue;
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Exportable;
 import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.Module;
+import org.metaborg.sdf2table.grammar.ModuleNotFound;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
@@ -97,6 +102,38 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		
 		return table;
 	}
+	
+	public static void fromFile(File input, File output, List<String> paths){
+		Syntax syntax = null;
+		try{
+			syntax = Module.fromFile(input, paths);
+		}catch (ModuleNotFound e){
+			System.err.println(e.getMessage());
+			System.exit(1);
+		}
+		
+		ParseTable pt = ParseTable.fromSyntax(syntax);
+				
+		IStrategoTerm result = pt.toATerm();
+        if(output != null){
+	        FileWriter out = null;
+	        try{
+				out = new FileWriter(output);
+				
+				out.write(result.toString());
+				
+				out.close();
+			}catch (IOException e){
+				System.err.println(e.getMessage());
+			}
+        }else{
+        	System.out.println(result.toString());
+        }
+        
+        State.reset();
+        Production.reset();
+	}
+	
 	
 	public int getInitialState(){
 		return 0;

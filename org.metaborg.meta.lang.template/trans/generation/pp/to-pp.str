@@ -1,4 +1,4 @@
-module generation/to-pp
+module generation/pp/to-pp
 
 imports
   libstratego-lib
@@ -6,8 +6,8 @@ imports
   libstrc
   signatures/sdf2-core/-
   analysis/desugar
-  generation/to-template
-  generation/to-str
+  generation/gen-utils/to-template
+  generation/gen-utils/to-str
   templatelang
   
 rules

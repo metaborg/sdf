@@ -1,9 +1,9 @@
-module generation/to-sdf
+module generation/syntax/to-sdf
+
 imports
   libstratego-lib
   libstratego-sglr
   libstratego-gpp
-  signatures/TemplateLang-sig
   utils/attributes
   utils/misc
   utils/tokenize
@@ -12,6 +12,29 @@ imports
   analysis/attributes
   analysis/desugar
   pp/layout-constraints/Layout-Constraints-pp
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
 
 rules
  

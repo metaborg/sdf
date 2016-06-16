@@ -1,4 +1,4 @@
-module make-permissive
+module generation/syntax/make-permissive
 
 imports 
   libstratego-sglr
@@ -7,7 +7,12 @@ imports
   analysis/attributes
   analysis/lifting
   stratego/metaborg
-  generation/remove-template
+  generation/gen-utils/remove-template
+  signatures/modules/Modules-sig
+  signatures/literals/Literals-sig
+  signatures/sorts/Sorts-sig
+  signatures/restrictions/Restrictions-sig
+  signatures/sdf2-core/Sdf2-Syntax-sig  
 
 rules
 

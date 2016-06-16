@@ -18,16 +18,19 @@ imports
   runtime/properties/-
   runtime/types/-
   runtime/editor/-
-
   analysis/-
-  generation/-
-  editor/builders
-  editor/-
-  //analyze
-  //names
-  //name-desugar
-//  name-check
-  //check
+  generation/completion/-
+  generation/gen-utils/-
+  generation/pp/-
+  generation/signatures/-
+  generation/syntax/-
+  editor/build-all
+  editor/build-completions
+  editor/build-format
+  editor/build-pp
+  editor/build-sig
+  editor/build-syntax
+  editor/build-utils
   names/analysis/names
   types/analysis/types-ts
 
