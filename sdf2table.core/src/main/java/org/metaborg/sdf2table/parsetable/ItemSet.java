@@ -1,17 +1,14 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.Stack;
 
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.core.CollisionSet;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
-import org.metaborg.sdf2table.symbol.Symbol;
-import org.metaborg.sdf2table.symbol.Terminal;
 
-public class ItemSet extends LinkedHashSet<Item>{
-	private static final long serialVersionUID = 6828916657513723316L;
+public class ItemSet extends CollisionSet<Item>{
 	int _hash = -1;
 	
 	private static class ItemSetConstructor implements CollectionConstructor<ItemSet, Item>{
@@ -32,6 +29,7 @@ public class ItemSet extends LinkedHashSet<Item>{
 	
 	public ItemSet(ItemSet copy){
 		super(copy);
+		copy.addSources(this);
 	}
 	
 	public ItemSet closure() throws UndefinedSymbol{
@@ -46,29 +44,23 @@ public class ItemSet extends LinkedHashSet<Item>{
 	
 	public boolean conflicts(Production p){
 		for(Item i : this){
-			if(p.product().equals(i.nextSymbol()) && !i.conflicts(p))
+			if(p.product().equals(i.nextSymbol()) && !i.shallowConflicts(p))
 				return false;
 		}
 		return true;
 	}
 	
-	public MergingMap<Trigger, ItemSet, Item> shift(){
-		MergingMap<Trigger, ItemSet, Item> map = new MergingMap<Trigger, ItemSet, Item>(_constructor);
+	public MergingMap<ItemSet, Item> shift(){
+		MergingMap<ItemSet, Item> map = new MergingMap<>(_constructor);
 		
 		for(Item i : this){
 			if(!i.isFinal()){
-				Symbol next = i.nextSymbol();
+				Stack<Trigger> stack = i.pendingTriggers();
+				Item shifted = i.shift();
 				
-				if(next.isTerminal()){
-					map.put((Terminal)next, i.shift());
-				}else{
-					for(IProduction p : next.productions()){
-						if(!i.conflicts(p.asProduction())){
-							map.put(p, i.shift());
-						}
-					}
+				while(!stack.isEmpty()){
+					map.put(stack.pop(), shifted);
 				}
-				
 			}
 		}
 		
@@ -94,7 +86,22 @@ public class ItemSet extends LinkedHashSet<Item>{
 	@Override
 	public boolean add(Item i){
 		_hash = -1;
-		return super.add(i);
+		Item doppelganger = push(i);
+		if(doppelganger == null)
+			return true;
+		
+		doppelganger.addSources(i.sources());
+		
+		return false;
+	}
+	
+	public void addSources(ItemSet items) {
+		for(Item i : this){
+			Item doppelganger = items.agent(i);
+			if(doppelganger != null){
+				i.addSources(doppelganger.sources());
+			}
+		}
 	}
 	
 	@Override

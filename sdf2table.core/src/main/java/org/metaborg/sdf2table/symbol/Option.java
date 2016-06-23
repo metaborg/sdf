@@ -4,10 +4,15 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 
-public class Option extends NonTerminal {
+public class Option extends ConcreteNonTerminal {
 	private static final StrategoConstructor CONS_OPT = new StrategoConstructor("opt", 1);
 	
 	private Symbol _symbol;
+	
+	@Override
+	public boolean nonEpsilon(){
+		return false;
+	}
 	
 	public Option(Symbol symbol){
 		super();
@@ -19,7 +24,12 @@ public class Option extends NonTerminal {
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean isLayout(){
+		return _symbol.isLayout();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
 		if(other instanceof Option){
 			return other != null && _symbol != null && _symbol.equals(((Option)other).getSymbol());
 		}

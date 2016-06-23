@@ -2,7 +2,7 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.util.Collection;
 
-import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.core.Exportable;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoList;
 

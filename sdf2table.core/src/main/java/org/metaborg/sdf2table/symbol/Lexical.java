@@ -4,7 +4,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 
-public class Lexical extends NonTerminal {
+public class Lexical extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_LEX = new StrategoConstructor("lex", 1);
 	
 	private Symbol _symbol;
@@ -19,7 +19,12 @@ public class Lexical extends NonTerminal {
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean isLayout(){
+		return _symbol.isLayout() || super.isLayout();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
 		if(other instanceof Lexical){
 			return other != null && _symbol != null && _symbol.equals(((Lexical)other).getSymbol());
 		}

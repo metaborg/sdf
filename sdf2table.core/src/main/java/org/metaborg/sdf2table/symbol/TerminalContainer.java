@@ -56,10 +56,10 @@ public class TerminalContainer extends Terminal{
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof TerminalContainer){
 			TerminalContainer s = (TerminalContainer)other;
-			return other != null && _cc.equals(s._cc);
+			return s != null && _cc != null && _cc.equals(s._cc);
 		}
 		return _cc != null && _cc.equals(other);
 	}
@@ -78,9 +78,9 @@ public class TerminalContainer extends Terminal{
 		return _cc.terminalString();
 	}
 	
-	public Terminal except(CharClass... restrictions){
+	public Terminal doExcept(CharClass... restrictions){
 		if(_cc == null)
 			return null;
-		return _cc.except(restrictions);
+		return _cc.doExcept(restrictions);
 	}
 }

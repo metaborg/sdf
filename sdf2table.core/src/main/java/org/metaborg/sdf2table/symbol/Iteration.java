@@ -4,7 +4,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 
-public class Iteration extends NonTerminal {
+public class Iteration extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_ITER = new StrategoConstructor("iter", 1);
 	private static final StrategoConstructor CONS_ITER_SEP = new StrategoConstructor("iter-sep", 2);
 	private static final StrategoConstructor CONS_ITER_STAR = new StrategoConstructor("iter-star", 1);
@@ -21,6 +21,11 @@ public class Iteration extends NonTerminal {
 		_min = min;
 	}
 	
+	@Override
+	public boolean isLayout(){
+		return _symbol.isLayout();
+	}
+	
 	public Symbol getSeparator(){
 		return _sep;
 	}
@@ -34,7 +39,7 @@ public class Iteration extends NonTerminal {
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Iteration){
 			Iteration i = (Iteration)other;
 			return other != null && _symbol != null && _min == i.getMinimum() && _symbol.equals(i.getSymbol());

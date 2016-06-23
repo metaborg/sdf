@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.parsetable.Priority;
+import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.SymbolCollection;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
@@ -16,7 +17,7 @@ public class Priorities{
 	Set<Priority> _higher = new HashSet<Priority>();
 	Set<Priority> _lower = new HashSet<Priority>();
 	
-	Set<PriorityLevel> _levels = new HashSet<PriorityLevel>();
+	Set<PriorityLevel> _levels;
 	
 	Production _production;
 	
@@ -27,19 +28,21 @@ public class Priorities{
 	public Set<PriorityLevel> priorityLevels(){
 		if(_levels == null){
 			_levels = new HashSet<>();
+			
 			for(Priority p : _lower){
 				_levels.add(new PriorityLevel(_production, p.position()));
 			}
 		}
+		
 		return _levels;
 	}
 	
 	public Set<PriorityLevel> priorityLevels(int position){
 		Set<PriorityLevel> set = new HashSet<>();
 		
-		for(PriorityLevel l : priorityLevels()){
-			if(l.position() == -1 || l.position() == position)
-				set.add(l);
+		for(PriorityLevel p : priorityLevels()){
+			if(p.position() == -1 || p.position() == position)
+				set.add(p);
 		}
 		
 		return set;
@@ -83,7 +86,7 @@ public class Priorities{
 	 * @param position
 	 * @return
 	 */
-	public boolean conflicts(IProduction np, int position){
+	public boolean shallowConflicts(IProduction np, int position){
 		for(Priority l : _lower){
 			if((l.position() == -1 || l.position() == position) && l.production().equals(np))
 				return true;
@@ -91,7 +94,51 @@ public class Priorities{
 		return false;
 	}
 	
-	public static void fromStrategoTerm(IStrategoTerm term, Syntax syntax, SymbolCollection symbols){
+	/**
+	 * 
+	 * @param np
+	 * @param position
+	 * @return
+	 */
+	public boolean deepConflicts(Production p, int position){
+		for(Priority l : _lower){
+			if((l.position() == -1 || l.position() == position) && l.production().equals(p))
+				return true;
+		}
+		return false;
+	}
+	
+	/*public boolean conflictsLeft(Symbol s){
+		if(_production.rightSet().contains(s))
+			return true;
+		for(Priority p : _higher){
+			if(p.production().rightSet().contains(s))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean conflictsRight(Symbol s){
+		if(_production.leftSet().contains(s))
+			return true;
+		for(Priority p : _higher){
+			if(p.production().leftSet().contains(s))
+				return true;
+		}
+		return false;
+	}*/
+	
+	public List<IStrategoTerm> toATerms(){
+		List<IStrategoTerm> list = new LinkedList<>();
+		
+		for(Priority l : _lower){
+			list.add(l.toATerm(_production));
+		}
+		
+		return list;
+	}
+	
+	public static void fromStrategoTerm(IStrategoTerm term, Syntax syntax){
 		if(term instanceof StrategoAppl){
 			StrategoAppl app = (StrategoAppl)term;
 			if(app.getName().equals("Priorities")){
@@ -131,10 +178,10 @@ public class Priorities{
 								group = group.getSubterm(0);
 							}
 							if(group instanceof StrategoAppl && ((StrategoAppl)group).getName().equals("SimpleGroup")){
-								a.priorities.add(new Priority(syntax.uniqueProduction(Production.fromATerm(group.getSubterm(0), symbols)), a.position, a.transitive));
+								a.priorities.add(new Priority(Production.fromATerm(group.getSubterm(0), syntax), a.position, a.transitive));
 							}else if(group instanceof StrategoAppl && ((StrategoAppl)group).getName().equals("ProdsGroup")){
 								for(IStrategoTerm tp : (StrategoList)group.getSubterm(0)){
-									a.priorities.add(new Priority(syntax.uniqueProduction(Production.fromATerm(tp, symbols)), a.position, a.transitive));
+									a.priorities.add(new Priority(Production.fromATerm(tp, syntax), a.position, a.transitive));
 								}
 							}else{
 								System.err.println("Priorities Section: Malformed term: SimpleGroup expected.");
@@ -143,9 +190,8 @@ public class Priorities{
 							for(Priority p : a.priorities){
 								if(p != null){
 									if(ascendant != null){
-										Priority lower = new Priority(p.production(), a.position, a.transitive);
-										
 										for(Priority higher : ascendant.priorities){
+											Priority lower = new Priority(p.production(), higher.position(), higher.isTransitive());
 											//ap.addPriority(new Priority(ap, p, ascendant.position, ascendant.transitive));
 											higher.production().priorities().addLower(lower);
 											p.production().priorities().addHigher(higher);

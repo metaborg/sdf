@@ -1,32 +1,188 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.FirstSet;
-import org.metaborg.sdf2table.grammar.FollowSet;
-import org.metaborg.sdf2table.grammar.Follower;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 
-public class ContextualProduction implements IProduction{
+public class ContextualProduction extends IProduction{
 	Production _source;
 	ContextualSymbol _symbol;
 	List<Symbol> _rhs;
+	Set<ContextualSymbol> _dependants = new HashSet<>();
+	static final Set<ContextualProduction> _to_validate = new HashSet<>();
 	int _id = -1;
+	String _str;
 	
-	public ContextualProduction(Production source, ContextualSymbol symbol, List<Symbol> rhs){
+	boolean _declared = false;
+	boolean _valid = false;
+	
+	Label _label = null;
+	
+	private ContextualProduction(Production source, ContextualSymbol symbol, List<Symbol> rhs){
 		_source = source;
 		_symbol = symbol;
 		_rhs = rhs;
+		
+		for(Symbol s : rhs){
+			if(s instanceof ContextualSymbol){
+				ContextualSymbol cs = ((ContextualSymbol)s);
+				cs.addDependant(this);
+			}
+		}
 	}
 	
-	public int id(){
-		if(_id == -1)
-			_id = Production.nextId();
-		return _id;
+	public static ContextualProduction unique(Production source, ContextualSymbol symbol, List<Symbol> rhs){
+		ContextualProduction u = new ContextualProduction(source, symbol, rhs);
+		u.declare();
+		
+		return u;
+	}
+	
+	static public void validateAll(){
+		for(ContextualProduction p : _to_validate){
+			p.validate();
+		}
+		_to_validate.clear();
+	}
+	
+	public void validate(){
+		if(!_valid){
+			for(Symbol s : _rhs){
+				if(!s.isTerminal() && (!(s instanceof ContextualSymbol) || !((ContextualSymbol)s).isValid()))
+					return;
+			}
+			_valid = true;
+			//
+			for(ContextualSymbol dep : _dependants){
+				dep.validate();
+			}
+			_dependants = null;
+		}
+	}
+	
+	/*public static void createAllLabels(){
+		for(Production p : ParseTable.current().syntax().productions()){
+			if(p.contextualProductions() != null){
+				for(ContextualProduction cp : p.contextualProductions()){
+					cp.createLabel();
+				}
+			}
+		}
+	}
+	
+	public void createLabel(){
+		if(_label == null){
+			_label = ParseTable.newLabel(this);
+			for(ContextualProduction p : _source.contextualProductions()){
+				if(equivalentTo(p)){
+					//_label.add(p);
+					p._label = _label;
+				}
+			}
+		}
+	}
+	
+	public boolean equivalentTo(ContextualProduction p){
+		//return false;
+		if(p == null || p.size() != size())
+			return false;
+		for(int i = 0; i < size(); ++i){
+			if(!symbol(i).equals(p.symbol(i)))
+				return false;
+		}
+		if(!followSet().equals(p.followSet()))
+			return false;
+		
+		return true;
+	}*/
+	
+	public Label label(){
+		if(_label == null)
+			_label = ParseTable.newLabel(this); 
+		return _label;
+		//return _source.label();
+	}
+	
+	public boolean isValid() {
+		return _valid;
+	}
+	
+	public void addDependant(ContextualSymbol dep){
+		_dependants.add(dep);
+	}
+	
+	public void declare(){
+		if(_declared)
+			return;
+		ParseTable.declareContextualProduction(this);
+		_source.addContextualProduction(this);
+		_to_validate.add(this);
+		_declared = true;
+	}
+	
+	public String shortString(){
+		if(constructor() != null && !constructor().isEmpty())
+			return _symbol.toString()+"."+constructor();
+		return toString();
+	}
+	
+	@Override
+	public String toString(){
+		if(_str == null){
+			_str = "";
+			for(Symbol s : _rhs)
+				_str += s.toString()+" ";
+			_str += "→ "+_symbol.toString();
+			if(constructor() != null && !constructor().isEmpty())
+				_str += "."+constructor();
+			if(!attributes().isEmpty()){
+				int i = 0;
+				_str += " {";
+				for(Attribute attr : attributes()){
+					if(i > 0)
+						_str += ",";
+					switch(attr){
+					case ASSOC_LEFT:
+						_str += "left";
+						break;
+					case ASSOC_RIGHT:
+						_str += "right";
+						break;
+					case BRACKET:
+						_str += "bracket";
+						break;
+					case REJECT:
+						_str += "reject";
+						break;
+					case LONGEST_MATCH:
+						_str += "longest-match";
+						break;
+					}
+					++i;
+				}
+				_str += "}";
+			}
+		}
+		
+		return _str;
+	}
+	
+	@Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+	
+	public String constructor(){
+		return _source.constructor();
+	}
+	
+	public boolean containsTerminal(){
+		return _source.containsTerminal();
 	}
 	
 	@Override
@@ -57,36 +213,11 @@ public class ContextualProduction implements IProduction{
 		return (List<Symbol>)(Object)_rhs;
 	}
 	
-	public List<Attribute> attributes(){
+	public Set<Attribute> attributes(){
 		return _source.attributes();
-	}
-	
-	public FirstSet firstSet(){
-		return _source.firstSet();
-	}
-	
-	public FollowSet followSet(){
-		return _source.followSet();
-	}
-	
-	public Set<Symbol> leftSet(){
-		return _source.leftSet();
-	}
-	
-	public Set<Symbol> rightSet(){
-		return _source.rightSet();
-	}
-	
-	public Follower asFollower(){
-		return (Follower)_source;
 	}
 	
 	public Production asProduction(){
 		return _source;
-	}
-
-	@Override
-	public boolean isTerminal() {
-		return _source.isTerminal();
 	}
 }

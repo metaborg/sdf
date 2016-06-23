@@ -1,38 +1,39 @@
 package org.metaborg.sdf2table.symbol;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.metaborg.sdf2table.grammar.Exportable;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.core.Exportable;
+import org.metaborg.sdf2table.core.FixPointMember;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
 public abstract class Symbol implements Exportable{
-	private Set<CharClass> _follow_restrictions = new LinkedHashSet<>();
+	//private static final MetaSymbolFactory _meta_factory = new MetaSymbolFactory();
+	//protected FixPointMember<SymbolClass, MetaSymbol> _class = new FixPointMember<>(null);
 	
-	protected Symbol(){
-		//
-	}
-	
-	public Set<CharClass> followRestrictions(){
-		return _follow_restrictions;
-	}
-	
-	public Terminal getFirst(){
-		if(isTerminal())
-			return (Terminal)this;
-		
-		TerminalContainer cc = new TerminalContainer();
-		for(IProduction p : productions())
-			cc.add(p.firstSet());
-		return cc.contents();
-	}
+	public abstract Terminal getFirst();
 	
 	public Symbol nonContextual(){
 		return this;
 	}
+	
+	/*public void computeMetaSymbol(){
+		_class.compute(_meta_factory);
+	}
+	
+	public void computeClass(){
+		_class.component().compute();
+	}
+	
+	public void computeDependencies(){
+		// no dependency by default.
+	}
+	
+	SymbolClass symbolClass(){
+		return _class.value();
+	}*/
+	
+	public abstract boolean nonEpsilon();
+	
+	public abstract boolean isLayout();
 	
 	/**
 	 * @return true if this is a terminal symbol.
@@ -49,23 +50,11 @@ public abstract class Symbol implements Exportable{
 		return false;
 	}
 	
-	/**
-	 * Get the list of productions that produce this symbol
-	 * @return A list of productions.
-	 */
-	abstract public List<IProduction> productions();
-	
-	public boolean isEpsilon(){
-		for(IProduction p : productions()){
-			if(!p.isEpsilon())
-				return false;
-		}
-		return true;
-	}
-	
-	public abstract boolean equals(Symbol other);
-	
 	public abstract String toString();
+	
+	public String graphviz(){
+		return toString();
+	}
 	
 	public abstract IStrategoTerm toATerm();
 	

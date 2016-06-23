@@ -24,4 +24,15 @@ public class SymbolCollection {
 			_symbols.add(s = symbol);
 		return s;
 	}
+	
+	/*public void computeClasses(){
+		for(Symbol s : _symbols)
+			s.computeDependencies();
+		
+		for(Symbol s : _symbols)
+			s.computeMetaSymbol();
+		
+		for(Symbol s : _symbols)
+			s.computeClass();
+	}*/
 }

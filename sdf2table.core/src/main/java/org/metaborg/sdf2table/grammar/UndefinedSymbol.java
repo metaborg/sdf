@@ -14,6 +14,11 @@ public class UndefinedSymbol extends Exception{
 		_production = production;
 	}
 	
+	public UndefinedSymbol(Symbol symbol){
+		super("Undefined symbol `"+symbol.toString()+"'");
+		_symbol = symbol;
+	}
+	
 	public Symbol symbol(){
 		return _symbol;
 	}

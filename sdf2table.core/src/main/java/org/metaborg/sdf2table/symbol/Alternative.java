@@ -4,7 +4,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 
-public class Alternative extends NonTerminal {
+public class Alternative extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_ALT = new StrategoConstructor("alt", 1);
 	
 	private Symbol _a, _b;
@@ -16,7 +16,12 @@ public class Alternative extends NonTerminal {
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean nonEpsilon(){
+		return _a.nonEpsilon() && _b.nonEpsilon();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
 		if(other instanceof Alternative){
 			Alternative a = (Alternative)other;
 			return other != null && ((_a.equals(a._a) && _b.equals(a._b)) || (_a.equals(a._b) && _b.equals(a._a)));

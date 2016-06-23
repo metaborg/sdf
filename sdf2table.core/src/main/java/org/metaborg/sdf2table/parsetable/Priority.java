@@ -1,11 +1,20 @@
 package org.metaborg.sdf2table.parsetable;
 
 import org.metaborg.sdf2table.grammar.Production;
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.StrategoAppl;
+import org.spoofax.terms.StrategoConstructor;
+import org.spoofax.terms.StrategoInt;
 
 public class Priority{
+	private static final StrategoConstructor CONS_ARG_GTR_PRIO = new StrategoConstructor("arg-gtr-prio", 3);
+	private static final StrategoConstructor CONS_GTR_PRIO = new StrategoConstructor("gtr-prio", 2);
+	
 	Production _production;
 	int _position;
 	boolean _transitive;
+	
+	String _str;
 	
 	public Priority(Production prod, int position, boolean transitive){
 		_production = prod;
@@ -23,6 +32,57 @@ public class Priority{
 	
 	public int position(){
 		return _position;
+	}
+	
+	public IStrategoTerm toATerm(Production p){
+		if(_position == -1){
+			return new StrategoAppl(
+					CONS_GTR_PRIO,
+					new IStrategoTerm[]{
+							new StrategoInt(p.label().id(), null, 0),
+							new StrategoInt(_production.label().id(), null, 0),
+					},
+					null,
+					0
+			);
+		}else{
+			return new StrategoAppl(
+					CONS_ARG_GTR_PRIO,
+					new IStrategoTerm[]{
+							new StrategoInt(p.label().id(), null, 0),
+							new StrategoInt(_position, null, 0),
+							new StrategoInt(_production.label().id(), null, 0),
+					},
+					null,
+					0
+			);
+		}
+	}
+	
+	@Override
+	public int hashCode(){
+		return toString().hashCode();
+	}
+	
+	@Override
+	public String toString(){
+		if(_str == null){
+			_str = _production.shortString();
+			if(_position >= 0)
+				_str += "<"+String.valueOf(_position)+">";
+			if(!_transitive)
+				_str += ".";
+		}
+		return _str;
+	}
+	
+	@Override
+	public boolean equals(Object other){
+		if(other != null && other instanceof Priority){
+			Priority p = (Priority)other;
+			return p._position == _position && p._transitive == _transitive && p._production.equals(_production);
+		}
+		return false;
 	}
 	
 	/*static int _count = 0;

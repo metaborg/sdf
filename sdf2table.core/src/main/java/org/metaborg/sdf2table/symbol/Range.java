@@ -34,7 +34,7 @@ public class Range extends Terminal{
 	}
 
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Range){
 			Range r = (Range)other;
 			return other != null && _min == r.minimum() && _max == r.maximum();
@@ -64,7 +64,7 @@ public class Range extends Terminal{
 	}
 	
 	@Override
-	public Terminal except(CharClass... restrictions){
+	public Terminal doExcept(CharClass... restrictions){
 		// We want to find all sub ranges that are not included in {restrictions}.
 		// min and max correspond to the current valid range.
 		int min = -1;

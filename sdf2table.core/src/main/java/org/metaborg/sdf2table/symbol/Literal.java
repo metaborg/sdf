@@ -5,11 +5,15 @@ import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 import org.spoofax.terms.StrategoString;
 
-public class Literal extends NonTerminal{
+public class Literal extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_LIT = new StrategoConstructor("lit", 1);
 	
 	private String _value;
 	
+	@Override
+	public boolean nonEpsilon(){
+		return true;
+	}
 	
 	public Literal(String value){
 		super();
@@ -26,7 +30,7 @@ public class Literal extends NonTerminal{
 	}
 
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Literal){
 			Literal l = (Literal)other;
 			return other != null && l.getValue().equals(_value);

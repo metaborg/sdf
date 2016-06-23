@@ -29,10 +29,33 @@ public class PriorityLevel implements Comparable<Object>{
 		return false;
 	}
 	
+	public boolean greaterThan(Production prod){
+		for(Priority p : _production.priorities().lowerPriorities()){
+			if(p.position() == _position && p.production().equals(prod))
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Object other){
+		if(other != null && other instanceof PriorityLevel){
+			PriorityLevel l = (PriorityLevel)other;
+			if(l._position == _position && l._production.equals(_production))
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode(){
+		return toString().hashCode();
+	}
+	
 	@Override
 	public String toString(){
 		if(_str == null){
-			_str = _production.toString();
+			_str = _production.shortString();
 			if(_position != -1)
 				_str += "<"+String.valueOf(_position)+">";
 		}

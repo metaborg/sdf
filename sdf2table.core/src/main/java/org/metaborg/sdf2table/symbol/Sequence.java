@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.symbol;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.parsetable.Utilities;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
@@ -78,7 +78,7 @@ public class Sequence extends CharClass{
 	}
 
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other != null && other instanceof Sequence){
 			Sequence s = (Sequence)other;
 			if(s._list.size() == _list.size()){
@@ -101,5 +101,12 @@ public class Sequence extends CharClass{
 			str += t.toString();
 		}
 		return str;
+	}
+
+	@Override
+	public Terminal getFirst() {
+		if(_list.isEmpty())
+			return null;
+		return _list.get(0);
 	}
 }

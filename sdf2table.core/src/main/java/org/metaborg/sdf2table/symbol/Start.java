@@ -11,7 +11,7 @@ public class Start extends Sort {
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Start){
 			return other != null;
 		}

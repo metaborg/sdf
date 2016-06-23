@@ -1,15 +1,19 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 import org.metaborg.sdf2table.symbol.CharClass;
+import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -18,6 +22,9 @@ import org.metaborg.sdf2table.symbol.Terminal;
  * A state item.
  */
 public class Item{
+	Set<Item> _sources;
+	Stack<Trigger> _pending_triggers;
+	
 	/**
 	 * Production associated to this item.
 	 */
@@ -52,12 +59,22 @@ public class Item{
 		_prod = p;
 		_pos = 0;
 		_str = null;
+		_sources = new HashSet<>();
 	}
 	
-	public Item(IProduction p, int pos){
+	public Item(IProduction p, int pos, Set<Item> sources){
 		_prod = p;
 		_pos = pos;
 		_str = null;
+		_sources = sources;
+	}
+	
+	public Item(IProduction p, Item source){
+		_prod = p;
+		_pos = 0;
+		_str = null;
+		_sources = new HashSet<>();
+		_sources.add(source);
 	}
 	
 	/**
@@ -86,10 +103,37 @@ public class Item{
 		return _pos;
 	}
 	
-	public boolean conflicts(IProduction p){
-		if(_prod instanceof Production && p instanceof Production)
-			((Production)_prod).conflicts((Production)p, _pos);
-		return false;
+	public Stack<Trigger> pendingTriggers(){
+		if(_pending_triggers == null){
+			_pending_triggers = new Stack<>();
+			
+			if(!isFinal()){
+				Symbol next = nextSymbol();
+				if(next instanceof NonTerminal){
+					for(IProduction p : ((NonTerminal)next).productions()){
+						if(!shallowConflicts(p.asProduction())){
+							_pending_triggers.add(p.label());
+						}
+					}
+				}else{
+					_pending_triggers.add((Terminal)next);
+				}
+			}
+		}
+		
+		return _pending_triggers;
+	}
+	
+	public void addSources(Set<Item> sources){
+		_sources.addAll(sources);
+	}
+	
+	public Set<Item> sources(){
+		return _sources;
+	}
+	
+	public boolean shallowConflicts(IProduction p){
+		return _prod.shallowConflicts(p, _pos);
 	}
 	
 	public ItemSet closure() throws UndefinedSymbol{
@@ -111,13 +155,13 @@ public class Item{
 		if(set.add(this)){
 			Symbol next = nextSymbol();
 			if(next != null && !next.isTerminal()){
-				List<IProduction> prods = next.productions();
+				Set<IProduction> prods = ((NonTerminal)next).productions();
 				if(prods.isEmpty()){
 					throw new UndefinedSymbol(next, _prod.asProduction());
 				}
 				for(IProduction p : prods){
-					if(!conflicts(p)){
-						Item i = new Item(p, 0);
+					if(!shallowConflicts(p)){
+						Item i = new Item(p, this);
 						queue.add(i);
 					}
 				}
@@ -154,16 +198,16 @@ public class Item{
 		if(_reduce_actions == null){
 			_reduce_actions = new LinkedHashSet<>();
 			if(_pos >= _prod.symbols().size()){
-				Terminal t = _prod.followSet().firstSet();
-				Terminal non_litigious = t.except(_prod.product().followRestrictions().toArray(new CharClass[0]));
+				Terminal t = _prod.followSet();
+				Terminal non_litigious = t.doExcept(_prod.product().followRestrictions().toArray(new CharClass[0]));
 				if(non_litigious != null)
-					_reduce_actions.add(new Reduce(non_litigious, _prod));
+					_reduce_actions.add(new Reduce(this, non_litigious, _prod.label()));
 				
 				for(CharClass cc : _prod.product().followRestrictions()){
 					if(cc instanceof Sequence){
-						Terminal litigious = cc.firstTerminal().inter(t);
+						Terminal litigious = (Terminal)cc.firstTerminal().inter(t);
 						if(litigious != null){
-							_reduce_actions.add(new Reduce(litigious, _prod, (Sequence)cc));
+							_reduce_actions.add(new Reduce(this, litigious, _prod.label(), (Sequence)cc));
 						}
 					}
 				}
@@ -176,7 +220,7 @@ public class Item{
 	public Item shift(){
 		if(isFinal())
 			return null;
-		return new Item(_prod, _pos+1);
+		return new Item(_prod, _pos+1, _sources);
 	}
 	
 	@Override
@@ -191,9 +235,18 @@ public class Item{
     public int hashCode() {
         return toString().hashCode();
     }
-	
+    
 	public String digraph(){
-		String str = "<td>"+Utilities.toHtml(this.toString())+"</td>";
-		return str;
+		String str = "";
+		for(int i = 0; i < _prod.symbols().size(); ++i){
+			if(i == _pos)
+				str += SEPARATOR+" ";
+			str += _prod.symbols().get(i).graphviz()+" ";
+		}
+		if(_pos >= _prod.symbols().size())
+			str += SEPARATOR+" ";
+		str += "→ "+_prod.product().graphviz();
+		
+		return "<td>"+Utilities.toHtml(str)+"</td>";
 	}
 }

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.Benchmark;
-import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
@@ -56,28 +57,88 @@ public class State implements Exportable{
 	 */
 	private int _id;
 	
+	public static class ActionList extends LinkedList<Action>{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		State _state;
+		
+		public ActionList(State state){
+			super();
+			_state = state;
+		}
+		
+		public ActionList(ActionList list){
+			super();
+			_state = list._state;
+			for(Action a : list){
+				add(a.copy());
+			}
+		}
+		
+		@Override
+		public boolean add(Action action){
+			/*if(action instanceof Reduce){
+				Reduce reduce = (Reduce)action;
+				for(Action a : this){
+					if(a instanceof Reduce){
+						Reduce r = (Reduce)a;
+						
+						if(r.label().agent().asProduction().equals(reduce.label().agent().asProduction())){ // conflict !
+							LabelGroup group = null;
+							if(r.label() instanceof LabelGroup){ // this is not the first conflict
+								group = (LabelGroup)r.label();
+							}else{ // this is the first conflict
+								group = ParseTable.newLabelGroup(r.label());
+								r.updateLabel(group);
+								for(Item i : r.item().sources())
+									i.pendingTriggers().add(group);
+							}
+							
+							group.add(reduce.label());
+							for(Item i : reduce.item().sources())
+								i.pendingTriggers().add(group);
+							
+							return true;
+						}
+					}
+				}
+			}*/
+			super.add(action);
+			return true;
+		}
+	}
+	
 	/**
 	 * An List<Action> factory used to populate the _actions table.
 	 */
-	private static class ActionListConstructor implements CollectionConstructor<List<Action>, Action>{
-		public List<Action> create(){
-			return new LinkedList<>();
+	private static class ActionListConstructor implements CollectionConstructor<ActionList, Action>{
+		State _state;
+		
+		public ActionListConstructor(State state){
+			_state = state;
 		}
 		
-		public List<Action> create(List<Action> other){
-			return new LinkedList<>(other);
+		public ActionList create(){
+			return new ActionList(_state);
+		}
+		
+		public ActionList create(ActionList other){
+			return new ActionList(other);
 		}
 	}
 	
 	/**
 	 * Static instance of the List<Action> factory.
 	 */
-	private static final ActionListConstructor _constructor = new ActionListConstructor();
+	private final ActionListConstructor _constructor = new ActionListConstructor(this);
 	
 	/**
 	 * List of actions 
 	 */
-	MergingMap<Trigger, List<Action>, Action> _actions = new MergingMap<>(_constructor);
+	MergingMap<ActionList, Action> _actions = new MergingMap<>(_constructor);
 	
 	/**
 	 * Create a new empty state.
@@ -133,30 +194,7 @@ public class State implements Exportable{
 		_t_close.start();
 		
 		_items = _items.closure();
-		
-		/*Map<Production, Map<Reduce.ReducePolicy, Reduce>> reduces = new HashMap<>();
-		
-		for(Item i : _items){
-			for(Reduce r : i.reduceActions()){
-				//Reduce reduce = reduces.get(r.getProduction());
-				Map<Reduce.ReducePolicy, Reduce> map = reduces.get(r.getProduction());
-				if(map == null)
-					reduces.put(r.getProduction(), map = new EnumMap<>(Reduce.ReducePolicy.class));
-				Reduce reduce = map.get(r.policy());
-				if(reduce == null)
-					map.put(r.policy(), r);
-				else
-					map.put(r.policy(), new Reduce(reduce.getTriggerTerminal().union(r.getTriggerTerminal()), r.getProduction()));
-				
-			}
-		}
-		
-		for(Entry<Production, Map<Reduce.ReducePolicy, Reduce>> e : reduces.entrySet()){
-			for(Entry<Reduce.ReducePolicy, Reduce> re : e.getValue().entrySet()){
-				addAction(re.getValue());
-			}
-		}*/
-		
+
 		for(Item i : _items){
 			addActions((Set<Action>)(Object)i.reduceActions());
 		}
@@ -178,21 +216,31 @@ public class State implements Exportable{
 			_t_shift = Benchmark.newDistributedTask("State.shift");
 		_t_shift.start();
 		
-		//Map<Trigger, ItemSet> map = _items.shift();
-		MergingMap<Trigger, ItemSet, Item> map = _items.shift();
+		MergingMap<ItemSet, Item> map = _items.shift();
 		
 		_t_shift.stop();
 		
 		for(Entry<Trigger, ItemSet> e : map.entrySet()){
 			State s = new State(_pt, e.getValue());
 			
-			if(s.isAcceptState())//{
+			if(s.isAcceptState())
 				addAction(new Accept(e.getKey()));
-			//}else{
-				s = _pt.addState(s); // state s may change here
-				addAction(new Shift(e.getKey(), s));
-			//}
+			
+			s = _pt.addState(s); // state s may change here
+			addAction(new Shift(e.getKey(), s));
 		}
+	}
+	
+	public boolean shiftPending(){
+		for(Item i : _items){
+			if(!i.isFinal() && !i.pendingTriggers().isEmpty())
+				return true;
+		}
+		return false;
+	}
+	
+	void addSources(State s){
+		_items.addSources(s._items);
 	}
 	
 	/**
@@ -245,7 +293,7 @@ public class State implements Exportable{
 	 */
 	public boolean isAcceptState(){
 		for(Item i : _items){
-			if(i.isFinal() && i.production().product().isFileStart())
+			if(i.isFinal() && i.production().product().nonContextual().isFileStart())
 				return true;
 		}
 		
@@ -281,7 +329,7 @@ public class State implements Exportable{
     	List<IStrategoTerm> gotos = new ArrayList<>();
     	List<IStrategoTerm> actions = new ArrayList<>();
     	
-    	for(Entry<Trigger, List<Action>> entry : _actions.entrySet()){
+    	for(Entry<Trigger, ActionList> entry : _actions.entrySet()){
     		if(entry.getKey() instanceof Terminal){
 	    		Terminal trigger = (Terminal)entry.getKey();
 	    		
@@ -314,7 +362,7 @@ public class State implements Exportable{
 						0
 				));
     		}else{
-    			Production trigger = (Production)entry.getKey();
+    			Label trigger = (Label)entry.getKey();
     			
     			for(Action a : entry.getValue()){
     				if(a instanceof Shift){
@@ -362,7 +410,7 @@ public class State implements Exportable{
 		str += "];\n";
 		
 		int k = 0;
-		for(Entry<Trigger, List<Action>> e : _actions.entrySet()){
+		for(Entry<Trigger, ActionList> e : _actions.entrySet()){
 			Trigger trigger = e.getKey();
 			String color = "";
 			String label_color = "";
@@ -374,7 +422,7 @@ public class State implements Exportable{
 				color = " color=\"red\"";
 			for(Action a : e.getValue()){
 				String start = "node"+String.valueOf(_id);
-				String label = Utilities.toLabel(trigger.toString());
+				String label = Utilities.toLabel(trigger.graphviz());
 				String end = "";
 				
 				if(a instanceof Shift){
@@ -382,8 +430,8 @@ public class State implements Exportable{
 					end = "node"+String.valueOf(s.getDestination().id());
 				}else if(a instanceof Reduce){
 					Reduce r = (Reduce)a;
-					end = "node"+String.valueOf(_id)+"_"+String.valueOf(r.getProduction().id());
-					start = end+"\" [label = \""+Utilities.toLabel(r.getProduction().toString())+"\"];\n\""+start;
+					end = "node"+String.valueOf(_id)+"_"+String.valueOf(r.label().id());
+					start = end+"\" [label = \""+Utilities.toLabel(r.label().graphviz())+"\"];\n\""+start;
 				}else if(a instanceof Accept){
 					end = "node_accept";
 					if(e.getValue().size() == 2)
@@ -395,6 +443,8 @@ public class State implements Exportable{
 						conflict_node = "node_conflict_"+String.valueOf(_id)+"_"+String.valueOf(k++);
 						str += "\""+conflict_node+"\" [shape=diamond,style=filled,label=\"\",height=.1,width=.1];\n";
 						str += "\""+start+"\" -> \""+conflict_node+"\" [label=\""+label+"\""+color+label_color+"];\n";
+					}else{
+						str += "\""+start+"\";\n";
 					}
 					str += "\""+conflict_node+"\" -> \""+end+"\" [label=\"\""+color+label_color+"];\n";
 				}else
