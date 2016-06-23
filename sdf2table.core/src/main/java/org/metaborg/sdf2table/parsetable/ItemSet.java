@@ -28,8 +28,11 @@ public class ItemSet extends CollisionSet<Item>{
 	}
 	
 	public ItemSet(ItemSet copy){
-		super(copy);
-		copy.addSources(this);
+		super();
+		
+		for(Item i : copy){
+			add(new Item(i));
+		}
 	}
 	
 	public ItemSet closure() throws UndefinedSymbol{

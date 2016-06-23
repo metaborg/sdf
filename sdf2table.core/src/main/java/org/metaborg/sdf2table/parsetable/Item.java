@@ -24,6 +24,7 @@ import org.metaborg.sdf2table.symbol.Terminal;
 public class Item{
 	Set<Item> _sources;
 	Stack<Trigger> _pending_triggers;
+	//Set<Trigger> _triggers;
 	
 	/**
 	 * Production associated to this item.
@@ -77,6 +78,14 @@ public class Item{
 		_sources.add(source);
 	}
 	
+	public Item(Item copy){
+		_prod = copy._prod;
+		_pos = copy._pos;
+		_str = copy._str;
+		_sources = new HashSet<>();
+		_sources.addAll(copy._sources);
+	}
+	
 	/**
 	 * Get the item production.
 	 * @return A production.
@@ -111,7 +120,7 @@ public class Item{
 				Symbol next = nextSymbol();
 				if(next instanceof NonTerminal){
 					for(IProduction p : ((NonTerminal)next).productions()){
-						if(!shallowConflicts(p.asProduction())){
+						if(!shallowConflicts(p)){
 							_pending_triggers.add(p.label());
 						}
 					}
@@ -123,6 +132,27 @@ public class Item{
 		
 		return _pending_triggers;
 	}
+	
+	/*public Set<Trigger> triggers(){
+		if(_triggers == null){
+			_triggers = new HashSet<>();
+			
+			if(!isFinal()){
+				Symbol next = nextSymbol();
+				if(next instanceof NonTerminal){
+					for(IProduction p : ((NonTerminal)next).productions()){
+						if(!shallowConflicts(p.asProduction())){
+							_triggers.add(p.label());
+						}
+					}
+				}else{
+					_triggers.add((Terminal)next);
+				}
+			}
+		}
+		
+		return _triggers;
+	}*/
 	
 	public void addSources(Set<Item> sources){
 		_sources.addAll(sources);

@@ -154,13 +154,13 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 				state.shift();
 			}
 			
-			/*for(State state : _states){
+			for(State state : _states){
 				if(state.shiftPending()){
 					_queue.add(state);
 				}
-			}*/
+			}
 			
-			System.err.println("b");
+			//System.err.println("b");
 		}
 	}
 	

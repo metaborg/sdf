@@ -18,7 +18,7 @@ public class LabelGroup extends Label implements Trigger{
 	}
 	
 	@Override
-	public boolean isTerminal() {
+	public boolean isTerminal(){
 		return false;
 	}
 
@@ -47,5 +47,4 @@ public class LabelGroup extends Label implements Trigger{
 		
 		return str;
 	}
-
 }
