@@ -31,7 +31,7 @@ public class ItemSet extends CollisionSet<Item>{
 		super();
 		
 		for(Item i : copy){
-			add(new Item(i));
+			add(i);
 		}
 	}
 	
@@ -58,11 +58,16 @@ public class ItemSet extends CollisionSet<Item>{
 		
 		for(Item i : this){
 			if(!i.isFinal()){
-				Stack<Trigger> stack = i.pendingTriggers();
-				Item shifted = i.shift();
+				/*Stack<Trigger> stack = i.pendingTriggers();
 				
 				while(!stack.isEmpty()){
-					map.put(stack.pop(), shifted);
+					map.put(stack.pop(), i.shift());
+				}*/
+				
+				Item shifted = i.shift();
+				
+				for(Trigger t : i.triggers()){
+					map.put(t, shifted);
 				}
 			}
 		}
@@ -87,7 +92,7 @@ public class ItemSet extends CollisionSet<Item>{
     }
 	
 	@Override
-	public boolean add(Item i){
+	public boolean add(Item i){		
 		_hash = -1;
 		Item doppelganger = push(i);
 		if(doppelganger == null)

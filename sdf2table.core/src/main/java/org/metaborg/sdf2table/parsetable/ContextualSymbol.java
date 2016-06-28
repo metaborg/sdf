@@ -223,7 +223,7 @@ public class ContextualSymbol extends NonTerminal{
 												}else if(i <= l){
 													left = new Context(_left);
 													right = new Context(prio_left);
-												}else{ //if(i == r)
+												}else{ //if(i >= r)
 													left = new Context(prio_right);
 													right = new Context(_right);
 												}
@@ -237,7 +237,7 @@ public class ContextualSymbol extends NonTerminal{
 												if(i != l && i != r){
 													filter = Filter.LAYOUT_ONLY;
 													contains_non_layout_symbol = false; // /!\
-												}else if(inside_layout || (left.isEmpty() && right.isEmpty()))
+												}else if(inside_layout || ((left == null || left.isEmpty()) && ( right == null || right.isEmpty())))
 													filter = Filter.NONE;
 												
 												symbol = ContextualSymbol.unique(left, nt, right, filter);

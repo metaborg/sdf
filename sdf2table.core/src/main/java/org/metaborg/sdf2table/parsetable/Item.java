@@ -23,8 +23,8 @@ import org.metaborg.sdf2table.symbol.Terminal;
  */
 public class Item{
 	Set<Item> _sources;
-	Stack<Trigger> _pending_triggers;
-	//Set<Trigger> _triggers;
+	//Stack<Trigger> _pending_triggers;
+	Set<Trigger> _triggers;
 	
 	/**
 	 * Production associated to this item.
@@ -112,7 +112,7 @@ public class Item{
 		return _pos;
 	}
 	
-	public Stack<Trigger> pendingTriggers(){
+	/*public Stack<Trigger> pendingTriggers(){
 		if(_pending_triggers == null){
 			_pending_triggers = new Stack<>();
 			
@@ -128,12 +128,14 @@ public class Item{
 					_pending_triggers.add((Terminal)next);
 				}
 			}
+		}else{
+			System.out.println("bouh");
 		}
 		
 		return _pending_triggers;
-	}
+	}*/
 	
-	/*public Set<Trigger> triggers(){
+	public Set<Trigger> triggers(){
 		if(_triggers == null){
 			_triggers = new HashSet<>();
 			
@@ -152,7 +154,7 @@ public class Item{
 		}
 		
 		return _triggers;
-	}*/
+	}
 	
 	public void addSources(Set<Item> sources){
 		_sources.addAll(sources);

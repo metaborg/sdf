@@ -9,7 +9,6 @@ import org.spoofax.terms.StrategoInt;
 public class Priority{
 	private static final StrategoConstructor CONS_ARG_GTR_PRIO = new StrategoConstructor("arg-gtr-prio", 3);
 	private static final StrategoConstructor CONS_GTR_PRIO = new StrategoConstructor("gtr-prio", 2);
-	
 	Production _production;
 	int _position;
 	boolean _transitive;

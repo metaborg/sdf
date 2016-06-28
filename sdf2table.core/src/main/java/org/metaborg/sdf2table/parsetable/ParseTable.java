@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -190,7 +189,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 			//System.exit(1);
 			return;
 		}
-				
+			
 		IStrategoTerm result = pt.toATerm();
         if(output != null){
 	        FileWriter out = null;
@@ -209,7 +208,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
         
         System.out.println("State count: "+pt.states().size());
         
-        pt.generateGraphvizFile(Paths.get(output.getPath()+".dot"));
+        //pt.generateGraphvizFile(Paths.get(output.getPath()+".dot"));
         
         State.reset();
         Label.reset();

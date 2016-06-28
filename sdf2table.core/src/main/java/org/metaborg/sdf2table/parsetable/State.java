@@ -232,10 +232,10 @@ public class State implements Exportable{
 	}
 	
 	public boolean shiftPending(){
-		for(Item i : _items){
+		/*for(Item i : _items){
 			if(!i.isFinal() && !i.pendingTriggers().isEmpty())
 				return true;
-		}
+		}*/
 		return false;
 	}
 	

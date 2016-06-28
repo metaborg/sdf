@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.parsetable.Priority;
-import org.metaborg.sdf2table.symbol.Symbol;
-import org.metaborg.sdf2table.symbol.SymbolCollection;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
@@ -58,6 +56,7 @@ public class Priorities{
 	
 	public boolean addHigher(Priority p){
 		if(_higher.add(p)){
+			_higher.addAll(p.production().priorities().higherPriorities());
 			if(p.isTransitive()){
 				for(Priority l : _lower){
 					l.production().priorities().addHigher(p);
@@ -70,6 +69,7 @@ public class Priorities{
 	
 	public boolean addLower(Priority p){
 		if(_lower.add(p)){
+			_lower.addAll(p.production().priorities().lowerPriorities());
 			if(p.isTransitive()){
 				for(Priority l : _higher){
 					l.production().priorities().addLower(p);
@@ -107,26 +107,6 @@ public class Priorities{
 		}
 		return false;
 	}
-	
-	/*public boolean conflictsLeft(Symbol s){
-		if(_production.rightSet().contains(s))
-			return true;
-		for(Priority p : _higher){
-			if(p.production().rightSet().contains(s))
-				return true;
-		}
-		return false;
-	}
-	
-	public boolean conflictsRight(Symbol s){
-		if(_production.leftSet().contains(s))
-			return true;
-		for(Priority p : _higher){
-			if(p.production().leftSet().contains(s))
-				return true;
-		}
-		return false;
-	}*/
 	
 	public List<IStrategoTerm> toATerms(){
 		List<IStrategoTerm> list = new LinkedList<>();
@@ -192,7 +172,6 @@ public class Priorities{
 									if(ascendant != null){
 										for(Priority higher : ascendant.priorities){
 											Priority lower = new Priority(p.production(), higher.position(), higher.isTransitive());
-											//ap.addPriority(new Priority(ap, p, ascendant.position, ascendant.transitive));
 											higher.production().priorities().addLower(lower);
 											p.production().priorities().addHigher(higher);
 										}
