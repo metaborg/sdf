@@ -58,7 +58,7 @@ public class CollisionSet<Value> implements Set<Value>{
 	public boolean addAll(Collection<? extends Value> c){
 		boolean changed = false;
 		for(Value e : c){
-			if(push(e) == null)
+			if(add(e))
 				changed = true;
 		}
 		return changed;

@@ -1,9 +1,7 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
 import org.metaborg.sdf2table.symbol.SymbolCollection;

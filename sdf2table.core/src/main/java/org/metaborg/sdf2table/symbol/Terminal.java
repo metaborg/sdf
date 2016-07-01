@@ -2,7 +2,6 @@ package org.metaborg.sdf2table.symbol;
 
 import java.util.List;
 
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.parsetable.Utilities;
 import org.spoofax.interpreter.terms.IStrategoTerm;

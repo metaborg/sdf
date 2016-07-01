@@ -1,7 +1,9 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.util.Collection;
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import org.metaborg.sdf2table.core.CollisionSet;
 import org.metaborg.sdf2table.grammar.Production;
@@ -10,39 +12,71 @@ import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 
 public class ItemSet extends CollisionSet<Item>{
 	int _hash = -1;
+	State _state;
 	
-	private static class ItemSetConstructor implements CollectionConstructor<ItemSet, Item>{
+	private static class ItemSetManager implements CollectionManager<ItemSet, Item>{
 		public ItemSet create(){
-			return new ItemSet();
+			return new ItemSet((State)null);
 		}
 		
 		public ItemSet create(ItemSet other){
 			return new ItemSet(other);
 		}
+
+		@Override
+		public Item copy(Item item){
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE)
+				return item;
+			return item.split();
+		}
 	}
 	
-	private static final ItemSetConstructor _constructor = new ItemSetConstructor();
+	private static final ItemSetManager _constructor = new ItemSetManager();
 	
-	public ItemSet(){
+	public ItemSet(State state){
 		super();
+		_state = state;
 	}
 	
 	public ItemSet(ItemSet copy){
 		super();
+		_state = null;
 		
-		for(Item i : copy){
-			add(i);
+		if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE){
+			for(Item i : copy){
+				add(i);
+			}
+		}else{
+			for(Item i : copy){
+				add(i.split());
+			}
 		}
 	}
 	
-	public ItemSet closure() throws UndefinedSymbol{
-		ItemSet nset = new ItemSet();
+	public void setState(State state){
+		_state = state;
+	}
+	
+	public State state(){
+		return _state;
+	}
+	
+	public void close() throws UndefinedSymbol{
+		/*ItemSet nset = new ItemSet(_state);
 		
 		for(Item i : this){
 			nset.addAll(i.closure());
 		}
 		
-		return nset;
+		return nset;*/
+		List<Item> kernel = new LinkedList<>(this);
+		
+		clear();
+		_hash = -1;
+		
+		for(Item i : kernel){
+			i.close(this);
+		}
 	}
 	
 	public boolean conflicts(Production p){
@@ -58,16 +92,18 @@ public class ItemSet extends CollisionSet<Item>{
 		
 		for(Item i : this){
 			if(!i.isFinal()){
-				/*Stack<Trigger> stack = i.pendingTriggers();
+				Queue<Trigger> queue = i.pendingTriggers();
 				
-				while(!stack.isEmpty()){
-					map.put(stack.pop(), i.shift());
-				}*/
-				
-				Item shifted = i.shift();
-				
-				for(Trigger t : i.triggers()){
-					map.put(t, shifted);
+				if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE){
+					Item shifted = i.shift();
+					
+					for(Trigger t : queue){
+						map.put(t, shifted);
+					}
+				}else{
+					while(!queue.isEmpty()){
+						map.put(queue.poll(), i.shift());
+					}
 				}
 			}
 		}
@@ -95,19 +131,35 @@ public class ItemSet extends CollisionSet<Item>{
 	public boolean add(Item i){		
 		_hash = -1;
 		Item doppelganger = push(i);
-		if(doppelganger == null)
+		if(doppelganger == null){
+			i._set = this;
 			return true;
+		}
 		
-		doppelganger.addSources(i.sources());
+		doppelganger.merge(i);
 		
 		return false;
 	}
 	
-	public void addSources(ItemSet items) {
-		for(Item i : this){
-			Item doppelganger = items.agent(i);
+	public void merge(ItemSet items) {
+		/*Production prod = null;
+		boolean uni = true;
+		
+		for(Item i : items){
+			if(prod != null && !i.production().asProduction().equals(prod)){
+				uni = false;
+				break;
+			}
+			prod = i.production().asProduction();
+		}
+		
+		if(uni && items.size() > 1)
+			System.err.println("hey");*/
+		
+		for(Item i : items){
+			Item doppelganger = agent(i);
 			if(doppelganger != null){
-				i.addSources(doppelganger.sources());
+				doppelganger.merge(i);
 			}
 		}
 	}

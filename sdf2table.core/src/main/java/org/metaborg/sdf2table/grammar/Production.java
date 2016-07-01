@@ -37,6 +37,7 @@ public class Production extends IProduction{
 	private static final StrategoConstructor CONS_ATTR_RIGHT = new StrategoConstructor("right", 0);
 	private static final StrategoConstructor CONS_ATTR_BRACKET = new StrategoConstructor("bracket", 0);
 	private static final StrategoConstructor CONS_ATTR_REJECT = new StrategoConstructor("reject", 0);
+	private static final StrategoConstructor CONS_ATTR_PREFER = new StrategoConstructor("prefer", 0);
 	private static final StrategoConstructor CONS_ATTR_LONGEST_MATCH = new StrategoConstructor("longest-match", 0);
 	
 	private static final StrategoConstructor CONS_TERM = new StrategoConstructor("term", 1);
@@ -282,6 +283,9 @@ public class Production extends IProduction{
 					case REJECT:
 						_str += "reject";
 						break;
+					case PREFER:
+						_str += "prefer";
+						break;
 					case LONGEST_MATCH:
 						_str += "longest-match";
 						break;
@@ -325,6 +329,9 @@ public class Production extends IProduction{
 					break;
 				case REJECT:
 					attr_list[i] = new StrategoAppl(CONS_ATTR_REJECT, new IStrategoTerm[]{}, null, 0);
+					break;
+				case PREFER:
+					attr_list[i] = new StrategoAppl(CONS_ATTR_PREFER, new IStrategoTerm[]{}, null, 0);
 					break;
 				case LONGEST_MATCH:
 					attr_list[i] = new StrategoAppl(
@@ -431,6 +438,9 @@ public class Production extends IProduction{
 							break;
 						case "Reject":
 							attrs.add(Attribute.REJECT);
+							break;
+						case "Prefer":
+							attrs.add(Attribute.PREFER);
 							break;
 						case "Term":
 							ta = ta.getSubterm(0);

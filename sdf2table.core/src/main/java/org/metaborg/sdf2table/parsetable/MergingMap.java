@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.symbol.Terminal;
 
 import java.util.Set;
 
@@ -18,11 +17,11 @@ import java.util.Set;
  */
 public class MergingMap<Container extends Collection<Value>, Value>{
 	Map<Trigger, Container> _map;
-	CollectionConstructor<Container, Value> _constructor;
+	CollectionManager<Container, Value> _manager;
 	
-	public MergingMap(CollectionConstructor<Container, Value> constructor){
+	public MergingMap(CollectionManager<Container, Value> constructor){
 		_map = new HashMap<Trigger, Container>();
-		_constructor = constructor;
+		_manager = constructor;
 	}
 	
 	public Set<Entry<Trigger, Container>> entrySet(){
@@ -33,7 +32,9 @@ public class MergingMap<Container extends Collection<Value>, Value>{
 		if(key == null)
 			return;
 		
-		if(key.isTerminal()){
+		boolean need_copy = false;
+		
+		//if(key.isTerminal()){
 			Map<Trigger, Container> nmap = new HashMap<>();
 			
 			for(Entry<Trigger, Container> e : _map.entrySet()){
@@ -41,8 +42,11 @@ public class MergingMap<Container extends Collection<Value>, Value>{
 					nmap.put(e.getKey(), e.getValue());
 				}else{
 					if(key.equals(e.getKey())){
-						Container set = _constructor.create(e.getValue());
+						Container set = e.getValue();
+						if(need_copy)
+							value = _manager.copy(value);
 						set.add(value);
+						need_copy = true;
 						
 						nmap.put(key, set);
 						key = null;
@@ -50,8 +54,11 @@ public class MergingMap<Container extends Collection<Value>, Value>{
 						Trigger with = key.inter(e.getKey());
 						
 						if(with != null){
-							Container set = _constructor.create(e.getValue());
+							Container set = _manager.create(e.getValue());
+							if(need_copy)
+								value = _manager.copy(value);
 							set.add(value);
+							need_copy = true;
 							
 							nmap.put(with, set);
 							
@@ -69,18 +76,21 @@ public class MergingMap<Container extends Collection<Value>, Value>{
 			}
 			
 			if(key != null){
-				Container set = _constructor.create();
+				Container set = _manager.create();
+				if(need_copy)
+					value = _manager.copy(value);
 				set.add(value);
+				need_copy = true;
 				nmap.put(key, set);
 			}
 			
 			_map = nmap;
-		}else{
+		/*}else{
 			Container set = _map.get(key);
 			if(set == null){
-				_map.put(key, set = _constructor.create());
+				_map.put(key, set = _manager.create());
 			}
 			set.add(value);
-		}
+		}*/
 	}
 }

@@ -6,9 +6,13 @@ import java.util.List;
 import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.parsetable.Utilities;
 import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.StrategoAppl;
+import org.spoofax.terms.StrategoConstructor;
+import org.spoofax.terms.StrategoInt;
+import org.spoofax.terms.StrategoList;
 
 /**
- * The sequence is the only character class that is not a terminal.
+ * The sequence is the only character class that is not a Symbol.
  * It can be seen as "the character c0 followed by c1 ... cn".
  * <p>
  * This class has been introduced to deal with follow restrictions,
@@ -20,7 +24,8 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
  * c0c1..cn.
  */
 public class Sequence extends CharClass{
-	List<Terminal> _list = null;
+	List<Symbol> _list = null;
+	private static final StrategoConstructor CONS_SEQUENCE = new StrategoConstructor("sequence", 2);
 	
 	/**
 	 * Empty sequence constructor
@@ -29,17 +34,17 @@ public class Sequence extends CharClass{
 		_list = new ArrayList<>();
 	}
 	
-	public Sequence(List<Terminal> list){
+	public Sequence(List<Symbol> list){
 		_list = list;
 	}
 	
-	public Sequence(Terminal head, Terminal tail){
+	public Sequence(Symbol head, Symbol tail){
 		_list = new ArrayList<>();
 		_list.add(head);
 		_list.add(tail);
 	}
 	
-	public Sequence(Terminal head, List<Terminal> tail){
+	public Sequence(Symbol head, List<Symbol> tail){
 		_list = new ArrayList<>();
 		_list.add(head);
 		_list.addAll(tail);
@@ -49,7 +54,7 @@ public class Sequence extends CharClass{
 	public Terminal firstTerminal(){
 		if(_list.isEmpty())
 			return null;
-		return _list.get(0);
+		return _list.get(0).getFirst();
 	}
 
 	@Override
@@ -57,10 +62,23 @@ public class Sequence extends CharClass{
 		return !_list.isEmpty() && firstTerminal().contains(c);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public IStrategoTerm toATerm(){
-		return Utilities.strategoListFromExportables((List<Exportable>)(Object)_list);
+		StrategoList slist = Utilities.strategoListFromExportables(_list);
+		
+		return new StrategoAppl(
+				CONS_SEQUENCE,
+				new IStrategoTerm[]{
+					slist.head(),
+					slist.tail()
+				},
+				null,
+				0
+		);
+	}
+	
+	public StrategoList toATermList() {
+		return Utilities.strategoListFromExportables(_list);
 	}
 
 	@Override
@@ -95,7 +113,7 @@ public class Sequence extends CharClass{
 	@Override
 	public String toString() {
 		String str = "";
-		for(Terminal t : _list){
+		for(Symbol t : _list){
 			if(!str.isEmpty())
 				str += ".";
 			str += t.toString();
@@ -107,6 +125,6 @@ public class Sequence extends CharClass{
 	public Terminal getFirst() {
 		if(_list.isEmpty())
 			return null;
-		return _list.get(0);
+		return _list.get(0).getFirst();
 	}
 }

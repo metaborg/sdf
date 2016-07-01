@@ -30,7 +30,7 @@ public class Utilities{
     	return list;
     }
     
-    public static StrategoList strategoListFromExportables(Collection<Exportable> _list){
+    public static StrategoList strategoListFromExportables(Collection<? extends Exportable> _list){
     	/*StrategoList list = new StrategoList(null, null, null, 0);
     	
     	for(Exportable term : _list){
@@ -52,7 +52,7 @@ public class Utilities{
     	return strategoListFromArray(ary);
     }
     
-    public static StrategoList strategoListFromCollection(Collection<IStrategoTerm> terms){
+    public static StrategoList strategoListFromCollection(Collection<? extends IStrategoTerm> terms){
     	/*StrategoList list = new StrategoList(null, null, null, 0);
     	
     	for(IStrategoTerm term : terms){

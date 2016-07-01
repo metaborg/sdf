@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.Exportable;
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -57,6 +55,8 @@ public class State implements Exportable{
 	 */
 	private int _id;
 	
+	private boolean _reduced = false;
+	
 	public static class ActionList extends LinkedList<Action>{
 		/**
 		 * 
@@ -80,7 +80,7 @@ public class State implements Exportable{
 		
 		@Override
 		public boolean add(Action action){
-			/*if(action instanceof Reduce){
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE && action instanceof Reduce){
 				Reduce reduce = (Reduce)action;
 				for(Action a : this){
 					if(a instanceof Reduce){
@@ -93,19 +93,15 @@ public class State implements Exportable{
 							}else{ // this is the first conflict
 								group = ParseTable.newLabelGroup(r.label());
 								r.updateLabel(group);
-								for(Item i : r.item().sources())
-									i.pendingTriggers().add(group);
 							}
 							
 							group.add(reduce.label());
-							for(Item i : reduce.item().sources())
-								i.pendingTriggers().add(group);
 							
 							return true;
 						}
 					}
 				}
-			}*/
+			}
 			super.add(action);
 			return true;
 		}
@@ -114,10 +110,10 @@ public class State implements Exportable{
 	/**
 	 * An List<Action> factory used to populate the _actions table.
 	 */
-	private static class ActionListConstructor implements CollectionConstructor<ActionList, Action>{
+	private static class ActionListManager implements CollectionManager<ActionList, Action>{
 		State _state;
 		
-		public ActionListConstructor(State state){
+		public ActionListManager(State state){
 			_state = state;
 		}
 		
@@ -128,12 +124,17 @@ public class State implements Exportable{
 		public ActionList create(ActionList other){
 			return new ActionList(other);
 		}
+
+		@Override
+		public Action copy(Action other){
+			return other.copy();
+		}
 	}
 	
 	/**
 	 * Static instance of the List<Action> factory.
 	 */
-	private final ActionListConstructor _constructor = new ActionListConstructor(this);
+	private final ActionListManager _constructor = new ActionListManager(this);
 	
 	/**
 	 * List of actions 
@@ -146,7 +147,7 @@ public class State implements Exportable{
 	 */
 	public State(ParseTable pt){
 		_pt = pt;
-		_items = new ItemSet();
+		_items = new ItemSet(this);
 		_id = -1;
 	}
 	
@@ -158,6 +159,7 @@ public class State implements Exportable{
 	public State(ParseTable pt, ItemSet set){
 		_pt = pt;
 		_items = set;
+		set.setState(this);
 		_id = -1;
 	}
 	
@@ -183,23 +185,51 @@ public class State implements Exportable{
 	/**
 	 * Close the associated item set.
 	 * <p>
-	 * This method add each item of the item set closure to the state,
-	 * generate every reduce actions associated to those items.
+	 * This method add each item of the item set closure to the state.
 	 * @throws UndefinedSymbol 
 	 */
-	@SuppressWarnings("unchecked")
 	public void close() throws UndefinedSymbol{
 		if(_t_close == null)
 			_t_close = Benchmark.newDistributedTask("State.close");
 		_t_close.start();
 		
-		_items = _items.closure();
-
-		for(Item i : _items){
-			addActions((Set<Action>)(Object)i.reduceActions());
-		}
+		_items.close();
 		
 		_t_close.stop();
+	}
+	
+	public List<Label> reduceLabels(IProduction prod){
+		List<Label> list = new LinkedList<>(); 
+		for(Entry<Trigger, ActionList> e : _actions.entrySet()){
+			for(Action a : e.getValue()){
+				if(a instanceof Reduce){
+					Reduce r = (Reduce)a;
+					if(r.label().contains(prod)){
+						list.add(r.label());
+					}
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	public void reduce(){
+		if(!_reduced){
+			for(Item i : _items){
+				addActions(i.reduceActions());
+			}
+			
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE){
+				for(Item i : _items){
+					if(i.isFinal()){
+						i.addSourceLabels(reduceLabels(i.production()));
+					}
+				}
+			}
+			
+			_reduced = true;
+		}
 	}
 	
 	/**
@@ -232,15 +262,17 @@ public class State implements Exportable{
 	}
 	
 	public boolean shiftPending(){
-		/*for(Item i : _items){
+		if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE)
+			return false;
+		for(Item i : _items){
 			if(!i.isFinal() && !i.pendingTriggers().isEmpty())
 				return true;
-		}*/
+		}
 		return false;
 	}
 	
-	void addSources(State s){
-		_items.addSources(s._items);
+	void merge(State s){
+		_items.merge(s._items);
 	}
 	
 	/**
@@ -281,7 +313,7 @@ public class State implements Exportable{
 	 * <p>
 	 * See {@link #addAction(Action)}.
 	 */
-	private void addActions(Collection<Action> c){
+	private void addActions(Collection<? extends Action> c){
 		for(Action a : c){
 			addAction(a);
 		}

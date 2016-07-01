@@ -21,6 +21,7 @@ public abstract class IProduction{
 		
 		BRACKET,
 		REJECT,
+		PREFER,
 		
 		LONGEST_MATCH
 	}

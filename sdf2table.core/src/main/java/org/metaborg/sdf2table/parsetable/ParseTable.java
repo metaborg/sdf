@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,6 +34,11 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		SHALLOW
 	}
 	
+	public enum DeepReduceConflictPolicy{
+		IGNORE,
+		MERGE
+	}
+	
 	static final StrategoConstructor CONS_PT = new StrategoConstructor("parse-table", 5);
 	static final StrategoConstructor CONS_STATES = new StrategoConstructor("states", 1);
 	static final StrategoConstructor CONS_PRIORITIES = new StrategoConstructor("priorities", 1);
@@ -41,15 +47,41 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	List<Label> _labels = new LinkedList<>();
 	
 	Syntax _syntax;
-	PriorityPolicy _ppolicy = PriorityPolicy.IGNORE;
+	PriorityPolicy _ppolicy = PriorityPolicy.DEEP;
+	DeepReduceConflictPolicy _rcpolicy = DeepReduceConflictPolicy.IGNORE;
 	
 	Queue<State> _queue  = new LinkedList<>();
 	
 	static ParseTable _current = null;
 	
+	public static class Statistics{
+		int _state_count = 0;
+		int _rr_conflicts = 0;
+		int _sr_conflicts = 0;
+		
+		public void print(PrintStream out){
+			out.println("==== parse table statistics ====");
+			out.println("state count: "+_state_count);
+			out.println("conflicts count: "+(_sr_conflicts+_rr_conflicts));
+			out.println(".... shift/reduce: "+_sr_conflicts);
+			out.println(".... reduce/reduce: "+_rr_conflicts);
+			out.println("================================");
+		}
+	}
+	
+	public ParseTable(Syntax syntax, PriorityPolicy pp, DeepReduceConflictPolicy rcp){
+		_syntax = syntax;
+		_ppolicy = pp;
+		_rcpolicy = rcp;
+	}
+	
 	public ParseTable(Syntax syntax, PriorityPolicy pp){
 		_syntax = syntax;
 		_ppolicy = pp;
+	}
+	
+	public ParseTable(Syntax syntax){
+		_syntax = syntax;
 	}
 	
 	public static ParseTable current(){
@@ -77,6 +109,12 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return g;
 	}
 	
+	public static LabelGroup newLabelGroup(LabelGroup copy){
+		LabelGroup g = new LabelGroup(copy);
+		_current._labels.add(g);
+		return g;
+	}
+	
 	public Syntax syntax(){
 		return _syntax;
 	}
@@ -87,6 +125,18 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	
 	public PriorityPolicy priorityPolicy(){
 		return _ppolicy;
+	}
+	
+	public DeepReduceConflictPolicy deepReduceConflictPolicy(){
+		return _rcpolicy;
+	}
+	
+	public Statistics statistics(){
+		Statistics st = new Statistics();
+		
+		st._state_count = _states.size();
+		
+		return st;
 	}
 	
 	public void build() throws UndefinedSymbol{
@@ -112,13 +162,13 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		/*if(_ppolicy == PriorityPolicy.DEEP){
 			//_syntax.symbols().computeClasses();
 			ContextualProduction.createAllLabels();
-		}*/
+		}*/ 
 		
 		t_sg.start();
 		State s0 = new State(this);
 		
 		for(IProduction p : start.productions()){
-			s0.addItem(new Item(p));
+			s0.addItem(new Item(s0.items(), p));
 		}
 		
 		addState(s0);
@@ -134,7 +184,8 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		
 		for(State s : _states){ // Avoid state duplication
 			if(s.equals(state)){
-				s.addSources(state);
+				if(_rcpolicy == DeepReduceConflictPolicy.MERGE)
+					s.merge(state);
 				return s;
 			}
 		}
@@ -154,12 +205,14 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 			}
 			
 			for(State state : _states){
+				state.reduce();
+			}
+			
+			for(State state : _states){ // TODO do it in reduce phase
 				if(state.shiftPending()){
 					_queue.add(state);
 				}
 			}
-			
-			//System.err.println("b");
 		}
 	}
 	
@@ -172,24 +225,36 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	}
 	
 	public static void fromFile(File input, File output, List<String> paths){
+		Benchmark.reset();
+		
+		Benchmark.SingleTask t_import = Benchmark.main.newSingleTask("import");
+    	Benchmark.ComposedTask t_generate = Benchmark.main.newComposedTask("generation");
+    	Benchmark.SingleTask t_export = Benchmark.main.newSingleTask("export");
+		
+    	// import modules
+    	t_import.start();
 		Syntax syntax = null;
 		try{
 			syntax = Module.fromFile(input, paths);
 		}catch (ModuleNotFound e){
 			System.err.println(e.getMessage());
-			//System.exit(1);
 			return;
 		}
+		t_import.stop();
 		
+		// generate parse table
+		t_generate.start();
 		ParseTable pt = null;
 		try {
 			pt = ParseTable.fromSyntax(syntax, PriorityPolicy.DEEP);
 		} catch (UndefinedSymbol e) {
 			System.err.println(e.getMessage());
-			//System.exit(1);
 			return;
 		}
-			
+		t_generate.stop();
+		
+		// export parse table
+		t_export.start();
 		IStrategoTerm result = pt.toATerm();
         if(output != null){
 	        FileWriter out = null;
@@ -205,11 +270,12 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
         }else{
         	System.out.println(result.toString());
         }
+        t_export.stop();
         
-        System.out.println("State count: "+pt.states().size());
+        //pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
         
-        //pt.generateGraphvizFile(Paths.get(output.getPath()+".dot"));
-        
+        pt.statistics().print(System.err);
+        Benchmark.print(System.err);
         State.reset();
         Label.reset();
 	}

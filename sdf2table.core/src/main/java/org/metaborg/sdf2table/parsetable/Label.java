@@ -1,15 +1,11 @@
 package org.metaborg.sdf2table.parsetable;
 
-import java.util.HashSet;
-
 import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 public class Label implements Trigger, Exportable{
-	private static final long serialVersionUID = 3104013422034445079L;
-	
 	static int _count = 0;
 	
 	public static void reset(){
@@ -67,7 +63,15 @@ public class Label implements Trigger, Exportable{
 		return _agent.graphviz();
 	}
 	
+	public Label copy(){
+		return this;
+	}
+	
 	public IStrategoTerm toATerm(){
 		return _agent.asProduction().toATerm(id());
+	}
+
+	public boolean contains(IProduction prod) {
+		return _agent.equals(prod);
 	}
 }

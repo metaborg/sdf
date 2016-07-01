@@ -72,7 +72,7 @@ public class Reduce extends Action{
 	
 	@Override
 	public Action copy(){
-		return new Reduce(_item, (Terminal)trigger(), _label);
+		return new Reduce(_item, (Terminal)trigger(), _label.copy());
 	}
 	
 	public IStrategoTerm aTermPolicy(){
@@ -112,7 +112,7 @@ public class Reduce extends Action{
 							aTermPolicy(),
 							Utilities.strategoListFromArray(new StrategoAppl(
 									CONS_FOLLOW_RESTRICTION,
-									new IStrategoTerm[]{((StrategoList)_lookahead.toATerm()).tail()},
+									new IStrategoTerm[]{((StrategoList)_lookahead.toATermList()).tail()},
 									null,
 									0
 							))

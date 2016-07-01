@@ -157,7 +157,7 @@ public class Application{
         
         t_export.stop();
         
-        Benchmark.print();
+        Benchmark.print(System.out);
         Benchmark.reset();
         State.reset();
         Label.reset();

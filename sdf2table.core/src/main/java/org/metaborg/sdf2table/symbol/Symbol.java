@@ -1,35 +1,18 @@
 package org.metaborg.sdf2table.symbol;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.metaborg.sdf2table.core.Exportable;
-import org.metaborg.sdf2table.core.FixPointMember;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
 public abstract class Symbol implements Exportable{
-	//private static final MetaSymbolFactory _meta_factory = new MetaSymbolFactory();
-	//protected FixPointMember<SymbolClass, MetaSymbol> _class = new FixPointMember<>(null);
-	
 	public abstract Terminal getFirst();
 	
 	public Symbol nonContextual(){
 		return this;
 	}
-	
-	/*public void computeMetaSymbol(){
-		_class.compute(_meta_factory);
-	}
-	
-	public void computeClass(){
-		_class.component().compute();
-	}
-	
-	public void computeDependencies(){
-		// no dependency by default.
-	}
-	
-	SymbolClass symbolClass(){
-		return _class.value();
-	}*/
 	
 	public abstract boolean nonEpsilon();
 	
@@ -57,6 +40,22 @@ public abstract class Symbol implements Exportable{
 	}
 	
 	public abstract IStrategoTerm toATerm();
+	
+	public static List<Symbol> fromStrategoList(IStrategoTerm term, SymbolCollection collection){
+		List<Symbol> list = new LinkedList<>();
+		
+		if(term instanceof StrategoList){
+			StrategoList slist = (StrategoList)term;
+			
+			for(IStrategoTerm t : slist){
+				list.add(fromStrategoTerm(t, collection));
+			}
+		}else{
+			System.err.println("sdf2table : Symbol.fromStrategoList: this term is not a list.");
+		}
+		
+		return list;
+	}
 	
 	public static Symbol fromStrategoTerm(IStrategoTerm term, SymbolCollection collection){
 		Symbol symbol;
@@ -86,6 +85,9 @@ public abstract class Symbol implements Exportable{
 				break;
 			case "Alt":
 				symbol = new Alternative(fromStrategoTerm(app.getSubterm(0), null), fromStrategoTerm(app.getSubterm(1), null));
+				break;
+			case "Sequence":
+				symbol = new Sequence(fromStrategoTerm(app.getSubterm(0), null), fromStrategoList(app.getSubterm(1), null));
 				break;
 			case "Lex":
 				symbol = new Lexical(fromStrategoTerm(app.getSubterm(0), null));
