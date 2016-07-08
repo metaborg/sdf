@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
+//import java.util.Map.Entry;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.Exportable;
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.parsetable.MergingMap.Entry;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
@@ -22,9 +24,11 @@ import org.spoofax.terms.StrategoInt;
  */
 public class State implements Exportable{
 	static Benchmark.DistributedTask _t_shift;
+	static Benchmark.DistributedTask _t_reduce;
 	static Benchmark.DistributedTask _t_close;
 	static Benchmark.DistributedTask _t_action;
 	static Benchmark.DistributedTask _t_equal;
+	static Benchmark.DistributedTask _t_merge;
 	
 	public static void reset(){
 		_t_shift = _t_close = _t_action = _t_equal = null;
@@ -182,6 +186,10 @@ public class State implements Exportable{
 			_id = id;
 	}
 	
+	public void complete(){
+		_items.complete();
+	}
+	
 	/**
 	 * Close the associated item set.
 	 * <p>
@@ -216,6 +224,10 @@ public class State implements Exportable{
 	
 	public void reduce(){
 		if(!_reduced){
+			if(_t_reduce == null)
+				_t_reduce = Benchmark.newDistributedTask("State.reduce");
+			_t_reduce.start();
+			
 			for(Item i : _items){
 				addActions(i.reduceActions());
 			}
@@ -229,6 +241,8 @@ public class State implements Exportable{
 			}
 			
 			_reduced = true;
+			
+			_t_reduce.stop();
 		}
 	}
 	
@@ -272,7 +286,13 @@ public class State implements Exportable{
 	}
 	
 	void merge(State s){
+		if(_t_merge == null)
+			_t_merge = Benchmark.newDistributedTask("State.merge");
+		_t_merge.start();
+		
 		_items.merge(s._items);
+		
+		_t_merge.stop();
 	}
 	
 	/**
@@ -300,7 +320,7 @@ public class State implements Exportable{
 	 */
 	private void addAction(Action a){
 		if(_t_action == null)
-			_t_action = Benchmark.newDistributedTask("State.ation");
+			_t_action = Benchmark.newDistributedTask("State.action");
 		_t_action.start();
 		
 		_actions.put(a.trigger(), a);
@@ -339,13 +359,16 @@ public class State implements Exportable{
 	
 	@Override
     public boolean equals(Object o){
+		if(o == this)
+			return true;
 		if(o != null && o instanceof State){
 			if(_t_equal == null)
-				_t_equal = Benchmark.newDistributedTask("State.equal");
+				_t_equal = Benchmark.newDistributedTask("State.equals");
 			_t_equal.start();
 			
 			State s = (State)o;
 			boolean ok = s._items.equals(_items);
+			
 			_t_equal.stop();
 			return ok;
 		}

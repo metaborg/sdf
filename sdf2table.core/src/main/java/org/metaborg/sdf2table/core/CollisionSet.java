@@ -3,12 +3,16 @@ package org.metaborg.sdf2table.core;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class CollisionSet<Value> implements Set<Value>{
 	private transient Hashtable<Value, Value> _tbl;
 	int _initial_capacity = 11;
 	float _load_factor = 0.75f;
+	
+	List<Value> _list = new LinkedList<>();
 	
 	public CollisionSet(){
 		_tbl = new Hashtable<>();
@@ -43,10 +47,12 @@ public class CollisionSet<Value> implements Set<Value>{
 		return push(e) == null;
 	}
 	
-	public Value push(Value e) {
-		if(_tbl.containsKey(e))
-			return _tbl.get(e);
+	public Value push(Value e){
+		Value v = _tbl.get(e);
+		if(v != null)
+			return v;
 		_tbl.put(e, e);
+		_list.add(e);
 		return null;
 	}
 	
@@ -90,12 +96,16 @@ public class CollisionSet<Value> implements Set<Value>{
 
 	@Override
 	public Iterator<Value> iterator() {
-		return _tbl.keySet().iterator();
+		return _list.iterator();
 	}
 
 	@Override
 	public boolean remove(Object o){
-		return _tbl.remove(o) != null;
+		if(_tbl.remove(o) != null){
+			_list.remove(o);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -111,11 +121,14 @@ public class CollisionSet<Value> implements Set<Value>{
 	@Override
 	public boolean retainAll(Collection<?> c) {
 		Hashtable<Value, Value> tbl = new Hashtable<>(_initial_capacity, _load_factor);
+		_list.clear();
 		
 		for(Object o : c){
 			Value e = _tbl.get(o);
-			if(e != null)
+			if(e != null){
 				tbl.put(e, e);
+				_list.add(e);
+			}
 		}
 		
 		if(tbl.size() != size()){

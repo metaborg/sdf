@@ -1,18 +1,31 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import org.metaborg.sdf2table.core.CollisionSet;
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
 
 public class ItemSet extends CollisionSet<Item>{
 	int _hash = -1;
+	//int[] _sig = null;
+	
 	State _state;
+	Set<Item> _kernels = new CollisionSet<>();
+	
+	enum Status{
+		OPEN,
+		COMPLETE,
+		CLOSING,
+		CLOSED
+	}
+	
+	Status _status = Status.OPEN;
 	
 	private static class ItemSetManager implements CollectionManager<ItemSet, Item>{
 		public ItemSet create(){
@@ -61,22 +74,24 @@ public class ItemSet extends CollisionSet<Item>{
 		return _state;
 	}
 	
-	public void close() throws UndefinedSymbol{
-		/*ItemSet nset = new ItemSet(_state);
-		
-		for(Item i : this){
-			nset.addAll(i.closure());
+	public void complete(){
+		if(_status == Status.OPEN){
+			_status = Status.COMPLETE;
+			computeHashCode();
 		}
+	}
+	
+	public void close() throws UndefinedSymbol{
+		//List<Item> kernel = new LinkedList<>(this);
 		
-		return nset;*/
-		List<Item> kernel = new LinkedList<>(this);
+		//clear();
+		//_hash = -1;
 		
-		clear();
-		_hash = -1;
-		
-		for(Item i : kernel){
+		_status = Status.CLOSING;
+		for(Item i : _kernels){
 			i.close(this);
 		}
+		_status = Status.CLOSED;
 	}
 	
 	public boolean conflicts(Production p){
@@ -113,26 +128,41 @@ public class ItemSet extends CollisionSet<Item>{
 	
 	@Override
     public boolean equals(Object o){
-		if(o != null && o instanceof ItemSet){
+		if(o == this)
+			return true;
+		if(o != null && o instanceof ItemSet && o.hashCode() == _hash){
 			ItemSet set = (ItemSet)o;
 			
-			if(set.size() == this.size()){
+			if(set._kernels.size() == _kernels.size()){
+				for(Item i : _kernels){
+					if(!set._kernels.contains(i))
+						return false;
+				}
+				return true;
+			}
+			
+			/*if(set.size() == this.size()){
 				for(Item i : this){
 					if(!set.contains(i))
 						return false;
 				}
 				return true;
-			}
+			}*/
+			
+			//return Arrays.equals(_sig, set._sig);
 		}
 		return false;
     }
 	
 	@Override
-	public boolean add(Item i){		
-		_hash = -1;
+	public boolean add(Item i){
+		if(_status == Status.CLOSED)
+			System.err.println("sdf2table.ItemSet.add: warning: this item-set is closed!");
 		Item doppelganger = push(i);
 		if(doppelganger == null){
 			i._set = this;
+			if(_status == Status.OPEN)
+				_kernels.add(i);
 			return true;
 		}
 		
@@ -169,19 +199,24 @@ public class ItemSet extends CollisionSet<Item>{
 		_hash = -1;
 		return super.addAll(i);
 	}
+	
+	public void computeHashCode(){
+		_hash = 0;
+		int[] _sig = new int[size()];
+		int i = 0;
+		for(Item item : _kernels){
+			_sig[i] = item.hashCode();
+        	++i;
+		}
+		Arrays.sort(_sig);
+		/*for(i = 0; i < size(); ++i){
+			_hash += _sig[i] * Math.pow(31.0, size()-1.0-i);
+		}*/
+		_hash = Utilities.hashCode(_sig);
+	}
 
     @Override
     public int hashCode(){
-    	if(_hash == -1){
-	        _hash = 0;
-	        int k = 0;
-	        
-	        for(Item i : this){
-	        	_hash += i.hashCode() * Math.pow(31.0, this.size()-1.0-k);
-	        	++k;
-	        }
-    	}
-        
         return _hash;
     }
 }

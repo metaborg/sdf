@@ -42,7 +42,7 @@ public class Iteration extends ConcreteNonTerminal{
 	public boolean equals(Object other) {
 		if(other instanceof Iteration){
 			Iteration i = (Iteration)other;
-			return other != null && _symbol != null && _min == i.getMinimum() && _symbol.equals(i.getSymbol());
+			return other != null && _symbol != null && _min == i.getMinimum() && _symbol.equals(i.getSymbol()) && (_sep != null ? _sep.equals(i._sep) : i._sep == null);
 		}
 		return false;
 	}

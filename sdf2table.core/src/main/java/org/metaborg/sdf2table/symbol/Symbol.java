@@ -9,6 +9,7 @@ import org.spoofax.terms.*;
 
 public abstract class Symbol implements Exportable{
 	public abstract Terminal getFirst();
+	int _hash_code = -1;
 	
 	public Symbol nonContextual(){
 		return this;
@@ -33,10 +34,19 @@ public abstract class Symbol implements Exportable{
 		return false;
 	}
 	
-	public abstract String toString();
-	
 	public String graphviz(){
 		return toString();
+	}
+	
+	public int computeHashCode(){
+		return toString().hashCode();
+	}
+	
+	@Override
+	public int hashCode(){
+		if(_hash_code == -1)
+			_hash_code = computeHashCode();
+		return _hash_code;
 	}
 	
 	public abstract IStrategoTerm toATerm();

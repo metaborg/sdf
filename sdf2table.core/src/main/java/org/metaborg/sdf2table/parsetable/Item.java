@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.sdf2table.core.Benchmark;
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbol;
@@ -87,7 +89,7 @@ public class Item{
 	/**
 	 * String representation of this item.
 	 */
-	String _str;
+	int _hash_code = -1;
 	
 	/**
 	 * Reduce actions associated to this item.
@@ -104,7 +106,6 @@ public class Item{
 	public Item(ItemSet set, IProduction p){
 		_prod = p;
 		_pos = 0;
-		_str = null;
 		_set = set;
 	}
 	
@@ -115,7 +116,6 @@ public class Item{
 	public Item(Item ancestor){
 		_prod = ancestor._prod;
 		_pos = ancestor._pos+1;
-		_str = null;
 		_set = null;
 		
 		_ancestors.add(ancestor);
@@ -125,7 +125,6 @@ public class Item{
 	public Item(IProduction p, Item source){
 		_prod = p;
 		_pos = 0;
-		_str = null;
 		_sources = new LinkedList<>();
 		_sources.add(source);
 		_set = source._set;
@@ -134,7 +133,7 @@ public class Item{
 	public Item split(){
 		Item item = new Item(_set, _prod);
 		item._pos = _pos;
-		item._str = _str;
+		item._hash_code = _hash_code;
 		item._ancestors.addAll(_ancestors);
 		
 		for(Item i : _ancestors)
@@ -312,30 +311,32 @@ public class Item{
 	
 	public void close(ItemSet set) throws UndefinedSymbol{
 		Queue<Item> queue = new LinkedList<>();
-		queue.add(this);
+		this.doClose(set, queue);
 		while(!queue.isEmpty()){
 			Item i = queue.poll();
 			i.doClose(set, queue);
 		}
 	}
 	
+	static Benchmark.DistributedTask _t_close;
+	static Benchmark.DistributedTask _t_equals;
+	
 	private void doClose(ItemSet set, Queue<Item> queue) throws UndefinedSymbol{
 		Item self = this;
 		/*if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE)
 			self = new Item(this);*/
 		
-		if(set.add(self)){
-			Symbol next = nextSymbol();
-			if(next != null && !next.isTerminal()){
-				Set<IProduction> prods = ((NonTerminal)next).productions();
-				if(prods.isEmpty()){
-					throw new UndefinedSymbol(next, _prod.asProduction());
-				}
-				for(IProduction p : prods){
-					if(!shallowConflicts(p)){
-						Item i = new Item(p, self);
+		Symbol next = nextSymbol();
+		if(next != null && !next.isTerminal()){
+			Set<IProduction> prods = ((NonTerminal)next).productions();
+			if(prods.isEmpty()){
+				throw new UndefinedSymbol(next, _prod.asProduction());
+			}
+			for(IProduction p : prods){
+				if(!shallowConflicts(p)){
+					Item i = new Item(p, self);
+					if(set.add(i))
 						queue.add(i);
-					}
 				}
 			}
 		}
@@ -343,17 +344,15 @@ public class Item{
 	
 	@Override
 	public String toString(){
-		if(_str == null){
-			_str = "";
-			for(int i = 0; i < _prod.symbols().size(); ++i){
-				if(i == _pos)
-					_str += SEPARATOR+" ";
-				_str += _prod.symbols().get(i).toString()+" ";
-			}
-			if(_pos >= _prod.symbols().size())
+		String _str = "";
+		for(int i = 0; i < _prod.symbols().size(); ++i){
+			if(i == _pos)
 				_str += SEPARATOR+" ";
-			_str += "→ "+_prod.product().toString();
+			_str += _prod.symbols().get(i).toString()+" ";
 		}
+		if(_pos >= _prod.symbols().size())
+			_str += SEPARATOR+" ";
+		_str += "→ "+_prod.product().toString();
 		
 		return _str;
 	}
@@ -399,13 +398,18 @@ public class Item{
     public boolean equals(Object o){
 		if(!(o instanceof Item))
 			return false;
+		
 		Item i = (Item)o;
-        return _prod.equals(i._prod) && _pos == i._pos;
+        boolean ok = _hash_code == i._hash_code && _pos == i._pos && _prod.equals(i._prod);
+        
+        return ok;
     }
 
     @Override
     public int hashCode(){
-        return toString().hashCode();
+    	if(_hash_code == -1)
+    		_hash_code = toString().hashCode();
+    	return _hash_code;
     }
     
 	public String digraph(){

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Terminal;

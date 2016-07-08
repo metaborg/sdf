@@ -47,6 +47,11 @@ public class Numeric extends Terminal{
 			return "$eof";
 		return "\\"+String.valueOf(value);
 	}
+	
+	@Override
+	public int computeHashCode(){
+		return _value;
+	}
 
 	@Override
 	public String terminalString() {

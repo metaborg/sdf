@@ -3,12 +3,10 @@ package org.metaborg.sdf2table.symbol;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.metaborg.sdf2table.core.Exportable;
-import org.metaborg.sdf2table.parsetable.Utilities;
+import org.metaborg.sdf2table.core.Utilities;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
-import org.spoofax.terms.StrategoInt;
 import org.spoofax.terms.StrategoList;
 
 /**

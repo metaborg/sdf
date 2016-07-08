@@ -11,9 +11,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import org.metaborg.sdf2table.core.Benchmark;
+import org.metaborg.sdf2table.core.CollisionSet;
 import org.metaborg.sdf2table.core.Exportable;
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Module;
 import org.metaborg.sdf2table.grammar.ModuleNotFound;
@@ -43,7 +46,10 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	static final StrategoConstructor CONS_STATES = new StrategoConstructor("states", 1);
 	static final StrategoConstructor CONS_PRIORITIES = new StrategoConstructor("priorities", 1);
 	
-	List<State> _states = new LinkedList<>();
+	static final int LOAD_FACTOR = 2;
+	
+	//List<State> _states = new LinkedList<>();
+	CollisionSet<State> _states = null;
 	List<Label> _labels = new LinkedList<>();
 	
 	Syntax _syntax;
@@ -73,15 +79,21 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		_syntax = syntax;
 		_ppolicy = pp;
 		_rcpolicy = rcp;
+		
+		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
 	}
 	
 	public ParseTable(Syntax syntax, PriorityPolicy pp){
 		_syntax = syntax;
 		_ppolicy = pp;
+		
+		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
 	}
 	
 	public ParseTable(Syntax syntax){
 		_syntax = syntax;
+		
+		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
 	}
 	
 	public static ParseTable current(){
@@ -119,7 +131,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return _syntax;
 	}
 	
-	public List<State> states(){
+	public Set<State> states(){
 		return _states;
 	}
 	
@@ -144,16 +156,20 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		Benchmark.ComposedTask task = Benchmark.newComposedTask("parse table generation");
 		task.start();
 		
-		Benchmark.SingleTask t_ff = task.newSingleTask("FIRST and FOLLOW computation");
-		Benchmark.SingleTask t_sg = task.newSingleTask("states generation");
-		
 		NonTerminal start = _syntax.startProduction().product();
 		
 		if(_ppolicy == PriorityPolicy.DEEP){
+			Benchmark.SingleTask t = task.newSingleTask("Contextual symbols");
+			
+			t.start();
 			start = ContextualSymbol.unique(null, start, null, ContextualSymbol.Filter.NONE);
 			ContextualProduction.validateAll();
 			ContextualSymbol.validateAll();
+			t.stop();
 		}
+		
+		Benchmark.SingleTask t_ff = task.newSingleTask("FIRST and FOLLOW computation");
+		Benchmark.SingleTask t_sg = task.newSingleTask("states generation");
 		
 		t_ff.start();
 		_syntax.computeFollowSets();
@@ -180,18 +196,25 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	}
 	
 	public State addState(State state) throws UndefinedSymbol{
-		state.close();
+		state.complete();
 		
-		for(State s : _states){ // Avoid state duplication
+		/*for(State s : _states){ // Avoid state duplication
 			if(s.equals(state)){
 				if(_rcpolicy == DeepReduceConflictPolicy.MERGE)
 					s.merge(state);
 				return s;
 			}
+		}*/
+		State s = _states.push(state);
+		if(s != null){
+			if(_rcpolicy == DeepReduceConflictPolicy.MERGE)
+				s.merge(state);
+			return s;
 		}
 		
-		state.assignId(_states.size());
-		_states.add(state);
+		state.close();
+		state.assignId(_states.size()-1);
+		state.reduce();
 		_queue.add(state);
 		
 		return state;
@@ -204,15 +227,15 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 				state.shift();
 			}
 			
-			for(State state : _states){
-				state.reduce();
-			}
+			/*for(State state : _states){
+				
+			}*/
 			
-			for(State state : _states){ // TODO do it in reduce phase
+			/*for(State state : _states){ // TODO do it in reduce phase
 				if(state.shiftPending()){
 					_queue.add(state);
 				}
-			}
+			}*/
 		}
 	}
 	

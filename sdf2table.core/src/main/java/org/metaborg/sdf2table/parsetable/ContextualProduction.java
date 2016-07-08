@@ -16,7 +16,7 @@ public class ContextualProduction extends IProduction{
 	Set<ContextualSymbol> _dependants = new HashSet<>();
 	static final Set<ContextualProduction> _to_validate = new HashSet<>();
 	int _id = -1;
-	String _str;
+	int _hash_code = -1;
 	
 	boolean _declared = false;
 	boolean _valid = false;
@@ -133,40 +133,41 @@ public class ContextualProduction extends IProduction{
 	
 	@Override
 	public String toString(){
-		if(_str == null){
-			_str = "";
-			for(Symbol s : _rhs)
-				_str += s.toString()+" ";
-			_str += "→ "+_symbol.toString();
-			if(constructor() != null && !constructor().isEmpty())
-				_str += "."+constructor();
-			if(!attributes().isEmpty()){
-				int i = 0;
-				_str += " {";
-				for(Attribute attr : attributes()){
-					if(i > 0)
-						_str += ",";
-					switch(attr){
-					case ASSOC_LEFT:
-						_str += "left";
-						break;
-					case ASSOC_RIGHT:
-						_str += "right";
-						break;
-					case BRACKET:
-						_str += "bracket";
-						break;
-					case REJECT:
-						_str += "reject";
-						break;
-					case LONGEST_MATCH:
-						_str += "longest-match";
-						break;
-					}
-					++i;
+		String _str = "";
+		for(Symbol s : _rhs)
+			_str += s.toString()+" ";
+		_str += "→ "+_symbol.toString();
+		if(constructor() != null && !constructor().isEmpty())
+			_str += "."+constructor();
+		if(!attributes().isEmpty()){
+			int i = 0;
+			_str += " {";
+			for(Attribute attr : attributes()){
+				if(i > 0)
+					_str += ",";
+				switch(attr){
+				case ASSOC_LEFT:
+					_str += "left";
+					break;
+				case ASSOC_RIGHT:
+					_str += "right";
+					break;
+				case BRACKET:
+					_str += "bracket";
+					break;
+				case REJECT:
+					_str += "reject";
+					break;
+				case PREFER:
+					_str += "prefer";
+					break;
+				case LONGEST_MATCH:
+					_str += "longest-match";
+					break;
 				}
-				_str += "}";
+				++i;
 			}
+			_str += "}";
 		}
 		
 		return _str;
@@ -174,8 +175,10 @@ public class ContextualProduction extends IProduction{
 	
 	@Override
     public int hashCode() {
-        return toString().hashCode();
-    }
+		if(_hash_code == -1)
+			_hash_code = toString().hashCode();
+		return _hash_code;
+	}
 	
 	public String constructor(){
 		return _source.constructor();

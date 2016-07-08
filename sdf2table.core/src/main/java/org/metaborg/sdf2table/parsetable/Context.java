@@ -1,13 +1,16 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.Production;
 
 public class Context{
 	Set<PriorityLevel> _priorities;
+	int _hash_code = -1;
 	
 	public Context(){
 		_priorities = new TreeSet<>();
@@ -119,6 +122,25 @@ public class Context{
 			str += l.toString();
 		}
 		return "{"+str+"}";
+	}
+	
+	public void computeHashCode(){
+		_hash_code = 0;
+		int[] hashs = new int[_priorities.size()];
+		int i = 0;
+		for(PriorityLevel l : _priorities){
+			hashs[i] = l.hashCode();
+        	++i;
+		}
+		Arrays.sort(hashs);
+		_hash_code = Utilities.hashCode(hashs);
+	}
+	
+	@Override
+	public int hashCode(){
+		if(_hash_code == -1)
+			computeHashCode();
+		return _hash_code;
 	}
 
 	public boolean isEmpty() {

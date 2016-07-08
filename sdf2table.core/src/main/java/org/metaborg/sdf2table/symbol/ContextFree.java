@@ -23,7 +23,7 @@ public class ContextFree extends ConcreteNonTerminal{
 	}
 	
 	@Override
-	public boolean equals(Object other) {
+	public boolean equals(Object other){
 		if(other instanceof ContextFree){
 			return other != null && _symbol != null && _symbol.equals(((ContextFree)other).getSymbol());
 		}

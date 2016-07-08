@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
 import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
-import org.metaborg.sdf2table.parsetable.Utilities;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;

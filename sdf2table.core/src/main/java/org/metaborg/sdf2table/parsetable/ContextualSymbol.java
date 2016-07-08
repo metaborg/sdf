@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.Production;
@@ -33,7 +34,6 @@ public class ContextualSymbol extends NonTerminal{
 	NonTerminal _symbol;
 	
 	Syntax _syntax;
-	String _str;
 	
 	Context _left;
 	Context _right;
@@ -339,7 +339,7 @@ public class ContextualSymbol extends NonTerminal{
 
 	@Override
 	public boolean equals(Object other){
-		if(other != null && other instanceof ContextualSymbol){
+		if(other != null && other instanceof ContextualSymbol && other.hashCode() == hashCode()){
 			ContextualSymbol cs = (ContextualSymbol)other;
 			return other == this || (cs._filter == _filter && cs._symbol.equals(_symbol) && cs._left.equals(_left) && cs._right.equals(_right));
 		}
@@ -347,24 +347,23 @@ public class ContextualSymbol extends NonTerminal{
 	}
 	
 	@Override
-	public int hashCode(){
-		return toString().hashCode();
+	public int computeHashCode(){
+		int[] hashs = {_left.hashCode(), _symbol.hashCode(), _right.hashCode()};
+		return Utilities.hashCode(hashs);
 	}
 
 	@Override
 	public String toString(){
-		if(_str == null){
-			_str = "<"+_left.toString()+":"+_symbol.toString()+":"+_right.toString()+">";
-			switch(_filter){
-			case LAYOUT_ONLY:
-				_str += "ε";
-				break;
-			case REJECT_LAYOUT:
-				_str += "!ε";
-				break;
-			default:
-				break;
-			}
+		String _str = "<"+_left.toString()+":"+_symbol.toString()+":"+_right.toString()+">";
+		switch(_filter){
+		case LAYOUT_ONLY:
+			_str += "ε";
+			break;
+		case REJECT_LAYOUT:
+			_str += "!ε";
+			break;
+		default:
+			break;
 		}
 		return _str;
 	}

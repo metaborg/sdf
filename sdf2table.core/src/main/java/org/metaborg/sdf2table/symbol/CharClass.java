@@ -8,7 +8,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 
-public abstract class CharClass extends Symbol implements Trigger{	
+public abstract class CharClass extends Symbol implements Trigger{
 	@Override
 	public boolean nonEpsilon(){
 		return true;
