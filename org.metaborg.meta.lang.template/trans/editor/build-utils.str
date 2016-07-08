@@ -1,0 +1,113 @@
+module editor/build-utils
+
+imports
+  libstratego-sdf
+  lib/EditorService
+  lib/ds/pp/-
+  libstratego-gpp
+  lib/sdf-desugar
+  lib/sdf-parenthesize
+  stratego/metaborg
+  signatures/kernel/Kernel-sig
+  signatures/TemplateLang-sig
+  
+rules
+  
+  //pretty-printer for the generated sdf
+  pp-sdf-to-string =
+  sdf-desugar;
+  parenthesize-Sdf2;
+  sdf-ppfix;
+  ast2box(|[<pp-table-sdf>, PP-Table([PP-Entry(Path1("Constructor"),[Arg("1")])])]);
+  box2text-string(|80)
+
+
+  pp-ds-to-string =
+    ds-prettyprint-SDF-start-symbols
+    ; !V([], <id>)
+    ; box2text-string(|120)
+
+  //pretty-printer for the generated esv
+  pp-esv-to-string =
+    topdown(try(pp-fix-string-quotes));
+    ast2box(|[<esv-pp-table>]);
+    box2text-string(|80)
+
+  pp-fix-string-quotes:
+    String(string) -> String(string')
+    where
+      <not(string-starts-with(|"\""))> string
+    with
+      string' := <conc-strings> ("\"", string, "\"")
+
+  pp-fix-string-quotes:
+    Placeholder(string) -> Placeholder(string')
+    where
+      <not(string-starts-with(|"<"))> string
+    with
+      string' := <conc-strings> ("<", string, ">")
+
+  esv-pp-table =
+    DescriptorPPTable
+  <+
+    tbl := <import-term(target/metaborg/EditorService-pretty.pp.af)>;
+    rules(DescriptorPPTable := tbl)
+    
+    // When given a tuple (path, string) this writes string into path.
+    write-string-to-file =
+        ?(filename, string);
+        if <dirname; readdir> filename then
+          with(
+            handle := <fopen> (filename, "w");
+            <fputs> (string, handle);
+            <fclose> handle;
+            <refresh-workspace-file> filename
+          )
+        end
+    
+    create-src-gen(|project-path, folder, ext):
+        filename -> filename'
+        with
+            fn := <get-filename> filename; 
+            src-gen-path := <concat-strings; create-dir> [project-path, "/src-gen"];
+            src-gen-folder := <concat-strings; create-dir> [src-gen-path, "/" ,folder];
+            file-folder := <get-dir(|src-gen-folder)> filename ;
+            filename' := <concat-strings> [file-folder, "/" , fn, ext]
+  
+    get-dir(|path) :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      names' := <at-last(![])> names;
+      if [h | tl] := names'
+      then      
+        first := <concat-strings> [path, "/" ,h]; 
+                <create-dirs(|first)> tl;
+                s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
+        else
+          s' := path
+        end
+
+
+   create-dir  = not( file-exists ; filemode ; isdir) < mkdir + id
+
+   create-dirs(|dir):
+    [h | tl] -> None()
+    where
+      <create-dir> dir;
+      new-dir := <concat-strings> [dir, "/", h];
+      <create-dirs(|new-dir)> tl
+
+    create-dirs(|dir):
+    [] -> None()
+    where
+      <create-dir> dir
+  
+  get-filename :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      s' := <last> names
+
+ sugar-attributes:
+  Attrs([]) -> NoAttrs()

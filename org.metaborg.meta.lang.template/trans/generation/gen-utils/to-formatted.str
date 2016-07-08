@@ -1,0 +1,91 @@
+module generation/gen-utils/to-formatted
+
+imports
+  analysis/-
+  runtime/index/-
+  runtime/task/-
+  signatures/TemplateLang-sig
+  runtime/nabl/-
+  runtime/properties/-
+  names/analysis/names
+  utils/tokenize
+  generation/syntax/to-sdf
+  signatures/basic/Basic-sig
+  signatures/priority/Priority-sig
+  
+
+
+rules
+    sugar-priorities:
+      SimpleGroup(prod) ->  SimpleRefGroup(sc)
+    where
+      sortdef   := <?SdfProduction(SortDef(<id>), Rhs(rhs), _)> prod;
+      rhs'        := <strip-annos> rhs;
+      const     := <get-properties(|NablProp_constructorName())> sortdef;
+      temps*    := <map(get-def); try(desugar-templates); strip-annos> const;
+      p*          := <map(get-prod-elems)> temps*;
+        [sc]    := <filter(?(<id>, rhs'))> p*
+
+
+    get-prod-elems:
+      SdfProductionWithCons(SortCons(SortDef(s),c), Rhs(symbols*), a*) -> (SortConsRef(Sort(s), c), symbols*)   
+    
+    get-prod-elems:
+      TemplateProductionWithCons(SortCons(SortDef(s),c), t, a) -> (SortConsRef(Sort(s), c), result)
+    with
+      result := <template-to-prod> t
+      
+    remove-attrs:
+      SdfProductionWithCons(sc, rhs, attrs) -> SdfProductionWithCons(sc, rhs, NoAttrs())
+
+    //single-line template
+    template-to-prod:
+        SingleLineTemplate(elems) -> elems'
+    with
+        elems' := <filter(template-elem-to-prod); flatten-list> elems
+    
+    template-elem-to-prod:
+        String(t) -> <string-to-prod> t
+  
+    //removing layout from separator  
+    template-elem-to-prod:
+        Placeholder(symbol, option) -> symbol' 
+    where
+      <?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
+    with
+      lit' := <separator-to-literal> lit;
+      if "" := lit'
+      then
+        switch !symbol
+          case ?IterSep(sym, _) : symbol' :=  Iter(sym)
+          case ?IterStarSep(sym, _) : symbol' :=  IterStar(sym)
+          case ?Label(l, IterSep(sym, _)) : symbol' :=  Label(l, Iter(sym))
+          case ?Label(l, IterStarSep(sym, _)) : symbol' :=  Label(l, IterStar(sym))
+        end
+      else
+        switch !symbol
+          case ?IterSep(sym, _) : symbol' :=  IterSep(sym, Lit(lit'))
+          case ?IterStarSep(sym, _) : symbol' :=  IterStarSep(sym, Lit(lit'))
+          case ?Label(l, IterSep(sym, _)) : symbol' :=  Label(l, IterSep(sym, Lit(lit')))
+          case ?Label(l, IterStarSep(sym, _)) : symbol' :=  Label(l, IterStarSep(sym, Lit(lit')))
+        end
+      end
+
+  template-elem-to-prod:
+    Placeholder(symbol, option) -> symbol
+  where
+    <not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
+  
+    
+  //multi-line template
+  template-to-prod:
+    Template(lines) -> elems
+     with
+      elems := <map(line-to-prod)> lines
+
+ line-to-prod:
+    Line(elems) -> elems'
+    with
+      elems' := <filter(template-elem-to-prod); flatten-list> elems
+
+string-to-prod =  string-edge-tokenize(where({x: ?x; <one(?x)> ['(', ')']})); map(!Lit(<template-escape; double-quote>))

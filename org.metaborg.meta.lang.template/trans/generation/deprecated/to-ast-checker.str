@@ -1,0 +1,226 @@
+module generation/deprecated/to-ast-checker
+
+imports
+  libstratego-lib
+  libstratego-sglr
+  libstrc
+  signatures/sdf2-core/-
+  analysis/desugar
+  generation/gen-utils/to-template
+  generation/gen-utils/to-str
+  generation/pp/to-pp
+  templatelang
+  
+rules
+
+  module-to-chk:
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g, s'*])//Module(m', [i0, s'*])
+    with
+      m'   := <to-str-module-name(|"-chk", "check")> Module(m)
+    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
+    ; i2*  := <map(to-str-import(|"-chk", "check"))> i*
+    ; lang := <language-spec-name>
+    ; g    := Strategies([SDefNoArgs($[check-example], CallNoArgs(SVar($[check-[lang]])))])
+    ; s'*  := <filter(section-to-check(|lang))> s*
+
+  
+  section-to-check(|lang):
+     SDFSection(ContextFreeStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-check)> s*        
+  
+  section-to-check(|lang):
+     SDFSection(LexicalStartSymbols(s*)) -> Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-check)> s*      
+     
+  section-to-check(|lang):
+     SDFSection(KernelStartSymbols(s*)) ->  Strategies(<not(?[])> [s1*])
+   with
+       s1* := <map(start-symbol-to-check)> s*      
+     
+  start-symbol-to-check:
+    Sort(x) -> SDefNoArgs($[check-SDF-start-symbols], CallNoArgs(SVar($[check-[x]])))       
+  
+  section-to-check(|lang):
+    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*])
+    with
+    	sort* := <filter(productive-sort); make-set> p*
+    	; s1*    := <map(sort-to-check)> sort*
+    	; s2*    := <map(sort-to-check(|lang))> sort*
+    	; s3*    := <map(sort-to-check-amb)> sort*
+    	; s4*    := <map(sort-to-error-lexical)> sort*  
+    	  
+  section-to-check(|lang):
+  	SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*])
+  	with
+  		sort* := <filter(productive-sort); make-set> p*
+  		; s1*   := <map(sort-to-check(|lang))> sort*
+    	; s2*   := <filter(prod-to-template; desugar-templates;template-to-check <+ template-to-check); flatten-list> p* 
+    	; s3*   := <map(is-sort-fail-chk)> sort*
+    	; s4*   := <map(sort-to-check-amb)> sort*  
+    	; s5*   := <map(sort-to-error-cf)> sort*  
+  		    
+   section-to-check(|lang):
+  	SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, s6*, s7*, s8*])
+  	with
+  		sort*            := <filter(cf-productive-sort); make-set> p*
+  		; s1*            := <map(sort-to-check(|lang))> sort*  
+    	; s2*            := <filter(cf-prod-to-template; desugar-templates; template-to-check); flatten-list> p*
+    	; s3*            := <map(is-sort-fail-chk)> sort*
+    	; lexical-sorts* := <filter(lex-productive-sort); make-set> p*
+    	; s4*            := <map(sort-to-check)> lexical-sorts*
+        ; s5*            := <map(sort-to-check(|lang))> lexical-sorts* 
+        ; s6*            := <map(sort-to-check-amb)> [sort*, lexical-sorts*]  
+        ; s7*			 := <map(sort-to-error-lexical)> lexical-sorts*
+        ; s8*            := <map(sort-to-error-cf)> sort*
+    	  
+  		 
+    	   
+  section-to-check(|lang):
+    TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*, s4*, s5*])
+    with
+      	sort* := <filter(productive-sort); make-set> t*
+    	; s1*   := <map(sort-to-check(|lang))> sort*
+    	; s2*   := <filter(template-to-check); flatten-list> t*
+    	; s3*   := <map(is-sort-fail-chk)> sort*
+    	; s4*   := <map(sort-to-check-amb)> sort*
+    	; s5*   := <map(sort-to-error-cf)> sort*
+    	  
+   
+    sort-to-check(|lang):
+    x -> SDefNoArgs($[check-[lang]], CallNoArgs(SVar($[check-[x]])))
+  
+    sort-to-check:
+    x -> SDefNoArgs($[check-[x]], CallNoArgs(SVar("is-string")))//SDefNoArgs($[check-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))))
+    
+    sort-to-check-amb:
+    	x -> RDefNoArgs($[check-[x]], RuleNoCond(NoAnnoList(Op("amb", [NoAnnoList(ListTail([Var("h")], Var("hs")))])), App(CallNoArgs(SVar($[check-[x]])), Var("h"))))
+  
+    sort-to-error-lexical:
+    	x -> SDefNoArgs(
+			  $[error-[x]]
+			, Call(SVar("debug"), [Build(NoAnnoList(Str($["Unexpected constructor. Expected string from sort [x] instead. "])))])
+			)
+			
+	sort-to-error-cf:
+		x -> 	SDefNoArgs(
+			  $[error-[x]]
+			, Call(SVar("debug"), [Build(NoAnnoList(Str($["Unexpected constructor. Expected constructor from sort [x] instead. "])))])
+			)	
+  
+  template-to-check:
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
+      [RDefNoArgs(
+        $[check-[s]]
+      , Rule(NoAnnoList(input), RootApp(Id()), with*)
+         ), SDefNoArgs($[is-[s]-with-constructor], Match(NoAnnoList(Op(c, WldArg*)))
+      )]
+      where
+      	not(<fetch-elem(?Reject())> a*)
+      with
+      	!t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
+	    < line* := [Line([Layout(""), elem*])] 
+	    + !t => Template(line*)
+      with
+        <reset-counter> "check";
+      	line'*      := <map(introduce-labels-line-chk)> line*;
+        output      := <map(template-line-to-stratego-chk)> line'*;
+        arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+        WldArg*     := <map(!Wld())> arg*;
+        (output', with*) := <thread-alltd(extract-BA-chk)> (output, []);
+        input       := Op(c, arg*)
+  
+template-to-check:
+    TemplateProduction(SortDef(s), t, Attrs(a*)) ->
+      RDefNoArgs(
+        $[check-[s]]
+      , Rule(NoAnnoList(input), RootApp(Id()), cond*)
+      )
+      where
+      	not(<fetch-elem(?Reject())> a*)
+      with
+	      !t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
+	    < line* := [Line([Layout(""), elem*])] 
+	    + !t => Template(line*)
+      with
+      <reset-counter> "check";
+      line'*      := <map(introduce-labels-line-chk)> line*;
+      output      := <map(template-line-to-stratego-chk)> line'*;
+      arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+      if !arg* => [arg] then
+          if <fetch-elem(?Bracket())> a* then
+            input := Op("Parenthetical", arg*);
+            (output', cond*) := <thread-alltd(extract-BA-chk)> (output, [])
+          else
+            // injection
+            // FIXME: this may result in infinite loop in pretty printer
+            //        if there is a cycle of injections in the grammar!
+            input := arg;
+            (output', with*) := <thread-alltd(extract-BA-where-chk)> (output, []);
+            cond* := [WhereClause(Not(CallNoArgs(SVar($[is-[s]-with-constructor])))), with*] // check whether there is a rule with constructor already defined, 
+            																// this one should only be applied when there is not
+          end
+      else
+      	input := Tuple(arg*);
+      	(output', cond*) := <thread-alltd(extract-BA-chk)> (output, [])
+      end
+  
+  is-sort-fail-chk:
+  	s -> SDefNoArgs($[is-[s]-with-constructor], Fail()) //needs to be generated for every sort to avoid undefined strategy
+ 
+
+  extract-BA-chk :
+    (t@BA(_, _), e*) -> (Var(x), [e*, WithClause(t)]) 
+    where 
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !$[t[<next-counter> "check"]__]> t, "'")    
+    	
+   extract-BA-where-chk :
+    (t@BA(_, _), e*) -> (Var(x), [e*, WhereClause(t)]) 
+    where 
+    	x := <conc-strings> (<collect-one(?Var(<id>)) <+ !$[t[<next-counter> "check"]__]> t, "'")  	
+      	
+  introduce-labels-line-chk:
+    Line(elem*) -> Line(elem'*)
+    with
+      elem'* := <map(try(introduce-labels-chk))> elem*
+      
+  introduce-labels-chk:
+     Placeholder(symbol, c) -> Placeholder(Label(Unquoted(l), symbol), c)
+     where
+     	<not(?Label(_, _))> symbol
+     with
+       l  := $[t[<next-counter> "check"]__]      
+  
+  introduce-labels-chk:
+     Placeholder(Label(Unquoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l]__]), symbol), c)
+  
+  introduce-labels-chk:
+     Placeholder(Label(Quoted(l), symbol), c) -> Placeholder(Label(Unquoted($[[l']__]), symbol), c)
+     with
+     	l' := <un-double-quote> l
+   
+  introduce-labels-chk:
+  	term -> <id>  
+  
+  template-line-to-stratego-chk:
+  	Line(elem*) -> <filter(template-element-to-chk)> elem*
+  	
+  template-element-to-chk: 
+  	p@Placeholder(Label(Unquoted(l), Sort(x)), _) -> BA(
+          LChoice(CallNoArgs(SVar($[check-[x]])), CallNoArgs(SVar($[error-[x]])))
+        , Var(l)
+        )
+  	
+  template-element-to-chk:
+      Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x)) + ?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> BA(
+          Call(
+            SVar("map")
+          , [LChoice(CallNoArgs(SVar($[check-[x]])), CallNoArgs(SVar($[error-[x]])))]
+          )
+        , Var(l)
+        )  	
+
+	
+  

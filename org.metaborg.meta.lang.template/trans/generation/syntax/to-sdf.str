@@ -1,0 +1,555 @@
+module generation/syntax/to-sdf
+
+imports
+  libstratego-lib
+  libstratego-sglr
+  libstratego-gpp
+  utils/attributes
+  utils/misc
+  utils/tokenize
+  names/analysis/names
+  runtime/nabl/utils
+  analysis/attributes
+  analysis/desugar
+  pp/layout-constraints/Layout-Constraints-pp
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
+ 
+  to-sdf(|chars, newline, kfr) = 
+  module-to-sdf(|chars, newline, kfr) <+ section-to-sdf(|chars, newline, kfr) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
+
+  module-to-sdf(|chars, newline, kfr):
+    Module(Unparameterized(mn), i, sections) ->
+      'module(unparameterized(mn), imports, exports)
+    with
+      if [] := sections
+      then
+        exports := []
+      else
+          exports := [exports(<filter(section-to-sdf(|chars, newline, kfr))> sections)]
+      end;
+      imports := <map(imports-to-sdf)> i
+
+  module-to-sdf:
+    Module(Unparameterized(mn)) -> 'module(unparameterized(mn))
+
+  module-to-sdf:
+    Module(Parameterized(mn, symbols)) -> 'module(parameterized(mn, symbols'))
+    with
+      symbols' := <term-translation> symbols      
+  
+  imports-to-sdf: 
+    Imports(mod) -> imports(i)
+    with
+      i := <map(module-to-sdf)> mod
+    
+  /* SDF3 sections */
+  //Context-free Start Symbols
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(ContextFreeStartSymbols(symbols)) -> context-free-start-symbols(symbols')
+    with
+      symbols' := <term-translation> symbols
+
+  //KernelStartSymbols -> kernel-start-symbols
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(KernelStartSymbols(symbols)) -> kernel-start-symbols(symbols')
+    with
+      symbols' := <term-translation> symbols
+
+  //LexicalStartSymbols -> lexical-start-symbols
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexicalStartSymbols(symbols)) -> lexical-start-symbols(symbols')
+    with
+      symbols' := <term-translation> symbols
+
+  //productive productions section
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*, restr*]
+    with
+      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+      //content complete prods
+        cc* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+             ; nub 
+             ; map(sort-to-contentcomplete)> prods*;    
+        if [] := cc* then
+            inj* := []
+        else
+            inj* := [context-free-syntax(<term-translation> cc*)]
+        end;
+      // lexical restrictions
+        x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
+      let
+        chars-end-with-identifier-char =
+              where(reverse; ?[<is-alphanum + '_'> | _])
+
+            string-ends-with-identifier-char =
+              where(explode-string; chars-end-with-identifier-char)
+      in
+        r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
+           flatten-list;
+               filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
+          if !r* => [] + !kfr => None() then
+            restr* := []
+          else
+            restr* := [lexical-restrictions([follow(r*, kfr)])]
+          end
+      end
+
+
+  //lexical syntax productive section
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexicalSyntax(prods)) -> lexical-syntax(prods')
+    with
+      prods' := <map(prod-to-sdf)> prods
+
+  //kernel syntax
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(Kernel(prods)) -> syntax(prods')
+    with
+      prods' := <map(prod-to-sdf)> prods
+
+  //lexical restrictions
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexicalRestrictions(restrictions)) -> lexical-restrictions(restrictions')
+    with
+      restrictions' := <term-translation> restrictions
+
+  //context-free restrictions
+   section-to-sdf(|chars, newline, kfr):
+    SDFSection(ContextFreeRestrictions(restrictions)) -> context-free-restrictions(restrictions')
+    with
+      restrictions' := <term-translation> restrictions
+
+
+  //kernel restrictions
+  section-to-sdf(|chars, newline, kfr):
+  SDFSection(Restrictions(restrictions)) -> restrictions(restrictions')
+    with
+      restrictions' := <term-translation> restrictions
+
+  //sorts
+  section-to-sdf(|chars, newline, kfr):
+  SDFSection(Sorts(symbols)) -> 'sorts(symbols')
+    with
+      symbols' := <term-translation> symbols
+
+  //aliases
+  section-to-sdf(|chars, newline, kfr):
+  SDFSection(Aliases(aliases)) -> aliases(aliases')
+    with
+      aliases' := <term-translation> aliases
+
+  //variables
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(Variables(prods)) -> variables(prods')
+    with
+      prods' := <map(prod-to-sdf)> prods
+
+    //lexical variables
+   section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexVariables(prods)) -> lexical-variables(prods')
+    with
+      prods' := <map(prod-to-sdf)> prods
+
+  //variables with productive productions
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(VariablesProductive(prods)) -> variables(prods')
+    with
+        prods' := <map(prod-to-sdf)> prods
+
+    //lexical variables with productive productions
+   section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexVariablesProductive(prods)) -> lexical-variables(prods')
+    with
+        prods' := <map(prod-to-sdf)> prods
+
+
+  //context-free priorities
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(ContextFreePriorities(priorities)) -> context-free-priorities(priorities')
+    with
+      priorities' := <map(priority-to-sdf(|chars, newline))> priorities
+
+  //lexical priorities
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(LexicalPriorities(priorities)) -> lexical-priorities(priorities')
+    with
+      priorities' := <map(priority-to-sdf(|chars, newline))> priorities
+
+  //kernel priorities
+  section-to-sdf(|chars, newline, kfr):
+    SDFSection(Priorities(priorities)) -> priorities(priorities')
+    with
+      priorities' := <map(priority-to-sdf(|chars, newline))> priorities
+
+  priority-to-sdf(|chars, newline):
+    Chain(groups) -> chain(groups')
+    with
+      groups' := <map(group-to-sdf(|chars, newline) <+ term-translation)> groups
+
+  priority-to-sdf(|chars, newline):
+    Assoc(gr1, associativity, gr2) -> assoc(gr1', associativity', gr2')
+    with
+      gr1'           := <group-to-sdf(|chars, newline) <+ term-translation> gr1;
+      associativity' := <term-translation> associativity;
+      gr2'           := <group-to-sdf(|chars, newline) <+ term-translation> gr2
+
+  group-to-sdf(|chars, newline):
+    SimpleRefGroup(ref) -> simple-group(ref')
+    with
+      ref' := <sortcons-to-sdf(|chars, newline)> ref
+
+  group-to-sdf(|chars, newline):
+    ProdsRefGroup(ref) -> prods-group(ref')
+     with
+      ref' := <map(sortcons-to-sdf(|chars, newline))> ref
+
+  group-to-sdf(|chars, newline):
+    AssocRefGroup(a, ref) -> assoc-group(a', ref')
+    with
+      a'   := <term-translation> a;
+      ref' := <map(sortcons-to-sdf(|chars, newline))> ref
+
+  group-to-sdf(|chars, newline):
+    SimpleGroup(prod) -> simple-group(prod')
+    with
+      prod' := <prod-to-sdf> prod
+
+  group-to-sdf(|chars, newline):
+    ProdsGroup(prods) -> prods-group(prods')
+    with
+      prods' := <map(prod-to-sdf)> prods
+
+  group-to-sdf(|chars, newline):
+    AssocGroup(a, prods) -> assoc-group(a', prods')
+    with
+      a'     := <term-translation> a;
+      prods' := <map(prod-to-sdf)> prods
+
+  group-to-sdf(|chars, newline):
+    WithArguments(group, arg) -> with-arguments(group', arg')
+    with
+        arg'   := <term-translation> arg;
+        group' := <group-to-sdf(|chars, newline)> group
+
+  group-to-sdf(|chars, newline):
+    NonTransitive(group) -> non-transitive(group')
+    with
+        group' := <group-to-sdf(|chars, newline)> group
+
+  sortcons-to-sdf(|chars, newline):
+    SortConsRef(Sort(s), Constructor(c)) -> prod(p, s, no-attrs())
+    with
+      prod := <get-def; try(desugar-templates)> c;
+      p    := <get-prod-elems(|chars, newline)> prod
+
+  get-prod-elems(|chars, newline):
+    SdfProductionWithCons(s, Rhs(symbols*), a*) -> <term-translation> symbols*
+
+  get-prod-elems(|chars, newline):
+    TemplateProductionWithCons(s, t, a) -> result
+    with
+      case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+      result := <template-to-sdf(|chars, newline, case)> t
+  
+  //Productions
+  prod-to-sdf:
+    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> prod(symbols'*, symbol', a''*)
+    with
+      symbols'* := <term-translation> symbols*;
+      symbol'   := <term-translation> symbol;
+      c         := <double-quote> cons;
+      a*        := <?Attrs(<id>) <+ ![]> attrs;
+        a'*       := [sdf-cons(c) , a*];
+      a''*      := <term-translation> Attrs(a'*)
+
+  prod-to-sdf:
+    SdfProduction(symbol, Rhs(symbols*), a*) -> prod(symbols'*, symbol', a'*)
+    with
+      symbols'* := <term-translation> symbols*;
+      symbol'   := <term-translation> symbol;
+      a'*       := <term-translation> a*
+
+  //TemplateSection
+  section-to-sdf(|chars, newline, kfr):
+    TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
+    with
+      p* := <map(prod-to-sdf(|chars, newline))> x;
+        //content complete prods
+        cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
+             ; nub 
+             ; map(sort-to-contentcomplete)> x; 
+        if [] := cc*
+        then
+            inj* := []
+        else
+            inj* := [context-free-syntax(<term-translation> cc*)]
+        end;
+      // lexical restrictions
+      let
+        chars-end-with-identifier-char =
+              where(reverse; ?[<is-alphanum + '_'> | _])
+
+            string-ends-with-identifier-char =
+              where(explode-string; chars-end-with-identifier-char)
+      in
+        r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
+           flatten-list;
+               filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
+          if !r* => [] + !kfr => None() then
+            restr* := []
+          else
+            restr* := [lexical-restrictions([follow(r*, kfr)])]
+          end
+      end
+
+  prod-to-sdf(|chars, newline):
+    TemplateProduction(s, t, a) -> prod(t', s', a')
+    with
+      case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
+      t'   := <template-to-sdf(|chars, newline, case)> t;
+      s'   := <term-translation> s;
+      a'   := <term-translation> a
+
+
+  prod-to-sdf(|chars, newline):
+    TemplateProductionWithCons(SortCons(s, Constructor(cons)), t, attrs) -> prod(t', s', a''*)
+    with
+      case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> attrs ;
+      t'   := <template-to-sdf(|chars, newline, case)> t;
+      s'   := <term-translation> s;
+      c    := <double-quote> cons;
+      a*   := <?Attrs(<id>) <+ ![]> attrs;
+        a'*  := [sdf-cons(c) , a*];
+      a''* := <term-translation> Attrs(a'*)
+
+  //single-line template
+  template-to-sdf(|chars, newline, case):
+    SingleLineTemplate(elems) -> elems'
+    with
+    elems' := <filter(template-elem-to-sdf(|chars, case)); flatten-list> elems
+    
+  template-elem-to-sdf(|chars, case):
+    String(t) -> result
+    where
+    if CaseInsensitive() := case then 
+      result := <string-to-sdf-insensitive(|chars)> t
+    else
+      result := <string-to-sdf(|chars)> t
+    end
+  
+  //removing layout from separator  
+  template-elem-to-sdf(|chars, case):
+    Placeholder(symbol, option) -> symbol' 
+    where
+      <?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
+    with
+      lit' := <separator-to-literal> lit;
+      //debug(!"lit' = ");
+      if "" := lit'
+      then
+        switch !symbol
+          case ?IterSep(sym, _) : symbol'               := <term-translation> Iter(sym)
+          case ?IterStarSep(sym, _) : symbol'           := <term-translation> IterStar(sym)
+          case ?Label(l, IterSep(sym, _)) : symbol'     := <term-translation> Label(l, Iter(sym))
+          case ?Label(l, IterStarSep(sym, _)) : symbol' := <term-translation> Label(l, IterStar(sym))
+        end
+      else
+        switch !symbol
+          case ?IterSep(sym, _) : symbol'               := <term-translation> IterSep(sym, Lit(lit'))
+          case ?IterStarSep(sym, _) : symbol'           := <term-translation> IterStarSep(sym, Lit(lit'))
+          case ?Label(l, IterSep(sym, _)) : symbol'     := <term-translation> Label(l, IterSep(sym, Lit(lit')))
+          case ?Label(l, IterStarSep(sym, _)) : symbol' := <term-translation> Label(l, IterStarSep(sym, Lit(lit')))
+        end
+      end 
+      
+  template-elem-to-sdf(|chars, case):
+    Placeholder(symbol, option) -> <term-translation> symbol
+    where
+      <not(?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit))))> symbol
+
+  //multi-line template
+  template-to-sdf(|chars, newline, case):
+     Template(lines*) -> elems*
+     with
+      elems* := <filter(line-to-sdf(|chars, case)); flatten-list> lines*
+
+  add-newline-first:
+  Line(elem*) -> Line([String("\n") | elem*])
+
+  add-newline-last :
+    Line(elem*) -> Line([elem*, String("\n")])
+ 
+  line-to-sdf(|chars, case):
+    Line(elems*) -> elems'*
+    where
+      elems'* := <filter(template-elem-to-sdf(|chars, case)); flatten-list; not(?[])> elems*
+  
+rules //conversion of SDF3 terms into SDF2
+
+  term-translation = topdown(try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf ))
+
+  //regular constructor conversion
+  term-to-sdf:
+    cons#(args) -> cons'#(args)
+    with
+      [f|fs] := <explode-string> cons;
+      cons'  := <implode-string> [<to-lower> f|fs]
+
+  //special constructors conversion
+  special-term-to-sdf:
+    IterSep(sort, lit) -> iter-sep(sort, lit)
+
+  special-term-to-sdf:
+    Right() -> right()
+
+  special-term-to-sdf:
+    IterStar(sort) -> iter-star(sort)
+
+  special-term-to-sdf:
+    Simple(sort) -> simple-charclass(sort)
+
+  special-term-to-sdf:
+    CharClass(sort) -> char-class(sort)
+
+  special-term-to-sdf:
+    LabelStart() -> label_start()
+
+  special-term-to-sdf:
+    NonAssoc() -> non-assoc()
+
+  special-term-to-sdf:
+    WithArguments(g, a) -> with-arguments(g, a)
+
+  special-term-to-sdf:
+    NonTransitive(g) -> non-transitive(g)
+
+  special-term-to-sdf:
+    SimpleGroup(p) -> simple-group(p)
+
+  special-term-to-sdf:
+    ProdsGroup(p) -> prods-group(p)
+
+  special-term-to-sdf:
+    AssocGroup(a, p) -> assoc-group(a, p)
+
+  special-term-to-sdf:
+    RealCon(i, n, o) -> real-con(i, n, o)
+
+  special-term-to-sdf:
+    IterStarSep(sort, sep) -> iter-star-sep(sort, sep)
+
+  special-term-to-sdf:
+    FileStart() -> file-start()
+
+  special-term-to-sdf:
+    ParameterizedSort(sort, sym) -> parameterized-sort(sort, sym)
+
+  special-term-to-sdf:
+    CiLit(lit) -> ci-lit(lit)
+
+  special-term-to-sdf:
+    NoAttrs() -> no-attrs()
+
+  special-term-to-sdf:
+    SortDef(s) -> sort(s)
+
+  special-term-to-sdf:
+    Deprecated() -> term(default(fun(unquoted("deprecated"))))
+
+  special-term-to-sdf:
+    Deprecated(s) -> term(default(appl(unquoted("deprecated"), [fun(quoted(s))])))
+
+  special-term-to-sdf:
+    Constructor(s) -> term(default(appl(unquoted("cons"), [fun(quoted(s))])))
+
+  special-term-to-sdf:
+    Sequence(t1, t2*) -> seq(t1, t2*)
+
+  special-term-to-sdf:
+    LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+
+  special-term-to-sdf:
+    IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
+
+  special-term-to-sdf:
+    CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
+    
+  special-term-to-sdf:
+    Placeholder() -> term(default(fun(unquoted("placeholder"))))  
+    
+  special-term-to-sdf:
+    PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))  
+    
+  special-term-to-sdf:
+    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))       
+    
+    
+    
+  terms-to-sdf:
+    [term | tail] -> <id>
+
+  terms-to-sdf:
+    [] -> []
+
+ char-is-layout =
+    ' ' + '\t' + '\r' + '\n'
+
+  string-is-layout =
+    string-as-chars(all(char-is-layout))
+
+  remove-layout =
+    string-as-chars(filter(not(char-is-layout)))
+
+  separator-to-literal = un-double-quote; unescape; remove-layout; template-escape
+
+/**
+   * Split on the edges delimiting identifiers.
+   * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
+   */
+  string-to-sdf(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    // FIXME: Case insensitive literals need ci-lit/single-quote.
+    map(!lit(<template-escape; double-quote>))
+
+   string-to-sdf-insensitive(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    map(!ci-lit(<template-escape; single-quote>))
+
+ sort-to-contentcomplete:
+    s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
+    with
+      rhs := lit(<concat-strings> ["[[", s, "]]"]);
+      c := <double-quote> $[[s]-Plhdr]
+
+template-escape =
+    string-replace(|"\\", "\\\\");
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"\"", "\\\"")

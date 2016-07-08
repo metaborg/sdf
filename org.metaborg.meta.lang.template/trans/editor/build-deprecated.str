@@ -1,0 +1,58 @@
+module editor/build-deprecated
+
+imports
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  generation/deprecated/to-esv
+  generation/deprecated/to-ast-checker  
+
+rules
+
+   generate-ast-checker-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      //; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "check", "-chk.str")> mn
+
+   generate-ast-checker-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The ast checker file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   := <module-to-chk> selected'
+      //; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "check", "-chk.aterm")> mn
+
+
+  generate-esv-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected'
+      ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn
+
+   generate-esv-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The esv file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, sections)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   := <module-to-esv; pp-esv-to-string <+ !""; debug(!"The esv file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n")> selected'
+      ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn

@@ -108,4 +108,4 @@ rules
 
 signature
   constructors
-    Parenthetical : Unknown -> Unknown
+    Parenthetical : T_Any -> T_Any

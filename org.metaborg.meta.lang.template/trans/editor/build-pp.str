@@ -1,0 +1,31 @@
+module editor/build-pp
+
+imports
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  generation/pp/to-pp
+
+rules
+  generate-pp-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   :=  <module-to-pp> selected'
+     // ; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
+
+   generate-pp-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The pp file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      //; fn       :=  <get-filename> mn
+      ; filename := <create-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn
+  

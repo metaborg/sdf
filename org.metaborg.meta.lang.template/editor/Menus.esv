@@ -31,8 +31,10 @@ menus
     action: "Generate all files" = generate-all
    
   	submenu: "SDF"
-      action: "Generate SDF (abstract)" = generate-sdf-abstract (meta)
-      action: "Generate SDF (concrete)" = generate-sdf-concrete
+      action: "Generate SDF (abstract)"   = generate-sdf-abstract (meta)
+      action: "Generate SDF (concrete)"   = generate-sdf-concrete
+      action: "to Normal Form"            = sdf3-to-normal-form 
+      action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract 
     end
     
     submenu: "Signature"
@@ -41,17 +43,7 @@ menus
       action: "Generate DynSem Signatures (abstract)" = generate-dynsem-abstract (meta)
       action: "Generate DynSem Signatures"            = generate-dynsem 
     end
-    
-    submenu: "Parse Table" (meta)
-      action: "Normalize and generate Parse Table"     = normalize-and-generate-pt
-      action: "Generate Parse Table (NF required)"     = generate-parse-table 
-      action: "Generate Item-sets (NF required)"       = generate-item-sets 
-      action: "Generate Parse Table sdf2table format"  = generate-parse-table-sdf2table-format
-      action: "to Normal Form"                         = sdf3-to-normal-form 
-      action: "to Normal Form (abstract)"              = sdf3-to-normal-form-abstract 
-      action: "to Normal Form (SDF2)"                  = sdf3-to-normal-form-sdf 
-    end
-    
+        
     submenu: "Completion"
       action: "Generate Stratego"         = generate-new-completions-stratego 
       action: "Generate ESV colorer"      = generate-new-completions-colorer

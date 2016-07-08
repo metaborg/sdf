@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.sdf:${metaborgVersion}
 name: SDF
-metaborgVersion: 2.0.0-beta1
+metaborgVersion: 2.0.0-SNAPSHOT
 metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
 dependencies:
   compile:

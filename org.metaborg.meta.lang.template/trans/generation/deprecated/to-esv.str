@@ -1,0 +1,334 @@
+module generation/to-esv
+
+imports
+  signatures/TemplateLang-sig
+  EditorService
+  utils/attributes
+  utils/misc
+  analysis/desugar
+ // templatelang/expand
+  generation/gen-utils/to-str
+  generation/gen-utils/to-template
+  signatures/sorts/Sorts-sig
+  signatures/sdf2-core/Sdf2-sig
+
+rules
+
+  module-to-esv :
+  	Module(m, i*, s*) -> Module(m', i'*, c*)
+  	with
+  		m'  := <to-str-module-name(|"-esv", "completions")> Module(m);
+  		//i'* := <debug(!"before "); map(to-str-import(|"-esv", "completions"))> i*;
+  		i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-esv", "completions")) <+ ![]> i*;
+  		c*  := <filter(template-section-to-esv)> s*
+  		
+  template-section-to-esv:
+    TemplateSection(x) -> Completions("", x')
+    where
+      x' := <filter(template-to-completion) ; not(?[])> x
+      
+  template-section-to-esv:
+  	SDFSection(ContextFreeSyntax(p*)) -> Completions("", x')
+  	where
+  		x' := <filter(prod-to-template; desugar-templates; template-to-completion <+ template-to-completion); not(?[])> p*
+  		
+  template-section-to-esv:
+  	SDFSection(Kernel(p*)) -> Completions("", x')
+  	where
+  		x' := <filter(cf-prod-to-template; desugar-templates; template-to-completion); not(?[])> p*		
+ 
+  template-to-completion:
+  	TemplateProduction(SortDef(s), SingleLineTemplate(elems*), Attrs(attrs*)) -> CompletionTemplateEx([Sort(s)], CompletionPrefix(prefix), part*, [])
+  	where
+  		<not(fetch-elem(?Reject() + ?Deprecated(_) + ?Deprecated()))> attrs*
+  	with
+  		part* := <filter(template-element-to-esv);
+  					template-to-completion-template-helper> elems*;
+  		prefix := <build-prefix> part*
+  	where
+      <accept-template-parts(|s)> part*
+  		
+  
+  template-to-completion:
+  	TemplateProductionWithCons(SortCons(SortDef(s), c), SingleLineTemplate(elems*), Attrs(attrs*)) -> CompletionTemplateEx([Sort(s)], CompletionPrefix(prefix), part*, [])
+  	where
+  		<not(fetch-elem(?Reject() + ?Deprecated(_) + ?Deprecated()))> attrs*
+  	with
+  		part* := <filter(template-element-to-esv);
+  					template-to-completion-template-helper> elems*;	
+  		prefix := <build-prefix> part*
+  	where
+      <accept-template-parts(|s)> part*
+  
+  template-to-completion:
+  	TemplateProduction(SortDef(s), Template(lines*), Attrs(attrs*)) -> CompletionTemplateEx([Sort(s)], CompletionPrefix(prefix), part*, [Blank()])
+  	where
+  		<not(fetch-elem(?Reject() + ?Deprecated(_) + ?Deprecated()))> attrs*
+  	with
+  		part* := <filter(template-line-to-esv);
+                remove-cursor-except-first;
+                separate-by(|String("\n"));
+                template-to-completion-template-helper> lines*;		
+  		prefix := <build-prefix> part*
+  	 where
+      <accept-template-parts(|s)> part*
+  
+  template-to-completion:
+  	TemplateProductionWithCons(SortCons(SortDef(s), c), Template(lines*), Attrs(attrs*)) -> CompletionTemplateEx([Sort(s)], CompletionPrefix(prefix), part*, [Blank()])
+  	where
+  		<not(fetch-elem(?Reject() + ?Deprecated(_) + ?Deprecated()))> attrs*
+  	with
+  		part* := <filter(template-line-to-esv);
+                remove-cursor-except-first;
+                separate-by(|String("\n"));
+                template-to-completion-template-helper> lines*;	
+  		prefix := <build-prefix> part*
+  	 where
+      <accept-template-parts(|s)> part*
+  
+
+  // template-line-to-esv:
+  //   Line([Layout(x), Placeholder(label, _, <Option() + Star()>, option*)]) ->
+  //     <spaces-to-tabs> [String(x), Cursor()]
+  //     where
+  //       <not(one(?Text(_)))> option*
+  
+  
+   template-line-to-esv:
+     Line([Layout(x), Placeholder(<?Opt(_) + ?IterStar(_) + ?Label(_, Opt(_)) + ?Label(_, IterStar(_)) + ?IterStarSep(_, _) + ?Label(_, IterStarSep(_, _))>, option*)]) ->
+       <spaces-to-tabs> [String(x), Cursor()]
+       where
+         <not(one(?Text(_)))> option*
+  	
+  template-line-to-esv:
+    Line(elem*) -> <filter(template-element-to-esv); not(?[]); spaces-to-tabs> elem*
+  
+  spaces-to-tabs =
+    try([String(string-replace(|"  ", "\t")) | id])
+  
+  template-to-completion-template-helper =
+    flatten-list;
+    concatenate-consecutive-strings;
+    map(try(String(templatelang-escape)))
+  
+  build-prefix =
+    map(template-element-to-string);
+    concat-strings;
+    string-replace(|"\\n", " ");
+    string-replace(|"\\t", " ");
+    string-as-chars(listbu(try( \[' ', ' ' | t] -> [' ' | t]\ )));
+    !String(<id>)
+  
+  accept-template-parts(|sort) =
+    // not acceptable are:
+    //  * empty templates
+    //  * injections (i.e., a single element that isn't String(_))
+    ?[_, _ | _] + ?[String(_) | _]
+  
+    // template-element-to-esv:
+    // Placeholder(label, Sort(sort), _, option*) ->
+    //   PlaceholderWithSort($[<[text]:], sort)
+    //   where
+    //     <one(?Text(text))> option*
+  
+  // Any placeholder with title results in a placeholder with that title.
+   template-element-to-esv:
+     Placeholder(symbol , option*) ->
+       PlaceholderWithSort($[<[text]:], sort)
+       where
+         <one(?Text(text))> option*
+       with
+       	 <oncetd(?Sort(sort))> symbol 
+       	 
+     //Iter(Sort(x))
+     //Label(l, Sort(x))  	 
+    // template-element-to-esv:
+    // p@Placeholder(label, Sort(sort), _, option*) ->
+    //   PlaceholderWithSort($[<[text]:], sort)
+    // where
+    //   <not(one(?Text(_) + ?Hide()))> option*
+    // where
+    //   text := <template-element-to-string> p      		
+     	 
+        
+  //Placeholders inside templates to esv placeholders
+   template-element-to-esv:
+     p@Placeholder(symbol, option*) ->
+       PlaceholderWithSort($[<[text]:], sort)
+     where
+       <not(one(?Text(_) + ?Hide()))> option*
+     with
+       text := <template-element-to-string> p;
+       <oncetd(?Sort(sort))> symbol 
+  	    
+  template-element-to-esv:
+    Layout(x) -> String(x)
+
+  template-element-to-esv:
+    String(_) -> <id>   
+      
+      
+      
+rules // TemplateLang / completion template element to string
+
+	// template-element-to-string:
+	//     Placeholder(_, _, _, option*) -> text
+	//     where
+	//        <one(?Text(text))> option*
+
+
+
+  //template element with a placeholder name
+  template-element-to-string:
+    Placeholder(_, option*) -> text
+    where
+       <one(?Text(text))> option*
+       
+  //template element A or A+ without a text or hide attribute
+  template-element-to-string:
+    Placeholder(<?Label(_, Sort(sort)) + ?Sort(sort) + ?Iter(Sort(sort)) + ?Label(_, Iter(Sort(sort))) + ?IterSep(Sort(sort), _) + ?Label(_, IterSep(Sort(sort), _))>, option*) -> sort
+    where
+      <not(one(?Text(_) + ?Hide()))> option*
+
+  //template element A? or A* without a text or hide attribute	
+  template-element-to-string:
+    Placeholder(<?Opt(_) + ?IterStar(_) + ?Label(_, Opt(_)) + ?Label(_, IterStar(_)) + ?IterStarSep(_, _) + ?Label(_, IterStarSep(_, _))>, option*) -> ""
+    where
+      <not(one(?Text(_) + ?Hide()))> option*
+      
+  //template element with a hide attribute
+  template-element-to-string:
+    Placeholder(_, option*) -> ""
+    where
+       <one(?Hide())> option*
+
+  template-element-to-string:
+    Placeholder(t) -> t
+
+  template-element-to-string:
+    PlaceholderWithSort(t, _) -> <string-as-chars(Tl; init)> t
+
+  template-element-to-string:
+    Layout(x) -> x
+
+  template-element-to-string:
+    String(x) -> x
+
+  template-element-to-string:
+    Cursor() -> ""
+  
+  remove-cursor-except-first =
+    [[id, Cursor()] | remove-cursor] <+ [id | remove-cursor-except-first] <+ []
+
+  remove-cursor =
+    ?[[_, Cursor()] | <remove-cursor>] <+ [id | remove-cursor] <+ []    
+      
+      
+
+  // template-section-to-esv:
+  //   SDFSection(context-free-syntax(x)) -> Completions("", x')
+  //   where
+  //     x' := <filter(templatelang-sdf-prod-to-template-prod;
+  //                   template-to-completion-template)> x
+
+rules
+
+//   template-to-completion-template:
+//     prod@TemplateProduction(sort, cons, SingleLineTemplate(_), attrs(a*)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* ]|
+//     where
+//       not(<?deprecated() + ?deprecated(_) + ?reject()> a*)
+//     with
+//       elem* := <expand-single-line-template-production> prod;
+//       part* := <filter(template-element-to-esv);
+//                 template-to-completion-template-helper> elem*;
+//       prefix := <build-prefix> part*
+//     where
+//       <accept-template-parts(|sort)> part*
+// 
+//   template-to-completion-template:
+//     prod @TemplateProduction(sort, cons, Template(_), attrs(a*)) ->
+//       |[ completion template ~sort : ~prefix = ~*part* (blank) ]|
+//     where
+//       not(<?deprecated() + ?deprecated(_) + ?reject()> a*)
+//     with
+//       line* := <expand-multi-line-template-production> prod;
+//       part* := <filter(template-line-to-esv);
+//                 remove-cursor-except-first;
+//                 separate-by(|String("\n"));
+//                 template-to-completion-template-helper> line*;
+//       prefix := <build-prefix> part*
+//     where
+//       <accept-template-parts(|sort)> part*
+
+/*  template-to-completion-template-helper =
+    flatten-list;
+    concatenate-consecutive-strings;
+    map(try(String(templatelang-escape)))
+
+  build-prefix =
+    map(template-element-to-string);
+    concat-strings;
+    string-replace(|"\\n", " ");
+    string-replace(|"\\t", " ");
+    string-as-chars(listbu(try( \[' ', ' ' | t] -> [' ' | t]\ )));
+    !String(<id>)
+
+  accept-template-parts(|sort) =
+    // not acceptable are:
+    //  * empty templates
+    //  * injections (i.e., a single element that isn't String(_))
+    ?[_, _ | _] + ?[String(_) | _]
+
+rules
+
+  template-line-to-esv:
+    Line([Layout(x), Placeholder(label, _, <Option() + Star()>, option*)]) ->
+      <spaces-to-tabs> [String(x), Cursor()]
+      where
+        <not(one(?Text(_)))> option*
+
+  template-line-to-esv:
+    Line(elem*) -> <filter(template-element-to-esv); not(?[]); spaces-to-tabs> elem*
+
+  spaces-to-tabs =
+    try([String(string-replace(|"  ", "\t")) | id])
+
+  // Any placeholder with title results in a placeholder with that title.
+  template-element-to-esv:
+    Placeholder(label, Sort(sort), _, option*) ->
+      PlaceholderWithSort($[<[text]:], sort)
+      where
+        <one(?Text(text))> option*
+
+  // A and A+ result in a placeholder containing the shortest expansion of A.
+  // template-element-to-esv:
+  //   placeholder @ Placeholder(label, sort(sort), <None() + Plus()>, option*) ->
+  //     PlaceholderWithSort($[<[text]:], sort)
+  //   where
+  //     <not(one(?Text(_) + ?Hide()))> option*
+  //   where
+  //     text := <expand-template-element;
+  //              map(template-element-to-string);
+  //              concat-strings
+  //              <+ !sort> [placeholder]
+
+  // A? and A* result in a 0-length placeholder.
+  template-element-to-esv:
+    Placeholder(label, Sort(sort), <Option() + Star()>, option*) ->
+      PlaceholderWithSort("<:", sort)
+    where
+      <not(one(?Text(_)))> option*
+
+  template-element-to-esv:
+    Layout(x) -> String(x)
+
+  template-element-to-esv:
+    String(_) -> <id>
+
+  remove-cursor-except-first =
+    [[id, Cursor()] | remove-cursor] <+ [id | remove-cursor-except-first] <+ []
+
+  remove-cursor = 
+    ?[[_, Cursor()] | <remove-cursor>] <+ [id | remove-cursor] <+ []
+*/
