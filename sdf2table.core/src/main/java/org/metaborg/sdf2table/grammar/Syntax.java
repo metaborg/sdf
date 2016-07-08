@@ -10,7 +10,7 @@ import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 
 public class Syntax{
-	List<Production> _productions = new ArrayList<>();
+	List<SyntaxProduction> _productions = new ArrayList<>();
 	List<ContextualProduction> _cproductions = new ArrayList<>();
 	SymbolCollection _symbols = new SymbolCollection();
 	
@@ -23,21 +23,21 @@ public class Syntax{
 	}
 	
 	public void computeFollowSets(){ // Total complexity O(3n)
-		for(Production p : _productions){
+		for(SyntaxProduction p : _productions){
 			p.computeDependencies();
 		}
 		for(ContextualProduction p : _cproductions){
 			p.computeDependencies();
 		}
 		
-		for(Production p : _productions){
+		for(SyntaxProduction p : _productions){
 			p.computeSets();
 		}
 		for(ContextualProduction p : _cproductions){
 			p.computeSets();
 		}
 		
-		for(Production p : _productions){
+		for(SyntaxProduction p : _productions){
 			p.computeSetsComponents();
 		}
 		for(ContextualProduction p : _cproductions){
@@ -52,8 +52,8 @@ public class Syntax{
 	 * @return A production equals to prod which is registered by this Syntax instance,
 	 * or null is prod is not declared in the syntax definition.
 	 */
-	public Production uniqueProduction(Production prod){
-		for(Production p : _productions){
+	public SyntaxProduction uniqueProduction(SyntaxProduction prod){
+		for(SyntaxProduction p : _productions){
 			if(p.merge(prod))
 				return p;
 		}
@@ -62,7 +62,7 @@ public class Syntax{
 		return prod;
 	}
 	
-	public List<Production> productions(){
+	public List<SyntaxProduction> productions(){
 		return _productions;
 	}
 	
@@ -70,8 +70,8 @@ public class Syntax{
 		return _cproductions;
 	}
 	
-	public Production startProduction(){
-		for(Production p : _productions){
+	public SyntaxProduction startProduction(){
+		for(SyntaxProduction p : _productions){
 			if(p.product().isFileStart())
 				return p;
 		}
@@ -84,7 +84,7 @@ public class Syntax{
 			if(app.getName().equals("Kernel")){
 				StrategoList sdf_productions = (StrategoList)app.getSubterm(0);
 				for(IStrategoTerm t : sdf_productions){
-					Production prod = Production.fromATerm(t, syntax);
+					SyntaxProduction prod = SyntaxProduction.fromATerm(t, syntax);
 					if(prod != null){
 						prod.product().addProduction(prod);
 						//syntax.productions().add(prod); already done.

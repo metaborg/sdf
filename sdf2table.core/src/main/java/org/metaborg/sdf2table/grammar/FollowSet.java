@@ -4,9 +4,9 @@ import org.metaborg.sdf2table.core.FixPointMember;
 import org.metaborg.sdf2table.symbol.TerminalContainer;
 
 public class FollowSet extends FixPointMember<TerminalContainer, FirstSet>{
-	Production _production;
+	SyntaxProduction _production;
 	
-	public FollowSet(Production prod){
+	public FollowSet(SyntaxProduction prod){
 		super(new TerminalContainer());
 		_production = prod;
 	}

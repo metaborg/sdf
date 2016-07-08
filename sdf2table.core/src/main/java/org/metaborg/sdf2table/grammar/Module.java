@@ -73,15 +73,15 @@ public class Module{
 		return term;
 	}
 	
-	public static Syntax fromFile(File file, List<String> paths) throws ModuleNotFound{
+	public static Syntax fromFile(File file, List<String> paths) throws ModuleNotFoundException{
 		return fromStrategoTerm(termFromFile(file), paths);
 	}
 	
-	public static Module fromFile(File file, List<String> paths, Map<String, UnloadedModule> modules, Syntax syntax) throws ModuleNotFound{
+	public static Module fromFile(File file, List<String> paths, Map<String, UnloadedModule> modules, Syntax syntax) throws ModuleNotFoundException{
 		return fromStrategoTerm(termFromFile(file), paths, modules, syntax);
 	}
 	
-	public static Syntax fromStrategoTerm(IStrategoTerm term, List<String> paths) throws ModuleNotFound{
+	public static Syntax fromStrategoTerm(IStrategoTerm term, List<String> paths) throws ModuleNotFoundException{
 		Map<String, UnloadedModule> modules = new HashMap<>();
 		Syntax syntax = new Syntax();
 		fromStrategoTerm(term, paths, modules, syntax);
@@ -102,7 +102,7 @@ public class Module{
 		return syntax;
 	}
 	
-	public static Module fromStrategoTerm(IStrategoTerm term, List<String> paths, Map<String, UnloadedModule> modules, Syntax syntax) throws ModuleNotFound{
+	public static Module fromStrategoTerm(IStrategoTerm term, List<String> paths, Map<String, UnloadedModule> modules, Syntax syntax) throws ModuleNotFoundException{
 		if(term instanceof StrategoAppl){
 			StrategoAppl app = (StrategoAppl)term;
 			if(app.getName().equals("Module")){
@@ -148,7 +148,7 @@ public class Module{
 									}
 									
 									if(dep == null){
-										throw new ModuleNotFound(iname, module);
+										throw new ModuleNotFoundException(iname, module);
 									}
 								}
 							}

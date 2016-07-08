@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 
 public abstract class ConcreteNonTerminal extends NonTerminal{
-	private Set<IProduction> _productions = new LinkedHashSet<>();
-	private Set<Production> _left_deriv = null;
-	private Set<Production> _right_deriv = null;
+	private Set<Production> _productions = new LinkedHashSet<>();
+	private Set<SyntaxProduction> _left_deriv = null;
+	private Set<SyntaxProduction> _right_deriv = null;
 	
 	private Set<CharClass> _follow_restrictions = new LinkedHashSet<>();
 	
@@ -23,13 +23,13 @@ public abstract class ConcreteNonTerminal extends NonTerminal{
 	 * @return A list of productions.
 	 */
 	@Override
-	public Set<IProduction> productions(){
+	public Set<Production> productions(){
 		return _productions;
 	}
 	
-	public void leftDerivations(Set<Production> set){
-		for(IProduction p : _productions){
-			if(set.add(p.asProduction()) && !p.isEmpty()){
+	public void leftDerivations(Set<SyntaxProduction> set){
+		for(Production p : _productions){
+			if(set.add(p.syntaxProduction()) && !p.isEmpty()){
 				Symbol left = p.symbol(0);
 				if(left instanceof NonTerminal)
 					set.addAll(((NonTerminal)left).leftDerivations());
@@ -37,7 +37,7 @@ public abstract class ConcreteNonTerminal extends NonTerminal{
 		}
 	}
 	
-	public Set<Production> leftDerivations(){
+	public Set<SyntaxProduction> leftDerivations(){
 		if(_left_deriv == null){
 			_left_deriv = new HashSet<>();
 			leftDerivations(_left_deriv);
@@ -45,9 +45,9 @@ public abstract class ConcreteNonTerminal extends NonTerminal{
 		return _left_deriv;
 	}
 	
-	public void rightDerivations(Set<Production> set){
-		for(IProduction p : _productions){
-			if(set.add(p.asProduction()) && !p.isEmpty()){
+	public void rightDerivations(Set<SyntaxProduction> set){
+		for(Production p : _productions){
+			if(set.add(p.syntaxProduction()) && !p.isEmpty()){
 				Symbol right = p.symbol(0);
 				if(right instanceof NonTerminal)
 					set.addAll(((NonTerminal)right).rightDerivations());
@@ -55,7 +55,7 @@ public abstract class ConcreteNonTerminal extends NonTerminal{
 		}
 	}
 	
-	public Set<Production> rightDerivations(){
+	public Set<SyntaxProduction> rightDerivations(){
 		if(_right_deriv == null){
 			_right_deriv = new HashSet<>();
 			rightDerivations(_right_deriv);

@@ -11,9 +11,9 @@ import java.util.Set;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.symbol.CharClass;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Sequence;
@@ -79,7 +79,7 @@ public class Item{
 	/**
 	 * Production associated to this item.
 	 */
-	IProduction _prod;
+	Production _prod;
 	
 	/**
 	 * Cursor position.
@@ -103,7 +103,7 @@ public class Item{
 	 * 
 	 * Produce an item without any source nor ancestor.
 	 */
-	public Item(ItemSet set, IProduction p){
+	public Item(ItemSet set, Production p){
 		_prod = p;
 		_pos = 0;
 		_set = set;
@@ -122,7 +122,7 @@ public class Item{
 		ancestor._successors.add(this);
 	}
 	
-	public Item(IProduction p, Item source){
+	public Item(Production p, Item source){
 		_prod = p;
 		_pos = 0;
 		_sources = new LinkedList<>();
@@ -235,7 +235,7 @@ public class Item{
 	 * Get the item production.
 	 * @return A production.
 	 */
-	public IProduction production(){
+	public Production production(){
 		return _prod;
 	}
 	
@@ -286,7 +286,7 @@ public class Item{
 				Symbol next = nextSymbol();
 				if(next instanceof NonTerminal){
 					if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE){
-						for(IProduction p : ((NonTerminal)next).productions()){
+						for(Production p : ((NonTerminal)next).productions()){
 							if(!shallowConflicts(p)){
 								_pending_triggers.add(p.label());
 							}
@@ -305,11 +305,11 @@ public class Item{
 		return _triggers;
 	}
 	
-	public boolean shallowConflicts(IProduction p){
+	public boolean shallowConflicts(Production p){
 		return _prod.shallowConflicts(p, _pos);
 	}
 	
-	public void close(ItemSet set) throws UndefinedSymbol{
+	public void close(ItemSet set) throws UndefinedSymbolException{
 		Queue<Item> queue = new LinkedList<>();
 		this.doClose(set, queue);
 		while(!queue.isEmpty()){
@@ -321,18 +321,18 @@ public class Item{
 	static Benchmark.DistributedTask _t_close;
 	static Benchmark.DistributedTask _t_equals;
 	
-	private void doClose(ItemSet set, Queue<Item> queue) throws UndefinedSymbol{
+	private void doClose(ItemSet set, Queue<Item> queue) throws UndefinedSymbolException{
 		Item self = this;
 		/*if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE)
 			self = new Item(this);*/
 		
 		Symbol next = nextSymbol();
 		if(next != null && !next.isTerminal()){
-			Set<IProduction> prods = ((NonTerminal)next).productions();
+			Set<Production> prods = ((NonTerminal)next).productions();
 			if(prods.isEmpty()){
-				throw new UndefinedSymbol(next, _prod.asProduction());
+				throw new UndefinedSymbolException(next, _prod.syntaxProduction());
 			}
-			for(IProduction p : prods){
+			for(Production p : prods){
 				if(!shallowConflicts(p)){
 					Item i = new Item(p, self);
 					if(set.add(i))

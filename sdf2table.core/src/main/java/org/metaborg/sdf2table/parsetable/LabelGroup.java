@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 
 public class LabelGroup extends Label implements Trigger{
@@ -11,12 +11,12 @@ public class LabelGroup extends Label implements Trigger{
 	Set<Label> _labels = new HashSet<>();
 
 	public LabelGroup(Label one){
-		super(one.agent().asProduction());
+		super(one.agent().syntaxProduction());
 		_labels.add(one);
 	}
 	
 	public LabelGroup(LabelGroup g){
-		super(g.agent().asProduction());
+		super(g.agent().syntaxProduction());
 		_labels.addAll(g._labels);
 	}
 	
@@ -29,8 +29,8 @@ public class LabelGroup extends Label implements Trigger{
 	}
 	
 	@Override
-	public boolean contains(IProduction prod) {
-		return agent().equals(prod.asProduction());
+	public boolean contains(Production prod) {
+		return agent().equals(prod.syntaxProduction());
 	}
 	
 	@Override

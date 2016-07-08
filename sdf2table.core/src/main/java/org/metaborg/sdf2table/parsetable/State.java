@@ -9,9 +9,9 @@ import java.util.List;
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.parsetable.MergingMap.Entry;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -90,7 +90,7 @@ public class State implements Exportable{
 					if(a instanceof Reduce){
 						Reduce r = (Reduce)a;
 						
-						if(r.label().agent().asProduction().equals(reduce.label().agent().asProduction())){ // conflict !
+						if(r.label().agent().syntaxProduction().equals(reduce.label().agent().syntaxProduction())){ // conflict !
 							LabelGroup group = null;
 							if(r.label() instanceof LabelGroup){ // this is not the first conflict
 								group = (LabelGroup)r.label();
@@ -194,9 +194,9 @@ public class State implements Exportable{
 	 * Close the associated item set.
 	 * <p>
 	 * This method add each item of the item set closure to the state.
-	 * @throws UndefinedSymbol 
+	 * @throws UndefinedSymbolException 
 	 */
-	public void close() throws UndefinedSymbol{
+	public void close() throws UndefinedSymbolException{
 		if(_t_close == null)
 			_t_close = Benchmark.newDistributedTask("State.close");
 		_t_close.start();
@@ -206,7 +206,7 @@ public class State implements Exportable{
 		_t_close.stop();
 	}
 	
-	public List<Label> reduceLabels(IProduction prod){
+	public List<Label> reduceLabels(Production prod){
 		List<Label> list = new LinkedList<>(); 
 		for(Entry<Trigger, ActionList> e : _actions.entrySet()){
 			for(Action a : e.getValue()){
@@ -253,9 +253,9 @@ public class State implements Exportable{
 	 * parse graph.
 	 * <p>
 	 * Be sure to call {@link #close()} before this method to get a consistent state.
-	 * @throws UndefinedSymbol 
+	 * @throws UndefinedSymbolException 
 	 */
-	public void shift() throws UndefinedSymbol{
+	public void shift() throws UndefinedSymbolException{
 		if(_t_shift == null)
 			_t_shift = Benchmark.newDistributedTask("State.shift");
 		_t_shift.start();

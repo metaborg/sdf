@@ -2,19 +2,19 @@ package org.metaborg.sdf2table.grammar;
 
 import org.metaborg.sdf2table.symbol.Symbol;
 
-public class UndefinedSymbol extends Exception{
+public class UndefinedSymbolException extends Exception{
 	private static final long serialVersionUID = -5263375916196593334L;
 	
 	Symbol _symbol;
-	Production _production;
+	SyntaxProduction _production;
 	
-	public UndefinedSymbol(Symbol symbol, Production production){
+	public UndefinedSymbolException(Symbol symbol, SyntaxProduction production){
 		super("Undefined symbol `"+symbol.toString()+"' in production `"+production.toString()+"'");
 		_symbol = symbol;
 		_production = production;
 	}
 	
-	public UndefinedSymbol(Symbol symbol){
+	public UndefinedSymbolException(Symbol symbol){
 		super("Undefined symbol `"+symbol.toString()+"'");
 		_symbol = symbol;
 	}
@@ -23,7 +23,7 @@ public class UndefinedSymbol extends Exception{
 		return _symbol;
 	}
 	
-	public Production production(){
+	public SyntaxProduction production(){
 		return _production;
 	}
 }

@@ -17,12 +17,12 @@ import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.CollisionSet;
 import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.Module;
-import org.metaborg.sdf2table.grammar.ModuleNotFound;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.Module;
+import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.*;
@@ -104,11 +104,11 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return _current._syntax.symbols().get(symbol, true);
 	}
 	
-	public static Production unique(Production prod){
+	public static SyntaxProduction unique(SyntaxProduction prod){
 		return _current._syntax.uniqueProduction(prod);
 	}
 	
-	public static Label newLabel(IProduction p){
+	public static Label newLabel(Production p){
 		Label l = new Label(p);
 		if(_current._ppolicy == PriorityPolicy.SHALLOW || p instanceof ContextualProduction)
 			_current._labels.add(l);
@@ -151,7 +151,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return st;
 	}
 	
-	public void build() throws UndefinedSymbol{
+	public void build() throws UndefinedSymbolException{
 		_current = this;
 		Benchmark.ComposedTask task = Benchmark.newComposedTask("parse table generation");
 		task.start();
@@ -183,7 +183,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		t_sg.start();
 		State s0 = new State(this);
 		
-		for(IProduction p : start.productions()){
+		for(Production p : start.productions()){
 			s0.addItem(new Item(s0.items(), p));
 		}
 		
@@ -195,7 +195,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		_current = null;
 	}
 	
-	public State addState(State state) throws UndefinedSymbol{
+	public State addState(State state) throws UndefinedSymbolException{
 		state.complete();
 		
 		/*for(State s : _states){ // Avoid state duplication
@@ -220,7 +220,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return state;
 	}
 	
-	public void processQueue() throws UndefinedSymbol{
+	public void processQueue() throws UndefinedSymbolException{
 		while(!_queue.isEmpty()){
 			while(!_queue.isEmpty()){
 				State state = _queue.poll();
@@ -239,7 +239,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		}
 	}
 	
-	public static ParseTable fromSyntax(Syntax syntax, PriorityPolicy pp) throws UndefinedSymbol{
+	public static ParseTable fromSyntax(Syntax syntax, PriorityPolicy pp) throws UndefinedSymbolException{
 		ParseTable table = new ParseTable(syntax, pp);
 		
 		table.build();
@@ -259,7 +259,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		Syntax syntax = null;
 		try{
 			syntax = Module.fromFile(input, paths);
-		}catch (ModuleNotFound e){
+		}catch (ModuleNotFoundException e){
 			System.err.println(e.getMessage());
 			return;
 		}
@@ -270,7 +270,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		ParseTable pt = null;
 		try {
 			pt = ParseTable.fromSyntax(syntax, PriorityPolicy.DEEP);
-		} catch (UndefinedSymbol e) {
+		} catch (UndefinedSymbolException e) {
 			System.err.println(e.getMessage());
 			return;
 		}
@@ -327,7 +327,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 			labels.add(l.toATerm());
 		}
 		
-		for(Production p : _syntax.productions()){
+		for(SyntaxProduction p : _syntax.productions()){
 			labels.add(p.label().toATerm()); // to match priorities
 			priorities.addAll(p.priorities().toATerms());
 		}

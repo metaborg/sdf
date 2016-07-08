@@ -1,7 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import org.metaborg.sdf2table.core.Exportable;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
@@ -17,9 +17,9 @@ public class Label implements Trigger, Exportable{
 	}
 	
 	int _id = -1;
-	private IProduction _agent;
+	private Production _agent;
 
-	Label(IProduction p){
+	Label(Production p){
 		_agent = p;
 	}
 	
@@ -35,7 +35,7 @@ public class Label implements Trigger, Exportable{
 		return _id;
 	}
 	
-	IProduction agent(){
+	Production agent(){
 		return _agent;
 	}
 
@@ -68,10 +68,10 @@ public class Label implements Trigger, Exportable{
 	}
 	
 	public IStrategoTerm toATerm(){
-		return _agent.asProduction().toATerm(id());
+		return _agent.syntaxProduction().toATerm(id());
 	}
 
-	public boolean contains(IProduction prod) {
+	public boolean contains(Production prod) {
 		return _agent.equals(prod);
 	}
 }

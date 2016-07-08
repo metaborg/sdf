@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 
-public class ContextualProduction extends IProduction{
-	Production _source;
+public class ContextualProduction extends Production{
+	SyntaxProduction _source;
 	ContextualSymbol _symbol;
 	List<Symbol> _rhs;
 	Set<ContextualSymbol> _dependants = new HashSet<>();
@@ -23,7 +23,7 @@ public class ContextualProduction extends IProduction{
 	
 	Label _label = null;
 	
-	private ContextualProduction(Production source, ContextualSymbol symbol, List<Symbol> rhs){
+	private ContextualProduction(SyntaxProduction source, ContextualSymbol symbol, List<Symbol> rhs){
 		_source = source;
 		_symbol = symbol;
 		_rhs = rhs;
@@ -36,7 +36,7 @@ public class ContextualProduction extends IProduction{
 		}
 	}
 	
-	public static ContextualProduction unique(Production source, ContextualSymbol symbol, List<Symbol> rhs){
+	public static ContextualProduction unique(SyntaxProduction source, ContextualSymbol symbol, List<Symbol> rhs){
 		ContextualProduction u = new ContextualProduction(source, symbol, rhs);
 		u.declare();
 		
@@ -220,7 +220,7 @@ public class ContextualProduction extends IProduction{
 		return _source.attributes();
 	}
 	
-	public Production asProduction(){
+	public SyntaxProduction syntaxProduction(){
 		return _source;
 	}
 }

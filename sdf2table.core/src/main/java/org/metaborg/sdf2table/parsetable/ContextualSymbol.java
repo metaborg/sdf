@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.PriorityLevel;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.symbol.CharClass;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
@@ -130,7 +130,7 @@ public class ContextualSymbol extends NonTerminal{
 		return _filter == Filter.LAYOUT_ONLY || _symbol.isLayout();
 	}
 	
-	public static NonTerminal unique(Context left, NonTerminal symbol, Context right, Filter filter) throws UndefinedSymbol{
+	public static NonTerminal unique(Context left, NonTerminal symbol, Context right, Filter filter) throws UndefinedSymbolException{
 		if(symbol instanceof ContextualSymbol){
 			ContextualSymbol cs = (ContextualSymbol)symbol;
 			switch(cs._filter){
@@ -174,21 +174,21 @@ public class ContextualSymbol extends NonTerminal{
 		return _symbol;
 	}
 	
-	public void computeProductions() throws UndefinedSymbol{
+	public void computeProductions() throws UndefinedSymbolException{
 		if(_productions == null){
 			_productions = new LinkedHashSet<>();
 			boolean inside_layout = _symbol.isLayout();
 			
-			for(IProduction p : _symbol.productions()){
+			for(Production p : _symbol.productions()){
 				// check conflicts
-				if(!_left.conflictsLeft(p.asProduction()) && !_right.conflictsRight(p.asProduction())){
+				if(!_left.conflictsLeft(p.syntaxProduction()) && !_right.conflictsRight(p.syntaxProduction())){
 					boolean layout_only = true;
 					// Iteration on the left side of the production, to take care of empty symbols.
 					for(int l = 0; l < p.size(); ++l){
 						Symbol sym_left = p.symbol(l);
 						
 						if(inside_layout || !sym_left.isLayout()){
-							Set<PriorityLevel> prio_left = p.asProduction().priorities().priorityLevels(l);
+							Set<PriorityLevel> prio_left = p.syntaxProduction().priorities().priorityLevels(l);
 							next_possible_production:
 							// Iteration on the right side
 							for(int r = p.size()-1; r >= l; --r){
@@ -196,7 +196,7 @@ public class ContextualSymbol extends NonTerminal{
 								
 								if(inside_layout || !sym_right.isLayout()){
 									layout_only = false;
-									Set<PriorityLevel> prio_right = p.asProduction().priorities().priorityLevels(r);
+									Set<PriorityLevel> prio_right = p.syntaxProduction().priorities().priorityLevels(r);
 	
 									List<Symbol> rhs = new ArrayList<>();
 									boolean contains_non_layout_symbol = false;
@@ -267,10 +267,10 @@ public class ContextualSymbol extends NonTerminal{
 													rhs_rl.add(rhs.get(j));
 												}
 											}
-											addProduction(ContextualProduction.unique(p.asProduction(), this, rhs_rl));
+											addProduction(ContextualProduction.unique(p.syntaxProduction(), this, rhs_rl));
 										}
 									}else{
-										addProduction(ContextualProduction.unique(p.asProduction(), this, rhs));
+										addProduction(ContextualProduction.unique(p.syntaxProduction(), this, rhs));
 									}
 								}
 								
@@ -284,7 +284,7 @@ public class ContextualSymbol extends NonTerminal{
 					} // ~ left recusrion
 					
 					if(layout_only && _filter != Filter.REJECT_LAYOUT){
-						addProduction(ContextualProduction.unique(p.asProduction(), this, p.symbols()));
+						addProduction(ContextualProduction.unique(p.syntaxProduction(), this, p.symbols()));
 					}
 				}
 			} // ~ original productions iteration
@@ -300,19 +300,19 @@ public class ContextualSymbol extends NonTerminal{
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Set<IProduction> productions(){
-		return (Set<IProduction>)(Object)_productions;
+	public Set<Production> productions(){
+		return (Set<Production>)(Object)_productions;
 	}
 	
-	private Set<Production> _left_deriv = null;
-	private Set<Production> _right_deriv = null;
+	private Set<SyntaxProduction> _left_deriv = null;
+	private Set<SyntaxProduction> _right_deriv = null;
 	
 	@Override
-	public Set<Production> leftDerivations(){
+	public Set<SyntaxProduction> leftDerivations(){
 		if(_left_deriv == null){
 			_left_deriv = new HashSet<>();
-			Set<Production> set = _symbol.leftDerivations();
-			for(Production p : set){
+			Set<SyntaxProduction> set = _symbol.leftDerivations();
+			for(SyntaxProduction p : set){
 				if(!_left.conflictsLeft(p))
 					_left_deriv.add(p);
 			}
@@ -321,11 +321,11 @@ public class ContextualSymbol extends NonTerminal{
 	}
 	
 	@Override
-	public Set<Production> rightDerivations(){
+	public Set<SyntaxProduction> rightDerivations(){
 		if(_right_deriv == null){
 			_right_deriv = new HashSet<>();
-			Set<Production> set = _symbol.leftDerivations();
-			for(Production p : set){
+			Set<SyntaxProduction> set = _symbol.leftDerivations();
+			for(SyntaxProduction p : set){
 				if(!_right.conflictsLeft(p))
 					_right_deriv.add(p);
 			}

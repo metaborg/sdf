@@ -3,17 +3,17 @@ package org.metaborg.sdf2table.grammar;
 import org.metaborg.sdf2table.parsetable.Priority;
 
 public class PriorityLevel implements Comparable<Object>{
-	Production _production;
+	SyntaxProduction _production;
 	int _position;
 	
 	String _str;
 	
-	public PriorityLevel(Production production, int position){
+	public PriorityLevel(SyntaxProduction production, int position){
 		_production = production;
 		_position = position;
 	}
 	
-	public Production production(){
+	public SyntaxProduction production(){
 		return _production;
 	}
 	
@@ -29,7 +29,7 @@ public class PriorityLevel implements Comparable<Object>{
 		return false;
 	}
 	
-	public boolean greaterThan(Production prod){
+	public boolean greaterThan(SyntaxProduction prod){
 		for(Priority p : _production.priorities().lowerPriorities()){
 			if(p.position() == _position && p.production().equals(prod))
 				return true;

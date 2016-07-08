@@ -7,9 +7,9 @@ import java.util.Set;
 
 import org.metaborg.sdf2table.core.CollisionSet;
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 
 public class ItemSet extends CollisionSet<Item>{
 	int _hash = -1;
@@ -81,7 +81,7 @@ public class ItemSet extends CollisionSet<Item>{
 		}
 	}
 	
-	public void close() throws UndefinedSymbol{
+	public void close() throws UndefinedSymbolException{
 		//List<Item> kernel = new LinkedList<>(this);
 		
 		//clear();
@@ -94,7 +94,7 @@ public class ItemSet extends CollisionSet<Item>{
 		_status = Status.CLOSED;
 	}
 	
-	public boolean conflicts(Production p){
+	public boolean conflicts(SyntaxProduction p){
 		for(Item i : this){
 			if(p.product().equals(i.nextSymbol()) && !i.shallowConflicts(p))
 				return false;

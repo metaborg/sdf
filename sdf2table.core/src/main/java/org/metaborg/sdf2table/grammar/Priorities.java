@@ -17,9 +17,9 @@ public class Priorities{
 	
 	Set<PriorityLevel> _levels;
 	
-	Production _production;
+	SyntaxProduction _production;
 	
-	public Priorities(Production production){
+	public Priorities(SyntaxProduction production){
 		_production = production;
 	}
 	
@@ -86,7 +86,7 @@ public class Priorities{
 	 * @param position
 	 * @return
 	 */
-	public boolean shallowConflicts(IProduction np, int position){
+	public boolean shallowConflicts(Production np, int position){
 		for(Priority l : _lower){
 			if((l.position() == -1 || l.position() == position) && l.production().equals(np))
 				return true;
@@ -100,7 +100,7 @@ public class Priorities{
 	 * @param position
 	 * @return
 	 */
-	public boolean deepConflicts(Production p, int position){
+	public boolean deepConflicts(SyntaxProduction p, int position){
 		for(Priority l : _lower){
 			if((l.position() == -1 || l.position() == position) && l.production().equals(p))
 				return true;
@@ -158,10 +158,10 @@ public class Priorities{
 								group = group.getSubterm(0);
 							}
 							if(group instanceof StrategoAppl && ((StrategoAppl)group).getName().equals("SimpleGroup")){
-								a.priorities.add(new Priority(Production.fromATerm(group.getSubterm(0), syntax), a.position, a.transitive));
+								a.priorities.add(new Priority(SyntaxProduction.fromATerm(group.getSubterm(0), syntax), a.position, a.transitive));
 							}else if(group instanceof StrategoAppl && ((StrategoAppl)group).getName().equals("ProdsGroup")){
 								for(IStrategoTerm tp : (StrategoList)group.getSubterm(0)){
-									a.priorities.add(new Priority(Production.fromATerm(tp, syntax), a.position, a.transitive));
+									a.priorities.add(new Priority(SyntaxProduction.fromATerm(tp, syntax), a.position, a.transitive));
 								}
 							}else{
 								System.err.println("Priorities Section: Malformed term: SimpleGroup expected.");

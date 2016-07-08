@@ -13,10 +13,10 @@ import java.util.List;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Module;
-import org.metaborg.sdf2table.grammar.ModuleNotFound;
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
-import org.metaborg.sdf2table.grammar.UndefinedSymbol;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.parsetable.State;
@@ -117,7 +117,7 @@ public class Application{
     	Syntax syntax = null;
 		try{
 			syntax = Module.fromFile(new File(input), paths);
-		}catch (ModuleNotFound e){
+		}catch (ModuleNotFoundException e){
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
@@ -127,7 +127,7 @@ public class Application{
         ParseTable pt = null;
 		try {
 			pt = ParseTable.fromSyntax(syntax, pp);
-		} catch (UndefinedSymbol e) {
+		} catch (UndefinedSymbolException e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}

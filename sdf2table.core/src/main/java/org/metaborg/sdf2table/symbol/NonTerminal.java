@@ -3,8 +3,8 @@ package org.metaborg.sdf2table.symbol;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.parsetable.ContextualSymbol;
 
 public abstract class NonTerminal extends Symbol{
@@ -16,11 +16,11 @@ public abstract class NonTerminal extends Symbol{
 	 * Get the list of productions that produce this symbol
 	 * @return A list of productions.
 	 */
-	public abstract Set<IProduction> productions();
+	public abstract Set<Production> productions();
 	
-	public abstract Set<Production> leftDerivations();
+	public abstract Set<SyntaxProduction> leftDerivations();
 	
-	public abstract Set<Production> rightDerivations();
+	public abstract Set<SyntaxProduction> rightDerivations();
 	
 	public void addContextualSymbol(ContextualSymbol s){
 		if(_contextual_symbols == null)
@@ -35,7 +35,7 @@ public abstract class NonTerminal extends Symbol{
 	
 	@Override
 	public boolean isLayout(){
-		for(IProduction p : productions()){
+		for(Production p : productions()){
 			if(!p.isEmpty())
 				return false;
 		}
@@ -44,12 +44,12 @@ public abstract class NonTerminal extends Symbol{
 	
 	public Terminal getFirst(){
 		TerminalContainer cc = new TerminalContainer();
-		for(IProduction p : productions())
+		for(Production p : productions())
 			cc.add(p.firstSet());
 		return cc.contents();
 	}
 	
-	public void addProduction(IProduction p){
+	public void addProduction(Production p){
 		if(p.product() == this)
 			productions().add(p);
 	}

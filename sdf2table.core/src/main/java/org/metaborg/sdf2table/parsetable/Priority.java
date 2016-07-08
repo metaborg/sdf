@@ -1,6 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -9,19 +9,19 @@ import org.spoofax.terms.StrategoInt;
 public class Priority{
 	private static final StrategoConstructor CONS_ARG_GTR_PRIO = new StrategoConstructor("arg-gtr-prio", 3);
 	private static final StrategoConstructor CONS_GTR_PRIO = new StrategoConstructor("gtr-prio", 2);
-	Production _production;
+	SyntaxProduction _production;
 	int _position;
 	boolean _transitive;
 	
 	String _str;
 	
-	public Priority(Production prod, int position, boolean transitive){
+	public Priority(SyntaxProduction prod, int position, boolean transitive){
 		_production = prod;
 		_position = position;
 		_transitive = transitive;
 	}
 	
-	public Production production(){
+	public SyntaxProduction production(){
 		return _production;
 	}
 	
@@ -33,7 +33,7 @@ public class Priority{
 		return _position;
 	}
 	
-	public IStrategoTerm toATerm(Production p){
+	public IStrategoTerm toATerm(SyntaxProduction p){
 		if(_position == -1){
 			return new StrategoAppl(
 					CONS_GTR_PRIO,
