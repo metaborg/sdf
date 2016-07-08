@@ -82,16 +82,13 @@ public class ItemSet extends CollisionSet<Item>{
 	}
 	
 	public void close() throws UndefinedSymbolException{
-		//List<Item> kernel = new LinkedList<>(this);
-		
-		//clear();
-		//_hash = -1;
-		
-		_status = Status.CLOSING;
-		for(Item i : _kernels){
-			i.close(this);
+		if(_status == Status.COMPLETE || _status == Status.OPEN){
+			_status = Status.CLOSING;
+			for(Item i : _kernels){
+				i.close(this);
+			}
+			_status = Status.CLOSED;
 		}
-		_status = Status.CLOSED;
 	}
 	
 	public boolean conflicts(SyntaxProduction p){

@@ -86,7 +86,7 @@ public class Priorities{
 	 * @param position
 	 * @return
 	 */
-	public boolean shallowConflicts(Production np, int position){
+	public boolean shallowConflicts(SyntaxProduction np, int position){
 		for(Priority l : _lower){
 			if((l.position() == -1 || l.position() == position) && l.production().equals(np))
 				return true;

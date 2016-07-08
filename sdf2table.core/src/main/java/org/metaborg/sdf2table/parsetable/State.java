@@ -61,6 +61,8 @@ public class State implements Exportable{
 	
 	private boolean _reduced = false;
 	
+	private boolean _update_requested = false;
+	
 	public static class ActionList extends LinkedList<Action>{
 		/**
 		 * 
@@ -190,6 +192,13 @@ public class State implements Exportable{
 		_items.complete();
 	}
 	
+	public void requestUpdate(){
+		if(!_update_requested){
+			_update_requested = true;
+			ParseTable.current().requestUpdate(this);
+		}
+	}
+	
 	/**
 	 * Close the associated item set.
 	 * <p>
@@ -260,6 +269,7 @@ public class State implements Exportable{
 			_t_shift = Benchmark.newDistributedTask("State.shift");
 		_t_shift.start();
 		
+		_update_requested = false;
 		MergingMap<ItemSet, Item> map = _items.shift();
 		
 		_t_shift.stop();
@@ -270,7 +280,7 @@ public class State implements Exportable{
 			if(s.isAcceptState())
 				addAction(new Accept(e.getKey()));
 			
-			s = _pt.addState(s); // state s may change here
+			s = _pt.push(s); // state s may change here
 			addAction(new Shift(e.getKey(), s));
 		}
 	}
@@ -393,7 +403,6 @@ public class State implements Exportable{
 				for(Action a : entry.getValue()){
 		    		alist.add(a.toATerm());
 		    		
-		    		// TODO Shift gotos: is that usefull ?
 	    			if(a instanceof Shift){
 	    				gotos.add(new StrategoAppl(
 		    					CONS_GOTO,

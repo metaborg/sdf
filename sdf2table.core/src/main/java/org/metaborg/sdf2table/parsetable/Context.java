@@ -6,7 +6,9 @@ import java.util.TreeSet;
 
 import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.PriorityLevel;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
+import org.metaborg.sdf2table.symbol.NonTerminal;
 
 public class Context{
 	Set<PriorityLevel> _priorities;
@@ -44,8 +46,8 @@ public class Context{
 		return false;
 	}
 	
-	public void leftSimplify(Set<SyntaxProduction> derivations){
-		Set<PriorityLevel> simplified = new TreeSet<>();
+	public void leftSimplify(SyntaxProduction sp, NonTerminal nt, int pos/*Set<SyntaxProduction> derivations*/){
+		/*Set<PriorityLevel> simplified = new TreeSet<>();
 		for(PriorityLevel l : _priorities){
 			for(SyntaxProduction p : derivations){
 				if(p.left() == null || !p.left().nonEpsilon()){
@@ -56,11 +58,26 @@ public class Context{
 				}
 			}
 		}
+		_priorities = simplified;*/
+		
+		Set<PriorityLevel> simplified = new TreeSet<>();
+		
+		for(PriorityLevel l : _priorities){
+			for(Production p : nt.productions()){
+				SyntaxProduction ntsp = p.syntaxProduction();
+				
+				if(!sp.directConflicts(ntsp, pos) && ntsp.potentialLeftDeepConflict(l)){
+					simplified.add(l);
+					break;
+				}
+			}
+		}
+		
 		_priorities = simplified;
 	}
 	
-	public void rightSimplify(Set<SyntaxProduction> derivations){
-		Set<PriorityLevel> simplified = new TreeSet<>();
+	public void rightSimplify(SyntaxProduction sp, NonTerminal nt, int pos/*Set<SyntaxProduction> derivations*/){
+		/*Set<PriorityLevel> simplified = new TreeSet<>();
 		for(PriorityLevel l : _priorities){
 			for(SyntaxProduction p : derivations){
 				if(p.right() == null || !p.right().nonEpsilon()){
@@ -71,6 +88,21 @@ public class Context{
 				}
 			}
 		}
+		_priorities = simplified;*/
+		
+		Set<PriorityLevel> simplified = new TreeSet<>();
+		
+		for(PriorityLevel l : _priorities){
+			for(Production p : nt.productions()){
+				SyntaxProduction ntsp = p.syntaxProduction();
+				
+				if(!sp.directConflicts(ntsp, pos) && ntsp.potentialRightDeepConflict(l)){
+					simplified.add(l);
+					break;
+				}
+			}
+		}
+		
 		_priorities = simplified;
 	}
 	

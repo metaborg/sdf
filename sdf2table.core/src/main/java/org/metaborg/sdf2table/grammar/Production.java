@@ -163,6 +163,35 @@ public abstract class Production{
 	
 	public abstract boolean containsTerminal();
 	
+	public boolean directConflicts(Production p, int pos){
+		boolean left_exposed = true;
+		boolean right_exposed = true;
+		
+		for(int i = 0; i < pos; ++i){
+			if(!symbol(i).isLayout()){
+				left_exposed = false;
+				break;
+			}
+		}
+		
+		for(int i = pos+1; i < size(); ++i){
+			if(!symbol(i).isLayout()){
+				right_exposed = false;
+				break;
+			}
+		}
+		
+		if(left_exposed && p.right() != null && p.right().nonEpsilon())
+			left_exposed = false;
+		if(right_exposed && p.left() != null && p.left().nonEpsilon())
+			right_exposed = false;
+		
+		if(!left_exposed && !right_exposed)
+			return false;
+		
+		return syntaxProduction().priorities().shallowConflicts(p.syntaxProduction(), pos);
+	}
+	
 	/**
 	 * 
 	 * @param np A symbol production.
@@ -172,7 +201,7 @@ public abstract class Production{
 	 */
 	public boolean shallowConflicts(Production np, int pos){
 		if(ParseTable.current().priorityPolicy() != ParseTable.PriorityPolicy.SHALLOW){
-			return false;
+			return directConflicts(np.syntaxProduction(), pos);
 		}
 		if(pos >= size())
 			return false;

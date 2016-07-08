@@ -130,6 +130,12 @@ public class ContextualSymbol extends NonTerminal{
 		return _filter == Filter.LAYOUT_ONLY || _symbol.isLayout();
 	}
 	
+	@Override
+	public boolean nonEpsilon(){
+		return _filter == Filter.REJECT_LAYOUT || _symbol.nonEpsilon();
+	}
+	
+	
 	public static NonTerminal unique(Context left, NonTerminal symbol, Context right, Filter filter) throws UndefinedSymbolException{
 		if(symbol instanceof ContextualSymbol){
 			ContextualSymbol cs = (ContextualSymbol)symbol;
@@ -228,8 +234,10 @@ public class ContextualSymbol extends NonTerminal{
 													right = new Context(_right);
 												}
 												
-												left.leftSimplify(nt.leftDerivations());
-												right.rightSimplify(nt.rightDerivations());
+												//left.leftSimplify(nt.leftDerivations());
+												//right.rightSimplify(nt.rightDerivations());
+												left.leftSimplify(p.syntaxProduction(), nt, i);
+												right.rightSimplify(p.syntaxProduction(), nt, i);
 												
 												Filter filter = Filter.REJECT_LAYOUT;
 												contains_non_layout_symbol = true;

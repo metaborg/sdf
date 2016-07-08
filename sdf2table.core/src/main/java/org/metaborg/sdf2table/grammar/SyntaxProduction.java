@@ -210,6 +210,79 @@ public class SyntaxProduction extends Production{
 		return _cons;
 	}
 	
+	public boolean potentialLeftDeepConflict(PriorityLevel l){
+		Set<SyntaxProduction> set = new HashSet<>();
+		return doPotentialLeftDeepConflict(l, set);
+	}
+	
+	public boolean potentialRightDeepConflict(PriorityLevel l){
+		Set<SyntaxProduction> set = new HashSet<>();
+		return doPotentialRightDeepConflict(l, set);
+	}
+	
+	private boolean doPotentialLeftDeepConflict(PriorityLevel l, Set<SyntaxProduction> set){
+		if((left() != null && left().nonEpsilon()) || set.contains(this))
+			return false;
+		if(l.production().priorities().deepConflicts(this, l.position()))
+			return true;
+		
+		set.add(this);
+		
+		for(int i = 0; i < size(); ++i){
+			Symbol s = symbol(i);
+			
+			if(s != null && s instanceof NonTerminal){
+				NonTerminal n = (NonTerminal)s;
+				for(Production p : n.productions()){
+					SyntaxProduction sp = p.syntaxProduction();
+					
+					if(!directConflicts(sp, i) && sp.doPotentialLeftDeepConflict(l, set)){
+						return true;
+					}
+				}
+				
+				if(n.nonEpsilon())
+					break;
+			}else{
+				break;
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean doPotentialRightDeepConflict(PriorityLevel l, Set<SyntaxProduction> set){
+		if((right() != null && right().nonEpsilon()) || set.contains(this))
+			return false;
+		if(l.production().priorities().deepConflicts(this, l.position()))
+			return true;
+		
+		set.add(this);
+		
+		for(int i = size()-1; i >= 0; --i){
+			Symbol s = symbol(i);
+			
+			if(s != null && s instanceof NonTerminal){
+				NonTerminal n = (NonTerminal)s;
+				
+				for(Production p : n.productions()){
+					SyntaxProduction sp = p.syntaxProduction();
+					
+					if(!directConflicts(sp, i) && sp.doPotentialRightDeepConflict(l, set)){
+						return true;
+					}
+				}
+				
+				if(n.nonEpsilon())
+					break;
+			}else{
+				break;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public boolean equals(Object o){
 		if(o == this)

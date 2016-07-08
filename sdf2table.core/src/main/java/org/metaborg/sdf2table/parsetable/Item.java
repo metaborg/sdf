@@ -260,6 +260,7 @@ public class Item{
 	public boolean addTrigger(Trigger trigger){
 		if(_triggers.add(trigger)){
 			pendingTriggers().add(trigger);
+			_set.state().requestUpdate();
 			return true;
 		}
 		return false;

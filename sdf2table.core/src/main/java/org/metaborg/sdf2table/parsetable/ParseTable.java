@@ -7,15 +7,12 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.core.CollisionSet;
-import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Module;
@@ -28,7 +25,7 @@ import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
-public class ParseTable{ // TODO extends ParseTable from Set<State>.
+public class ParseTable extends CollisionSet<State>{
 	public static final int VERSION = 6;
 	
 	public enum PriorityPolicy{
@@ -46,10 +43,12 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	static final StrategoConstructor CONS_STATES = new StrategoConstructor("states", 1);
 	static final StrategoConstructor CONS_PRIORITIES = new StrategoConstructor("priorities", 1);
 	
-	static final int LOAD_FACTOR = 2;
+	/**
+	 * HashMap initial capacity factor
+	 */
+	static final int CAPACITY_FACTOR = 2;
+	static final float LOAD_FACTOR = 0.75f;
 	
-	//List<State> _states = new LinkedList<>();
-	CollisionSet<State> _states = null;
 	List<Label> _labels = new LinkedList<>();
 	
 	Syntax _syntax;
@@ -76,24 +75,24 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	}
 	
 	public ParseTable(Syntax syntax, PriorityPolicy pp, DeepReduceConflictPolicy rcp){
+		super(syntax.symbols().count()*CAPACITY_FACTOR, LOAD_FACTOR);
+		
 		_syntax = syntax;
 		_ppolicy = pp;
 		_rcpolicy = rcp;
-		
-		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
 	}
 	
 	public ParseTable(Syntax syntax, PriorityPolicy pp){
+		super(syntax.symbols().count()*CAPACITY_FACTOR, LOAD_FACTOR);
+		
 		_syntax = syntax;
 		_ppolicy = pp;
-		
-		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
 	}
 	
 	public ParseTable(Syntax syntax){
-		_syntax = syntax;
+		super(syntax.symbols().count()*CAPACITY_FACTOR, LOAD_FACTOR);
 		
-		_states = new CollisionSet<>(syntax.symbols().count()*LOAD_FACTOR, 0.75f);
+		_syntax = syntax;
 	}
 	
 	public static ParseTable current(){
@@ -131,10 +130,6 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return _syntax;
 	}
 	
-	public Set<State> states(){
-		return _states;
-	}
-	
 	public PriorityPolicy priorityPolicy(){
 		return _ppolicy;
 	}
@@ -146,7 +141,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 	public Statistics statistics(){
 		Statistics st = new Statistics();
 		
-		st._state_count = _states.size();
+		st._state_count = size();
 		
 		return st;
 	}
@@ -175,11 +170,6 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		_syntax.computeFollowSets();
 		t_ff.stop();
 		
-		/*if(_ppolicy == PriorityPolicy.DEEP){
-			//_syntax.symbols().computeClasses();
-			ContextualProduction.createAllLabels();
-		}*/ 
-		
 		t_sg.start();
 		State s0 = new State(this);
 		
@@ -187,7 +177,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 			s0.addItem(new Item(s0.items(), p));
 		}
 		
-		addState(s0);
+		push(s0);
 		processQueue();
 		t_sg.stop();
 		
@@ -195,47 +185,33 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		_current = null;
 	}
 	
-	public State addState(State state) throws UndefinedSymbolException{
+	@Override
+	public State push(State state){
 		state.complete();
 		
-		/*for(State s : _states){ // Avoid state duplication
-			if(s.equals(state)){
-				if(_rcpolicy == DeepReduceConflictPolicy.MERGE)
-					s.merge(state);
-				return s;
-			}
-		}*/
-		State s = _states.push(state);
+		State s = super.push(state);
 		if(s != null){
 			if(_rcpolicy == DeepReduceConflictPolicy.MERGE)
 				s.merge(state);
 			return s;
 		}
 		
-		state.close();
-		state.assignId(_states.size()-1);
-		state.reduce();
-		_queue.add(state);
+		state.assignId(size()-1);
+		state.requestUpdate();
 		
 		return state;
 	}
 	
+	public void requestUpdate(State s){
+		_queue.add(s);
+	}
+	
 	public void processQueue() throws UndefinedSymbolException{
 		while(!_queue.isEmpty()){
-			while(!_queue.isEmpty()){
-				State state = _queue.poll();
-				state.shift();
-			}
-			
-			/*for(State state : _states){
-				
-			}*/
-			
-			/*for(State state : _states){ // TODO do it in reduce phase
-				if(state.shiftPending()){
-					_queue.add(state);
-				}
-			}*/
+			State state = _queue.poll();
+			state.close();
+			state.reduce();
+			state.shift();
 		}
 	}
 	
@@ -316,7 +292,6 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		return 0;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public IStrategoTerm toATerm(){
 		_current = this;
 		
@@ -343,7 +318,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 						new StrategoAppl(
 								CONS_STATES,
 								new IStrategoTerm[]{
-										Utilities.strategoListFromExportables((Collection<Exportable>)(Object)_states)
+										Utilities.strategoListFromExportables(this)
 								},
 								null,
 								0
@@ -366,7 +341,7 @@ public class ParseTable{ // TODO extends ParseTable from Set<State>.
 		String str = "digraph g{\n";
 		str += "graph [rankdir = \"LR\"];\n";
 		
-		for(State s : _states){
+		for(State s : this){
 			str += s.digraph();
 		}
 		
