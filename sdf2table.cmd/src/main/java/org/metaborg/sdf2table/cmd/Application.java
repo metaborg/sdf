@@ -127,7 +127,7 @@ public class Application{
         ParseTable pt = null;
 		try {
 			pt = ParseTable.fromSyntax(syntax, pp);
-		} catch (UndefinedSymbolException e) {
+		} catch (UndefinedSymbolException | InterruptedException e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
