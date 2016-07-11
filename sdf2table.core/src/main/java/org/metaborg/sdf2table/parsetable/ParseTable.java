@@ -146,7 +146,7 @@ public class ParseTable extends CollisionSet<State>{
 		return st;
 	}
 	
-	public void build() throws UndefinedSymbolException{
+	public void build() throws UndefinedSymbolException, InterruptedException{
 		_current = this;
 		Benchmark.ComposedTask task = Benchmark.newComposedTask("parse table generation");
 		task.start();
@@ -206,8 +206,11 @@ public class ParseTable extends CollisionSet<State>{
 		_queue.add(s);
 	}
 	
-	public void processQueue() throws UndefinedSymbolException{
+	public void processQueue() throws UndefinedSymbolException, InterruptedException{
 		while(!_queue.isEmpty()){
+			if(Thread.currentThread().isInterrupted())
+				throw new InterruptedException();
+			
 			State state = _queue.poll();
 			state.close();
 			state.reduce();
@@ -215,7 +218,7 @@ public class ParseTable extends CollisionSet<State>{
 		}
 	}
 	
-	public static ParseTable fromSyntax(Syntax syntax, PriorityPolicy pp) throws UndefinedSymbolException{
+	public static ParseTable fromSyntax(Syntax syntax, PriorityPolicy pp) throws UndefinedSymbolException, InterruptedException{
 		ParseTable table = new ParseTable(syntax, pp);
 		
 		table.build();
@@ -246,7 +249,7 @@ public class ParseTable extends CollisionSet<State>{
 		ParseTable pt = null;
 		try {
 			pt = ParseTable.fromSyntax(syntax, PriorityPolicy.DEEP);
-		} catch (UndefinedSymbolException e) {
+		} catch (UndefinedSymbolException | InterruptedException e) {
 			System.err.println(e.getMessage());
 			return;
 		}
@@ -271,7 +274,7 @@ public class ParseTable extends CollisionSet<State>{
         }
         t_export.stop();
         
-        //pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
+        pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
         
         pt.statistics().print(System.err);
         Benchmark.print(System.err);
