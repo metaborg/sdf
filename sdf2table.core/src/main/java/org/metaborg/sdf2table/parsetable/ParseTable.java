@@ -274,7 +274,7 @@ public class ParseTable extends CollisionSet<State>{
         }
         t_export.stop();
         
-        pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
+        //pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
         
         pt.statistics().print(System.err);
         Benchmark.print(System.err);
