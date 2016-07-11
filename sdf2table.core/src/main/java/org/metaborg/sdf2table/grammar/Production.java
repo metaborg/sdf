@@ -26,12 +26,6 @@ public abstract class Production{
 		LONGEST_MATCH
 	}
 	
-	/*static final BooleanFixPointFactory and_factory = new BooleanFixPointFactory(BooleanFixPoint.Operator.AND);
-	static final BooleanFixPointFactory or_factory = new BooleanFixPointFactory(BooleanFixPoint.Operator.OR);
-	
-	FixPointMember<Boolean, BooleanFixPoint> _always_layout = new FixPointMember<>(null);
-	FixPointMember<Boolean, BooleanFixPoint> _never_layout = new FixPointMember<>(null);*/
-	
 	static final FirstSetFactory fs_factory = new FirstSetFactory();
 	
 	FixPointMember<TerminalContainer, FirstSet> _first_set = new FixPointMember<>(new TerminalContainer());
@@ -41,7 +35,6 @@ public abstract class Production{
 	 * <p>
 	 * This set is not computed until {@link Syntax#computeFollowSets()} has not been called.
 	 */
-	//FollowSet _follow_set = new FollowSet(this);
 	FixPointMember<TerminalContainer, FirstSet> _follow_set = new FixPointMember<>(new TerminalContainer());
 	
 	/**

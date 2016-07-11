@@ -329,7 +329,7 @@ public class Item{
 		
 		Symbol next = nextSymbol();
 		if(next != null && !next.isTerminal()){
-			Set<Production> prods = ((NonTerminal)next).productions();
+			Set<? extends Production> prods = ((NonTerminal)next).productions();
 			if(prods.isEmpty()){
 				throw new UndefinedSymbolException(next, _prod.syntaxProduction());
 			}

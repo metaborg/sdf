@@ -65,42 +65,6 @@ public class ContextualProduction extends Production{
 		}
 	}
 	
-	/*public static void createAllLabels(){
-		for(Production p : ParseTable.current().syntax().productions()){
-			if(p.contextualProductions() != null){
-				for(ContextualProduction cp : p.contextualProductions()){
-					cp.createLabel();
-				}
-			}
-		}
-	}
-	
-	public void createLabel(){
-		if(_label == null){
-			_label = ParseTable.newLabel(this);
-			for(ContextualProduction p : _source.contextualProductions()){
-				if(equivalentTo(p)){
-					//_label.add(p);
-					p._label = _label;
-				}
-			}
-		}
-	}
-	
-	public boolean equivalentTo(ContextualProduction p){
-		//return false;
-		if(p == null || p.size() != size())
-			return false;
-		for(int i = 0; i < size(); ++i){
-			if(!symbol(i).equals(p.symbol(i)))
-				return false;
-		}
-		if(!followSet().equals(p.followSet()))
-			return false;
-		
-		return true;
-	}*/
-	
 	public Label label(){
 		if(_label == null)
 			_label = ParseTable.newLabel(this); 

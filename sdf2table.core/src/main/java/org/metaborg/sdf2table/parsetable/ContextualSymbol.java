@@ -118,13 +118,6 @@ public class ContextualSymbol extends NonTerminal{
 			_dependants.add(dep);
 	}
 	
-	/*@Override
-	public void computeDependencies(){
-		for(ContextualSymbol s : _productions){
-			//
-		}
-	}*/
-	
 	@Override
 	public boolean isLayout(){
 		return _filter == Filter.LAYOUT_ONLY || _symbol.isLayout();
@@ -164,9 +157,6 @@ public class ContextualSymbol extends NonTerminal{
 		ContextualSymbol u = (ContextualSymbol)ParseTable.unique(e);
 		if(e == u)
 			e.computeProductions();
-		
-		/*if(u.productions().isEmpty())
-			return null;*/
 		
 		return u;
 	}
@@ -349,7 +339,7 @@ public class ContextualSymbol extends NonTerminal{
 	public boolean equals(Object other){
 		if(other != null && other instanceof ContextualSymbol && other.hashCode() == hashCode()){
 			ContextualSymbol cs = (ContextualSymbol)other;
-			return other == this || (cs._filter == _filter && cs._symbol.equals(_symbol) && cs._left.equals(_left) && cs._right.equals(_right));
+			return other == this || (cs._filter == _filter && cs._left.equals(_left) && cs._symbol.equals(_symbol) && cs._right.equals(_right));
 		}
 		return false;
 	}
