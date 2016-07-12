@@ -223,7 +223,9 @@ public class SyntaxProduction extends Production{
 	private boolean doPotentialLeftDeepConflict(PriorityLevel l, Set<SyntaxProduction> set){
 		if((left() != null && left().nonEpsilon()) || set.contains(this))
 			return false;
-		if(l.production().priorities().deepConflicts(this, l.position()))
+		/*if(l.production().priorities().deepConflicts(this, l.position()))
+			return true;*/
+		if(l.conflicts(this))
 			return true;
 		
 		set.add(this);
@@ -254,7 +256,9 @@ public class SyntaxProduction extends Production{
 	private boolean doPotentialRightDeepConflict(PriorityLevel l, Set<SyntaxProduction> set){
 		if((right() != null && right().nonEpsilon()) || set.contains(this))
 			return false;
-		if(l.production().priorities().deepConflicts(this, l.position()))
+		/*if(l.production().priorities().deepConflicts(this, l.position()))
+			return true;*/
+		if(l.conflicts(this))
 			return true;
 		
 		set.add(this);

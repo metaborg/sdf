@@ -17,6 +17,7 @@ import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Module;
 import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
+import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
@@ -226,8 +227,16 @@ public class ParseTable extends CollisionSet<State>{
 		return table;
 	}
 	
+	public static void resetAll(){
+		State.reset();
+        Label.reset();
+        PriorityLevel.reset();
+        
+        Benchmark.reset();
+	}
+	
 	public static void fromFile(File input, File output, List<String> paths){
-		Benchmark.reset();
+		resetAll();
 		
 		Benchmark.SingleTask t_import = Benchmark.main.newSingleTask("import");
     	Benchmark.ComposedTask t_generate = Benchmark.main.newComposedTask("generation");
@@ -278,8 +287,6 @@ public class ParseTable extends CollisionSet<State>{
         
         pt.statistics().print(System.err);
         Benchmark.print(System.err);
-        State.reset();
-        Label.reset();
 	}
 	
 	void generateGraphvizFile(Path file){

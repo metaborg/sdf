@@ -30,7 +30,9 @@ public class Context{
 		if(p.left() != null && p.left().nonEpsilon())
 			return false;
 		for(PriorityLevel l : _priorities){
-			if(l.production().priorities().deepConflicts(p, l.position()))
+			/*if(l.production().priorities().deepConflicts(p, l.position()))
+				return true;*/
+			if(l.conflicts(p))
 				return true;
 		}
 		return false;
@@ -40,7 +42,9 @@ public class Context{
 		if(p.right() != null && p.right().nonEpsilon())
 			return false;
 		for(PriorityLevel l : _priorities){
-			if(l.production().priorities().deepConflicts(p, l.position()))
+			/*if(l.production().priorities().deepConflicts(p, l.position()))
+				return true;*/
+			if(l.conflicts(p))
 				return true;
 		}
 		return false;

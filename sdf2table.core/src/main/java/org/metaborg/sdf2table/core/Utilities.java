@@ -10,7 +10,7 @@ import org.spoofax.terms.StrategoList;
  * Some useful function to generate the parse table.
  */
 public class Utilities{
-	public static int hashCode(int[] ary){
+	public static int hashCode(int... ary){
 		CRC32 hash = new CRC32();
 		
 		for(int i = 0; i < ary.length; ++i){

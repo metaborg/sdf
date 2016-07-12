@@ -1,6 +1,5 @@
-package org.metaborg.sdf2table.parsetable;
+package org.metaborg.sdf2table.grammar;
 
-import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;

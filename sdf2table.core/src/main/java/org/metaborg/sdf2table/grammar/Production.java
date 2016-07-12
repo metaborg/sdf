@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.FixPointMember;
+import org.metaborg.sdf2table.core.Utilities;
+import org.metaborg.sdf2table.grammar.Priorities.PosPriorityLevel;
 import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.symbol.NonTerminal;
@@ -27,6 +29,8 @@ public abstract class Production{
 	}
 	
 	static final FirstSetFactory fs_factory = new FirstSetFactory();
+	
+	int _hash_code = -1;
 	
 	FixPointMember<TerminalContainer, FirstSet> _first_set = new FixPointMember<>(new TerminalContainer());
 	
@@ -182,7 +186,12 @@ public abstract class Production{
 		if(!left_exposed && !right_exposed)
 			return false;
 		
-		return syntaxProduction().priorities().shallowConflicts(p.syntaxProduction(), pos);
+		//return syntaxProduction().priorities().shallowConflicts(p.syntaxProduction(), pos);
+		for(PriorityLevel l : syntaxProduction().priorities().priorityLevels(pos)){
+			if(l.conflicts(p.syntaxProduction()))
+				return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -200,9 +209,24 @@ public abstract class Production{
 			return false;
 		Symbol next = symbol(pos);
 		if(np.product().nonContextual().equals(next.nonContextual())){
-			return syntaxProduction().priorities().shallowConflicts(np.syntaxProduction(), pos);
+			//return syntaxProduction().priorities().shallowConflicts(np.syntaxProduction(), pos);
+			for(PriorityLevel l : syntaxProduction().priorities().priorityLevels(pos)){
+				if(l.conflicts(np.syntaxProduction()))
+					return true;
+			}
 		}
 		return false;
+	}
+	
+	@Override
+	public int hashCode(){
+		if(_hash_code == -1){
+			int[] ary = new int[size()];
+			for(int i = 0; i < size(); ++i)
+				ary[i] = symbol(i).hashCode();
+			_hash_code = Utilities.hashCode(ary);
+		}
+		return _hash_code;
 	}
 	
 	public String graphviz(){

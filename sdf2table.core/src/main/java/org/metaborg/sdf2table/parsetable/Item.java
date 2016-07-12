@@ -408,8 +408,10 @@ public class Item{
 
     @Override
     public int hashCode(){
-    	if(_hash_code == -1)
-    		_hash_code = toString().hashCode();
+    	if(_hash_code == -1){
+    		int[] ary = {_pos, _prod.hashCode()};
+    		_hash_code = Utilities.hashCode(ary);
+    	}
     	return _hash_code;
     }
     
