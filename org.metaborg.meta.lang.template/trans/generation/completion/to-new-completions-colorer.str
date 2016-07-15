@@ -1,57 +1,35 @@
 module generation/completion/to-new-completions-colorer
 
-
 imports
   libstratego-lib
   libstrc
+  signatures/TemplateLang-sig
   analysis/types
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
   analysis/desugar
-  generation/syntax/to-str
+  generation/gen-utils/to-str
   lib/EditorService
-
-imports
-  signatures/aliases/-
-  signatures/aterms/-
-  signatures/basic/-
-  signatures/characterclass/-
-  signatures/constants/-
-  signatures/grammar/-
-  signatures/kernel/-
-  signatures/labels/-
-  signatures/layout/-
-  signatures/layout-constraints/-
-  signatures/lifting/-
-  signatures/literals/-
-  signatures/modules/-
-  signatures/priority/-
-  signatures/regular/-
-  signatures/renaming/-
-  signatures/restrictions/-
-  signatures/sdf2-core/-
-  signatures/sorts/-
-  signatures/symbols/-
-  signatures/TemplateLang-sig  
+  signatures/sorts/Sorts-sig
+  signatures/modules/Modules-sig
   
 rules
     
   module-to-cmp-colorer:
-    Module(m, i*, s*) -> Module(m', i'*, [Colorer("", c*)])
-    with
-      m'  := <to-str-module-name(|"-cc-esv", "completion/colorer")> Module(m);
-      i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;
-      c*  := <filter(section-to-cmp-colorer); flatten-list> s*
+  Module(m, i*, s*) -> Module(m', i'*, [Colorer("", c*)])
+  with
+     m'  := <to-str-module-name(|"-cc-esv", "completion/colorer")> Module(m);
+     i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports(<id>)]; map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;
+     c*  := <filter(section-to-cmp-colorer); flatten-list> s*
     
   section-to-cmp-colorer:
     SDFSection(ContextFreeSyntax(prods*)) -> cc-colorer*
-    with
-    //content complete prods
-    cc-colorer* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-                   ; nub 
-                   ; map(sort-to-colorer)> prods*
+      with
+      //content complete prods
+      cc-colorer* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                  ; nub 
+                  ; map(sort-to-colorer)> prods*
                    
   sort-to-colorer:
     n -> ColorRule(ConstructorOnly(Constructor($[[n]-Plhdr])), AttributeRef("gray"))
-    

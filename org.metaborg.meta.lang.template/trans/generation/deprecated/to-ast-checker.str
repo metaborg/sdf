@@ -1,4 +1,4 @@
-module generation/experimental/to-ast-checker
+module generation/deprecated/to-ast-checker
 
 imports
   libstratego-lib
@@ -6,10 +6,32 @@ imports
   libstrc
   signatures/sdf2-core/-
   analysis/desugar
-  generation/syntax/to-template
-  generation/syntax/to-str
+  generation/gen-utils/to-template
+  generation/gen-utils/to-str
   generation/pp/to-pp
-  templatelang
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
   
 rules
 

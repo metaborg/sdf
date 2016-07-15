@@ -2,7 +2,8 @@ module editor/build-sdf-completions
 
 imports
   generation/syntax/to-sdf-completions
-  editor/editor-utils
+  editor/build-utils
+  analysis/desugar
 
 imports
   signatures/aliases/-
@@ -25,8 +26,7 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig    
-  
+  signatures/TemplateLang-sig      
 
 rules
   

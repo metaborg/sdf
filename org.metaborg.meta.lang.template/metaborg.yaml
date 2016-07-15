@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 name: TemplateLang
-metaborgVersion: 2.0.0-SNAPSHOT
+metaborgVersion: 2.1.0-SNAPSHOT
 metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
 dependencies:
   compile:
@@ -53,7 +53,7 @@ language:
     - strc
 build:
   stratego-cli:
-  - phase: preJava
+  - phase: compile
     strategy: org.strategoxt.tools.main-parse-pp-table
     args:
     - -i

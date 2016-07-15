@@ -2,8 +2,9 @@ module editor/build-sdf
 
 imports
   generation/syntax/-
-  editor/editor-utils
-
+  editor/build-utils
+  analysis/desugar
+  
 imports
   signatures/aliases/-
   signatures/aterms/-

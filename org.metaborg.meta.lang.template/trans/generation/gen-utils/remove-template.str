@@ -1,13 +1,14 @@
-module generation/pp/remove-template
+module generation/gen-utils/remove-template
 
 imports
   libstratego-sglr
+  signatures/TemplateLang-sig
   analysis/analyze
   analysis/desugar
   libstrc
   generation/syntax/to-sdf
   trans/utils/-
-
+  
 imports
   signatures/aliases/-
   signatures/aterms/-
@@ -29,7 +30,7 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig  
+  signatures/TemplateLang-sig
   
 strategies
   

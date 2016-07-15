@@ -1,4 +1,4 @@
-module generation/syntax/to-template
+module generation/gen-utils/to-template
 
 imports
   libstratego-sglr
@@ -24,7 +24,7 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig  
+  signatures/TemplateLang-sig 
 
 rules // Convert regular productions to desugared syntax templates
 	

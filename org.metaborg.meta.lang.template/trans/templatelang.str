@@ -19,8 +19,18 @@ imports
   runtime/types/-
   runtime/editor/-
   analysis/-
-  generation/-
-  editor/-
+  generation/completion/-
+  generation/gen-utils/-
+  generation/pp/-
+  generation/signatures/-
+  generation/syntax/-
+  editor/build-all
+  editor/build-completions
+  editor/build-format
+  editor/build-pp
+  editor/build-sig
+  editor/build-syntax
+  editor/build-utils
   names/analysis/names
   types/analysis/types-ts
   generation/completion/-

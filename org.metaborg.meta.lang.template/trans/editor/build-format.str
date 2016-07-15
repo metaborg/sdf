@@ -1,13 +1,19 @@
 module editor/build-format
 
 imports
-  editor/editor-utils
   pp
   generation/syntax/-
   generation/pp/-
-  
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  generation/gen-utils/to-template
+  generation/gen-utils/remove-template
+  generation/gen-utils/to-formatted
+
 rules
-  lift-sdf3-abstract:
+    lift-sdf3-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
@@ -57,3 +63,4 @@ rules
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
       filename := <create-src-gen(|project-path, "formatted", ".aterm")> mn   
+

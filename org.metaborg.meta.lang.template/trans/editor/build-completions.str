@@ -1,14 +1,19 @@
 module editor/build-completions
 
 imports
-  editor/editor-utils
+  libstrc
+  editor/build-utils
+  generation/completion/-
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
   generation/completion/-
   
 rules
-    
-  generate-new-completions-colorer:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    where
+   generate-new-completions-colorer:
+   (selected, position, ast, path, project-path) -> (filename, result)
+     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         ast'     := <desugar-templates> selected;
         filename := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;

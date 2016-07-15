@@ -13,6 +13,7 @@ imports
   runtime/properties/-
   runtime/relations/-
   analysis/desugar
+  signatures/sorts/Sorts-sig
 
   
 signature
@@ -20,7 +21,7 @@ signature
   	
   	Inj : Constructor
   	AltType  : List(Type) -> Type 
-  	SeqType  : List(Type) -> type
+  	SeqType  : List(Type) -> Type
   	// LiftType : Type -> Type
 
 

@@ -1,18 +1,16 @@
-module editor/editor-utils
+module editor/build-utils
 
 imports
+  libstratego-sdf
+  lib/EditorService
+  lib/ds/pp/-
+  libstratego-gpp
   lib/sdf-desugar
   lib/sdf-parenthesize
-  libstratego-sdf
-  libstratego-lib
-  libstratego-gpp
-  libstratego-sglr
-  lib/EditorService  
   stratego/metaborg
-  analysis/desugar 
-  lib/ds/pp/-
-
-
+  signatures/kernel/Kernel-sig
+  signatures/TemplateLang-sig
+  
 rules
   
   //pretty-printer for the generated sdf
@@ -112,5 +110,4 @@ rules
       s' := <last> names
 
  sugar-attributes:
-  Attrs([]) -> NoAttrs()      
-      
+  Attrs([]) -> NoAttrs()

@@ -7,7 +7,8 @@ imports
   runtime/nabl/-
   runtime/task/-
   runtime/types/-  
-  generation/syntax/to-str
+  generation/gen-utils/to-str
+  analysis/desugar
 
 imports
   signatures/aliases/-
@@ -31,7 +32,7 @@ imports
   signatures/sorts/-
   signatures/symbols/-
   signatures/TemplateLang-sig
-  
+
 rules
   
   module-to-sig:

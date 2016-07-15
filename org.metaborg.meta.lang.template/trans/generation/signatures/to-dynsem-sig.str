@@ -10,7 +10,7 @@ imports
   runtime/types/-
   lib/ds/signatures/-
   lib/ds/pp/-  
-  generation/syntax/to-str
+  generation/gen-utils/to-str
   generation/signatures/to-sig
     
 imports

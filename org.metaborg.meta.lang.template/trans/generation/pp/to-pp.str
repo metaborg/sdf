@@ -6,8 +6,8 @@ imports
   libstrc
   signatures/sdf2-core/-
   analysis/desugar
-  generation/syntax/to-template
-  generation/syntax/to-str
+  generation/gen-utils/to-template
+  generation/gen-utils/to-str
 
 imports
   signatures/aliases/-
@@ -36,8 +36,7 @@ rules
   
   language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"    
   placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
-  
-  
+    
 rules
 
   module-to-pp:
@@ -489,10 +488,12 @@ rules
             s := Call(SVar("pp-V-list"), [ppx])
           case ?(_, "", "0"):
             // separator is multiple line breaks => vertical box with vs option
-            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs))])
+            svs := <int-to-string; double-quote> vs;
+            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(svs))])
           otherwise:
             // separator has mixed line breaks and literals => vertical box with vs and sep options
-            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(vs)), literals'])
+            svs := <int-to-string; double-quote> vs;
+            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(svs)), literals'])
        end
    
   placeholder-to-var: 

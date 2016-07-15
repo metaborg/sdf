@@ -1,15 +1,16 @@
-module generation/pp/to-formatted
+module generation/gen-utils/to-formatted
 
 imports
   analysis/-
   runtime/index/-
   runtime/task/-
+  signatures/TemplateLang-sig
   runtime/nabl/-
   runtime/properties/-
   names/analysis/names
   utils/tokenize
   generation/syntax/to-sdf
-  
+
 imports
   signatures/aliases/-
   signatures/aterms/-
@@ -31,8 +32,7 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig    
-
+  signatures/TemplateLang-sig
 
 rules
     sugar-priorities:
