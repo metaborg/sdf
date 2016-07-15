@@ -106,6 +106,59 @@ rules
                                     Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
                                     Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
                                     GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   // insertions with lists +
+   prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([Iter(Sort(x))]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(Iter(Sort(x)), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+  prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterSep(Sort(x), _)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterSep(Sort(x), _), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+  
+   // insertions with lists *
+   prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterStar(Sort(x))]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterStar(Sort(x)), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+  prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterStarSep(Sort(x), _)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterStarSep(Sort(x), _), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+   
   
    to-new-cmp-elem(|sort):
      Label(_, x) -> <to-new-cmp-elem(|sort)> x 
