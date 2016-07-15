@@ -90,9 +90,18 @@ rules
 
   //productive productions section
   section-to-sdf(|chars, newline, kfr):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), restr*]
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), plhdr-prods*, restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+  		// explicit placeholder prods
+  		sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+    plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
+    if [] := sorts* then
+            plhdr-prods* := []
+        else
+            plhdr-prods* := [context-free-syntax([plhdr*])]
+        end;                    
   		// lexical restrictions
         x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
       let
@@ -543,14 +552,6 @@ rules //conversion of SDF3 terms into SDF2
       right-placeholder-chars := <?(_, <id>)> placeholder-chars;
       rhs := lit(<concat-strings> [left-placeholder-chars, s, right-placeholder-chars]);
       c := <double-quote> $[[s]-Plhdr]
-      
-  sort-to-plhdr-ins-prod:
-    s -> prod([sort("COMPLETION-INSERTION")], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder-insertion"))))]))
-    with
-       c := <double-quote> $[[s]-Plhdr]     
-       
-  lit-to-lit-insertion-prod:
-    lit -> prod([sort("COMPLETION-INSERTION")], lit, attrs([term(default(fun(unquoted("literal-completion"))))]))
     
 template-escape =
     string-replace(|"\\", "\\\\");
