@@ -54,7 +54,7 @@ rules
       then
         exports := [exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
       else
-          exports := [exports-completion, exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
+        exports := [exports-completion, exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
       end;
       imports := <map(imports-to-sdf-completions)> i
 
@@ -68,7 +68,7 @@ rules
     
   //productive productions section
   section-to-sdf-completions(|chars, newline):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [plhdr-prods*, lit-prods*]
+  	SDFSection(ContextFreeSyntax(prods*)) -> [cf-start-symbols*, plhdr-prods*, lit-prods*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
   		//content complete prods
@@ -86,13 +86,21 @@ rules
             plhdr-prods* := []
         else
             plhdr-prods* := [context-free-syntax([plhdr-ins*])]
+        end;
+        start-symbols* := <map(sort-to-cf-start-symbol); term-translation> sorts*;  
+        if [] := sorts* then
+            cf-start-symbols* := []
+        else
+            cf-start-symbols* := [context-free-start-symbols([start-symbols*])]
         end
         
-   sort-to-plhdr-ins-prod:
+  sort-to-plhdr-ins-prod:
     s -> prod([sort("COMPLETION-INSERTION")], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder-insertion"))))]))
     with
        c := <double-quote> $[[s]-Plhdr]     
        
   lit-to-lit-insertion-prod:
     lit -> prod([sort("COMPLETION-INSERTION")], lit, attrs([term(default(fun(unquoted("literal-completion"))))]))      
-      
+  
+  sort-to-cf-start-symbol:
+    s -> sort(s)    

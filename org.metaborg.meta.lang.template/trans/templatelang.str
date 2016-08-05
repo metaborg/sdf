@@ -31,6 +31,7 @@ imports
   editor/build-sig
   editor/build-syntax
   editor/build-utils
+  editor/build-sdf-completions
   names/analysis/names
   types/analysis/types-ts
   generation/completion/-
