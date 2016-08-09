@@ -27,8 +27,8 @@ public class Context{
 	}
 	
 	public boolean conflictsLeft(SyntaxProduction p){
-		if(p.left() != null && p.left().nonEpsilon())
-			return false;
+		/*if(p.left() != null && p.left().nonEpsilon())
+			return false;*/
 		for(PriorityLevel l : _priorities){
 			/*if(l.production().priorities().deepConflicts(p, l.position()))
 				return true;*/
@@ -39,8 +39,8 @@ public class Context{
 	}
 	
 	public boolean conflictsRight(SyntaxProduction p){
-		if(p.right() != null && p.right().nonEpsilon())
-			return false;
+		/*if(p.right() != null && p.right().nonEpsilon())
+			return false;*/
 		for(PriorityLevel l : _priorities){
 			/*if(l.production().priorities().deepConflicts(p, l.position()))
 				return true;*/

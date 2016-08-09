@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.symbol;
 
+import org.metaborg.sdf2table.symbol.Symbol.Type;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -16,8 +17,18 @@ public class Alternative extends ConcreteNonTerminal{
 	}
 	
 	@Override
+	public Type type(){
+		return Type.CONTEXT_FREE;
+	}
+	
+	@Override
 	public boolean nonEpsilon(){
 		return _a.nonEpsilon() && _b.nonEpsilon();
+	}
+	
+	@Override
+	public boolean isLayout() {
+		return _a.isLayout() && _b.isLayout();
 	}
 	
 	@Override

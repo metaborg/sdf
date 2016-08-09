@@ -8,17 +8,57 @@ import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.*;
 
 public abstract class Symbol implements Exportable{
+	
+	public enum Type{
+		TERMINAL,
+		LITERAL,
+		LEXICAL,
+		CONTEXT_FREE,
+		UNDEF;
+		
+		public int level(){
+			switch(this){
+			case CONTEXT_FREE:
+				return 3;
+			case LEXICAL:
+				return 2;
+			case LITERAL:
+				return 1;
+			case TERMINAL:
+				return 0;
+			default:
+				break;
+			}
+			
+			System.err.println("Undefined symbol kind");
+			return -1;
+		}
+	}
+	
+	public abstract Type type();
+	
+	/**
+	 * @return true if the symbol is a Layout.
+	 */
+	public abstract boolean isLayout();
+	
+	/**
+	 * @return true if the symbol is a Layout, or is always null.
+	 */
+	public abstract boolean isEpsilon();
+	
+	/**
+	 * @return true if the symbol is not nullable.
+	 */
+	public abstract boolean nonEpsilon();
+	
 	public abstract Terminal getFirst();
 	int _hash_code = -1;
 	
 	public Symbol nonContextual(){
 		return this;
 	}
-	
-	public abstract boolean nonEpsilon();
-	
-	public abstract boolean isLayout();
-	
+
 	/**
 	 * @return true if this is a terminal symbol.
 	 */

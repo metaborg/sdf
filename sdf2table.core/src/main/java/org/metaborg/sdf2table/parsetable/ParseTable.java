@@ -62,12 +62,18 @@ public class ParseTable extends CollisionSet<State>{
 	
 	public static class Statistics{
 		int _state_count = 0;
+		int _production_count = 0;
+		int _c_production_count = 0;
+		int _priority_level_count = 0;
 		int _rr_conflicts = 0;
 		int _sr_conflicts = 0;
 		
 		public void print(PrintStream out){
 			out.println("==== parse table statistics ====");
 			out.println("state count: "+_state_count);
+			out.println("production count: "+_production_count);
+			out.println("contextual production count: "+_c_production_count);
+			out.println("priority level count: "+_priority_level_count);
 			out.println("conflicts count: "+(_sr_conflicts+_rr_conflicts));
 			out.println(".... shift/reduce: "+_sr_conflicts);
 			out.println(".... reduce/reduce: "+_rr_conflicts);
@@ -143,6 +149,12 @@ public class ParseTable extends CollisionSet<State>{
 		Statistics st = new Statistics();
 		
 		st._state_count = size();
+		st._priority_level_count = PriorityLevel.count();
+		st._production_count = _syntax.productions().size();
+		st._c_production_count = _syntax.contextualProductions().size();
+		for(State s : this){
+			s.statistics(st);
+		}
 		
 		return st;
 	}
@@ -236,6 +248,11 @@ public class ParseTable extends CollisionSet<State>{
 	}
 	
 	public static void fromFile(File input, File output, List<String> paths){
+		fromFile(input, output, paths, PriorityPolicy.DEEP, true, false);
+	}
+	
+	public static void fromFile(File input, File output, List<String> paths, PriorityPolicy pp, boolean print_statistics, boolean generate_dot){
+		System.out.println("import file `"+input.getName()+"' ("+pp.toString()+" priority policy)");
 		resetAll();
 		
 		Benchmark.SingleTask t_import = Benchmark.main.newSingleTask("import");
@@ -257,7 +274,7 @@ public class ParseTable extends CollisionSet<State>{
 		t_generate.start();
 		ParseTable pt = null;
 		try {
-			pt = ParseTable.fromSyntax(syntax, PriorityPolicy.DEEP);
+			pt = ParseTable.fromSyntax(syntax, pp);
 		} catch (UndefinedSymbolException | InterruptedException e) {
 			System.err.println(e.getMessage());
 			return;
@@ -283,10 +300,19 @@ public class ParseTable extends CollisionSet<State>{
         }
         t_export.stop();
         
-        //pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
+        if(generate_dot){
+        	if(pt.size() > 200){
+        		System.err.println("The parse-table is huge. No Graphviz file will be generated.");
+        	}else{
+        		pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
+        	}
+        }
+        if(print_statistics){
+	        pt.statistics().print(System.err);
+	        Benchmark.print(System.err);
+        }
         
-        pt.statistics().print(System.err);
-        Benchmark.print(System.err);
+        resetAll();
 	}
 	
 	void generateGraphvizFile(Path file){

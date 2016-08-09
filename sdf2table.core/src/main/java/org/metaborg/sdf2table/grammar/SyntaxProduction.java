@@ -3,13 +3,17 @@ package org.metaborg.sdf2table.grammar;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.Utilities;
+import org.metaborg.sdf2table.parsetable.Context;
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
+import org.metaborg.sdf2table.parsetable.ContextualSymbol;
 import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.metaborg.sdf2table.symbol.CharClass;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -324,6 +328,130 @@ public class SyntaxProduction extends Production{
 		}
 		
 		return false;
+	}
+	
+	public ContextualProduction contextualize(ContextualSymbol cs, boolean conflicts_left, boolean conflicts_right, Set<PriorityLevel> prio_left, Set<PriorityLevel> prio_right, int l, int r) throws UndefinedSymbolException{
+		List<Symbol> rhs = new ArrayList<>();
+		boolean contains_non_layout_symbol = false;
+		boolean inside_layout = _symbol.isLayout();
+		
+		for(int i = 0; i < size(); ++i){
+			Symbol s = symbol(i);
+			
+			if(cs.filter() == ContextualSymbol.Filter.LAYOUT_ONLY && !s.isEpsilon()){
+				return null;
+			}
+			
+			if(s instanceof CharClass){ // A char class removes all contexts.
+				rhs.add(s);
+				contains_non_layout_symbol = true;
+			}else{
+				NonTerminal nt = (NonTerminal)s.nonContextual();
+				NonTerminal symbol; // new symbol
+				
+				if(i <= l || i >= r){
+					Context left = null, right = null; // new symbol contexts
+					ContextualSymbol.Filter filter = ContextualSymbol.Filter.LAYOUT_ONLY;
+					
+					if(i == l && i == r){
+						left = cs.leftContext().union(prio_right);
+						right = cs.rightContext().union(prio_left);
+					}else if(i <= l){
+						left = new Context(cs.leftContext());
+						right = new Context(prio_left);
+					}else{ //if(i >= r)
+						left = new Context(prio_right);
+						right = new Context(cs.rightContext());
+					}
+					
+					left.leftSimplify(this, nt, i);
+					right.rightSimplify(this, nt, i);
+					
+					if(i == l || i == r){
+						filter = ContextualSymbol.Filter.REJECT_LAYOUT;
+						contains_non_layout_symbol = true;
+						
+						if(inside_layout || ((left == null || left.isEmpty()) && ( right == null || right.isEmpty()))){
+							filter = ContextualSymbol.Filter.NONE;
+						}
+					}
+					
+					symbol = ContextualSymbol.unique(left, nt, right, filter);
+				}else{
+					symbol = ContextualSymbol.unique(null, (NonTerminal)s.nonContextual(), null, ContextualSymbol.Filter.NONE);
+				}
+				
+				if(symbol == null) // This production is not possible
+					return null;
+				
+				rhs.add(symbol);
+			}
+		} // ~ symbol iteration
+		
+		if(!contains_non_layout_symbol && cs.filter() == ContextualSymbol.Filter.REJECT_LAYOUT){ // Avoid layout/empty productions if filter = REJECT_LAYOUT
+			next_rl_production:
+			for(int i = 0; i < size(); ++i){
+				List<Symbol> rhs_rl = new ArrayList<>();
+				for(int j = 0; j < size(); ++j){
+					if(i == j){
+						NonTerminal s = ContextualSymbol.unique(null, (NonTerminal)rhs.get(j), null, ContextualSymbol.Filter.REJECT_LAYOUT);
+						if(s == null){
+							continue next_rl_production;
+						}
+						rhs_rl.add(s);
+					}else{
+						rhs_rl.add(rhs.get(j));
+					}
+				}
+				return ContextualProduction.unique(this, cs, rhs_rl);
+			}
+		}
+			
+		return ContextualProduction.unique(this, cs, rhs);
+	}
+	
+	@Override
+	public List<ContextualProduction> contextualize(ContextualSymbol cs) throws UndefinedSymbolException{
+		List<ContextualProduction> list = new LinkedList<>();
+
+		boolean conflicts_left = cs.leftContext().conflictsLeft(this);
+		boolean conflicts_right = cs.rightContext().conflictsRight(this);
+		boolean inside_layout = _symbol.isLayout();
+		
+		if(isEmpty()){
+			if(cs.filter() != ContextualSymbol.Filter.REJECT_LAYOUT){
+				list.add(ContextualProduction.unique(this, cs, symbols()));
+			}
+		}else{
+			for(int l = 0; l < size(); ++l){
+				Symbol sym_left = symbol(l);
+				if(!conflicts_left || ((!sym_left.isLayout() || inside_layout) && sym_left.type().level() < _symbol.type().level())){
+					Set<PriorityLevel> prio_left = priorities().priorityLevels(l);
+					
+					for(int r = size()-1; r >= l; --r){
+						Symbol sym_right = symbol(r);
+						if(!conflicts_right || sym_right.type().level() < _symbol.type().level()){
+							Set<PriorityLevel> prio_right = priorities().priorityLevels(r);
+							
+							ContextualProduction cp = contextualize(cs, conflicts_left, conflicts_right, prio_left, prio_right, l, r);
+							if(cp != null)
+								list.add(cp);
+						}
+					
+						if(cs.rightContext().isEmpty() || ((!sym_right.isLayout() || inside_layout) && sym_right.nonEpsilon()))
+							break;
+						
+						/*if(inside_layout || (!layout_only && (_right.isEmpty() || sym_right.nonEpsilon())))
+							break;*/
+					}
+				}
+				
+				if(cs.leftContext().isEmpty() || sym_left.nonEpsilon())
+					break;
+			}
+		}
+		
+		return list;
 	}
 	
 	public String shortString(){

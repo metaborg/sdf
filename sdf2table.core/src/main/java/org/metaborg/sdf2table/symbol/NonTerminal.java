@@ -34,7 +34,7 @@ public abstract class NonTerminal extends Symbol{
 	}
 	
 	@Override
-	public boolean isLayout(){
+	public boolean isEpsilon(){
 		for(Production p : productions()){
 			if(!p.isEmpty())
 				return false;

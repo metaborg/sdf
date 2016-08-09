@@ -1,11 +1,13 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 
@@ -186,5 +188,12 @@ public class ContextualProduction extends Production{
 	
 	public SyntaxProduction syntaxProduction(){
 		return _source;
+	}
+
+	@Override
+	public List<ContextualProduction> contextualize(ContextualSymbol cs) throws UndefinedSymbolException{
+		List<ContextualProduction> list = new LinkedList<>();
+		list.add(this);
+		return list;
 	}
 }

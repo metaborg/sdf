@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.symbol;
 
+import org.metaborg.sdf2table.symbol.Symbol.Type;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -14,13 +15,23 @@ public class Lexical extends ConcreteNonTerminal{
 		_symbol = symbol;
 	}
 	
+	@Override
+	public Type type(){
+		return Type.LEXICAL;
+	}
+	
 	public Symbol getSymbol(){
 		return _symbol;
 	}
 	
 	@Override
 	public boolean isLayout(){
-		return _symbol.isLayout() || super.isLayout();
+		return _symbol.isLayout();
+	}
+	
+	@Override
+	public boolean isEpsilon(){
+		return isLayout() || super.isEpsilon();
 	}
 	
 	@Override

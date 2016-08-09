@@ -31,6 +31,10 @@ public class PriorityLevel implements Comparable<Object>{
 		_levels.clear();
 	}
 	
+	public static int count(){
+		return _levels.size();
+	}
+	
 	private static class PosProduction{
 		SyntaxProduction _production;
 		int _position;

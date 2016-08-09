@@ -13,6 +13,7 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.parsetable.MergingMap.Entry;
+import org.metaborg.sdf2table.parsetable.ParseTable.Statistics;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
@@ -457,6 +458,25 @@ public class State implements Exportable{
     			0
 		);
     }
+    
+    public void statistics(Statistics st){
+    	for(Entry<Trigger, ActionList> e : _actions.entrySet()){
+			ActionList list = e.getValue();
+			int i = 0;
+			for(Action a : list){
+				for(int j = i+1; j < list.size(); ++j){
+					Action b = list.get(j);
+					if(a instanceof Shift && b instanceof Reduce)
+						++st._sr_conflicts;
+					if(a instanceof Reduce && b instanceof Shift)
+						++st._sr_conflicts;
+					if(a instanceof Reduce && b instanceof Reduce)
+						++st._rr_conflicts;
+				}
+				++i;
+			}
+		}
+	}
 	
 	public String digraph(){
 		String str = "\"node"+String.valueOf(_id)+"\" [margin=0 \n";

@@ -19,6 +19,16 @@ public abstract class CharClass extends Symbol implements Trigger{
 		return false;
 	}
 	
+	@Override
+	public boolean isEpsilon(){
+		return false;
+	}
+	
+	@Override
+	public Type type(){
+		return Type.TERMINAL;
+	}
+	
 	public abstract boolean contains(int c);
 	
 	public boolean intersects(CharClass cc){

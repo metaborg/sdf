@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,7 +19,7 @@ import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 public class ContextualSymbol extends NonTerminal{
-	enum Filter{
+	public enum Filter{
 		NONE,
 		LAYOUT_ONLY,
 		REJECT_LAYOUT
@@ -118,8 +119,25 @@ public class ContextualSymbol extends NonTerminal{
 			_dependants.add(dep);
 	}
 	
+	public Filter filter(){
+		return _filter;
+	}
+	
+	public Context leftContext(){
+		return _left;
+	}
+	
+	public Context rightContext(){
+		return _right;
+	}
+	
 	@Override
 	public boolean isLayout(){
+		return _symbol.isLayout();
+	}
+	
+	@Override
+	public boolean isEpsilon(){
 		return _filter == Filter.LAYOUT_ONLY || _symbol.isLayout();
 	}
 	
@@ -172,6 +190,16 @@ public class ContextualSymbol extends NonTerminal{
 	
 	public void computeProductions() throws UndefinedSymbolException{
 		if(_productions == null){
+			_productions = new LinkedHashSet<>();
+			
+			for(Production p : _symbol.productions()){
+				p.contextualize(this);
+			}
+			
+			_to_validate.add(this);
+		}
+		
+		/*if(_productions == null){
 			_productions = new LinkedHashSet<>();
 			boolean inside_layout = _symbol.isLayout();
 			
@@ -288,6 +316,12 @@ public class ContextualSymbol extends NonTerminal{
 			} // ~ original productions iteration
 			
 			_to_validate.add(this);
+		}*/
+	}
+	
+	private void addProductions(Collection<? extends ContextualProduction> prods){
+		for(ContextualProduction p : prods){
+			addProduction(p);
 		}
 	}
 	
@@ -378,5 +412,10 @@ public class ContextualSymbol extends NonTerminal{
 
 	public boolean isContextFree() {
 		return _left.isEmpty() && _right.isEmpty();
+	}
+
+	@Override
+	public Type type() {
+		return _symbol.type();
 	}
 }

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.symbol;
 
+import org.metaborg.sdf2table.symbol.Symbol.Type;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -19,6 +20,11 @@ public class Iteration extends ConcreteNonTerminal{
 		_symbol = symbol;
 		_sep = separator;
 		_min = min;
+	}
+	
+	@Override
+	public Type type(){
+		return Type.CONTEXT_FREE;
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.symbol;
 
+import org.metaborg.sdf2table.symbol.Symbol.Type;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -11,8 +12,18 @@ public class Literal extends ConcreteNonTerminal{
 	private String _value;
 	
 	@Override
+	public Type type(){
+		return Type.LITERAL;
+	}
+	
+	@Override
 	public boolean nonEpsilon(){
 		return true;
+	}
+	
+	@Override
+	public boolean isLayout(){
+		return false;
 	}
 	
 	public Literal(String value){

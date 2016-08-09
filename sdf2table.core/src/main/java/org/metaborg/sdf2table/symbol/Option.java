@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.symbol;
 
+import org.metaborg.sdf2table.symbol.Symbol.Type;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -17,6 +18,11 @@ public class Option extends ConcreteNonTerminal {
 	public Option(Symbol symbol){
 		super();
 		_symbol = symbol;
+	}
+	
+	@Override
+	public Type type(){
+		return Type.CONTEXT_FREE;
 	}
 	
 	public Symbol getSymbol(){
