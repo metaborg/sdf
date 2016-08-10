@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.metaborg.sdf2table.core.FixPointMember;
 import org.metaborg.sdf2table.core.Utilities;
-import org.metaborg.sdf2table.grammar.Priorities.PosPriorityLevel;
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
 import org.metaborg.sdf2table.parsetable.ContextualSymbol;
 import org.metaborg.sdf2table.parsetable.Label;
@@ -160,7 +159,7 @@ public abstract class Production{
 	
 	public abstract SyntaxProduction syntaxProduction();
 	
-	public abstract List<ContextualProduction> contextualize(ContextualSymbol cs) throws UndefinedSymbolException;
+	public abstract void contextualize(ContextualSymbol cs, Set<ContextualProduction> set) throws UndefinedSymbolException;
 	
 	public abstract boolean containsTerminal();
 	

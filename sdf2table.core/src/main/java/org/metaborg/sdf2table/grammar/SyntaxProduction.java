@@ -3,7 +3,6 @@ package org.metaborg.sdf2table.grammar;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -411,16 +410,18 @@ public class SyntaxProduction extends Production{
 	}
 	
 	@Override
-	public List<ContextualProduction> contextualize(ContextualSymbol cs) throws UndefinedSymbolException{
-		List<ContextualProduction> list = new LinkedList<>();
-
+	public void contextualize(ContextualSymbol cs, Set<ContextualProduction> set) throws UndefinedSymbolException{
 		boolean conflicts_left = cs.leftContext().conflictsLeft(this);
 		boolean conflicts_right = cs.rightContext().conflictsRight(this);
 		boolean inside_layout = _symbol.isLayout();
 		
 		if(isEmpty()){
 			if(cs.filter() != ContextualSymbol.Filter.REJECT_LAYOUT){
-				list.add(ContextualProduction.unique(this, cs, symbols()));
+				ContextualProduction cp = ContextualProduction.unique(this, cs, symbols());
+				if(cp != null){
+					cp.addDependant(cs);
+					set.add(cp);
+				}
 			}
 		}else{
 			for(int l = 0; l < size(); ++l){
@@ -434,8 +435,10 @@ public class SyntaxProduction extends Production{
 							Set<PriorityLevel> prio_right = priorities().priorityLevels(r);
 							
 							ContextualProduction cp = contextualize(cs, conflicts_left, conflicts_right, prio_left, prio_right, l, r);
-							if(cp != null)
-								list.add(cp);
+							if(cp != null){
+								cp.addDependant(cs);
+								set.add(cp);
+							}
 						}
 					
 						if(cs.rightContext().isEmpty() || ((!sym_right.isLayout() || inside_layout) && sym_right.nonEpsilon()))
@@ -450,8 +453,6 @@ public class SyntaxProduction extends Production{
 					break;
 			}
 		}
-		
-		return list;
 	}
 	
 	public String shortString(){

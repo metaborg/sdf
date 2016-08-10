@@ -1,15 +1,11 @@
 package org.metaborg.sdf2table.parsetable;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
-import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
@@ -193,142 +189,23 @@ public class ContextualSymbol extends NonTerminal{
 			_productions = new LinkedHashSet<>();
 			
 			for(Production p : _symbol.productions()){
-				p.contextualize(this);
+				p.contextualize(this, _productions);
 			}
 			
 			_to_validate.add(this);
 		}
-		
-		/*if(_productions == null){
-			_productions = new LinkedHashSet<>();
-			boolean inside_layout = _symbol.isLayout();
-			
-			for(Production p : _symbol.productions()){
-				// check conflicts
-				if(!_left.conflictsLeft(p.syntaxProduction()) && !_right.conflictsRight(p.syntaxProduction())){
-					boolean layout_only = true;
-					// Iteration on the left side of the production, to take care of empty symbols.
-					for(int l = 0; l < p.size(); ++l){
-						Symbol sym_left = p.symbol(l);
-						
-						if(inside_layout || !sym_left.isLayout()){
-							Set<PriorityLevel> prio_left = p.syntaxProduction().priorities().priorityLevels(l);
-							next_possible_production:
-							// Iteration on the right side
-							for(int r = p.size()-1; r >= l; --r){
-								Symbol sym_right = p.symbol(r);
-								
-								if(inside_layout || !sym_right.isLayout()){
-									layout_only = false;
-									Set<PriorityLevel> prio_right = p.syntaxProduction().priorities().priorityLevels(r);
-	
-									List<Symbol> rhs = new ArrayList<>();
-									boolean contains_non_layout_symbol = false;
-									
-									for(int i = 0; i < p.size(); ++i){
-										Symbol s = p.symbol(i);
-										if(_filter == Filter.LAYOUT_ONLY && !s.isLayout()){
-											continue next_possible_production;
-										}
-										
-										if(s instanceof CharClass){ // A char class removes all contexts.
-											rhs.add(s);
-											contains_non_layout_symbol = true;
-										}else{
-											NonTerminal nt = (NonTerminal)s.nonContextual();
-											NonTerminal symbol; // new symbol
-											
-											if(i <= l || i >= r){
-												Context left = null, right = null; // new symbol contexts
-												
-												if(i == l && i == r){
-													left = _left.union(prio_right);
-													right = _right.union(prio_left);
-												}else if(i <= l){
-													left = new Context(_left);
-													right = new Context(prio_left);
-												}else{ //if(i >= r)
-													left = new Context(prio_right);
-													right = new Context(_right);
-												}
-												
-												//left.leftSimplify(nt.leftDerivations());
-												//right.rightSimplify(nt.rightDerivations());
-												left.leftSimplify(p.syntaxProduction(), nt, i);
-												right.rightSimplify(p.syntaxProduction(), nt, i);
-												
-												Filter filter = Filter.REJECT_LAYOUT;
-												contains_non_layout_symbol = true;
-												
-												if(i != l && i != r){
-													filter = Filter.LAYOUT_ONLY;
-													contains_non_layout_symbol = false; // /!\
-												}else if(inside_layout || ((left == null || left.isEmpty()) && ( right == null || right.isEmpty())))
-													filter = Filter.NONE;
-												
-												symbol = ContextualSymbol.unique(left, nt, right, filter);
-											}else{
-												symbol = ContextualSymbol.unique(null, (NonTerminal)s.nonContextual(), null, Filter.NONE);
-											}
-											
-											if(symbol == null) // This production is not possible
-												continue next_possible_production;
-											
-											rhs.add(symbol);
-										}
-									} // ~ symbols iteration
-									
-									if(!contains_non_layout_symbol && _filter == Filter.REJECT_LAYOUT){ // Avoid layout/empty productions if filter = REJECT_LAYOUT
-										next_rl_production:
-										for(int i = 0; i < p.size(); ++i){
-											List<Symbol> rhs_rl = new ArrayList<>();
-											for(int j = 0; j < p.size(); ++j){
-												if(i == j){
-													NonTerminal s = ContextualSymbol.unique(null, (NonTerminal)rhs.get(j), null, Filter.REJECT_LAYOUT);
-													if(s == null){
-														continue next_rl_production;
-													}
-													rhs_rl.add(s);
-												}else{
-													rhs_rl.add(rhs.get(j));
-												}
-											}
-											addProduction(ContextualProduction.unique(p.syntaxProduction(), this, rhs_rl));
-										}
-									}else{
-										addProduction(ContextualProduction.unique(p.syntaxProduction(), this, rhs));
-									}
-								}
-								
-								if(inside_layout || (!layout_only && (_right.isEmpty() || sym_right.nonEpsilon())))
-									break;
-							} // ~ right recursion
-						}
-						
-						if(inside_layout || (!layout_only && (_left.isEmpty() || sym_left.nonEpsilon())))
-							break;
-					} // ~ left recusrion
-					
-					if(layout_only && _filter != Filter.REJECT_LAYOUT){
-						addProduction(ContextualProduction.unique(p.syntaxProduction(), this, p.symbols()));
-					}
-				}
-			} // ~ original productions iteration
-			
-			_to_validate.add(this);
-		}*/
 	}
 	
-	private void addProductions(Collection<? extends ContextualProduction> prods){
+	/*private void addProductions(Collection<? extends ContextualProduction> prods){
 		for(ContextualProduction p : prods){
 			addProduction(p);
 		}
-	}
+	}*/
 	
-	private void addProduction(ContextualProduction prod){
+	/*private void addProduction(ContextualProduction prod){
 		_productions.add(prod);
 		prod.addDependant(this);
-	}
+	}*/
 	
 	@SuppressWarnings("unchecked")
 	@Override
