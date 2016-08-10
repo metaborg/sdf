@@ -10,6 +10,7 @@ imports
   runtime/types/-
   analysis/desugar
   generation/gen-utils/to-str
+  generation/syntax/to-sdf
   
 imports
   signatures/aliases/-
@@ -39,14 +40,18 @@ imports
 rules
   
   module-to-new-cmp:
-  Module(Unparameterized(m), i*, s*) -> Module(m',  [i0, i1, is*, s', s2])
-  with
-    m'  := <conc-strings> ("completion/", m, "-cp");
-        i0  := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
-        i1  := Imports([Import($[signatures/[m]-sig])]); 
-        is* := <map(to-str-import(|"-cp", "completion"))> i*; 
-        s'  := Rules(<filter(section-to-new-cmp); flatten-list> s*);
-        s2  := Rules(<filter(section-to-rec-cmp); flatten-list> s*)
+  Module(Unparameterized(m), i*, s*) -> Module(m',  <flatten-list> [i0, i1, is*, s1, s2, s3])
+    with
+      m'        := <conc-strings> ("completion/", m, "-cp");
+      i0        := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
+      i1        := Imports([Import($[signatures/[m]-sig])]); 
+      is*       := <map(to-str-import(|"-cp", "completion"))> i*; 
+      new-cmp*  := <filter(section-to-new-cmp); flatten-list> s*;
+      s1       := <(not(?[]); !Rules(<id>)) <+ id> new-cmp* ;
+      rec-cmp*  := <filter(section-to-rec-cmp); flatten-list> s*;
+      s2       := <(not(?[]); !Rules(<id>)) <+ id> rec-cmp* ;
+      is-plhdr* := <filter(section-to-is-SDF-placeholder); flatten-list> s*;
+      s3       := <(not(?[]); !Rules(<id>)) <+ id> is-plhdr*
  
   section-to-new-cmp:
     SDFSection(ContextFreeSyntax(p*)) -> cc-str*
@@ -348,5 +353,13 @@ rules
     Placeholder(s, options) -> Wld()   
     
   generate-wld-template:
-     Line(elems*) -> <filter(generate-wld-template)> elems*     
+     Line(elems*) -> <filter(generate-wld-template)> elems* 
+     
+  section-to-is-SDF-placeholder:
+     SDFSection(ContextFreeSyntax(prods*)) -> rules*
+  	 with
+  	   sorts* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+       <debug(!"sorts ")> sorts*;                 
+       rules* :=  <map(!SDefNoArgs("is-SDF-placeholder", Match(NoAnnoList(Op($[[<id>]-Plhdr], [])))))> sorts*
          
