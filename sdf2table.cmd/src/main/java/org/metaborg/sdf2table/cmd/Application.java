@@ -14,7 +14,6 @@ import java.util.List;
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Module;
 import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
-import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.parsetable.Label;
