@@ -1,6 +1,7 @@
 module editor/build-deprecated
 
 imports
+  libstrc
   signatures/TemplateLang-sig
   signatures/modules/Modules-sig
   analysis/desugar

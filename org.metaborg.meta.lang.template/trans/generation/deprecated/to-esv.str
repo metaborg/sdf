@@ -6,11 +6,33 @@ imports
   utils/attributes
   utils/misc
   analysis/desugar
- // templatelang/expand
   generation/gen-utils/to-str
   generation/gen-utils/to-template
   signatures/sorts/Sorts-sig
   signatures/sdf2-core/Sdf2-sig
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig  
 
 rules
 

@@ -1,6 +1,9 @@
 module editor/build-completions
 
 imports
+  libstrc
+  editor/build-utils
+  generation/completion/-
   signatures/TemplateLang-sig
   signatures/modules/Modules-sig
   analysis/desugar
@@ -9,8 +12,8 @@ imports
   
 rules
    generate-new-completions-colorer:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    where
+   (selected, position, ast, path, project-path) -> (filename, result)
+     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
         ast'     := <desugar-templates> selected;
         filename := <create-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
@@ -23,4 +26,3 @@ rules
         ast'     := <desugar-templates> selected;
         result   := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
         filename := <create-src-gen(|project-path, "completion", "-cp.str")> mn
-  

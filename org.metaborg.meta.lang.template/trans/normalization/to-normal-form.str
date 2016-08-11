@@ -11,8 +11,7 @@ imports
   names/analysis/names
   stratego/metaborg
   runtime/analysis/core
-  editor/build-utils
-  
+  editor/build-utils  
 
 imports
   signatures/aliases/-

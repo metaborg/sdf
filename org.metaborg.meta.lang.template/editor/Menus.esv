@@ -46,27 +46,28 @@ menus
         
     submenu: "Completion"
       action: "Generate Stratego"         = generate-new-completions-stratego 
+      action: "Generate SDF completions"  = generate-sdf-completions-concrete
       action: "Generate ESV colorer"      = generate-new-completions-colorer
     end
     
     action: "Generate PP (abstract)" = generate-pp-abstract (meta)
     action: "Generate PP"            = generate-pp-concrete
           	
-    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
-    action: "Generate AST checker"            = generate-ast-checker-concrete
+//    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
+//    action: "Generate AST checker"            = generate-ast-checker-concrete
          
-    action: "Generate Permissive Grammar (abstract, starting from current)" = generate-permissive-abstract
-    action: "Generate Permissive Grammar (starting from current)" = generate-permissive-concrete
+//    action: "Generate Permissive Grammar (abstract, starting from current)" = generate-permissive-abstract
+//    action: "Generate Permissive Grammar (starting from current)" = generate-permissive-concrete
      	
   menu: "Format" (openeditor) (realtime)
     
-    action: "Format"             			      = pp-sdf3 (source)
-    action: "Lift (abstract)" 					  = lift-sdf3-abstract (meta)
-    action: "Lift" 								  = lift-sdf3    
+    action: "Format"             			            = pp-sdf3 (source)
+    action: "Lift (abstract)" 					          = lift-sdf3-abstract (meta)
+    action: "Lift" 								                = lift-sdf3    
     action: "Lift (templates, abstract)"          = lift-sdf3-template-abstract (meta)
     action: "Lift (templates)"                    = lift-sdf3-template 
-    action: "Extract productions (abstract)"	  = extract-regular-productions-abstract (meta)
-    action: "Extract productions"				  = extract-regular-productions 
+    action: "Extract productions (abstract)"	    = extract-regular-productions-abstract (meta)
+    action: "Extract productions"				          = extract-regular-productions 
 
     
     

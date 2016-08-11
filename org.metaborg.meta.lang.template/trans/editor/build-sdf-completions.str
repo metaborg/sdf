@@ -1,0 +1,45 @@
+module editor/build-sdf-completions
+
+imports
+  generation/syntax/to-sdf-completions
+  editor/build-utils
+  analysis/desugar
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig      
+
+rules
+  
+  generate-sdf-completions-concrete:
+    (selected, position, ast, path, project-path) -> (filename, result)
+   where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The sdf file could not be generated.\n"); fail> path
+   where
+       <?Module(Unparameterized(mn), i*, sections)> ast ;
+      selected'     := <desugar-templates> selected;
+        //selected' := selected ;
+        filename := <create-src-gen(|project-path, "syntax/completion", "-completion-syntax.sdf")> mn;
+     //   result   := <sdf-aterm; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail>
+       result   := <module-to-sdf-completions; pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
