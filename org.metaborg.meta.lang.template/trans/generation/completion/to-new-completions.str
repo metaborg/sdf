@@ -200,13 +200,16 @@ rules
      where
        <?IterStar(_) + ?IterStarSep(_, _)> s     
        
-    to-new-cmp-elem(|sort):
+   to-new-cmp-elem(|sort):
      Placeholder(s, options) -> NoAnnoList(Op("None", []))
      where 
        <fetch(?Hide())> options   
     where
-       <not(?IterStar(_) + ?IterStarSep(_, _))> s            
+       <not(?IterStar(_) + ?IterStarSep(_, _))> s     
        
+   to-new-cmp-elem(|sort):
+     Label(l, t) -> <to-new-cmp-elem(|sort)> t
+     
 rules
 
   section-to-rec-cmp:
@@ -360,6 +363,5 @@ rules
   	 with
   	   sorts* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
                         ; nub> prods*;
-       <debug(!"sorts ")> sorts*;                 
        rules* :=  <map(!SDefNoArgs("is-SDF-placeholder", Match(NoAnnoList(Op($[[<id>]-Plhdr], [])))))> sorts*
          
