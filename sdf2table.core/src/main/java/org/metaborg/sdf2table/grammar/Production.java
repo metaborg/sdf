@@ -21,10 +21,12 @@ public abstract class Production{
 	public enum Attribute{
 		ASSOC_LEFT,
 		ASSOC_RIGHT,
+		NON_ASSOC,
 		
 		BRACKET,
 		REJECT,
 		PREFER,
+		AVOID,
 		
 		LONGEST_MATCH
 	}

@@ -38,9 +38,11 @@ public class SyntaxProduction extends Production{
 	private static final StrategoConstructor CONS_ATTRS = new StrategoConstructor("attrs", 1);
 	private static final StrategoConstructor CONS_ATTR_LEFT = new StrategoConstructor("left", 0);
 	private static final StrategoConstructor CONS_ATTR_RIGHT = new StrategoConstructor("right", 0);
+	private static final StrategoConstructor CONS_ATTR_NON_ASSOC = new StrategoConstructor("non-assoc", 0);
 	private static final StrategoConstructor CONS_ATTR_BRACKET = new StrategoConstructor("bracket", 0);
 	private static final StrategoConstructor CONS_ATTR_REJECT = new StrategoConstructor("reject", 0);
 	private static final StrategoConstructor CONS_ATTR_PREFER = new StrategoConstructor("prefer", 0);
+	private static final StrategoConstructor CONS_ATTR_AVOID = new StrategoConstructor("avoid", 0);
 	private static final StrategoConstructor CONS_ATTR_LONGEST_MATCH = new StrategoConstructor("longest-match", 0);
 	
 	private static final StrategoConstructor CONS_TERM = new StrategoConstructor("term", 1);
@@ -414,6 +416,7 @@ public class SyntaxProduction extends Production{
 		boolean conflicts_left = cs.leftContext().conflictsLeft(this);
 		boolean conflicts_right = cs.rightContext().conflictsRight(this);
 		boolean inside_layout = _symbol.isLayout();
+		boolean contains_terminal = false;
 		
 		if(isEmpty()){
 			if(cs.filter() != ContextualSymbol.Filter.REJECT_LAYOUT){
@@ -426,11 +429,17 @@ public class SyntaxProduction extends Production{
 		}else{
 			for(int l = 0; l < size(); ++l){
 				Symbol sym_left = symbol(l);
+				if(sym_left.type().level() < _symbol.type().level())
+					contains_terminal = true;
+				
 				if(!conflicts_left || ((!sym_left.isLayout() || inside_layout) && sym_left.type().level() < _symbol.type().level())){
 					Set<PriorityLevel> prio_left = priorities().priorityLevels(l);
 					
 					for(int r = size()-1; r >= l; --r){
 						Symbol sym_right = symbol(r);
+						if(sym_right.type().level() < _symbol.type().level())
+							contains_terminal = true;
+						
 						if(!conflicts_right || sym_right.type().level() < _symbol.type().level()){
 							Set<PriorityLevel> prio_right = priorities().priorityLevels(r);
 							
@@ -451,6 +460,36 @@ public class SyntaxProduction extends Production{
 				
 				if(cs.leftContext().isEmpty() || sym_left.nonEpsilon())
 					break;
+			}
+			
+			// Add the full layout production if necessary
+			if(!contains_terminal && cs.filter() != ContextualSymbol.Filter.REJECT_LAYOUT && !cs.leftContext().isEmpty() && !cs.rightContext().isEmpty()){
+				List<Symbol> rhs = new ArrayList<>();
+				
+				for(int i = 0; i < size(); ++i){
+					Symbol s = symbol(i);
+					NonTerminal nt = (NonTerminal)s.nonContextual();
+					
+					Set<PriorityLevel> prio_left = priorities().priorityLevels(i);
+					Set<PriorityLevel> prio_right = priorities().priorityLevels(i);
+					
+					Context left = cs.leftContext().union(prio_right);
+					Context right = cs.rightContext().union(prio_left);
+					
+					left.leftSimplify(this, nt, i);
+					right.rightSimplify(this, nt, i);
+					
+					Symbol symbol = ContextualSymbol.unique(left, (NonTerminal)s.nonContextual(), right, ContextualSymbol.Filter.LAYOUT_ONLY);
+					
+					if(symbol == null) // This production is not possible
+						return;
+					
+					rhs.add(symbol);
+				}
+				
+				ContextualProduction cp = ContextualProduction.unique(this, cs, rhs);
+				cp.addDependant(cs);
+				set.add(cp);
 			}
 		}
 	}
@@ -483,11 +522,17 @@ public class SyntaxProduction extends Production{
 					case ASSOC_RIGHT:
 						_str += "right";
 						break;
+					case NON_ASSOC:
+						_str += "non-assoc";
+						break;
 					case BRACKET:
 						_str += "bracket";
 						break;
 					case REJECT:
 						_str += "reject";
+						break;
+					case AVOID:
+						_str += "avoid";
 						break;
 					case PREFER:
 						_str += "prefer";
@@ -530,6 +575,9 @@ public class SyntaxProduction extends Production{
 				case ASSOC_RIGHT:
 					attr_list[i] = new StrategoAppl(CONS_ATTR_RIGHT, new IStrategoTerm[]{}, null, 0);
 					break;
+				case NON_ASSOC:
+					attr_list[i] = new StrategoAppl(CONS_ATTR_NON_ASSOC, new IStrategoTerm[]{}, null, 0);
+					break;
 				case BRACKET:
 					attr_list[i] = new StrategoAppl(CONS_ATTR_BRACKET, new IStrategoTerm[]{}, null, 0);
 					break;
@@ -538,6 +586,9 @@ public class SyntaxProduction extends Production{
 					break;
 				case PREFER:
 					attr_list[i] = new StrategoAppl(CONS_ATTR_PREFER, new IStrategoTerm[]{}, null, 0);
+					break;
+				case AVOID:
+					attr_list[i] = new StrategoAppl(CONS_ATTR_AVOID, new IStrategoTerm[]{}, null, 0);
 					break;
 				case LONGEST_MATCH:
 					attr_list[i] = new StrategoAppl(
@@ -634,6 +685,9 @@ public class SyntaxProduction extends Production{
 							case "Right":
 								attrs.add(Attribute.ASSOC_RIGHT);
 								break;
+							case "NonAssoc":
+								attrs.add(Attribute.NON_ASSOC);
+								break;
 							default:
 								System.err.println("Unknown associativity: `"+assoc.getName()+"'.");
 								break;
@@ -647,6 +701,9 @@ public class SyntaxProduction extends Production{
 							break;
 						case "Prefer":
 							attrs.add(Attribute.PREFER);
+							break;
+						case "Avoid":
+							attrs.add(Attribute.AVOID);
 							break;
 						case "Term":
 							ta = ta.getSubterm(0);
