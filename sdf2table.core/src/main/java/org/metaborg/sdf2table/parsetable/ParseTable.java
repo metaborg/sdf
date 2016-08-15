@@ -1,6 +1,8 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -69,15 +71,25 @@ public class ParseTable extends CollisionSet<State>{
 		int _sr_conflicts = 0;
 		
 		public void print(PrintStream out){
-			out.println("==== parse table statistics ====");
-			out.println("state count: "+_state_count);
-			out.println("production count: "+_production_count);
-			out.println("contextual production count: "+_c_production_count);
-			out.println("priority level count: "+_priority_level_count);
-			out.println("conflicts count: "+(_sr_conflicts+_rr_conflicts));
-			out.println(".... shift/reduce: "+_sr_conflicts);
-			out.println(".... reduce/reduce: "+_rr_conflicts);
-			out.println("================================");
+			if(out == System.err){
+				out.println("==== parse table statistics ====");
+				out.println("state count: "+_state_count);
+				out.println("production count: "+_production_count);
+				out.println("contextual production count: "+_c_production_count);
+				out.println("priority level count: "+_priority_level_count);
+				out.println("conflicts count: "+(_sr_conflicts+_rr_conflicts));
+				out.println(".... shift/reduce: "+_sr_conflicts);
+				out.println(".... reduce/reduce: "+_rr_conflicts);
+				out.println("================================");
+			}else{
+				out.print(";"+_state_count);
+				out.print(";"+_production_count);
+				out.print(";"+_c_production_count);
+				out.print(";"+_priority_level_count);
+				out.print(";"+(_sr_conflicts+_rr_conflicts));
+				out.print(";"+_sr_conflicts);
+				out.print(";"+_rr_conflicts);
+			}
 		}
 	}
 	
@@ -247,11 +259,45 @@ public class ParseTable extends CollisionSet<State>{
         Benchmark.reset();
 	}
 	
-	public static void fromFile(File input, File output, List<String> paths){
-		fromFile(input, output, paths, PriorityPolicy.DEEP, true, false);
+	public static void genStats(File input, File output, List<String> paths){
+		try{
+			Path shallow_log = java.nio.file.Paths.get(output.getPath()+"-shallow.csv");
+			Path deep_log = java.nio.file.Paths.get(output.getPath()+"-deep.csv");
+			
+			PrintStream shallow_out = new PrintStream(new FileOutputStream(shallow_log.toFile(), true));
+			PrintStream deep_out = new PrintStream(new FileOutputStream(deep_log.toFile(), true));
+			
+			int n = 20;
+			
+			String header = "state count;production count;contextual production count; priority level count; conflicts count;shift/reduce;reduce/reduce";
+			header += "sdf2table;import;generation;parse table generation;grammar transformation;FIRST and FOLLOW computation;states generation;close;reduce;action;shift;compare";
+			
+			for(int i = 0; i < n; ++i){
+				System.err.println("shallow generation "+i+"/"+n);
+				shallow_out.println(header);
+				shallow_out.print(i);
+				fromFile(input, output, paths, PriorityPolicy.SHALLOW, shallow_out, false);
+				shallow_out.print("\n");
+			}
+			
+			for(int i = 0; i < n; ++i){
+				System.err.println("deep generation "+i+"/"+n);
+				deep_out.println(header);
+				deep_out.print(i);
+				fromFile(input, output, paths, PriorityPolicy.DEEP, deep_out, false);
+				deep_out.print("\n");
+			}
+		}catch (FileNotFoundException e){
+			e.printStackTrace();
+		}
 	}
 	
-	public static void fromFile(File input, File output, List<String> paths, PriorityPolicy pp, boolean print_statistics, boolean generate_dot){
+	public static void fromFile(File input, File output, List<String> paths){
+		fromFile(input, output, paths, PriorityPolicy.DEEP, System.err, false);
+		//genStats(input, output, paths);
+	}
+	
+	public static void fromFile(File input, File output, List<String> paths, PriorityPolicy pp, PrintStream log, boolean generate_dot){
 		System.out.println("import file `"+input.getName()+"' ("+pp.toString()+" priority policy)");
 		resetAll();
 		
@@ -307,9 +353,9 @@ public class ParseTable extends CollisionSet<State>{
         		pt.generateGraphvizFile(java.nio.file.Paths.get(output.getPath()+".dot"));
         	}
         }
-        if(print_statistics){
-	        pt.statistics().print(System.err);
-	        Benchmark.print(System.err);
+        if(log != null){
+	        pt.statistics().print(log);
+	        Benchmark.print(log);
         }
         
         resetAll();
