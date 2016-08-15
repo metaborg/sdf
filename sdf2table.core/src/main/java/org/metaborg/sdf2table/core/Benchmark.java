@@ -61,7 +61,11 @@ public class Benchmark{
 		
 		@Override
 		public void print(PrintStream out, int tab){
-			out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+			}
 		}
 
 		@Override
@@ -110,7 +114,11 @@ public class Benchmark{
 		
 		@Override
 		public void print(PrintStream out, int tab){
-			out.println(Benchmark.tabulation(tab)+" [#] "+name()+": "+formatTime(duration()));
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+" [#] "+name()+": "+formatTime(duration()));
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+			}
 		}
 
 		@Override
@@ -170,14 +178,16 @@ public class Benchmark{
 		
 		@Override
 		public void print(PrintStream out, int tab){
-			out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
-			//Task last = null;
-			for(Task t : _sub_task){
-				/*if(last != null){
-					System.out.println(Benchmark.tabulation(tab+1)+" | "+formatTime(t.startTime()-last.endTime()));
-				}*/
-				t.print(out, tab+1);
-				//last = t;
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+				for(Task t : _sub_task){
+					t.print(out, tab+1);
+				}
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+				for(Task t : _sub_task){
+					t.print(out, 0);
+				}
 			}
 		}
 
@@ -217,8 +227,12 @@ public class Benchmark{
 	}
 	
 	public static void print(PrintStream out){
-		out.println("===== benchmark =====");
-		main.print(out, 0);
-		out.println("=====================");
+		if(out == System.err){
+			out.println("===== benchmark =====");
+			main.print(out, 0);
+			out.println("=====================");
+		}else{
+			main.print(out, 0);
+		}
 	}
 }
