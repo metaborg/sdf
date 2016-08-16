@@ -11,7 +11,7 @@ public class FileStart extends Sort{
 	}
 	
 	@Override
-	public boolean equals(Symbol other){
+	public boolean equals(Object other){
 		if(other instanceof FileStart){
 			return other != null;
 		}

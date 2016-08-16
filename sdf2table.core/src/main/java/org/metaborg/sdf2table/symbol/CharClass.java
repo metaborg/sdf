@@ -3,11 +3,32 @@ package org.metaborg.sdf2table.symbol;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.Trigger;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 
-public abstract class CharClass extends Symbol{
+public abstract class CharClass extends Symbol implements Trigger{
+	@Override
+	public boolean nonEpsilon(){
+		return true;
+	}
+	
+	@Override
+	public boolean isLayout(){
+		return false;
+	}
+	
+	@Override
+	public boolean isEpsilon(){
+		return false;
+	}
+	
+	@Override
+	public Type type(){
+		return Type.TERMINAL;
+	}
+	
 	public abstract boolean contains(int c);
 	
 	public boolean intersects(CharClass cc){
@@ -43,8 +64,18 @@ public abstract class CharClass extends Symbol{
 		return max;
 	}
 	
-	public Terminal inter(CharClass cc){
-		return Terminal.inter(this, cc);
+	@Override
+	public Trigger inter(Trigger t){
+		if(t instanceof CharClass)
+			return Terminal.inter(this, (CharClass)t);
+		return null;
+	}
+	
+	@Override
+	public Trigger except(Trigger t){
+		if(this instanceof Terminal && t instanceof CharClass)
+			return ((Terminal)this).doExcept((CharClass)t);
+		return this;
 	}
 	
 	public Terminal union(CharClass cc){

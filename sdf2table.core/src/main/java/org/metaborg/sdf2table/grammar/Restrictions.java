@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Set;
 
 import org.metaborg.sdf2table.symbol.CharClass;
+import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.SymbolCollection;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -24,7 +25,11 @@ public class Restrictions{
 							Set<CharClass> ccs = CharClass.lookaheadsFromATerm(ares.getSubterm(1));
 							StrategoList subjects = (StrategoList)ares.getSubterm(0);
 							for(IStrategoTerm subject : subjects){
-								Symbol.fromStrategoTerm(subject, collection).followRestrictions().addAll(ccs);
+								Symbol s = Symbol.fromStrategoTerm(subject, collection);
+								if(s instanceof NonTerminal)
+									((NonTerminal)s).followRestrictions().addAll(ccs);
+								else
+									System.err.println("Restrictions Section: Non terminal expected.");
 							}
 							break;
 						default:

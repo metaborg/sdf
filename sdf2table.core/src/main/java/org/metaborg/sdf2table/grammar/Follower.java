@@ -1,12 +1,6 @@
 package org.metaborg.sdf2table.grammar;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-
-import org.metaborg.sdf2table.symbol.Terminal;
-
-public abstract class Follower{
+/*public abstract class Follower{
 	private FirstSet _set = null;
 	
 	private Set<Terminal> _precomputed_firsts = new HashSet<>();
@@ -25,31 +19,6 @@ public abstract class Follower{
 		doGenerateFirstSet(new Stack<Follower>());
 	}
 	
-	/**
-	 * Compute equivalent classes in FIRST sets.
-	 * <p>
-	 * Let view all FIRST and FOLLOW sets as a graph G(E, V), where
-	 * for all production P, E contains FIRST(P) and FOLLOW(P),
-	 * and V a relation defined by :
-	 * 
-	 * 		for all (A, B) on E^2, (A, B) is on V iff
-	 * 		B depends on A, ie. for all terminal t of A, t is in B. // TODO review this definition.
-	 * 
-	 * G is a dependency graph. G can contains cycles.
-	 * <p>
-	 * For all FOLLOW or FIRST sets A and B, A = B if
-	 * it exists two paths (v, w) where
-	 * 
-	 * 		A --v-->* B, and B --w-->* A.
-	 * 
-	 * In other words, A = B if A and B share the same strongly connected component.
-	 * <p>
-	 * ... // TODO explain how to build the acyclic dependency graph.
-	 * <p>
-	 * Based on TARJAN's strongly connected components algorithm.
-	 * c.f. https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
-	 * @param stack
-	 */
 	private void doGenerateFirstSet(Stack<Follower> stack){
 		if(_set == null){
 			_index = _low_link = _count++;
@@ -106,9 +75,9 @@ public abstract class Follower{
 		}
 	}
 
-	protected void addDependency(Follower f){
-		if(_dependencies.add(f)){
-			f.addDependent(this);
+	protected void addDependency(Follower p){
+		if(_dependencies.add(p)){
+			p.addDependent(this);
 		}
 	}
 	
@@ -134,4 +103,4 @@ public abstract class Follower{
 	public FirstSet firstSet(){
 		return _set;
 	}
-}
+}*/

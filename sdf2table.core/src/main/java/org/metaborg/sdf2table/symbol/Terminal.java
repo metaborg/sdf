@@ -2,8 +2,8 @@ package org.metaborg.sdf2table.symbol;
 
 import java.util.List;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.parsetable.Utilities;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
@@ -22,6 +22,10 @@ public abstract class Terminal extends CharClass implements Trigger{
 		return this;
 	}
 	
+	public Terminal getFirst(){
+		return this;
+	}
+	
 	@Override
 	public String toString(){
 		return "["+terminalString()+"]";
@@ -29,7 +33,7 @@ public abstract class Terminal extends CharClass implements Trigger{
 	
 	public abstract String terminalString();
 	
-	public abstract Terminal except(CharClass... restrictions);
+	public abstract Terminal doExcept(CharClass... restrictions);
 	
 	public abstract List<IStrategoTerm> getATermCC();
 	

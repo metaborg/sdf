@@ -13,9 +13,10 @@ import java.util.List;
 
 import org.metaborg.sdf2table.core.Benchmark;
 import org.metaborg.sdf2table.grammar.Module;
-import org.metaborg.sdf2table.grammar.ModuleNotFound;
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
 import org.metaborg.sdf2table.grammar.Syntax;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
+import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.parsetable.State;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -38,6 +39,7 @@ public class Application{
 		out.println("\t-i filename\t\tinput from file");
 		out.println("\t-o filename\t\tinput to file (default stdout)");
 		out.println("\t-p path\t\tcolon separated search path for SDF modules (default '.')");
+		out.println("\t-P policy\t\tpriority policy. Values are 'deep', 'shallow' and 'none' (default 'shallow')");
 		out.println("\t-V\t\treveal program version (i.e. "+String.valueOf(VERSION)+")");
 	}
 	
@@ -53,6 +55,9 @@ public class Application{
 		String input = null;
 		String output = null;
 		String dot_output = null;
+		String pp_str;
+		
+		ParseTable.PriorityPolicy pp = ParseTable.PriorityPolicy.SHALLOW;
 		
 		for(int i = 0; i < argv.length; ++i){
 			switch(argv[i]){
@@ -68,6 +73,15 @@ public class Application{
 			case "-D":
 				dot_output = readNext(argv, ++i);
 				break;
+			case "-P":
+				pp_str = readNext(argv, ++i);
+				pp = ParseTable.PriorityPolicy.valueOf(pp_str.toUpperCase());
+				if(pp == null){
+					System.err.println(APP_NAME+": invalid priority policy -- '"+pp_str+"'");
+					usage(APP_NAME, System.err);
+					return;
+				}
+				break;
 			case "-h":
 				usage(APP_NAME, System.out);
 				return;
@@ -75,7 +89,7 @@ public class Application{
 				System.out.println(String.valueOf(VERSION));
 				return;
 			default:
-				System.err.println(argv[0]+": invalid option -- '"+argv[i]+"'");
+				System.err.println(APP_NAME+": invalid option -- '"+argv[i]+"'");
 				usage(APP_NAME, System.err);
 				return;
 			}
@@ -90,10 +104,10 @@ public class Application{
 			return;
 		}
 		
-		exec(input, output, paths, dot_output);
+		exec(input, output, paths, pp, dot_output);
 	}
 	
-	public static void exec(String input, String output, List<String> paths, String dot_output){
+	public static void exec(String input, String output, List<String> paths, ParseTable.PriorityPolicy pp, String dot_output){
 		Benchmark.SingleTask t_import = Benchmark.main.newSingleTask("import");
     	Benchmark.ComposedTask t_generate = Benchmark.main.newComposedTask("generation");
     	Benchmark.SingleTask t_export = Benchmark.main.newSingleTask("export");
@@ -102,14 +116,20 @@ public class Application{
     	Syntax syntax = null;
 		try{
 			syntax = Module.fromFile(new File(input), paths);
-		}catch (ModuleNotFound e){
+		}catch (ModuleNotFoundException e){
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
 		t_import.stop();
     	
     	t_generate.start();
-        ParseTable pt = ParseTable.fromSyntax(syntax);
+        ParseTable pt = null;
+		try {
+			pt = ParseTable.fromSyntax(syntax, pp);
+		} catch (UndefinedSymbolException | InterruptedException e) {
+			System.err.println(e.getMessage());
+			System.exit(1);
+		}
         t_generate.stop();
 		
 		t_export.start();
@@ -136,17 +156,17 @@ public class Application{
         
         t_export.stop();
         
-        Benchmark.print();
+        Benchmark.print(System.out);
         Benchmark.reset();
         State.reset();
-        Production.reset();
+        Label.reset();
 	}
     
 	static void generateGraphvizFile(Path file, ParseTable pt){
     	try {
 			Files.write(file, pt.digraph().getBytes());
 			System.err.println("Graphiv written at: "+file.toAbsolutePath().toUri().getPath());
-		} catch (IOException e) {
+		} catch (IOException e){
 			System.err.println(e.getMessage());
 		}
     }

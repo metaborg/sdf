@@ -1,21 +1,21 @@
 package org.metaborg.sdf2table.symbol;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.metaborg.sdf2table.core.CollisionSet;
 
 public class SymbolCollection {
-	private Set<Symbol> _symbols;
+	private CollisionSet<Symbol> _symbols;
 	
 	public SymbolCollection(){
-		_symbols = new HashSet<>();
+		_symbols = new CollisionSet<>();
 	}
 	
 	public Symbol get(Symbol symbol){
-		for(Symbol s : _symbols){ // TODO take advantage of the symbol hash code.
-			if(s.equals(symbol))
-				return s;
-		}
-		return null;
+		Symbol s =_symbols.agent(symbol);
+		return s;
+	}
+	
+	public int count(){
+		return _symbols.size();
 	}
 	
 	public Symbol get(Symbol symbol, boolean create){

@@ -32,6 +32,6 @@ public class UnloadedModule extends Module{
 	}
 	
 	public void loadPriorities(){
-		Priorities.fromStrategoTerm(_priorities_term, syntax(), symbols());
+		Priorities.fromStrategoTerm(_priorities_term, syntax());
 	}
 }
