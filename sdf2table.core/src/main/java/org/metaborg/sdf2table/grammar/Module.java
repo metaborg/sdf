@@ -84,7 +84,8 @@ public class Module{
 	public static Syntax fromStrategoTerm(IStrategoTerm term, List<String> paths) throws ModuleNotFoundException{
 		Map<String, UnloadedModule> modules = new HashMap<>();
 		Syntax syntax = new Syntax();
-		fromStrategoTerm(term, paths, modules, syntax);
+		Module main = fromStrategoTerm(term, paths, modules, syntax);
+		syntax.setMainModule(main);
 		
 		//Set<Module> loaded_modules = new HashSet<>();
 		for(Entry<String, UnloadedModule> e : modules.entrySet()){

@@ -23,6 +23,7 @@ import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
+import org.metaborg.sdf2table.parenthesizer.Parenthesizer;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.*;
@@ -315,6 +316,23 @@ public class ParseTable extends CollisionSet<State>{
 			return;
 		}
 		t_import.stop();
+		
+		// parenthesize
+		final String pname = syntax.mainModule().name().replace("-norm", "");
+		File poutput = new File(output.getParentFile().getParentFile().getParentFile().getAbsolutePath()+"/src-gen/pp/"+syntax.mainModule().name()+"-parenthesized-java.aterm");
+		IStrategoTerm parenthesized = Parenthesizer.parenthesize(syntax, pname);
+		//String ppp = Parenthesizer.prettyPrint(parenthesized);
+		FileWriter pout = null;
+		try{
+			pout = new FileWriter(poutput);
+			
+			//pout.write(ppp);
+			pout.write(parenthesized.toString());
+			
+			pout.close();
+		}catch (IOException e){
+			System.err.println(e.getMessage());
+		}
 		
 		// generate parse table
 		t_generate.start();

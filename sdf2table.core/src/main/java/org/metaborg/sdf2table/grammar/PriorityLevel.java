@@ -35,7 +35,7 @@ public class PriorityLevel implements Comparable<Object>{
 		return _levels.size();
 	}
 	
-	private static class PosProduction{
+	public static class PosProduction{
 		SyntaxProduction _production;
 		int _position;
 		int _hash_code = -1;
@@ -104,7 +104,7 @@ public class PriorityLevel implements Comparable<Object>{
 		_productions.add(agent);
 	}
 	
-	Set<PriorityLevel> lowerLevels(){
+	public Set<PriorityLevel> lowerLevels(){
 		if(_lower == null)
 			computeLowerLevels();
 		return _lower;

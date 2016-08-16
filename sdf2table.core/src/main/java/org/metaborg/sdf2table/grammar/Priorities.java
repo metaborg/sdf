@@ -128,11 +128,11 @@ public class Priorities{
 		return set;
 	}
 	
-	Set<Priority> lowerPriorities(){
+	public Set<Priority> lowerPriorities(){
 		return _lower;
 	}
 	
-	Set<Priority> higherPriorities(){
+	public Set<Priority> higherPriorities(){
 		return _higher;
 	}
 	

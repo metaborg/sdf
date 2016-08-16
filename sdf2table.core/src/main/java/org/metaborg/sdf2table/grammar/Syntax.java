@@ -13,9 +13,18 @@ public class Syntax{
 	List<SyntaxProduction> _productions = new ArrayList<>();
 	List<ContextualProduction> _cproductions = new ArrayList<>();
 	SymbolCollection _symbols = new SymbolCollection();
+	Module _main_module = null;
 	
 	public Syntax(){
 		//
+	}
+	
+	public Module mainModule(){
+		return _main_module;
+	}
+	
+	public void setMainModule(Module module){
+		_main_module = module;
 	}
 	
 	public SymbolCollection symbols(){
