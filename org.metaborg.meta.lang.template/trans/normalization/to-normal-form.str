@@ -47,6 +47,9 @@ rules
         where(before := <cputime>);
         s;
         where(after := <cputime>; !(after, before); subt; match)    
+        
+rules 
+    placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")    
   
 rules
     
@@ -60,10 +63,12 @@ rules
             mn'  := <strip-annos> mn;
             rules(expanded-module: mn' -> <id>);
             where(before-normalizing := <cputime>);
+            
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
-            non-template-sections*     := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
-            
+            non-template-sections*      := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
+            non-template-sections'*    := <flatten-list> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
+                       
             import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<conc-strings>(<id>, "-norm"))))> i*;
             imports                    := <?[] <+ ![Imports(<id>)]> import-names*;
             
@@ -71,25 +76,24 @@ rules
             // lifted-cons    := <lift-constructors-norm> non-template-m;
             
             // change priority norm to handle Sort.Cons priorities
-            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections*;
-            
+            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections'*;            
             
             //basic normalization
-            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections*;
+            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections'*;
             new-basic-prods*           := [new-basic-prods'*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))];
             new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> expanded-prio;
            
            
             // basic + restrictions
-            cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections*;
-            lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections*;
-            kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections*;
+            cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections'*;
+            lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections'*;
+            kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections'*;
       
          
             // top sorts
-            lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections*;
-            cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections*;
-            start-symbols*             := <filter(?SDFSection(KernelStartSymbols(<id>))); flatten-list> non-template-sections*; 
+            lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections'*;
+            cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections'*;
+            start-symbols*             := <filter(?SDFSection(KernelStartSymbols(<id>))); flatten-list> non-template-sections'*; 
             lexical-start-prods*       := <map(lex-start-prod)> lex-start-symbols*;
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
@@ -134,23 +138,41 @@ rules
             end  
             
            // where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
+    
+  add-placeholder-prods:
+    SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
+    with
+      //content complete prods
+        sorts*                 := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                                  ; nub> prods*;
+        placeholder-prods*     := <map(add-plhdr-prod)> sorts*
+   
+      
+  add-plhdr-prod:
+    s -> SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs([rhs]), Attrs([Placeholder()]))
+      with
+        placeholder-chars := <placeholder-chars> ;
+        left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+        right-placeholder-chars := <?(_, <id>)> placeholder-chars;
+        rhs := Lit(<concat-strings; double-quote> [left-placeholder-chars, s, right-placeholder-chars]);
+        c := $[[s]-Plhdr]  
      
-    expand-import(|path):
-        name -> ast
-        where
-            name'  := <strip-annos> name;  
-            <not(expanded-module)> name';
-            rules(
-                expanded-module:
-                    name' -> <id>
-            );
-            debug(!"name ");
-            ast    := <get-ast; module-to-normal-form(|path)> name;
-            debug(!"ast ")          
-            //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
-            
+  expand-import(|path):
+    name -> ast
+    where
+        name'  := <strip-annos> name;  
+        <not(expanded-module)> name';
+        rules(
+            expanded-module:
+                name' -> <id>
+        );
+        debug(!"name ");
+        ast    := <get-ast; module-to-normal-form(|path)> name;
+        debug(!"ast ")          
+        //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
+          
     open-import-custom(resolve-path, parse-file, record-declarations):
-    import -> result
+      import -> result
     where
       if not(!import => COMPLETION(_)) then
         path       := <resolve-path> import;

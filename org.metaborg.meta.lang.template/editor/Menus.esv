@@ -45,9 +45,9 @@ menus
     end
         
     submenu: "Completion"
-      action: "Generate Stratego"         = generate-new-completions-stratego 
-      action: "Generate SDF completions"  = generate-sdf-completions-concrete
-      action: "Generate ESV colorer"      = generate-new-completions-colorer
+      action: "Generate Stratego expansions"          = generate-new-completions-stratego 
+      action: "Generate SDF3 insertions"              = generate-sdf-completions-concrete
+      action: "Generate ESV colorer"                  = generate-new-completions-colorer
     end
     
     action: "Generate PP (abstract)" = generate-pp-abstract (meta)

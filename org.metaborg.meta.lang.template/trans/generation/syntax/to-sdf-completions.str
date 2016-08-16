@@ -42,13 +42,78 @@ rules
 
 rules
  
+  module-to-sdf3-completions:
+    Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[completion/[mn]-completion-insertions]), [Imports([Module(Unparameterized(mn))]), i'*], sections'*)
+      //'module(unparameterized($[completion/[mn]-completion-syntax]), [imports('module(unparameterized(mn))), imports], exports)
+    with
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections* ;
+      newline := <collect-one(?Newlines(<id>)) <+ !None()> sections* 
+    with
+      sections'* := <flatten-list> [ <filter(section-to-sdf3-completions(|chars, newline))> sections*, 
+                      SDFSection(LexicalSyntax([SdfProduction(SortDef("COMPLETION-INSERTION"), Rhs([]), NoAttrs())]))];       
+      i'* := <map(imports-to-sdf3-completions)> i*
+
+  module-to-sdf3-completions:
+    Module(Unparameterized(mn)) -> Module(Unparameterized($[completion/[mn]-completion-insertions])) 
+  
+  imports-to-sdf3-completions: 
+    Imports(mod) -> Imports(i)
+    with
+      i := <map(module-to-sdf3-completions)> mod
+    
+  //productive productions section
+  section-to-sdf3-completions(|chars, newline):
+  	SDFSection(ContextFreeSyntax(prods*)) -> [cf-start-symbols*, plhdr-prods*, lit-prods*]
+  	with
+  		  prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+  		  //content complete prods
+        sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+        lits*        := <collect(?lit(_) <+ ?ci-lit(_)); nub> prods';
+        lit-ins*  := <map(lit-to-lit-insertion-prod)> lits*;
+        if [] := lits* then
+            lit-prods* := []
+        else
+            lit-prods* := [SDFSection(LexicalSyntax([lit-ins*]))]
+        end;                        
+        plhdr-ins* := <map(sort-to-plhdr-ins-prod)> sorts*;      
+        if [] := sorts* then
+            plhdr-prods* := []
+        else
+            plhdr-prods* := [SDFSection(ContextFreeSyntax([plhdr-ins*]))]
+        end;
+        start-symbols* := <map(sort-to-cf-start-symbol)> sorts*;  
+        if [] := sorts* then
+            cf-start-symbols* := []
+        else
+            cf-start-symbols* := [SDFSection(ContextFreeStartSymbols([start-symbols*]))]
+        end
+        
+  sort-to-plhdr-ins-prod:
+    s -> SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs([Sort("COMPLETION-INSERTION")]), Attrs([PlaceholderInsertion()]))
+    with
+       c := $[[s]-Plhdr]     
+       
+  lit-to-lit-insertion-prod:
+    lit(l) -> SdfProduction(Lit(l'), Rhs([Sort("COMPLETION-INSERTION")]), Attrs([LiteralCompletion()]))      
+    where
+      l' := <is-double-quoted <+ double-quote> l
+      
+  lit-to-lit-insertion-prod:
+    ci-lit(l) -> SdfProduction(CiLit(l), Rhs([Sort("COMPLETION-INSERTION")]), Attrs([LiteralCompletion()]))
+  
+  sort-to-cf-start-symbol:
+    s -> Sort(s)   
+    
+// insertions in SDF2
+
   module-to-sdf-completions:
     Module(Unparameterized(mn), i, sections) ->
       'module(unparameterized($[completion/[mn]-completion-syntax]), [imports('module(unparameterized(mn))), imports], exports)
-    with
+     with
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections 
-    with
+     with
       exports-completion := exports(<filter(section-to-sdf-completions(|chars, newline)); flatten-list> sections); 
       if exports([]) := exports-completion
       then
@@ -57,50 +122,52 @@ rules
         exports := [exports-completion, exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]
       end;
       imports := <map(imports-to-sdf-completions)> i
-
+  
   module-to-sdf-completions:
     Module(Unparameterized(mn)) -> 'module(unparameterized($[completion/[mn]-completion-syntax])) 
-  
+
   imports-to-sdf-completions: 
     Imports(mod) -> imports(i)
-    with
+     with
       i := <map(module-to-sdf-completions)> mod
-    
-  //productive productions section
-  section-to-sdf-completions(|chars, newline):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [cf-start-symbols*, plhdr-prods*, lit-prods*]
-  	with
-  		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-  		//content complete prods
-        sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-                        ; nub> prods*;
-        lits*        := <collect(?lit(_) <+ ?ci-lit(_)); nub> prods';
-        lit-ins*  := <map(lit-to-lit-insertion-prod); term-translation> lits*;
-        if [] := lits* then
-            lit-prods* := []
-        else
-            lit-prods* := [lexical-syntax([lit-ins*])]
-        end;                        
-        plhdr-ins* := <map(sort-to-plhdr-ins-prod); term-translation> sorts*;      
-        if [] := sorts* then
-            plhdr-prods* := []
-        else
-            plhdr-prods* := [context-free-syntax([plhdr-ins*])]
-        end;
-        start-symbols* := <map(sort-to-cf-start-symbol); term-translation> sorts*;  
-        if [] := sorts* then
-            cf-start-symbols* := []
-        else
-            cf-start-symbols* := [context-free-start-symbols([start-symbols*])]
-        end
-        
-  sort-to-plhdr-ins-prod:
-    s -> prod([sort("COMPLETION-INSERTION")], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder-insertion"))))]))
-    with
-       c := <double-quote> $[[s]-Plhdr]     
-       
-  lit-to-lit-insertion-prod:
-    lit -> prod([sort("COMPLETION-INSERTION")], lit, attrs([term(default(fun(unquoted("literal-completion"))))]))      
   
-  sort-to-cf-start-symbol:
+   section-to-sdf-completions(|chars, newline):
+    SDFSection(ContextFreeSyntax(prods*)) -> [cf-start-symbols*, plhdr-prods*, lit-prods*]
+    with
+     prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+     //content complete prods
+         sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                         ; nub> prods*;
+         lits*        := <collect(?lit(_) <+ ?ci-lit(_)); nub> prods';
+        lit-ins*  := <map(lit-to-lit-sdf-insertion-prod); term-translation> lits*;
+         if [] := lits* then
+             lit-prods* := []
+         else
+            lit-prods* := [lexical-syntax([lit-ins*])]
+         end;                        
+        plhdr-ins* := <map(sort-to-plhdr-sdf-ins-prod); term-translation> sorts*;      
+         if [] := sorts* then
+             plhdr-prods* := []
+         else
+            plhdr-prods* := [context-free-syntax([plhdr-ins*])]
+         end;
+        start-symbols* := <map(sort-to-cf-sdf-start-symbol); term-translation> sorts*;  
+        if [] := sorts* then
+             cf-start-symbols* := []
+         else
+            cf-start-symbols* := [context-free-start-symbols([start-symbols*])]
+         end
+         
+   sort-to-plhdr-sdf-ins-prod:
+    s -> prod([sort("COMPLETION-INSERTION")], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder-insertion"))))]))
+     with
+       c := <double-quote> $[[s]-Plhdr]     
+
+        
+   lit-to-lit-sdf-insertion-prod:
+    lit -> prod([sort("COMPLETION-INSERTION")], lit, attrs([term(default(fun(unquoted("literal-completion"))))]))      
+       
+   sort-to-cf-sdf-start-symbol:
     s -> sort(s)    
+  
+     

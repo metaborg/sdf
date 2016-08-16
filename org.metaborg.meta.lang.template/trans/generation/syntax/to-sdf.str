@@ -424,7 +424,7 @@ rules
       elems* := <filter(line-to-sdf(|chars, case)); flatten-list> lines*
 
   add-newline-first:
-  Line(elem*) -> Line([String("\n") | elem*])
+    Line(elem*) -> Line([String("\n") | elem*])
 
   add-newline-last :
     Line(elem*) -> Line([elem*, String("\n")])
@@ -531,9 +531,7 @@ rules //conversion of SDF3 terms into SDF2
     PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))  
     
   special-term-to-sdf:
-    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))       
-    
-    
+    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
     
   terms-to-sdf:
     [term | tail] -> <id>
@@ -556,18 +554,18 @@ rules //conversion of SDF3 terms into SDF2
    * Split on the edges delimiting identifiers.
    * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
    */
-  string-to-sdf(|chars) =
+ string-to-sdf(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     //debug(!"stringtosdf");
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<template-escape; double-quote>))
 
-   string-to-sdf-insensitive(|chars) =
+ string-to-sdf-insensitive(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     //debug(!"stringtosdf");
     map(!ci-lit(<template-escape; single-quote>))
 
-  sort-to-plhdr-prod:
+ sort-to-plhdr-prod:
     s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
     with
       placeholder-chars := <placeholder-chars> ;
