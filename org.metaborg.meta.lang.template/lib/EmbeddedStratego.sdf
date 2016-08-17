@@ -26,6 +26,11 @@ exports
              "|[" Rule      "]|" -> E1 {cons("ToTerm")}
     "Rule"   "|[" Rule      "]|" -> E1 {cons("ToTerm")}
              "|[" StratRule "]|" -> E1 {cons("ToTerm")}
+             
+    "RuleDef" "|[" RuleDef  "]|" -> E1 {cons("ToTerm")}    
+    "RDef"    "|[" RuleDef  "]|" -> E1 {cons("ToTerm")}         
+              "|[" RuleDef  "]|" -> E1 {cons("ToTerm")}   
+
 
                "|[" Strategy "]|" -> E1 {cons("ToTerm")}
     "Strat"    "|[" Strategy "]|" -> E1 {cons("ToTerm")}

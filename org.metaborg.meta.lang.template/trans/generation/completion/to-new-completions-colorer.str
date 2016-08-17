@@ -1,6 +1,5 @@
 module generation/completion/to-new-completions-colorer
 
-
 imports
   libstratego-lib
   libstrc
@@ -13,6 +12,7 @@ imports
   generation/gen-utils/to-str
   lib/EditorService
   signatures/sorts/Sorts-sig
+  signatures/modules/Modules-sig
   
 rules
     

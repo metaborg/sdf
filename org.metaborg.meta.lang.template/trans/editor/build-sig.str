@@ -1,16 +1,16 @@
 module editor/build-sig
 
 imports
+  libstrc
   signatures/TemplateLang-sig
   signatures/modules/Modules-sig
   analysis/desugar
   editor/build-utils
   generation/signatures/-
 
-
 rules
 
-   generate-sig-abstract:
+  generate-sig-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, _)> ast ;
@@ -31,8 +31,8 @@ rules
       result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
 
-   generate-dynsem:
-         (selected, position, ast, path, project-path) -> (filename, result)
+  generate-dynsem:
+    (selected, position, ast, path, project-path) -> (filename, result)
     where
       <?Module(Unparameterized(m), i*, sections)> ast ;
       m' := <strip-annos; string-tokenize(|['/']); last> m;
@@ -43,8 +43,8 @@ rules
       result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
 
-   generate-dynsem-abstract:
-         (selected, position, ast, path, project-path) -> (filename, result)
+  generate-dynsem-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
     where
       <?Module(Unparameterized(m), i*, sections)> ast ;
       m' := <strip-annos; string-tokenize(|['/']); last> m;
@@ -52,5 +52,6 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result   := <module-to-ds-sig> selected'
-      ; filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn
+      result   := <module-to-ds-sig> selected';
+      filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn   
+   

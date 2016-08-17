@@ -1,6 +1,13 @@
 module sdf2-core/Sdf2
 
-imports sdf2-core/Sdf2-Syntax constants/StrCon constants/NatCon priority/Priority characterclass/Character modules/Modules
+imports 
+  sdf2-core/Sdf2-Syntax 
+  constants/StrCon 
+  constants/NatCon 
+  priority/Priority 
+  characterclass/Character 
+  modules/Modules
+  layout-constraints/Layout-Constraints
 
 context-free start-symbols
     Module
@@ -55,7 +62,18 @@ context-free syntax
     ATermAttribute = <prefer> {reject}
     ATermAttribute = <avoid> {reject}
     ATermAttribute = <bracket> {reject}
-    ATermAttribute = <id (<ModuleName>)> {reject}
+    ATermAttribute = <ignore-layout> {reject}
+    ATermAttribute = <deprecated> {reject}
+    ATermAttribute = <enforce-newline> {reject}
+    ATermAttribute = <longest-match> {reject}
+    ATermAttribute = <case-insensitive> {reject}
+    ATermAttribute = <placeholder> {reject}
+    ATermAttribute = <placeholder-insertion> {reject}
+    ATermAttribute = <literal-completion> {reject}
+    ATermAttribute = <layout(<Constraint>)> {reject}
+    ATermAttribute = <deprecated(<StrCon>)> {reject}
+    ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
+    ATermAttribute = <id(<ModuleName>)> {reject}
     
 
   restrictions
