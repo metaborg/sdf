@@ -4,6 +4,8 @@ imports aterms/Aterms
         symbols/Symbols 
         grammar/Grammars
         constants/StrCon
+        priority/Priority
+        layout-constraints/Layout-Constraints
  
 context-free syntax
 
@@ -12,17 +14,35 @@ Attribute.Term = <<ATermAttribute>>
 
 Attributes.Attrs = <{<list:{Attribute ", "}*>}>
 Attributes.NoAttrs = <>
-Attribute.Deprecated = <deprecated> {prefer}
-Attribute.Deprecated = <deprecated(<StrCon>)> {prefer}
-Attribute.Constructor = <cons(<StrCon>)> {prefer, deprecated("Use 'Sort.Cons' notation instead")}
+
+
+
+//special attributes that should show up in the parse table as attr
+
+Attribute.Deprecated = <deprecated(<StrCon>)> 
+Attribute.Constructor = <cons(<StrCon>)> {deprecated("Use 'Sort.Cons' notation instead")}
 Attribute = <<QuotedConstructor>> {prefer, deprecated("Use 'Sort.Cons' notation instead") }
-Attribute.CaseInsensitive = <case-insensitive> {prefer}
 QuotedConstructor.Constructor = <<StrCon>>
 
+Attribute.Reject = <reject>
+Attribute.Prefer = <prefer>
+Attribute.Avoid = <avoid> 
+
+Attribute.Bracket = <bracket>
+Attribute.Assoc = <<Associativity>>
+
+Attribute.LayoutConstraint = <layout(<Constraint>)> 
+Attribute.IgnoreLayout = <ignore-layout>
+Attribute.EnforceNewLine = <enforce-newline>
+Attribute.LongestMatch = <longest-match>
+
+Attribute.CaseInsensitive = <case-insensitive>
+Attribute.Deprecated = <deprecated>  
+
 //new completion attributes
-Attribute.Placeholder = <placeholder> {prefer}
-Attribute.PlaceholderInsertion = <placeholder-insertion> {prefer}
-Attribute.LiteralCompletion = <literal-completion> {prefer}
+Attribute.Placeholder = <placeholder> 
+Attribute.PlaceholderInsertion = <placeholder-insertion> 
+Attribute.LiteralCompletion = <literal-completion> 
 
 
 Production.Prod = <<Symbols> -\> <result:Symbol> <Attributes>> {deprecated("Use productive form instead")}

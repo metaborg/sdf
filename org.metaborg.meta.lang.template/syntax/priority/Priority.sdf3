@@ -9,8 +9,7 @@ Associativity.Right = <right>
 Associativity.NonAssoc = <non-assoc>
 Associativity.Assoc = <assoc>
 
-Attribute.Bracket = <bracket>
-Attribute.Assoc = <<Associativity>>
+
 
 ArgumentIndicator.Default = <\<<arguments:{NatCon ","}+>\>>
 Group.WithArguments = <<Group> <ArgumentIndicator>> {non-assoc}
