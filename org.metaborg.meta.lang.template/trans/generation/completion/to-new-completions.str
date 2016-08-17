@@ -10,20 +10,48 @@ imports
   runtime/types/-
   analysis/desugar
   generation/gen-utils/to-str
-  signatures/modules/Modules-sig
-  signatures/sorts/Sorts-sig
-  signatures/sdf2-core/Sdf2-sig
+  generation/syntax/to-sdf
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+// TODO: convert transformations to concrete syntax
   
 rules
   
   module-to-new-cmp:
-  Module(Unparameterized(m), i*, s*) -> Module(m',  [i0, i1, is*, s'])
-  with
-    m'  := <conc-strings> ("completion/", m, "-cp");
-        i0  := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
-        i1  := Imports([Import($[signatures/[m]-sig])]); 
-        is* := <map(to-str-import(|"-cp", "completion"))> i*; 
-        s'  := Strategies(<filter(section-to-new-cmp); flatten-list> s*)
+  Module(Unparameterized(m), i*, s*) -> Module(m',  <flatten-list> [i0, i1, is*, s1, s2, s3])
+    with
+      m'        := <conc-strings> ("completion/", m, "-cp");
+      i0        := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
+      i1        := Imports([Import($[signatures/[m]-sig])]); 
+      is*       := <map(to-str-import(|"-cp", "completion"))> i*; 
+      new-cmp*  := <filter(section-to-new-cmp); flatten-list> s*;
+      s1       := <(not(?[]); !Rules(<id>)) <+ id> new-cmp* ;
+      rec-cmp*  := <filter(section-to-rec-cmp); flatten-list> s*;
+      s2       := <(not(?[]); !Rules(<id>)) <+ id> rec-cmp* ;
+      is-plhdr* := <filter(section-to-is-SDF-placeholder); flatten-list> s*;
+      s3       := <(not(?[]); !Rules(<id>)) <+ id> is-plhdr*
  
   section-to-new-cmp:
     SDFSection(ContextFreeSyntax(p*)) -> cc-str*
@@ -31,8 +59,9 @@ rules
       cc-str* := <filter(prod-to-new-cmp)> p*
       
   prod-to-new-cmp:
-    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
-                                                       App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))])) ]), Fail()), Var("completions"))))    
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> 
+            RDef |[ suggest-completions(|completions):
+                      ~term:placeholder -> <add-completions(|~term:expansion); fail> completions ]|
       where not (
         <fetch-elem(?Reject())> attrs
       )
@@ -42,11 +71,13 @@ rules
           <fetch-elem(?PlaceholderInsertion())> attrs
         )
       with
-        rhs-placeholders* := <filter(to-new-cmp-elem(|sort))> rhs*
+        placeholder      := NoAnnoList(Op($[[sort]-Plhdr], []));
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, <filter(to-new-cmp-elem(|sort))> rhs* ))]))
                 
   prod-to-new-cmp:
-    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), 
-                                                                                                            App(Seq(CallT(SVar("add-completions"), [], [ NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, rhs-placeholders* ))]))]), Fail()), Var("completions"))))    
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) ->
+            RDef |[ suggest-completions(|completions):
+              ~term:placeholder -> <add-completions(|~term:expansion); fail> completions ]|
       where not (
         <fetch-elem(?Reject())> attrs
       )
@@ -56,11 +87,9 @@ rules
         // Generate completion for empty productions?
         // where <not(?SingleLineTemplate([]))> template
       with
-        rhs-placeholders* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template
-  
-  
-  
-        
+        placeholder := NoAnnoList(Op($[[sort]-Plhdr], []));
+        expansion   := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template))]))        
+   
    //injections
    prod-to-new-cmp:
      SdfProduction(SortDef(sort), Rhs([Sort(x)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
@@ -85,7 +114,58 @@ rules
                                                                                                             , Var("completions-inj"))), BA(CallT(SVar("add-list-completions"), [], [Var(ListVar("elems*"))]), Var("completions"))))))]))  
   */
   
+     
+   // insertions with lists +
+   prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([Iter(Sort(x))]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(Iter(Sort(x)), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
   
+  prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterSep(Sort(x), _)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterSep(Sort(x), _), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+  
+   // insertions with lists *
+   prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterStar(Sort(x))]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterStar(Sort(x)), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+  
+  prod-to-new-cmp:
+     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([IterStarSep(Sort(x), _)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+   
+   prod-to-new-cmp:
+     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(IterStarSep(Sort(x), _), [])]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], 
+                                    Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
+                                    Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
+                                    GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))
+    
    to-new-cmp-elem(|sort):
      Sort(x) ->  App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))
 
@@ -96,18 +176,192 @@ rules
      IterSep(Sort(x), sep) -> NoAnnoList(List([App(Call(SVar("try"), [CallT(SVar("inline-completions"), [], [NoAnnoList(Op($[[sort]-Plhdr], []))])]), NoAnnoList(Op($[[x]-Plhdr], [])))]))
       
    to-new-cmp-elem(|sort):
-     IterStar(x) -> NoAnnoList(List([]))
+     IterStar(x) -> NoAnnoList(Op("CURSOR_ELEMENT", []))
    
    to-new-cmp-elem(|sort):
-     IterStarSep(x, sep) -> NoAnnoList(List([]))
+     IterStarSep(x, sep) -> NoAnnoList(Op("CURSOR_ELEMENT", []))
         
    //TODO: lift optionals to alternatives
    to-new-cmp-elem(|sort):
-     Opt(x) -> NoAnnoList(Op("None", []))
-        
+     Opt(x) -> NoAnnoList(Op("Some", [NoAnnoList(Op("CURSOR_ELEMENT", []))]))
         
    to-new-cmp-elem(|sort):
      Line(elems*) -> <filter(to-new-cmp-elem(|sort))> elems*   
    
    to-new-cmp-elem(|sort):
      Placeholder(s, options) -> <to-new-cmp-elem(|sort)> s   
+     where 
+       <not(fetch(?Hide()))> options
+
+   to-new-cmp-elem(|sort):
+     Placeholder(s, options) -> NoAnnoList(List([]))
+     where 
+       <fetch(?Hide())> options   
+     where
+       <?IterStar(_) + ?IterStarSep(_, _)> s     
+       
+   to-new-cmp-elem(|sort):
+     Placeholder(s, options) -> NoAnnoList(Op("None", []))
+     where 
+       <fetch(?Hide())> options   
+    where
+       <not(?IterStar(_) + ?IterStarSep(_, _))> s     
+       
+   to-new-cmp-elem(|sort):
+     Label(l, t) -> <to-new-cmp-elem(|sort)> t
+     
+rules
+
+  section-to-rec-cmp:
+    SDFSection(ContextFreeSyntax(p*)) -> <nub> [left-rec-str*, right-rec-str*]
+    where
+      left-rec-str*  := <filter(prod-to-left-rec-cmp); flatten-list> p*;  
+      right-rec-str* := <filter(prod-to-right-rec-cmp); flatten-list> p*
+      
+      
+  prod-to-left-rec-cmp: 
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*@[Sort(s) | tl*]), Attrs(attrs)) -> 
+         [ RuleDef |[ is-left-recursive: ~term:sort-term -> <id> ]|,
+           RuleDef |[ suggest-completions-left-rec(|completions):
+                        ~term:input -> <add-completions(
+                                              | ~term:expansion
+                                              )
+                                              ; fail> completions ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )      
+      where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+      where
+        sort' := <strip-annos> sort;
+        s'    := <strip-annos> s;
+        <?s'> sort'
+      with
+        sort-term        := NoAnnoList(Str(sort'));
+        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));
+        expansion-terms* := <filter(to-new-cmp-elem(|sort)); ?[h | tl]; ![Var("orig-term") | tl]> rhs*;
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+      
+   
+  prod-to-right-rec-cmp: 
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> 
+          [ RuleDef |[ is-right-recursive: ~term:sort-term -> <id> ]| ,
+            RuleDef |[ suggest-completions-right-rec(|completions):
+                         ~term:input -> <add-completions(
+                                               | ~term:expansion
+                                               )
+                                               ; fail> completions ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+        )
+      where not (
+        <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+      where 
+        <last; ?Sort(s)> rhs*;
+        sort'     := <strip-annos> sort;
+        s'        := <strip-annos> s;
+        <?s'> sort'
+      with        
+        sort-term        := NoAnnoList(Str(sort'));
+        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")])) ;
+        expansion-terms* := <filter(to-new-cmp-elem(|sort)); at-last(![Var("orig-term")])> rhs*;
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+        
+      
+        
+  prod-to-left-rec-cmp:
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> 
+          [RuleDef |[ is-left-recursive: ~term:sort-term -> <id> ]|,
+           RuleDef |[ suggest-completions-left-rec(|completions):
+                        ~term:input -> <add-completions(
+                                              | ~term:expansion
+                                              )
+                                              ; fail> completions ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where not (
+        <fetch-elem(?PlaceholderInsertion())> attrs
+      )
+      where
+        <check-left-rec-template(|sort)> template
+      with
+        sort-term        := NoAnnoList(Str(sort));
+        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));        
+        expansion-terms* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list; ?[h | tl]; ![Var("orig-term") | tl]> template;
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+  prod-to-right-rec-cmp:
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> 
+          [RuleDef |[ is-right-recursive: ~term:sort-term -> <id> ]|,
+           RuleDef |[ suggest-completions-right-rec(|completions):
+                        ~term:input -> <add-completions(
+                                              | ~term:expansion
+                                              )
+                                              ; fail> completions ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where not (
+        <fetch-elem(?PlaceholderInsertion())> attrs
+      )
+      where
+        <check-right-rec-template(|sort)> template
+      with
+        sort-term        := NoAnnoList(Str(sort));
+        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));
+        expansion-terms* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list; at-last(![Var("orig-term")])> template;
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+  
+  check-left-rec-template(|sort):
+    SingleLineTemplate(elems*) -> <id>
+    where
+      [plhdr | rest] := <filter(not(?Layout(_)))> elems*;
+      sort'          := <strip-annos> sort;
+      <?Placeholder(Sort(s), _)> plhdr;
+      s'             := <strip-annos> s;
+      <?s'> sort'
+
+  check-left-rec-template(|sort):
+    Template(lines*) -> <id>
+    where
+      elems*         := <filter(?Line(<id>)); flatten-list> lines*;
+      [plhdr | rest] := <filter(not(?Layout(_)))> elems*;
+      sort'          := <strip-annos> sort;
+      <?Placeholder(Sort(s), _)> plhdr;
+      s'             := <strip-annos> s;
+      <?s'> sort'
+
+  check-right-rec-template(|sort) :
+    SingleLineTemplate(elems*) -> <id>
+    where
+      plhdr := <filter(not(?Layout(_))); last> elems*;
+      sort' := <strip-annos> sort;
+      <?Placeholder(Sort(s), _)> plhdr;
+      s'    := <strip-annos> s;
+      <?s'> sort'
+      
+  check-right-rec-template(|sort):
+    Template(lines*) -> <id>
+    where
+      elems* := <filter(?Line(<id>)); flatten-list> lines*;
+      plhdr  := <filter(not(?Layout(_))); last> elems*;
+      sort'  := <strip-annos> sort;
+      <?Placeholder(Sort(s), _)> plhdr;
+      s'     := <strip-annos> s;
+      <?s'> sort'    
+      
+  generate-wld-template:
+    Placeholder(s, options) -> Wld()   
+    
+  generate-wld-template:
+     Line(elems*) -> <filter(generate-wld-template)> elems* 
+     
+  section-to-is-SDF-placeholder:
+     SDFSection(ContextFreeSyntax(prods*)) -> rules*
+  	 with
+  	   sorts* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+       rules* :=  <map(!SDefNoArgs("is-SDF-placeholder", Match(NoAnnoList(Op($[[<id>]-Plhdr], [])))))> sorts*
+         

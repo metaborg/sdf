@@ -8,7 +8,7 @@ imports
   utils/misc
   runtime/editor/origins
   names/analysis/names
-  generation/remove-template
+  generation/pp/remove-template
   analysis/desugar
 
 

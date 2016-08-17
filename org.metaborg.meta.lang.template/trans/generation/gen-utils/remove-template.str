@@ -8,11 +8,29 @@ imports
   libstrc
   generation/syntax/to-sdf
   trans/utils/-
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
   signatures/TemplateLang-sig
-  signatures/kernel/Kernel-sig
-  signatures/basic/Basic-sig
-  signatures/literals/Literals-sig
-  signatures/modules/Modules-sig
   
 strategies
   

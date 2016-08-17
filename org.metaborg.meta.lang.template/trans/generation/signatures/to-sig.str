@@ -1,4 +1,4 @@
-module generation/to-sig
+module generation/signatures/to-sig
 
 imports
   libstratego-lib
@@ -6,13 +6,33 @@ imports
   analysis/types
   runtime/nabl/-
   runtime/task/-
-  runtime/types/-
+  runtime/types/-  
   generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
   signatures/TemplateLang-sig
-  signatures/modules/Modules-sig
-  signatures/sorts/Sorts-sig
-  signatures/sdf2-core/Sdf2-Syntax-sig
-  
+
 rules
   
   module-to-sig:
@@ -46,20 +66,34 @@ rules
     s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
         
   section-to-sig:
-    SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*]
+    SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]
     where
-        cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-             ; nub 
-             ; map(sort-to-contentcomplete-sig)> p*
+      cc-sig*      := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+                      ; nub 
+                      ; map(sort-to-placeholder-sig)> p*;
+      cc-ins-sig* :=  < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+                      ; nub 
+                      ; map(sort-to-placeholder-insertion-sig)> p*;
+      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>)) 
+                             + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _) 
+                             <+ ?TemplateProductionWithCons(SortCons(SortDef(<strip-annos>), _), SingleLineTemplate([]), _)) 
+                     ; nub 
+                     ; map(sort-to-opt-placeholder-sig)> p*    
     where
-        sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
+      sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
     
   section-to-sig:
-    SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*]
+    SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]
     where
-        cc-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-             ; nub 
-             ; map(sort-to-contentcomplete-sig)> p*
+      cc-sig*     := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+                     ; nub 
+                     ; map(sort-to-placeholder-sig)> p*;
+      cc-ins-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
+                     ; nub 
+                     ; map(sort-to-placeholder-insertion-sig)> p*;
+      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>)) + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _)) 
+                     ; nub 
+                     ; map(sort-to-opt-placeholder-sig)> p*
     where
       sig* := <filter(cfg-to-sig)> p*   
  
@@ -131,5 +165,15 @@ rules
      
   check-fun-type: FunType([], t) -> t
   
-  sort-to-contentcomplete-sig:
+  sort-to-placeholder-sig:
         sort -> OpDecl($[[sort]-Plhdr], ConstType(SortNoArgs($[[sort]])))
+  
+  sort-to-opt-placeholder-sig:
+        sort -> OpDecl($[[sort]-Opt-Plhdr], ConstType(SortNoArgs($[[sort]])))
+  
+  sort-to-placeholder-insertion-sig:
+        sort -> OpDecl(
+              $[[sort]-Plhdr]
+            , FunType([ConstType(SortNoArgs("COMPLETION-INSERTION"))], ConstType(SortNoArgs($[[sort]])))
+            )    
+        

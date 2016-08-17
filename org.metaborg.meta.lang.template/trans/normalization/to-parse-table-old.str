@@ -1,16 +1,39 @@
 module to-parse-table-old
 
 imports
-  signatures/TemplateLang-sig
   libstratego-sglr
   libstratego-lib
   libstratego-gpp
-  generation/to-sdf
+  generation/syntax/to-sdf
   runtime/nabl/-
   pp/TemplateLang-pp
   trans/utils/misc
   normalization/char-class-utils
   normalization/to-normal-form
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
     
 overlays
   sdf-norm-constructor(s) = Term(Default(Appl(Unquoted("default"),[Appl(Unquoted("appl"),[Appl(Unquoted("unquoted"),[Fun(Quoted("\"cons\""))]),List([List([Appl(Unquoted("fun"),[Appl(Unquoted("quoted"),[Fun(Quoted(s))])])])])])])))    

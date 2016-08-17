@@ -8,8 +8,35 @@ imports
   analysis/desugar
   generation/gen-utils/to-template
   generation/gen-utils/to-str
-  templatelang
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
   
+rules
+  
+  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"    
+  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
+    
 rules
 
   module-to-pp:
@@ -56,12 +83,21 @@ rules
       ; s3*    := <map(sort-to-pp-amb)> sort*
         
   section-to-pp(|lang):
-    SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, cc*])
+    SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, cc*, cc-ins*, cc-opt-plhr*])
     with
-        //content complete prods
+        //content complete prods for regular placeholders
         cc* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
              ; nub 
-             ; map(sort-to-contentcomplete-pp); flatten-list> p*
+             ; map(sort-to-placeholder-pp); flatten-list> p*;
+         //content complete prods for placeholder insertion
+        cc-ins* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+             ; nub 
+             ; map(sort-to-placeholder-insertion-pp); flatten-list> p*  ;   
+        cc-opt-plhr* := < collect(?Opt(Sort(<strip-annos>)) <+ ?IterStarSep(Sort(<strip-annos>), _) <+ ?IterStar(Sort(<strip-annos>)) 
+                             <+ ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _) 
+                             <+ ?TemplateProductionWithCons(SortCons(SortDef(<strip-annos>), _), SingleLineTemplate([]), _)) 
+                     ; nub 
+                     ; map(sort-to-opt-placeholder-pp); flatten-list> p*                     
     with
       sort* := <filter(productive-sort); make-set> p*
       ; s1*   := <map(sort-to-pp(|lang))> sort*
@@ -399,8 +435,8 @@ rules
        s := <placeholder-to-pp-one> p
       
   placeholder-to-pp-one:
-    Placeholder(symbol, option*) -> LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                              , Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))]))
+    Placeholder(symbol, option*) -> LChoice(Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[s]]))]), 
+                                            Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))
     where
       <collect-om(?Sort(s))> symbol
     with
@@ -412,8 +448,8 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego:
-    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                                                                           , s), Var(l))
+    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(s,
+                                                                                                   Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -426,8 +462,8 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego:
-    Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(Seq(CallNoArgs(SVar("is-string")), Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-origin-term"))]))
-                                                                                           , s), Var(l))
+    Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(s, 
+                                                                                                                 Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])), Var(l))
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -471,10 +507,28 @@ rules
       <+ ?[]
     )
     
-  sort-to-contentcomplete-pp:
-    sort -> [ RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(List(
+  sort-to-placeholder-pp:
+    sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(List(
                   [ NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
-                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> ["\"[[", sort,"]]\""] ))]))]))]))]))))
-            , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], []))))
-            , SDefNoArgs("is-SDF-placeholder", Match(NoAnnoList(Op($[[sort]-Plhdr], []))))
-            ]
+                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> [left-placeholder-chars, sort, right-placeholder-chars] ))]))]))]))]))))
+                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [])))) ]
+    where
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars             
+                 
+  sort-to-placeholder-insertion-pp:
+    sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Plhdr], [Wld()])), NoAnnoList(List(
+                  [ NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
+                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(<concat-strings> [left-placeholder-chars, sort, right-placeholder-chars] ))]))]))]))]))))
+                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Plhdr], [Wld()])))) ]             
+    where
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars        
+  
+  sort-to-opt-placeholder-pp:
+    sort -> [RDefNoArgs($[prettyprint-[sort]], RuleNoCond(NoAnnoList(Op($[[sort]-Opt-Plhdr], [])), NoAnnoList(List(
+                  [ NoAnnoList(Op("H", [ NoAnnoList(List([]))
+                  , NoAnnoList(List([NoAnnoList(Op("S", [NoAnnoList(Str(""))]))]))]))]))))
+                 , SDefNoArgs($[is-[sort]], Match(NoAnnoList(Op($[[sort]-Opt-Plhdr], [])))) ]
