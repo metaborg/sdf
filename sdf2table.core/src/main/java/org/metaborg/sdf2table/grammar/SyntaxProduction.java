@@ -44,6 +44,7 @@ public class SyntaxProduction extends Production{
 	private static final StrategoConstructor CONS_ATTR_PREFER = new StrategoConstructor("prefer", 0);
 	private static final StrategoConstructor CONS_ATTR_AVOID = new StrategoConstructor("avoid", 0);
 	private static final StrategoConstructor CONS_ATTR_LONGEST_MATCH = new StrategoConstructor("longest-match", 0);
+	private static final StrategoConstructor CONS_ATTR_CASE_INSENSITIVE = new StrategoConstructor("case-insensitive", 1);
 	
 	private static final StrategoConstructor CONS_TERM = new StrategoConstructor("term", 1);
 	private static final StrategoConstructor CONS_CONS = new StrategoConstructor("cons", 1);
@@ -539,6 +540,8 @@ public class SyntaxProduction extends Production{
 						break;
 					case LONGEST_MATCH:
 						_str += "longest-match";
+					case CASE_INSENSITIVE:
+						_str += "case-insensitive";
 						break;
 					}
 					++i;
@@ -595,6 +598,16 @@ public class SyntaxProduction extends Production{
 							CONS_TERM,
 							new IStrategoTerm[]{
 									new StrategoAppl(CONS_ATTR_LONGEST_MATCH, new IStrategoTerm[]{}, null, 0)
+							},
+							null,
+							0
+						);
+					break;
+				case CASE_INSENSITIVE:
+					attr_list[i] = new StrategoAppl(
+							CONS_TERM,
+							new IStrategoTerm[]{
+									new StrategoAppl(CONS_ATTR_CASE_INSENSITIVE, new IStrategoTerm[]{}, null, 0)
 							},
 							null,
 							0
@@ -704,6 +717,9 @@ public class SyntaxProduction extends Production{
 							break;
 						case "Avoid":
 							attrs.add(Attribute.AVOID);
+							break;
+						case "CaseInsensitive":
+							attrs.add(Attribute.CASE_INSENSITIVE);
 							break;
 						case "Term":
 							ta = ta.getSubterm(0);

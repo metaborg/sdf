@@ -28,7 +28,8 @@ public abstract class Production{
 		PREFER,
 		AVOID,
 		
-		LONGEST_MATCH
+		LONGEST_MATCH,
+		CASE_INSENSITIVE
 	}
 	
 	static final FirstSetFactory fs_factory = new FirstSetFactory();

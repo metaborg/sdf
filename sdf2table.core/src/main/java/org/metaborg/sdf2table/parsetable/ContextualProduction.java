@@ -129,6 +129,9 @@ public class ContextualProduction extends Production{
 				case LONGEST_MATCH:
 					_str += "longest-match";
 					break;
+				case CASE_INSENSITIVE:
+					_str += "case-insensitive";
+					break;
 				}
 				++i;
 			}

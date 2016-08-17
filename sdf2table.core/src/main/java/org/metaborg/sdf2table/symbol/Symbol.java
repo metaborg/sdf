@@ -130,6 +130,10 @@ public abstract class Symbol implements Exportable{
 				enquoted = ((StrategoString)app.getSubterm(0)).stringValue();
 				symbol = new Literal(enquoted.substring(1, enquoted.length()-1));
 				break;
+			case "CiLit":
+				enquoted = ((StrategoString)app.getSubterm(0)).stringValue();
+				symbol = new Literal(enquoted.substring(1, enquoted.length()-1), false);
+				break;
 			case "Opt":
 				symbol = new Option(fromStrategoTerm(app.getSubterm(0), null));
 				break;
