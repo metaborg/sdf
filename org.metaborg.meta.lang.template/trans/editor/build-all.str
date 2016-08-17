@@ -79,12 +79,12 @@ rules
         <write-string-to-file> (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast);
         
         // completions table 
-        sdf-completions-filename         := <create-src-gen(|project-path, "syntax/completion", "-completion-insertion-norm.aterm")> mn;
+        sdf-completions-filename         := <create-src-gen(|project-path, "syntax/normalized/completion", "-completion-insertions-norm.aterm")> mn;
         sdf-completions-ast              := <module-to-sdf3-completions; to-normal-form(|$[[project-path]/[<dirname> path]]) <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
         <write-string-to-file> (sdf-completions-filename, <aterm-escape-strings; pp-aterm> sdf-completions-ast)  
       else
         // to completions table from sdf2table
-        sdf-completions-filename         := <create-src-gen(|project-path, "syntax/completion", "-completion-insertion.sdf")> mn;
+        sdf-completions-filename         := <create-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf")> mn;
         sdf-completions-ast              := <module-to-sdf-completions; pp-sdf-to-string  <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
         <write-string-to-file> (sdf-completions-filename, sdf-completions-ast)
       end  

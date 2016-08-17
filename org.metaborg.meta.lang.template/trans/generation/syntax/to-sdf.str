@@ -522,7 +522,13 @@ rules //conversion of SDF3 terms into SDF2
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
   special-term-to-sdf:
-    CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
+    CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))
+    
+  special-term-to-sdf:
+    EnforceNewLine() -> term(default(fun(unquoted("enforce-newline"))))  
+    
+  special-term-to-sdf:
+    LongestMatch() -> term(default(fun(unquoted("longest-match"))))      
     
   special-term-to-sdf:
     Placeholder() -> term(default(fun(unquoted("placeholder"))))  

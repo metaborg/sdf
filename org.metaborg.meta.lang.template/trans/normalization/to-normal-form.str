@@ -12,6 +12,8 @@ imports
   stratego/metaborg
   runtime/analysis/core
   editor/build-utils  
+  pp/layout-constraints/Layout-Constraints-pp
+  libstratego-gpp
 
 imports
   signatures/aliases/-
@@ -57,7 +59,7 @@ rules
     to-normal-form(|path) = module-to-normal-form(|path)
     
     module-to-normal-form(|path) :
-        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-norm]), imports, new-sections)
+        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[normalized/[mn]-norm]), imports, new-sections)
         with
             //<debug(!"normalizing grammar ")> mn;
             mn'  := <strip-annos> mn;
@@ -67,9 +69,10 @@ rules
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
             non-template-sections*      := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
-            non-template-sections'*    := <flatten-list> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
+            
+            non-template-sections'*    := <flatten-list; normalize-layout-constraints> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
                        
-            import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<conc-strings>(<id>, "-norm"))))> i*;
+            import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<concat-strings>["normalized/", <id>, "-norm"])))> i*;
             imports                    := <?[] <+ ![Imports(<id>)]> import-names*;
             
             // keeping Sort.Cons in the normalized grammar
@@ -156,7 +159,12 @@ rules
         right-placeholder-chars := <?(_, <id>)> placeholder-chars;
         rhs := Lit(<concat-strings; double-quote> [left-placeholder-chars, s, right-placeholder-chars]);
         c := $[[s]-Plhdr]  
-     
+  
+  normalize-layout-constraints = topdown(try(normalize-constraint))
+  
+  normalize-constraint :
+    LayoutConstraint(constr) -> Term(Default(Appl(Unquoted("layout"), [Fun(Quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+      
   expand-import(|path):
     name -> ast
     where
@@ -234,7 +242,7 @@ rules
             prod := <get-def; try(desugar-templates); try(template-to-sdf3-prod(|tokenize-chars)); try(remove-constructor)> c    
         
     basic-norm :
-        Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
+        Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[normalized/[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
         with
             new-prods*             := <filter(basic-norm-aux); flatten-list> sections*;
             sections'*             := <filter(not(?SDFSection(ContextFreeSyntax(_)) + ?SDFSection(LexicalSyntax(_)) + ?SDFSection(LexicalPriorities(_)) + ?SDFSection(ContextFreePriorities(_)) + ?SDFSection(Kernel(_)) +?SDFSection(Priorities(_))))> sections*;

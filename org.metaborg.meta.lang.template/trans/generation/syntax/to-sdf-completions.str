@@ -109,7 +109,7 @@ rules
 
   module-to-sdf-completions:
     Module(Unparameterized(mn), i, sections) ->
-      'module(unparameterized($[completion/[mn]-completion-syntax]), [imports('module(unparameterized(mn))), imports], exports)
+      'module(unparameterized($[completion/[mn]-completion-insertions]), [imports('module(unparameterized(mn))), imports], exports)
      with
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections 
@@ -124,7 +124,7 @@ rules
       imports := <map(imports-to-sdf-completions)> i
   
   module-to-sdf-completions:
-    Module(Unparameterized(mn)) -> 'module(unparameterized($[completion/[mn]-completion-syntax])) 
+    Module(Unparameterized(mn)) -> 'module(unparameterized($[completion/[mn]-completion-insertions])) 
 
   imports-to-sdf-completions: 
     Imports(mod) -> imports(i)
