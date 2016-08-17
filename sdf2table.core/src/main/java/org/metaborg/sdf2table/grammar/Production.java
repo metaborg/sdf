@@ -15,24 +15,202 @@ import org.metaborg.sdf2table.symbol.Terminal;
 import org.metaborg.sdf2table.symbol.TerminalContainer;
 
 public abstract class Production{
-	/**
-	 * Production attributes.
-	 */
-	public enum Attribute{
-		ASSOC_LEFT,
-		ASSOC_RIGHT,
-		NON_ASSOC,
+	static final FirstSetFactory fs_factory = new FirstSetFactory();
+	
+	public enum AssocType{
+		LEFT,
+		RIGHT,
+		NON_ASSOC
+	}
+	
+	public enum AttributeType{
+		DEPRECATED, // see Deprecated
 		
-		BRACKET,
 		REJECT,
 		PREFER,
 		AVOID,
 		
+		ASSOC, // see Associativity
+		
+		BRACKET,
+		
+		LAYOUT_CONSTRAINT, // see LayoutConstraint
+		IGNORE_LAYOUT,
+		ENFORCE_NEWLINE,
+		
 		LONGEST_MATCH,
-		CASE_INSENSITIVE
+		CASE_INSENSITIVE,
+		
+		PLACEHOLDER,
+		PLACEHOLDER_INSERTION,
+		LITERAL_COMPLETION
 	}
 	
-	static final FirstSetFactory fs_factory = new FirstSetFactory();
+	public static class Attribute{
+		AttributeType _type;
+		
+		public Attribute(AttributeType type){
+			_type = type;
+		}
+		
+		public AttributeType type(){
+			return _type;
+		}
+		
+		public String name(){
+			switch(_type){
+			case REJECT:
+				return "reject";
+			case PREFER:
+				return "prefer";
+			case AVOID:
+				return "avoid";
+			case BRACKET:
+				return "bracket";
+			case IGNORE_LAYOUT:
+				return "ignore-layout";
+			case ENFORCE_NEWLINE:
+				return "enforce-newline";
+			case LONGEST_MATCH:
+				return "longest-match";
+			case CASE_INSENSITIVE:
+				return "case-insensitive";
+			case PLACEHOLDER:
+				return "placeholder";
+			case PLACEHOLDER_INSERTION:
+				return "placeholder-insertion";
+			case LITERAL_COMPLETION:
+				return "literal-completion";
+			default:
+				break;
+			}
+			
+			return "";
+		}
+		
+		@Override
+		public int hashCode(){
+			return _type.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object other){
+			if(other != null && other instanceof Attribute){
+				Attribute attr = (Attribute)other;
+				return _type.equals(attr._type);
+			}
+			
+			return false;
+		}
+	}
+	
+	public static class Associativity extends Attribute{
+		AssocType _assoc;
+		
+		public Associativity(AssocType assoc){
+			super(AttributeType.ASSOC);
+			_assoc = assoc;
+		}
+		
+		public AssocType assoc(){
+			return _assoc;
+		}
+		
+		@Override
+		public String name(){
+			switch(_assoc){
+			case LEFT:
+				return "left";
+			case RIGHT:
+				return "right";
+			case NON_ASSOC:
+				return "non-assoc";
+			}
+			
+			return "";
+		}
+		
+		@Override
+		public int hashCode(){
+			return Utilities.hashCode(_type.hashCode(), _assoc.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object other){
+			if(other != null && other instanceof Associativity){
+				Associativity attr = (Associativity)other;
+				return _assoc.equals(attr._assoc);
+			}
+			
+			return false;
+		}
+	}
+	
+	public static class Deprecated extends Attribute{
+		String _message;
+		
+		public Deprecated(String message){
+			super(AttributeType.DEPRECATED);
+			_message = message;
+		}
+		
+		public String message(){
+			return _message;
+		}
+		
+		@Override
+		public String name(){
+			return "deprecated";
+		}
+		
+		@Override
+		public int hashCode(){
+			return Utilities.hashCode(_type.hashCode(), _message.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object other){
+			if(other != null && other instanceof Deprecated){
+				Deprecated attr = (Deprecated)other;
+				return _message.equals(attr._message);
+			}
+			
+			return false;
+		}
+	}
+	
+	public static class LayoutConstraint extends Attribute{
+		String _constraint;
+		
+		public LayoutConstraint(String constraint){
+			super(AttributeType.LAYOUT_CONSTRAINT);
+			_constraint = constraint;
+		}
+		
+		public String constraint(){
+			return _constraint;
+		}
+		
+		@Override
+		public String name(){
+			return "layout("+_constraint+")";
+		}
+		
+		@Override
+		public int hashCode(){
+			return Utilities.hashCode(_type.hashCode(), _constraint.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object other){
+			if(other != null && other instanceof LayoutConstraint){
+				LayoutConstraint attr = (LayoutConstraint)other;
+				return _constraint.equals(attr._constraint);
+			}
+			
+			return false;
+		}
+	}
 	
 	int _hash_code = -1;
 	

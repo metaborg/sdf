@@ -1,7 +1,6 @@
 package org.metaborg.sdf2table.io;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Set;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Production.Attribute;
 import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.symbol.Alternative;
 import org.metaborg.sdf2table.symbol.CharClass;
@@ -258,66 +258,16 @@ public class Importer{
 				
 				// Read attributes
 				tattrs = (StrategoAppl)app.getSubterm(2);
-				Set<Attribute> attrs = EnumSet.noneOf(Attribute.class);
+				Set<Attribute> attrs = new HashSet<>();
 				switch(tattrs.getName()){
 				case "NoAttrs":
 					break;
-				case "Attrs": // TODO handle all production attributes
+				case "Attrs":
 					StrategoList talist = (StrategoList)tattrs.getSubterm(0);
 					for(IStrategoTerm ta : talist){
-						StrategoAppl a = (StrategoAppl)ta;
-						switch(a.getName()){
-						case "Assoc":
-							StrategoAppl assoc = (StrategoAppl)a.getSubterm(0);
-							switch(assoc.getName()){
-							case "Left":
-								attrs.add(Attribute.ASSOC_LEFT);
-								break;
-							case "Right":
-								attrs.add(Attribute.ASSOC_RIGHT);
-								break;
-							case "NonAssoc":
-								attrs.add(Attribute.NON_ASSOC);
-								break;
-							default:
-								System.err.println("Unknown associativity: `"+assoc.getName()+"'.");
-								break;
-							}
-							break;
-						case "Bracket":
-							attrs.add(Attribute.BRACKET);
-							break;
-						case "Reject":
-							attrs.add(Attribute.REJECT);
-							break;
-						case "Prefer":
-							attrs.add(Attribute.PREFER);
-							break;
-						case "Avoid":
-							attrs.add(Attribute.AVOID);
-							break;
-						case "CaseInsensitive":
-							attrs.add(Attribute.CASE_INSENSITIVE);
-							break;
-						case "Term":
-							ta = ta.getSubterm(0);
-							if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Default")){
-								ta = ta.getSubterm(0);
-								if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Fun")){
-									ta = ta.getSubterm(0);
-									if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Unquoted")){
-										StrategoString str = (StrategoString)ta.getSubterm(0);
-										if(str.stringValue().equals("longest-match")){
-											attrs.add(Attribute.LONGEST_MATCH);
-											break;
-										}
-									}
-								}
-							}
-						default:
-							System.err.println("Unknown attribute type: `"+a.getName()+"'.");
-							break;
-						}
+						Attribute attr = importAttribute(ta);
+						if(attr != null)
+							attrs.add(attr);
 					}
 					break;
 				default:
@@ -330,6 +280,70 @@ public class Importer{
 		}
 		
 		return null;
+	}
+	
+	public static Production.Attribute importAttribute(IStrategoTerm term){
+		if(term instanceof StrategoAppl){
+			StrategoAppl a = (StrategoAppl)term;
+			switch(a.getName()){ // This is just to get a proper name for the attribute.
+			case "Assoc":
+				StrategoAppl assoc = (StrategoAppl)a.getSubterm(0);
+				switch(assoc.getName()){
+				case "Left":
+					return new Production.Associativity(Production.AssocType.LEFT);
+				case "Right":
+					return new Production.Associativity(Production.AssocType.RIGHT);
+				case "NonAssoc":
+					return new Production.Associativity(Production.AssocType.NON_ASSOC);
+				default:
+					System.err.println("Unknown associativity: `"+assoc.getName()+"'.");
+					break;
+				}
+				break;
+			case "Reject":
+				return new Production.Attribute(Production.AttributeType.REJECT);
+			case "Prefer":
+				return new Production.Attribute(Production.AttributeType.PREFER);
+			case "Avoid":
+				return new Production.Attribute(Production.AttributeType.AVOID);
+			case "Bracket":
+				return new Production.Attribute(Production.AttributeType.BRACKET);
+			case "LayoutConstraint":
+				return new Production.LayoutConstraint(importLayoutConstraint(a.getSubterm(0)));
+			case "IgnoreLayout":
+				return new Production.Attribute(Production.AttributeType.IGNORE_LAYOUT);
+			case "EnforceNewLine":
+				return new Production.Attribute(Production.AttributeType.ENFORCE_NEWLINE);
+			case "LongestMatch":
+				return new Production.Attribute(Production.AttributeType.LONGEST_MATCH);
+			case "CaseInsensitive":
+				return new Production.Attribute(Production.AttributeType.CASE_INSENSITIVE);
+			case "Deprecated":
+				String message = "";
+				if(a.getSubtermCount() > 0){
+					message = ((StrategoString)a.getSubterm(0)).stringValue();
+				}
+				return new Production.Deprecated(message);
+			case "Placeholder":
+				return new Production.Attribute(Production.AttributeType.PLACEHOLDER);
+			case "PlaceholderInsertion":
+				return new Production.Attribute(Production.AttributeType.PLACEHOLDER_INSERTION);
+			case "LiteralCompletion":
+				return new Production.Attribute(Production.AttributeType.LITERAL_COMPLETION);
+			case "Term":
+				System.err.println("sdf2table : importAttribute: unhandled term attribute (yet)."); // TODO
+				break;
+			default:
+				System.err.println("sdf2table : importAttribute: unknown attribute `"+a.getName()+"'.");
+				break;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static String importLayoutConstraint(IStrategoTerm term){
+		return ""; // TODO
 	}
 	
 	public static List<Symbol> importSymbolList(SymbolCollection collection, IStrategoTerm term){
