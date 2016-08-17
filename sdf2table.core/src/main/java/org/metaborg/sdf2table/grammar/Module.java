@@ -89,7 +89,7 @@ public class Module{
 		
 		//Set<Module> loaded_modules = new HashSet<>();
 		for(Entry<String, UnloadedModule> e : modules.entrySet()){
-			e.getValue().loadSyntax();
+			e.getValue().loadKernel();
 		}
 		
 		for(Entry<String, UnloadedModule> e : modules.entrySet()){

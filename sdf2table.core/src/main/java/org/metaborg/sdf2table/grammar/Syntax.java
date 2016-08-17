@@ -5,9 +5,6 @@ import java.util.List;
 
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
 import org.metaborg.sdf2table.symbol.SymbolCollection;
-import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoList;
 
 public class Syntax{
 	List<SyntaxProduction> _productions = new ArrayList<>();
@@ -85,25 +82,6 @@ public class Syntax{
 				return p;
 		}
 		return null;
-	}
-	
-	public static void fromStrategoTerm(IStrategoTerm term, Syntax syntax){
-		if(term instanceof StrategoAppl){
-			StrategoAppl app = (StrategoAppl)term;
-			if(app.getName().equals("Kernel")){
-				StrategoList sdf_productions = (StrategoList)app.getSubterm(0);
-				for(IStrategoTerm t : sdf_productions){
-					SyntaxProduction prod = SyntaxProduction.fromATerm(t, syntax);
-					if(prod != null){
-						prod.product().addProduction(prod);
-						//syntax.productions().add(prod); already done.
-					}else{
-						System.err.println("Malformed Stratego term : SdfProduction expected.");
-						return;
-					}
-				}
-			}
-		}
 	}
 
 	public void declareContextualProduction(ContextualProduction contextualProduction) {

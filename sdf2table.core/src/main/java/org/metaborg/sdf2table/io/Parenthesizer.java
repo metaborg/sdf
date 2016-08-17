@@ -1,4 +1,4 @@
-package org.metaborg.sdf2table.parenthesizer;
+package org.metaborg.sdf2table.io;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,12 +1,7 @@
 package org.metaborg.sdf2table.symbol;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoList;
 
 public abstract class CharClass extends Symbol implements Trigger{
 	@Override
@@ -187,56 +182,4 @@ public abstract class CharClass extends Symbol implements Trigger{
 	}
 	
 	public abstract IStrategoTerm toATerm();
-	
-	public static Set<CharClass> lookaheadsFromATerm(IStrategoTerm term){
-		Set<CharClass> set = new HashSet<>();
-		
-		StrategoList slist;
-		
-		if(term instanceof StrategoAppl){
-			StrategoAppl app = (StrategoAppl)term;
-			switch(app.getName()){
-			case "List":
-				slist = (StrategoList)app.getSubterm(0);
-				Set<Terminal> terminals = new HashSet<>();
-				for(IStrategoTerm t : slist){
-					Set<CharClass> ccs = lookaheadsFromATerm(t);
-					for(CharClass cc : ccs){
-						if(cc instanceof Terminal){
-							terminals.add((Terminal)cc);
-						}else{
-							set.add(cc);
-						}
-					}
-				}
-				if(!terminals.isEmpty()){
-					Terminal u = Terminal.union(terminals.toArray(new Terminal[terminals.size()]));
-					//System.err.println("Union:"+u.toString());
-					set.add(u);
-				}
-				break;
-			// NON TERMINALS
-			case "Seq":
-				Terminal head = Terminal.fromATerm(app.getSubterm(0));
-				for(CharClass tail : lookaheadsFromATerm(app.getSubterm(1))){
-					if(tail instanceof Sequence){
-						set.add(new Sequence(head, ((Sequence)tail)._list));
-					}else if(tail instanceof Terminal){
-						set.add(new Sequence(head, (Terminal)tail));
-					}else{
-						System.err.println("In sequence: `"+tail.toString()+"' is not a terminal.");
-					}
-				}
-				break;
-			// TERMINALS
-			case "CharClass":
-				set.add(Terminal.fromATerm(app.getSubterm(0)));
-				break;
-			default:
-				System.err.println("In sequence: `"+app.toString()+"' is not a character class.");
-				break;
-			}
-		}
-		return set;
-	}
 } 

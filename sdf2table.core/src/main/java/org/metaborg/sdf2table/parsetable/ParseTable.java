@@ -23,7 +23,7 @@ import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
-import org.metaborg.sdf2table.parenthesizer.Parenthesizer;
+import org.metaborg.sdf2table.io.Parenthesizer;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.spoofax.interpreter.terms.*;
