@@ -23,7 +23,7 @@ public class Exporter{
 	private static final StrategoConstructor CONS_IGNORE_LAYOUT = new StrategoConstructor("ignore-layout", 0);
 	private static final StrategoConstructor CONS_ENFORCE_NEWLINE = new StrategoConstructor("enforce-newline", 0);
 	private static final StrategoConstructor CONS_LONGEST_MATCH = new StrategoConstructor("longest-match", 0);
-	private static final StrategoConstructor CONS_CASE_INSENSITIVE = new StrategoConstructor("case-isensitive", 0);
+	private static final StrategoConstructor CONS_CASE_INSENSITIVE = new StrategoConstructor("case-insensitive", 0);
 	private static final StrategoConstructor CONS_PLACEHOLDER = new StrategoConstructor("placeholder", 0);
 	private static final StrategoConstructor CONS_PLACEHOLDER_INSERTION = new StrategoConstructor("placeholder-insertion", 0);
 	private static final StrategoConstructor CONS_LITERAL_COMPLETION = new StrategoConstructor("literal-completion", 0);
@@ -44,10 +44,8 @@ public class Exporter{
 				CONS_ASSOC,
 				new IStrategoTerm[]{
 						new StrategoAppl(
-								CONS_ASSOC,
-								new IStrategoTerm[]{
-										cons
-								},
+								cons,
+								new IStrategoTerm[]{},
 								null,
 								0
 						)
