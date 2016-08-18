@@ -1,72 +1,122 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.Queue;
+import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.core.CollisionSet;
+import org.metaborg.sdf2table.core.Utilities;
+import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.grammar.Trigger;
-import org.metaborg.sdf2table.symbol.Symbol;
-import org.metaborg.sdf2table.symbol.Terminal;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 
-public class ItemSet extends LinkedHashSet<Item>{
-	private static final long serialVersionUID = 6828916657513723316L;
+public class ItemSet extends CollisionSet<Item>{
 	int _hash = -1;
+	//int[] _sig = null;
 	
-	private static class ItemSetConstructor implements CollectionConstructor<ItemSet, Item>{
+	State _state;
+	Set<Item> _kernels = new CollisionSet<>();
+	
+	enum Status{
+		OPEN,
+		COMPLETE,
+		CLOSING,
+		CLOSED
+	}
+	
+	Status _status = Status.OPEN;
+	
+	private static class ItemSetManager implements CollectionManager<ItemSet, Item>{
 		public ItemSet create(){
-			return new ItemSet();
+			return new ItemSet((State)null);
 		}
 		
 		public ItemSet create(ItemSet other){
 			return new ItemSet(other);
 		}
+
+		@Override
+		public Item copy(Item item){
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE)
+				return item;
+			return item.split();
+		}
 	}
 	
-	private static final ItemSetConstructor _constructor = new ItemSetConstructor();
+	private static final ItemSetManager _constructor = new ItemSetManager();
 	
-	public ItemSet(){
+	public ItemSet(State state){
 		super();
+		_state = state;
 	}
 	
 	public ItemSet(ItemSet copy){
-		super(copy);
-	}
-	
-	public ItemSet closure(){
-		ItemSet nset = new ItemSet();
+		super();
+		_state = null;
 		
-		for(Item i : this){
-			nset.addAll(i.closure());
+		if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE){
+			for(Item i : copy){
+				add(i);
+			}
+		}else{
+			for(Item i : copy){
+				add(i.split());
+			}
 		}
-		
-		return nset;
 	}
 	
-	public boolean conflicts(Production p){
+	public void setState(State state){
+		_state = state;
+	}
+	
+	public State state(){
+		return _state;
+	}
+	
+	public void complete(){
+		if(_status == Status.OPEN){
+			_status = Status.COMPLETE;
+			computeHashCode();
+		}
+	}
+	
+	public void close() throws UndefinedSymbolException{
+		if(_status == Status.COMPLETE || _status == Status.OPEN){
+			_status = Status.CLOSING;
+			for(Item i : _kernels){
+				i.close(this);
+			}
+			_status = Status.CLOSED;
+		}
+	}
+	
+	public boolean conflicts(SyntaxProduction p){
 		for(Item i : this){
-			if(p.product().equals(i.nextSymbol()) && !i.conflicts(p))
+			if(p.product().equals(i.nextSymbol()) && !i.shallowConflicts(p))
 				return false;
 		}
 		return true;
 	}
 	
-	public MergingMap<Trigger, ItemSet, Item> shift(){
-		MergingMap<Trigger, ItemSet, Item> map = new MergingMap<Trigger, ItemSet, Item>(_constructor);
+	public MergingMap<ItemSet, Item> shift(){
+		MergingMap<ItemSet, Item> map = new MergingMap<>(_constructor);
 		
 		for(Item i : this){
 			if(!i.isFinal()){
-				Symbol next = i.nextSymbol();
+				Queue<Trigger> queue = i.pendingTriggers();
 				
-				if(next.isTerminal()){
-					map.put((Terminal)next, i.shift());
+				if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE){
+					Item shifted = i.shift();
+					
+					for(Trigger t : queue){
+						map.put(t, shifted);
+					}
 				}else{
-					for(Production p : next.getProductions()){
-						if(!i.conflicts(p)){
-							map.put(p, i.shift());
-						}
+					while(!queue.isEmpty()){
+						map.put(queue.poll(), i.shift());
 					}
 				}
-				
 			}
 		}
 		
@@ -75,24 +125,70 @@ public class ItemSet extends LinkedHashSet<Item>{
 	
 	@Override
     public boolean equals(Object o){
-		if(o != null && o instanceof ItemSet){
+		if(o == this)
+			return true;
+		if(o != null && o instanceof ItemSet && o.hashCode() == _hash){
 			ItemSet set = (ItemSet)o;
 			
-			if(set.size() == this.size()){
+			if(set._kernels.size() == _kernels.size()){
+				for(Item i : _kernels){
+					if(!set._kernels.contains(i))
+						return false;
+				}
+				return true;
+			}
+			
+			/*if(set.size() == this.size()){
 				for(Item i : this){
 					if(!set.contains(i))
 						return false;
 				}
 				return true;
-			}
+			}*/
+			
+			//return Arrays.equals(_sig, set._sig);
 		}
 		return false;
     }
 	
 	@Override
 	public boolean add(Item i){
-		_hash = -1;
-		return super.add(i);
+		if(_status == Status.CLOSED)
+			System.err.println("sdf2table.ItemSet.add: warning: this item-set is closed!");
+		Item doppelganger = push(i);
+		if(doppelganger == null){
+			i._set = this;
+			if(_status == Status.OPEN)
+				_kernels.add(i);
+			return true;
+		}
+		
+		doppelganger.merge(i);
+		
+		return false;
+	}
+	
+	public void merge(ItemSet items) {
+		/*Production prod = null;
+		boolean uni = true;
+		
+		for(Item i : items){
+			if(prod != null && !i.production().asProduction().equals(prod)){
+				uni = false;
+				break;
+			}
+			prod = i.production().asProduction();
+		}
+		
+		if(uni && items.size() > 1)
+			System.err.println("hey");*/
+		
+		for(Item i : items){
+			Item doppelganger = agent(i);
+			if(doppelganger != null){
+				doppelganger.merge(i);
+			}
+		}
 	}
 	
 	@Override
@@ -100,19 +196,24 @@ public class ItemSet extends LinkedHashSet<Item>{
 		_hash = -1;
 		return super.addAll(i);
 	}
+	
+	public void computeHashCode(){
+		_hash = 0;
+		int[] _sig = new int[size()];
+		int i = 0;
+		for(Item item : _kernels){
+			_sig[i] = item.hashCode();
+        	++i;
+		}
+		Arrays.sort(_sig);
+		/*for(i = 0; i < size(); ++i){
+			_hash += _sig[i] * Math.pow(31.0, size()-1.0-i);
+		}*/
+		_hash = Utilities.hashCode(_sig);
+	}
 
     @Override
     public int hashCode(){
-    	if(_hash == -1){
-	        _hash = 0;
-	        int k = 0;
-	        
-	        for(Item i : this){
-	        	_hash += i.hashCode() * Math.pow(31.0, this.size()-1.0-k);
-	        	++k;
-	        }
-    	}
-        
         return _hash;
     }
 }

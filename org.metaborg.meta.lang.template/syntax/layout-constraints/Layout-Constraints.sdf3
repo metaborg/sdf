@@ -14,8 +14,7 @@ lexical restrictions
 
 context-free syntax
   
-  Attribute.LayoutConstraint = <layout(<Constraint>)> {prefer}
-  Attribute.IgnoreLayout = <ignore-layout> {prefer}
+  
   Constraint.Tree = NatCon 
   Constraint.Num = <num(<NatCon>)> 
   Constraint = LayoutVar 

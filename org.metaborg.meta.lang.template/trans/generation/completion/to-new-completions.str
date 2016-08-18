@@ -183,7 +183,7 @@ rules
         
    //TODO: lift optionals to alternatives
    to-new-cmp-elem(|sort):
-     Opt(x) -> NoAnnoList(Op("CURSOR_ELEMENT", []))
+     Opt(x) -> NoAnnoList(Op("Some", [NoAnnoList(Op("CURSOR_ELEMENT", []))]))
         
    to-new-cmp-elem(|sort):
      Line(elems*) -> <filter(to-new-cmp-elem(|sort))> elems*   

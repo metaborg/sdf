@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
+//import java.util.Map.Entry;
 
 import org.metaborg.sdf2table.core.Benchmark;
-import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.core.Exportable;
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
+import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
+import org.metaborg.sdf2table.parsetable.MergingMap.Entry;
+import org.metaborg.sdf2table.parsetable.ParseTable.Statistics;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
@@ -22,9 +25,11 @@ import org.spoofax.terms.StrategoInt;
  */
 public class State implements Exportable{
 	static Benchmark.DistributedTask _t_shift;
+	static Benchmark.DistributedTask _t_reduce;
 	static Benchmark.DistributedTask _t_close;
 	static Benchmark.DistributedTask _t_action;
 	static Benchmark.DistributedTask _t_equal;
+	static Benchmark.DistributedTask _t_merge;
 	
 	public static void reset(){
 		_t_shift = _t_close = _t_action = _t_equal = null;
@@ -55,28 +60,93 @@ public class State implements Exportable{
 	 */
 	private int _id;
 	
+	private boolean _reduced = false;
+	
+	private boolean _update_requested = false;
+	
+	public static class ActionList extends LinkedList<Action>{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		State _state;
+		
+		public ActionList(State state){
+			super();
+			_state = state;
+		}
+		
+		public ActionList(ActionList list){
+			super();
+			_state = list._state;
+			for(Action a : list){
+				add(a.copy());
+			}
+		}
+		
+		@Override
+		public boolean add(Action action){
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE && action instanceof Reduce){
+				Reduce reduce = (Reduce)action;
+				for(Action a : this){
+					if(a instanceof Reduce){
+						Reduce r = (Reduce)a;
+						
+						if(r.label().agent().syntaxProduction().equals(reduce.label().agent().syntaxProduction())){ // conflict !
+							LabelGroup group = null;
+							if(r.label() instanceof LabelGroup){ // this is not the first conflict
+								group = (LabelGroup)r.label();
+							}else{ // this is the first conflict
+								group = ParseTable.newLabelGroup(r.label());
+								r.updateLabel(group);
+							}
+							
+							group.add(reduce.label());
+							
+							return true;
+						}
+					}
+				}
+			}
+			super.add(action);
+			return true;
+		}
+	}
+	
 	/**
 	 * An List<Action> factory used to populate the _actions table.
 	 */
-	private static class ActionListConstructor implements CollectionConstructor<List<Action>, Action>{
-		public List<Action> create(){
-			return new LinkedList<>();
+	private static class ActionListManager implements CollectionManager<ActionList, Action>{
+		State _state;
+		
+		public ActionListManager(State state){
+			_state = state;
 		}
 		
-		public List<Action> create(List<Action> other){
-			return new LinkedList<>(other);
+		public ActionList create(){
+			return new ActionList(_state);
+		}
+		
+		public ActionList create(ActionList other){
+			return new ActionList(other);
+		}
+
+		@Override
+		public Action copy(Action other){
+			return other.copy();
 		}
 	}
 	
 	/**
 	 * Static instance of the List<Action> factory.
 	 */
-	private static final ActionListConstructor _constructor = new ActionListConstructor();
+	private final ActionListManager _constructor = new ActionListManager(this);
 	
 	/**
 	 * List of actions 
 	 */
-	MergingMap<Trigger, List<Action>, Action> _actions = new MergingMap<>(_constructor);
+	MergingMap<ActionList, Action> _actions = new MergingMap<>(_constructor);
 	
 	/**
 	 * Create a new empty state.
@@ -84,7 +154,7 @@ public class State implements Exportable{
 	 */
 	public State(ParseTable pt){
 		_pt = pt;
-		_items = new ItemSet();
+		_items = new ItemSet(this);
 		_id = -1;
 	}
 	
@@ -96,6 +166,7 @@ public class State implements Exportable{
 	public State(ParseTable pt, ItemSet set){
 		_pt = pt;
 		_items = set;
+		set.setState(this);
 		_id = -1;
 	}
 	
@@ -118,48 +189,71 @@ public class State implements Exportable{
 			_id = id;
 	}
 	
+	public void complete(){
+		_items.complete();
+	}
+	
+	public void requestUpdate(){
+		if(!_update_requested){
+			_update_requested = true;
+			ParseTable.current().requestUpdate(this);
+		}
+	}
+	
 	/**
 	 * Close the associated item set.
 	 * <p>
-	 * This method add each item of the item set closure to the state,
-	 * generate every reduce actions associated to those items.
+	 * This method add each item of the item set closure to the state.
+	 * @throws UndefinedSymbolException 
 	 */
-	@SuppressWarnings("unchecked")
-	public void close(){
+	public void close() throws UndefinedSymbolException{
 		if(_t_close == null)
 			_t_close = Benchmark.newDistributedTask("State.close");
 		_t_close.start();
 		
-		_items = _items.closure();
-		
-		/*Map<Production, Map<Reduce.ReducePolicy, Reduce>> reduces = new HashMap<>();
-		
-		for(Item i : _items){
-			for(Reduce r : i.reduceActions()){
-				//Reduce reduce = reduces.get(r.getProduction());
-				Map<Reduce.ReducePolicy, Reduce> map = reduces.get(r.getProduction());
-				if(map == null)
-					reduces.put(r.getProduction(), map = new EnumMap<>(Reduce.ReducePolicy.class));
-				Reduce reduce = map.get(r.policy());
-				if(reduce == null)
-					map.put(r.policy(), r);
-				else
-					map.put(r.policy(), new Reduce(reduce.getTriggerTerminal().union(r.getTriggerTerminal()), r.getProduction()));
-				
-			}
-		}
-		
-		for(Entry<Production, Map<Reduce.ReducePolicy, Reduce>> e : reduces.entrySet()){
-			for(Entry<Reduce.ReducePolicy, Reduce> re : e.getValue().entrySet()){
-				addAction(re.getValue());
-			}
-		}*/
-		
-		for(Item i : _items){
-			addActions((Set<Action>)(Object)i.reduceActions());
-		}
+		_items.close();
 		
 		_t_close.stop();
+	}
+	
+	public List<Label> reduceLabels(Production prod){
+		List<Label> list = new LinkedList<>(); 
+		for(Entry<Trigger, ActionList> e : _actions.entrySet()){
+			for(Action a : e.getValue()){
+				if(a instanceof Reduce){
+					Reduce r = (Reduce)a;
+					if(r.label().contains(prod)){
+						list.add(r.label());
+					}
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	public void reduce(){
+		if(!_reduced){
+			if(_t_reduce == null)
+				_t_reduce = Benchmark.newDistributedTask("State.reduce");
+			_t_reduce.start();
+			
+			for(Item i : _items){
+				addActions(i.reduceActions());
+			}
+			
+			if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.MERGE){
+				for(Item i : _items){
+					if(i.isFinal()){
+						i.addSourceLabels(reduceLabels(i.production()));
+					}
+				}
+			}
+			
+			_reduced = true;
+			
+			_t_reduce.stop();
+		}
 	}
 	
 	/**
@@ -169,27 +263,47 @@ public class State implements Exportable{
 	 * parse graph.
 	 * <p>
 	 * Be sure to call {@link #close()} before this method to get a consistent state.
+	 * @throws UndefinedSymbolException 
 	 */
-	public void shift(){
+	public void shift() throws UndefinedSymbolException{
 		if(_t_shift == null)
 			_t_shift = Benchmark.newDistributedTask("State.shift");
 		_t_shift.start();
 		
-		//Map<Trigger, ItemSet> map = _items.shift();
-		MergingMap<Trigger, ItemSet, Item> map = _items.shift();
+		_update_requested = false;
+		MergingMap<ItemSet, Item> map = _items.shift();
 		
 		_t_shift.stop();
 		
 		for(Entry<Trigger, ItemSet> e : map.entrySet()){
 			State s = new State(_pt, e.getValue());
 			
-			if(s.isAcceptState())//{
+			if(s.isAcceptState())
 				addAction(new Accept(e.getKey()));
-			//}else{
-				s = _pt.addState(s); // state s may change here
-				addAction(new Shift(e.getKey(), s));
-			//}
+			
+			s = _pt.push(s); // state s may change here
+			addAction(new Shift(e.getKey(), s));
 		}
+	}
+	
+	public boolean shiftPending(){
+		if(ParseTable.current().deepReduceConflictPolicy() == ParseTable.DeepReduceConflictPolicy.IGNORE)
+			return false;
+		for(Item i : _items){
+			if(!i.isFinal() && !i.pendingTriggers().isEmpty())
+				return true;
+		}
+		return false;
+	}
+	
+	void merge(State s){
+		if(_t_merge == null)
+			_t_merge = Benchmark.newDistributedTask("State.merge");
+		_t_merge.start();
+		
+		_items.merge(s._items);
+		
+		_t_merge.stop();
 	}
 	
 	/**
@@ -217,7 +331,7 @@ public class State implements Exportable{
 	 */
 	private void addAction(Action a){
 		if(_t_action == null)
-			_t_action = Benchmark.newDistributedTask("State.ation");
+			_t_action = Benchmark.newDistributedTask("State.action");
 		_t_action.start();
 		
 		_actions.put(a.trigger(), a);
@@ -230,7 +344,7 @@ public class State implements Exportable{
 	 * <p>
 	 * See {@link #addAction(Action)}.
 	 */
-	private void addActions(Collection<Action> c){
+	private void addActions(Collection<? extends Action> c){
 		for(Action a : c){
 			addAction(a);
 		}
@@ -242,7 +356,7 @@ public class State implements Exportable{
 	 */
 	public boolean isAcceptState(){
 		for(Item i : _items){
-			if(i.isFinal() && i.production().product().isFileStart())
+			if(i.isFinal() && i.production().product().nonContextual().isFileStart())
 				return true;
 		}
 		
@@ -256,13 +370,16 @@ public class State implements Exportable{
 	
 	@Override
     public boolean equals(Object o){
+		if(o == this)
+			return true;
 		if(o != null && o instanceof State){
 			if(_t_equal == null)
-				_t_equal = Benchmark.newDistributedTask("State.equal");
+				_t_equal = Benchmark.newDistributedTask("State.equals");
 			_t_equal.start();
 			
 			State s = (State)o;
 			boolean ok = s._items.equals(_items);
+			
 			_t_equal.stop();
 			return ok;
 		}
@@ -278,7 +395,7 @@ public class State implements Exportable{
     	List<IStrategoTerm> gotos = new ArrayList<>();
     	List<IStrategoTerm> actions = new ArrayList<>();
     	
-    	for(Entry<Trigger, List<Action>> entry : _actions.entrySet()){
+    	for(Entry<Trigger, ActionList> entry : _actions.entrySet()){
     		if(entry.getKey() instanceof Terminal){
 	    		Terminal trigger = (Terminal)entry.getKey();
 	    		
@@ -287,7 +404,6 @@ public class State implements Exportable{
 				for(Action a : entry.getValue()){
 		    		alist.add(a.toATerm());
 		    		
-		    		// TODO Shift gotos: is that usefull ?
 	    			if(a instanceof Shift){
 	    				gotos.add(new StrategoAppl(
 		    					CONS_GOTO,
@@ -311,7 +427,7 @@ public class State implements Exportable{
 						0
 				));
     		}else{
-    			Production trigger = (Production)entry.getKey();
+    			Label trigger = (Label)entry.getKey();
     			
     			for(Action a : entry.getValue()){
     				if(a instanceof Shift){
@@ -342,6 +458,25 @@ public class State implements Exportable{
     			0
 		);
     }
+    
+    public void statistics(Statistics st){
+    	for(Entry<Trigger, ActionList> e : _actions.entrySet()){
+			ActionList list = e.getValue();
+			int i = 0;
+			for(Action a : list){
+				for(int j = i+1; j < list.size(); ++j){
+					Action b = list.get(j);
+					if(a instanceof Shift && b instanceof Reduce)
+						++st._sr_conflicts;
+					if(a instanceof Reduce && b instanceof Shift)
+						++st._sr_conflicts;
+					if(a instanceof Reduce && b instanceof Reduce)
+						++st._rr_conflicts;
+				}
+				++i;
+			}
+		}
+	}
 	
 	public String digraph(){
 		String str = "\"node"+String.valueOf(_id)+"\" [margin=0 \n";
@@ -359,7 +494,7 @@ public class State implements Exportable{
 		str += "];\n";
 		
 		int k = 0;
-		for(Entry<Trigger, List<Action>> e : _actions.entrySet()){
+		for(Entry<Trigger, ActionList> e : _actions.entrySet()){
 			Trigger trigger = e.getKey();
 			String color = "";
 			String label_color = "";
@@ -371,7 +506,7 @@ public class State implements Exportable{
 				color = " color=\"red\"";
 			for(Action a : e.getValue()){
 				String start = "node"+String.valueOf(_id);
-				String label = Utilities.toLabel(trigger.toString());
+				String label = Utilities.toLabel(trigger.graphviz());
 				String end = "";
 				
 				if(a instanceof Shift){
@@ -379,8 +514,8 @@ public class State implements Exportable{
 					end = "node"+String.valueOf(s.getDestination().id());
 				}else if(a instanceof Reduce){
 					Reduce r = (Reduce)a;
-					end = "node"+String.valueOf(_id)+"_"+String.valueOf(r.getProduction().id());
-					start = end+"\" [label = \""+Utilities.toLabel(r.getProduction().toString())+"\"];\n\""+start;
+					end = "node"+String.valueOf(_id)+"_"+String.valueOf(r.label().id());
+					start = end+"\" [label = \""+Utilities.toLabel(r.label().graphviz())+"\"];\n\""+start;
 				}else if(a instanceof Accept){
 					end = "node_accept";
 					if(e.getValue().size() == 2)
@@ -392,6 +527,8 @@ public class State implements Exportable{
 						conflict_node = "node_conflict_"+String.valueOf(_id)+"_"+String.valueOf(k++);
 						str += "\""+conflict_node+"\" [shape=diamond,style=filled,label=\"\",height=.1,width=.1];\n";
 						str += "\""+start+"\" -> \""+conflict_node+"\" [label=\""+label+"\""+color+label_color+"];\n";
+					}else{
+						str += "\""+start+"\";\n";
 					}
 					str += "\""+conflict_node+"\" -> \""+end+"\" [label=\"\""+color+label_color+"];\n";
 				}else

@@ -21,18 +21,18 @@ rules
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
       kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
       result := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> normalized;
-      filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf")> mn
+      filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf")> mn
 
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
-      filename := <create-src-gen(|project-path, "syntax",  "-normalized.sdf3")> mn;
+      filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3")> mn;
       result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> selected  
     
   sdf3-to-normal-form-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
-      filename := <create-src-gen(|project-path, "syntax",  "-normalized.aterm")> mn;
+      filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
       result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected

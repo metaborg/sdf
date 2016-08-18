@@ -1,4 +1,4 @@
-package org.metaborg.sdf2table.grammar;
+package org.metaborg.sdf2table.core;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 

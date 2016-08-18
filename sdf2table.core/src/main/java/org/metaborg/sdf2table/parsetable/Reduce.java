@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Terminal;
@@ -26,37 +27,69 @@ public class Reduce extends Action{
 		REJECT
 	}
 	
-	Production _prod;
+	Label _label;
 	ReducePolicy _policy = ReducePolicy.NORMAL;
 	Sequence _lookahead;
+	Item _item;
 	
-	public Reduce(Terminal symbol, Production prod){
+	public Reduce(Item item, Terminal symbol, Label label){
 		super(symbol);
-		_prod = prod;
+		_label = label;
+		_item = item;
 		
-		if(_prod.attributes().contains(Production.Attribute.REJECT))
-			_policy = ReducePolicy.REJECT;
+		selectReducePolicy();
 	}
 	
-	public Reduce(Terminal symbol, Production prod, Sequence lookahead){
+	public Reduce(Item item, Terminal symbol, Label label, Sequence lookahead){
 		super(symbol);
-		_prod = prod;
+		_label = label;
 		_lookahead = lookahead;
+		_item = item;
 		
-		if(_prod.attributes().contains(Production.Attribute.REJECT))
-			_policy = ReducePolicy.REJECT;
+		selectReducePolicy();
+	}
+	
+	private void selectReducePolicy(){
+		for(Production.Attribute attr : _label.agent().attributes()){
+			switch(attr.type()){
+			case PREFER:
+				_policy = ReducePolicy.PREFER;
+				break;
+			case AVOID:
+				_policy = ReducePolicy.AVOID;
+				break;
+			case REJECT:
+				_policy = ReducePolicy.REJECT;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	
+	public Item item(){
+		return _item;
+	}
+	
+	public void updateLabel(Label label){
+		_label = label;
 	}
 	
 	public Terminal getTriggerTerminal(){
 		return (Terminal)trigger();
 	}
 	
-	public Production getProduction(){
-		return _prod;
+	public Label label(){
+		return _label;
 	}
 	
 	public ReducePolicy policy(){
 		return _policy;
+	}
+	
+	@Override
+	public Action copy(){
+		return new Reduce(_item, (Terminal)trigger(), _label.copy());
 	}
 	
 	public IStrategoTerm aTermPolicy(){
@@ -80,8 +113,8 @@ public class Reduce extends Action{
 			return new StrategoAppl(
 					CONS_REDUCE,
 					new IStrategoTerm[]{
-							new StrategoInt(_prod.symbols().size(), null, 0),
-							new StrategoInt(_prod.id(), null, 0),
+							new StrategoInt(_label.agent().symbols().size(), null, 0),
+							new StrategoInt(_label.id(), null, 0),
 							aTermPolicy()
 					},
 					null,
@@ -91,12 +124,12 @@ public class Reduce extends Action{
 			return new StrategoAppl(
 					CONS_REDUCE_LOOKAHEAD,
 					new IStrategoTerm[]{
-							new StrategoInt(_prod.symbols().size(), null, 0),
-							new StrategoInt(_prod.id(), null, 0),
+							new StrategoInt(_label.agent().symbols().size(), null, 0),
+							new StrategoInt(_label.id(), null, 0),
 							aTermPolicy(),
 							Utilities.strategoListFromArray(new StrategoAppl(
 									CONS_FOLLOW_RESTRICTION,
-									new IStrategoTerm[]{((StrategoList)_lookahead.toATerm()).tail()},
+									new IStrategoTerm[]{((StrategoList)_lookahead.toATermList()).tail()},
 									null,
 									0
 							))

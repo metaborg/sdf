@@ -16,5 +16,16 @@
 			<artifactId>org.spoofax.terms</artifactId>
 			<version>${metaborg-version}</version>
 		</dependency>
+		
+		<dependency>
+		     <groupId>org.metaborg</groupId>
+		     <artifactId>strategoxt-min-jar</artifactId>
+		     <version>${metaborg-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.metaborg</groupId>
+			<artifactId>org.strategoxt.strj</artifactId>
+			<version>${metaborg-version}</version>
+		</dependency>
 	</dependencies>
 </project>
