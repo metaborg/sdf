@@ -88,6 +88,8 @@ public class Application{
 			case "-V":
 				System.out.println(String.valueOf(VERSION));
 				return;
+			case "--exit":
+				return;
 			default:
 				System.err.println(APP_NAME+": invalid option -- '"+argv[i]+"'");
 				usage(APP_NAME, System.err);

@@ -7,8 +7,10 @@ import org.spoofax.terms.StrategoString;
 
 public class Literal extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_LIT = new StrategoConstructor("lit", 1);
+	private static final StrategoConstructor CONS_CILIT = new StrategoConstructor("cilit", 1);
 	
 	private String _value;
+	private boolean _case_sensitive = true;
 	
 	@Override
 	public Type type(){
@@ -30,8 +32,18 @@ public class Literal extends ConcreteNonTerminal{
 		_value = value;
 	}
 	
+	public Literal(String value, boolean case_sensitive){
+		super();
+		_value = value;
+		_case_sensitive = case_sensitive;
+	}
+	
 	public String getValue(){
 		return _value;
+	}
+	
+	public boolean isCaseSensitive(){
+		return _case_sensitive;
 	}
 	
 	@Override
@@ -43,12 +55,12 @@ public class Literal extends ConcreteNonTerminal{
 	public boolean equals(Object other) {
 		if(other instanceof Literal){
 			Literal l = (Literal)other;
-			return other != null && l.getValue().equals(_value);
+			return other != null && l.isCaseSensitive() == _case_sensitive && l.getValue().equals(_value);
 		}
 		return false;
 	}
 	
 	public IStrategoTerm toATerm(){
-		return new StrategoAppl(CONS_LIT, new IStrategoTerm[]{new StrategoString(_value, null, 0)}, null, 0);
+		return new StrategoAppl(_case_sensitive ? CONS_LIT : CONS_CILIT, new IStrategoTerm[]{new StrategoString(_value, null, 0)}, null, 0);
 	}
 }

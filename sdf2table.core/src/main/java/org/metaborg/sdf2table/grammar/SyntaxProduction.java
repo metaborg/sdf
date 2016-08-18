@@ -1,12 +1,12 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.metaborg.sdf2table.core.Utilities;
+import org.metaborg.sdf2table.io.Exporter;
 import org.metaborg.sdf2table.parsetable.Context;
 import org.metaborg.sdf2table.parsetable.ContextualProduction;
 import org.metaborg.sdf2table.parsetable.ContextualSymbol;
@@ -16,12 +16,10 @@ import org.metaborg.sdf2table.symbol.CharClass;
 import org.metaborg.sdf2table.symbol.NonTerminal;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;
-import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 import org.spoofax.terms.StrategoInt;
-import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
 
 /**
@@ -36,15 +34,6 @@ public class SyntaxProduction extends Production{
 	private static final StrategoConstructor CONS_PROD = new StrategoConstructor("prod", 3);
 	private static final StrategoConstructor CONS_NO_ATTRS = new StrategoConstructor("no-attrs", 0);
 	private static final StrategoConstructor CONS_ATTRS = new StrategoConstructor("attrs", 1);
-	private static final StrategoConstructor CONS_ATTR_LEFT = new StrategoConstructor("left", 0);
-	private static final StrategoConstructor CONS_ATTR_RIGHT = new StrategoConstructor("right", 0);
-	private static final StrategoConstructor CONS_ATTR_NON_ASSOC = new StrategoConstructor("non-assoc", 0);
-	private static final StrategoConstructor CONS_ATTR_BRACKET = new StrategoConstructor("bracket", 0);
-	private static final StrategoConstructor CONS_ATTR_REJECT = new StrategoConstructor("reject", 0);
-	private static final StrategoConstructor CONS_ATTR_PREFER = new StrategoConstructor("prefer", 0);
-	private static final StrategoConstructor CONS_ATTR_AVOID = new StrategoConstructor("avoid", 0);
-	private static final StrategoConstructor CONS_ATTR_LONGEST_MATCH = new StrategoConstructor("longest-match", 0);
-	
 	private static final StrategoConstructor CONS_TERM = new StrategoConstructor("term", 1);
 	private static final StrategoConstructor CONS_CONS = new StrategoConstructor("cons", 1);
 	
@@ -515,32 +504,7 @@ public class SyntaxProduction extends Production{
 				for(Attribute attr : _attributes){
 					if(i > 0)
 						_str += ",";
-					switch(attr){
-					case ASSOC_LEFT:
-						_str += "left";
-						break;
-					case ASSOC_RIGHT:
-						_str += "right";
-						break;
-					case NON_ASSOC:
-						_str += "non-assoc";
-						break;
-					case BRACKET:
-						_str += "bracket";
-						break;
-					case REJECT:
-						_str += "reject";
-						break;
-					case AVOID:
-						_str += "avoid";
-						break;
-					case PREFER:
-						_str += "prefer";
-						break;
-					case LONGEST_MATCH:
-						_str += "longest-match";
-						break;
-					}
+					_str += attr.name();
 					++i;
 				}
 				_str += "}";
@@ -568,39 +532,7 @@ public class SyntaxProduction extends Production{
 			
 			int i = 0;
 			for(Attribute attr : _attributes){
-				switch(attr){
-				case ASSOC_LEFT:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_LEFT, new IStrategoTerm[]{}, null, 0);
-					break;
-				case ASSOC_RIGHT:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_RIGHT, new IStrategoTerm[]{}, null, 0);
-					break;
-				case NON_ASSOC:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_NON_ASSOC, new IStrategoTerm[]{}, null, 0);
-					break;
-				case BRACKET:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_BRACKET, new IStrategoTerm[]{}, null, 0);
-					break;
-				case REJECT:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_REJECT, new IStrategoTerm[]{}, null, 0);
-					break;
-				case PREFER:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_PREFER, new IStrategoTerm[]{}, null, 0);
-					break;
-				case AVOID:
-					attr_list[i] = new StrategoAppl(CONS_ATTR_AVOID, new IStrategoTerm[]{}, null, 0);
-					break;
-				case LONGEST_MATCH:
-					attr_list[i] = new StrategoAppl(
-							CONS_TERM,
-							new IStrategoTerm[]{
-									new StrategoAppl(CONS_ATTR_LONGEST_MATCH, new IStrategoTerm[]{}, null, 0)
-							},
-							null,
-							0
-						);
-					break;
-				}
+				attr_list[i] = Exporter.exportAttribute(attr);
 				++i;
 			}
 			
@@ -639,101 +571,5 @@ public class SyntaxProduction extends Production{
 				null,
 				0
 				);
-	}
-	
-	public static SyntaxProduction fromATerm(IStrategoTerm term, Syntax syntax){
-		if(term instanceof IStrategoAppl){
-			StrategoAppl app = (StrategoAppl)term;
-			boolean with_cons = false;
-			if(app.getName().equals("SdfProduction") || (with_cons = true && app.getName().equals("SdfProductionWithCons"))){
-				NonTerminal symbol;
-				String cons = "";
-				List<Symbol> sym_list = new ArrayList<>();
-				StrategoAppl tattrs;
-				
-				if(with_cons){
-					// SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
-					symbol = (NonTerminal)Symbol.fromStrategoTerm(app.getSubterm(0).getSubterm(0), syntax.symbols());
-					cons = ((StrategoString)app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
-				}else{
-					symbol = (NonTerminal)Symbol.fromStrategoTerm(app.getSubterm(0), syntax.symbols());
-				}
-				
-				// Read right hand side of the equation: Rhs([<symbols>])
-				StrategoList rhs = (StrategoList)app.getSubterm(1).getSubterm(0);
-				for(IStrategoTerm t : rhs){
-					sym_list.add(Symbol.fromStrategoTerm(t, syntax.symbols()));
-				}
-				
-				// Read attributes
-				tattrs = (StrategoAppl)app.getSubterm(2);
-				Set<Attribute> attrs = EnumSet.noneOf(Attribute.class);
-				switch(tattrs.getName()){
-				case "NoAttrs":
-					break;
-				case "Attrs": // TODO handle all production attributes
-					StrategoList talist = (StrategoList)tattrs.getSubterm(0);
-					for(IStrategoTerm ta : talist){
-						StrategoAppl a = (StrategoAppl)ta;
-						switch(a.getName()){
-						case "Assoc":
-							StrategoAppl assoc = (StrategoAppl)a.getSubterm(0);
-							switch(assoc.getName()){
-							case "Left":
-								attrs.add(Attribute.ASSOC_LEFT);
-								break;
-							case "Right":
-								attrs.add(Attribute.ASSOC_RIGHT);
-								break;
-							case "NonAssoc":
-								attrs.add(Attribute.NON_ASSOC);
-								break;
-							default:
-								System.err.println("Unknown associativity: `"+assoc.getName()+"'.");
-								break;
-							}
-							break;
-						case "Bracket":
-							attrs.add(Attribute.BRACKET);
-							break;
-						case "Reject":
-							attrs.add(Attribute.REJECT);
-							break;
-						case "Prefer":
-							attrs.add(Attribute.PREFER);
-							break;
-						case "Avoid":
-							attrs.add(Attribute.AVOID);
-							break;
-						case "Term":
-							ta = ta.getSubterm(0);
-							if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Default")){
-								ta = ta.getSubterm(0);
-								if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Fun")){
-									ta = ta.getSubterm(0);
-									if(ta instanceof StrategoAppl && ((StrategoAppl)ta).getName().equals("Unquoted")){
-										StrategoString str = (StrategoString)ta.getSubterm(0);
-										if(str.stringValue().equals("longest-match")){
-											attrs.add(Attribute.LONGEST_MATCH);
-											break;
-										}
-									}
-								}
-							}
-						default:
-							System.err.println("Unknown attribute type: `"+a.getName()+"'.");
-							break;
-						}
-					}
-					break;
-				default:
-					System.err.println("Malformed Stratego term : Attributes expected.");
-					return null;
-				}
-				
-				return syntax.uniqueProduction(new SyntaxProduction(symbol, cons, sym_list, attrs));
-			}
-		}
-		return null;
 	}
 }

@@ -48,6 +48,10 @@ public class Sequence extends CharClass{
 		_list.addAll(tail);
 	}
 	
+	public List<Symbol> symbols(){
+		return _list;
+	}
+	
 	@Override
 	public Terminal firstTerminal(){
 		if(_list.isEmpty())

@@ -37,8 +37,7 @@ public class Reduce extends Action{
 		_label = label;
 		_item = item;
 		
-		if(_label.agent().attributes().contains(Production.Attribute.REJECT))
-			_policy = ReducePolicy.REJECT;
+		selectReducePolicy();
 	}
 	
 	public Reduce(Item item, Terminal symbol, Label label, Sequence lookahead){
@@ -47,8 +46,25 @@ public class Reduce extends Action{
 		_lookahead = lookahead;
 		_item = item;
 		
-		if(_label.agent().attributes().contains(Production.Attribute.REJECT))
-			_policy = ReducePolicy.REJECT;
+		selectReducePolicy();
+	}
+	
+	private void selectReducePolicy(){
+		for(Production.Attribute attr : _label.agent().attributes()){
+			switch(attr.type()){
+			case PREFER:
+				_policy = ReducePolicy.PREFER;
+				break;
+			case AVOID:
+				_policy = ReducePolicy.AVOID;
+				break;
+			case REJECT:
+				_policy = ReducePolicy.REJECT;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	
 	public Item item(){

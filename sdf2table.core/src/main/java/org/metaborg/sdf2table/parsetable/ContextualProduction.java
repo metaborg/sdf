@@ -110,26 +110,7 @@ public class ContextualProduction extends Production{
 			for(Attribute attr : attributes()){
 				if(i > 0)
 					_str += ",";
-				switch(attr){
-				case ASSOC_LEFT:
-					_str += "left";
-					break;
-				case ASSOC_RIGHT:
-					_str += "right";
-					break;
-				case BRACKET:
-					_str += "bracket";
-					break;
-				case REJECT:
-					_str += "reject";
-					break;
-				case PREFER:
-					_str += "prefer";
-					break;
-				case LONGEST_MATCH:
-					_str += "longest-match";
-					break;
-				}
+				_str += attr.name();
 				++i;
 			}
 			_str += "}";
