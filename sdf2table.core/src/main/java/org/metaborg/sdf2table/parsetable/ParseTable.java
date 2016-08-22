@@ -318,9 +318,10 @@ public class ParseTable extends CollisionSet<State>{
 		t_import.stop();
 		
 		// parenthesize
-		/*final String pname = syntax.mainModule().name().replace("-norm", "");
-		File poutput = new File(output.getParentFile().getParentFile().getParentFile().getAbsolutePath()+"/src-gen/pp/"+syntax.mainModule().name()+"-parenthesized-java.aterm");
-		IStrategoTerm parenthesized = Parenthesizer.parenthesize(syntax, pname);
+		TermFactory tf = new TermFactory();
+		final String pname = syntax.mainModule().absoluteName().replace("-norm", "");
+		File poutput = new File(output.getParentFile().getParentFile().getParentFile().getAbsolutePath()+"/src-gen/pp/"+pname+"-parenthesized-java.aterm");
+		IStrategoTerm parenthesized = Parenthesizer.parenthesize(syntax, pname, tf);
 		//String ppp = Parenthesizer.prettyPrint(parenthesized);
 		FileWriter pout = null;
 		try{
@@ -332,7 +333,7 @@ public class ParseTable extends CollisionSet<State>{
 			pout.close();
 		}catch (IOException e){
 			System.err.println(e.getMessage());
-		}*/
+		}
 		
 		// generate parse table
 		t_generate.start();
