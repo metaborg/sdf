@@ -5,51 +5,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Priorities.PosPriorityLevel;
 import org.metaborg.sdf2table.grammar.PriorityLevel;
 import org.metaborg.sdf2table.grammar.PriorityLevel.PosProduction;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.SyntaxProduction;
 import org.metaborg.sdf2table.symbol.Symbol;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoConstructor;
-import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
 import org.spoofax.terms.TermFactory;
 import org.strategoxt.lang.Context;
 import org.strategoxt.strc.pp_stratego_string_0_0;
-import org.strategoxt.strc.tfc1_0_2;
+
+import com.google.common.collect.Lists;
 
 public class Parenthesizer {
-    // static final StrategoConstructor CONS_MODULE = new StrategoConstructor("Module", 2);
-    // static final StrategoConstructor CONS_IMPORTS = new StrategoConstructor("Imports", 1);
-    // static final StrategoConstructor CONS_IMPORT = new StrategoConstructor("Import", 1);
-    // static final StrategoConstructor CONS_STRATEGIES = new StrategoConstructor("Strategies", 1);
-    // static final StrategoConstructor CONS_SDEFNOARGS = new StrategoConstructor("SDefNoArgs", 2);
-    // static final StrategoConstructor CONS_CALL = new StrategoConstructor("Call", 2);
-    // static final StrategoConstructor CONS_CALLNOARGS = new StrategoConstructor("CallNoArgs", 1);
-    // static final StrategoConstructor CONS_SVAR = new StrategoConstructor("SVar", 1);
-    // static final StrategoConstructor CONS_RULES = new StrategoConstructor("Rules", 1);
-    // static final StrategoConstructor CONS_RDEFNOARGS = new StrategoConstructor("RDefNoArgs", 2);
-    // static final StrategoConstructor CONS_RULE = new StrategoConstructor("Rule", 3);
-    // static final StrategoConstructor CONS_CHOICE = new StrategoConstructor("Choice", 2);
-    // static final StrategoConstructor CONS_MATCH = new StrategoConstructor("Match", 1);
-    // static final StrategoConstructor CONS_NOANNOLIST = new StrategoConstructor("NoAnnoList", 1);
-    // static final StrategoConstructor CONS_OP = new StrategoConstructor("Op", 2);
-    // static final StrategoConstructor CONS_VAR = new StrategoConstructor("Var", 1);
-    // static final StrategoConstructor CONS_BA = new StrategoConstructor("BA", 2);
-    // static final StrategoConstructor CONS_WLD = new StrategoConstructor("Wld", 0);
-    // static final StrategoConstructor CONS_FAIL = new StrategoConstructor("Fail", 0);
-    // static final StrategoConstructor CONS_SIGNATURE = new StrategoConstructor("Signature", 1);
-    //
-    // static final StrategoAppl APPL_WLD = new StrategoAppl(CONS_WLD, new IStrategoTerm[] {}, null, 0);
-    //
-    // static final StrategoAppl APPL_FAIL = new StrategoAppl(CONS_FAIL, new IStrategoTerm[] {}, null, 0);
 
     private static IStrategoTerm importModule(String name, TermFactory tf) {
         return tf.makeAppl(tf.makeConstructor("Import", 1), tf.makeString(name));
+    }
+
+    private static IStrategoTerm importModuleWildCard(String name, TermFactory tf) {
+        return tf.makeAppl(tf.makeConstructor("ImportWildcard", 1), tf.makeString(name));
     }
 
     private static IStrategoTerm call(String name, TermFactory tf, IStrategoTerm args) {
@@ -82,9 +60,25 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm makeChoice(TermFactory tf, IStrategoTerm match, IStrategoTerm else_term) {
-        return tf.makeAppl(tf.makeConstructor("Choice", 2), match, else_term);// new StrategoAppl(CONS_CHOICE, new
-                                                                              // IStrategoTerm[] { match, else_term },
-                                                                              // null, 0);
+        return tf.makeAppl(tf.makeConstructor("Choice", 2), match, else_term);
+    }
+
+    private static IStrategoTerm makeSignature(TermFactory tf, String cons, List<String> sorts, String sort) {
+        return tf.makeAppl(tf.makeConstructor("OpDecl", 2), tf.makeString(cons), tf.makeAppl(
+            tf.makeConstructor("FunType", 2), makeConstTypeNoArgsList(tf, sorts), makeConstTypeNoArgs(tf, sort)));
+    }
+
+    private static IStrategoTerm makeConstTypeNoArgs(TermFactory tf, String sort) {
+        return tf.makeAppl(tf.makeConstructor("ConstType", 1),
+            tf.makeAppl(tf.makeConstructor("SortNoArgs", 1), tf.makeString(sort)));
+    }
+
+    private static IStrategoTerm makeConstTypeNoArgsList(TermFactory tf, List<String> sorts) {
+        List<IStrategoTerm> terms = Lists.newLinkedList();
+        for(String sort : sorts) {
+            terms.add(makeConstTypeNoArgs(tf, sort));
+        }
+        return tf.makeList(terms);
     }
 
     private static IStrategoTerm match(TermFactory tf, SyntaxProduction prod) {
@@ -114,22 +108,13 @@ public class Parenthesizer {
         }
 
         return tf.makeAppl(tf.makeConstructor("NoAnnoList", 1),
-            tf.makeAppl(tf.makeConstructor("OP", 2), tf.makeString(prod.constructor()), tf.makeList(args)));
-
-        // new StrategoAppl(CONS_NOANNOLIST,
-        // new IStrategoTerm[] { new StrategoAppl(CONS_OP, new IStrategoTerm[] {
-        // new StrategoString(prod.constructor(), null, 0), Utilities.strategoListFromArray(args) }, null, 0) },
-        // null, 0);
+            tf.makeAppl(tf.makeConstructor("Op", 2), tf.makeString(prod.constructor()), tf.makeList(args)));
     }
 
     private static IStrategoTerm parenthetical(TermFactory tf, IStrategoTerm var) {
         return tf.makeAppl(tf.makeConstructor("NoAnnoList", 1),
             tf.makeAppl(tf.makeConstructor("Op", 2), tf.makeString("Parenthetical"), tf.makeList(var)));
 
-        // new StrategoAppl(CONS_NOANNOLIST,
-        // new IStrategoTerm[] { new StrategoAppl(CONS_OP, new IStrategoTerm[] {
-        // new StrategoString("Parenthetical", null, 0), Utilities.strategoListFromArray(var) }, null, 0) },
-        // null, 0);
     }
 
     private static int productionSize(SyntaxProduction prod) {
@@ -155,19 +140,15 @@ public class Parenthesizer {
                 args[i] = parenthetical(tf, args[i]);
             }
         }
-
+        
         return tf.makeAppl(tf.makeConstructor("NoAnnoList", 1),
-            tf.makeAppl(tf.makeConstructor("OP", 2), tf.makeString(prod.constructor()), tf.makeList(args)));
-        // new StrategoAppl(CONS_NOANNOLIST,
-        // new IStrategoTerm[] { new StrategoAppl(CONS_OP, new IStrategoTerm[] {
-        // new StrategoString(prod.constructor(), null, 0), Utilities.strategoListFromArray(args) }, null, 0) },
-        // null, 0);
+            tf.makeAppl(tf.makeConstructor("Op", 2), tf.makeString(prod.constructor()), tf.makeList(args)));
     }
 
     public static String prettyPrint(IStrategoTerm parenthesized) {
         final Context context = new Context();
         org.strategoxt.strc.Main.init(context);
-
+        
         IStrategoTerm term = pp_stratego_string_0_0.instance.invoke(context, parenthesized);
 
         if(term == null || term.getTermType() != IStrategoTerm.STRING)
@@ -176,58 +157,22 @@ public class Parenthesizer {
         return ((StrategoString) term).stringValue();
     }
 
-    private static void compareTerms(IStrategoTerm parenthesized, IStrategoTerm term) {
-
-        if(parenthesized.getSubtermCount() != term.getSubtermCount()) {
-            System.out.println("different number of subterms");
-        } else {
-            for(int i = 0; i < parenthesized.getSubtermCount(); i++) {
-                compareTerms(parenthesized.getSubterm(i), term.getSubterm(i));
-            }
-
-            if(parenthesized.getStorageType() != term.getStorageType()) {
-                System.out.println("storage type is different");
-            }
-
-            if(parenthesized.getTermType() != term.getTermType()) {
-                System.out.println("term type is different");
-            }
-
-            if(!parenthesized.match(term)) {
-                System.out.println("terms do not match");
-            }
-
-            if(!parenthesized.equals(term)) {
-                System.out.println("terms are not equal");
-            }
-        }
-    }
-
     public static IStrategoTerm parenthesize(Syntax grammar, String name, TermFactory tf) {
         final String module_name = "pp/" + name + "-parenthesize";
         final String rule_name = name + "Parenthesize";
 
+        IStrategoList listOfImports =
+            tf.makeList(importModule("libstratego-lib", tf), importModuleWildCard("signatures", tf));
+
         // Imports
-        IStrategoTerm imports = tf.makeAppl(tf.makeConstructor("Imports", 1),
-            tf.makeList(importModule("libstratego-lib", tf), importModule("signatures/-", tf)));
-
-
-        // new StrategoAppl(CONS_IMPORTS, new IStrategoTerm[] { Utilities
-        // .strategoListFromArray(importModule("libstratego-lib"), importModule("signatures/" + name + "-sig")) },
-        // null, 0);
+        IStrategoTerm imports = tf.makeAppl(tf.makeConstructor("Imports", 1), tf.makeList(listOfImports));
 
         // Strategies
         IStrategoTerm strategies = tf.makeAppl(tf.makeConstructor("Strategies", 1),
-            tf.makeList(
+            tf.makeList(tf.makeList(
                 defineStrategy("io-" + name + "-parenthesize", tf,
                     call("io-wrap", tf, call("parenthesize-" + name, tf, null))),
-                defineStrategy("parenthesize-" + name, tf, call("innermost", tf, call(rule_name, tf, null)))));
-
-        // new StrategoAppl(CONS_STRATEGIES,
-        // new IStrategoTerm[] { Utilities.strategoListFromArray(
-        // defineStrategy("io-" + name + "-parenthesize", call("io-wrap", tf, call("parenthesize-" + name, tf, null))),
-        // defineStrategy("parenthesize-" + name, tf, call("innermost", tf, call(rule_name, tf, null)))) },
-        // null, 0);
+                defineStrategy("parenthesize-" + name, tf, call("innermost", tf, call(rule_name, tf, null))))));
 
         // Rules
         List<IStrategoTerm> rule_list = new ArrayList<>();
@@ -258,7 +203,6 @@ public class Parenthesizer {
                                             pattern_matching = makeChoice(tf, m, pattern_matching);
                                     }
                                 }
-
                             }
                         }
                     }
@@ -270,21 +214,21 @@ public class Parenthesizer {
                         if(rule != null)
                             rule_list.add(rule);
                     }
-
                     ++pos;
                 }
             }
         }
 
-        IStrategoTerm rules = tf.makeAppl(tf.makeConstructor("Rules", 1), tf.makeList(rule_list));
-            
+        IStrategoTerm rules = tf.makeAppl(tf.makeConstructor("Rules", 1), tf.makeList(tf.makeList(rule_list)));
+
 
         // Signature
-        IStrategoTerm signature = tf.makeAppl(tf.makeConstructor("Signature", 1), tf.makeList());
-            
+        IStrategoTerm signature = tf.makeAppl(tf.makeConstructor("Signature", 1), tf.makeList(tf.makeList(tf.makeAppl(
+            tf.makeConstructor("Constructors", 1),
+            tf.makeList(tf.makeList(makeSignature(tf, "Parenthetical", Lists.newArrayList("Unknown"), "Unknown")))))));
 
-        return tf.makeAppl(tf.makeConstructor("Module", 2), tf.makeString(module_name), tf.makeList(imports, strategies, rules, signature)); 
-//            new StrategoAppl(CONS_MODULE, new IStrategoTerm[] { new StrategoString(module_name, null, 0),
-//            Utilities.strategoListFromArray(imports, strategies, rules, signature) }, null, 0);
+
+        return tf.makeAppl(tf.makeConstructor("Module", 2), tf.makeString(module_name),
+            tf.makeList(imports, strategies, rules, signature));
     }
 }

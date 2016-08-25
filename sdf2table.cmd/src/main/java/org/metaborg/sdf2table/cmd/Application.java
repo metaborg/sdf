@@ -16,10 +16,12 @@ import org.metaborg.sdf2table.grammar.Module;
 import org.metaborg.sdf2table.grammar.ModuleNotFoundException;
 import org.metaborg.sdf2table.grammar.Syntax;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
+import org.metaborg.sdf2table.io.Parenthesizer;
 import org.metaborg.sdf2table.parsetable.Label;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.parsetable.State;
 import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.TermFactory;
 
 public class Application{
 	public static final float VERSION = 1.0f;
@@ -35,6 +37,7 @@ public class Application{
 		
 		out.println("Usage: "+path+" [options]\nOptions:");
 		out.println("\t-D filename\t\twrite a graphviz file from the parse table");
+		out.println("\t-par filename\t\twrite a parenthesize file from the parse table");
 		out.println("\t-h\t\tdisplay help information (usage)");
 		out.println("\t-i filename\t\tinput from file");
 		out.println("\t-o filename\t\tinput to file (default stdout)");
@@ -55,6 +58,7 @@ public class Application{
 		String input = null;
 		String output = null;
 		String dot_output = null;
+		String parenthesize = null;
 		String pp_str;
 		
 		ParseTable.PriorityPolicy pp = ParseTable.PriorityPolicy.SHALLOW;
@@ -73,6 +77,9 @@ public class Application{
 			case "-D":
 				dot_output = readNext(argv, ++i);
 				break;
+			case "-par":
+                parenthesize = readNext(argv, ++i);
+                break;	
 			case "-P":
 				pp_str = readNext(argv, ++i);
 				pp = ParseTable.PriorityPolicy.valueOf(pp_str.toUpperCase());
@@ -106,10 +113,10 @@ public class Application{
 			return;
 		}
 		
-		exec(input, output, paths, pp, dot_output);
+		exec(input, output, paths, pp, parenthesize, dot_output);
 	}
 	
-	public static void exec(String input, String output, List<String> paths, ParseTable.PriorityPolicy pp, String dot_output){
+	public static void exec(String input, String output, List<String> paths, ParseTable.PriorityPolicy pp, String parenthesize, String dot_output){
 		Benchmark.SingleTask t_import = Benchmark.main.newSingleTask("import");
     	Benchmark.ComposedTask t_generate = Benchmark.main.newComposedTask("generation");
     	Benchmark.SingleTask t_export = Benchmark.main.newSingleTask("export");
@@ -123,6 +130,25 @@ public class Application{
 			System.exit(1);
 		}
 		t_import.stop();
+		
+		// parenthesize
+        if(parenthesize != null) {
+            TermFactory tf = new TermFactory();
+            final String pname = syntax.mainModule().absoluteName().replace("-norm", "");
+            File poutput = new File(parenthesize);
+            IStrategoTerm parenthesized = Parenthesizer.parenthesize(syntax, pname, tf);
+            String ppp = Parenthesizer.prettyPrint(parenthesized);
+            FileWriter pout = null;
+            try {
+                pout = new FileWriter(poutput);
+
+                pout.write(ppp);
+
+                pout.close();
+            } catch(IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
     	
     	t_generate.start();
         ParseTable pt = null;
