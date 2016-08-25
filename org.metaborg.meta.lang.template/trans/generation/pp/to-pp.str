@@ -43,7 +43,7 @@ rules
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0   := Imports([Import("libstratego-gpp"), Import("runtime/tmpl/pp"), Import("runtime/editor/origins"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
     ; lang := <language-spec-name>
@@ -75,11 +75,13 @@ rules
     Sort(x) -> SDefNoArgs($[prettyprint-[lang]-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-[x]])))
   
   section-to-pp(|lang):
-    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*])
+    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s2'*, s3*])
     with
-      sort* := <filter(productive-sort); make-set> p*
+      sort* := <filter(productive-sort-lex); make-set> p*
+      ; ci-sort* := <filter(productive-sort-lex-ci); make-set> p*
       ; s1*    := <map(sort-to-pp(|lang))> sort*
-      ; s2*    := <map(sort-to-pp(|lang))> sort*
+      ; s2*    := <map(lex-sort-to-pp(|lang))> sort*
+      ; s2'*   := <map(lex-sort-to-pp-ci(|lang))> ci-sort*
       ; s3*    := <map(sort-to-pp-amb(|lang))> sort*
         
   section-to-pp(|lang):
@@ -150,6 +152,36 @@ rules
       <fetch-elem(?Reject())> attrs
     )  
     
+  productive-sort-lex:
+    SdfProduction(SortDef(s), _, Attrs(attrs)) -> s
+    where not (
+      <fetch-elem(?Reject() + ?CaseInsensitive())> attrs
+    )
+    
+  productive-sort-lex:
+    SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(attrs)) -> s
+    where not (
+      <fetch-elem(?Reject() + ?CaseInsensitive())> attrs
+    )  
+    
+  productive-sort-lex-ci:
+    SdfProduction(SortDef(s), _, Attrs(attrs)) -> s
+    where not (
+      <fetch-elem(?Reject())> attrs
+    )
+    where (
+      <fetch-elem(?CaseInsensitive())> attrs
+    )
+    
+  productive-sort-lex-ci:
+    SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(attrs)) -> s
+    where not (
+      <fetch-elem(?Reject())> attrs
+    )
+    where (
+      <fetch-elem(?CaseInsensitive())> attrs
+    )  
+    
   cf-productive-sort:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(attrs)) -> s
     where not (
@@ -177,9 +209,12 @@ rules
   sort-to-pp(|lang):
     x -> SDefNoArgs($[prettyprint-[lang]], CallNoArgs(SVar($[prettyprint-[lang]-[x]])))
   
-  sort-to-pp(|lang):
+  lex-sort-to-pp(|lang):
     x -> SDefNoArgs($[prettyprint-[lang]-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))))
-    
+  
+  lex-sort-to-pp-ci(|lang):
+    x -> SDefNoArgs($[prettyprint-[lang]-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("origin-text")))]))]))))
+      
   sort-to-pp-amb(|lang):
     x -> RDefNoArgs($[prettyprint-[lang]-[x]], RuleNoCond(NoAnnoList(Op("amb", [NoAnnoList(ListTail([Var("h")], Var("hs")))])), App(CallNoArgs(SVar($[prettyprint-[lang]-[x]])), Var("h"))))
   
