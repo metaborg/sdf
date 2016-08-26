@@ -79,10 +79,10 @@ rules
     with
       sort* := <filter(productive-sort-lex); make-set> p*
       ; ci-sort* := <filter(productive-sort-lex-ci); make-set> p*
-      ; s1*    := <map(sort-to-pp(|lang))> sort*
+      ; s1*    := <map(sort-to-pp(|lang))> [sort*, ci-sort*]
       ; s2*    := <map(lex-sort-to-pp(|lang))> sort*
       ; s2'*   := <map(lex-sort-to-pp-ci(|lang))> ci-sort*
-      ; s3*    := <map(sort-to-pp-amb(|lang))> sort*
+      ; s3*    := <map(sort-to-pp-amb(|lang))> [sort*, ci-sort*]
         
   section-to-pp(|lang):
     SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, cc*, cc-ins*, cc-opt-plhr*])
