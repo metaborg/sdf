@@ -66,7 +66,7 @@ rules
         <fetch-elem(?Reject())> attrs
       )
       // Generate completion for empty productions?
-      // where <not(?[])> rhs*
+      where <not(?[])> rhs*
       where not (
           <fetch-elem(?PlaceholderInsertion())> attrs
         )
@@ -85,10 +85,39 @@ rules
           <fetch-elem(?PlaceholderInsertion())> attrs
         )
         // Generate completion for empty productions?
-        // where <not(?SingleLineTemplate([]))> template
+         where <not(?SingleLineTemplate([]))> template
       with
         placeholder := NoAnnoList(Op($[[sort]-Plhdr], []));
         expansion   := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list> template))]))        
+   
+   // return the constructor of nullable sorts 
+  prod-to-new-cmp:
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*), Attrs(attrs)) -> 
+            RDef |[ null-constructor-completion-sort:
+                      ~str:sort -> ~term:cons-term ]|
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where <?[]> rhs*
+      where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+      )
+      with
+        cons-term := NoAnnoList(Op(constructor, []))
+        
+  prod-to-new-cmp:
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) ->
+            RDef |[ null-constructor-completion-sort:
+                      ~str:sort -> ~term:cons-term ]|
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+      where <?SingleLineTemplate([])> template   
+      with
+        cons-term := NoAnnoList(Op(constructor, []))
    
    //injections
    prod-to-new-cmp:
@@ -102,6 +131,7 @@ rules
                                     Rule(NoAnnoList(Op($[[sort]-Plhdr], [])), App(CallT(SVar("suggest-completions"), [], [Var("completions")]), NoAnnoList(Op($[[x]-Plhdr], []))), 
                                     Seq(BA(Not(CallNoArgs(SVar("is-expanded"))), NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))]))), 
                                     GenDynRules([ SetDynRule(DynRuleId(RDecNoArgs("is-expanded")), RuleNoCond(NoAnnoList(Tuple([NoAnnoList(Op($[[sort]-Plhdr], [])), NoAnnoList(Op($[[x]-Plhdr], []))])), RootApp(Id())))]))))          
+  
   //TODO: injections with constructors
   /* prod-to-new-cmp:
      SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs([Sort(x)]), Attrs(attrs)) -> RDefT("suggest-completions", [], [DefaultVarDec("completions")], Rule(NoAnnoList(Op($[[sort]-Plhdr], []))
@@ -191,21 +221,33 @@ rules
    to-new-cmp-elem(|sort):
      Placeholder(s, options) -> <to-new-cmp-elem(|sort)> s   
      where 
-       <not(fetch(?Hide()))> options
+       <not(fetch(?Hide()))> options;
+       <not(fetch(?CompCursor()))> options 
+       
+   to-new-cmp-elem(|sort):
+     Placeholder(s, options) -> NoAnnoList(Op("CURSOR_ELEMENT", []))
+     where 
+       <not(fetch(?Hide()))> options;
+       <fetch(?CompCursor())> options     
 
    to-new-cmp-elem(|sort):
      Placeholder(s, options) -> NoAnnoList(List([]))
      where 
-       <fetch(?Hide())> options   
+       <fetch(?Hide())> options  
      where
        <?IterStar(_) + ?IterStarSep(_, _)> s     
        
    to-new-cmp-elem(|sort):
      Placeholder(s, options) -> NoAnnoList(Op("None", []))
      where 
-       <fetch(?Hide())> options   
-    where
-       <not(?IterStar(_) + ?IterStarSep(_, _))> s     
+       <fetch(?Hide())> options  
+     where
+       <?Opt(_)> s    
+       
+   to-new-cmp-elem(|sort):
+    Placeholder(Sort(s), options) -> App(CallNoArgs(SVar("null-constructor-completion-sort")), NoAnnoList(Str(s)))
+    where 
+       <fetch(?Hide())> options         
        
    to-new-cmp-elem(|sort):
      Label(l, t) -> <to-new-cmp-elem(|sort)> t
@@ -213,12 +255,89 @@ rules
 rules
 
   section-to-rec-cmp:
-    SDFSection(ContextFreeSyntax(p*)) -> <nub> [left-rec-str*, right-rec-str*]
+    SDFSection(ContextFreeSyntax(p*)) -> <nub> [left-rec-str*, right-rec-str*, inj-rec-str*]
     where
       left-rec-str*  := <filter(prod-to-left-rec-cmp); flatten-list> p*;  
-      right-rec-str* := <filter(prod-to-right-rec-cmp); flatten-list> p*
+      right-rec-str* := <filter(prod-to-right-rec-cmp); flatten-list> p*;
+      inj-rec-str*   := <filter(prod-to-inj-rec-cmp); flatten-list> p*
       
+  section-to-rec-cmp:
+    SDFSection(LexicalSyntax(p*)) -> <nub> [inj-clause-str*]    
+    where
+       inj-clause-str*   := <filter(prod-to-inj-clause); flatten-list> p*
+       
+  prod-to-inj-clause:
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs), Attrs(attrs)) -> 
+          RuleDef |[ is-lexical-completion-sort: ~term:sort-term -> <id> ]|
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )      
+      where not (
+          <fetch-elem(?LiteralCompletion())> attrs
+      )
+      where
+        sort'     := <strip-annos> sort;
+        sort-term := NoAnnoList(Str(sort'))
+        
+        
+  prod-to-inj-clause:
+    SdfProduction(SortDef(sort), Rhs(rhs), Attrs(attrs)) -> 
+          RuleDef |[ is-lexical-completion-sort: ~term:sort-term -> <id> ]|
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )      
+      where not (
+          <fetch-elem(?LiteralCompletion())> attrs
+      )
+      where
+        sort'     := <strip-annos> sort;
+        sort-term := NoAnnoList(Str(sort'))
       
+  // TODO : This solution does not handle cyclic injections    
+  prod-to-inj-rec-cmp: 
+    SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*@[Sort(s)]), Attrs(attrs)) -> 
+         [ RuleDef |[ is-left-recursive: ~term:s-term -> <is-left-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,
+           RuleDef |[ is-right-recursive: ~term:s-term -> <is-right-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,                       
+           RuleDef |[ ~id:strategy-name :
+                     ~term:s-term -> <id>     ]|]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )      
+      where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+      where
+        sort' := <strip-annos> sort;
+        s'    := <strip-annos> s        
+      with
+        sort-term        := NoAnnoList(Str(sort'));
+        s-term           := NoAnnoList(Str(s'));
+        strategy-name    := $[is-[sort]-completion-sort]
+        
+  prod-to-inj-rec-cmp: 
+    SdfProduction(SortDef(sort), Rhs(rhs*@[Sort(s)]), Attrs(attrs)) -> 
+         [ RuleDef |[ is-left-recursive: ~term:s-term -> <is-left-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,
+           RuleDef |[ is-right-recursive: ~term:s-term -> <is-right-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,           
+           RuleDef |[ ~id:strategy-name :
+                     ~term:s-term -> <id>     ]|]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )      
+      where not (
+          <fetch-elem(?PlaceholderInsertion())> attrs
+        )
+      where
+        sort' := <strip-annos> sort;
+        s'    := <strip-annos> s        
+      with
+        sort-term        := NoAnnoList(Str(sort'));
+        s-term           := NoAnnoList(Str(s'));
+        strategy-name    := $[is-[sort]-completion-sort]      
+              
   prod-to-left-rec-cmp: 
     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*@[Sort(s) | tl*]), Attrs(attrs)) -> 
          [ RuleDef |[ is-left-recursive: ~term:sort-term -> <id> ]|,
@@ -226,7 +345,12 @@ rules
                         ~term:input -> <add-completions(
                                               | ~term:expansion
                                               )
-                                              ; fail> completions ]| ]
+                                              ; fail> completions 
+                        where
+                          <~id:strategy-name> sort ]|,
+           RuleDef |[ ~id:strategy-name :
+                          ~term:sort-term -> <id> ]|
+         ]
       where not (
         <fetch-elem(?Reject())> attrs
       )      
@@ -239,9 +363,10 @@ rules
         <?s'> sort'
       with
         sort-term        := NoAnnoList(Str(sort'));
-        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));
+        input            := NoAnnoList(Tuple([Var("sort"), Var("orig-term")]));
         expansion-terms* := <filter(to-new-cmp-elem(|sort)); ?[h | tl]; ![Var("orig-term") | tl]> rhs*;
-        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]));
+        strategy-name    := $[is-[sort]-completion-sort]
       
    
   prod-to-right-rec-cmp: 
@@ -251,7 +376,11 @@ rules
                          ~term:input -> <add-completions(
                                                | ~term:expansion
                                                )
-                                               ; fail> completions ]| ]
+                                               ; fail> completions
+                         where
+                          <~id:strategy-name> sort]|,
+            RuleDef |[ ~id:strategy-name :
+                          ~term:sort-term -> <id> ]| ]
       where not (
         <fetch-elem(?Reject())> attrs
         )
@@ -265,11 +394,10 @@ rules
         <?s'> sort'
       with        
         sort-term        := NoAnnoList(Str(sort'));
-        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")])) ;
+        input            := NoAnnoList(Tuple([Var("sort"), Var("orig-term")]));
         expansion-terms* := <filter(to-new-cmp-elem(|sort)); at-last(![Var("orig-term")])> rhs*;
-        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
-        
-      
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]));
+        strategy-name    := $[is-[sort]-completion-sort]     
         
   prod-to-left-rec-cmp:
     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> 
@@ -278,7 +406,11 @@ rules
                         ~term:input -> <add-completions(
                                               | ~term:expansion
                                               )
-                                              ; fail> completions ]| ]
+                                              ; fail> completions
+                      where
+                          <~id:strategy-name> sort ]|,
+           RuleDef |[ ~id:strategy-name :
+                        ~term:sort-term -> <id> ]| ]
       where not (
         <fetch-elem(?Reject())> attrs
       )
@@ -289,9 +421,11 @@ rules
         <check-left-rec-template(|sort)> template
       with
         sort-term        := NoAnnoList(Str(sort));
-        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));        
+        input            := NoAnnoList(Tuple([Var("sort"), Var("orig-term")]));   
         expansion-terms* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list; ?[h | tl]; ![Var("orig-term") | tl]> template;
-        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]));
+        strategy-name    := $[is-[sort]-completion-sort]
+        
   prod-to-right-rec-cmp:
     TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), template, Attrs(attrs)) -> 
           [RuleDef |[ is-right-recursive: ~term:sort-term -> <id> ]|,
@@ -299,7 +433,11 @@ rules
                         ~term:input -> <add-completions(
                                               | ~term:expansion
                                               )
-                                              ; fail> completions ]| ]
+                                              ; fail> completions
+                        where
+                          <~id:strategy-name> sort ]|,
+           RuleDef |[ ~id:strategy-name :
+                        ~term:sort-term -> <id> ]|  ]
       where not (
         <fetch-elem(?Reject())> attrs
       )
@@ -310,9 +448,10 @@ rules
         <check-right-rec-template(|sort)> template
       with
         sort-term        := NoAnnoList(Str(sort));
-        input            := NoAnnoList(Tuple([NoAnnoList(Str(sort)), Var("orig-term")]));
+        input            := NoAnnoList(Tuple([Var("sort"), Var("orig-term")]));
         expansion-terms* := <(?SingleLineTemplate(<id>) <+ ?Template(<id>)); filter(to-new-cmp-elem(|sort)); flatten-list; at-last(![Var("orig-term")])> template;
-        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]))
+        expansion        := NoAnnoList(Tuple([ NoAnnoList(Str(constructor)), NoAnnoList(Op(constructor, expansion-terms*))]));
+        strategy-name    := $[is-[sort]-completion-sort]
   
   check-left-rec-template(|sort):
     SingleLineTemplate(elems*) -> <id>
