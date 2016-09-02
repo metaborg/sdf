@@ -75,17 +75,18 @@ rules
     Sort(x) -> SDefNoArgs($[prettyprint-[lang]-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-[x]])))
   
   section-to-pp(|lang):
-    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s2'*, s3*])
+    SDFSection(LexicalSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s3'*, s4*])
     with
       sort* := <filter(productive-sort-lex); make-set> p*
       ; ci-sort* := <filter(productive-sort-lex-ci); make-set> p*
       ; s1*    := <map(sort-to-pp(|lang))> [sort*, ci-sort*]
-      ; s2*    := <map(lex-sort-to-pp(|lang))> sort*
-      ; s2'*   := <map(lex-sort-to-pp-ci(|lang))> ci-sort*
-      ; s3*    := <map(sort-to-pp-amb(|lang))> [sort*, ci-sort*]
+      ; s2*    := <map(sort-to-pp-local(|lang))> [sort*, ci-sort*]
+      ; s3*    := <map(lex-sort-to-pp(|lang))> sort*
+      ; s3'*   := <map(lex-sort-to-pp-ci(|lang))> ci-sort*
+      ; s4*    := <map(sort-to-pp-amb(|lang))> [sort*, ci-sort*]
         
   section-to-pp(|lang):
-    SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, cc*, cc-ins*, cc-opt-plhr*])
+    SDFSection(ContextFreeSyntax(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, cc*, cc-ins*, cc-opt-plhr*])
     with
         //content complete prods for regular placeholders
         cc* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
@@ -103,30 +104,34 @@ rules
     with
       sort* := <filter(productive-sort); make-set> p*
       ; s1*   := <map(sort-to-pp(|lang))> sort*
-      ; s2*   := <filter(prod-to-template; desugar-templates;template-to-pp(|lang) <+ template-to-pp(|lang)); flatten-list> p*
-      ; s3*   := <map(is-sort-fail(|lang))> sort*  
-      ; s4*   := <map(sort-to-pp-amb(|lang))> sort*
+      ; s2*   := <map(sort-to-pp-local(|lang))> sort*
+      ; s3*   := <filter(prod-to-template; desugar-templates;template-to-pp(|lang) <+ template-to-pp(|lang)); flatten-list> p*
+      ; s4*   := <map(is-sort-fail(|lang))> sort*  
+      ; s5*   := <map(sort-to-pp-amb(|lang))> sort*
           
   section-to-pp(|lang):
-    SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, s6*])
+    SDFSection(Kernel(p*)) -> Strategies(<not(?[])> [s1*, s2*, s3*, s4*, s5*, s6*, s7*, s8*])
     with
       sort*            := <filter(cf-productive-sort); make-set> p*
       ; s1*            := <map(sort-to-pp(|lang))> sort*  
-      ; s2*            := <filter(cf-prod-to-template; desugar-templates; template-to-pp(|lang)); flatten-list> p*
-      ; s3*            := <map(is-sort-fail(|lang))> sort*
+      ; s2*            := <map(sort-to-pp-local(|lang))> sort*
+      ; s3*            := <filter(cf-prod-to-template; desugar-templates; template-to-pp(|lang)); flatten-list> p*
+      ; s4*            := <map(is-sort-fail(|lang))> sort*
       ; lexical-sorts* := <filter(lex-productive-sort); make-set> p*
-      ; s4*            := <map(sort-to-pp(|lang))> lexical-sorts*
-        ; s5*            := <map(sort-to-pp(|lang))> lexical-sorts* 
-        ; s6*            := <map(sort-to-pp-amb(|lang))> [sort*, lexical-sorts*]  
+      ; s5*            := <map(sort-to-pp(|lang))> lexical-sorts*
+      ; s6*            := <map(sort-to-pp-local(|lang))> lexical-sorts*
+      ; s7*            := <map(lex-sort-to-pp(|lang))> lexical-sorts* 
+      ; s8*            := <map(sort-to-pp-amb(|lang))> [sort*, lexical-sorts*]  
                  
   section-to-pp(|lang):
     TemplateSection(t*) -> Strategies(<?[_|_]> [s1*, s2*, s3*, s4*])
     with
         sort* := <filter(productive-sort); make-set> t*
       ; s1*   := <map(sort-to-pp(|lang))> sort*
-      ; s2*   := <filter(template-to-pp(|lang)); flatten-list> t*
-      ; s3*   := <map(is-sort-fail(|lang))> sort*
-      ; s4*   := <map(sort-to-pp-amb(|lang))> sort*
+      ; s2*   := <map(sort-to-pp-local(|lang))> sort*
+      ; s3*   := <filter(template-to-pp(|lang)); flatten-list> t*
+      ; s4*   := <map(is-sort-fail(|lang))> sort*
+      ; s5*   := <map(sort-to-pp-amb(|lang))> sort*
         
   productive-sort:
     TemplateProduction(SortDef(s), _, Attrs(attrs)) -> s
@@ -209,6 +214,10 @@ rules
   sort-to-pp(|lang):
     x -> SDefNoArgs($[prettyprint-[lang]], CallNoArgs(SVar($[prettyprint-[lang]-[x]])))
   
+  sort-to-pp-local(|lang):
+    x -> RDefT($[prettyprint-[lang]], [], [DefaultVarDec("sort")], Rule(Var("t"), RootApp(CallNoArgs(SVar($[prettyprint-[lang]-[x]])))
+          , BA(Match(NoAnnoList(Str(x))), Var("sort"))))
+  
   lex-sort-to-pp(|lang):
     x -> SDefNoArgs($[prettyprint-[lang]-[x]], Build(NoAnnoList(List([NoAnnoList(Op("S", [RootApp(CallNoArgs(SVar("is-string")))]))]))))
   
@@ -224,12 +233,18 @@ rules
         $[prettyprint-[lang]-[s]]
       , Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
       ), SDefNoArgs($[is-[lang]-[s]], Match(NoAnnoList(Op(c, WldArg*)))),
-      RDefNoArgs($[[lang]-get-indent], Rule(NoAnnoList(Tuple([ NoAnnoList(input), Var("index")])), Var("indent"), 
-      [ WithClause(SwitchChoice(Build(Var("index")), switch-indent*, Assign(Var("indent"), NoAnnoList(Str("\"\"")))))]))
-      , RDefNoArgs($[[lang]-get-separator], Rule(NoAnnoList(Tuple([ NoAnnoList(input), Var("index")])), Var("separator"), 
-      [ WithClause(SwitchChoice(Build(Var("index")), switch-sep*, Assign(Var("separator"), NoAnnoList(Str("\"\"")))))]))
-      , RDefNoArgs($[[lang]-get-leading-ws], Rule(NoAnnoList(Tuple([ NoAnnoList(input), Var("index")])), Var("ws"), 
-      [ WithClause(SwitchChoice(Build(Var("index")), switch-ws*, Assign(Var("ws"), NoAnnoList(Str("\"\"")))))]))
+      
+      RDefNoArgs($[[lang]-get-indent], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("indent"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-indent*, Assign(Var("indent"), NoAnnoList(Str("\"\"")))))]))
+      
+      , RDefNoArgs($[[lang]-get-separator], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("separator"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-sep*, Assign(Var("separator"), NoAnnoList(Str("\"\"")))))]))
+        
+      , RDefNoArgs($[[lang]-get-leading-ws], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("ws"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-ws*, Assign(Var("ws"), NoAnnoList(Str("\"\"")))))]))
       ]
     where
         not(<fetch-elem(?Reject())> a*)
