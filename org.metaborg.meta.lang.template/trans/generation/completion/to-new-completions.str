@@ -337,6 +337,51 @@ rules
         sort-term        := NoAnnoList(Str(sort'));
         s-term           := NoAnnoList(Str(s'));
         strategy-name    := $[is-[sort]-completion-sort]      
+        
+  prod-to-inj-rec-cmp:
+    TemplateProduction(SortDef(sort), SingleLineTemplate([Placeholder(Sort(s), [])]), Attrs(attrs)) -> 
+          [RuleDef |[ is-left-recursive: ~term:s-term -> <is-left-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,
+           RuleDef |[ is-right-recursive: ~term:s-term -> <is-right-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,           
+           RuleDef |[ ~id:strategy-name :
+                     ~term:s-term -> <id> ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where not (
+        <fetch-elem(?PlaceholderInsertion())> attrs
+      )
+      where
+        sort' := <strip-annos> sort;
+        s'    := <strip-annos> s  
+      with
+        sort-term        := NoAnnoList(Str(sort'));
+        s-term           := NoAnnoList(Str(s'));
+        strategy-name    := $[is-[sort]-completion-sort] 
+        
+  prod-to-inj-rec-cmp:
+    TemplateProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), SingleLineTemplate([Placeholder(Sort(s), [])]), Attrs(attrs)) -> 
+          [RuleDef |[ is-left-recursive: ~term:s-term -> <is-left-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,
+           RuleDef |[ is-right-recursive: ~term:s-term -> <is-right-recursive> ~term:sort-term
+                        where <not(is-lexical-completion-sort)> ~term:s-term ]|,           
+           RuleDef |[ ~id:strategy-name :
+                     ~term:s-term -> <id> ]| ]
+      where not (
+        <fetch-elem(?Reject())> attrs
+      )
+      where not (
+        <fetch-elem(?PlaceholderInsertion())> attrs
+      )
+      where
+        sort' := <strip-annos> sort;
+        s'    := <strip-annos> s  
+      with
+        sort-term        := NoAnnoList(Str(sort'));
+        s-term           := NoAnnoList(Str(s'));
+        strategy-name    := $[is-[sort]-completion-sort]       
+              
               
   prod-to-left-rec-cmp: 
     SdfProductionWithCons(SortCons(SortDef(sort), Constructor(constructor)), Rhs(rhs*@[Sort(s) | tl*]), Attrs(attrs)) -> 
