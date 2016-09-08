@@ -253,7 +253,9 @@ public class Importer{
 				// Read right hand side of the equation: Rhs([<symbols>])
 				StrategoList rhs = (StrategoList)app.getSubterm(1).getSubterm(0);
 				for(IStrategoTerm t : rhs){
-					sym_list.add(importSymbol(syntax.symbols(), t));
+					Symbol s = importSymbol(syntax.symbols(), t);
+					if(s != null)
+						sym_list.add(s);
 				}
 				
 				// Read attributes
@@ -353,7 +355,9 @@ public class Importer{
 			StrategoList slist = (StrategoList)term;
 			
 			for(IStrategoTerm t : slist){
-				list.add(importSymbol(collection, t));
+				Symbol s = importSymbol(collection, t);
+				if(s != null)
+					list.add(s);
 			}
 		}else{
 			System.err.println("sdf2table : Symbol.fromStrategoList: this term is not a list.");
@@ -441,6 +445,8 @@ public class Importer{
 		if(term instanceof StrategoAppl){
 			StrategoAppl app = (StrategoAppl)term;
 			switch(app.getName()){
+			case "Absent":
+				return null;
 			case "Simple":
 				return importTerminal(app.getSubterm(0));
 			case "Present":
