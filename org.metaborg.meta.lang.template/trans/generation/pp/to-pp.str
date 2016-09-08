@@ -34,7 +34,7 @@ imports
   
 rules
   
-  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"    
+  language-spec-name = prim("pp_language_spec_name") <+ "unknown"    
   placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
     
 rules
