@@ -43,7 +43,7 @@ rules
   Module(Unparameterized(m), i*, s*) -> Module(m',  <flatten-list> [i0, i1, is*, s1, s2, s3])
     with
       m'        := <conc-strings> ("completion/", m, "-cp");
-      i0        := Imports([Import("libstratego-gpp"), Import("runtime/completion/-")]);
+      i0        := Imports([Import("libstratego-gpp"), Import("libspoofax/editor/completion/-")]);
       i1        := Imports([Import($[signatures/[m]-sig])]); 
       is*       := <map(to-str-import(|"-cp", "completion"))> i*; 
       new-cmp*  := <filter(section-to-new-cmp); flatten-list> s*;
