@@ -1,13 +1,13 @@
 module sdf
 
 imports
-  libstratego-lib
-  libstratego-sdf
-  libstratego-sglr
+
   libstrc
+  libstratego-sdf
+  libspoofax/stratego/dynrule
+  libspoofax/core/parse
   analysis
   generate-syntax-templates
-  stratego/metaborg
   signatures/SDF
   editor/builders
   check
@@ -18,7 +18,7 @@ rules
   editor-analyze:
     (ast, path, project-path) -> (ast, <flatten-list> error'*, <flatten-list> warning'*, [])
     with
-      editor-init;
+      reset-dynamic-rules;
       analyze-ast;
       // We only collect-om since we don't want inner warning dupes
       error*   := <collect-om(fetch-sdf-errors, conc)> ast;
@@ -45,7 +45,7 @@ rules
   editor-resolve:
     (unparameterized(x), position, ast, path, project-path) -> target
     where
-      target := <parse-sdf-file> <resolve-import-decl> x
+      target := <parse-file-with-current-lang> <resolve-import-decl> x
 
   override pp-sdf-string = fail // ensure compiler doesn't blow up
 
