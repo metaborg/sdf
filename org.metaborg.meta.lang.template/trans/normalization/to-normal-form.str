@@ -14,6 +14,7 @@ imports
   editor/build-utils  
   pp/layout-constraints/Layout-Constraints-pp
   libstratego-gpp
+  utils/tokenize
 
 imports
   signatures/aliases/-
@@ -68,7 +69,12 @@ rules
             
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
-            non-template-sections*      := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
+            kfr                        := <collect-one(?KeywordFollowRestriction(<id>)) <+ !None()> sections*;
+            kattrs                     := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections*;
+            
+            desugared-sections*        := <lift-all; desugar-templates> sections*;
+            new-lex-restrictions*      := <generate-follow-restrictions-reject-keywords(|kfr, tokenize-chars, kattrs)> desugared-sections*;
+            non-template-sections*     := <remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> [desugared-sections*, new-lex-restrictions*];
             
             non-template-sections'*    := <flatten-list; normalize-layout-constraints> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
                        
@@ -150,7 +156,6 @@ rules
                                   ; nub> prods*;
         placeholder-prods*     := <map(add-plhdr-prod)> sorts*
    
-      
   add-plhdr-prod:
     s -> SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs([rhs]), Attrs([Placeholder()]))
       with
@@ -160,10 +165,87 @@ rules
         rhs := Lit(<concat-strings; double-quote> [left-placeholder-chars, s, right-placeholder-chars]);
         c := $[[s]-Plhdr]  
   
+  
   normalize-layout-constraints = topdown(try(normalize-constraint))
   
   normalize-constraint :
     LayoutConstraint(constr) -> Term(Default(Appl(Unquoted("layout"), [Fun(Quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+  
+  generate-follow-restrictions-reject-keywords(|kfr, chars, kattrs) = filter(follow-restrictions-template-prods(|kfr, chars, kattrs)); flatten-list
+  
+  follow-restrictions-template-prods(|kfr, chars, kattrs):
+    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, SDFSection(LexicalSyntax(reject-prods*))]
+      where 
+      // lexical restrictions
+        x    := <filter(case-sensitive-template-prods); nub> prods*;
+        ci-x := <filter(case-insensitive-template-prods); nub> prods*;
+        <debug(!"x, ci-x ")> (x, ci-x);
+        let
+          chars-end-with-identifier-char =
+                where(reverse; ?[<is-alphanum + '_'> | _])
+  
+              string-ends-with-identifier-char =
+                where(explode-string; chars-end-with-identifier-char)
+        in
+          r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
+             flatten-list;
+                 filter(string-ends-with-identifier-char; string-to-norm(|chars); last)> x;
+          ci-r* := <collect-om(?String(<string-edge-tokenize(where({ci-x: ?ci-x; <one(?ci-x)> chars}))>));
+             flatten-list;
+                 filter(string-ends-with-identifier-char; string-to-norm-insensitive(|chars); last)> ci-x;       
+            if ![ci-r*, r*] => [] + !kfr => None() then
+              restr* := []
+            else
+              restr* := [SDFSection(LexicalRestrictions([Follow(<nub> [ci-r*, r*], kfr)]))]
+            end
+        end;
+        // reject/other attributes productions
+        if ![ci-r*, r*] => [] + !kattrs => None() then
+           reject-prods* := []
+        else
+           <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
+           reject-prods* := <nub; map(!SdfProduction(symbol-kattrs, Rhs([<id>]), attr-kattrs))> [ci-r*, r*]
+        end
+ 
+ 
+  string-to-norm(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    // FIXME: Case insensitive literals need ci-lit/single-quote.
+    map(!Lit(<escape-sdf3; double-quote>))
+
+  string-to-norm-insensitive(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    map(!CiLit(<escape-sdf3; single-quote>))
+
+  escape-sdf3 =
+    string-replace(|"\\", "\\\\");
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"\"", "\\\"")  
+  
+  case-sensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-sensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs       
+  
       
   expand-import(|path):
     name -> ast
