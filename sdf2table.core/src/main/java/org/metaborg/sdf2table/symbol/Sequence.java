@@ -9,19 +9,7 @@ import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 import org.spoofax.terms.StrategoList;
 
-/**
- * The sequence is the only character class that is not a Symbol.
- * It can be seen as "the character c0 followed by c1 ... cn".
- * <p>
- * This class has been introduced to deal with follow restrictions,
- * where the restriction is about a sequence of characters.
- * <p>
- * Note that the method {@link #contains(int)} is slightly over-restrictive, in
- * the sense that it returns true for a character c iff c = c0,
- * even though c cannot be considered a a part of the caracter class
- * c0c1..cn.
- */
-public class Sequence extends CharClass{
+public class Sequence extends ConcreteNonTerminal{
 	List<Symbol> _list = null;
 	private static final StrategoConstructor CONS_SEQUENCE = new StrategoConstructor("sequence", 2);
 	
@@ -36,12 +24,6 @@ public class Sequence extends CharClass{
 		_list = list;
 	}
 	
-	public Sequence(Symbol head, Symbol tail){
-		_list = new ArrayList<>();
-		_list.add(head);
-		_list.add(tail);
-	}
-	
 	public Sequence(Symbol head, List<Symbol> tail){
 		_list = new ArrayList<>();
 		_list.add(head);
@@ -50,18 +32,6 @@ public class Sequence extends CharClass{
 	
 	public List<Symbol> symbols(){
 		return _list;
-	}
-	
-	@Override
-	public Terminal firstTerminal(){
-		if(_list.isEmpty())
-			return null;
-		return _list.get(0).getFirst();
-	}
-
-	@Override
-	public boolean contains(int c) {
-		return !_list.isEmpty() && firstTerminal().contains(c);
 	}
 	
 	@Override
@@ -77,24 +47,6 @@ public class Sequence extends CharClass{
 				null,
 				0
 		);
-	}
-	
-	public StrategoList toATermList() {
-		return Utilities.strategoListFromExportables(_list);
-	}
-
-	@Override
-	public int minimum() {
-		if(_list.isEmpty())
-			return 256;
-		return firstTerminal().minimum();
-	}
-
-	@Override
-	public int maximum() {
-		if(_list.isEmpty())
-			return 256;
-		return firstTerminal().maximum();
 	}
 
 	@Override
@@ -114,19 +66,37 @@ public class Sequence extends CharClass{
 
 	@Override
 	public String toString() {
-		String str = "";
+		String str = "(";
 		for(Symbol t : _list){
 			if(!str.isEmpty())
-				str += ".";
+				str += " ";
 			str += t.toString();
 		}
+		str += ")";
 		return str;
 	}
 
 	@Override
-	public Terminal getFirst() {
-		if(_list.isEmpty())
-			return null;
-		return _list.get(0).getFirst();
+	public Type type() {
+		return Type.CONTEXT_FREE;
+	}
+
+	@Override
+	public boolean nonEpsilon(){
+		for(Symbol s : _list){
+			if(s.nonEpsilon())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isLayout() {
+		for(Symbol s : _list){
+			if(!s.isLayout())
+				return false;
+		}
+		
+		return true;
 	}
 }
