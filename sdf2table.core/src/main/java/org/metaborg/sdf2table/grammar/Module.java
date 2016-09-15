@@ -30,6 +30,11 @@ public class Module{
 		return _name;
 	}
 	
+	public String absoluteName(){
+	    String[] names = _name.split("/");
+        return names[names.length-1];
+    }
+	
 	public Syntax syntax(){
 		return _syntax;
 	}

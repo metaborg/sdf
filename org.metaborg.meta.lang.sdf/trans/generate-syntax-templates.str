@@ -5,7 +5,6 @@ imports
   libstratego-sglr
   libstratego-aterm
   libstratego-gpp
-  stratego/metaborg
 
 overlays
   CONS(t) = term(default(appl(unquoted("cons"), [fun(quoted(t))])))

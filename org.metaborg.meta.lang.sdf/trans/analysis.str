@@ -4,8 +4,10 @@ imports
   libstratego-lib
   libstratego-sdf
   libstratego-sglr
-  stratego/metaborg
-
+  libspoofax/resource/cache
+  libspoofax/resource/path
+  libspoofax/core/parse
+  
 strategies
 
   analyze-ast:
@@ -72,7 +74,7 @@ rules
   resolve-import-path:
     x -> full-path
     where
-      sdf-source-and-include-locations
+      current-language-source-and-include-directories
     ; includes := <map(try(expand-relative-path))>
     ; full-path := <fetch-elem(\ path -> <file-exists> $[[path]/[x]] \)> includes
 
@@ -137,7 +139,7 @@ strategies
   record-all-module-names =
     record-all-definitions(
         alltd(record-module-name)
-      , parse-sdf-string
+      , parse-string-with-current-lang
       | "sdf"
     )
   
@@ -150,7 +152,7 @@ strategies
     rules(ModuleName : mname -> mname)
   
   record-all-definitions(record, parse|ext) = 
-    sdf-source-and-include-files;
+    current-language-source-and-include-files;
     list-loop(
       try(record-definitions(record, parse|ext))
     )
