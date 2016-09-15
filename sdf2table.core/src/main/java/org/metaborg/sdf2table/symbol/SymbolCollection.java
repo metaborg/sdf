@@ -10,6 +10,8 @@ public class SymbolCollection {
 	}
 	
 	public Symbol get(Symbol symbol){
+		if(symbol == null)
+			return null;
 		Symbol s =_symbols.agent(symbol);
 		return s;
 	}
@@ -19,6 +21,8 @@ public class SymbolCollection {
 	}
 	
 	public Symbol get(Symbol symbol, boolean create){
+		if(symbol == null)
+			return null;
 		Symbol s = get(symbol);
 		if(s == null && create)
 			_symbols.add(s = symbol);
