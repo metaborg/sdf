@@ -21,7 +21,7 @@ public class Option extends ConcreteNonTerminal {
 	
 	@Override
 	public Type type(){
-		return Type.CONTEXT_FREE;
+		return _symbol.type();
 	}
 	
 	public Symbol getSymbol(){

@@ -11,6 +11,7 @@ import org.spoofax.terms.StrategoList;
 
 public class Sequence extends ConcreteNonTerminal{
 	List<Symbol> _list = null;
+	Type _type = Type.TERMINAL;
 	private static final StrategoConstructor CONS_SEQUENCE = new StrategoConstructor("sequence", 2);
 	
 	/**
@@ -22,12 +23,21 @@ public class Sequence extends ConcreteNonTerminal{
 	
 	public Sequence(List<Symbol> list){
 		_list = list;
+		initType();
 	}
 	
 	public Sequence(Symbol head, List<Symbol> tail){
 		_list = new ArrayList<>();
 		_list.add(head);
 		_list.addAll(tail);
+		initType();
+	}
+	
+	void initType(){
+		for(Symbol s : _list){
+			if(s.type().level() > _type.level())
+				_type = s.type();
+		}
 	}
 	
 	public List<Symbol> symbols(){
@@ -78,7 +88,7 @@ public class Sequence extends ConcreteNonTerminal{
 
 	@Override
 	public Type type() {
-		return Type.CONTEXT_FREE;
+		return _type;
 	}
 
 	@Override

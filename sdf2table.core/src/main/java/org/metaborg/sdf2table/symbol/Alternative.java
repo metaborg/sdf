@@ -8,16 +8,21 @@ public class Alternative extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_ALT = new StrategoConstructor("alt", 1);
 	
 	private Symbol _a, _b;
+	private Type _type = Type.TERMINAL;
 	
 	public Alternative(Symbol a, Symbol b){
 		super();
 		_a = a;
 		_b = b;
+		if(_a.type().level() > _type.level())
+			_type = _a.type();
+		if(_b.type().level() > _type.level())
+			_type = _b.type();
 	}
 	
 	@Override
 	public Type type(){
-		return Type.CONTEXT_FREE;
+		return _type;
 	}
 	
 	@Override
