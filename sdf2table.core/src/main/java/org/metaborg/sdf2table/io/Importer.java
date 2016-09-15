@@ -435,7 +435,7 @@ public class Importer{
 			return null;
 		}
 		
-		if(collection != null)
+		if(collection != null && symbol != null)
 			symbol = collection.get(symbol, true);
 		
 		return symbol;
