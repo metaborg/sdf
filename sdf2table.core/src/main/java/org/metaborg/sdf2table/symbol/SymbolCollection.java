@@ -20,7 +20,7 @@ public class SymbolCollection {
 	
 	public Symbol get(Symbol symbol, boolean create){
 		Symbol s = get(symbol);
-		if(s == null && create)
+		if(s == null && symbol != null && create)
 			_symbols.add(s = symbol);
 		return s;
 	}
