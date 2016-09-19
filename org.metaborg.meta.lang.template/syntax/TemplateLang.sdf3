@@ -17,12 +17,6 @@ context-free start-symbols
     Module
 
 context-free syntax
-//tweaks for content completion
-TemplateProduction.WATER = <<CONTENTCOMPLETE>> {recover}
-PlaceholderOption.WATER = <<CONTENTCOMPLETE>> {recover}
-PlaceholderOptions.WATER = <<CONTENTCOMPLETE>> {recover} 
-
-context-free syntax
 //options section
 Section.TemplateOptions = <
 	template options 
@@ -32,6 +26,8 @@ Section.TemplateOptions = <
 	> 
 
 TemplateOption.Newlines = <newlines : <NewlineOptionValue>>
+
+TemplateOption.KeywordAttributes = <<SymbolDef> = keyword <Attributes>>
  
 NewlineOptionValue.None = <none>
 NewlineOptionValue.Leading = <leading>

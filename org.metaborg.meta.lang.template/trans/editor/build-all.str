@@ -67,8 +67,9 @@ rules
       chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
       kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      kattrs               := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
       sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-      sdf-ast              := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
+      sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
       <write-string-to-file> (sdf-filename, sdf-ast)  
     where
     version             := <check-sdf2table>;

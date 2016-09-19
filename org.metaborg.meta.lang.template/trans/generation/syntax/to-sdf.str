@@ -64,10 +64,10 @@ rules
 
 rules
  
-  to-sdf(|chars, newline, kfr) = 
-  module-to-sdf(|chars, newline, kfr) <+ section-to-sdf(|chars, newline, kfr) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
+  to-sdf(|chars, newline, kfr, kattrs) = 
+  module-to-sdf(|chars, newline, kfr, kattrs) <+ section-to-sdf(|chars, newline, kfr, kattrs) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
 
-  module-to-sdf(|chars, newline, kfr):
+  module-to-sdf(|chars, newline, kfr, kattrs):
     Module(Unparameterized(mn), i, sections) ->
       'module(unparameterized(mn), imports, exports)
     with
@@ -75,7 +75,7 @@ rules
       then
         exports := []
       else
-          exports := [exports(<filter(section-to-sdf(|chars, newline, kfr))> sections)]
+          exports := [exports(<filter(section-to-sdf(|chars, newline, kfr, kattrs))> sections)]
       end;
       imports := <map(imports-to-sdf)> i
 
@@ -94,39 +94,40 @@ rules
     
   /* SDF3 sections */
   //Context-free Start Symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreeStartSymbols(symbols)) -> context-free-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //KernelStartSymbols -> kernel-start-symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(KernelStartSymbols(symbols)) -> kernel-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //LexicalStartSymbols -> lexical-start-symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalStartSymbols(symbols)) -> lexical-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //productive productions section
-  section-to-sdf(|chars, newline, kfr):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), plhdr-prods*, restr*]
+  section-to-sdf(|chars, newline, kfr, kattrs):
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
   		// explicit placeholder prods
   		sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
                         ; nub> prods*;
-    plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
-    if [] := sorts* then
-            plhdr-prods* := []
-        else
-            plhdr-prods* := [context-free-syntax([plhdr*])]
-        end;                    
-  		// lexical restrictions
-        x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
+      plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
+      if [] := sorts* then
+              plhdr-prods* := []
+          else
+              plhdr-prods* := [context-free-syntax([plhdr*])]
+          end;                    
+      // lexical restrictions
+      x    := <filter(case-sensitive-template-prods); nub> prods*;
+      ci-x := <filter(case-insensitive-template-prods); nub> prods*;
       let
         chars-end-with-identifier-char =
               where(reverse; ?[<is-alphanum + '_'> | _])
@@ -137,96 +138,125 @@ rules
         r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
            flatten-list;
                filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
-          if !r* => [] + !kfr => None() then
+        ci-r* := <collect-om(?String(<string-edge-tokenize(where({ci-x: ?ci-x; <one(?ci-x)> chars}))>));
+           flatten-list;
+               filter(string-ends-with-identifier-char; string-to-sdf-insensitive(|chars); last)> ci-x;       
+          if ![ci-r*, r*] => [] + !kfr => None() then
             restr* := []
           else
-            restr* := [lexical-restrictions([follow(r*, kfr)])]
+            restr* := [lexical-restrictions([follow(<nub> [ci-r*, r*], kfr)])]
           end
+      end;
+      // reject/other attributes productions
+      if ![ci-r*, r*] => [] + !kattrs => None() then
+         reject-prods* := []
+      else
+         <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
+         reject-prods* := <nub; map(!prod([<id>], <term-translation> symbol-kattrs, <term-translation> attr-kattrs))> [ci-r*, r*]
       end
-
+       
+  case-sensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-sensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs 
 
   //lexical syntax productive section
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalSyntax(prods)) -> lexical-syntax(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //kernel syntax
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Kernel(prods)) -> syntax(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //lexical restrictions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalRestrictions(restrictions)) -> lexical-restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
   //context-free restrictions
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreeRestrictions(restrictions)) -> context-free-restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
 
   //kernel restrictions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Restrictions(restrictions)) -> restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
   //sorts
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Sorts(symbols)) -> 'sorts(symbols')
     with
       symbols' := <term-translation> symbols
 
   //aliases
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Aliases(aliases)) -> aliases(aliases')
     with
       aliases' := <term-translation> aliases
 
   //variables
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Variables(prods)) -> variables(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
     //lexical variables
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexVariables(prods)) -> lexical-variables(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //variables with productive productions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(VariablesProductive(prods)) -> variables(prods')
     with
         prods' := <map(prod-to-sdf)> prods
 
     //lexical variables with productive productions
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexVariablesProductive(prods)) -> lexical-variables(prods')
     with
         prods' := <map(prod-to-sdf)> prods
 
 
   //context-free priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreePriorities(priorities)) -> context-free-priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
 
   //lexical priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalPriorities(priorities)) -> lexical-priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
 
   //kernel priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Priorities(priorities)) -> priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
@@ -320,7 +350,7 @@ rules
       a'*       := <term-translation> a*
 
   //TemplateSection
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
     with
       p* := <map(prod-to-sdf(|chars, newline))> x;
