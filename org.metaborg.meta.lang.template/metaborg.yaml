@@ -1,15 +1,16 @@
 ---
-id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
+id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}-notsnapshot
 name: TemplateLang
 metaborgVersion: 2.1.0-SNAPSHOT
 metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
 dependencies:
   compile:
-  - org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}
-  - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}
-  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
-  - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
+  - org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
+  - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgVersion}
+  - org.metaborg:org.metaborg.meta.lang.esv:${metaborgVersion}
+  - org.metaborg:org.metaborg.meta.lang.ts:${metaborgVersion}
   source:
+  - org.metaborg:meta.lib.spoofax:${metaborgVersion}
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
 generates:
 - language: EditorService
