@@ -1,19 +1,15 @@
 package org.metaborg.sdf2table.parsetable;
 
-import org.metaborg.sdf2table.core.Utilities;
 import org.metaborg.sdf2table.grammar.Production;
-import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Terminal;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 import org.spoofax.terms.StrategoInt;
-import org.spoofax.terms.StrategoList;
 
 public class Reduce extends Action{
 	private static final StrategoConstructor CONS_REDUCE = new StrategoConstructor("reduce", 3);
 	private static final StrategoConstructor CONS_REDUCE_LOOKAHEAD = new StrategoConstructor("reduce", 4);
-	private static final StrategoConstructor CONS_FOLLOW_RESTRICTION = new StrategoConstructor("follow-restriction", 1);
 	private static final StrategoInt APPL_NORMAL = new StrategoInt(0, null, 0);
 	private static final StrategoInt APPL_REJECT = new StrategoInt(1, null, 0);
 	private static final StrategoInt APPL_AVOID = new StrategoInt(2, null, 0);
@@ -29,7 +25,7 @@ public class Reduce extends Action{
 	
 	Label _label;
 	ReducePolicy _policy = ReducePolicy.NORMAL;
-	Sequence _lookahead;
+	Lookahead _lookahead;
 	Item _item;
 	
 	public Reduce(Item item, Terminal symbol, Label label){
@@ -40,7 +36,7 @@ public class Reduce extends Action{
 		selectReducePolicy();
 	}
 	
-	public Reduce(Item item, Terminal symbol, Label label, Sequence lookahead){
+	public Reduce(Item item, Terminal symbol, Label label, Lookahead lookahead){
 		super(symbol);
 		_label = label;
 		_lookahead = lookahead;
@@ -127,12 +123,7 @@ public class Reduce extends Action{
 							new StrategoInt(_label.agent().symbols().size(), null, 0),
 							new StrategoInt(_label.id(), null, 0),
 							aTermPolicy(),
-							Utilities.strategoListFromArray(new StrategoAppl(
-									CONS_FOLLOW_RESTRICTION,
-									new IStrategoTerm[]{((StrategoList)_lookahead.toATermList()).tail()},
-									null,
-									0
-							))
+							_lookahead.toATerm()
 					},
 					null,
 					0

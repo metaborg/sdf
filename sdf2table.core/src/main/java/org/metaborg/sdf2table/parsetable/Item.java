@@ -15,8 +15,8 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.metaborg.sdf2table.grammar.UndefinedSymbolException;
 import org.metaborg.sdf2table.symbol.CharClass;
+import org.metaborg.sdf2table.symbol.Followed;
 import org.metaborg.sdf2table.symbol.NonTerminal;
-import org.metaborg.sdf2table.symbol.Sequence;
 import org.metaborg.sdf2table.symbol.Symbol;
 import org.metaborg.sdf2table.symbol.Terminal;
 
@@ -376,10 +376,10 @@ public class Item{
 					_reduce_actions.add(new Reduce(this, non_litigious, _prod.label()));
 				
 				for(CharClass cc : _prod.product().followRestrictions()){
-					if(cc instanceof Sequence){
+					if(cc instanceof Followed){
 						Terminal litigious = (Terminal)cc.firstTerminal().inter(t);
 						if(litigious != null){
-							_reduce_actions.add(new Reduce(this, litigious, _prod.label(), (Sequence)cc));
+							_reduce_actions.add(new Reduce(this, litigious, _prod.label(), Lookahead.fromCharClass(cc)));
 						}
 					}
 				}

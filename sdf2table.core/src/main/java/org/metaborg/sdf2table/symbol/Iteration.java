@@ -23,7 +23,7 @@ public class Iteration extends ConcreteNonTerminal{
 	
 	@Override
 	public Type type(){
-		return Type.CONTEXT_FREE;
+		return _symbol.type();
 	}
 	
 	@Override
