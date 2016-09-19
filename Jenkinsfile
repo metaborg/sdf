@@ -16,6 +16,6 @@ node{
       // Run the maven build
       sh "mvn -B -U clean verify -DforceContextQualifier=\$(date +%Y%m%d%H%M) "
     }
-    archiveArtifacts artifacts: ‘org.metaborg.meta.lang.template.eclipse.site/target/site/', excludes: null, onlyIfSuccessful: true
+    archiveArtifacts artifacts: 'org.metaborg.meta.lang.template.eclipse.site/target/site/', excludes: null, onlyIfSuccessful: true
   }
 }
