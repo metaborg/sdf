@@ -179,7 +179,6 @@ rules
       // lexical restrictions
         x    := <filter(case-sensitive-template-prods); nub> prods*;
         ci-x := <filter(case-insensitive-template-prods); nub> prods*;
-        <debug(!"x, ci-x ")> (x, ci-x);
         let
           chars-end-with-identifier-char =
                 where(reverse; ?[<is-alphanum + '_'> | _])
@@ -256,9 +255,7 @@ rules
             expanded-module:
                 name' -> <id>
         );
-        debug(!"name ");
-        ast    := <get-ast; module-to-normal-form(|path)> name;
-        debug(!"ast ")          
+        ast    := <get-ast; module-to-normal-form(|path)> name       
         //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
           
     open-import-custom(resolve-path, parse-file, record-declarations):
