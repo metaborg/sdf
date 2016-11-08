@@ -12,8 +12,8 @@ public class Reduce extends Action{
 	private static final StrategoConstructor CONS_REDUCE_LOOKAHEAD = new StrategoConstructor("reduce", 4);
 	private static final StrategoInt APPL_NORMAL = new StrategoInt(0, null, 0);
 	private static final StrategoInt APPL_REJECT = new StrategoInt(1, null, 0);
-	private static final StrategoInt APPL_AVOID = new StrategoInt(2, null, 0);
-	private static final StrategoInt APPL_PREFER = new StrategoInt(3, null, 0);
+	private static final StrategoInt APPL_AVOID = new StrategoInt(4, null, 0);
+	private static final StrategoInt APPL_PREFER = new StrategoInt(2, null, 0);
 	
 	
 	enum ReducePolicy{
