@@ -19,10 +19,17 @@ SymbolDef.Cf = <<SymbolDef>-CF> {prefer}
 SymbolDef.Lex = <<SymbolDef>-LEX> {prefer}
 SymbolDef.Var = <<SymbolDef>-VAR> {prefer}
 
+DeclSymbol         = Symbol
+DeclSymbol.DeclSort = <<Sort>> {prefer}
+DeclSymbol.Cf = <<DeclSymbol>-CF> {prefer}
+DeclSymbol.Lex = <<DeclSymbol>-LEX> {prefer}
+DeclSymbol.Var = <<DeclSymbol>-VAR> {prefer}
+
+
 Grammar.Sorts = <
 	sorts
 
-		<Symbols>
+		<DeclSymbol*>
 		
 		>
  

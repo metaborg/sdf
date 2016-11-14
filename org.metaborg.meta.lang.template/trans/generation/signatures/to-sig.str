@@ -98,7 +98,7 @@ rules
       sig* := <filter(cfg-to-sig)> p*   
  
   sort-to-sig:
-    Sort(s) -> SortNoArgs(s)
+    DeclSort(s) -> SortNoArgs(s)
 
   cfg-to-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-decl> c
