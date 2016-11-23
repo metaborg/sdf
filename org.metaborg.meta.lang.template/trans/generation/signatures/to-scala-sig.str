@@ -1,0 +1,282 @@
+module generation/signatures/to-scala-sig
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+imports
+  generation/signatures/to-sig
+  libspoofax/core/language
+
+rules
+
+  module-to-scala-sig-string: input -> ret
+  with if language-specification;debug(|"lang-spec: ") => (_, grpId, ident, _, _) then
+    // (name, groupId, id, version, location)
+    ret := <module-to-scala-sig-string(|[grpId, ident, "ast"])> input
+  else
+    ret := <module-to-scala-sig-string(|["org.example", "ExampleLang", "ast"])> input
+  end
+
+  module-to-scala-sig-string(|pkg-base*): Module(Unparameterized(m), i*, s*) ->
+$[package [pkg]
+object [m] {
+// Generic imports
+import org.metaborg.scalaInterop.terms.{sdf, stratego}
+import org.metaborg.scalaInterop.terms.stratego.{Term => STerm}
+// Generated imports
+[imports]
+// Lexical definitions
+[lexical-definitions]
+// Lexical extractors
+[lexical-companions]
+// Sort definitions
+[sort-definitions]
+// Constructor definitions
+[constructor-definitions]
+// Extractors from STerm
+[sort-companions]
+}
+]
+  with pkg := <module-to-scala-package-name(|pkg-base*)> Module(Unparameterized(m))
+     ; imports := <map(to-scala-import(|pkg-base*)); string-list-join(|"\n")> i*
+     ; lexical-sorts := <lexical-sorts> s*
+     ; lexical-definitions := <lexicals-to-scala-sig(|pkg-base*)> lexical-sorts
+     ; lexical-companions := <lexical-matching-in-scala> lexical-sorts
+     
+     ; sort* := <unique-context-free-sections(context-free-sort)> s*
+     ; injection* := <unique-context-free-sections(context-free-injection)> s*
+     ; constructor* := <unique-context-free-sections(context-free-constructor)> s*
+     
+     ; sort-definitions := <sorts-to-scala-sig> (sort*, injection*)
+     ; constructor-definitions := <constructors-to-scala-sig> constructor*
+     ; sort-companions := <sort-matching-in-scala> (sort*, injection*, constructor*)
+
+  to-scala-import(|pkg-base*): Imports(i*) ->
+    <map(module-to-scala-import-name(|pkg-base*); !$[import [<id>]]);string-list-join(|"\n")> i*
+
+  module-to-scala-package-name(|pkg-base*):
+    Module(Unparameterized(m)) -> <separate-by(|".");concat-strings> [pkg-base*, modulepart*]
+  with modulepart* := <string-as-chars(remove-all(?'-'))
+                      ;string-tokenize(|['/']); init> m
+
+  module-to-scala-import-name(|pkg-base*):
+    Module(Unparameterized(m)) -> <separate-by(|".");concat-strings> [pkg-base*, modulepart*, "_"]
+  with modulepart* := <string-as-chars(remove-all(?'-'))
+                      ;string-tokenize(|['/'])> m
+
+  lexicals-to-scala-sig(|pkg-base*) =
+    map(lexsort-to-scala-decl(|pkg-base*))
+  ; string-list-join(|"\n")
+
+  lexical-sorts =
+      filter(lexical-section-sorts + kernel-section-lexical-sort)
+    ; concat
+    ; nub
+
+  lexical-section-sorts = ?SDFSection(LexicalSyntax(<filter(get-sort-from-prod)>))
+  kernel-section-lexical-sort = ?SDFSection(Kernel(<filter(get-lex-kernel-sort-from-prod)>))
+
+  get-lex-kernel-sort-from-prod:
+    <?SdfProduction(Lex(SortDef(s)), _, Attrs(a*))
+    +?SdfProductionWithCons(SortCons(Lex(SortDef(s)), _), _, Attrs(a*))> -> s
+  where <not(fetch-elem(?Reject()))> a*
+
+  lexical-matching-in-scala = map(lexsort-to-companion-object); string-list-join(|"\n")
+
+  sorts-to-scala-sig = sorts-to-scala-decls; string-list-join(|"\n")
+
+  constructors-to-scala-sig = filter(cons-to-scala-decl); string-list-join(|"\n")
+
+  unique-context-free-sections(s) = filter(context-free-sections(s)); concat; nub
+
+  context-free-sections(s) =
+    ?SDFSection(ContextFreeSyntax(<filter(s)>)) + ?SDFSection(Kernel(<filter(s)>))
+  + ?TemplateSection(<filter(s)>)
+
+  // TODO: get RHS and support `Label(lbl, sort)` instead of using get-type
+  context-free-constructor:
+    SdfProductionWithCons(SortCons(sd,Constructor(c)), _, Attrs(a*)) ->
+      (<strip-annos> c, <get-type> c)
+  where <?SortDef(s) + ?Cf(SortDef(s))> sd
+      ; <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  context-free-constructor:
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, Attrs(a*)) ->
+      (<strip-annos> c, <get-type> c)
+  where <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  context-free-injection:
+    SdfProduction(sd, rhs, Attrs(a*)) -> (s, sort)
+  where <?SortDef(s) + ?Cf(SortDef(s))> sd
+      ; <not(fetch-elem(?Reject() + ?Bracket()))> a*
+      ; (  (ConstType(SortNoArgs(sort)) := <get-type; Hd> rhs)
+        <+ (<debug(|"[to-scala-sig] bad injection rule rhs: ")> rhs; fail) )
+
+  context-free-injection:
+    TemplateProduction(SortDef(s), t, Attrs(a*)) -> (s, sort)
+  where <not(fetch-elem(?Reject() + ?Bracket()))> a*
+      ; (  (ConstType(SortNoArgs(sort)) := <get-type; Hd> t)
+        <+ (<debug(|"[to-scala-sig] bad injection rule rhs: ")> t; fail) )
+
+  context-free-sort:
+    SdfProductionWithCons(SortCons(sd,_), _, Attrs(a*)) -> s
+  where <?SortDef(s) + ?Cf(SortDef(s))> sd
+      ; <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  context-free-sort:
+    TemplateProductionWithCons(SortCons(SortDef(s), _), _, Attrs(a*)) -> s
+  where <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  context-free-sort:
+    SdfProduction(sd, _, Attrs(a*)) -> s
+  where <?SortDef(s) + ?Cf(SortDef(s))> sd
+      ; <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  context-free-sort:
+    TemplateProduction(SortDef(s), _, Attrs(a*)) -> s
+  where <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  lexsort-to-scala-decl(|pkg-base*):
+    s -> <string-list-join(|"\n")>
+      [ $[case class [s](string: String, origin: stratego.Origin) extends sdf.Lexical {]
+      , <indent-text(|2)>
+          $[override def toSTerm: STerm.String = STerm.String(string, origin)]
+      , $[}] ]
+  with pkg := <separate-by(|".");concat-strings> [pkg-base*, "lexicals"]
+
+  sorts-to-scala-decls: (sort*, injection*) -> result
+  with result := <map(sort-to-scala-decl(|injection*))> sort*
+
+  sort-to-scala-decl(|injections): sort -> $[sealed trait [sort] extends sdf.Constructor[supers]]
+  with supers := <filter(?(<id>, sort)); map(!$[ with [<id>]]); concat-strings> injections
+
+  sort-matching-in-scala: (sort*, injection*, constructor*) -> result
+  with result := <map(sort-to-companion-object(|injection*, constructor*))> sort*
+
+  sort-to-companion-object(|injection*, constructor*):
+    sort -> <string-list-join(|"\n")>
+      [ $[object Extract[sort] {]
+      , <string-list-join(|"\n");indent-text(|2)>
+        [ $<def unapply(term: STerm): Option[<sort>] = term match {>
+        , <string-list-join(|"\n");indent-text(|2)>
+          [ match*
+          , delegate*
+          , $[case _ => None] ]
+        , $[}] ]
+      , $[}]
+      , $[object Extract[sort]List {]
+      , <string-list-join(|"\n");indent-text(|2)>
+        [ $<def unapply(term: STerm): Option[List[<sort>]] = term match {>
+        , <string-list-join(|"\n");indent-text(|2)>
+          [ $[case STerm.List(l, o) =>]
+          , <string-list-join(|"\n");indent-text(|2)>
+              [ $[val l2 = l.map(Extract[sort].unapply)]
+              , $[if (l2.contains(None)) None]
+              , $[else Some(l2.map(_.get))] ]
+          , $[case _ => None] ]
+        , $[}] ]
+      , $[}] ]
+  with cons*  := <filter(?(_, FunType(_, ConstType(SortNoArgs(sort)))))> constructor*
+     ; match* := <map(constructor-to-STerm-match)> cons*
+     ; inj*   := <filter(?(sort, <id>))> injection*
+     ; delegate* := <map(injection-to-STerm-delegation)> inj*
+
+  lexsort-to-companion-object:
+    sort -> <string-list-join(|"\n")>
+      [ $[object Extract[sort] {]
+      , <string-list-join(|"\n");indent-text(|2)>
+        [ $<def unapply(term: STerm): Option[<sort>] = term match {>
+        , <string-list-join(|"\n");indent-text(|2)>
+          [ $[case STerm.String(string, origin) => Some([sort](string, origin))]
+          , $[case _ => None] ]
+        , $[}] ]
+      , $[}]
+      , $[object Extract[sort]List {]
+      , <string-list-join(|"\n");indent-text(|2)>
+        [ $<def unapply(term: STerm): Option[List[<sort>]] = term match {>
+        , <string-list-join(|"\n");indent-text(|2)>
+          [ $[case STerm.List(l, o) =>]
+          , <string-list-join(|"\n");indent-text(|2)>
+              [ $[val l2 = l.map(Extract[sort].unapply)]
+              , $[if (l2.contains(None)) None]
+              , $[else Some(l2.map(_.get))] ]
+          , $[case _ => None] ]
+        , $[}] ]
+      , $[}] ]
+
+  constructor-to-STerm-match:
+    (c, FunType(inputs, _)) ->
+      $[case STerm.Cons("[c]", List([match]), o) => Some([c]([build], o))]
+  with match := <map-with-index(type-to-scala-match)
+                ;separate-by(|", ")
+                ;concat-strings> inputs
+     ; build := <map-with-index(\(i, _) -> $[_[i]]\)
+                ;separate-by(|", ")
+                ;concat-strings> inputs
+
+  injection-to-STerm-delegation:
+    inj-sort -> $[case Extract[inj-sort](_1) -> Some(_1)]
+
+  type-to-scala-match: (i, ConstType(SortNoArgs(sort))) -> $[Extract[sort](_[i])]
+
+  type-to-scala-match: (i, ConstType(Sort("List", [SortNoArgs(sort)]))) -> $[Extract[sort]List(_[i])]
+
+  type-to-scala-match: (i, ConstType(Sort(wrapper, [SortNoArgs(sort)]))) ->
+    <debug(|"[to-scala-sig] unsupported wrapper type: "); fail> wrapper
+
+  cons-to-scala-decl:
+    (c, t) -> <string-list-join(|"\n")> 
+      [ $[case class [c]([fields]) extends [super] {]
+      , <indent-text(|2)>
+          $[override def toSTerm = STerm.Cons("[c]", List([recurseFields]), origin)]
+      , $[}] ]
+    where
+      (  (FunType(inputs, ConstType(SortNoArgs(super))) := t)
+      <+ (<debug(|"[to-scala-sig] bad constructor rule type: ")> t; fail) )
+    with fields := <map-with-index(type-to-scala-field)
+                   ;![<id>, ["origin: stratego.Origin"]]
+                   ;concat
+                   ;separate-by(|", ")
+                   ;concat-strings> inputs
+       ; recurseFields := <map-with-index(\(i, _) -> $[_[i].toSTerm]\)
+                          ;separate-by(|", ")
+                          ;concat-strings> inputs
+
+  type-to-scala-field: (i, ConstType(SortNoArgs(sort))) -> $[_[i]: [sort]]
+
+  type-to-scala-field: (i, ConstType(Sort("List", [SortNoArgs(sort)]))) -> ${_{i}: List[{sort}]}
+
+  type-to-scala-field: (i, ConstType(Sort(wrapper, [SortNoArgs(sort)]))) ->
+    <debug(|"[to-scala-sig] unsupported wrapper type: "); fail> wrapper
+
+  string-list-join(|sep) = separate-by(|sep);concat-strings

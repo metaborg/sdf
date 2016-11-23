@@ -42,6 +42,7 @@ menus
       action: "Generate Signature (concrete)"         = generate-sig-concrete
       action: "Generate DynSem Signatures (abstract)" = generate-dynsem-abstract (meta)
       action: "Generate DynSem Signatures"            = generate-dynsem 
+      action: "Generate Scala Signatures"             = generate-scala
     end
         
     submenu: "Completion"
