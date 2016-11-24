@@ -52,8 +52,8 @@ $[package [pkg]
 
 object [m] {
   // Generic imports
-  import org.metaborg.scalaTerms
-  import org.metaborg.scalaTerms.{ sdf, STerm }
+  import org.metaborg.scalaterms
+  import org.metaborg.scalaterms.{ sdf, STerm }
   // Generated imports
   [imports]
   // Lexical definitions
