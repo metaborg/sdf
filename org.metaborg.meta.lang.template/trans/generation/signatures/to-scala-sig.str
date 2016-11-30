@@ -40,7 +40,7 @@ imports
 rules
 
   module-to-scala-sig-string: input -> ret
-  with if language-specification;debug(|"lang-spec: ") => (_, grpId, ident, _, _) then
+  with if language-specification => (_, grpId, ident, _, _) then
     // (name, groupId, id, version, location)
     ret := <module-to-scala-sig-string(|[grpId, ident, "ast"])> input
   else
@@ -50,7 +50,7 @@ rules
   module-to-scala-sig-string(|pkg-base*): Module(Unparameterized(m), i*, s*) ->
 $[package [pkg]
 
-object [m] {
+object M[m'] {
   // Generic imports
   import org.metaborg.scalaterms
   import org.metaborg.scalaterms.{ sdf, STerm }
@@ -64,10 +64,9 @@ object [m] {
   [sort-definitions]
   // Constructor definitions
   [constructor-definitions]
-  // Extractors from STerm
-  [sort-companions]
 }]
   with pkg := <module-to-scala-package-name(|pkg-base*)> Module(Unparameterized(m))
+     ; m' := <string-as-chars(remove-all(?'-')); string-tokenize(|['/']); last> m
      ; imports := <map(to-scala-import(|pkg-base*)); string-list-join(|"\n")> i*
      ; lexical-sorts := <lexical-sorts> s*
      ; lexical-definitions := <lexicals-to-scala-sig(|pkg-base*)> lexical-sorts
@@ -78,8 +77,7 @@ object [m] {
      ; constructor* := <unique-context-free-sections(context-free-constructor)> s*
      
      ; sort-definitions := <sorts-to-scala-sig> (sort*, injection*)
-     ; constructor-definitions := <constructors-to-scala-sig> (sort*, constructor*)
-     ; sort-companions := <sort-matching-in-scala> (sort*, injection*, constructor*)
+     ; constructor-definitions := <constructors-to-scala-sig> (sort*, constructor*, injection*)
 
   to-scala-import(|pkg-base*): Imports(i*) ->
     <map(module-to-scala-import-name(|pkg-base*); !$[import [<id>]]);string-list-join(|"\n")> i*
@@ -90,9 +88,11 @@ object [m] {
                       ;string-tokenize(|['/']); init> m
 
   module-to-scala-import-name(|pkg-base*):
-    Module(Unparameterized(m)) -> <separate-by(|".");concat-strings> [pkg-base*, modulepart*, "_"]
+    Module(Unparameterized(m)) ->
+      <separate-by(|".");concat-strings> [pkg-base*, modulepart1*, $[M[modulepart2]], "_"]
   with modulepart* := <string-as-chars(remove-all(?'-'))
                       ;string-tokenize(|['/'])> m
+     ; (modulepart1*, modulepart2) := <split-init-last> modulepart*
 
   lexicals-to-scala-sig(|pkg-base*) =
     map(lexsort-to-scala-decl(|pkg-base*))
@@ -115,12 +115,15 @@ object [m] {
 
   sorts-to-scala-sig = sorts-to-scala-decls; string-list-join(|"\n")
 
-  constructors-to-scala-sig: (sort*, constructor*) -> result
-  with cons-by-sort := <map(\sort -> <match-sort-and-cons(|sort)> constructor*\)> sort*
-     ; result := <map(sort-cons-to-scala-decl); string-list-join(|"\n")> cons-by-sort
+  constructors-to-scala-sig: (sort*, constructor*, injection*) -> result
+  with sort-with-cons-inj := <map(\sort -> ( sort
+                                           , <match-sort-and-cons(|sort)> constructor*
+                                           , <match-sort-and-inj(|sort)> injection* )\)> sort*
+     ; result := <map(sort-cons-to-scala-decl); string-list-join(|"\n")> sort-with-cons-inj
 
-  match-sort-and-cons(|sort): constructor* ->
-    (sort, <retain-all(?(_,FunType(_, ConstType(SortNoArgs(sort)))))> constructor*)
+  match-sort-and-cons(|sort) = retain-all(?(_,FunType(_, ConstType(SortNoArgs(sort)))))
+
+  match-sort-and-inj(|sort) = filter(?(sort, <id>))
 
   unique-context-free-sections(s) = filter(context-free-sections(s)); concat; nub
 
@@ -172,104 +175,121 @@ object [m] {
   where <not(fetch-elem(?Reject() + ?Bracket()))> a*
 
   lexsort-to-scala-decl(|pkg-base*):
-    s -> $[// Define implicit conversions (e.g. in the package object) to another representation you prefer
-           case class [s](string: java.lang.String, origin: scalaTerms.Origin) extends sdf.Lexical {
-             override def toSTerm: STerm.String = STerm.String(string, origin)
-           }]
+    s ->
+$[// Define implicit conversions (e.g. in the package object) to another representation you prefer
+ case class S[s](string: java.lang.String, origin: scalaterms.Origin) extends sdf.Lexical {
+   override def toSTerm: STerm.String = STerm.String(string, origin)
+ }]
   with pkg := <separate-by(|".");concat-strings> [pkg-base*, "lexicals"]
 
   sorts-to-scala-decls: (sort*, injection*) -> result
   with result := <map(sort-to-scala-decl(|injection*))> sort*
 
-  sort-to-scala-decl(|injections): sort -> $[sealed trait [sort] extends sdf.Constructor[supers]]
-  with supers := <filter(?(<id>, sort)); mapconcat(![" with ", <id>]); concat-strings> injections
-
-  sort-matching-in-scala: (sort*, injection*, constructor*) -> result
-  with result := <map(sort-to-companion-object(|injection*, constructor*))
-                 ;string-list-join(|"\n")> sort*
-
-  sort-to-companion-object(|injection*, constructor*):
-    sort -> <string-list-join(|"\n")>
-      [ $<object Extract<sort> extends scalaTerms.Extract[<sort>] {>
-      , <string-list-join(|"\n");indent-text(|2)>
-        [ $<def unapply(term: STerm): Option[<sort>] = term match {>
-        , <string-list-join(|"\n");indent-text(|2)>
-          [ match*
-          , inj-match*
-          , $[case _ => scala.None] ]
-        , $[}] ]
-      , $[}] ]
-  with cons*  := <filter(?(_, FunType(_, ConstType(SortNoArgs(sort)))))> constructor*
-     ; match* := <map(constructor-to-STerm-match)> cons*
-     ; inj*   := <filter(?(sort, <id>))> injection*
-     ; inj-match* := <map(injection-to-STerm-match)> inj*
+  sort-to-scala-decl(|injections): sort -> $[sealed trait S[sort] extends sdf.Constructor[supers]]
+  with supers := <filter(?(<id>, sort)); mapconcat(![" with S", <id>]); concat-strings> injections
 
   lexsort-to-companion-object:
-    sort -> <string-list-join(|"\n")>
-      [ $<object Extract<sort> extends scalaTerms.Extract[<sort>] {>
-      , <string-list-join(|"\n");indent-text(|2)>
-        [ $<def unapply(term: STerm): Option[<sort>] = term match {>
-        , <indent-text(|2)>
-          $[case STerm.String(string, origin) => scala.Some([sort](string, origin))
-            case _ => scala.None]
-        , $[}] ]
-      , $[}] ]
+    sort ->
+$<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
+    override val fromSTerm: scalaterms.FromSTerm[S<sort>] = new scalaterms.FromSTerm[S<sort>] {
+      override def unapply(term: STerm): Option[S<sort>] = term match {
+        <$[case STerm.String(string, origin) => scala.Some(S[sort](string, origin))
+           case _ => scala.None]>
+      }
+    }
+  }>
 
   constructor-to-STerm-match:
-    (c, FunType(inputs, ConstType(SortNoArgs(sort)))) ->
-      $[case STerm.Cons("[c]", scala.List([match]), o) => scala.Some([sort].[c]([build], o))]
-  with match := <map-with-index(type-to-scala-match)
-                ;separate-by(|", ")
-                ;concat-strings> inputs
-     ; build := <map-with-index(\(i, _) -> $[_[i]]\)
-                ;separate-by(|", ")
-                ;concat-strings> inputs
+    (c, t) -> $[case [cn].fromSTerm([n]) => scala.Some([n])]
+  with FunType(inputs, ConstType(SortNoArgs(super))) := t
+     ; cn := $[[c][<length> inputs]]
+     ; n := $[[<lower-case> super]1]
 
   injection-to-STerm-match:
-    inj-sort -> $[case Extract[inj-sort](_1) => scala.Some(_1)]
+    inj-sort -> $[case S[inj-sort].fromSTerm(_1) => scala.Some(_1)]
 
-  type-to-scala-match: (i, ConstType(SortNoArgs(sort))) -> $[Extract[sort](_[i])]
+  type-to-scala-match: t@(i, ConstType(SortNoArgs(sort))) ->
+    $[S[sort].fromSTerm([<type-to-scala-name> t])]
 
-  type-to-scala-match: (i, ConstType(Sort("List", [SortNoArgs(sort)]))) ->
-    $[Extract[sort].list(_[i])]
+  type-to-scala-match: t@(i, ConstType(Sort("List", [SortNoArgs(sort)]))) ->
+    $[S[sort].fromSTerm.list([<type-to-scala-name> t])]
 
-  type-to-scala-match: (i, ConstType(Sort("Option", [SortNoArgs(sort)]))) ->
-    $[Extract[sort].option(_[i])]
+  type-to-scala-match: t@(i, ConstType(Sort("Option", [SortNoArgs(sort)]))) ->
+    $[S[sort].fromSTerm.option([<type-to-scala-name> t])]
 
   type-to-scala-match: (i, ConstType(Sort(wrapper, [SortNoArgs(sort)]))) ->
     <debug(|"[to-scala-sig] unsupported wrapper type: "); fail> wrapper
 
-  sort-cons-to-scala-decl:
-    (sort, cons*) -> <string-list-join(|"\n")>
-      [ $[object [sort] {]
-      , <indent-text(|2)>
-          classes*
-      , $[}] ]
-  with classes* := <map(cons-to-scala-decl);string-list-join(|"\n")> cons*
+  sort-cons-to-scala-decl(|injection*):
+    (sort{a*}, cons*, inj*) ->
+$<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
+    override val fromSTerm: scalaterms.FromSTerm[S<sort>] = new scalaterms.FromSTerm[S<sort>] {
+      override def unapply(term: STerm): Option[S<sort>] = term match {
+        <<string-list-join(|"\n")>
+           [ match*
+           , inj-match*
+           , $[case _ => scala.None] ]>
+      }
+    }
+
+    <classes>
+  }>
+  with classes := <map(cons-to-scala-decl);string-list-join(|"\n")> cons*
+     ; match* := <map(constructor-to-STerm-match)> cons*
+     ; inj-match* := <map(injection-to-STerm-match)> inj*
 
   cons-to-scala-decl:
-    (c, t) -> $[case class [c]([fields]) extends [super] {
-                  override def toSTerm = STerm.Cons("[c]", scala.List([recurseFields]), origin)
-                }]
+    (c, t) ->
+      $<case class <cn>(<fields>) extends S<super> {
+          override def toSTerm = STerm.Cons("<c>", scala.List(<recurseFields>), origin)
+        }
+        object <cn> extends scalaterms.TermLikeCompanion[<cn>] {
+          override val fromSTerm: scalaterms.FromSTerm[<cn>] = new scalaterms.FromSTerm[<cn>] {
+            override def unapply(term: STerm): Option[<cn>] = term match {
+              <$[case STerm.Cons("[c]", scala.List([match]), o) => scala.Some([cn]([build]))
+                 case _ => None]>
+            }
+          }
+        }>
     with FunType(inputs, ConstType(SortNoArgs(super))) := t
+       ; cn := $[[c][<length> inputs]]
        ; fields := <map-with-index(type-to-scala-field)
-                   ;![<id>, ["origin: scalaTerms.Origin"]]
+                   ;![<id>, ["origin: scalaterms.Origin"]]
                    ;concat
                    ;separate-by(|", ")
                    ;concat-strings> inputs
-       ; recurseFields := <map-with-index(\(i, _) -> $[_[i].toSTerm]\)
+       ; recurseFields := <map-with-index(!$[[<type-to-scala-name>].toSTerm])
                           ;separate-by(|", ")
                           ;concat-strings> inputs
+       ; match := <map-with-index(type-to-scala-match)
+                  ;separate-by(|", ")
+                  ;concat-strings> inputs
+       ; build := <map-with-index(type-to-scala-name)
+                  ;![<id>, ["o"]]
+                  ;concat
+                  ;separate-by(|", ")
+                  ;concat-strings> inputs
 
-  type-to-scala-field: (i, ConstType(SortNoArgs(sort))) -> $[_[i]: [sort]]
+  type-to-scala-field: (i, ConstType(SortNoArgs(sort))) -> $[[<lower-case> sort][i]: S[sort]]
 
   type-to-scala-field: (i, ConstType(Sort("List", [SortNoArgs(sort)]))) ->
-    ${_{i}: STerm.List[{sort}]}
+    ${{<lower-case> sort}{i}: STerm.List[S{sort}]}
 
   type-to-scala-field: (i, ConstType(Sort("Option", [SortNoArgs(sort)]))) ->
-    ${_{i}: sdf.Option[{sort}]}
+    ${{<lower-case> sort}{i}: sdf.Option[S{sort}]}
 
   type-to-scala-field: (i, ConstType(Sort(wrapper, [SortNoArgs(sort)]))) ->
+    <debug(|"[to-scala-sig] unsupported wrapper type: "); fail> wrapper
+
+  type-to-scala-name: (i, ConstType(SortNoArgs(sort))) -> $[[<lower-case> sort][i]]
+
+  type-to-scala-name: (i, ConstType(Sort("List", [SortNoArgs(sort)]))) ->
+    ${{<lower-case> sort}{i}}
+
+  type-to-scala-name: (i, ConstType(Sort("Option", [SortNoArgs(sort)]))) ->
+    ${{<lower-case> sort}{i}}
+
+  type-to-scala-name: (i, ConstType(Sort(wrapper, [SortNoArgs(sort)]))) ->
     <debug(|"[to-scala-sig] unsupported wrapper type: "); fail> wrapper
 
   string-list-join(|sep) = separate-by(|sep);concat-strings
