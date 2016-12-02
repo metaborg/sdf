@@ -241,12 +241,12 @@ $<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
   cons-to-scala-decl:
     (c, t) ->
 $<case class <cn>(<fields>) extends S<super> {
-    override def toSTerm = STerm.Cons("<c>", scala.List(<recurseFields>), scala.Some(origin))
+    override def toSTerm = STerm.Cons("<c>", scala.Seq(<recurseFields>), scala.Some(origin))
   }
   object <cn> extends scalaterms.TermLikeCompanion[<cn>] {
     override val fromSTerm: scalaterms.FromSTerm[<cn>] = new scalaterms.FromSTerm[<cn>] {
       override def unapply(term: STerm): Option[<cn>] = term match {
-        <$[case STerm.Cons("[c]", scala.List([match]), scala.Some(origin)) =>
+        <$[case STerm.Cons("[c]", scala.Seq([match]), scala.Some(origin)) =>
              scala.Some([cn]([build]))
            case _ => None]>
       }
