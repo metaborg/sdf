@@ -178,7 +178,7 @@ object M[m'] {
     s ->
 $[// Define implicit conversions (e.g. in the package object) to another representation you prefer
  case class S[s](string: java.lang.String, origin: scalaterms.Origin) extends sdf.Lexical {
-   override def toSTerm: STerm.String = STerm.String(string, origin)
+   override def toSTerm: STerm.String = STerm.String(string, scala.Some(origin))
  }]
   with pkg := <separate-by(|".");concat-strings> [pkg-base*, "lexicals"]
 
@@ -193,7 +193,7 @@ $[// Define implicit conversions (e.g. in the package object) to another represe
 $<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
     override val fromSTerm: scalaterms.FromSTerm[S<sort>] = new scalaterms.FromSTerm[S<sort>] {
       override def unapply(term: STerm): Option[S<sort>] = term match {
-        <$[case STerm.String(string, origin) => scala.Some(S[sort](string, origin))
+        <$[case STerm.String(string, scala.Some(origin)) => scala.Some(S[sort](string, origin))
            case _ => scala.None]>
       }
     }
@@ -240,17 +240,18 @@ $<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
 
   cons-to-scala-decl:
     (c, t) ->
-      $<case class <cn>(<fields>) extends S<super> {
-          override def toSTerm = STerm.Cons("<c>", scala.List(<recurseFields>), origin)
-        }
-        object <cn> extends scalaterms.TermLikeCompanion[<cn>] {
-          override val fromSTerm: scalaterms.FromSTerm[<cn>] = new scalaterms.FromSTerm[<cn>] {
-            override def unapply(term: STerm): Option[<cn>] = term match {
-              <$[case STerm.Cons("[c]", scala.List([match]), o) => scala.Some([cn]([build]))
-                 case _ => None]>
-            }
-          }
-        }>
+$<case class <cn>(<fields>) extends S<super> {
+    override def toSTerm = STerm.Cons("<c>", scala.List(<recurseFields>), scala.Some(origin))
+  }
+  object <cn> extends scalaterms.TermLikeCompanion[<cn>] {
+    override val fromSTerm: scalaterms.FromSTerm[<cn>] = new scalaterms.FromSTerm[<cn>] {
+      override def unapply(term: STerm): Option[<cn>] = term match {
+        <$[case STerm.Cons("[c]", scala.List([match]), scala.Some(origin)) =>
+             scala.Some([cn]([build]))
+           case _ => None]>
+      }
+    }
+  }>
     with FunType(inputs, ConstType(SortNoArgs(super))) := t
        ; cn := $[[c][<length> inputs]]
        ; fields := <map-with-index(type-to-scala-field)
@@ -265,7 +266,7 @@ $<object S<sort> extends scalaterms.TermLikeCompanion[S<sort>] {
                   ;separate-by(|", ")
                   ;concat-strings> inputs
        ; build := <map-with-index(type-to-scala-name)
-                  ;![<id>, ["o"]]
+                  ;![<id>, ["origin"]]
                   ;concat
                   ;separate-by(|", ")
                   ;concat-strings> inputs
