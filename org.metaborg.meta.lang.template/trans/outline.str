@@ -6,11 +6,32 @@ module outline
 
 imports
   libstratego-sglr
-  signatures/TemplateLang-sig
   utils/attributes
   runtime/editor/outline-library
   runtime/editor/origins
-  
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig  
   
 rules
 
@@ -24,10 +45,6 @@ rules
   to-outline-label = ?prod(_, <id>, _)
   to-outline-label = ?prefix-fun(<id>, _, _, _)
   to-outline-label = ?follow(_, <id>)
-
-  
-  
-  
 
 rules
   

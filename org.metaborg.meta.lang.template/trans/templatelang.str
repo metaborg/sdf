@@ -31,8 +31,15 @@ imports
   editor/build-sig
   editor/build-syntax
   editor/build-utils
+  editor/build-sdf-completions
   names/analysis/names
   types/analysis/types-ts
+  generation/completion/-
+  generation/pp/-
+  generation/signatures/-
+  generation/syntax/-
+
+
 
 rules // Analysis
 
@@ -101,8 +108,6 @@ rules // Debugging
   // analysis-default-debug-interface = debug
 
 rules
-
-  language-spec-name = prim("SSL_EXT_language_spec_name") <+ "unknown"
 
   // When given a tuple (path, string) this writes string into path.
   write-string-to-file =

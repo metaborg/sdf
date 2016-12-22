@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 name: TemplateLang
-metaborgVersion: 2.0.0
+metaborgVersion: 2.1.0-SNAPSHOT
 metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
 dependencies:
   compile:
@@ -11,6 +11,7 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
+  - org.metaborg:meta.lib.spoofax:${metaborgVersion}
 generates:
 - language: EditorService
   directory: src-gen

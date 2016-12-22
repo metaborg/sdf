@@ -1,12 +1,15 @@
 module editor/build-pp
 
 imports
+  editor/build-utils
+  libstrc
   signatures/TemplateLang-sig
   signatures/modules/Modules-sig
   analysis/desugar
   generation/pp/to-pp
 
 rules
+
   generate-pp-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
@@ -16,7 +19,8 @@ rules
      // ; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
 
-   generate-pp-concrete:
+  generate-pp-concrete:
+
     (selected, position, ast, path, project-path) -> (filename, result)
     where
       <?Module(Unparameterized(m), i*, sections)> ast ;
@@ -26,6 +30,5 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
-      //; fn       :=  <get-filename> mn
       ; filename := <create-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn
-  
+

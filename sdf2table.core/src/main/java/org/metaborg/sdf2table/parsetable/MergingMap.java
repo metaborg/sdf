@@ -1,78 +1,176 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
-import org.metaborg.sdf2table.symbol.Terminal;
-
-import java.util.Set;
-
+import org.metaborg.sdf2table.grammar.Trigger;
 /**
  * A Hash map that avoid overlap between Terminals as keys.
  * @param <Key> Keys type
  * @param <Container>
  * @param <Value>
  */
-public class MergingMap<Key, Container extends Collection<Value>, Value>{
-	Map<Key, Container> _map;
-	CollectionConstructor<Container, Value> _constructor;
+public class MergingMap<Container extends Collection<Value>, Value>{
+	//Map<Trigger, Container> _map;
 	
-	public MergingMap(CollectionConstructor<Container, Value> constructor){
-		_map = new HashMap<Key, Container>();
-		_constructor = constructor;
+	public static class Entry<Key extends Trigger, Container>{
+		Trigger _trigger;
+		Container _c;
+		
+		public Entry(Trigger trigger, Container c){
+			_trigger = trigger;
+			_c = c;
+		}
+		
+		public Trigger trigger(){
+			return _trigger;
+		}
+		
+		public void setTrigger(Trigger t){
+			_trigger = t;
+		}
+		
+		public Container container(){
+			return _c;
+		}
+		
+		public Trigger getKey(){
+			return _trigger;
+		}
+		
+		public Container getValue(){
+			return _c;
+		}
 	}
 	
-	public Set<Entry<Key, Container>> entrySet(){
+	List<Entry<Trigger, Container>> _entries = new LinkedList<>();
+	CollectionManager<Container, Value> _manager;
+	
+	public MergingMap(CollectionManager<Container, Value> constructor){
+		//_map = new HashMap<Trigger, Container>();
+		_manager = constructor;
+	}
+	
+	/*public Set<Entry<Trigger, Container>> entrySet(){
 		return _map.entrySet();
+	}*/
+	
+	public List<Entry<Trigger, Container>> entrySet(){
+		return _entries;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void put(Key key, Value value){
+	/*public List<Entry<Container>> entries(){
+		return _entries;
+	}*/
+	
+	public void put(Trigger key, Value value){
 		if(key == null)
 			return;
 		
-		if(key instanceof Terminal){
-			Terminal term = (Terminal)key;
-			Map<Key, Container> nmap = new HashMap<>();
+		boolean need_copy = false;
+		
+		ListIterator<Entry<Trigger, Container>> it = _entries.listIterator();
+		
+		while(key != null && it.hasNext()){
+			Entry<Trigger, Container> e = it.next();
 			
-			for(Entry<Key, Container> e : _map.entrySet()){
-				if(term != null && e.getKey() instanceof Terminal){
-					Terminal with = term.inter((Terminal)e.getKey());
+			if(key.equals(e.trigger())){
+				if(need_copy)
+					value = _manager.copy(value);
+				e.container().add(value);
+				need_copy = true;
+				
+				key = null;
+			}else{
+				Trigger inter = key.inter(e.trigger());
+				
+				if(inter != null){
+					Trigger complmt = e.trigger().except(inter);
+					
+					if(complmt == null){
+						if(need_copy)
+							value = _manager.copy(value);
+						e.container().add(value);
+						need_copy = true;
+					}else{
+						Container set = _manager.create(e.container());
+						if(need_copy)
+							value = _manager.copy(value);
+						set.add(value);
+						need_copy = true;
+						it.add(new Entry<>(inter, set));
+						
+						e.setTrigger(complmt);
+					}
+					
+					key = key.except(inter);
+				}
+			}
+		}
+		
+		if(key != null){
+			Container set = _manager.create();
+			if(need_copy)
+				value = _manager.copy(value);
+			set.add(value);
+			need_copy = true;
+
+			_entries.add(new Entry<>(key, set));
+		}
+		
+		/*boolean need_copy = false;
+		
+		Map<Trigger, Container> nmap = new HashMap<>();
+		
+		for(Entry<Trigger, Container> e : _map.entrySet()){
+			if(key == null){
+				nmap.put(e.getKey(), e.getValue());
+			}else{
+				if(key.equals(e.getKey())){
+					Container set = e.getValue();
+					if(need_copy)
+						value = _manager.copy(value);
+					set.add(value);
+					need_copy = true;
+					
+					nmap.put(key, set);
+					key = null;
+				}else{
+					Trigger with = key.inter(e.getKey());
 					
 					if(with != null){
-						Container set = _constructor.create(e.getValue());
+						Container set = _manager.create(e.getValue());
+						if(need_copy)
+							value = _manager.copy(value);
 						set.add(value);
+						need_copy = true;
 						
-						nmap.put((Key)with, set);
+						nmap.put(with, set);
 						
-						Terminal without = ((Terminal)e.getKey()).except(with);
-						if(without != null)
-							nmap.put((Key)without, e.getValue());
+						Trigger without = e.getKey().except(with);
+						if(without != null){
+							nmap.put(without, e.getValue());
+						}
 						
-						term = term.except(with);
+						key = key.except(with);
 					}else{
 						nmap.put(e.getKey(), e.getValue());
 					}
-				}else{
-					nmap.put(e.getKey(), e.getValue());
 				}
 			}
-			
-			if(term != null){
-				Container set = _constructor.create();
-				set.add(value);
-				nmap.put((Key)term, set);
-			}
-			
-			_map = nmap;
-		}else{
-			Container set = _map.get(key);
-			if(set == null){
-				_map.put(key, set = _constructor.create());
-			}
-			set.add(value);
 		}
+		
+		if(key != null){
+			Container set = _manager.create();
+			if(need_copy)
+				value = _manager.copy(value);
+			set.add(value);
+			need_copy = true;
+			nmap.put(key, set);
+		}
+		
+		_map = nmap;*/
 	}
 }

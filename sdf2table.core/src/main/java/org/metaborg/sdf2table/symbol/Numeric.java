@@ -32,7 +32,7 @@ public class Numeric extends Terminal{
 	}
 
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Numeric){
 			Numeric n = (Numeric)other;
 			return other != null && _value == n.getValue();
@@ -46,6 +46,11 @@ public class Numeric extends Terminal{
 		if(value == 256)
 			return "$eof";
 		return "\\"+String.valueOf(value);
+	}
+	
+	@Override
+	public int computeHashCode(){
+		return _value;
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class Numeric extends Terminal{
 		return terms;
 	}
 	
-	public Terminal except(CharClass... restrictions){
+	public Terminal doExcept(CharClass... restrictions){
 		for(CharClass r : restrictions){
 			if(r.contains(_value))
 				return null;

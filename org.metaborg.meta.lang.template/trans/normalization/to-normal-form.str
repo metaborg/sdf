@@ -11,8 +11,10 @@ imports
   names/analysis/names
   stratego/metaborg
   runtime/analysis/core
-  editor/build-utils
-  
+  editor/build-utils  
+  pp/layout-constraints/Layout-Constraints-pp
+  libstratego-gpp
+  utils/tokenize
 
 imports
   signatures/aliases/-
@@ -48,6 +50,9 @@ rules
         where(before := <cputime>);
         s;
         where(after := <cputime>; !(after, before); subt; match)    
+        
+rules 
+    placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")    
   
 rules
     
@@ -55,42 +60,49 @@ rules
     to-normal-form(|path) = module-to-normal-form(|path)
     
     module-to-normal-form(|path) :
-        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-norm]), imports, new-sections)
+        m@Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[normalized/[mn]-norm]), imports, new-sections)
         with
             //<debug(!"normalizing grammar ")> mn;
             mn'  := <strip-annos> mn;
             rules(expanded-module: mn' -> <id>);
             where(before-normalizing := <cputime>);
+            
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
-            non-template-sections*     := <lift-all; desugar-templates; remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> sections*;
+            kfr                        := <collect-one(?KeywordFollowRestriction(<id>)) <+ !None()> sections*;
+            kattrs                     := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections*;
             
-            import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<conc-strings>(<id>, "-norm"))))> i*;
+            desugared-sections*        := <lift-all; desugar-templates> sections*;
+            new-lex-restrictions*      := <generate-follow-restrictions-reject-keywords(|kfr, tokenize-chars, kattrs)> desugared-sections*;
+            non-template-sections*     := <remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> [desugared-sections*, new-lex-restrictions*];
+            
+            non-template-sections'*    := <flatten-list; normalize-layout-constraints> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
+                       
+            import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<concat-strings>["normalized/", <id>, "-norm"])))> i*;
             imports                    := <?[] <+ ![Imports(<id>)]> import-names*;
             
             // keeping Sort.Cons in the normalized grammar
             // lifted-cons    := <lift-constructors-norm> non-template-m;
             
             // change priority norm to handle Sort.Cons priorities
-            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections*;
-            
+            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections'*;            
             
             //basic normalization
-            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections*;
+            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections'*;
             new-basic-prods*           := [new-basic-prods'*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))];
             new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> expanded-prio;
            
            
             // basic + restrictions
-            cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections*;
-            lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections*;
-            kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections*;
+            cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections'*;
+            lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections'*;
+            kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections'*;
       
          
             // top sorts
-            lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections*;
-            cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections*;
-            start-symbols*             := <filter(?SDFSection(KernelStartSymbols(<id>))); flatten-list> non-template-sections*; 
+            lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections'*;
+            cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections'*;
+            start-symbols*             := <filter(?SDFSection(KernelStartSymbols(<id>))); flatten-list> non-template-sections'*; 
             lexical-start-prods*       := <map(lex-start-prod)> lex-start-symbols*;
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
@@ -135,23 +147,119 @@ rules
             end  
             
            // where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
-     
-    expand-import(|path):
-        name -> ast
-        where
-            name'  := <strip-annos> name;  
-            <not(expanded-module)> name';
-            rules(
-                expanded-module:
-                    name' -> <id>
-            );
-            debug(!"name ");
-            ast    := <get-ast; module-to-normal-form(|path)> name;
-            debug(!"ast ")          
-            //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
-            
+    
+  add-placeholder-prods:
+    SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
+    with
+      //content complete prods
+        sorts*                 := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                                  ; nub> prods*;
+        placeholder-prods*     := <map(add-plhdr-prod)> sorts*
+   
+  add-plhdr-prod:
+    s -> SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs([rhs]), Attrs([Placeholder()]))
+      with
+        placeholder-chars := <placeholder-chars> ;
+        left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+        right-placeholder-chars := <?(_, <id>)> placeholder-chars;
+        rhs := Lit(<concat-strings; double-quote> [left-placeholder-chars, s, right-placeholder-chars]);
+        c := $[[s]-Plhdr]  
+  
+  
+  normalize-layout-constraints = topdown(try(normalize-constraint))
+  
+  normalize-constraint :
+    LayoutConstraint(constr) -> Term(Default(Appl(Unquoted("layout"), [Fun(Quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+  
+  generate-follow-restrictions-reject-keywords(|kfr, chars, kattrs) = filter(follow-restrictions-template-prods(|kfr, chars, kattrs)); flatten-list
+  
+  follow-restrictions-template-prods(|kfr, chars, kattrs):
+    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, SDFSection(LexicalSyntax(reject-prods*))]
+      where 
+      // lexical restrictions
+        x    := <filter(case-sensitive-template-prods); nub> prods*;
+        ci-x := <filter(case-insensitive-template-prods); nub> prods*;
+        let
+          chars-end-with-identifier-char =
+                where(reverse; ?[<is-alphanum + '_'> | _])
+  
+              string-ends-with-identifier-char =
+                where(explode-string; chars-end-with-identifier-char)
+        in
+          r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
+             flatten-list;
+                 filter(string-ends-with-identifier-char; string-to-norm(|chars); last)> x;
+          ci-r* := <collect-om(?String(<string-edge-tokenize(where({ci-x: ?ci-x; <one(?ci-x)> chars}))>));
+             flatten-list;
+                 filter(string-ends-with-identifier-char; string-to-norm-insensitive(|chars); last)> ci-x;       
+            if ![ci-r*, r*] => [] + !kfr => None() then
+              restr* := []
+            else
+              restr* := [SDFSection(LexicalRestrictions([Follow(<nub> [ci-r*, r*], kfr)]))]
+            end
+        end;
+        // reject/other attributes productions
+        if ![ci-r*, r*] => [] + !kattrs => None() then
+           reject-prods* := []
+        else
+           <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
+           reject-prods* := <nub; map(!SdfProduction(symbol-kattrs, Rhs([<id>]), attr-kattrs))> [ci-r*, r*]
+        end
+ 
+ 
+  string-to-norm(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    // FIXME: Case insensitive literals need ci-lit/single-quote.
+    map(!Lit(<escape-sdf3; double-quote>))
+
+  string-to-norm-insensitive(|chars) =
+    string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
+    //debug(!"stringtosdf");
+    map(!CiLit(<escape-sdf3; single-quote>))
+
+  escape-sdf3 =
+    string-replace(|"\\", "\\\\");
+    string-replace(|"\t", "\\t");
+    string-replace(|"\r", "\\r");
+    string-replace(|"\n", "\\n");
+    string-replace(|"\"", "\\\"")  
+  
+  case-sensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-sensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs       
+  
+      
+  expand-import(|path):
+    name -> ast
+    where
+        name'  := <strip-annos> name;  
+        <not(expanded-module)> name';
+        rules(
+            expanded-module:
+                name' -> <id>
+        );
+        ast    := <get-ast; module-to-normal-form(|path)> name       
+        //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
+          
     open-import-custom(resolve-path, parse-file, record-declarations):
-    import -> result
+      import -> result
     where
       if not(!import => COMPLETION(_)) then
         path       := <resolve-path> import;
@@ -213,7 +321,7 @@ rules
             prod := <get-def; try(desugar-templates); try(template-to-sdf3-prod(|tokenize-chars)); try(remove-constructor)> c    
         
     basic-norm :
-        Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
+        Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[normalized/[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
         with
             new-prods*             := <filter(basic-norm-aux); flatten-list> sections*;
             sections'*             := <filter(not(?SDFSection(ContextFreeSyntax(_)) + ?SDFSection(LexicalSyntax(_)) + ?SDFSection(LexicalPriorities(_)) + ?SDFSection(ContextFreePriorities(_)) + ?SDFSection(Kernel(_)) +?SDFSection(Priorities(_))))> sections*;

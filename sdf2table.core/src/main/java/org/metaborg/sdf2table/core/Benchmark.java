@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.core;
 
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class Benchmark{
 			return endTime()-startTime();
 		}
 		
-		public abstract void print(int tab);
+		public abstract void print(PrintStream out, int tab);
 	}
 	
 	public static class SingleTask extends Task{
@@ -59,8 +60,12 @@ public class Benchmark{
 		}
 		
 		@Override
-		public void print(int tab){
-			System.out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+		public void print(PrintStream out, int tab){
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+			}
 		}
 
 		@Override
@@ -108,8 +113,12 @@ public class Benchmark{
 		}
 		
 		@Override
-		public void print(int tab){
-			System.out.println(Benchmark.tabulation(tab)+" [#] "+name()+": "+formatTime(duration()));
+		public void print(PrintStream out, int tab){
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+" [#] "+name()+": "+formatTime(duration()));
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+			}
 		}
 
 		@Override
@@ -168,15 +177,17 @@ public class Benchmark{
 		}
 		
 		@Override
-		public void print(int tab){
-			System.out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
-			//Task last = null;
-			for(Task t : _sub_task){
-				/*if(last != null){
-					System.out.println(Benchmark.tabulation(tab+1)+" | "+formatTime(t.startTime()-last.endTime()));
-				}*/
-				t.print(tab+1);
-				//last = t;
+		public void print(PrintStream out, int tab){
+			if(out == System.err){
+				out.println(Benchmark.tabulation(tab)+name()+": "+formatTime(duration()));
+				for(Task t : _sub_task){
+					t.print(out, tab+1);
+				}
+			}else{
+				out.print(";"+((double)duration()/1000.0));
+				for(Task t : _sub_task){
+					t.print(out, 0);
+				}
 			}
 		}
 
@@ -215,9 +226,13 @@ public class Benchmark{
 		current = main;
 	}
 	
-	public static void print(){
-		System.out.println("===== benchmark =====");
-		main.print(0);
-		System.out.println("=====================");
+	public static void print(PrintStream out){
+		if(out == System.err){
+			out.println("===== benchmark =====");
+			main.print(out, 0);
+			out.println("=====================");
+		}else{
+			main.print(out, 0);
+		}
 	}
 }

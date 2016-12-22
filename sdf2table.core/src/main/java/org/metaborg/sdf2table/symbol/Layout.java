@@ -4,15 +4,29 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 
-public class Layout extends NonTerminal {
+public class Layout extends ConcreteNonTerminal{
 	private static final StrategoConstructor CONS_LAYOUT = new StrategoConstructor("layout", 0);
 	
 	public Layout(){
 		super();
 	}
 	
+	public boolean nonEpsilon(){
+		return false;
+	}
+	
 	@Override
-	public boolean equals(Symbol other) {
+	public Type type(){
+		return Type.UNDEF;
+	}
+	
+	@Override
+	public boolean isLayout(){
+		return true;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
 		if(other instanceof Layout){
 			return other != null;
 		}

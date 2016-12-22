@@ -1,28 +1,21 @@
 package org.metaborg.sdf2table.grammar;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import org.metaborg.sdf2table.core.FixPoint;
 import org.metaborg.sdf2table.symbol.TerminalContainer;
 
-public class FirstSet extends TerminalContainer{
-	@SuppressWarnings("unused")
-	private static final long serialVersionUID = 7938233559578582879L;
+public class FirstSet extends FixPoint<TerminalContainer>{
+	TerminalContainer _value = null;
 	
-	Set<FirstSet> _dependencies = new HashSet<FirstSet>();
-	
-	public void addDependency(FirstSet set){
-		if(set != this)
-			_dependencies.add(set);
+	@Override
+	public void apply(TerminalContainer set){
+		if(_value == null)
+			_value = set;
+		else
+			_value.add(set);
 	}
 	
-	public void compute(){
-		if(!_dependencies.isEmpty()){
-			for(FirstSet dep : _dependencies){
-				dep.compute();
-				add(dep);
-			}
-			_dependencies.clear();
-		}
+	@Override
+	public TerminalContainer value(){
+		return _value;
 	}
 }

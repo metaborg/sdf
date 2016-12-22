@@ -5,7 +5,7 @@ import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoConstructor;
 import org.spoofax.terms.StrategoString;
 
-public class Sort extends NonTerminal {
+public class Sort extends ConcreteNonTerminal {
 	private static final StrategoConstructor CONS_SORT = new StrategoConstructor("sort", 1);
 	
 	String _name;
@@ -15,12 +15,22 @@ public class Sort extends NonTerminal {
 		_name = name;
 	}
 	
+	@Override
+	public Type type(){
+		return Type.CONTEXT_FREE;
+	}
+	
+	@Override
+	public boolean isLayout(){
+		return false;
+	}
+	
 	public String getName(){
 		return _name;
 	}
 	
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Sort){
 			return other != null && _name != null && _name.equals(((Sort)other).getName());
 		}
