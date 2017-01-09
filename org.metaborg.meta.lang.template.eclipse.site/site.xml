@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.metaborg.meta.lang.template.eclipse.feature_2.1.0.qualifier.jar" id="org.metaborg.meta.lang.template.eclipse.feature" version="2.1.0.qualifier">
+   <feature url="features/org.metaborg.meta.lang.template.eclipse.feature_2.2.0.qualifier.jar" id="org.metaborg.meta.lang.template.eclipse.feature" version="2.2.0.qualifier">
       <category name="template"/>
    </feature>
    <category-def name="template" label="template language Eclipse plugin">
