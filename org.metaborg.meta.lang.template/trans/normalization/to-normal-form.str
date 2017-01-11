@@ -1092,14 +1092,14 @@ rules
             
      //left or assoc associativity productions       
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
         where
             <?Attrs(<id>); fetch(?Assoc(Left()) + ?Assoc(Assoc()))> attrs
         with
             p := SdfProduction(symbol, rhs, attrs)
         
      assoc-prio-fun:
-        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
         where
             <?Attrs(<id>); fetch(?Assoc(Left()) + ?Assoc(Assoc()))> attrs
     
