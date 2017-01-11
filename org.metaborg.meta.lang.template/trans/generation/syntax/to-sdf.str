@@ -36,12 +36,38 @@ imports
   signatures/symbols/-
   signatures/TemplateLang-sig
 
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules 
+  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
+
 rules
  
-  to-sdf(|chars, newline, kfr) = 
-  module-to-sdf(|chars, newline, kfr) <+ section-to-sdf(|chars, newline, kfr) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
+  to-sdf(|chars, newline, kfr, kattrs) = 
+  module-to-sdf(|chars, newline, kfr, kattrs) <+ section-to-sdf(|chars, newline, kfr, kattrs) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
 
-  module-to-sdf(|chars, newline, kfr):
+  module-to-sdf(|chars, newline, kfr, kattrs):
     Module(Unparameterized(mn), i, sections) ->
       'module(unparameterized(mn), imports, exports)
     with
@@ -49,7 +75,7 @@ rules
       then
         exports := []
       else
-          exports := [exports(<filter(section-to-sdf(|chars, newline, kfr))> sections)]
+          exports := [exports(<filter(section-to-sdf(|chars, newline, kfr, kattrs))> sections)]
       end;
       imports := <map(imports-to-sdf)> i
 
@@ -68,39 +94,40 @@ rules
     
   /* SDF3 sections */
   //Context-free Start Symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreeStartSymbols(symbols)) -> context-free-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //KernelStartSymbols -> kernel-start-symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(KernelStartSymbols(symbols)) -> kernel-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //LexicalStartSymbols -> lexical-start-symbols
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalStartSymbols(symbols)) -> lexical-start-symbols(symbols')
     with
       symbols' := <term-translation> symbols
 
   //productive productions section
-  section-to-sdf(|chars, newline, kfr):
-    SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), inj*, restr*]
-    with
-      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-      //content complete prods
-        cc* := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
-             ; nub 
-             ; map(sort-to-contentcomplete)> prods*;    
-        if [] := cc* then
-            inj* := []
-        else
-            inj* := [context-free-syntax(<term-translation> cc*)]
-        end;
+  section-to-sdf(|chars, newline, kfr, kattrs):
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, restr*]
+  	with
+  		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+  		// explicit placeholder prods
+  		sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;
+      plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
+      if [] := sorts* then
+              plhdr-prods* := []
+          else
+              plhdr-prods* := [context-free-syntax([plhdr*])]
+          end;                    
       // lexical restrictions
-        x := <filter(?TemplateProduction(SortDef(_), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, _)); nub> prods*;
+      x    := <filter(case-sensitive-template-prods); nub> prods*;
+      ci-x := <filter(case-insensitive-template-prods); nub> prods*;
       let
         chars-end-with-identifier-char =
               where(reverse; ?[<is-alphanum + '_'> | _])
@@ -111,96 +138,125 @@ rules
         r* := <collect-om(?String(<string-edge-tokenize(where({x: ?x; <one(?x)> chars}))>));
            flatten-list;
                filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
-          if !r* => [] + !kfr => None() then
+        ci-r* := <collect-om(?String(<string-edge-tokenize(where({ci-x: ?ci-x; <one(?ci-x)> chars}))>));
+           flatten-list;
+               filter(string-ends-with-identifier-char; string-to-sdf-insensitive(|chars); last)> ci-x;       
+          if ![ci-r*, r*] => [] + !kfr => None() then
             restr* := []
           else
-            restr* := [lexical-restrictions([follow(r*, kfr)])]
+            restr* := [lexical-restrictions([follow(<nub> [ci-r*, r*], kfr)])]
           end
+      end;
+      // reject/other attributes productions
+      if ![ci-r*, r*] => [] + !kattrs => None() then
+         reject-prods* := []
+      else
+         <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
+         reject-prods* := <nub; map(!prod([<id>], <term-translation> symbol-kattrs, <term-translation> attr-kattrs))> [ci-r*, r*]
       end
-
+       
+  case-sensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-sensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProduction(SortDef(_), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
+      
+  case-insensitive-template-prods:
+    TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
+    where
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs 
 
   //lexical syntax productive section
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalSyntax(prods)) -> lexical-syntax(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //kernel syntax
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Kernel(prods)) -> syntax(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //lexical restrictions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalRestrictions(restrictions)) -> lexical-restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
   //context-free restrictions
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreeRestrictions(restrictions)) -> context-free-restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
 
   //kernel restrictions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Restrictions(restrictions)) -> restrictions(restrictions')
     with
       restrictions' := <term-translation> restrictions
 
   //sorts
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Sorts(symbols)) -> 'sorts(symbols')
     with
       symbols' := <term-translation> symbols
 
   //aliases
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
   SDFSection(Aliases(aliases)) -> aliases(aliases')
     with
       aliases' := <term-translation> aliases
 
   //variables
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Variables(prods)) -> variables(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
     //lexical variables
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexVariables(prods)) -> lexical-variables(prods')
     with
       prods' := <map(prod-to-sdf)> prods
 
   //variables with productive productions
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(VariablesProductive(prods)) -> variables(prods')
     with
         prods' := <map(prod-to-sdf)> prods
 
     //lexical variables with productive productions
-   section-to-sdf(|chars, newline, kfr):
+   section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexVariablesProductive(prods)) -> lexical-variables(prods')
     with
         prods' := <map(prod-to-sdf)> prods
 
 
   //context-free priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(ContextFreePriorities(priorities)) -> context-free-priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
 
   //lexical priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(LexicalPriorities(priorities)) -> lexical-priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
 
   //kernel priorities
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     SDFSection(Priorities(priorities)) -> priorities(priorities')
     with
       priorities' := <map(priority-to-sdf(|chars, newline))> priorities
@@ -294,14 +350,14 @@ rules
       a'*       := <term-translation> a*
 
   //TemplateSection
-  section-to-sdf(|chars, newline, kfr):
+  section-to-sdf(|chars, newline, kfr, kattrs):
     TemplateSection(x) -> [context-free-syntax(p*), inj*, restr*]
     with
       p* := <map(prod-to-sdf(|chars, newline))> x;
         //content complete prods
         cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
              ; nub 
-             ; map(sort-to-contentcomplete)> x; 
+             ; map(sort-to-plhdr-prod)> x;
         if [] := cc*
         then
             inj* := []
@@ -398,7 +454,7 @@ rules
       elems* := <filter(line-to-sdf(|chars, case)); flatten-list> lines*
 
   add-newline-first:
-  Line(elem*) -> Line([String("\n") | elem*])
+    Line(elem*) -> Line([String("\n") | elem*])
 
   add-newline-last :
     Line(elem*) -> Line([elem*, String("\n")])
@@ -476,6 +532,9 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     SortDef(s) -> sort(s)
+    
+  special-term-to-sdf:
+    DeclSort(s) -> sort(s)  
 
   special-term-to-sdf:
     Deprecated() -> term(default(fun(unquoted("deprecated"))))
@@ -496,7 +555,13 @@ rules //conversion of SDF3 terms into SDF2
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
   special-term-to-sdf:
-    CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))  
+    CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))
+    
+  special-term-to-sdf:
+    EnforceNewLine() -> term(default(fun(unquoted("enforce-newline"))))  
+    
+  special-term-to-sdf:
+    LongestMatch() -> term(default(fun(unquoted("longest-match"))))      
     
   special-term-to-sdf:
     Placeholder() -> term(default(fun(unquoted("placeholder"))))  
@@ -505,9 +570,7 @@ rules //conversion of SDF3 terms into SDF2
     PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))  
     
   special-term-to-sdf:
-    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))       
-    
-    
+    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
     
   terms-to-sdf:
     [term | tail] -> <id>
@@ -530,23 +593,26 @@ rules //conversion of SDF3 terms into SDF2
    * Split on the edges delimiting identifiers.
    * E.g. "func(x,y)" => ["func", "(", "x", ",", "y", ")"]
    */
-  string-to-sdf(|chars) =
+ string-to-sdf(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     //debug(!"stringtosdf");
     // FIXME: Case insensitive literals need ci-lit/single-quote.
     map(!lit(<template-escape; double-quote>))
 
-   string-to-sdf-insensitive(|chars) =
+ string-to-sdf-insensitive(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));
     //debug(!"stringtosdf");
     map(!ci-lit(<template-escape; single-quote>))
 
- sort-to-contentcomplete:
+ sort-to-plhdr-prod:
     s -> prod([rhs], sort(s), attrs([sdf-cons(c), term(default(fun(unquoted("placeholder"))))]))
     with
-      rhs := lit(<concat-strings> ["[[", s, "]]"]);
+      placeholder-chars := <placeholder-chars> ;
+      left-placeholder-chars := <?(<id>, _)> placeholder-chars;
+      right-placeholder-chars := <?(_, <id>)> placeholder-chars;
+      rhs := lit(<concat-strings> [left-placeholder-chars, s, right-placeholder-chars]);
       c := <double-quote> $[[s]-Plhdr]
-
+    
 template-escape =
     string-replace(|"\\", "\\\\");
     string-replace(|"\t", "\\t");

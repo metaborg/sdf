@@ -1,14 +1,14 @@
 package org.metaborg.sdf2table.grammar;
 
-public class FollowSet extends Follower{
-	Production _production;
+import org.metaborg.sdf2table.core.FixPointMember;
+import org.metaborg.sdf2table.symbol.TerminalContainer;
+
+public class FollowSet extends FixPointMember<TerminalContainer, FirstSet>{
+	SyntaxProduction _production;
 	
-	public FollowSet(Production prod){
+	public FollowSet(SyntaxProduction prod){
+		super(new TerminalContainer());
 		_production = prod;
-	}
-	
-	public void computeDependencies(){
-		// nothing to do.
 	}
 	
 	@Override

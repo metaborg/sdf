@@ -22,10 +22,11 @@ rules
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
       kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      kattrs:= <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
       selected'     := <desugar-templates> selected;
       //selected' := selected ;
       filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
-      result := <to-sdf(|chars, newline, kfr)> selected'
+      result := <to-sdf(|chars, newline, kfr, kattrs)> selected'
 
   generate-sdf-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -38,9 +39,10 @@ rules
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections;
       kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+      kattrs:= <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
       selected'     := <desugar-templates> selected;
       filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-      result   := <to-sdf(|chars, newline, kfr); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
+      result   := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
   
    generate-permissive-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)

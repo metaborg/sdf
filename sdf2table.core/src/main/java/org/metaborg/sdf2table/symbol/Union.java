@@ -28,7 +28,7 @@ public class Union extends Terminal{
 	}
 
 	@Override
-	public boolean equals(Symbol other) {
+	public boolean equals(Object other) {
 		if(other instanceof Union){
 			Union u = (Union)other;
 			return u != null && ((_a.equals(u._a) && _b.equals(u._b)) || (_b.equals(u._a) && _a.equals(u._b)));
@@ -50,9 +50,9 @@ public class Union extends Terminal{
 		return terms;
 	}
 	
-	public Terminal except(CharClass... restrictions){
-		Terminal ta = _a.except(restrictions);
-		Terminal tb = _b.except(restrictions);
+	public Terminal doExcept(CharClass... restrictions){
+		Terminal ta = _a.doExcept(restrictions);
+		Terminal tb = _b.doExcept(restrictions);
 		
 		if(ta != null && tb == null)
 			return ta;

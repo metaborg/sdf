@@ -3,7 +3,6 @@ module editor/builders
 imports 
   signatures/SDF
   generation/-
-  stratego/metaborg
   pp/modules/Modules-pp
   pp/TemplateLang-pp
   signatures/kernel/Kernel-sig
@@ -83,8 +82,7 @@ rules
       with(
         handle := <fopen> (filename, "w");
         <fputs> (string, handle);
-        <fclose> handle;
-        <refresh-workspace-file> filename
+        <fclose> handle
       )
     end
     

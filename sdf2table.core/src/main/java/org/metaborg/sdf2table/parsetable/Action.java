@@ -1,6 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
-import org.metaborg.sdf2table.grammar.Exportable;
+import org.metaborg.sdf2table.core.Exportable;
 import org.metaborg.sdf2table.grammar.Trigger;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
@@ -23,6 +23,10 @@ public abstract class Action implements Exportable{
 	
 	public void setConflictual(boolean c){
 		_conflictual = c;
+	}
+	
+	public Action copy(){
+		return this;
 	}
 	
 	public abstract IStrategoTerm toATerm();

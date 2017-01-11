@@ -2,11 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sdf2table.cmd</artifactId>
+	
+	<properties>
+    	<sdf2table-main-class>org.metaborg.sdf2table.cmd.Application</sdf2table-main-class>
+    </properties>
 
 	<parent>
 		<groupId>org.metaborg</groupId>
 		<artifactId>parent.java</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
+		<version>2.2.0-SNAPSHOT</version>
 		<relativePath>../../releng/parent/java</relativePath>
 	</parent>
 
@@ -22,4 +26,68 @@
 			<version>${metaborg-version}</version>
 		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+		<!-- Create an executable JAR -->
+	      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-shade-plugin</artifactId>
+	        <executions>
+	          <execution>
+	            <phase>package</phase>
+	            <goals>
+	              <goal>shade</goal>
+	            </goals>
+	            <configuration>
+	              <transformers>
+	                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+	                  <mainClass>${sdf2table-main-class}</mainClass>
+	                </transformer>
+	              </transformers>
+	            </configuration>
+	          </execution>
+	        </executions>
+	      </plugin>
+	      
+	      <!-- Testing if the code is runnable, and if the shaded JAR is runnable -->
+	      <plugin>
+	        <groupId>org.codehaus.mojo</groupId>
+	        <artifactId>exec-maven-plugin</artifactId>
+	        <executions>
+	          <execution>
+	            <id>test-executable</id>
+	            <phase>test</phase>
+	            <goals>
+	              <goal>exec</goal>
+	            </goals>
+	            <configuration>
+	              <executable>java</executable>
+	              <arguments>
+	                <argument>-classpath</argument>
+	                <classpath />
+	                <argument>${sdf2table-main-class}</argument>
+	                <argument>--exit</argument>
+	              </arguments>
+	            </configuration>
+	          </execution>
+	          <execution>
+	            <id>test-shaded-jar-executable</id>
+	            <phase>verify</phase>
+	            <goals>
+	              <goal>exec</goal>
+	            </goals>
+	            <configuration>
+	              <executable>java</executable>
+	              <arguments>
+	                <argument>-jar</argument>
+	                <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+	                <argument>--exit</argument>
+	              </arguments>
+	            </configuration>
+	          </execution>
+	        </executions>
+	      </plugin>
+		</plugins>
+	</build>
 </project>

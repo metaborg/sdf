@@ -28,9 +28,6 @@ Grammar.Restrictions = <
 	
 	>
 
-Attribute.Reject = <reject>
-Attribute.Prefer = <prefer>
-Attribute.Avoid = <avoid> 
 
 context-free priorities    
     Lookahead.Seq > 

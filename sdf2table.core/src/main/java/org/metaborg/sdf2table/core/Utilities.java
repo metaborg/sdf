@@ -1,8 +1,8 @@
-package org.metaborg.sdf2table.parsetable;
+package org.metaborg.sdf2table.core;
 
 import java.util.Collection;
+import java.util.zip.CRC32;
 
-import org.metaborg.sdf2table.grammar.Exportable;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.StrategoList;
 
@@ -10,6 +10,18 @@ import org.spoofax.terms.StrategoList;
  * Some useful function to generate the parse table.
  */
 public class Utilities{
+	public static int hashCode(int... ary){
+		CRC32 hash = new CRC32();
+		
+		for(int i = 0; i < ary.length; ++i){
+			for(int b = 0; b < 4; ++b){
+				hash.update(ary[i] >>> (b << 3));
+			}
+		}
+		
+		return (int)hash.getValue();
+	}
+	
 	/**
      * Create a new Stratego list from an array.
      * @param ary An array of Stratego terms.
@@ -30,7 +42,7 @@ public class Utilities{
     	return list;
     }
     
-    public static StrategoList strategoListFromExportables(Collection<Exportable> _list){
+    public static StrategoList strategoListFromExportables(Collection<? extends Exportable> _list){
     	/*StrategoList list = new StrategoList(null, null, null, 0);
     	
     	for(Exportable term : _list){
@@ -52,7 +64,7 @@ public class Utilities{
     	return strategoListFromArray(ary);
     }
     
-    public static StrategoList strategoListFromCollection(Collection<IStrategoTerm> terms){
+    public static StrategoList strategoListFromCollection(Collection<? extends IStrategoTerm> terms){
     	/*StrategoList list = new StrategoList(null, null, null, 0);
     	
     	for(IStrategoTerm term : terms){

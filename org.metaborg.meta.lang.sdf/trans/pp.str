@@ -2,10 +2,11 @@ module trans/pp
 
 imports
   libstratego-gpp
-  runtime/refactoring/-
   pp/TemplateLang-pp
   pp/modules/Modules-pp
   lib/sdf3/TemplateLang-parenthesize
+  libspoofax/sdf/pp
+  libspoofax/editor/refactoring/-
 
 rules
   
