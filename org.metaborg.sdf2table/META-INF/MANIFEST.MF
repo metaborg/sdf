@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1484065551203
+Bnd-LastModified: 1484123667449
 Build-Jdk: 1.8.0_102
 Built-By: eduardo
 Bundle-Description: Maven parent POM for Java projects
