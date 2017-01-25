@@ -3,7 +3,6 @@ package org.metaborg.newsdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,14 +14,14 @@ import org.metaborg.newsdf2table.grammar.CharacterClass;
 import org.metaborg.newsdf2table.grammar.CharacterClassConc;
 import org.metaborg.newsdf2table.grammar.CharacterClassNumeric;
 import org.metaborg.newsdf2table.grammar.CharacterClassRange;
+import org.metaborg.newsdf2table.grammar.CharacterClassSeq;
+import org.metaborg.newsdf2table.grammar.ConstructorAttribute;
 import org.metaborg.newsdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.newsdf2table.grammar.DeprecatedAttribute;
 import org.metaborg.newsdf2table.grammar.FileStartSymbol;
 import org.metaborg.newsdf2table.grammar.GeneralAttribute;
 import org.metaborg.newsdf2table.grammar.IAttribute;
-import org.metaborg.newsdf2table.grammar.IPriority;
 import org.metaborg.newsdf2table.grammar.IProduction;
-import org.metaborg.newsdf2table.grammar.IRestriction;
 import org.metaborg.newsdf2table.grammar.IterSepSymbol;
 import org.metaborg.newsdf2table.grammar.IterStarSepSymbol;
 import org.metaborg.newsdf2table.grammar.IterStarSymbol;
@@ -31,11 +30,12 @@ import org.metaborg.newsdf2table.grammar.Layout;
 import org.metaborg.newsdf2table.grammar.LayoutConstraintAttribute;
 import org.metaborg.newsdf2table.grammar.LexicalSymbol;
 import org.metaborg.newsdf2table.grammar.LiteralType;
-import org.metaborg.newsdf2table.grammar.NonTerminal;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.OptionalSymbol;
+import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Production;
 import org.metaborg.newsdf2table.grammar.SequenceSymbol;
+import org.metaborg.newsdf2table.grammar.Sort;
 import org.metaborg.newsdf2table.grammar.StartSymbol;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoAppl;
@@ -44,28 +44,23 @@ import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
-import org.spoofax.terms.TermFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
 
-    
-
-    public static NormGrammar readGrammar(File input, File output, List<String> paths, ITermFactory termFactory) throws Exception {
-        Map<String, Boolean> modules = new HashMap<>();
-
-        Set<IProduction> prods = Sets.newHashSet();
-        Set<IRestriction> rests = Sets.newHashSet();
-        Set<IPriority> prios = Sets.newHashSet();
+    public static NormGrammar readGrammar(File input, File output, List<String> paths, ITermFactory termFactory)
+        throws Exception {
+        Map<String, Boolean> modules = Maps.newHashMap();
 
         IStrategoTerm mainModule = termFromFile(input, termFactory);
 
-        NormGrammar grammar = new NormGrammar(prods, rests, prios);
+        NormGrammar grammar = new NormGrammar();
 
         generateGrammar(grammar, mainModule, modules, paths, termFactory);
-        grammar.mergeProductionAttributes();
+        grammar.priorityTransitiveClosure();
 
         return grammar;
     }
@@ -156,13 +151,14 @@ public class GrammarReader {
             if(app.getName().equals("Kernel")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
-                    processProduction(g, t);
+                    g.prods.add(processProduction(g, t));
                 }
             }
         }
     }
 
-    private static void processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+    private static IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+
         if(term instanceof IStrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             boolean with_cons = false;
@@ -170,7 +166,7 @@ public class GrammarReader {
                 || (with_cons = true && app.getName().equals("SdfProductionWithCons"))) {
                 Symbol symbol;
                 String cons = null;
-                List<Symbol> rhs_symbols = Lists.newLinkedList();
+                List<Symbol> rhs_symbols = Lists.newArrayList();
                 StrategoAppl tattrs;
 
                 if(with_cons) {
@@ -207,24 +203,34 @@ public class GrammarReader {
                         throw new UnexpectedTermException(term.toString(), "Attributes");
                 }
 
+                if(cons != null) {
+                    attrs.add(new ConstructorAttribute(cons));
+                }
 
-                Production prod = new Production(symbol, cons, rhs_symbols);
-
-                g.prods.add(prod);
-                g.prod_attrs.put(prod, attrs);
-
+                Production prod = new Production(symbol, rhs_symbols);
+                if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
+                    g.initial_prod = prod;
+                }
+                
+                for(IAttribute a : attrs) {
+                    g.prod_attrs.put(prod, a);
+                }
+                
+                g.symbol_prods.put(symbol, prod);
+                return prod;
 
             } else {
                 throw new UnexpectedTermException(term.toString(), "SdfProduction");
             }
         }
+        throw new UnexpectedTermException(term.toString(), "SdfProduction");
     }
 
     private static Symbol processSymbol(NormGrammar g, IStrategoTerm term) {
         Symbol symbol;
         String enquoted;
 
-        symbol = g.symbols.get(term);
+        symbol = g.symbols.get(term.toString());
 
         if(symbol != null) {
             return symbol;
@@ -234,10 +240,10 @@ public class GrammarReader {
             StrategoAppl app = (StrategoAppl) term;
             switch(app.getName()) {
                 case "SortDef":
-                    symbol = new NonTerminal(((StrategoString) app.getSubterm(0)).stringValue());
+                    symbol = new Sort(((StrategoString) app.getSubterm(0)).stringValue());
                     break;
                 case "Sort":
-                    symbol = new NonTerminal(((StrategoString) app.getSubterm(0)).stringValue());
+                    symbol = new Sort(((StrategoString) app.getSubterm(0)).stringValue());
                     break;
                 case "Layout":
                     symbol = new Layout();
@@ -247,11 +253,11 @@ public class GrammarReader {
                     break;
                 case "Lit":
                     enquoted = ((StrategoString) app.getSubterm(0)).stringValue();
-                    symbol = new NonTerminal(enquoted.substring(1, enquoted.length() - 1), LiteralType.Lit);
+                    symbol = new Sort(enquoted.substring(1, enquoted.length() - 1), LiteralType.Lit);
                     break;
                 case "CiLit":
                     enquoted = ((StrategoString) app.getSubterm(0)).stringValue();
-                    symbol = new NonTerminal(enquoted.substring(1, enquoted.length() - 1), LiteralType.CiLit);
+                    symbol = new Sort(enquoted.substring(1, enquoted.length() - 1), LiteralType.CiLit);
                     break;
                 case "Opt":
                     symbol = new OptionalSymbol(processSymbol(g, app.getSubterm(0)));
@@ -299,7 +305,7 @@ public class GrammarReader {
         }
 
         if(g != null && symbol != null) {
-            g.symbols.put(term, symbol);
+            g.symbols.put(term.toString(), symbol);
         }
 
         return symbol;
@@ -404,8 +410,21 @@ public class GrammarReader {
                 case "LiteralCompletion":
                     return new GeneralAttribute("literal-completion");
                 case "Term":
-                    System.err.println("sdf2table : importAttribute: unhandled term attribute."); // TODO
-                    throw new UnexpectedTermException(a.toString());
+                    IStrategoTerm def = a.getSubterm(0);
+                    IStrategoTerm appl = def.getSubterm(0);
+                    IStrategoTerm unquoted = appl.getSubterm(0);
+                    IStrategoTerm attr_name = unquoted.getSubterm(0);
+                    if(attr_name.toString().equals("\"layout\"")) {
+                        IStrategoTerm fun = appl.getSubterm(1).getSubterm(0);
+                        IStrategoTerm quoted = fun.getSubterm(0);
+                        IStrategoTerm constraint = quoted.getSubterm(0);
+                        return new LayoutConstraintAttribute(
+                            constraint.toString().substring(3, constraint.toString().length() - 3));
+                    } else {
+                        // TODO handle generic ATerms as attributes
+                        System.err.println("sdf2table : importAttribute: unhandled term attribute.");
+                        throw new UnexpectedTermException(a.toString());
+                    }
                 default:
                     System.err.println("sdf2table : importAttribute: unknown attribute `" + a.getName() + "'.");
                     throw new UnexpectedTermException(a.toString());
@@ -415,11 +434,170 @@ public class GrammarReader {
         return null;
     }
 
-    private static void addRestrictions(NormGrammar g, StrategoAppl tsection) {
+    private static void addRestrictions(NormGrammar g, StrategoAppl tsection) throws UnexpectedTermException {
+        if(tsection instanceof StrategoAppl) {
+            StrategoAppl app = (StrategoAppl) tsection;
+            if(app.getName().equals("Restrictions")) {
+                StrategoList restrictions = (StrategoList) app.getSubterm(0);
+                for(IStrategoTerm restriction : restrictions) {
+                    processRestriction(g, restriction);
+                }
+            }
+        }
     }
 
-    private static void addPriorities(NormGrammar g, StrategoAppl tsection) {
+    private static void processRestriction(NormGrammar g, IStrategoTerm restriction) throws UnexpectedTermException {
+        if(restriction instanceof StrategoAppl) {
+            StrategoAppl res = (StrategoAppl) restriction;
+            switch(res.getName()) {
+                case "Follow":
+                    Set<Symbol> ccs = importLookaheadList(res.getSubterm(1));
+                    StrategoList subjects = (StrategoList) res.getSubterm(0);
+                    for(IStrategoTerm subject : subjects) {
+                        Symbol s = processSymbol(g, subject);
+                        s.followRestriction().addAll(ccs);
+                    }
+                    break;
+                default:
+                    throw new UnexpectedTermException(res.getName());
+            }
+        } else {
+            throw new UnexpectedTermException(restriction.toString());
+        }
     }
+
+    public static Set<Symbol> importLookaheadList(IStrategoTerm term) throws UnexpectedTermException {
+        Set<Symbol> set = Sets.newHashSet();
+
+        StrategoList slist;
+
+        if(term instanceof StrategoAppl) {
+            StrategoAppl app = (StrategoAppl) term;
+            switch(app.getName()) {
+                case "List":
+                    slist = (StrategoList) app.getSubterm(0);
+                    for(IStrategoTerm t : slist) {
+                        Set<Symbol> ccs = importLookaheadList(t);
+                        for(Symbol cc : ccs) {
+                            set.add(cc);
+                        }
+                    }
+                    break;
+                 // NON TERMINALS
+                case "Seq":
+                    Symbol head = processCharClass(app.getSubterm(0));
+                    set.add(new CharacterClassSeq(head, importLookaheadList(app.getSubterm(1))));
+                    
+                    break;
+                // TERMINALS
+                case "CharClass":
+                    set.add(processCharClass(app.getSubterm(0)));
+                    break;
+                default:
+                    throw new UnexpectedTermException(app.toString(), "List or Seq or CharClass");
+            }
+        }
+        return set;
+    }
+
+    private static void addPriorities(NormGrammar g, StrategoAppl tsection) throws Exception {
+        if(tsection instanceof StrategoAppl) {
+            StrategoAppl app = (StrategoAppl) tsection;
+            if(app.getName().equals("Priorities")) {
+                StrategoList chains = (StrategoList) app.getSubterm(0);
+                for(IStrategoTerm chain : chains) {
+                    processPriorityChain(g, chain);
+                }
+            }
+        }
+    }
+
+    private static void processPriorityChain(NormGrammar g, IStrategoTerm chain) throws Exception {
+        if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Chain")) {
+            StrategoList groups = (StrategoList) chain.getSubterm(0);
+            IProduction higher = null, lower = null;
+            boolean transitive = true;
+            List<Integer> arguments = Lists.newArrayList();
+
+            if(groups.size() != 2) {
+                throw new Exception("Expecting only binary priority relations");
+            }
+
+            IStrategoTerm first_group = groups.getSubterm(0);
+
+            if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("NonTransitive")) {
+                transitive = false;
+                first_group = first_group.getSubterm(0);
+            }
+
+            if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("WithArguments")) {
+                StrategoAppl priority_args = (StrategoAppl) first_group.getSubterm(1);
+                if(!priority_args.getName().equals("Default")) {
+                    throw new UnexpectedTermException(priority_args.toString(), "Default");
+                }
+                StrategoList positions = (StrategoList) priority_args.getSubterm(0);
+                for(IStrategoTerm pos : positions.getAllSubterms()) {
+                    if(pos instanceof StrategoString) {
+                        arguments.add(Integer.parseInt(((StrategoString) pos).stringValue()));
+                    } else {
+                        throw new UnexpectedTermException(pos.toString(), "Argument Position");
+                    }
+                }
+                first_group = first_group.getSubterm(0);
+
+                // the order of terms can be NonTransitive(WithArguments(*)) or WithArguments(NonTransitive(*))
+                if(first_group instanceof StrategoAppl
+                    && ((StrategoAppl) first_group).getName().equals("NonTransitive")) {
+                    transitive = false;
+                    first_group = first_group.getSubterm(0);
+                }
+            }
+
+            if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("SimpleGroup")) {
+                higher = processProduction(g, first_group.getSubterm(0));
+            } else {
+                throw new Exception("Normalized priority relation should be on SimpleGroups only.");
+            }
+
+            IStrategoTerm second_group = groups.getSubterm(1);
+
+            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("SimpleGroup")) {
+                lower = processProduction(g, second_group.getSubterm(0));
+            } else {
+                throw new Exception("Normalized priority relation should be on SimpleGroups only.");
+            }
+
+            Priority p = new Priority(higher, lower, transitive);
+
+            if(transitive) {
+                g.transitive_prio.add(p);
+                g.prio_prods.add(higher);
+                g.prio_prods.add(lower);
+
+                if(arguments.isEmpty()) {
+                    g.trans_prio_arguments.put(p, -1);
+                } else {
+                    for(Integer arg : arguments) {
+                        g.trans_prio_arguments.put(p, arg);
+                    }
+                }
+
+
+            } else {
+                g.non_transitive_prio.add(p);
+                if(arguments.isEmpty()) {
+                    g.trans_prio_arguments.put(p, -1);
+                } else {
+                    for(Integer arg : arguments) {
+                        g.trans_prio_arguments.put(p, arg);
+                    }
+                }
+            }
+
+        }
+    }
+
+
 
     private static IStrategoTerm termFromFile(File file, ITermFactory termFactory) {
         FileReader reader = null;

@@ -1,12 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
-import java.util.List;
-
 public interface IPriority {
     
-    IProduction greater();
+    IProduction higher();
     IProduction lower();
-    List<Integer> arguments();
     boolean transitive();
 
 }

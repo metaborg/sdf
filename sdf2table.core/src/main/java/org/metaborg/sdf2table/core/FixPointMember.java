@@ -50,7 +50,7 @@ public class FixPointMember<Value, FixPointType extends FixPoint<Value>>{
 	 * c.f. https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
 	 * @param stack
 	 */
-	private void doCompute(Stack<FixPointMember<Value, FixPointType>> stack, FixPointFactory factory){
+    private void doCompute(Stack<FixPointMember<Value, FixPointType>> stack, FixPointFactory factory){
 		if(_component == null){
 			_index = _low_link = _count++;
 			_on_stack = true;

@@ -1,12 +1,12 @@
 package org.metaborg.newsdf2table.grammar;
 
-public class Priority implements IPriority {
+public class DeepPriority implements IPriority {
 
     IProduction higher;
     IProduction lower;
     boolean transitive;
 
-    public Priority(IProduction higher, IProduction lower, boolean transitive) {
+    public DeepPriority(IProduction higher, IProduction lower, boolean transitive) {
         this.higher = higher;
         this.lower = lower;
         this.transitive = transitive;
@@ -59,7 +59,7 @@ public class Priority implements IPriority {
             return false;
         if(getClass() != obj.getClass())
             return false;
-        Priority other = (Priority) obj;
+        DeepPriority other = (DeepPriority) obj;
         if(higher == null) {
             if(other.higher != null)
                 return false;
