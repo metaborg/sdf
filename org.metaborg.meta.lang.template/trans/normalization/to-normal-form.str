@@ -1137,21 +1137,29 @@ rules
             first-binary := <try(norm-prio-fun)> Chain([<try(remove-constructor)> first-prod, <try(remove-constructor)> second-prod]) 
      
      norm-prio-fun:
-        Chain([SimpleGroup(_)]) -> []
+        Chain([group]) -> []
+        where
+           <check-group(?SimpleGroup(_))> group
      
      norm-prio-fun:
-        Chain([ProdsGroup([])]) -> []   
+        Chain([group]) -> []  
+        where
+           <check-group(?ProdsGroup([]))> group 
      
      norm-prio-fun:
-        Chain([ProdsGroup([]), group]) -> []
-        
+        Chain([group1, group2]) -> []
+        where
+           <check-group(?ProdsGroup([]))> group1
+             
      norm-prio-fun:
         Chain([group, ProdsGroup([])]) -> []
         where
-        <not(?AssocGroup(_, _) + ?ProdsGroup(_))> group   
+        <not(check-group(?AssocGroup(_, _)) + check-group(?ProdsGroup(_)))> group   
         
      norm-prio-fun:
-        Chain([AssocGroup(_, [])]) -> []   
+        Chain([group]) -> []   
+        where
+        <not(check-group(?AssocGroup(_, [])))> group
      
      norm-prio-fun :
         Chain([ProdsGroup(p*), group]) -> new-chains
@@ -1159,29 +1167,77 @@ rules
             <not(?[])> p*
         where
             new-chains := <map(create-gt-chain(|SimpleGroup(<id; try(remove-constructor)>), group); try(norm-prio-fun))> p*
+    
+     norm-prio-fun :
+        Chain([NonTransitive(ProdsGroup(p*)), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), group); try(norm-prio-fun))> p*
+     
+     norm-prio-fun :
+        Chain([WithArguments(ProdsGroup(p*), args), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|WithArguments(SimpleGroup(<id; try(remove-constructor)>), args), group); try(norm-prio-fun))> p*
+     
+     norm-prio-fun :
+        Chain([NonTransitive(WithArguments(ProdsGroup(p*), args)), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|NonTransitive(WithArguments(SimpleGroup(<id; try(remove-constructor)>), args)), group); try(norm-prio-fun))> p*
+     
+     norm-prio-fun :
+        Chain([WithArguments(NonTransitive(ProdsGroup(p*)), args), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|WithArguments(NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), args), group); try(norm-prio-fun))> p*
      
      norm-prio-fun :
         Chain([group, ProdsGroup(p*)]) -> new-chains
         where
-          <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group;
+          <not(check-group(?ProdsGroup(_)) + check-group(?AssocGroup(_, _)))> group;
           <not(?[])> p*
       where
           new-chains := <map(create-gt-chain(|group, SimpleGroup(<id; try(remove-constructor)>)); try(norm-prio-fun))> p*   
           
-   norm-prio-fun:
-     Chain([assocGroup@AssocGroup(_, p*), group]) -> new-chains   
-     where
-         new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([ProdsGroup(p*), group])]
-         
+     norm-prio-fun:
+        Chain([assocGroup@AssocGroup(_, p*), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([ProdsGroup(p*), group])]
+     
+     norm-prio-fun:
+        Chain([assocGroup@NonTransitive(AssocGroup(_, p*)), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([NonTransitive(ProdsGroup(p*)), group])]
+     
+     norm-prio-fun:
+        Chain([assocGroup@WithArguments(AssocGroup(_, p*), args), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([WithArguments(ProdsGroup(p*), args), group])]
+ 
+     norm-prio-fun:
+        Chain([assocGroup@NonTransitive(WithArguments(AssocGroup(_, p*), args)), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([NonTransitive(WithArguments(ProdsGroup(p*), args)), group])]
+     
+     norm-prio-fun:
+        Chain([assocGroup@WithArguments(NonTransitive(AssocGroup(_, p*)), args), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([WithArguments(NonTransitive(ProdsGroup(p*)), args), group])]
+              
      norm-prio-fun:
        Chain([group, assocGroup@AssocGroup(_, p*)]) -> new-chains
        where
-            <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group
+            <not(check-group(?ProdsGroup(_)) + check-group(?AssocGroup(_, _)))> group
        where          
             new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([group, ProdsGroup(p*)])]        
      
      norm-prio-fun:
-        Assoc(ProdsGroup([]), _, group) -> <try(norm-prio-fun)> Chain([group])
+        Assoc(<check-group(?ProdsGroup([]))>, _, group) -> <try(norm-prio-fun)> Chain([group])
         
      norm-prio-fun:
         Assoc(ProdsGroup(p*), associativity, group) -> new-chains
@@ -1294,6 +1350,14 @@ rules
             <?[second-prod | ppss]> pps;
             <?[]> ppss;
             new-assocs := <norm-prio-fun> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod))              
+     
+     check-group(group) :
+        NonTransitive(g) -> <check-group(group)> g
+     
+     check-group(group) :
+        WithArguments(g, _) -> <check-group(group)> g   
+     
+     check-group(group) = group
       
      norm-prio-args:
         WithArguments(SimpleGroup(p@SdfProduction(s, Rhs(rhs*), attrs*)), Default(args)) -> WithArguments(SimpleGroup(p), Default(args'))
