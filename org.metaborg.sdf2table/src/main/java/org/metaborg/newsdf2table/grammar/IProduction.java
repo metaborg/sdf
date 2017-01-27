@@ -27,8 +27,6 @@ public interface IProduction {
     List<Symbol> rightHand();
     
     // To calculate Deep Priority Conflicts
-    boolean isRightRecursive();
-    boolean isLeftRecursive();
     boolean isLeftAssociative(SetMultimap<IPriority, Integer> priorities, Set<Integer> leftRecursivePositions);
     boolean isRightAssociative(SetMultimap<IPriority, Integer> priorities, Set<Integer> rightRecursivePositions);   
     Set<Integer> leftRecursivePositions();

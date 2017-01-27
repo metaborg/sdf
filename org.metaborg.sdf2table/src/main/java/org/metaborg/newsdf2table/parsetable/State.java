@@ -232,7 +232,18 @@ public class State implements Comparable<State> {
     }
 
     private boolean isPriorityConflict(LRItem item, IProduction p) {
-        Priority prio = new Priority(item.prod, p, false);
+        IProduction higher = item.prod;
+        IProduction lower  = p;
+        
+        if (higher instanceof ContextualProduction) {
+            higher = ((ContextualProduction) higher).orig_prod;
+        }
+        
+        if (lower instanceof ContextualProduction) {
+            lower = ((ContextualProduction) lower).orig_prod;
+        }
+        
+        Priority prio = new Priority(higher, lower, false);
         if(pt.getGrammar().priorities().containsKey(prio)) {
             Set<Integer> arguments = pt.getGrammar().priorities().get(prio);
             for(int i : arguments) {

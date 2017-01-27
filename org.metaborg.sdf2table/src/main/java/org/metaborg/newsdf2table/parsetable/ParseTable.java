@@ -72,12 +72,13 @@ public class ParseTable {
 
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
+        _start_time = System.currentTimeMillis();
         deepConflictsAnalysis();
-
-        prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
-        initial_prod = getGrammar().initial_prod;
-
-
+        _end_time = System.currentTimeMillis();
+        
+        
+        long deepPrioritiesTime = _end_time - _start_time;
+        printStatistics("Deep Priorities: ", deepPrioritiesTime);
 
         // TODO Currently generating an LR(0) table, compute first/follow/nullable sets to generate SLR(1)
         // calculate nullable symbols
@@ -91,6 +92,8 @@ public class ParseTable {
 
         // create states
         _start_time = System.currentTimeMillis();
+        prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
+        initial_prod = getGrammar().initial_prod;
         State s0 = new State(initial_prod, this);
         stateQueue.add(s0);
         processStateQueue();
@@ -131,7 +134,6 @@ public class ParseTable {
             if(!conflicting_args.isEmpty()) {
                 Set<IProduction> contexts = Sets.newHashSet();
                 contexts.add(prio.lower());
-                grammar.contextual_symbols.add(new ContextualSymbol(prio.higher().leftHand(), contexts));
                 // create contextual production
                 ContextualProduction p =
                     new ContextualProduction(prio.higher(), contexts, conflicting_args, prio.higher().isBracket(this));
@@ -241,6 +243,14 @@ public class ParseTable {
         Map<IProduction, ContextualProduction> contextual_prods, int label) {
         BiMap<IProduction, Integer> labels = HashBiMap.create();
         Set<ContextualProduction> new_contextual_prods = Sets.newHashSet();
+        
+        for(ContextualProduction p : grammar.contextual_prods.values()) {
+            for(Symbol s : p.rhs) {
+                if(s instanceof ContextualSymbol) {
+                    grammar.contextual_symbols.add((ContextualSymbol) s);
+                }
+            }
+        }
 
         for(ContextualSymbol ctx_s : grammar.contextual_symbols) {
             for(IProduction p : grammar.symbol_prods.get(ctx_s.s)) {

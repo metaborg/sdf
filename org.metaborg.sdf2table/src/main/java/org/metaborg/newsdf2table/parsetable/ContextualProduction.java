@@ -55,14 +55,6 @@ public class ContextualProduction implements IProduction {
         return rhs;
     }
 
-    @Override public boolean isRightRecursive() {
-        return orig_prod.isRightRecursive();
-    }
-
-    @Override public boolean isLeftRecursive() {
-        return orig_prod.isLeftRecursive();
-    }
-
     @Override public boolean isLeftAssociative(SetMultimap<IPriority, Integer> priorities,
         Set<Integer> leftRecursivePositions) {
         return orig_prod.isLeftAssociative(priorities, leftRecursivePositions);
