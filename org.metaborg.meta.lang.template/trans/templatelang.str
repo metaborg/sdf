@@ -10,14 +10,12 @@ imports
   pp/TemplateLang-parenthesize
   outline
   EditorService
-  stratego/metaborg
   runtime/analysis/-
   runtime/nabl/-
   runtime/task/-
   runtime/index/-
   runtime/properties/-
   runtime/types/-
-  runtime/editor/-
   analysis/-
   generation/completion/-
   generation/gen-utils/-
@@ -116,7 +114,6 @@ rules
       with(
         handle := <fopen> (filename, "w");
         <fputs> (string, handle);
-        <fclose> handle;
-        <refresh-workspace-file> filename
+        <fclose> handle
       )
     end

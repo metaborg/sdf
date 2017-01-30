@@ -2,14 +2,13 @@ module normalization/to-normal-form
 
 imports 
   libstratego-sglr
+  libspoofax/resource/cache
   signatures/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   analysis/lifting
   generation/gen-utils/remove-template
-  runtime/nabl/utils
   names/analysis/names
-  stratego/metaborg
   runtime/analysis/core
   editor/build-utils  
   pp/layout-constraints/Layout-Constraints-pp
@@ -268,7 +267,7 @@ rules
           rules(
             IsImported: path
           );
-          ( <is-newer> (cache-path, path);
+          ( <file-is-newer> (cache-path, path);
             file := <ReadFromFile> cache-path
           <+
             file := <parse-file> path;

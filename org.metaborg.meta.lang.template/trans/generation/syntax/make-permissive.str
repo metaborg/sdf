@@ -2,11 +2,11 @@ module generation/syntax/make-permissive
 
 imports 
   libstratego-sglr
+  libspoofax/core/parse
   signatures/TemplateLang-sig
   analysis/desugar
   analysis/attributes
   analysis/lifting
-  stratego/metaborg
   generation/gen-utils/remove-template
   signatures/modules/Modules-sig
   signatures/literals/Literals-sig

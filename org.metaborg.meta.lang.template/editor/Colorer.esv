@@ -1,13 +1,22 @@
 module Colorer
 
-imports 
+// Baseline ESV errors on color references for some reason, disable import and use explicit colors. 
+// imports editor/Colorer.generated
 
-  editor/Colorer.generated
+colorer // Default, token-based highlighting
+
+  keyword    : 127 0 85 bold
+  identifier : _
+  string     : 0 0 255
+  number     : 0 128 0
+  var        : 139 69 19 italic
+  operator   : 0 0 128
+  layout     : 63 127 95 italic
 
 colorer
 
-	_.String: blue
-	_.Constructor: darkblue
-	_.Lit: blue
-	_.CiLit: blue
-	Label._ : grey
+	_.String: 0 0 255
+	_.Constructor: 0 0 128
+	_.Lit: 0 0 255
+	_.CiLit: 0 0 255
+	Label._ : 128 128 128
