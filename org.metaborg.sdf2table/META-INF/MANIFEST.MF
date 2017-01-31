@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1485340923074
+Bnd-LastModified: 1485849989719
 Build-Jdk: 1.8.0_102
 Built-By: eduardo
 Bundle-Description: Maven parent POM for Java projects
@@ -17,5 +17,5 @@ Export-Package: org.metaborg.newsdf2table.exceptions,org.metaborg.newsdf
 Import-Package: org.spoofax.interpreter.terms,org.spoofax.terms,com.goog
  le.common.collect;provider=metaborg;mandatory:=provider;version=0,org.a
  pache.tools.ant
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.7))"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
 Tool: Bnd-2.4.1.201501161923
