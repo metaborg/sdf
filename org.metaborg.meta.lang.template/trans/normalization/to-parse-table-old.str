@@ -75,20 +75,6 @@ signature
    completion   : completion
    look         : term * List(terms) -> look
 
-
-//couldn't import those from the runtime libraries (why?)
-rules
-
-    cputime = prim("SSL_cputime")
-    
-    cputime-to-seconds:
-        cputime -> <div> (cputime, 1000000000)
-    
-    measure-time(s, match) =
-        where(before := <cputime>);
-        s;
-        where(after := <cputime>; !(after, before); subt; match)  
-
    
 rules
   

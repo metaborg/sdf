@@ -4,8 +4,8 @@ imports
   signatures/TemplateLang-sig
   utils/attributes
   utils/misc
-  runtime/editor/origins
-  runtime/editor/annotations
+  libspoofax/term/origin
+  libspoofax/term/annotation
 
 signature constructors
 	// desugar templates with one line into a single line template

@@ -8,6 +8,8 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lang.esv:${metaborgVersion}
   source:
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
+  # Required for SDF3, which depends on baseline SDF3, which still generates imports to lib.analysis
+  # Can be removed after bootstrapping
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 pardonedLanguages:
@@ -21,7 +23,7 @@ language:
     - -Idef
     - ${path:root}/lib/SDF.def
   stratego:
-    format: ctree
+    format: jar
     args:
     - -la
     - stratego-lib

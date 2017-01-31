@@ -7,8 +7,8 @@ module outline
 imports
   libstratego-sglr
   utils/attributes
-  runtime/editor/outline-library
-  runtime/editor/origins
+  libspoofax/editor/outline
+  libspoofax/term/origin
 
 imports
   signatures/aliases/-
