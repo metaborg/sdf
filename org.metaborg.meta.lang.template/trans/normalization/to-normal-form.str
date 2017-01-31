@@ -167,7 +167,7 @@ rules
   normalize-layout-constraints = topdown(try(normalize-constraint))
   
   normalize-constraint :
-    LayoutConstraint(constr) -> Term(Default(Appl(Unquoted("layout"), [Fun(Quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+    LayoutConstraint(constr) -> Term(Default(Appl(Unquoted("layout"), [Fun(Quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
   
   generate-follow-restrictions-reject-keywords(|kfr, chars, kattrs) = filter(follow-restrictions-template-prods(|kfr, chars, kattrs)); flatten-list
   
