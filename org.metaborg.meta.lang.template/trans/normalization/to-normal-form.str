@@ -1139,12 +1139,12 @@ rules
      norm-prio-fun:
         Chain([group]) -> []
         where
-           <check-group(?SimpleGroup(_))> group
+          <check-group(?SimpleGroup(_))> group
      
      norm-prio-fun:
         Chain([group]) -> []  
         where
-           <check-group(?ProdsGroup([]))> group 
+          <check-group(?ProdsGroup([]))> group 
      
      norm-prio-fun:
         Chain([group1, group2]) -> []
@@ -1154,12 +1154,12 @@ rules
      norm-prio-fun:
         Chain([group, ProdsGroup([])]) -> []
         where
-        <not(check-group(?AssocGroup(_, _)) + check-group(?ProdsGroup(_)))> group   
+        <not(check-group(?AssocGroup(_, _)) + check-group(?ProdsGroup(_)))> group 
         
      norm-prio-fun:
         Chain([group]) -> []   
         where
-        <not(check-group(?AssocGroup(_, [])))> group
+        <check-group(?AssocGroup(_, []))> group
      
      norm-prio-fun :
         Chain([ProdsGroup(p*), group]) -> new-chains
