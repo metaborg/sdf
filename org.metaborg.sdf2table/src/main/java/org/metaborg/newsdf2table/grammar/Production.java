@@ -128,6 +128,8 @@ public class Production implements IProduction {
         // dangling else case
         if(!lower_rightRecursivePositions.isEmpty() && lower_rightAssociative) {
             for(int i : lower_rightRecursivePositions) {
+                if(this.rightHand().size() <= i)
+                    continue;
                 for(int j = 0; j <= i; j++) {
                     if(this.rhs.get(j).equals(p.rightHand().get(j))) {
                         matchPrefix = true;
@@ -141,8 +143,8 @@ public class Production implements IProduction {
                     break;
             }
         }
-        if(matchPrefix) {
-            Set<Integer> conflicting_ps = Sets.newHashSet(conflicting_p);            
+        if(matchPrefix && !this.equals(p)) {
+            Set<Integer> conflicting_ps = Sets.newHashSet(conflicting_p);
             pt.getGrammar().deep_priorities().putAll(prio, conflicting_ps);
             result.addAll(conflicting_ps);
         }

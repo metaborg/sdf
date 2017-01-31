@@ -9,14 +9,10 @@ import org.spoofax.interpreter.terms.ITermFactory;
 import com.google.common.collect.Lists;
 
 public class CharacterClass extends Symbol {
-    
+
     public static CharacterClass maxCC =
         new CharacterClass(new CharacterClassRange(new CharacterClassNumeric(0), new CharacterClassNumeric(256)));
     Symbol cc;
-
-    public CharacterClass() {
-        cc = null;
-    }
 
     public CharacterClass(Symbol s) {
         this.cc = s;
@@ -177,14 +173,15 @@ public class CharacterClass extends Symbol {
                 if(rt == null)
                     rt = t; // it's the first, and may be the only, range.
                 else
-                    rt = CharacterClass.union(new CharacterClass(rt),new CharacterClass(t)).cc; // Not the first one, we merge them.
+                    rt = CharacterClass.union(new CharacterClass(rt), new CharacterClass(t)).cc; // Not the first one,
+                                                                                                 // we merge them.
                 min = max = -1;
             }
         }
 
         if(rt == null)
             return null;
-        
+
         return new CharacterClass(rt);
     }
 
@@ -195,6 +192,10 @@ public class CharacterClass extends Symbol {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
+        if(cc == null) {
+            return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList());
+        }
+
         IStrategoTerm cc_aterm = cc.toAterm(tf);
         if(cc_aterm instanceof IStrategoList) {
             List<IStrategoTerm> terms = Lists.newArrayList();
@@ -204,7 +205,9 @@ public class CharacterClass extends Symbol {
             return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(terms));
         }
         return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(cc_aterm));
+
     }
+
 
     @Override public int hashCode() {
         final int prime = 31;
@@ -230,6 +233,10 @@ public class CharacterClass extends Symbol {
     }
 
     public IStrategoTerm toStateAterm(ITermFactory tf) {
+        if(cc == null) {
+            return tf.makeList();
+        }
+
         IStrategoTerm cc_aterm = cc.toAterm(tf);
         if(cc_aterm instanceof IStrategoList) {
             List<IStrategoTerm> terms = Lists.newArrayList();

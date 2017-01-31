@@ -38,7 +38,9 @@ import org.metaborg.newsdf2table.grammar.SequenceSymbol;
 import org.metaborg.newsdf2table.grammar.Sort;
 import org.metaborg.newsdf2table.grammar.StartSymbol;
 import org.metaborg.newsdf2table.grammar.Symbol;
+import org.metaborg.newsdf2table.grammar.TermAttribute;
 import org.spoofax.interpreter.terms.IStrategoAppl;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
@@ -211,11 +213,11 @@ public class GrammarReader {
                 if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
                     g.initial_prod = prod;
                 }
-                
+
                 for(IAttribute a : attrs) {
                     g.prod_attrs.put(prod, a);
                 }
-                
+
                 g.symbol_prods.put(symbol, prod);
                 return prod;
 
@@ -227,10 +229,12 @@ public class GrammarReader {
     }
 
     private static Symbol processSymbol(NormGrammar g, IStrategoTerm term) {
-        Symbol symbol;
+        Symbol symbol = null;
         String enquoted;
 
+
         symbol = g.symbols.get(term.toString());
+
 
         if(symbol != null) {
             return symbol;
@@ -267,7 +271,7 @@ public class GrammarReader {
                     break;
                 case "Sequence":
                     symbol = new SequenceSymbol(processSymbol(g, app.getSubterm(0)),
-                        processSymbolList(null, app.getSubterm(1)));
+                        processSymbolList(g, app.getSubterm(1)));
                     break;
                 case "Iter":
                     symbol = new IterSymbol(processSymbol(g, app.getSubterm(0)));
@@ -412,23 +416,36 @@ public class GrammarReader {
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoTerm appl = def.getSubterm(0);
-                    IStrategoTerm unquoted = appl.getSubterm(0);
-                    IStrategoTerm attr_name = unquoted.getSubterm(0);
+                    IStrategoTerm quoted = appl.getSubterm(0);
+                    IStrategoTerm attr_name = quoted.getSubterm(0);
                     if(attr_name.toString().equals("\"layout\"")) {
+                        // check whether it's a quoted constraint or term constraint
                         IStrategoTerm fun = appl.getSubterm(1).getSubterm(0);
-                        IStrategoTerm quoted = fun.getSubterm(0);
-                        IStrategoTerm constraint = quoted.getSubterm(0);
-                        return new LayoutConstraintAttribute(
-                            constraint.toString().substring(3, constraint.toString().length() - 3));
+                        IStrategoTerm quotedElem = fun.getSubterm(0);
+                        if(((IStrategoAppl) quotedElem).getConstructor().getName().equals("Quoted")) {
+                            IStrategoTerm constraint = quotedElem.getSubterm(0);
+                            return new LayoutConstraintAttribute(
+                                constraint.toString().substring(3, constraint.toString().length() - 3));
+                        } else {
+                            //TODO process non quoted constraint
+                            IStrategoList subterms = (IStrategoList) appl.getSubterm(1);
+                            System.out.println("process non quoted constraint");
+                        }
                     } else {
-                        // TODO handle generic ATerms as attributes
-                        System.err.println("sdf2table : importAttribute: unhandled term attribute.");
-                        throw new UnexpectedTermException(a.toString());
+                        String attrName = ((StrategoString) quoted.getSubterm(0)).stringValue();
+                        List<String> elems = Lists.newArrayList();
+                        IStrategoList subterms = (IStrategoList) appl.getSubterm(1);
+                        for(IStrategoTerm elem : subterms) {
+                            String elem_name = ((StrategoString) elem.getSubterm(0).getSubterm(0)).stringValue();
+                            elems.add(elem_name);
+                        }
+                        return new TermAttribute(attrName, elems);
                     }
                 default:
                     System.err.println("sdf2table : importAttribute: unknown attribute `" + a.getName() + "'.");
                     throw new UnexpectedTermException(a.toString());
             }
+
         }
 
         return null;
@@ -483,11 +500,11 @@ public class GrammarReader {
                         }
                     }
                     break;
-                 // NON TERMINALS
+                // NON TERMINALS
                 case "Seq":
                     Symbol head = processCharClass(app.getSubterm(0));
                     set.add(new CharacterClassSeq(head, importLookaheadList(app.getSubterm(1))));
-                    
+
                     break;
                 // TERMINALS
                 case "CharClass":
