@@ -12,6 +12,9 @@ public class CharacterClass extends Symbol {
 
     public static CharacterClass maxCC =
         new CharacterClass(new CharacterClassRange(new CharacterClassNumeric(0), new CharacterClassNumeric(256)));
+    public static CharacterClass emptyCC =
+        new CharacterClass(null);    
+    
     Symbol cc;
 
     public CharacterClass(Symbol s) {
@@ -70,7 +73,61 @@ public class CharacterClass extends Symbol {
         return new CharacterClass(rt);
     }
 
+    public static CharacterClass intersection(CharacterClass... ary) {
+        int _min = minimum(ary);
+        int _max = maximum(ary);
+    
+        // We want to find all sub ranges that are not included in {restrictions}.
+        // min and max correspond to the current valid range.
+        int min = -1;
+        int max = -1;
+    
+        // The final restricted terminal.
+        Symbol rt = null;
+        // For each value of the range (plus a last iteration).
+        for(int c = _min; c <= _max + 1; ++c) {
+            boolean ok = false; // The value is valid or not (restricted or not).
+    
+            // if we are in the range...
+            if(c <= _max) {
+                ok = true;
+                for(CharacterClass cc : ary) {
+                    if(!cc.contains(c)) {
+                        ok = false; // invalid.
+                        break;
+                    }
+                }
+    
+                if(ok) { // We augment our current range (or create it if min == -1).
+                    if(min == -1)
+                        min = c;
+                    max = c;
+                }
+            }
+    
+            // We are out of a valid range, but we have detected one.
+            if(!ok && min != -1) {
+                Symbol t;
+                if(min == max)
+                    t = new CharacterClassNumeric(min); // Single-value range, a numeric.
+                else
+                    t = new CharacterClassRange(new CharacterClassNumeric(min), new CharacterClassNumeric(max));
+    
+                if(rt == null)
+                    rt = t; // it's the first, and may be the only, range.
+                else
+                    rt = CharacterClass.union(new CharacterClass(rt), new CharacterClass(t)).cc; // Not the first one,
+                                                                                                 // we merge them.
+                min = max = -1;
+            }
+        }
+    
+        return new CharacterClass(rt);
+    }
+
     public boolean contains(int c) {
+        if (cc == null) return false;
+        
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).contains(c);
         } else if(cc instanceof CharacterClassRange) {
@@ -81,6 +138,9 @@ public class CharacterClass extends Symbol {
     }
 
     public int minimum() {
+        
+        if (cc == null) return Integer.MAX_VALUE;
+        
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).minimum();
         } else if(cc instanceof CharacterClassRange) {
@@ -91,6 +151,9 @@ public class CharacterClass extends Symbol {
     }
 
     public int maximum() {
+        
+        if (cc == null) return Integer.MIN_VALUE;
+        
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).maximum();
         } else if(cc instanceof CharacterClassRange) {
@@ -121,6 +184,8 @@ public class CharacterClass extends Symbol {
     }
 
     public CharacterClass difference(CharacterClass... ary) {
+        if (cc == null) return this;
+        
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).difference(ary);
         } else if(cc instanceof CharacterClassRange) {
@@ -130,62 +195,8 @@ public class CharacterClass extends Symbol {
         }
     }
 
-    public static CharacterClass intersection(CharacterClass... ary) {
-        int _min = minimum(ary);
-        int _max = maximum(ary);
-
-        // We want to find all sub ranges that are not included in {restrictions}.
-        // min and max correspond to the current valid range.
-        int min = -1;
-        int max = -1;
-
-        // The final restricted terminal.
-        Symbol rt = null;
-        // For each value of the range (plus a last iteration).
-        for(int c = _min; c <= _max + 1; ++c) {
-            boolean ok = false; // The value is valid or not (restricted or not).
-
-            // if we are in the range...
-            if(c <= _max) {
-                ok = true;
-                for(CharacterClass cc : ary) {
-                    if(!cc.contains(c)) {
-                        ok = false; // invalid.
-                        break;
-                    }
-                }
-
-                if(ok) { // We augment our current range (or create it if min == -1).
-                    if(min == -1)
-                        min = c;
-                    max = c;
-                }
-            }
-
-            // We are out of a valid range, but we have detected one.
-            if(!ok && min != -1) {
-                Symbol t;
-                if(min == max)
-                    t = new CharacterClassNumeric(min); // Single-value range, a numeric.
-                else
-                    t = new CharacterClassRange(new CharacterClassNumeric(min), new CharacterClassNumeric(max));
-
-                if(rt == null)
-                    rt = t; // it's the first, and may be the only, range.
-                else
-                    rt = CharacterClass.union(new CharacterClass(rt), new CharacterClass(t)).cc; // Not the first one,
-                                                                                                 // we merge them.
-                min = max = -1;
-            }
-        }
-
-        if(rt == null)
-            return null;
-
-        return new CharacterClass(rt);
-    }
-
     @Override public String name() {
+        if(cc == null) return "[]";
         String name = "[";
         name += cc.name() + "]";
         return name;

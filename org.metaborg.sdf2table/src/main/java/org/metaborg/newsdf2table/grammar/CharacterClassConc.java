@@ -159,9 +159,7 @@ public class CharacterClassConc extends Symbol {
         if(cc_first != null && cc_second != null)
             return CharacterClass.union(cc_first, cc_second);
         
-        return null;
-
+        return new CharacterClass(null);
     }
-
 
 }

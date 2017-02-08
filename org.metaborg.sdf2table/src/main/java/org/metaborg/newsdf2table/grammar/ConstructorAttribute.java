@@ -40,5 +40,9 @@ public class ConstructorAttribute implements IAttribute {
             return false;
         return true;
     }
+    
+    @Override public String toString() {
+        return "cons(\"" + constructor + "\")";
+    }
 
 }

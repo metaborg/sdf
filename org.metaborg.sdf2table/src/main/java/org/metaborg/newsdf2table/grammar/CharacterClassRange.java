@@ -138,9 +138,6 @@ public class CharacterClassRange extends Symbol {
             }
         }
 
-        if(rt == null)
-            return null;
-
         return new CharacterClass(rt);
     }
 

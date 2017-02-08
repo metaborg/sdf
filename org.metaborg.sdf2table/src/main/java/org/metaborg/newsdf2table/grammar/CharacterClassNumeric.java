@@ -63,7 +63,7 @@ public class CharacterClassNumeric extends Symbol {
     public CharacterClass difference(CharacterClass[] ary) {
         for(CharacterClass r : ary){
             if(r.contains(character))
-                return null;
+                return new CharacterClass(null);
         }
         return new CharacterClass(this);
     }
