@@ -113,7 +113,8 @@ rules
             lex-symbols*               := <bagof-get-lexical-sorts; make-set> "lexical-symbols";
             kernel-symbols*            := <bagof-get-kernel-sorts; make-set> "kernel-symbols";
             new-regular-prods*         := <filter(regular-norm-symbol); flatten-list> [cf-symbols*, lex-symbols*, kernel-symbols*];
-            new-regular-priorities*    := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, kernel-symbols*];
+            new-lex-symbols*           := <bagof-get-lexical-sorts; make-set> "new-lexical-symbols";
+            new-regular-priorities*    := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, new-lex-symbols*, kernel-symbols*];
             
            
             // priorities
@@ -243,65 +244,21 @@ rules
     where
       <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs       
   
-      
-  expand-import(|path):
-    name -> ast
-    where
-        name'  := <strip-annos> name;  
-        <not(expanded-module)> name';
-        rules(
-            expanded-module:
-                name' -> <id>
-        );
-        ast    := <get-ast; module-to-normal-form(|path)> name       
-        //ast := <open-import-custom(resolve-path(|path), parse-file, module-to-normal-form(|path))> name
-          
-    open-import-custom(resolve-path, parse-file, record-declarations):
-      import -> result
-    where
-      if not(!import => COMPLETION(_)) then
-        path       := <resolve-path> import;
-        cache-path := <import-cache-path> path;
-        if not(<IsImported> path) then
-          rules(
-            IsImported: path
-          );
-          ( <file-is-newer> (cache-path, path);
-            file := <ReadFromFile> cache-path
-          <+
-            file := <parse-file> path;
-            if <file-exists> path then
-              // Only cache if on filesystem (e.g., ignore libstratego-lib)
-              <WriteToBinaryFile> (cache-path, file)
-            end        
-          );
-          {| CurrentFile:
-            rules(CurrentFile := path);
-            result := <record-declarations> file
-          |}
-        end
-      end        
+  lift-constructors-norm = topdown(try(lift-cons-fun))
     
-    resolve-path(|path):
-        name -> resolved-name
-        where
-            resolved-name := $[[path]/[name].sdf3]    
-  
-    lift-constructors-norm = topdown(try(lift-cons-fun))
-    
-    lift-cons-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProduction(symbol, Rhs(symbols*), attrs')
-        with
-            new-cons := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
-            attrs'   := <(?Attrs([]) + ?NoAttrs()); !Attrs([new-cons]) <+ ?Attrs(attrs*); !Attrs([new-cons, attrs*])> attrs
+  lift-cons-fun:
+    SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProduction(symbol, Rhs(symbols*), attrs')
+    with
+      new-cons := Term(Default(Appl(Unquoted("default"), [ Appl(Unquoted("appl"), [ Appl(Unquoted("unquoted"), [Fun(Quoted("\"cons\""))]), List([ List([ Appl(Unquoted("fun"), [Appl(Unquoted("quoted"), [Fun(Quoted(<escape; double-quote> cons))])])])])])]))); 
+      attrs'   := <(?Attrs([]) + ?NoAttrs()); !Attrs([new-cons]) <+ ?Attrs(attrs*); !Attrs([new-cons, attrs*])> attrs
         
     
-    expand-priorities(|tokenize-chars) = topdown(try(expand-priority(|tokenize-chars)))
+  expand-priorities(|tokenize-chars) = topdown(try(expand-priority(|tokenize-chars)))
     
-    expand-priority(|tokenize-chars):
-        SimpleRefGroup(ref) -> SimpleGroup(ref')
-        with
-            ref' := <sortcons-to-prod(|tokenize-chars)> ref
+  expand-priority(|tokenize-chars):
+    SimpleRefGroup(ref) -> SimpleGroup(ref')
+    with
+      ref' := <sortcons-to-prod(|tokenize-chars)> ref
         
     expand-priority(|tokenize-chars):
         ProdsRefGroup(ref) -> ProdsGroup(ref')
