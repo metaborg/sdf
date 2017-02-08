@@ -160,7 +160,7 @@ public class State implements Comparable<State> {
                             CharacterClass lookahead = CharacterClass.union(lookahead_array);
                             CharacterClass reduction_range =
                                 CharacterClass.intersection(CharacterClass.maxCC, new CharacterClass(cc_restriction));
-                            if(reduction_range != null) {
+                            if(!reduction_range.equals(CharacterClass.emptyCC)) {
                                 final_range = final_range.difference(reduction_range);
                                 addReduceAction(item.prod, prod_label, reduction_range, lookahead);
                             }
@@ -183,11 +183,11 @@ public class State implements Comparable<State> {
         CharacterClass final_range = cc;
 
         for(CharacterClass range : lr_actions.keySet()) {
-            if(final_range == null) {
+            if(final_range.equals(CharacterClass.emptyCC)) {
                 break;
             }
             CharacterClass intersection = CharacterClass.intersection(final_range, range);
-            if(intersection != null) {
+            if(!intersection.equals(CharacterClass.emptyCC)) {
                 if(intersection.equals(range)) {
                     lr_actions.put(intersection, new Reduce(prod, label, range, lookahead));
                     final_range = final_range.difference(intersection);
@@ -195,7 +195,7 @@ public class State implements Comparable<State> {
             }
         }
 
-        if(final_range != null) {
+        if(!final_range.equals(CharacterClass.emptyCC)) {
             lr_actions.put(final_range, new Reduce(prod, label, final_range, lookahead));
         }
     }

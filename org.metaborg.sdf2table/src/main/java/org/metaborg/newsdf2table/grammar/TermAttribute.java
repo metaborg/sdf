@@ -1,43 +1,30 @@
 package org.metaborg.newsdf2table.grammar;
 
-import java.util.List;
-
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Lists;
-
 public class TermAttribute implements IAttribute {
 
-    private String name;
-    private List<String> elems;
+    IStrategoTerm term;
+    String term_name;    
 
-    public TermAttribute(String name, List<String> elems) {
-        this.name = name;
-        this.elems = elems;
+    public TermAttribute(IStrategoTerm term, String term_name) {
+        this.term = term;
+        this.term_name = term_name;
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        List<IStrategoTerm> elems_aterm = Lists.newArrayList();
-        for (String s : elems) {
-            tf.makeString(s);
-        }
-        return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor(getName(), elems.size()), tf.makeList(elems_aterm)));
+        return tf.makeAppl(tf.makeConstructor("term", 1), term);
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    
+    @Override public String toString() {
+        return term.toString();
     }
 
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((elems == null) ? 0 : elems.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((term_name == null) ? 0 : term_name.hashCode());
         return result;
     }
 
@@ -49,28 +36,11 @@ public class TermAttribute implements IAttribute {
         if(getClass() != obj.getClass())
             return false;
         TermAttribute other = (TermAttribute) obj;
-        if(elems == null) {
-            if(other.elems != null)
+        if(term_name == null) {
+            if(other.term_name != null)
                 return false;
-        } else if(!elems.equals(other.elems))
-            return false;
-        if(name == null) {
-            if(other.name != null)
-                return false;
-        } else if(!name.equals(other.name))
+        } else if(!term_name.equals(other.term_name))
             return false;
         return true;
-    }
-    
-    @Override public String toString() {
-        String buf = "";
-        buf += name + "(";
-        int i = 0;
-        for (String s : elems) {
-            if (i != 0) buf += ", ";
-            buf += s;
-            i++;
-        }
-        return buf;
-    }
+    }   
 }

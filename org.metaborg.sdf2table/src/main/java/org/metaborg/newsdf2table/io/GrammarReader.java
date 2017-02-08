@@ -39,8 +39,10 @@ import org.metaborg.newsdf2table.grammar.Sort;
 import org.metaborg.newsdf2table.grammar.StartSymbol;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.TermAttribute;
+import org.metaborg.newsdf2table.parsetable.ParseTable;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
+import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
@@ -53,22 +55,22 @@ import com.google.common.collect.Sets;
 
 public class GrammarReader {
 
-    public static NormGrammar readGrammar(File input, File output, List<String> paths, ITermFactory termFactory)
-        throws Exception {
+
+    public static NormGrammar readGrammar(File input, File output, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
 
-        IStrategoTerm mainModule = termFromFile(input, termFactory);
+        IStrategoTerm mainModule = termFromFile(input);
 
         NormGrammar grammar = new NormGrammar();
 
-        generateGrammar(grammar, mainModule, modules, paths, termFactory);
+        generateGrammar(grammar, mainModule, modules, paths);
         grammar.priorityTransitiveClosure();
 
         return grammar;
     }
 
     private static void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules,
-        List<String> paths, ITermFactory termFactory) throws Exception {
+        List<String> paths) throws Exception {
 
         if(module instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) module;
@@ -109,8 +111,8 @@ public class GrammarReader {
                                         String filename = path + "/" + iname + ".aterm";
                                         File file = new File(filename);
                                         if(file.exists() && !file.isDirectory()) {
-                                            IStrategoTerm iModule = termFromFile(file, termFactory);
-                                            generateGrammar(g, iModule, modules, paths, termFactory);
+                                            IStrategoTerm iModule = termFromFile(file);
+                                            generateGrammar(g, iModule, modules, paths);
                                             break;
                                         } else {
                                             throw new ModuleNotFoundException(iname, modName);
@@ -153,14 +155,20 @@ public class GrammarReader {
             if(app.getName().equals("Kernel")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
-                    g.prods.add(processProduction(g, t));
+                    processProduction(g, t);
                 }
             }
         }
     }
 
     private static IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+        IProduction prod = null;
+        prod = g.productions_read.get(term.toString());
 
+        if(prod != null) {
+            return prod;
+        }
+        
         if(term instanceof IStrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             boolean with_cons = false;
@@ -209,7 +217,7 @@ public class GrammarReader {
                     attrs.add(new ConstructorAttribute(cons));
                 }
 
-                Production prod = new Production(symbol, rhs_symbols);
+                prod = new Production(symbol, rhs_symbols);
                 if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
                     g.initial_prod = prod;
                 }
@@ -217,10 +225,14 @@ public class GrammarReader {
                 for(IAttribute a : attrs) {
                     g.prod_attrs.put(prod, a);
                 }
+                
+                if(g != null && symbol != null) {
+                    g.productions_read.put(term.toString(), prod);
+                }
 
                 g.symbol_prods.put(symbol, prod);
+                g.prods.add(prod);
                 return prod;
-
             } else {
                 throw new UnexpectedTermException(term.toString(), "SdfProduction");
             }
@@ -232,9 +244,7 @@ public class GrammarReader {
         Symbol symbol = null;
         String enquoted;
 
-
-        symbol = g.symbols.get(term.toString());
-
+        symbol = g.symbols_read.get(term.toString());
 
         if(symbol != null) {
             return symbol;
@@ -309,7 +319,7 @@ public class GrammarReader {
         }
 
         if(g != null && symbol != null) {
-            g.symbols.put(term.toString(), symbol);
+            g.symbols_read.put(term.toString(), symbol);
         }
 
         return symbol;
@@ -415,32 +425,43 @@ public class GrammarReader {
                     return new GeneralAttribute("literal-completion");
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
-                    IStrategoTerm appl = def.getSubterm(0);
-                    IStrategoTerm quoted = appl.getSubterm(0);
-                    IStrategoTerm attr_name = quoted.getSubterm(0);
-                    if(attr_name.toString().equals("\"layout\"")) {
-                        // check whether it's a quoted constraint or term constraint
-                        IStrategoTerm fun = appl.getSubterm(1).getSubterm(0);
-                        IStrategoTerm quotedElem = fun.getSubterm(0);
-                        if(((IStrategoAppl) quotedElem).getConstructor().getName().equals("Quoted")) {
-                            IStrategoTerm constraint = quotedElem.getSubterm(0);
-                            return new LayoutConstraintAttribute(
-                                constraint.toString().substring(3, constraint.toString().length() - 3));
-                        } else {
-                            //TODO process non quoted constraint
-                            IStrategoList subterms = (IStrategoList) appl.getSubterm(1);
-                            System.out.println("process non quoted constraint");
-                        }
-                    } else {
-                        String attrName = ((StrategoString) quoted.getSubterm(0)).stringValue();
-                        List<String> elems = Lists.newArrayList();
-                        IStrategoList subterms = (IStrategoList) appl.getSubterm(1);
-                        for(IStrategoTerm elem : subterms) {
-                            String elem_name = ((StrategoString) elem.getSubterm(0).getSubterm(0)).stringValue();
-                            elems.add(elem_name);
-                        }
-                        return new TermAttribute(attrName, elems);
+                    IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);
+                    // if(term.getConstructor().getName().equals("Appl")) {
+                    // IStrategoTerm cons = term.getSubterm(0); // Quoted("\"cons_name\"") or Unquoted("cons_name")
+                    // String cons_name = ((IStrategoString) cons.getSubterm(0)).stringValue();
+                    // if(cons_name.equals("layout")) {
+                    // // check whether it's a quoted constraint or term constraint
+                    // IStrategoTerm fun = term.getSubterm(1).getSubterm(0);
+                    // IStrategoTerm quotedElem = fun.getSubterm(0);
+                    // if(((IStrategoAppl) quotedElem).getConstructor().getName().equals("Quoted")) {
+                    // IStrategoTerm constraint = quotedElem.getSubterm(0);
+                    // return new LayoutConstraintAttribute(
+                    // constraint.toString().substring(3, constraint.toString().length() - 3));
+                    // } else {
+                    // // TODO process non quoted constraint
+                    // IStrategoList subterms = (IStrategoList) term.getSubterm(1);
+                    // System.out.println("process non quoted constraint");
+                    // }
+                    // } else {
+                    // try {
+                    // IStrategoTerm termAttribute = createStrategoTermAttribute(term);
+                    // return new TermAttribute(termAttribute, termAttribute.toString());
+                    // } catch(Exception e) {
+                    // System.err.println(
+                    // "sdf2table : importAttribute: unknown term attribute `" + a.getName() + "'.");
+                    // throw new UnexpectedTermException(a.toString());
+                    // }
+                    // }
+                    // } else {
+                    try {
+                        IStrategoTerm termAttribute = createStrategoTermAttribute(term);
+                        return new TermAttribute(termAttribute, termAttribute.toString());
+                    } catch(Exception e) {
+                        System.err
+                            .println("sdf2table : importAttribute: unknown term attribute `" + a.getName() + "'.");
+                        throw new UnexpectedTermException(a.toString());
                     }
+                    // }
                 default:
                     System.err.println("sdf2table : importAttribute: unknown attribute `" + a.getName() + "'.");
                     throw new UnexpectedTermException(a.toString());
@@ -449,6 +470,40 @@ public class GrammarReader {
         }
 
         return null;
+    }
+
+    private static IStrategoTerm createStrategoTermAttribute(IStrategoAppl term) throws UnexpectedTermException {
+        if(term.getConstructor().getName().equals("Appl")) {
+            String cons_name = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
+            int arity = term.getSubterm(1).getSubtermCount();
+            IStrategoTerm[] subterms = new IStrategoTerm[arity];
+            for(int i = 0; i < arity; i++) {
+                IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
+                subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
+            }
+            return ParseTable.getTermfactory().makeAppl(ParseTable.getTermfactory().makeConstructor(cons_name, arity),
+                subterms);
+        } else if(term.getConstructor().getName().equals("Fun")) {
+            String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
+            if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
+                termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
+                    termName.length() - 1);
+            }
+            return ParseTable.getTermfactory().makeString(termName);
+        } else if(term.getConstructor().getName().equals("Int")) {
+            String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
+            int ivalue = Integer.parseInt(svalue);
+            return ParseTable.getTermfactory().makeInt(ivalue);
+        } else if(term.getConstructor().getName().equals("List")) {
+            IStrategoList term_list = (IStrategoList) term.getSubterm(0);
+            List<IStrategoTerm> terms = Lists.newArrayList();
+            for(IStrategoTerm t : term_list) {
+                terms.add(createStrategoTermAttribute((IStrategoAppl) t));
+            }
+            return ParseTable.getTermfactory().makeList(terms);
+        }
+        System.err.println("sdf2table : importAttribute: unknown stratego term attribute `" + term.getName() + "'.");
+        throw new UnexpectedTermException(term.toString());
     }
 
     private static void addRestrictions(NormGrammar g, StrategoAppl tsection) throws UnexpectedTermException {
@@ -616,7 +671,7 @@ public class GrammarReader {
 
 
 
-    private static IStrategoTerm termFromFile(File file, ITermFactory termFactory) {
+    private static IStrategoTerm termFromFile(File file) {
         FileReader reader = null;
         IStrategoTerm term = null;
 
@@ -627,7 +682,7 @@ public class GrammarReader {
             String aterm = new String(chars);
             reader.close();
 
-            term = termFactory.parseFromString(aterm);
+            term = ParseTable.getTermfactory().parseFromString(aterm);
         } catch(IOException e) {
             System.err.println("Cannot open module file `" + file.getPath() + "'");
         } finally {

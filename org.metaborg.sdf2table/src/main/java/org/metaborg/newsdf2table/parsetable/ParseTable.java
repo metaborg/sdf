@@ -64,7 +64,7 @@ public class ParseTable {
         long _end_time;
 
         _start_time = System.currentTimeMillis();
-        setGrammar(GrammarReader.readGrammar(input, output, paths, termFactory));
+        setGrammar(GrammarReader.readGrammar(input, output, paths));
         _end_time = System.currentTimeMillis();
 
         long importTime = _end_time - _start_time;
@@ -384,5 +384,9 @@ public class ParseTable {
             millis = "0" + millis;
         System.out.println(step + String.valueOf(totalTime / 1000) + "." + millis + "s");
         return totalTime;
+    }
+
+    public static ITermFactory getTermfactory() {
+        return termFactory;
     }
 }

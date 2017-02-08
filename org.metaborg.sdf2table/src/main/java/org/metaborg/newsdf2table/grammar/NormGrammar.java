@@ -35,7 +35,9 @@ public class NormGrammar implements INormGrammar {
     public SetMultimap<IPriority, Integer> non_trans_prio_arguments;
 
 
-    public HashMap<String, Symbol> symbols; // to calculate first and follow sets
+    public HashMap<String, Symbol> symbols_read; // caching symbols read
+    public HashMap<String, IProduction> productions_read; // caching symbols read
+    
     public SetMultimap<Symbol, IProduction> symbol_prods;
 
     public NormGrammar() {
@@ -49,7 +51,8 @@ public class NormGrammar implements INormGrammar {
         trans_prio_arguments = HashMultimap.create();
         non_trans_prio_arguments = HashMultimap.create();
         symbol_prods = HashMultimap.create();
-        this.symbols = Maps.newHashMap();
+        this.symbols_read = Maps.newHashMap();
+        this.productions_read = Maps.newHashMap();
     }
 
 
