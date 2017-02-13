@@ -83,21 +83,34 @@ rules
             // keeping Sort.Cons in the normalized grammar
             // lifted-cons    := <lift-constructors-norm> non-template-m;
             
+             where(before-normalizing-exp-prio := <cputime>);
             // change priority norm to handle Sort.Cons priorities
-            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections'*;            
+//            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections'*;            
+            after-normalizing-exp-prio := <cputime>;
             
+            where(!(after-normalizing-exp-prio, before-normalizing-exp-prio); subt; cputime-to-seconds; ?total-time-exp-prio; <debug(!"time spent expanding priorities ")> (<strip-annos> mn, total-time-exp-prio))
+            
+            where(before-normalizing-basic := <cputime>);
             //basic normalization
             new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections'*;
             new-basic-prods*           := [new-basic-prods'*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))];
-            new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> expanded-prio;
+            new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> non-template-sections'*;
+            after-normalizing-basic := <cputime>;
+            
+            where(!(after-normalizing-basic, before-normalizing-basic); subt; cputime-to-seconds; ?total-time-basic; <debug(!"time spent basic normalization (-cf, -lex) ")> (<strip-annos> mn, total-time-basic))
+            
            
-           
+            where(before-normalizing-rest := <cputime>);
             // basic + restrictions
             cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections'*;
             lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections'*;
             kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections'*;
+            after-normalizing-rest := <cputime>;
       
-         
+            where(!(after-normalizing-rest, before-normalizing-rest); subt; cputime-to-seconds; ?total-time-rest; <debug(!"time spent normalizing restrictions ")> (<strip-annos> mn, total-time-rest))
+            
+      
+            where(before-normalizing-top-sorts := <cputime>);
             // top sorts
             lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections'*;
             cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections'*;
@@ -106,31 +119,53 @@ rules
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
             new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())];
+            after-normalizing-top-sorts := <cputime>;
+            
+            where(!(after-normalizing-top-sorts, before-normalizing-top-sorts); subt; cputime-to-seconds; ?total-time-top-sorts; <debug(!"time spent top sorts ")> (<strip-annos> mn, total-time-top-sorts))
             
             
+            where(before-normalizing-reg := <cputime>);
             // regular 
             cf-symbols*                := <bagof-get-cf-sorts; make-set> "cf-symbols";
             lex-symbols*               := <bagof-get-lexical-sorts; make-set> "lexical-symbols";
             kernel-symbols*            := <bagof-get-kernel-sorts; make-set> "kernel-symbols";
             new-regular-prods*         := <filter(regular-norm-symbol); flatten-list> [cf-symbols*, lex-symbols*, kernel-symbols*];
+
             new-lex-symbols*           := <bagof-get-lexical-sorts; make-set> "new-lexical-symbols";
             new-regular-priorities*    := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, new-lex-symbols*, kernel-symbols*];
+            after-normalizing-reg := <cputime>;
             
-           
+            where(!(after-normalizing-reg, before-normalizing-reg); subt; cputime-to-seconds; ?total-time-reg; <debug(!"time spent normalizing regular expressions ")> (<strip-annos> mn, total-time-reg))
+            
+            
+            where(before-normalizing-prio := <cputime>);
             // priorities
-            new-kernel-priorities*      := <map(try(norm-prio-fun)); flatten-list> [new-basic-priorities*, new-regular-priorities*];            
+
+            new-kernel-priorities*      := <map(try(norm-prio-fun(|tokenize-chars))); flatten-list> [new-basic-priorities*, new-regular-priorities*];            
             assoc-prio-from-prods*      := <filter(assoc-prio-fun); flatten-list> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];       
-            new-normalized-priorities*  := <topdown(try(norm-prio-args))> [new-kernel-priorities*, assoc-prio-from-prods*];
+            new-normalized-priorities*  := <topdown(try(norm-prio-args(|tokenize-chars)))> [new-kernel-priorities*, assoc-prio-from-prods*];
+            after-normalizing-prio := <cputime>;            
+            where(!(after-normalizing-prio, before-normalizing-prio); subt; cputime-to-seconds; ?total-time-prio; <debug(!"time spent normalizing priorities ")> (<strip-annos> mn, total-time-prio))
+           
             
+            where(before-normalizing-lit := <cputime>);
             // literals            
             literals*                  := <collect(?Lit(_) + ?CiLit(_)); make-set> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
             new-literal-prods*         := <map(make-prod-from-lit)> literals*;
-       
-             
+            after-normalizing-lit := <cputime>;        
+           
+            where(!(after-normalizing-lit, before-normalizing-lit); subt; cputime-to-seconds; ?total-time-lit; <debug(!"time spent normalizing literals ")> (<strip-annos> mn, total-time-lit))
+            
+            
+            where(before-normalizing-cc := <cputime>);        
             // char-class
             new-char-class-prio*       := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> new-normalized-priorities*;
             new-char-class-prods*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [new-literal-prods*, new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
             new-char-class-restr*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [cf-restrictions*, lex-restrictions*, kernel-restrictions*];
+            after-normalizing-cc := <cputime>;            
+            
+            where(!(after-normalizing-cc, before-normalizing-cc); subt; cputime-to-seconds; ?total-time-cc; <debug(!"time spent normalizing character classes ")> (<strip-annos> mn, total-time-cc));
+           
             
             new-priorities-section     := SDFSection(Priorities(<make-set> [new-char-class-prio*]));
             // TODO: proper merge of productions (same production = merge attributes)
@@ -143,9 +178,11 @@ rules
                 new-sections := [new-kernel-section, new-priorities-section]
             else
                 new-sections := [new-kernel-section, new-restrictions-section, new-priorities-section]
-            end  
+            end;  
             
-           // where(after-normalizing := <cputime>; !(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
+            after-normalizing := <cputime>; 
+            
+            where(!(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
     
   add-placeholder-prods:
     SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
@@ -1032,22 +1069,24 @@ rules
      //QUESTION: do we add the productions from the priority list to the syntax section?
      //or do they need to be defined in the grammar?       
      //QUESTION: the transitive closure takes into consideration all the priorities, maybe it should be applied when combining modules
-     priority-norm:
+     priority-norm(|tokenize-chars):
         Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized(mn), i*, [sections'*, SDFSection(Priorities([new-priorities*]))])
         with
             sections'*             := <filter(not(?SDFSection(Priorities(_)) + ?SDFSection(ContextFreePriorities(_)) + ?SDFSection(LexicalPriorities(_))))> sections*; 
             cf-priorities*         := <filter(?SDFSection(ContextFreePriorities(<id>))); flatten-list> sections*;
-            new-cf-priorities*     := <map(try(norm-prio-fun)); flatten-list> cf-priorities*;
+            new-cf-priorities*     := <map(try(norm-prio-fun(|tokenize-chars))); flatten-list> cf-priorities*;
             lex-priorities*        := <filter(?SDFSection(LexicalPriorities(<id>))); flatten-list> sections*;
-            new-lex-priorities*    := <map(try(norm-prio-fun)); flatten-list> cf-priorities*;
+            new-lex-priorities*    := <map(try(norm-prio-fun(|tokenize-chars))); flatten-list> cf-priorities*;
             kernel-priorities*     := <filter(?SDFSection(Priorities(<id>))); flatten-list> sections*;
-            new-kernel-priorities* := <map(try(norm-prio-fun)); flatten-list> kernel-priorities*;
-            assoc-prio*            := <filter(?SDFSection(Kernel(<id>))); flatten-list; filter(assoc-prio-fun); flatten-list> sections*;        
+            new-kernel-priorities* := <map(try(norm-prio-fun(|tokenize-chars))); flatten-list> kernel-priorities*;
+            assoc-prio*            := <filter(?SDFSection(Kernel(<id>))); flatten-list; filter(assoc-prio-fun)> sections*;        
+
             new-priorities*        := [new-cf-priorities*, new-lex-priorities*, new-kernel-priorities*, assoc-prio*]
             
      //left or assoc associativity productions       
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons))), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons)))])
+
         where
             <?Attrs(<id>); fetch(?Assoc(Left()) + ?Assoc(Assoc()))> attrs
         with
@@ -1060,7 +1099,7 @@ rules
     
      //right associativity productions
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons))), Default(["0"]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons)))])
         where
             <?Attrs(<id>); fetch(?Assoc(Right()))> attrs
       with
@@ -1073,161 +1112,268 @@ rules
            
      //non-assoc associativity productions    
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)]),  Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])]
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons))), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons)))]),  Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons))), Default(["0"]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons)))])]
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
         with
             p := SdfProduction(symbol, Rhs(symbols*), attrs)
-        
         
      assoc-prio-fun:
         p@SdfProduction(symbol, Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)]),  Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])]
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
          
-     norm-prio-fun :
-        Chain([first-prod | pps]) -> [first-binary, <try(norm-prio-fun)> Chain([<try(remove-constructor)> second-prod | ppss])]  
+     norm-prio-fun(|tokenize-chars) :
+        Chain([first-prod | pps]) -> [first-binary, <try(norm-prio-fun(|tokenize-chars))> Chain([<try(remove-constructor)> second-prod | ppss])]  
         where
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
-            first-binary := <try(norm-prio-fun)> Chain([<try(remove-constructor)> first-prod, <try(remove-constructor)> second-prod]) 
+            first-binary := <try(norm-prio-fun(|tokenize-chars))> Chain([<try(remove-constructor)> first-prod, <try(remove-constructor)> second-prod]) 
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([group]) -> []
         where
-          <check-group(?SimpleGroup(_))> group
+          <check-group(?SimpleGroup(_) + ?SimpleRefGroup(_))> group
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([group]) -> []  
         where
-          <check-group(?ProdsGroup([]))> group 
+          <check-group(?ProdsGroup([]) + ?ProdsRefGroup([]))> group 
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([group1, group2]) -> []
         where
-           <check-group(?ProdsGroup([]))> group1
+           <check-group(?ProdsGroup([]) + ?ProdsRefGroup([]))> group1
              
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([group, ProdsGroup([])]) -> []
         where
-        <not(check-group(?AssocGroup(_, _)) + check-group(?ProdsGroup(_)))> group 
+        <not(check-group(?AssocGroup(_, _) + ?ProdsGroup(_) + ?AssocRefGroup(_, _) + ?ProdsRefGroup(_)))> group 
         
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([group]) -> []   
         where
-        <check-group(?AssocGroup(_, []))> group
-     
-     norm-prio-fun :
+        <check-group(?AssocGroup(_, []) + ?AssocRefGroup(_, []))> group
+           
+     norm-prio-fun(|tokenize-chars) :
         Chain([ProdsGroup(p*), group]) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-gt-chain(|SimpleGroup(<id; try(remove-constructor)>), group); try(norm-prio-fun))> p*
+            new-chains := <map(create-gt-chain(|SimpleGroup(<id; try(remove-constructor)>), group); try(norm-prio-fun(|tokenize-chars)))> p*
     
-     norm-prio-fun :
+     norm-prio-fun(|tokenize-chars) :
         Chain([NonTransitive(ProdsGroup(p*)), group]) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-gt-chain(|NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), group); try(norm-prio-fun))> p*
+            new-chains := <map(create-gt-chain(|NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), group); try(norm-prio-fun(|tokenize-chars)))> p*
      
-     norm-prio-fun :
+     norm-prio-fun(|tokenize-chars) :
         Chain([WithArguments(ProdsGroup(p*), args), group]) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-gt-chain(|WithArguments(SimpleGroup(<id; try(remove-constructor)>), args), group); try(norm-prio-fun))> p*
+            new-chains := <map(create-gt-chain(|WithArguments(SimpleGroup(<id; try(remove-constructor)>), args), group); try(norm-prio-fun(|tokenize-chars)))> p*
      
-     norm-prio-fun :
+     norm-prio-fun(|tokenize-chars) :
         Chain([NonTransitive(WithArguments(ProdsGroup(p*), args)), group]) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-gt-chain(|NonTransitive(WithArguments(SimpleGroup(<id; try(remove-constructor)>), args)), group); try(norm-prio-fun))> p*
+            new-chains := <map(create-gt-chain(|NonTransitive(WithArguments(SimpleGroup(<id; try(remove-constructor)>), args)), group); try(norm-prio-fun(|tokenize-chars)))> p*
      
-     norm-prio-fun :
+     norm-prio-fun(|tokenize-chars) :
         Chain([WithArguments(NonTransitive(ProdsGroup(p*)), args), group]) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-gt-chain(|WithArguments(NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), args), group); try(norm-prio-fun))> p*
+            new-chains := <map(create-gt-chain(|WithArguments(NonTransitive(SimpleGroup(<id; try(remove-constructor)>)), args), group); try(norm-prio-fun(|tokenize-chars)))> p*
      
-     norm-prio-fun :
+     norm-prio-fun(|tokenize-chars) :
+        Chain([ProdsRefGroup(p*), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|SimpleRefGroup(<id; try(remove-constructor)>), group); try(norm-prio-fun(|tokenize-chars)))> p*
+    
+     norm-prio-fun(|tokenize-chars) :
+        Chain([NonTransitive(ProdsRefGroup(p*)), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|NonTransitive(SimpleRefGroup(<id; try(remove-constructor)>)), group); try(norm-prio-fun(|tokenize-chars)))> p*
+     
+     norm-prio-fun(|tokenize-chars) :
+        Chain([WithArguments(ProdsRefGroup(p*), args), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|WithArguments(SimpleRefGroup(<id; try(remove-constructor)>), args), group); try(norm-prio-fun(|tokenize-chars)))> p*
+     
+     norm-prio-fun(|tokenize-chars) :
+        Chain([NonTransitive(WithArguments(ProdsRefGroup(p*), args)), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|NonTransitive(WithArguments(SimpleRefGroup(<id; try(remove-constructor)>), args)), group); try(norm-prio-fun(|tokenize-chars)))> p*
+     
+     norm-prio-fun(|tokenize-chars) :
+        Chain([WithArguments(NonTransitive(ProdsRefGroup(p*)), args), group]) -> new-chains
+        where
+            <not(?[])> p*
+        where
+            new-chains := <map(create-gt-chain(|WithArguments(NonTransitive(SimpleRefGroup(<id; try(remove-constructor)>)), args), group); try(norm-prio-fun(|tokenize-chars)))> p*
+          
+     norm-prio-fun(|tokenize-chars) :
         Chain([group, ProdsGroup(p*)]) -> new-chains
         where
-          <not(check-group(?ProdsGroup(_)) + check-group(?AssocGroup(_, _)))> group;
+          <not(check-group(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _) ))> group;
           <not(?[])> p*
       where
-          new-chains := <map(create-gt-chain(|group, SimpleGroup(<id; try(remove-constructor)>)); try(norm-prio-fun))> p*   
+          new-chains := <map(create-gt-chain(|group, SimpleGroup(<id; try(remove-constructor)>)); try(norm-prio-fun(|tokenize-chars)))> p*
           
-     norm-prio-fun:
+    norm-prio-fun(|tokenize-chars) :
+        Chain([group, ProdsRefGroup(p*)]) -> new-chains
+        where
+          <not(check-group(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _) ))> group;
+          <not(?[])> p*
+      where
+          new-chains := <map(create-gt-chain(|group, SimpleRefGroup(<id; try(remove-constructor)>)); try(norm-prio-fun(|tokenize-chars)))> p*
+          
+     norm-prio-fun(|tokenize-chars):
         Chain([assocGroup@AssocGroup(_, p*), group]) -> new-chains   
         where
-          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([ProdsGroup(p*), group])]
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([ProdsGroup(p*), group])]
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([assocGroup@NonTransitive(AssocGroup(_, p*)), group]) -> new-chains   
         where
-          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([NonTransitive(ProdsGroup(p*)), group])]
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([NonTransitive(ProdsGroup(p*)), group])]
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([assocGroup@WithArguments(AssocGroup(_, p*), args), group]) -> new-chains   
         where
-          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([WithArguments(ProdsGroup(p*), args), group])]
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([WithArguments(ProdsGroup(p*), args), group])]
  
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([assocGroup@NonTransitive(WithArguments(AssocGroup(_, p*), args)), group]) -> new-chains   
         where
-          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([NonTransitive(WithArguments(ProdsGroup(p*), args)), group])]
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([NonTransitive(WithArguments(ProdsGroup(p*), args)), group])]
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([assocGroup@WithArguments(NonTransitive(AssocGroup(_, p*)), args), group]) -> new-chains   
         where
-          new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([WithArguments(NonTransitive(ProdsGroup(p*)), args), group])]
-              
-     norm-prio-fun:
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([WithArguments(NonTransitive(ProdsGroup(p*)), args), group])]
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([assocGroup@AssocRefGroup(_, p*), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([ProdsRefGroup(p*), group])]
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([assocGroup@NonTransitive(AssocRefGroup(_, p*)), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([NonTransitive(ProdsRefGroup(p*)), group])]
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([assocGroup@WithArguments(AssocRefGroup(_, p*), args), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([WithArguments(ProdsRefGroup(p*), args), group])]
+ 
+     norm-prio-fun(|tokenize-chars):
+        Chain([assocGroup@NonTransitive(WithArguments(AssocRefGroup(_, p*), args)), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([NonTransitive(WithArguments(ProdsRefGroup(p*), args)), group])]
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([assocGroup@WithArguments(NonTransitive(AssocRefGroup(_, p*)), args), group]) -> new-chains   
+        where
+          new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([WithArguments(NonTransitive(ProdsRefGroup(p*)), args), group])]
+                   
+     norm-prio-fun(|tokenize-chars):
        Chain([group, assocGroup@AssocGroup(_, p*)]) -> new-chains
        where
             <not(check-group(?ProdsGroup(_)) + check-group(?AssocGroup(_, _)))> group
        where          
-            new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Chain([group, ProdsGroup(p*)])]        
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([group, ProdsGroup(p*)])]  
+   
+   norm-prio-fun(|tokenize-chars):
+       Chain([group, assocGroup@AssocRefGroup(_, p*)]) -> new-chains
+       where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group
+       where          
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Chain([group, ProdsRefGroup(p*)])]               
      
-     norm-prio-fun:
-        Assoc(<check-group(?ProdsGroup([]))>, _, group) -> <try(norm-prio-fun)> Chain([group])
-        
-     norm-prio-fun:
+   norm-prio-fun(|tokenize-chars):
+        Assoc(<check-group(?ProdsGroup([]) + ?ProdsRefGroup([]))>, _, group) -> <try(norm-prio-fun(|tokenize-chars))> Chain([group])
+                
+   norm-prio-fun(|tokenize-chars):
         Assoc(ProdsGroup(p*), associativity, group) -> new-chains
         where
             <not(?[])> p*
         where
-            new-chains := <map(create-assoc(|SimpleGroup(<id; try(remove-constructor)>), group, associativity); try(norm-prio-fun))> p*   
-        
-     norm-prio-fun:
-        Assoc(group, associativity, ProdsGroup([])) -> <try(norm-prio-fun)> Chain([group])
+            new-chains := <map(create-assoc(|SimpleGroup(<id; try(remove-constructor)>), group, associativity); try(norm-prio-fun(|tokenize-chars)))> p*   
+   
+   norm-prio-fun(|tokenize-chars):
+        Assoc(ProdsRefGroup(p*), associativity, group) -> new-chains
         where
-            <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group
-           
-     norm-prio-fun:
-        Assoc(group, associativity, ProdsGroup(p*)) -> new-chains
-        where
-            <not(?ProdsGroup(_)) + ?AssocGroup(_, _)> group;
             <not(?[])> p*
         where
-            new-chains := <map(create-assoc(|group, SimpleGroup(<id; try(remove-constructor)>), associativity); try(norm-prio-fun))> p*  
+            new-chains := <map(create-assoc(|SimpleRefGroup(<id; try(remove-constructor)>), group, associativity); try(norm-prio-fun(|tokenize-chars)))> p*   
+           
+   norm-prio-fun(|tokenize-chars):
+        Assoc(group, associativity, ProdsGroup([])) -> <try(norm-prio-fun(|tokenize-chars))> Chain([group])
+        where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group
             
-     norm-prio-fun:
+   norm-prio-fun(|tokenize-chars):
+        Assoc(group, associativity, ProdsRefGroup([])) -> <try(norm-prio-fun(|tokenize-chars))> Chain([group])
+        where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group         
+           
+     norm-prio-fun(|tokenize-chars):
+        Assoc(group, associativity, ProdsGroup(p*)) -> new-chains
+        where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group;
+            <not(?[])> p*
+        where
+            new-chains := <map(create-assoc(|group, SimpleGroup(<id; try(remove-constructor)>), associativity); try(norm-prio-fun(|tokenize-chars)))> p*  
+    
+    norm-prio-fun(|tokenize-chars):
+        Assoc(group, associativity, ProdsRefGroup(p*)) -> new-chains
+        where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group;
+            <not(?[])> p*
+        where
+            new-chains := <map(create-assoc(|group, SimpleRefGroup(<id; try(remove-constructor)>), associativity); try(norm-prio-fun(|tokenize-chars)))> p*  
+              
+     norm-prio-fun(|tokenize-chars):
         Assoc(assocGroup@AssocGroup(_, p*), associativity, group) -> new-chains
         where
-            new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Assoc(ProdsGroup(p*), associativity, group)] 
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Assoc(ProdsGroup(p*), associativity, group)] 
      
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
+        Assoc(assocGroup@AssocRefGroup(_, p*), associativity, group) -> new-chains
+        where
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Assoc(ProdsRefGroup(p*), associativity, group)] 
+        
+     norm-prio-fun(|tokenize-chars):
         Assoc(group, associativity, assocGroup@AssocGroup(_, p*)) -> new-chains
         where
-            <not(?ProdsGroup(_) + ?AssocGroup(_, _))> group
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group
         where
-            new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Assoc(associativity, group, ProdsGroup(p*))]                       
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Assoc(associativity, group, ProdsGroup(p*))]                       
      
-//     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
+        Assoc(group, associativity, assocGroup@AssocRefGroup(_, p*)) -> new-chains
+        where
+            <not(?ProdsGroup(_) + ?AssocGroup(_, _) + ?ProdsRefGroup(_) + ?AssocRefGroup(_, _))> group
+        where
+            new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Assoc(associativity, group, ProdsRefGroup(p*))]                       
+     
+
+//     norm-prio-fun(|tokenize-chars):
 //        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default([arity2]))), SimpleGroup(p1')])]
 //        where
 //            <?Left() + ?Assoc()> associativity
@@ -1238,7 +1384,7 @@ rules
 //            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
 //            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
             
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')])
         where
             <?Left() + ?Assoc()> associativity
@@ -1247,7 +1393,34 @@ rules
             p2'    := <try(remove-constructor); strip-annos> p2;          
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'       
      
-//     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1_ref), associativity, SimpleRefGroup(p2_ref)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1_ref), Default([arity1]))), SimpleRefGroup(p2_ref)])
+        where
+            <?Left() + ?Assoc()> associativity
+        where
+            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1_ref;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
+     
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleGroup(p1), associativity, SimpleRefGroup(p2_ref)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleRefGroup(p2_ref)])
+        where
+            <?Left() + ?Assoc()> associativity
+        where
+            p1'    := <try(remove-constructor); strip-annos> p1;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
+     
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1_ref), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1_ref), Default([arity1]))), SimpleGroup(p2')])
+        where
+            <?Left() + ?Assoc()> associativity
+        where
+            debug(!"here ");
+            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1_ref;
+            p2'    := <try(remove-constructor); strip-annos> p2;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
+     
+     //<sortcons-to-prod(|tokenize-chars)> ref
+//     norm-prio-fun(|tokenize-chars):
 //        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default(["0"]))), SimpleGroup(p1')])]
 //        where
 //            <?Right()> associativity
@@ -1256,7 +1429,7 @@ rules
 //            p2'    := <try(remove-constructor); strip-annos> p2;
 //            <not(?p1')> p2'
             
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')])
         where
             <?Right()> associativity
@@ -1264,7 +1437,26 @@ rules
             p1'    := <try(remove-constructor); strip-annos> p1;
             p2'    := <try(remove-constructor); strip-annos> p2
      
-//     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleGroup(p2')])
+        where
+            <?Right()> associativity
+        where
+            p2'    := <try(remove-constructor); strip-annos> p2
+            
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleGroup(p1), associativity, SimpleRefGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleRefGroup(p2)])
+        where
+            <?Right()> associativity
+        where
+            p1'    := <try(remove-constructor); strip-annos> p1  
+
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1), associativity, SimpleRefGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleRefGroup(p2)])
+        where
+            <?Right()> associativity
+            
+//     norm-prio-fun(|tokenize-chars):
 //        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(SimpleGroup(p1')), SimpleGroup(p2')]), Chain([NonTransitive(SimpleGroup(p2')), SimpleGroup(p1')])]
 //        where
 //            <?NonAssoc()> associativity
@@ -1275,7 +1467,7 @@ rules
 //            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
 //            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
             
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')])]
         where
             <?NonAssoc()> associativity
@@ -1284,25 +1476,70 @@ rules
             p2'    := <try(remove-constructor); strip-annos> p2;
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
             
-     norm-prio-fun:
-        Chain([AssocGroup(associativity, [p])]) -> <norm-prio-fun> Assoc(SimpleGroup(p), associativity, SimpleGroup(p))       
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default([arity1]))), SimpleGroup(p2')])]
+        where
+            <?NonAssoc()> associativity
+        where
+            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1;
+            p2'    := <try(remove-constructor); strip-annos> p2;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
+     
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleGroup(p1), associativity, SimpleRefGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleRefGroup(p2)]), Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleRefGroup(p2)])]
+        where
+            <?NonAssoc()> associativity
+        where
+            p1'    := <try(remove-constructor); strip-annos> p1;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'              
+     
+     norm-prio-fun(|tokenize-chars):
+        Assoc(SimpleRefGroup(p1), associativity, SimpleRefGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleRefGroup(p2)]), Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default([arity1]))), SimpleRefGroup(p2)])]
+        where
+            <?NonAssoc()> associativity
+        where
+            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1;
+            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
             
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
+        Chain([AssocGroup(associativity, [p])]) -> <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(p), associativity, SimpleGroup(p))   
+        
+     norm-prio-fun(|tokenize-chars):
+        Chain([AssocRefGroup(associativity, [p])]) -> <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(p), associativity, SimpleRefGroup(p))        
+            
+     norm-prio-fun(|tokenize-chars):
         Chain([AssocGroup(associativity, [first-prod | pps])]) -> new-assocs
         where
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
-            new-assocs := [<norm-prio-fun> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod)), 
-                           <norm-prio-fun> Chain([AssocGroup(associativity, [first-prod | ppss])]),
-                           <norm-prio-fun> Chain([AssocGroup(associativity, [second-prod | ppss])])
+            new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [first-prod | ppss])]),
+                           <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [second-prod | ppss])])
+                          ]
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([AssocRefGroup(associativity, [first-prod | pps])]) -> new-assocs
+        where
+            <?[second-prod | ppss]> pps;
+            <not(?[])> ppss;
+            new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [first-prod | ppss])]),
+                           <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [second-prod | ppss])])
                           ]
             
-     norm-prio-fun:
+     norm-prio-fun(|tokenize-chars):
         Chain([AssocGroup(associativity, [first-prod | pps])]) -> new-assocs
         where
             <?[second-prod | ppss]> pps;
             <?[]> ppss;
-            new-assocs := <norm-prio-fun> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod))              
+            new-assocs := <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod))              
+     
+     norm-prio-fun(|tokenize-chars):
+        Chain([AssocRefGroup(associativity, [first-prod | pps])]) -> new-assocs
+        where
+            <?[second-prod | ppss]> pps;
+            <?[]> ppss;
+            new-assocs := <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod))
      
      check-group(group) :
         NonTransitive(g) -> <check-group(group)> g
@@ -1312,16 +1549,16 @@ rules
      
      check-group(group) = group
       
-     norm-prio-args:
+     norm-prio-args(|tokenize-chars):
         WithArguments(SimpleGroup(p@SdfProduction(s, Rhs(rhs*), attrs*)), Default(args)) -> WithArguments(SimpleGroup(p), Default(args'))
         where
             args' := <map(update-args(|rhs*))> args
      
-     norm-prio-args:
+     norm-prio-args(|tokenize-chars):
         WithArguments(NonTransitive(SimpleGroup(p@SdfProduction(s, Rhs(rhs*), attrs*))), Default(args)) -> WithArguments(NonTransitive(SimpleGroup(p)), Default(args'))
         where      
             args' := <map(update-args(|rhs*))> args
-     
+              
      update-args(|rhs*):
         arg -> new-arg
         where
