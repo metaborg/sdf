@@ -119,7 +119,7 @@ rules
            
             // priorities
             new-kernel-priorities*      := <map(try(norm-prio-fun)); flatten-list> [new-basic-priorities*, new-regular-priorities*];            
-            assoc-prio-from-prods*      := <filter(assoc-prio-fun)> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];       
+            assoc-prio-from-prods*      := <filter(assoc-prio-fun); flatten-list> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];       
             new-normalized-priorities*  := <topdown(try(norm-prio-args))> [new-kernel-priorities*, assoc-prio-from-prods*];
             
             // literals            
@@ -1042,7 +1042,7 @@ rules
             new-lex-priorities*    := <map(try(norm-prio-fun)); flatten-list> cf-priorities*;
             kernel-priorities*     := <filter(?SDFSection(Priorities(<id>))); flatten-list> sections*;
             new-kernel-priorities* := <map(try(norm-prio-fun)); flatten-list> kernel-priorities*;
-            assoc-prio*            := <filter(?SDFSection(Kernel(<id>))); flatten-list; filter(assoc-prio-fun)> sections*;        
+            assoc-prio*            := <filter(?SDFSection(Kernel(<id>))); flatten-list; filter(assoc-prio-fun); flatten-list> sections*;        
             new-priorities*        := [new-cf-priorities*, new-lex-priorities*, new-kernel-priorities*, assoc-prio*]
             
      //left or assoc associativity productions       
@@ -1073,15 +1073,15 @@ rules
            
      //non-assoc associativity productions    
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Chain([NonTransitive(SimpleGroup(p)), SimpleGroup(p)])
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)]),  Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])]
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
         with
-            p := SdfProduction(symbol, rhs, attrs)
+            p := SdfProduction(symbol, Rhs(symbols*), attrs)
         
         
      assoc-prio-fun:
-        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(SimpleGroup(p)), SimpleGroup(p)])
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)]),  Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])]
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
          
@@ -1227,16 +1227,16 @@ rules
         where
             new-chains := [<try(norm-prio-fun)> Chain([assocGroup]), <try(norm-prio-fun)> Assoc(associativity, group, ProdsGroup(p*))]                       
      
-     norm-prio-fun:
-        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default([arity2]))), SimpleGroup(p1')])]
-        where
-            <?Left() + ?Assoc()> associativity
-        where
-            p1'    := <try(remove-constructor); strip-annos> p1;
-            p2'    := <try(remove-constructor); strip-annos> p2;
-            <not(?p1')> p2';            
-            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
-            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
+//     norm-prio-fun:
+//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default([arity2]))), SimpleGroup(p1')])]
+//        where
+//            <?Left() + ?Assoc()> associativity
+//        where
+//            p1'    := <try(remove-constructor); strip-annos> p1;
+//            p2'    := <try(remove-constructor); strip-annos> p2;
+//            <not(?p1')> p2';            
+//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
+//            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
             
      norm-prio-fun:
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')])
@@ -1244,18 +1244,17 @@ rules
             <?Left() + ?Assoc()> associativity
         where
             p1'    := <try(remove-constructor); strip-annos> p1;
-            p2'    := <try(remove-constructor); strip-annos> p2;
-            <?p1'> p2';            
+            p2'    := <try(remove-constructor); strip-annos> p2;          
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'       
      
-     norm-prio-fun:
-        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default(["0"]))), SimpleGroup(p1')])]
-        where
-            <?Right()> associativity
-        where
-            p1'    := <try(remove-constructor); strip-annos> p1;
-            p2'    := <try(remove-constructor); strip-annos> p2;
-            <not(?p1')> p2'
+//     norm-prio-fun:
+//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default(["0"]))), SimpleGroup(p1')])]
+//        where
+//            <?Right()> associativity
+//        where
+//            p1'    := <try(remove-constructor); strip-annos> p1;
+//            p2'    := <try(remove-constructor); strip-annos> p2;
+//            <not(?p1')> p2'
             
      norm-prio-fun:
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')])
@@ -1263,28 +1262,26 @@ rules
             <?Right()> associativity
         where
             p1'    := <try(remove-constructor); strip-annos> p1;
-            p2'    := <try(remove-constructor); strip-annos> p2;
-            <?p1'> p2'
+            p2'    := <try(remove-constructor); strip-annos> p2
      
-     norm-prio-fun:
-        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(SimpleGroup(p1')), SimpleGroup(p2')]), Chain([NonTransitive(SimpleGroup(p2')), SimpleGroup(p1')])]
-        where
-            <?NonAssoc()> associativity
-        where
-            p1'    := <try(remove-constructor); strip-annos> p1;
-            p2'    := <try(remove-constructor); strip-annos> p2;
-            <not(?p1')> p2';            
-            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
-            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
+//     norm-prio-fun:
+//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(SimpleGroup(p1')), SimpleGroup(p2')]), Chain([NonTransitive(SimpleGroup(p2')), SimpleGroup(p1')])]
+//        where
+//            <?NonAssoc()> associativity
+//        where
+//            p1'    := <try(remove-constructor); strip-annos> p1;
+//            p2'    := <try(remove-constructor); strip-annos> p2;
+//            <not(?p1')> p2';            
+//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
+//            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
             
      norm-prio-fun:
-        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(SimpleGroup(p1')), SimpleGroup(p2')])
+        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')])]
         where
             <?NonAssoc()> associativity
         where
             p1'    := <try(remove-constructor); strip-annos> p1;
             p2'    := <try(remove-constructor); strip-annos> p2;
-            <?p1'> p2';            
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
             
      norm-prio-fun:
