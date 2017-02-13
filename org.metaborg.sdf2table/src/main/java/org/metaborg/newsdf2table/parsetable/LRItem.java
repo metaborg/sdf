@@ -51,7 +51,7 @@ public class LRItem {
 
                 } else {
                     // it is a deep priority conflict and is not a conflicting arg, expand still
-                    Set<Integer> conflicting_args = this.prod.isDeepPriorityConflict(pt, p);
+                    Set<Integer> conflicting_args = this.prod.deepConflictingArgs(pt, p);
                     if(!conflicting_args.isEmpty() && !conflicting_args.contains(dotPosition)) {
                         LRItem newItem = new LRItem(p, 0, pt);
                         if(!items.contains(newItem)) {
@@ -75,22 +75,23 @@ public class LRItem {
 
     private boolean isPriorityConflict(LRItem item, IProduction p) {
         IProduction higher = item.prod;
-        IProduction lower  = p;
-        
-        if (higher instanceof ContextualProduction) {
+        IProduction lower = p;
+
+        if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).orig_prod;
         }
-        
-        if (lower instanceof ContextualProduction) {
+
+        if(lower instanceof ContextualProduction) {
             lower = ((ContextualProduction) lower).orig_prod;
         }
-        
+
         Priority prio = new Priority(higher, lower, false);
         if(pt.getGrammar().priorities().containsKey(prio)) {
             Set<Integer> arguments = pt.getGrammar().priorities().get(prio);
             for(int i : arguments) {
-                if(i == -1 || i == item.dotPosition)
+                if(i == item.dotPosition) {
                     return true;
+                }
             }
         }
         return false;

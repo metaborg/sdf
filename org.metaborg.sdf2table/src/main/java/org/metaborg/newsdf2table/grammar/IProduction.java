@@ -26,14 +26,11 @@ public interface IProduction {
      */    
     List<Symbol> rightHand();
     
-    // To calculate Deep Priority Conflicts
-    boolean isLeftAssociative(SetMultimap<IPriority, Integer> priorities, Set<Integer> leftRecursivePositions);
-    boolean isRightAssociative(SetMultimap<IPriority, Integer> priorities, Set<Integer> rightRecursivePositions);   
-    Set<Integer> leftRecursivePositions();
-    Set<Integer> rightRecursivePositions();
-    void setCurrentDeepPriorityElements(boolean value);
-    
-    
+    // To calculate Deep Priority Conflicts 
+    int leftRecursivePosition();
+    int rightRecursivePosition();    
+    void calculateRecursivity(NormGrammar grammar);
+        
     @Override int hashCode();
     @Override boolean equals(Object obj);
 
@@ -46,5 +43,7 @@ public interface IProduction {
 
     boolean isBracket(ParseTable pt);
 
-    Set<Integer> isDeepPriorityConflict(ParseTable pt, IProduction p);
+    Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p);
+
+    
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.IAttribute;
-import org.metaborg.newsdf2table.grammar.IPriority;
 import org.metaborg.newsdf2table.grammar.IProduction;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.Symbol;
@@ -21,21 +20,24 @@ public class ContextualProduction implements IProduction {
     Symbol lhs;
     List<Symbol> rhs;
 
-    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args, boolean isBracket) {
+    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args,
+        boolean isBracket) {
         this.orig_prod = orig_prod;
         rhs = Lists.newArrayList();
-        
+
         if(args.contains(-1)) {
+            // derived production passing the context to possible conflicting arguments (left and right recursive)
             lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
             for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                if(orig_prod.rightHand().get(i).equals(orig_prod.leftHand()) && !isBracket) {
+                if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
                     rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
                 } else {
                     rhs.add(orig_prod.rightHand().get(i));
-                }                
+                }
             }
 
         } else {
+            // initial production with conflicting argument
             lhs = orig_prod.leftHand();
             for(int i = 0; i < orig_prod.rightHand().size(); i++) {
                 if(args.contains(i)) {
@@ -53,28 +55,6 @@ public class ContextualProduction implements IProduction {
 
     @Override public List<Symbol> rightHand() {
         return rhs;
-    }
-
-    @Override public boolean isLeftAssociative(SetMultimap<IPriority, Integer> priorities,
-        Set<Integer> leftRecursivePositions) {
-        return orig_prod.isLeftAssociative(priorities, leftRecursivePositions);
-    }
-
-    @Override public boolean isRightAssociative(SetMultimap<IPriority, Integer> priorities,
-        Set<Integer> rightRecursivePositions) {
-        return orig_prod.isRightAssociative(priorities, rightRecursivePositions);
-    }
-
-    @Override public Set<Integer> leftRecursivePositions() {
-        return orig_prod.leftRecursivePositions();
-    }
-
-    @Override public Set<Integer> rightRecursivePositions() {
-        return orig_prod.rightRecursivePositions();
-    }
-
-    @Override public void setCurrentDeepPriorityElements(boolean value) {
-        orig_prod.setCurrentDeepPriorityElements(value);
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs) {
@@ -98,8 +78,8 @@ public class ContextualProduction implements IProduction {
         return orig_prod.isBracket(pt);
     }
 
-    @Override public Set<Integer> isDeepPriorityConflict(ParseTable pt, IProduction p) {
-        return orig_prod.isDeepPriorityConflict(pt, p);
+    @Override public Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p) {
+        return orig_prod.deepConflictingArgs(pt, p);
     }
 
     public void addContext(IProduction context, Set<Integer> conflicting_args) {
@@ -142,7 +122,7 @@ public class ContextualProduction implements IProduction {
         rhs = new_rhs;
 
     }
-    
+
     @Override public String toString() {
         String prod = "";
         prod += lhs.name();
@@ -188,5 +168,18 @@ public class ContextualProduction implements IProduction {
         } else if(!rhs.equals(other.rhs))
             return false;
         return true;
+    }
+
+    @Override public int leftRecursivePosition() {
+        return orig_prod.leftRecursivePosition();
+    }
+
+    @Override public int rightRecursivePosition() {
+        return orig_prod.rightRecursivePosition();
+    }
+
+    @Override public void calculateRecursivity(NormGrammar grammar) {
+        // This should not be called in a Contextual production
+        orig_prod.calculateRecursivity(grammar);
     }
 }

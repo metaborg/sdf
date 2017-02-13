@@ -14,23 +14,15 @@ import com.google.common.collect.Sets;
 
 public class Production implements IProduction {
 
-    Symbol lhs;
-    List<Symbol> rhs;
+    private Symbol lhs;
+    private List<Symbol> rhs;
 
     // First and Follow Sets
-    TableSet firstSet = new TableSet(this);
-    TableSet followSet = new TableSet(this);
+    private TableSet firstSet = new TableSet(this);
+    private TableSet followSet = new TableSet(this);
 
-    // Only calculate once when necessary
-    boolean calculatedDeepPriorityElements = false;
-    boolean isLeftRecursive = false;
-    boolean isRightRecursive = false;
-    boolean isLeftAssociative = false;
-    boolean isRightAssociative = false;
-    Set<Integer> leftRecursivePos = Sets.newHashSet();
-    Set<Integer> rightRecursivePos = Sets.newHashSet();
-
-
+    private int leftRecursivePos = -1;
+    private int rightRecursivePos = -1;
 
     public Production(Symbol lhs, List<Symbol> rhs) {
         this.lhs = lhs;
@@ -81,7 +73,7 @@ public class Production implements IProduction {
         }
     }
 
-    @Override public Set<Integer> isDeepPriorityConflict(ParseTable pt, IProduction p) {
+    @Override public Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p) {
         DeepPriority prio = new DeepPriority(this, p, false);
 
         if(pt.getGrammar().deep_priorities().containsKey(prio)) {
@@ -91,63 +83,39 @@ public class Production implements IProduction {
         Set<Integer> result = Sets.newHashSet();
 
         // calculate information about both productions
-        Set<Integer> higher_leftRecursivePositions = this.leftRecursivePositions();
-        Set<Integer> lower_leftRecursivePositions = p.leftRecursivePositions();
-        Set<Integer> higher_rightRecursivePositions = this.rightRecursivePositions();
-        Set<Integer> lower_rightRecursivePositions = p.rightRecursivePositions();
-        boolean higher_leftAssociative =
-            this.isLeftAssociative(pt.getGrammar().priorities(), higher_leftRecursivePositions);
-        boolean lower_leftAssociative = p.isLeftAssociative(pt.getGrammar().priorities(), lower_leftRecursivePositions);
-        boolean higher_rightAssociative =
-            this.isRightAssociative(pt.getGrammar().priorities(), higher_rightRecursivePositions);
-        boolean lower_rightAssociative =
-            p.isRightAssociative(pt.getGrammar().priorities(), lower_rightRecursivePositions);
-        this.setCurrentDeepPriorityElements(true);
-        p.setCurrentDeepPriorityElements(true);
+        // int lower_leftRecursivePos = p.leftRecursivePosition();
+        // int lower_rightRecursivePos = p.rightRecursivePosition();
 
         // check if item.prod is left and right recursive
         // check if Symbol_left (item.prod) =>
         // check if p is right recursive
-        if(!higher_leftRecursivePositions.isEmpty() && !higher_rightRecursivePositions.isEmpty()
-            && lower_rightAssociative && higher_leftAssociative) {
-            // add item.prod > p as a deep priority conflict
-            pt.getGrammar().deep_priorities().putAll(prio, higher_leftRecursivePositions);
-            result.addAll(higher_leftRecursivePositions);
-        }
 
-        // check the mirrored option
-        if(!higher_leftRecursivePositions.isEmpty() && !higher_rightRecursivePositions.isEmpty()
-            && lower_leftAssociative && higher_rightAssociative) {
-            // add item.prod > p as a deep priority conflict
-            pt.getGrammar().deep_priorities().putAll(prio, higher_rightRecursivePositions);
-            result.addAll(higher_rightRecursivePositions);
-        }
 
-        boolean matchPrefix = false;
-        int conflicting_p = -1;
+        // boolean matchPrefix = false;
+        // int conflicting_p = -1;
         // dangling else case
-        if(!lower_rightRecursivePositions.isEmpty() && lower_rightAssociative) {
-            for(int i : lower_rightRecursivePositions) {
-                if(this.rightHand().size() <= i)
-                    continue;
-                for(int j = 0; j <= i; j++) {
-                    if(this.rhs.get(j).equals(p.rightHand().get(j))) {
-                        matchPrefix = true;
-                        conflicting_p = i;
-                    } else {
-                        matchPrefix = false;
-                        break;
-                    }
-                }
-                if(matchPrefix)
-                    break;
-            }
-        }
-        if(matchPrefix && !this.equals(p)) {
-            Set<Integer> conflicting_ps = Sets.newHashSet(conflicting_p);
-            pt.getGrammar().deep_priorities().putAll(prio, conflicting_ps);
-            result.addAll(conflicting_ps);
-        }
+        // if(!lower_rightRecursivePositions.isEmpty()) {
+        // for(int i : lower_rightRecursivePositions) {
+        // if(this.rightHand().size() <= i)
+        // continue;
+        // for(int j = 0; j <= i; j++) {
+        // if(this.rhs.get(j).equals(p.rightHand().get(j))) {
+        // matchPrefix = true;
+        // conflicting_p = i;
+        // } else {
+        // matchPrefix = false;
+        // break;
+        // }
+        // }
+        // if(matchPrefix)
+        // break;
+        // }
+        // }
+        // if(matchPrefix && !this.equals(p)) {
+        // Set<Integer> conflicting_ps = Sets.newHashSet(conflicting_p);
+        // pt.getGrammar().deep_priorities().putAll(prio, conflicting_ps);
+        // result.addAll(conflicting_ps);
+        // }
 
         // check if the item.prod is recursive
         // check if the prefix of its recursion matches the prefix of p (prior to its recursion)
@@ -161,100 +129,16 @@ public class Production implements IProduction {
     }
 
 
-    @Override public boolean isRightAssociative(SetMultimap<IPriority, Integer> priorities,
-        Set<Integer> rightRecursivePositions) {
 
-        if(calculatedDeepPriorityElements)
-            return isRightAssociative;
-
-        // there is a priority that does not allow recursion
-        if(priorities.containsEntry(new Priority(this, this, true), -1)) {
-            isRightAssociative = false;
-            return isRightAssociative;
-        }
-
-        // if there is a priority that allows a left recursive derivation
-        for(int i : rightRecursivePositions) {
-            if(!priorities.containsEntry(new Priority(this, this, true), i)) {
-                isRightAssociative = true;
-                return isRightAssociative;
-            }
-        }
-
-        return isRightAssociative;
-    }
-
-    @Override public Set<Integer> rightRecursivePositions() {
-        // TODO Considers indirect recursion?
-
-        if(calculatedDeepPriorityElements)
-            return rightRecursivePos;
-
-        boolean nullable = true;
-        for(int i = rhs.size() - 1; i >= 0; i--) {
-            Symbol symbol = rhs.get(i);
-            if(symbol.nullable && nullable) {
-                continue;
-            }
-            if(nullable && !symbol.nullable && symbol.equals(lhs)) {
-                rightRecursivePos.add(i);
-            }
-            if(!symbol.nullable) {
-                break;
-            }
-        }
-
+    @Override public int rightRecursivePosition() {
+        // TODO Consider indirect recursion?
         return rightRecursivePos;
     }
 
-    @Override public boolean isLeftAssociative(SetMultimap<IPriority, Integer> priorities,
-        Set<Integer> leftRecursivePositions) {
 
-        if(calculatedDeepPriorityElements)
-            return isLeftAssociative;
-
-        // there is a priority that does not allow recursion
-        if(priorities.containsEntry(new Priority(this, this, true), -1)) {
-            isLeftAssociative = false;
-            return isLeftAssociative;
-        }
-
-        // if there is a priority that allows a left recursive derivation
-        for(int i : leftRecursivePositions) {
-            if(!priorities.containsEntry(new Priority(this, this, true), i)) {
-                isLeftAssociative = true;
-                return isLeftAssociative;
-            }
-        }
-
-        return isLeftAssociative;
-    }
-
-    @Override public Set<Integer> leftRecursivePositions() {
-        // TODO Considers indirect recursion?
-
-        if(calculatedDeepPriorityElements)
-            return leftRecursivePos;
-
-        boolean nullable = true;
-        for(int i = 0; i < rhs.size(); i++) {
-            Symbol symbol = rhs.get(i);
-            if(symbol.nullable && nullable) {
-                continue;
-            }
-            if(nullable && !symbol.nullable && symbol.equals(lhs)) {
-                leftRecursivePos.add(i);
-            }
-            if(!symbol.nullable) {
-                break;
-            }
-        }
-
+    @Override public int leftRecursivePosition() {
+        // TODO Consider indirect recursion?
         return leftRecursivePos;
-    }
-
-    @Override public void setCurrentDeepPriorityElements(boolean value) {
-        this.calculatedDeepPriorityElements = value;
     }
 
     @Override public String toString() {
@@ -317,6 +201,32 @@ public class Production implements IProduction {
         } else if(!rhs.equals(other.rhs))
             return false;
         return true;
+    }
+
+    @Override public void calculateRecursivity(NormGrammar grammar) {
+        // TODO: consider indirect recursion
+
+        // left recursion
+        for(int i = 0; i < rhs.size(); i++) {
+            if(rhs.get(i).equals(lhs)) {
+                leftRecursivePos = i;
+                break;
+            }
+            if(!rhs.get(i).nullable) {
+                break;
+            }
+        }
+
+        // right recursion
+        for(int i = rhs.size() - 1; i >= 0; i--) {
+            if(rhs.get(i).equals(lhs)) {
+                rightRecursivePos = i;
+                break;
+            }
+            if(!rhs.get(i).nullable) {
+                break;
+            }
+        }
     }
 
 }

@@ -14,7 +14,9 @@ import org.metaborg.newsdf2table.grammar.CharacterClass;
 import org.metaborg.newsdf2table.grammar.IPriority;
 import org.metaborg.newsdf2table.grammar.IProduction;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
+import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Symbol;
+import org.metaborg.newsdf2table.grammar.UniqueProduction;
 import org.metaborg.newsdf2table.io.GrammarReader;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -70,25 +72,44 @@ public class ParseTable {
         long importTime = _end_time - _start_time;
         printStatistics("Import: ", importTime);
 
+        // calculate nullable symbols
+        _start_time = System.currentTimeMillis();
+        calculateNullable();
+        _end_time = System.currentTimeMillis();
+
+        long nullableTime = _end_time - _start_time;
+        printStatistics("Nullable: ", nullableTime);
+
+        // calculate left and right recursive productions (considering nullable symbols)
+        _start_time = System.currentTimeMillis();
+        calculateRecursion();
+        _end_time = System.currentTimeMillis();
+
+        long recursionTime = _end_time - _start_time;
+        printStatistics("Recursion: ", recursionTime);
+
+        // normalize priorities according to recursion
+        _start_time = System.currentTimeMillis();
+        normalizePriorities();
+        _end_time = System.currentTimeMillis();
+
+        long normPriorities = _end_time - _start_time;
+        printStatistics("Normalizing Priorities: ", normPriorities);
+
+
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
         _start_time = System.currentTimeMillis();
         deepConflictsAnalysis();
         _end_time = System.currentTimeMillis();
-        
-        
+
         long deepPrioritiesTime = _end_time - _start_time;
         printStatistics("Deep Priorities: ", deepPrioritiesTime);
 
-        // TODO Currently generating an LR(0) table, compute first/follow/nullable sets to generate SLR(1)
-        // calculate nullable symbols
-        // calculateNullable();
-
+        // TODO Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
         // create first/follow sets by calculating dependencies and using Tarjan's algorithm
         // see http://compilers.iecc.com/comparch/article/01-04-079
         // calculateFirstFollow();
-
-
 
         // create states
         _start_time = System.currentTimeMillis();
@@ -124,37 +145,15 @@ public class ParseTable {
         printStatistics("Export: ", exportTime);
 
 
-        printStatistics("Total: ", importTime + generationTime + exportTime);
+        printStatistics("Total: ", importTime + nullableTime + recursionTime + generationTime + exportTime);
 
-    }
-
-    private void deepConflictsAnalysis() {
-        for(IPriority prio : grammar.priorities().keySet()) {
-            Set<Integer> conflicting_args = prio.higher().isDeepPriorityConflict(this, prio.lower());
-            if(!conflicting_args.isEmpty()) {
-                Set<IProduction> contexts = Sets.newHashSet();
-                contexts.add(prio.lower());
-                // create contextual production
-                ContextualProduction p =
-                    new ContextualProduction(prio.higher(), contexts, conflicting_args, prio.higher().isBracket(this));
-                
-                // if contextual production does not exist add it
-                if(!grammar.contextual_prods.containsKey(prio.higher())) {
-                    grammar.contextual_prods.put(prio.higher(), p);
-                } else {
-                    // add new contextual production adding contexts to correct arguments
-                    ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-                    existing_prod.addContext(prio.lower(), conflicting_args);
-                }
-            }
-        }
     }
 
     private void calculateNullable() {
         boolean markedNullable = false;
         do {
             markedNullable = false;
-            for(IProduction p : getGrammar().prods) {
+            for(IProduction p : getGrammar().prods.values()) {
                 if(p.rightHand().isEmpty() && !p.leftHand().nullable) {
                     p.leftHand().nullable = true;
                     markedNullable = true;
@@ -176,14 +175,70 @@ public class ParseTable {
         } while(markedNullable);
     }
 
+    private void calculateRecursion() {
+        for(IProduction p : getGrammar().prods.values()) {
+            p.calculateRecursivity(getGrammar());
+        }
+    }
+
+    private void normalizePriorities() {
+        for(IPriority p : grammar.priorities().keySet()) {
+            if(grammar.priorities().get(p).contains(-1)) {
+                // mutually recursive priorities = operator precedence
+                if(p.higher().leftHand().equals(p.lower().leftHand())) {
+                    // p1 > p2 becomes p1 left p2 and p1 right p2
+                    Set<Integer> new_values = Sets.newHashSet();
+
+                    // if p2 : A = A w, priority should affect only right recursive position of p1
+                    if(p.lower().leftRecursivePosition() != -1 && p.lower().rightRecursivePosition() == -1) {
+                        new_values.add(p.higher().rightRecursivePosition());
+                    }
+
+                    // p2 : A = w A, priority should affect only left recursive position of p1
+                    if(p.lower().rightRecursivePosition() != -1 && p.lower().leftRecursivePosition() == -1) {
+                        new_values.add(p.higher().leftRecursivePosition());
+                    }
+
+                    // p2 : A = A w A, priority should affect left and right recursive positions of p1
+                    if(p.lower().rightRecursivePosition() != -1 && p.lower().leftRecursivePosition() != -1) {
+                        new_values.add(p.higher().rightRecursivePosition());
+                        new_values.add(p.higher().leftRecursivePosition());
+                    }
+
+                    // if p2 : A = B or p2 : A =
+                    if(p.lower().rightHand().size() == 1 || p.lower().rightHand().size() == 0) {
+                        new_values.add(p.higher().rightRecursivePosition());
+                        new_values.add(p.higher().leftRecursivePosition());
+                    }
+
+                    // if p2 : A = w1 A w2, priority should have no effect
+
+                    new_values.addAll(grammar.priorities().get(p));
+                    grammar.priorities().replaceValues(p, new_values);
+                } else {
+                    // tree filtering : non (mutually) recursive productions
+                    Set<Integer> new_values = Sets.newHashSet();
+                    for(int i = 0; i < p.higher().rightHand().size(); i++) {
+                        if(p.higher().rightHand().get(i).equals(p.lower().leftHand())) {
+                            new_values.add(i);
+                        }
+                    }
+
+                    new_values.addAll(grammar.priorities().get(p));
+                    grammar.priorities().replaceValues(p, new_values);
+                }
+            }
+        }
+    }
+
     private void calculateFirstFollow() {
-        for(IProduction p : getGrammar().prods) {
+        for(IProduction p : getGrammar().prods.values()) {
             p.calculateDependencies(getGrammar());
         }
 
         tarjanStack = new Stack<>();
         first_components = Sets.newHashSet();
-        for(IProduction p : getGrammar().prods) {
+        for(IProduction p : getGrammar().prods.values()) {
             if(p.firstSet().index == -1) {
                 stronglyConnectedTarjan(p.firstSet(), first_components);
             }
@@ -224,6 +279,178 @@ public class ParseTable {
         }
     }
 
+    private void deepConflictsAnalysis() {
+        for(IPriority prio : grammar.priorities().keySet()) {
+            IProduction higher = prio.higher();
+            IProduction lower = prio.lower();
+
+            // infix-prefix conflict
+            if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+                lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1 && // lower is prefix
+                higher.leftHand().equals(lower.leftHand()) && // the productions are mutually recursive
+                grammar.priorities().containsEntry(prio, 0)) { // the priority is E.In right E.Pre
+
+                // checking E.In left E.Pre
+                if(grammar.priorities().get(prio).contains(higher.rightRecursivePosition())) {
+                    break;
+                }
+
+                // check whether the priorities that remove the conflict exist
+                IPriority inverse = new Priority(lower, higher, false);
+                // checking E.Pre left E.In
+                if(grammar.priorities().get(inverse).contains(lower.rightRecursivePosition())) {
+                    break;
+                }
+
+                // conflicting position
+                int conflict_pos = higher.leftRecursivePosition();
+
+                Set<IProduction> contexts = Sets.newHashSet();
+                contexts.add(prio.lower());
+
+                Set<Integer> conflicting_args = Sets.newHashSet();
+                conflicting_args.add(conflict_pos);
+
+                // create production E = E<lower> in E
+                ContextualProduction p =
+                    new ContextualProduction(prio.higher(), contexts, conflicting_args, prio.higher().isBracket(this));
+
+                // if contextual production does not exist add it
+                if(!grammar.contextual_prods.containsKey(prio.higher())) {
+                    grammar.contextual_prods.put(prio.higher(), p);
+                } else {
+                    // add new context to correct arguments of existing contextual production
+                    ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
+                    existing_prod.addContext(prio.lower(), conflicting_args);
+                }
+            }
+
+            // infix-postfix conflict
+            if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+                lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
+                higher.leftHand().equals(lower.leftHand()) && // the productions are mutually recursive
+                grammar.priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the priority is
+                                                                                           // E.In left E.Pos
+
+                // checking E.In right E.Pos
+                if(grammar.priorities().get(prio).contains(0)) {
+                    break;
+                }
+
+                // check whether the priorities that remove the conflict exist
+                IPriority inverse = new Priority(lower, higher, false);
+                // checking E.Pos right E.In
+                if(grammar.priorities().get(inverse).contains(0)) {
+                    break;
+                }
+
+                // conflicting position
+                int conflict_pos = higher.rightRecursivePosition();
+
+                Set<IProduction> contexts = Sets.newHashSet();
+                contexts.add(prio.lower());
+
+                Set<Integer> conflicting_args = Sets.newHashSet();
+                conflicting_args.add(conflict_pos);
+
+                // create production E = E in E<lower>
+                ContextualProduction p =
+                    new ContextualProduction(prio.higher(), contexts, conflicting_args, prio.higher().isBracket(this));
+
+                // if contextual production does not exist add it
+                if(!grammar.contextual_prods.containsKey(prio.higher())) {
+                    grammar.contextual_prods.put(prio.higher(), p);
+                } else {
+                    // add new context to correct arguments of existing contextual production
+                    ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
+                    existing_prod.addContext(prio.lower(), conflicting_args);
+                }
+            }
+
+            // dangling else conflict
+            if(higher.leftRecursivePosition() == -1 && higher.rightRecursivePosition() != -1 && // higher has prefix
+                lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1) { // lower is prefix)
+                boolean matchPrefix = false;
+
+                for(int conflict : grammar.priorities().get(prio)) {
+                    if(lower.rightHand().size() < conflict - 1)
+                        continue;
+                    for(int i = 0; i <= conflict; i++) {
+                        if(higher.rightHand().get(i).equals(lower.rightHand().get(i))) {
+                            matchPrefix = true;
+                        } else {
+                            matchPrefix = false;
+                            break;
+                        }
+                    }
+                    if(matchPrefix && !higher.equals(lower)) {
+                        Set<IProduction> contexts = Sets.newHashSet();
+                        contexts.add(prio.lower());
+
+                        Set<Integer> conflicting_args = Sets.newHashSet();
+                        conflicting_args.add(conflict);
+
+                        // create production E = pre E<lower> in E
+                        ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args,
+                            prio.higher().isBracket(this));
+
+                        // if contextual production does not exist add it
+                        if(!grammar.contextual_prods.containsKey(prio.higher())) {
+                            grammar.contextual_prods.put(prio.higher(), p);
+                        } else {
+                            // add new context to correct arguments of existing contextual production
+                            ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
+                            existing_prod.addContext(prio.lower(), conflicting_args);
+                        }
+                    }
+                }
+            }
+            // mirrored dangling else conflict
+            if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() == -1 && // higher has postfix
+                lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1) { // lower is postfix)
+                boolean matchPrefix = false;
+
+                for(int conflict : grammar.priorities().get(prio)) {
+
+                    if(lower.rightHand().size() < (higher.rightHand().size() - conflict))
+                        continue;
+                    
+                    for(int i = 0; i < higher.rightHand().size() - conflict; i++) { 
+                        if(higher.rightHand().get(higher.rightHand().size() - 1 - i) // check backwards
+                            .equals(lower.rightHand().get(lower.rightHand().size() - 1 - i))) {
+                            matchPrefix = true;
+                        } else {
+                            matchPrefix = false;
+                            break;
+                        }
+                    }
+                    if(matchPrefix && !higher.equals(lower)) {
+                        Set<IProduction> contexts = Sets.newHashSet();
+                        contexts.add(prio.lower());
+
+                        Set<Integer> conflicting_args = Sets.newHashSet();
+                        conflicting_args.add(conflict);
+
+                        // create production E = E in E<lower> pos
+                        ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args,
+                            prio.higher().isBracket(this));
+
+                        // if contextual production does not exist add it
+                        if(!grammar.contextual_prods.containsKey(prio.higher())) {
+                            grammar.contextual_prods.put(prio.higher(), p);
+                        } else {
+                            // add new context to correct arguments of existing contextual production
+                            ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
+                            existing_prod.addContext(prio.lower(), conflicting_args);
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
     private void processStateQueue() {
         while(!stateQueue.isEmpty()) {
             State state = stateQueue.poll();
@@ -239,11 +466,11 @@ public class ParseTable {
         state.doReduces();
     }
 
-    private BiMap<IProduction, Integer> createLabels(Set<IProduction> prods,
+    private BiMap<IProduction, Integer> createLabels(Map<UniqueProduction, IProduction> prods,
         Map<IProduction, ContextualProduction> contextual_prods, int label) {
         BiMap<IProduction, Integer> labels = HashBiMap.create();
-        Set<ContextualProduction> new_contextual_prods = Sets.newHashSet();
-        
+
+
         for(ContextualProduction p : grammar.contextual_prods.values()) {
             for(Symbol s : p.rhs) {
                 if(s instanceof ContextualSymbol) {
@@ -255,17 +482,17 @@ public class ParseTable {
         for(ContextualSymbol ctx_s : grammar.contextual_symbols) {
             for(IProduction p : grammar.symbol_prods.get(ctx_s.s)) {
                 if(!ctx_s.context.contains(p)) {
-                    ContextualProduction new_prod = new ContextualProduction(p, ctx_s.context, Sets.newHashSet(-1), p.isBracket(this));
-                    new_contextual_prods
-                        .add(new_prod);
+                    ContextualProduction new_prod =
+                        new ContextualProduction(p, ctx_s.context, Sets.newHashSet(-1), p.isBracket(this));
+                    grammar.derived_contextual_prods.add(new_prod);
                     grammar.symbol_prods.put(ctx_s, new_prod);
                 }
             }
         }
 
-        label = label + prods.size() + new_contextual_prods.size() - 1;
+        label = label + prods.size() + grammar.derived_contextual_prods.size() - 1;
 
-        for(IProduction p : prods) {
+        for(IProduction p : prods.values()) {
             if(contextual_prods.containsKey(p)) {
                 labels.put(contextual_prods.get(p), label);
             } else {
@@ -274,7 +501,7 @@ public class ParseTable {
             label--;
         }
 
-        for(ContextualProduction p : new_contextual_prods) {
+        for(ContextualProduction p : grammar.derived_contextual_prods) {
             labels.put(p, label);
             label--;
         }

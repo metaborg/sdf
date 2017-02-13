@@ -39,12 +39,12 @@ import org.metaborg.newsdf2table.grammar.Sort;
 import org.metaborg.newsdf2table.grammar.StartSymbol;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.TermAttribute;
+import org.metaborg.newsdf2table.grammar.UniqueProduction;
 import org.metaborg.newsdf2table.parsetable.ParseTable;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
@@ -168,7 +168,7 @@ public class GrammarReader {
         if(prod != null) {
             return prod;
         }
-        
+
         if(term instanceof IStrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             boolean with_cons = false;
@@ -217,7 +217,26 @@ public class GrammarReader {
                     attrs.add(new ConstructorAttribute(cons));
                 }
 
+                UniqueProduction unique_prod = new UniqueProduction(symbol, rhs_symbols);
+
+                prod = g.prods.get(unique_prod);
+
+                // production already exists
+                if(prod != null) {
+                    for(IAttribute a : attrs) {
+                        g.prod_attrs.put(prod, a);
+                    }
+
+                    if(g != null && symbol != null) {
+                        g.productions_read.put(term.toString(), prod);
+                    }
+
+                    return prod;
+                }
+
+                // processing a new production
                 prod = new Production(symbol, rhs_symbols);
+
                 if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
                     g.initial_prod = prod;
                 }
@@ -225,13 +244,14 @@ public class GrammarReader {
                 for(IAttribute a : attrs) {
                     g.prod_attrs.put(prod, a);
                 }
-                
+
                 if(g != null && symbol != null) {
                     g.productions_read.put(term.toString(), prod);
                 }
 
                 g.symbol_prods.put(symbol, prod);
-                g.prods.add(prod);
+                g.prods.put(unique_prod, prod);
+
                 return prod;
             } else {
                 throw new UnexpectedTermException(term.toString(), "SdfProduction");
@@ -668,8 +688,6 @@ public class GrammarReader {
 
         }
     }
-
-
 
     private static IStrategoTerm termFromFile(File file) {
         FileReader reader = null;

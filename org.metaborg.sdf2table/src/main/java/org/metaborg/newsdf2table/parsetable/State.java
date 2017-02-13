@@ -119,7 +119,7 @@ public class State implements Comparable<State> {
                             new_gotos.add(new GoTo(pt.prod_labels.get(p), pt));
                         } else {
                             // it is a deep priority conflict and is not a conflicting arg, expand still
-                            Set<Integer> conflicting_args = item.prod.isDeepPriorityConflict(pt, p);
+                            Set<Integer> conflicting_args = item.prod.deepConflictingArgs(pt, p);
                             if(!conflicting_args.isEmpty() && !conflicting_args.contains(item.dotPosition)) {
                                 new_kernel.add(item.shiftDot());
                                 new_gotos.add(new GoTo(pt.prod_labels.get(p), pt));
@@ -138,11 +138,11 @@ public class State implements Comparable<State> {
         // for each item p_i : A = A0 ... AN .
         // add a reduce action reduce([0-256] / follow(A), pi)
         for(LRItem item : items) {
-                       
+
 
             if(item.dotPosition == item.prod.rightHand().size()) {
-                int prod_label = pt.prod_labels.get(item.prod); 
-                
+                int prod_label = pt.prod_labels.get(item.prod);
+
                 if(item.prod.leftHand().followRestriction().isEmpty()) {
                     addReduceAction(item.prod, prod_label, CharacterClass.maxCC, null);
                 } else {
@@ -233,22 +233,24 @@ public class State implements Comparable<State> {
 
     private boolean isPriorityConflict(LRItem item, IProduction p) {
         IProduction higher = item.prod;
-        IProduction lower  = p;
-        
-        if (higher instanceof ContextualProduction) {
+        IProduction lower = p;
+
+        if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).orig_prod;
         }
-        
-        if (lower instanceof ContextualProduction) {
+
+        if(lower instanceof ContextualProduction) {
             lower = ((ContextualProduction) lower).orig_prod;
         }
-        
+
         Priority prio = new Priority(higher, lower, false);
+
         if(pt.getGrammar().priorities().containsKey(prio)) {
             Set<Integer> arguments = pt.getGrammar().priorities().get(prio);
             for(int i : arguments) {
-                if(i == -1 || i == item.dotPosition)
+                if(i == item.dotPosition) {
                     return true;
+                }
             }
         }
         return false;

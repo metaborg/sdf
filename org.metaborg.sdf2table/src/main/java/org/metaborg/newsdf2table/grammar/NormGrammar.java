@@ -1,6 +1,7 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.parsetable.ContextualProduction;
@@ -17,11 +18,12 @@ public class NormGrammar implements INormGrammar {
 
     public IProduction initial_prod;
 
-    public Set<IProduction> prods;
+    public Map<UniqueProduction, IProduction> prods;
     // extra map to merge same productions with different attributes
     public SetMultimap<IProduction, IAttribute> prod_attrs;
 
     public BiMap<IProduction, ContextualProduction> contextual_prods;
+    public Set<ContextualProduction> derived_contextual_prods;
     public Set<ContextualSymbol> contextual_symbols;
 
     public Set<IPriority> transitive_prio;
@@ -34,15 +36,15 @@ public class NormGrammar implements INormGrammar {
     public SetMultimap<IPriority, Integer> trans_prio_arguments;
     public SetMultimap<IPriority, Integer> non_trans_prio_arguments;
 
-
     public HashMap<String, Symbol> symbols_read; // caching symbols read
     public HashMap<String, IProduction> productions_read; // caching symbols read
-    
+
     public SetMultimap<Symbol, IProduction> symbol_prods;
 
     public NormGrammar() {
-        this.prods = Sets.newHashSet();
+        this.prods = Maps.newHashMap();
         this.contextual_prods = HashBiMap.create();
+        this.derived_contextual_prods = Sets.newHashSet();
         this.contextual_symbols = Sets.newHashSet();
         this.prod_attrs = HashMultimap.create();
         this.transitive_prio = Sets.newHashSet();
@@ -56,7 +58,7 @@ public class NormGrammar implements INormGrammar {
     }
 
 
-    @Override public Set<IProduction> syntax() {
+    @Override public Map<UniqueProduction, IProduction> syntax() {
         return prods;
     }
 
