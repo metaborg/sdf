@@ -64,7 +64,7 @@ rules
             //<debug(!"normalizing grammar ")> mn;
             mn'  := <strip-annos> mn;
             rules(expanded-module: mn' -> <id>);
-            where(before-normalizing := <cputime>);
+//            where(before-normalizing := <cputime>);
             
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
@@ -83,34 +83,34 @@ rules
             // keeping Sort.Cons in the normalized grammar
             // lifted-cons    := <lift-constructors-norm> non-template-m;
             
-             where(before-normalizing-exp-prio := <cputime>);
+//             where(before-normalizing-exp-prio := <cputime>);
             // change priority norm to handle Sort.Cons priorities
 //            expanded-prio              := <expand-priorities(|tokenize-chars)> non-template-sections'*;            
-            after-normalizing-exp-prio := <cputime>;
+//            after-normalizing-exp-prio := <cputime>;
             
-            where(!(after-normalizing-exp-prio, before-normalizing-exp-prio); subt; cputime-to-seconds; ?total-time-exp-prio; <debug(!"time spent expanding priorities ")> (<strip-annos> mn, total-time-exp-prio))
+//            where(!(after-normalizing-exp-prio, before-normalizing-exp-prio); subt; cputime-to-seconds; ?total-time-exp-prio; <debug(!"time spent expanding priorities ")> (<strip-annos> mn, total-time-exp-prio))
             
-            where(before-normalizing-basic := <cputime>);
+//            where(before-normalizing-basic := <cputime>);
             //basic normalization
-            new-basic-prods'*          := <filter(basic-norm-aux); flatten-list> non-template-sections'*;
+            new-basic-prods'*          := <filter(basic-norm-aux(|tokenize-chars)); flatten-list> non-template-sections'*;
             new-basic-prods*           := [new-basic-prods'*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))];
-            new-basic-priorities*      := <filter(basic-norm-aux-prio); flatten-list> non-template-sections'*;
+            new-basic-priorities*      := <filter(basic-norm-aux-prio(|tokenize-chars)); flatten-list> non-template-sections'*;
             after-normalizing-basic := <cputime>;
             
-            where(!(after-normalizing-basic, before-normalizing-basic); subt; cputime-to-seconds; ?total-time-basic; <debug(!"time spent basic normalization (-cf, -lex) ")> (<strip-annos> mn, total-time-basic))
+//            where(!(after-normalizing-basic, before-normalizing-basic); subt; cputime-to-seconds; ?total-time-basic; <debug(!"time spent basic normalization (-cf, -lex) ")> (<strip-annos> mn, total-time-basic))
             
            
-            where(before-normalizing-rest := <cputime>);
+//            where(before-normalizing-rest := <cputime>);
             // basic + restrictions
             cf-restrictions*           := <filter(?SDFSection(ContextFreeRestrictions(<id>))); flatten-list; map(try(cf-to-kernel-restriction))> non-template-sections'*;
             lex-restrictions*          := <filter(?SDFSection(LexicalRestrictions(<id>))); flatten-list; map(try(lex-to-kernel-restriction))> non-template-sections'*;
             kernel-restrictions*       := <filter(?SDFSection(Restrictions(<id>))); flatten-list> non-template-sections'*;
             after-normalizing-rest := <cputime>;
       
-            where(!(after-normalizing-rest, before-normalizing-rest); subt; cputime-to-seconds; ?total-time-rest; <debug(!"time spent normalizing restrictions ")> (<strip-annos> mn, total-time-rest))
+//            where(!(after-normalizing-rest, before-normalizing-rest); subt; cputime-to-seconds; ?total-time-rest; <debug(!"time spent normalizing restrictions ")> (<strip-annos> mn, total-time-rest))
             
       
-            where(before-normalizing-top-sorts := <cputime>);
+//            where(before-normalizing-top-sorts := <cputime>);
             // top sorts
             lex-start-symbols*         := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> non-template-sections'*;
             cf-start-symbols*          := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> non-template-sections'*;
@@ -119,12 +119,12 @@ rules
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
             new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())];
-            after-normalizing-top-sorts := <cputime>;
+//            after-normalizing-top-sorts := <cputime>;
             
-            where(!(after-normalizing-top-sorts, before-normalizing-top-sorts); subt; cputime-to-seconds; ?total-time-top-sorts; <debug(!"time spent top sorts ")> (<strip-annos> mn, total-time-top-sorts))
+//            where(!(after-normalizing-top-sorts, before-normalizing-top-sorts); subt; cputime-to-seconds; ?total-time-top-sorts; <debug(!"time spent top sorts ")> (<strip-annos> mn, total-time-top-sorts))
             
             
-            where(before-normalizing-reg := <cputime>);
+//            where(before-normalizing-reg := <cputime>);
             // regular 
             cf-symbols*                := <bagof-get-cf-sorts; make-set> "cf-symbols";
             lex-symbols*               := <bagof-get-lexical-sorts; make-set> "lexical-symbols";
@@ -133,38 +133,38 @@ rules
 
             new-lex-symbols*           := <bagof-get-lexical-sorts; make-set> "new-lexical-symbols";
             new-regular-priorities*    := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, new-lex-symbols*, kernel-symbols*];
-            after-normalizing-reg := <cputime>;
+//            after-normalizing-reg := <cputime>;
             
-            where(!(after-normalizing-reg, before-normalizing-reg); subt; cputime-to-seconds; ?total-time-reg; <debug(!"time spent normalizing regular expressions ")> (<strip-annos> mn, total-time-reg))
+//            where(!(after-normalizing-reg, before-normalizing-reg); subt; cputime-to-seconds; ?total-time-reg; <debug(!"time spent normalizing regular expressions ")> (<strip-annos> mn, total-time-reg))
             
             
-            where(before-normalizing-prio := <cputime>);
+//            where(before-normalizing-prio := <cputime>);
             // priorities
 
             new-kernel-priorities*      := <map(try(norm-prio-fun(|tokenize-chars))); flatten-list> [new-basic-priorities*, new-regular-priorities*];            
             assoc-prio-from-prods*      := <filter(assoc-prio-fun); flatten-list> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];       
             new-normalized-priorities*  := <topdown(try(norm-prio-args(|tokenize-chars)))> [new-kernel-priorities*, assoc-prio-from-prods*];
-            after-normalizing-prio := <cputime>;            
-            where(!(after-normalizing-prio, before-normalizing-prio); subt; cputime-to-seconds; ?total-time-prio; <debug(!"time spent normalizing priorities ")> (<strip-annos> mn, total-time-prio))
+//            after-normalizing-prio := <cputime>;            
+//            where(!(after-normalizing-prio, before-normalizing-prio); subt; cputime-to-seconds; ?total-time-prio; <debug(!"time spent normalizing priorities ")> (<strip-annos> mn, total-time-prio))
            
             
-            where(before-normalizing-lit := <cputime>);
+//            where(before-normalizing-lit := <cputime>);
             // literals            
             literals*                  := <collect(?Lit(_) + ?CiLit(_)); make-set> [new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
             new-literal-prods*         := <map(make-prod-from-lit)> literals*;
-            after-normalizing-lit := <cputime>;        
+//            after-normalizing-lit := <cputime>;        
            
-            where(!(after-normalizing-lit, before-normalizing-lit); subt; cputime-to-seconds; ?total-time-lit; <debug(!"time spent normalizing literals ")> (<strip-annos> mn, total-time-lit))
+//            where(!(after-normalizing-lit, before-normalizing-lit); subt; cputime-to-seconds; ?total-time-lit; <debug(!"time spent normalizing literals ")> (<strip-annos> mn, total-time-lit))
             
             
-            where(before-normalizing-cc := <cputime>);        
+//            where(before-normalizing-cc := <cputime>);        
             // char-class
             new-char-class-prio*       := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> new-normalized-priorities*;
             new-char-class-prods*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [new-literal-prods*, new-regular-prods*, new-basic-prods*, new-top-sorts-prods*];
             new-char-class-restr*      := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations))> [cf-restrictions*, lex-restrictions*, kernel-restrictions*];
-            after-normalizing-cc := <cputime>;            
+//            after-normalizing-cc := <cputime>;            
             
-            where(!(after-normalizing-cc, before-normalizing-cc); subt; cputime-to-seconds; ?total-time-cc; <debug(!"time spent normalizing character classes ")> (<strip-annos> mn, total-time-cc));
+//            where(!(after-normalizing-cc, before-normalizing-cc); subt; cputime-to-seconds; ?total-time-cc; <debug(!"time spent normalizing character classes ")> (<strip-annos> mn, total-time-cc));
            
             
             new-priorities-section     := SDFSection(Priorities(<make-set> [new-char-class-prio*]));
@@ -178,11 +178,11 @@ rules
                 new-sections := [new-kernel-section, new-priorities-section]
             else
                 new-sections := [new-kernel-section, new-restrictions-section, new-priorities-section]
-            end;  
+            end 
             
-            after-normalizing := <cputime>; 
+//            after-normalizing := <cputime>; 
             
-            where(!(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
+//            where(!(after-normalizing, before-normalizing); subt; cputime-to-seconds; ?total-time; <debug(!"time spent normalizing grammar ")> (<strip-annos> mn, total-time))
     
   add-placeholder-prods:
     SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
@@ -312,38 +312,48 @@ rules
         with
             prod := <get-def; try(desugar-templates); try(template-to-sdf3-prod(|tokenize-chars)); try(remove-constructor)> c    
         
-    basic-norm :
+    basic-norm(|tokenize-chars) :
         Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[normalized/[mn]-normalized]), i*, [new-kernel-section, new-priorities-section, sections'*])
         with
-            new-prods*             := <filter(basic-norm-aux); flatten-list> sections*;
+            new-prods*             := <filter(basic-norm-aux(|tokenize-chars)); flatten-list> sections*;
             sections'*             := <filter(not(?SDFSection(ContextFreeSyntax(_)) + ?SDFSection(LexicalSyntax(_)) + ?SDFSection(LexicalPriorities(_)) + ?SDFSection(ContextFreePriorities(_)) + ?SDFSection(Kernel(_)) +?SDFSection(Priorities(_))))> sections*;
-            new-priorities*        := <filter(basic-norm-aux-prio); flatten-list> sections*;
+            new-priorities*        := <filter(basic-norm-aux-prio(|tokenize-chars)); flatten-list> sections*;
             new-priorities-section := SDFSection(Priorities(new-priorities*));
             new-kernel-section     := SDFSection(Kernel([new-prods*, SdfProduction(Cf(Layout()), Rhs([Cf(Layout()), Cf(Layout())]), Attrs([Assoc(Left())]))]))
     
-    basic-norm-aux :
+    basic-norm-aux(|tokenize-chars) :
         SDFSection(Kernel(prods*)) -> prods'*
         with
-            prods'* := <map(kernel-basic-norm-prod)> prods*
+            prods'* := <map(kernel-basic-norm-prod(|tokenize-chars))> prods*
     
-    basic-norm-aux :
+    basic-norm-aux(|tokenize-chars) :
         SDFSection(ContextFreeSyntax(prods*)) -> prods'*
         with
-            prods'* := <map(cf-basic-norm-prod)> prods*
+            prods'* := <map(cf-basic-norm-prod(|tokenize-chars))> prods*
     
-    kernel-basic-norm-prod:
+    kernel-basic-norm-prod(|tokenize-chars):
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProductionWithCons(SortCons(symbol', Constructor(cons)), Rhs(symbols'*), attrs')
         with
             symbol'   := <try(kernel-basic-norm-symb)> symbol;
             symbols'* := <map(try(kernel-basic-norm-symb))> symbols*; 
             attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
         
-    kernel-basic-norm-prod:
+    kernel-basic-norm-prod(|tokenize-chars):
         SdfProduction(symbol, Rhs(symbols*), attrs) -> SdfProduction(symbol', Rhs(symbols'*), attrs')
         with
             symbol'   := <try(kernel-basic-norm-symb)> symbol;
             symbols'* := <map(try(kernel-basic-norm-symb))> symbols*; 
             attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
+            
+     kernel-basic-norm-prod(|tokenize-chars):
+      SortConsRef(symbol, cons) -> SortConsRef(symbol', cons)
+        with
+           symbol'   := <try(kernel-basic-norm-symb)> symbol;
+           rules(get-referenced-prod: 
+             SortConsRef(symbol', cons) -> ref
+             with
+                ref := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> SortConsRef(symbol, cons)
+            )       
     
     kernel-basic-norm-symb:
         s -> <id>
@@ -354,7 +364,7 @@ rules
             rules(get-kernel-sorts:+ "kernel-symbols" -> s') 
     
         
-    cf-basic-norm-prod:
+    cf-basic-norm-prod(|tokenize-chars):
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProductionWithCons(SortCons(symbol', Constructor(cons)), Rhs(symbols'*), attrs')
         with
             symbol'   := <try(cf-basic-norm-symb)> symbol;
@@ -364,7 +374,7 @@ rules
                 rules(get-cf-sorts:+ "cf-symbols" -> Cf(Opt(Layout()))) 
             end
         
-    cf-basic-norm-prod:
+    cf-basic-norm-prod(|tokenize-chars):
         SdfProduction(symbol, Rhs(symbols*), attrs) -> SdfProduction(symbol', Rhs(symbols'*), attrs')
         with
             symbol'   := <try(cf-basic-norm-symb)> symbol;
@@ -373,6 +383,16 @@ rules
             if <not(?[st] <+ ?[])> symbols* then
                 rules(get-cf-sorts:+ "cf-symbols" -> Cf(Opt(Layout()))) 
             end
+    
+    cf-basic-norm-prod(|tokenize-chars):
+        SortConsRef(symbol, cons) -> SortConsRef(symbol', cons)
+        with
+           symbol'   := <try(cf-basic-norm-symb)> symbol;
+           rules(get-referenced-prod: 
+             SortConsRef(symbol', cons) -> ref
+             with
+                ref := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> SortConsRef(symbol, cons)
+            )
         
     cf-basic-norm-symb:
         s -> Cf(s)
@@ -382,27 +402,39 @@ rules
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-cf-sorts:+ "cf-symbols" -> Cf(s')) 
             
-    basic-norm-aux :
+    basic-norm-aux(|tokenize-chars) :
         SDFSection(LexicalSyntax(prods*)) -> [prods'*, lex-injs*]
         with
-            prods'*   := <map(lex-basic-norm-prod)> prods*;
+            prods'*   := <map(lex-basic-norm-prod(|tokenize-chars))> prods*;
             lex-symbs* := <bagof-get-lexical-sorts; make-set> "lexical-symbols" ;
             lex-injs* := <map(create-lex-inj)> lex-symbs*
             
         
-    lex-basic-norm-prod:
+    lex-basic-norm-prod(|tokenize-chars):
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProductionWithCons(SortCons(symbol', Constructor(cons)), Rhs(symbols'*), attrs')
         with
             symbol'   := <try(lex-basic-norm-symb)> symbol;
             symbols'* := <map(try(lex-basic-norm-symb))> symbols*; 
             attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
         
-    lex-basic-norm-prod:
+    lex-basic-norm-prod(|tokenize-chars):
         SdfProduction(symbol, Rhs(symbols*), attrs) -> SdfProduction(symbol', Rhs(symbols'*), attrs')
         with
             symbol'   := <try(lex-basic-norm-symb)> symbol;
             symbols'* := <map(try(lex-basic-norm-symb))> symbols*; 
             attrs'    := <?Attrs([]); !NoAttrs() <+ id> attrs
+            
+    lex-basic-norm-prod(|tokenize-chars):
+       SortConsRef(symbol, cons) -> SortConsRef(symbol', cons)
+       with
+        symbol'   := <try(lex-basic-norm-symb)> symbol;
+        rules(get-referenced-prod: 
+             SortConsRef(symbol', cons) -> ref
+             with
+                ref := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> SortConsRef(symbol, cons)
+        )
+        
+                  
         
     lex-basic-norm-symb:
         s -> Lex(s)
@@ -417,53 +449,53 @@ rules
         where
             s' := <?SortDef(x); !Sort(x) <+ id> s
             
-    basic-norm-aux-prio:
+    basic-norm-aux-prio(|tokenize-chars):
         SDFSection(ContextFreePriorities(prio*)) -> prio'*
         with
-            prio'* := <map(cf-basic-norm-prio)> prio*
+            prio'* := <map(cf-basic-norm-prio(|tokenize-chars))> prio*
         
-    basic-norm-aux-prio:        
+    basic-norm-aux-prio(|tokenize-chars):        
         SDFSection(LexicalPriorities(prio*)) -> prio'*
         with
-            prio'* := <map(lex-basic-norm-prio)> prio*
+            prio'* := <map(lex-basic-norm-prio(|tokenize-chars))> prio*
     
-    basic-norm-aux-prio:        
+    basic-norm-aux-prio(|tokenize-chars):        
         SDFSection(Priorities(prio*)) -> prio'*
         with
-            prio'* := <map(kernel-basic-norm-prio)> prio*            
+            prio'* := <map(kernel-basic-norm-prio(|tokenize-chars))> prio*            
             
-    lex-basic-norm-prio:
+    lex-basic-norm-prio(|tokenize-chars):
         Chain(groups*) -> Chain(groups'*)
         with
-            groups'* := <topdown(try(lex-basic-norm-prod))> groups*
+            groups'* := <topdown(try(lex-basic-norm-prod(|tokenize-chars)))> groups*
     
-    lex-basic-norm-prio:
+    lex-basic-norm-prio(|tokenize-chars):
         Assoc(g1, associativity, g2) ->  Assoc(g1', associativity, g2')
         with
-            g1' :=  <topdown(try(lex-basic-norm-prod))> g1;
-            g2' :=  <topdown(try(lex-basic-norm-prod))> g2     
+            g1' :=  <topdown(try(lex-basic-norm-prod(|tokenize-chars)))> g1;
+            g2' :=  <topdown(try(lex-basic-norm-prod(|tokenize-chars)))> g2     
     
-    cf-basic-norm-prio:
+    cf-basic-norm-prio(|tokenize-chars):
         Chain(groups*) -> Chain(groups'*)
         with
-            groups'* := <topdown(try(cf-basic-norm-prod))> groups*
+            groups'* := <topdown(try(cf-basic-norm-prod(|tokenize-chars)))> groups*
     
-    cf-basic-norm-prio:
+    cf-basic-norm-prio(|tokenize-chars):
         Assoc(g1, associativity, g2) ->  Assoc(g1', associativity, g2')
         with
-            g1' :=  <topdown(try(cf-basic-norm-prod))> g1;
-            g2' :=  <topdown(try(cf-basic-norm-prod))> g2 
+            g1' :=  <topdown(try(cf-basic-norm-prod(|tokenize-chars)))> g1;
+            g2' :=  <topdown(try(cf-basic-norm-prod(|tokenize-chars)))> g2 
     
-    kernel-basic-norm-prio:
+    kernel-basic-norm-prio(|tokenize-chars):
         Chain(groups*) -> Chain(groups'*)
         with
-            groups'* := <topdown(try(kernel-basic-norm-prod))> groups*
+            groups'* := <topdown(try(kernel-basic-norm-prod(|tokenize-chars)))> groups*
     
-    kernel-basic-norm-prio:
+    kernel-basic-norm-prio(|tokenize-chars):
         Assoc(g1, associativity, g2) ->  Assoc(g1', associativity, g2')
         with
-            g1' :=  <topdown(try(kernel-basic-norm-prod))> g1;
-            g2' :=  <topdown(try(kernel-basic-norm-prod))> g2 
+            g1' :=  <topdown(try(kernel-basic-norm-prod(|tokenize-chars)))> g1;
+            g2' :=  <topdown(try(kernel-basic-norm-prod(|tokenize-chars)))> g2 
     
                 
     top-sorts:
@@ -1397,8 +1429,8 @@ rules
         Assoc(SimpleRefGroup(p1_ref), associativity, SimpleRefGroup(p2_ref)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1_ref), Default([arity1]))), SimpleRefGroup(p2_ref)])
         where
             <?Left() + ?Assoc()> associativity
-        where
-            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1_ref;
+        where        
+            p1'    := <get-referenced-prod> p1_ref;
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
      
      norm-prio-fun(|tokenize-chars):
@@ -1414,8 +1446,7 @@ rules
         where
             <?Left() + ?Assoc()> associativity
         where
-            debug(!"here ");
-            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1_ref;
+            p1'    := <get-referenced-prod> p1_ref;
             p2'    := <try(remove-constructor); strip-annos> p2;
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
      
@@ -1481,7 +1512,7 @@ rules
         where
             <?NonAssoc()> associativity
         where
-            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1;
+            p1'    := <get-referenced-prod> p1;
             p2'    := <try(remove-constructor); strip-annos> p2;
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
      
@@ -1498,7 +1529,7 @@ rules
         where
             <?NonAssoc()> associativity
         where
-            p1'    := <try(sortcons-to-prod(|tokenize-chars)); try(remove-constructor); try(strip-annos)> p1;
+            p1'    := <get-referenced-prod> p1;
             arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
             
      norm-prio-fun(|tokenize-chars):
@@ -1516,7 +1547,7 @@ rules
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [first-prod | ppss])]),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [second-prod | ppss])])
                           ]
-     
+                          
      norm-prio-fun(|tokenize-chars):
         Chain([AssocRefGroup(associativity, [first-prod | pps])]) -> new-assocs
         where
@@ -1532,14 +1563,16 @@ rules
         where
             <?[second-prod | ppss]> pps;
             <?[]> ppss;
-            new-assocs := <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod))              
+            new-assocs := [ <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod)) ,
+                            <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(second-prod), associativity, SimpleGroup(first-prod)) ]             
      
      norm-prio-fun(|tokenize-chars):
         Chain([AssocRefGroup(associativity, [first-prod | pps])]) -> new-assocs
         where
             <?[second-prod | ppss]> pps;
             <?[]> ppss;
-            new-assocs := <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod))
+            new-assocs := [ <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod)),
+                            <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(second-prod), associativity, SimpleRefGroup(first-prod))]   
      
      check-group(group) :
         NonTransitive(g) -> <check-group(group)> g

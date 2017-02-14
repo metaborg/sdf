@@ -19,6 +19,8 @@ public class NormGrammar implements INormGrammar {
     public IProduction initial_prod;
 
     public Map<UniqueProduction, IProduction> prods;
+    // to handle Sort.Cons in priorities
+    public Map<ProductionReference, IProduction> sort_cons_prods;
     // extra map to merge same productions with different attributes
     public SetMultimap<IProduction, IAttribute> prod_attrs;
 
@@ -40,9 +42,10 @@ public class NormGrammar implements INormGrammar {
     public HashMap<String, IProduction> productions_read; // caching symbols read
 
     public SetMultimap<Symbol, IProduction> symbol_prods;
-
+    
     public NormGrammar() {
         this.prods = Maps.newHashMap();
+        this.sort_cons_prods = Maps.newHashMap();
         this.contextual_prods = HashBiMap.create();
         this.derived_contextual_prods = Sets.newHashSet();
         this.contextual_symbols = Sets.newHashSet();

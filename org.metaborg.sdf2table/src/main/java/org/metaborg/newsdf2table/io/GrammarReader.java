@@ -34,6 +34,7 @@ import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.OptionalSymbol;
 import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Production;
+import org.metaborg.newsdf2table.grammar.ProductionReference;
 import org.metaborg.newsdf2table.grammar.SequenceSymbol;
 import org.metaborg.newsdf2table.grammar.Sort;
 import org.metaborg.newsdf2table.grammar.StartSymbol;
@@ -176,6 +177,7 @@ public class GrammarReader {
                 || (with_cons = true && app.getName().equals("SdfProductionWithCons"))) {
                 Symbol symbol;
                 String cons = null;
+                ConstructorAttribute cons_attr = null;
                 List<Symbol> rhs_symbols = Lists.newArrayList();
                 StrategoAppl tattrs;
 
@@ -214,7 +216,8 @@ public class GrammarReader {
                 }
 
                 if(cons != null) {
-                    attrs.add(new ConstructorAttribute(cons));
+                    cons_attr = new ConstructorAttribute(cons);
+                    attrs.add(cons_attr);
                 }
 
                 UniqueProduction unique_prod = new UniqueProduction(symbol, rhs_symbols);
@@ -236,6 +239,10 @@ public class GrammarReader {
 
                 // processing a new production
                 prod = new Production(symbol, rhs_symbols);
+
+                if(cons_attr != null) {
+                    g.sort_cons_prods.put(new ProductionReference(symbol, cons_attr), prod);
+                }
 
                 if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
                     g.initial_prod = prod;
@@ -446,33 +453,6 @@ public class GrammarReader {
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);
-                    // if(term.getConstructor().getName().equals("Appl")) {
-                    // IStrategoTerm cons = term.getSubterm(0); // Quoted("\"cons_name\"") or Unquoted("cons_name")
-                    // String cons_name = ((IStrategoString) cons.getSubterm(0)).stringValue();
-                    // if(cons_name.equals("layout")) {
-                    // // check whether it's a quoted constraint or term constraint
-                    // IStrategoTerm fun = term.getSubterm(1).getSubterm(0);
-                    // IStrategoTerm quotedElem = fun.getSubterm(0);
-                    // if(((IStrategoAppl) quotedElem).getConstructor().getName().equals("Quoted")) {
-                    // IStrategoTerm constraint = quotedElem.getSubterm(0);
-                    // return new LayoutConstraintAttribute(
-                    // constraint.toString().substring(3, constraint.toString().length() - 3));
-                    // } else {
-                    // // TODO process non quoted constraint
-                    // IStrategoList subterms = (IStrategoList) term.getSubterm(1);
-                    // System.out.println("process non quoted constraint");
-                    // }
-                    // } else {
-                    // try {
-                    // IStrategoTerm termAttribute = createStrategoTermAttribute(term);
-                    // return new TermAttribute(termAttribute, termAttribute.toString());
-                    // } catch(Exception e) {
-                    // System.err.println(
-                    // "sdf2table : importAttribute: unknown term attribute `" + a.getName() + "'.");
-                    // throw new UnexpectedTermException(a.toString());
-                    // }
-                    // }
-                    // } else {
                     try {
                         IStrategoTerm termAttribute = createStrategoTermAttribute(term);
                         return new TermAttribute(termAttribute, termAttribute.toString());
@@ -481,7 +461,6 @@ public class GrammarReader {
                             .println("sdf2table : importAttribute: unknown term attribute `" + a.getName() + "'.");
                         throw new UnexpectedTermException(a.toString());
                     }
-                    // }
                 default:
                     System.err.println("sdf2table : importAttribute: unknown attribute `" + a.getName() + "'.");
                     throw new UnexpectedTermException(a.toString());
@@ -647,14 +626,78 @@ public class GrammarReader {
 
             if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("SimpleGroup")) {
                 higher = processProduction(g, first_group.getSubterm(0));
+            } else if(first_group instanceof StrategoAppl
+                && ((StrategoAppl) first_group).getName().equals("SimpleRefGroup")) {
+                IStrategoTerm sort = first_group.getSubterm(0).getSubterm(0);
+                IStrategoTerm constructor = first_group.getSubterm(0).getSubterm(1);
+                String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
+
+                ProductionReference prod_ref =
+                    new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
+
+                higher = g.sort_cons_prods.get(prod_ref);
+                if(higher == null) {
+                    throw new Exception("Production referenced by " + prod_ref + " could not be found.");
+                }
+
+                Symbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
+                List<Integer> norm_arguments = Lists.newArrayList();
+                for(int arg : arguments) {
+                    int norm_arg = 0;
+                    for(Symbol s : higher.rightHand()) {
+                        if(arg == 0 && norm_arg == 0) {
+                            norm_arguments.add(norm_arg);
+                            break;
+                        }
+                        if(arg == 0) {
+                            norm_arg++;
+                            norm_arguments.add(norm_arg);
+                            break;
+                        }
+                        if(!s.equals(optLayout)) {
+                            arg--;                            
+                        }
+                        norm_arg++;
+                    }
+                }
+                
+                arguments = norm_arguments;
             } else {
-                throw new Exception("Normalized priority relation should be on SimpleGroups only.");
+                throw new Exception("Normalized priority relation should be on SimpleGroups or SimpleGroupsRef only.");
             }
 
             IStrategoTerm second_group = groups.getSubterm(1);
+            
+            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("NonTransitive")) {
+                second_group = second_group.getSubterm(0);
+            }
+            
+            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("WithArguments")) {
+                  
+                second_group = second_group.getSubterm(0);
+
+                // the order of terms can be NonTransitive(WithArguments(*)) or WithArguments(NonTransitive(*))
+                if(second_group instanceof StrategoAppl
+                    && ((StrategoAppl) second_group).getName().equals("NonTransitive")) {
+                    second_group = second_group.getSubterm(0);
+                }
+            }
 
             if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("SimpleGroup")) {
                 lower = processProduction(g, second_group.getSubterm(0));
+            } else if(second_group instanceof StrategoAppl
+                && ((StrategoAppl) second_group).getName().equals("SimpleRefGroup")) {
+                IStrategoTerm sort = second_group.getSubterm(0).getSubterm(0);
+                IStrategoTerm constructor = second_group.getSubterm(0).getSubterm(1);
+                String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
+
+                ProductionReference prod_ref =
+                    new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
+
+                lower = g.sort_cons_prods.get(prod_ref);
+                if(lower == null) {
+                    throw new Exception("Production referenced by " + prod_ref + " could not be found.");
+                }
             } else {
                 throw new Exception("Normalized priority relation should be on SimpleGroups only.");
             }
@@ -673,8 +716,6 @@ public class GrammarReader {
                         g.trans_prio_arguments.put(p, arg);
                     }
                 }
-
-
             } else {
                 g.non_transitive_prio.add(p);
                 if(arguments.isEmpty()) {
