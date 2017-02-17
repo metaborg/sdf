@@ -15,9 +15,6 @@ public class LRItem {
     ParseTable pt;
     IProduction prod;
     int dotPosition;
-    Set<IProduction> context = Sets.newHashSet();
-
-    boolean processed;
 
     public LRItem(IProduction prod, int dotPosition, ParseTable pt) {
         if(!(prod instanceof ContextualProduction) && pt.getGrammar().contextual_prods.containsKey(prod)) {
@@ -27,45 +24,54 @@ public class LRItem {
         }
         this.pt = pt;
         this.dotPosition = dotPosition;
-        processed = false;
     }
 
     public void process(Set<LRItem> items, Queue<LRItem> itemsQueue, SetMultimap<Symbol, LRItem> symbol_items) {
-        if(dotPosition < prod.rightHand().size()) {
+        if(pt.item_derivedItems.containsKey(this)) {
+            for(LRItem derivedItem : pt.item_derivedItems.get(this)) {
+                if(!items.contains(derivedItem)) {
+                    itemsQueue.add(derivedItem);
+                }
+                items.add(derivedItem);
+            }
+            items.add(this);
 
-            Symbol s_at_dot = prod.rightHand().get(dotPosition);
+            if(this.dotPosition < prod.rightHand().size()) {
+                symbol_items.put(prod.rightHand().get(this.dotPosition), this);
+            }
 
+        } else {
+            
+            Set<LRItem> derivedItems = Sets.newHashSet();
 
-            for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
-                if(!isPriorityConflict(this, p)) {
+            if(dotPosition < prod.rightHand().size()) {
 
-                    // p might be the problematic contextual production
-                    if(pt.getGrammar().contextual_prods.get(p) != null) {
-                        p = pt.getGrammar().contextual_prods.get(p);
-                    }
+                Symbol s_at_dot = prod.rightHand().get(dotPosition);
 
-                    LRItem newItem = new LRItem(p, 0, pt);
-                    if(!items.contains(newItem)) {
-                        itemsQueue.add(newItem);
-                    }
+                for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
 
-                } else {
-                    // it is a deep priority conflict and is not a conflicting arg, expand still
-                    Set<Integer> conflicting_args = this.prod.deepConflictingArgs(pt, p);
-                    if(!conflicting_args.isEmpty() && !conflicting_args.contains(dotPosition)) {
+                    if(!isPriorityConflict(this, p)) {
+
+                        // p might be the problematic contextual production
+                        if(pt.getGrammar().contextual_prods.get(p) != null) {
+                            p = pt.getGrammar().contextual_prods.get(p);
+                        }
+
                         LRItem newItem = new LRItem(p, 0, pt);
+                        derivedItems.add(newItem);
+                        
                         if(!items.contains(newItem)) {
                             itemsQueue.add(newItem);
                         }
                     }
                 }
             }
-        }
 
-        this.processed = true;
-        items.add(this);
-        if(this.dotPosition < prod.rightHand().size()) {
-            symbol_items.put(prod.rightHand().get(this.dotPosition), this);
+            pt.item_derivedItems.put(this, derivedItems);
+            items.add(this);
+            if(this.dotPosition < prod.rightHand().size()) {
+                symbol_items.put(prod.rightHand().get(this.dotPosition), this);
+            }
         }
     }
 
@@ -114,23 +120,13 @@ public class LRItem {
         if(dotPosition >= prod.rightHand().size()) {
             buf += " .";
         }
-        if(!context.isEmpty()) {
-            buf += " [ctx = ";
-            int i = 0;
-            for(IProduction p : context) {
-                if(i != 0)
-                    buf += ", ";
-                buf += pt.prod_labels.get(p) + " : " + p;
-            }
-            buf += "]";
-        }
+
         return buf;
     }
 
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
         result = prime * result + dotPosition;
         result = prime * result + ((prod == null) ? 0 : prod.hashCode());
         return result;
@@ -144,11 +140,6 @@ public class LRItem {
         if(getClass() != obj.getClass())
             return false;
         LRItem other = (LRItem) obj;
-        if(context == null) {
-            if(other.context != null)
-                return false;
-        } else if(!context.equals(other.context))
-            return false;
         if(dotPosition != other.dotPosition)
             return false;
         if(prod == null) {

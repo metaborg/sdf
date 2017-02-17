@@ -17,6 +17,7 @@ import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.UniqueProduction;
+import org.metaborg.newsdf2table.io.Benchmark;
 import org.metaborg.newsdf2table.io.GrammarReader;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -26,6 +27,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
 public class ParseTable {
@@ -44,8 +46,12 @@ public class ParseTable {
     Set<Set<TableSet>> follow_components;
 
     Queue<State> stateQueue = Lists.newLinkedList();
+    Set<State> processedStates = Sets.newHashSet();
     List<State> states = Lists.newArrayList();
+    
     Map<Set<LRItem>, State> kernel_states = Maps.newHashMap();
+    Map<LRItem, Set<LRItem>> item_derivedItems = Maps.newHashMap();
+    
     int totalStates = 0;
 
     File input;
@@ -70,7 +76,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long importTime = _end_time - _start_time;
-        printStatistics("Import: ", importTime);
+        Benchmark.printStatistics("Import: ", importTime);
 
         // calculate nullable symbols
         _start_time = System.currentTimeMillis();
@@ -78,7 +84,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long nullableTime = _end_time - _start_time;
-        printStatistics("Nullable: ", nullableTime);
+        Benchmark.printStatistics("Nullable: ", nullableTime);
 
         // calculate left and right recursive productions (considering nullable symbols)
         _start_time = System.currentTimeMillis();
@@ -86,7 +92,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long recursionTime = _end_time - _start_time;
-        printStatistics("Recursion: ", recursionTime);
+        Benchmark.printStatistics("Recursion: ", recursionTime);
 
         // normalize priorities according to recursion
         _start_time = System.currentTimeMillis();
@@ -94,7 +100,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long normPriorities = _end_time - _start_time;
-        printStatistics("Normalizing Priorities: ", normPriorities);
+        Benchmark.printStatistics("Normalizing Priorities: ", normPriorities);
 
 
         // calculate deep priority conflicts based on current priorities
@@ -104,7 +110,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long deepPrioritiesTime = _end_time - _start_time;
-        printStatistics("Deep Priorities: ", deepPrioritiesTime);
+        Benchmark.printStatistics("Deep Priorities: ", deepPrioritiesTime);
 
         // TODO Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
         // create first/follow sets by calculating dependencies and using Tarjan's algorithm
@@ -122,7 +128,7 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long generationTime = _end_time - _start_time;
-        printStatistics("Generation: ", generationTime);
+        Benchmark.printStatistics("Generation: ", generationTime);
 
         // output table
         _start_time = System.currentTimeMillis();
@@ -142,10 +148,10 @@ public class ParseTable {
         _end_time = System.currentTimeMillis();
 
         long exportTime = _end_time - _start_time;
-        printStatistics("Export: ", exportTime);
+        Benchmark.printStatistics("Export: ", exportTime);
 
 
-        printStatistics("Total: ", importTime + nullableTime + recursionTime + generationTime + exportTime);
+        Benchmark.printStatistics("Total: ", importTime + nullableTime + recursionTime + generationTime + exportTime);
 
     }
 
@@ -414,8 +420,8 @@ public class ParseTable {
 
                     if(lower.rightHand().size() < (higher.rightHand().size() - conflict))
                         continue;
-                    
-                    for(int i = 0; i < higher.rightHand().size() - conflict; i++) { 
+
+                    for(int i = 0; i < higher.rightHand().size() - conflict; i++) {
                         if(higher.rightHand().get(higher.rightHand().size() - 1 - i) // check backwards
                             .equals(lower.rightHand().get(lower.rightHand().size() - 1 - i))) {
                             matchPrefix = true;
@@ -454,12 +460,14 @@ public class ParseTable {
     private void processStateQueue() {
         while(!stateQueue.isEmpty()) {
             State state = stateQueue.poll();
-            processState(state);
+            if(!processedStates.contains(state)) {
+                processState(state);
+            }
         }
     }
 
     private void processState(State state) {
-        state.processed = true;
+        processedStates.add(state);
 
         state.doShift();
         states.add(state);
@@ -479,16 +487,60 @@ public class ParseTable {
             }
         }
 
-        for(ContextualSymbol ctx_s : grammar.contextual_symbols) {
+        Queue<ContextualSymbol> contextual_symbols = Queues.newArrayDeque(grammar.contextual_symbols);
+        Set<ContextualSymbol> processed_symbols = Sets.newHashSet();
+
+        while(!contextual_symbols.isEmpty()) {
+            ContextualSymbol ctx_s = contextual_symbols.poll();
+            if(processed_symbols.contains(ctx_s))
+                continue;
+            processed_symbols.add(ctx_s);
+
             for(IProduction p : grammar.symbol_prods.get(ctx_s.s)) {
-                if(!ctx_s.context.contains(p)) {
+
+                if(ctx_s.context.contains(p))
+                    continue;
+
+                ContextualProduction ctx_p = null;
+                if(grammar.contextual_prods.get(p) != null) {
+                    ctx_p = grammar.contextual_prods.get(p);
+                }
+
+                if(ctx_p != null) {
+                    ContextualProduction new_prod =
+                        ctx_p.mergeContext(ctx_s.context, contextual_symbols, processed_symbols);
+                    grammar.derived_contextual_prods.add(new_prod);
+                    grammar.symbol_prods.put(ctx_s, new_prod);
+                } else if(!ctx_s.context.contains(p)) {
                     ContextualProduction new_prod =
                         new ContextualProduction(p, ctx_s.context, Sets.newHashSet(-1), p.isBracket(this));
                     grammar.derived_contextual_prods.add(new_prod);
                     grammar.symbol_prods.put(ctx_s, new_prod);
                 }
             }
+
+
         }
+
+        // for(ContextualSymbol ctx_s : grammar.contextual_symbols) {
+        // for(IProduction p : grammar.symbol_prods.get(ctx_s.s)) {
+        // ContextualProduction ctx_p = null;
+        // if(grammar.contextual_prods.get(p) != null) {
+        // ctx_p = grammar.contextual_prods.get(p);
+        // }
+        //
+        // if(ctx_p != null) {
+        // ContextualProduction new_prod = ctx_p.mergeContext(ctx_s.context);
+        // grammar.derived_contextual_prods.add(new_prod);
+        // grammar.symbol_prods.put(ctx_s, new_prod);
+        // } else if(!ctx_s.context.contains(p)) {
+        // ContextualProduction new_prod =
+        // new ContextualProduction(p, ctx_s.context, Sets.newHashSet(-1), p.isBracket(this));
+        // grammar.derived_contextual_prods.add(new_prod);
+        // grammar.symbol_prods.put(ctx_s, new_prod);
+        // }
+        // }
+        // }
 
         label = label + prods.size() + grammar.derived_contextual_prods.size() - 1;
 
@@ -605,13 +657,7 @@ public class ParseTable {
         this.grammar = grammar;
     }
 
-    private long printStatistics(String step, long totalTime) {
-        String millis = String.valueOf(totalTime % 1000);
-        while(millis.length() < 3)
-            millis = "0" + millis;
-        System.out.println(step + String.valueOf(totalTime / 1000) + "." + millis + "s");
-        return totalTime;
-    }
+
 
     public static ITermFactory getTermfactory() {
         return termFactory;

@@ -28,8 +28,7 @@ public class State implements Comparable<State> {
     SetMultimap<CharacterClass, Action> lr_actions;
 
     Queue<LRItem> itemsQueue;
-
-    boolean processed = false;
+    Set<LRItem> processedItems;
 
     public static Set<State> states = Sets.newHashSet();
 
@@ -100,7 +99,6 @@ public class State implements Comparable<State> {
                     checkKernel(new_kernel, new_gotos, new_shifts);
                 }
             } else {
-                // if symbol is contextual, shift using all productions, but the context
 
                 for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
 
@@ -117,13 +115,6 @@ public class State implements Comparable<State> {
                         if(!isPriorityConflict(item, p)) {
                             new_kernel.add(item.shiftDot());
                             new_gotos.add(new GoTo(pt.prod_labels.get(p), pt));
-                        } else {
-                            // it is a deep priority conflict and is not a conflicting arg, expand still
-                            Set<Integer> conflicting_args = item.prod.deepConflictingArgs(pt, p);
-                            if(!conflicting_args.isEmpty() && !conflicting_args.contains(item.dotPosition)) {
-                                new_kernel.add(item.shiftDot());
-                                new_gotos.add(new GoTo(pt.prod_labels.get(p), pt));
-                            }
                         }
                     }
                     if(!new_kernel.isEmpty()) {
@@ -136,7 +127,7 @@ public class State implements Comparable<State> {
 
     public void doReduces() {
         // for each item p_i : A = A0 ... AN .
-        // add a reduce action reduce([0-256] / follow(A), pi)
+        // add a reduce action reduce([0-256] / follow(A), p_i)
         for(LRItem item : items) {
 
 
@@ -300,6 +291,29 @@ public class State implements Comparable<State> {
         }
 
         return buf;
+    }
+
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((kernel == null) ? 0 : kernel.hashCode());
+        return result;
+    }
+
+    @Override public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(getClass() != obj.getClass())
+            return false;
+        State other = (State) obj;
+        if(kernel == null) {
+            if(other.kernel != null)
+                return false;
+        } else if(!kernel.equals(other.kernel))
+            return false;
+        return true;
     }
 
     @Override public int compareTo(State o) {

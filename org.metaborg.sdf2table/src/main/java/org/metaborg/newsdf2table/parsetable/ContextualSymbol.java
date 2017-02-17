@@ -80,4 +80,14 @@ public class ContextualSymbol extends Symbol {
         
         return new ContextualSymbol(s, new_contexts);
     }
+    
+    
+    public ContextualSymbol addContexts(Set<IProduction> contexts) {
+        Set<IProduction> new_contexts = Sets.newHashSet();
+        new_contexts.addAll(context);
+        new_contexts.addAll(contexts);
+        
+        return new ContextualSymbol(s, new_contexts);
+    }
+    
 }

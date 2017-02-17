@@ -60,12 +60,30 @@ public class GrammarReader {
     public static NormGrammar readGrammar(File input, File output, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
 
+        long _start_time, _end_time;
+
+        _start_time = System.currentTimeMillis();
         IStrategoTerm mainModule = termFromFile(input);
+        _end_time = System.currentTimeMillis();
+
+        long readAtermTime = _end_time - _start_time;
+        Benchmark.printStatistics("Read Aterm: ", readAtermTime);
 
         NormGrammar grammar = new NormGrammar();
 
+        _start_time = System.currentTimeMillis();
         generateGrammar(grammar, mainModule, modules, paths);
+        _end_time = System.currentTimeMillis();
+
+        long processAtermTime = _end_time - _start_time;
+        Benchmark.printStatistics("Process Aterm: ", processAtermTime);
+
+        _start_time = System.currentTimeMillis();
         grammar.priorityTransitiveClosure();
+        _end_time = System.currentTimeMillis();
+
+        long transitiveClosureTime = _end_time - _start_time;
+        Benchmark.printStatistics("Priorities Transitive Closure: ", transitiveClosureTime);
 
         return grammar;
     }
@@ -624,56 +642,23 @@ public class GrammarReader {
                 }
             }
 
-            if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("SimpleGroup")) {
-                higher = processProduction(g, first_group.getSubterm(0));
-            } else if(first_group instanceof StrategoAppl
-                && ((StrategoAppl) first_group).getName().equals("SimpleRefGroup")) {
-                IStrategoTerm sort = first_group.getSubterm(0).getSubterm(0);
-                IStrategoTerm constructor = first_group.getSubterm(0).getSubterm(1);
-                String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
+            higher = processGroup(g, first_group);
 
-                ProductionReference prod_ref =
-                    new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
-
-                higher = g.sort_cons_prods.get(prod_ref);
-                if(higher == null) {
-                    throw new Exception("Production referenced by " + prod_ref + " could not be found.");
-                }
-
-                Symbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
-                List<Integer> norm_arguments = Lists.newArrayList();
-                for(int arg : arguments) {
-                    int norm_arg = 0;
-                    for(Symbol s : higher.rightHand()) {
-                        if(arg == 0 && norm_arg == 0) {
-                            norm_arguments.add(norm_arg);
-                            break;
-                        }
-                        if(arg == 0) {
-                            norm_arg++;
-                            norm_arguments.add(norm_arg);
-                            break;
-                        }
-                        if(!s.equals(optLayout)) {
-                            arg--;                            
-                        }
-                        norm_arg++;
-                    }
-                }
-                
-                arguments = norm_arguments;
-            } else {
-                throw new Exception("Normalized priority relation should be on SimpleGroups or SimpleGroupsRef only.");
+            // in case the priority is Sort.Cons <arg> > p2
+            if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("SimpleRefGroup")) {
+                arguments = normalizePriorityArguments(higher, arguments);
             }
 
             IStrategoTerm second_group = groups.getSubterm(1);
-            
-            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("NonTransitive")) {
+
+            if(second_group instanceof StrategoAppl
+                && ((StrategoAppl) second_group).getName().equals("NonTransitive")) {
                 second_group = second_group.getSubterm(0);
             }
-            
-            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("WithArguments")) {
-                  
+
+            if(second_group instanceof StrategoAppl
+                && ((StrategoAppl) second_group).getName().equals("WithArguments")) {
+
                 second_group = second_group.getSubterm(0);
 
                 // the order of terms can be NonTransitive(WithArguments(*)) or WithArguments(NonTransitive(*))
@@ -683,24 +668,7 @@ public class GrammarReader {
                 }
             }
 
-            if(second_group instanceof StrategoAppl && ((StrategoAppl) second_group).getName().equals("SimpleGroup")) {
-                lower = processProduction(g, second_group.getSubterm(0));
-            } else if(second_group instanceof StrategoAppl
-                && ((StrategoAppl) second_group).getName().equals("SimpleRefGroup")) {
-                IStrategoTerm sort = second_group.getSubterm(0).getSubterm(0);
-                IStrategoTerm constructor = second_group.getSubterm(0).getSubterm(1);
-                String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
-
-                ProductionReference prod_ref =
-                    new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
-
-                lower = g.sort_cons_prods.get(prod_ref);
-                if(lower == null) {
-                    throw new Exception("Production referenced by " + prod_ref + " could not be found.");
-                }
-            } else {
-                throw new Exception("Normalized priority relation should be on SimpleGroups only.");
-            }
+            lower = processGroup(g, second_group);
 
             Priority p = new Priority(higher, lower, transitive);
 
@@ -727,7 +695,86 @@ public class GrammarReader {
                 }
             }
 
+        } else if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Assoc")) {
+            IStrategoTerm first_group = chain.getSubterm(0);
+            IStrategoTerm assoc = chain.getSubterm(1);
+            IStrategoTerm second_group = chain.getSubterm(2);
+
+
+            IProduction higher = processGroup(g, first_group);
+            IProduction lower = processGroup(g, second_group);
+
+            Priority p = new Priority(higher, lower, false);
+
+            g.non_transitive_prio.add(p);
+
+            if(assoc.toString().contains("Left")) {
+                g.trans_prio_arguments.put(p, higher.rightHand().size());
+            } else if(assoc.toString().contains("Right")) {
+                g.trans_prio_arguments.put(p, 0);
+            } else {
+                g.trans_prio_arguments.put(p, 0);
+                g.trans_prio_arguments.put(p, higher.rightHand().size());
+            }
+
+        } else {
+            throw new UnexpectedTermException(chain.toString(), "Chain or Assoc");
         }
+    }
+
+    private static List<Integer> normalizePriorityArguments(IProduction production, List<Integer> arguments) {
+        Symbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
+        List<Integer> norm_arguments = Lists.newArrayList();
+        for(int arg : arguments) {
+            int norm_arg = 0;
+            for(Symbol s : production.rightHand()) {
+                if(arg == 0 && norm_arg == 0) {
+                    norm_arguments.add(norm_arg);
+                    break;
+                }
+                if(arg == 0) {
+                    norm_arg++;
+                    norm_arguments.add(norm_arg);
+                    break;
+                }
+                if(!s.equals(optLayout)) {
+                    arg--;
+                }
+                norm_arg++;
+            }
+        }
+
+        arguments = norm_arguments;
+        return arguments;
+    }
+
+    private static IProduction processGroup(NormGrammar g, IStrategoTerm group)
+        throws UnexpectedTermException, Exception {
+
+        IProduction production = null;
+
+        if(group instanceof StrategoAppl && ((StrategoAppl) group).getName().equals("SimpleGroup")) {
+            production = processProduction(g, group.getSubterm(0));
+        } else if(group instanceof StrategoAppl && ((StrategoAppl) group).getName().equals("SimpleRefGroup")) {
+            IStrategoTerm sort = group.getSubterm(0).getSubterm(0);
+            IStrategoTerm constructor = group.getSubterm(0).getSubterm(1);
+            String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
+
+            ProductionReference prod_ref =
+                new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
+
+            production = g.sort_cons_prods.get(prod_ref);
+            if(production == null) {
+                throw new Exception("Production referenced by " + prod_ref + " could not be found.");
+            }
+        } else {
+            throw new Exception("Normalized priority relation should be on SimpleGroups only.");
+        }
+
+        if(production == null) {
+            throw new Exception("Group " + group + " could not be processed.");
+        }
+        return production;
     }
 
     private static IStrategoTerm termFromFile(File file) {

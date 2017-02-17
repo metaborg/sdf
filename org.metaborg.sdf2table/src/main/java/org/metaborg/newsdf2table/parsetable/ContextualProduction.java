@@ -1,6 +1,7 @@
 package org.metaborg.newsdf2table.parsetable;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.IAttribute;
@@ -19,6 +20,12 @@ public class ContextualProduction implements IProduction {
     IProduction orig_prod;
     Symbol lhs;
     List<Symbol> rhs;
+
+    public ContextualProduction(IProduction orig_prod, Symbol lhs, List<Symbol> rhs) {
+        this.orig_prod = orig_prod;
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
 
     public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args,
         boolean isBracket) {
@@ -95,11 +102,11 @@ public class ContextualProduction implements IProduction {
                 new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
             }
 
-            for(int i = 0; i < rhs.size(); i++) {
-                if(rhs.get(i) instanceof ContextualSymbol) {
+            for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
                     new_rhs.add(((ContextualSymbol) rhs.get(i)).addContext(context));
                 } else {
-                    new_rhs.add(new ContextualSymbol(rhs.get(i), contexts));
+                    new_rhs.add(orig_prod.rightHand().get(i));
                 }
             }
         } else {
@@ -121,6 +128,34 @@ public class ContextualProduction implements IProduction {
         }
         rhs = new_rhs;
 
+    }
+
+    public ContextualProduction mergeContext(Set<IProduction> context, Queue<ContextualSymbol> contextual_symbols, Set<ContextualSymbol> processed_symbols) {
+        Symbol new_lhs = null;
+        List<Symbol> new_rhs = Lists.newArrayList();
+        Set<IProduction> contexts = Sets.newHashSet();
+        contexts.addAll(context);
+
+        new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
+
+        for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+            if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                if(rhs.get(i) instanceof ContextualSymbol) {
+                    ContextualSymbol mergedSymbol = ((ContextualSymbol) rhs.get(i)).addContexts(context);
+                    if(!processed_symbols.contains(mergedSymbol) && !contextual_symbols.contains(mergedSymbol)) {
+                        contextual_symbols.add(mergedSymbol);
+                    }
+                    new_rhs.add(mergedSymbol);
+                } else {
+                    new_rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
+                }
+            } else {
+                new_rhs.add(rhs.get(i));
+            }
+        }
+
+
+        return new ContextualProduction(orig_prod, new_lhs, new_rhs);
     }
 
     @Override public String toString() {

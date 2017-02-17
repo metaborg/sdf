@@ -235,4 +235,12 @@ public class Benchmark{
 			main.print(out, 0);
 		}
 	}
+	
+	public static long printStatistics(String step, long totalTime) {
+        String millis = String.valueOf(totalTime % 1000);
+        while(millis.length() < 3)
+            millis = "0" + millis;
+        System.out.println(step + String.valueOf(totalTime / 1000) + "." + millis + "s");
+        return totalTime;
+    }
 }
