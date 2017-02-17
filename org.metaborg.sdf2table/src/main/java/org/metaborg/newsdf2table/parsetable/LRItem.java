@@ -1,6 +1,5 @@
 package org.metaborg.newsdf2table.parsetable;
 
-import java.util.Queue;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.IProduction;
@@ -26,32 +25,32 @@ public class LRItem {
         this.dotPosition = dotPosition;
     }
 
-    public void process(Set<LRItem> items, Queue<LRItem> itemsQueue, SetMultimap<Symbol, LRItem> symbol_items) {
-        if(pt.item_derivedItems.containsKey(this)) {
-            for(LRItem derivedItem : pt.item_derivedItems.get(this)) {
-                if(!items.contains(derivedItem)) {
-                    itemsQueue.add(derivedItem);
-                }
-                items.add(derivedItem);
-            }
+    public void process(Set<LRItem> items, SetMultimap<Symbol, LRItem> symbol_items) {
+        
+        // items that have been already calculated
+        if(pt.item_derivedItems.containsKey(this)) {            
             items.add(this);
+            for(LRItem item : pt.item_derivedItems.get(this)) {
+                if(!items.contains(item)) {
+                    item.process(items, symbol_items);
+                }
+                items.add(item);
+            }              
 
             if(this.dotPosition < prod.rightHand().size()) {
                 symbol_items.put(prod.rightHand().get(this.dotPosition), this);
             }
-
         } else {
+            items.add(this);
             
             Set<LRItem> derivedItems = Sets.newHashSet();
 
             if(dotPosition < prod.rightHand().size()) {
-
                 Symbol s_at_dot = prod.rightHand().get(dotPosition);
 
                 for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
 
                     if(!isPriorityConflict(this, p)) {
-
                         // p might be the problematic contextual production
                         if(pt.getGrammar().contextual_prods.get(p) != null) {
                             p = pt.getGrammar().contextual_prods.get(p);
@@ -61,14 +60,14 @@ public class LRItem {
                         derivedItems.add(newItem);
                         
                         if(!items.contains(newItem)) {
-                            itemsQueue.add(newItem);
+                            newItem.process(items, symbol_items);
                         }
                     }
                 }
             }
 
             pt.item_derivedItems.put(this, derivedItems);
-            items.add(this);
+            
             if(this.dotPosition < prod.rightHand().size()) {
                 symbol_items.put(prod.rightHand().get(this.dotPosition), this);
             }

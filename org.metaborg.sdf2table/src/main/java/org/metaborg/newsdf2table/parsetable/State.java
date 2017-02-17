@@ -27,13 +27,11 @@ public class State implements Comparable<State> {
     SetMultimap<Symbol, LRItem> symbol_items;
     SetMultimap<CharacterClass, Action> lr_actions;
 
-    Queue<LRItem> itemsQueue;
     Set<LRItem> processedItems;
 
     public static Set<State> states = Sets.newHashSet();
 
     public State(IProduction p, ParseTable pt) {
-        itemsQueue = Lists.newLinkedList();
         items = Sets.newHashSet();
         actions = Sets.newHashSet();
         gotos = Sets.newHashSet();
@@ -48,12 +46,11 @@ public class State implements Comparable<State> {
         LRItem item = new LRItem(p, 0, pt);
         kernel.add(item);
         pt.kernel_states.put(kernel, this);
-        itemsQueue.add(item);
+
         closure();
     }
 
     public State(Set<LRItem> kernel, ParseTable pt) {
-        itemsQueue = Lists.newLinkedList();
         items = Sets.newHashSet();
         actions = Sets.newHashSet();
         gotos = Sets.newHashSet();
@@ -68,16 +65,12 @@ public class State implements Comparable<State> {
         label = this.pt.totalStates;
         this.pt.totalStates++;
 
-        for(LRItem item : kernel) {
-            itemsQueue.add(item);
-        }
         closure();
     }
 
     private void closure() {
-        while(!itemsQueue.isEmpty()) {
-            LRItem current = itemsQueue.poll();
-            current.process(items, itemsQueue, symbol_items);
+        for(LRItem item : kernel) {
+            item.process(items, symbol_items);
         }
     }
 
