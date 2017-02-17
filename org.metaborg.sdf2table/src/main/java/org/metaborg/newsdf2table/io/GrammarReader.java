@@ -709,12 +709,12 @@ public class GrammarReader {
             g.non_transitive_prio.add(p);
 
             if(assoc.toString().contains("Left")) {
-                g.trans_prio_arguments.put(p, higher.rightHand().size());
+                g.trans_prio_arguments.put(p, higher.rightHand().size()-1);
             } else if(assoc.toString().contains("Right")) {
                 g.trans_prio_arguments.put(p, 0);
             } else {
                 g.trans_prio_arguments.put(p, 0);
-                g.trans_prio_arguments.put(p, higher.rightHand().size());
+                g.trans_prio_arguments.put(p, higher.rightHand().size()-1);
             }
 
         } else {
