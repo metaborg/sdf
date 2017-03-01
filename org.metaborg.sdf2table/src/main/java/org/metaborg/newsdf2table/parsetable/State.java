@@ -1,6 +1,5 @@
 package org.metaborg.newsdf2table.parsetable;
 
-import java.util.Queue;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.CharacterClass;
@@ -11,7 +10,6 @@ import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Symbol;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 

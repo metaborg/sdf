@@ -29,7 +29,7 @@ public interface IProduction {
     // To calculate Deep Priority Conflicts 
     int leftRecursivePosition();
     int rightRecursivePosition();    
-    void calculateRecursivity(NormGrammar grammar);
+    void calculateRecursion(NormGrammar grammar);
         
     @Override int hashCode();
     @Override boolean equals(Object obj);
@@ -39,11 +39,5 @@ public interface IProduction {
     void calculateDependencies(NormGrammar g);
 
     TableSet firstSet();
-    TableSet followSet();
-
-    boolean isBracket(ParseTable pt);
-
-    Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p);
-
-    
+    TableSet followSet();   
 }

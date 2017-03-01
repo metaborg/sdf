@@ -1,7 +1,6 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
-import java.util.Set;
 
 import org.metaborg.newsdf2table.parsetable.ParseTable;
 import org.metaborg.newsdf2table.parsetable.TableSet;
@@ -10,7 +9,6 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public class Production implements IProduction {
 
@@ -72,63 +70,6 @@ public class Production implements IProduction {
             }
         }
     }
-
-    @Override public Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p) {
-        DeepPriority prio = new DeepPriority(this, p, false);
-
-        if(pt.getGrammar().deep_priorities().containsKey(prio)) {
-            return pt.getGrammar().deep_priorities().get(prio);
-        }
-
-        Set<Integer> result = Sets.newHashSet();
-
-        // calculate information about both productions
-        // int lower_leftRecursivePos = p.leftRecursivePosition();
-        // int lower_rightRecursivePos = p.rightRecursivePosition();
-
-        // check if item.prod is left and right recursive
-        // check if Symbol_left (item.prod) =>
-        // check if p is right recursive
-
-
-        // boolean matchPrefix = false;
-        // int conflicting_p = -1;
-        // dangling else case
-        // if(!lower_rightRecursivePositions.isEmpty()) {
-        // for(int i : lower_rightRecursivePositions) {
-        // if(this.rightHand().size() <= i)
-        // continue;
-        // for(int j = 0; j <= i; j++) {
-        // if(this.rhs.get(j).equals(p.rightHand().get(j))) {
-        // matchPrefix = true;
-        // conflicting_p = i;
-        // } else {
-        // matchPrefix = false;
-        // break;
-        // }
-        // }
-        // if(matchPrefix)
-        // break;
-        // }
-        // }
-        // if(matchPrefix && !this.equals(p)) {
-        // Set<Integer> conflicting_ps = Sets.newHashSet(conflicting_p);
-        // pt.getGrammar().deep_priorities().putAll(prio, conflicting_ps);
-        // result.addAll(conflicting_ps);
-        // }
-
-        // check if the item.prod is recursive
-        // check if the prefix of its recursion matches the prefix of p (prior to its recursion)
-        // add item.prod > p as a deep priority conflict
-
-        return result;
-    }
-
-    @Override public boolean isBracket(ParseTable pt) {
-        return pt.getGrammar().prod_attrs.get(this).contains(new GeneralAttribute("bracket"));
-    }
-
-
 
     @Override public int rightRecursivePosition() {
         // TODO Consider indirect recursion?
@@ -203,12 +144,11 @@ public class Production implements IProduction {
         return true;
     }
 
-    @Override public void calculateRecursivity(NormGrammar grammar) {
-        // TODO: consider indirect recursion
+    @Override public void calculateRecursion(NormGrammar grammar) {
 
         // left recursion
         for(int i = 0; i < rhs.size(); i++) {
-            if(rhs.get(i).equals(lhs)) {
+            if(grammar.leftRecursive.containsEntry(lhs, rhs.get(i))) {
                 leftRecursivePos = i;
                 break;
             }
@@ -219,7 +159,7 @@ public class Production implements IProduction {
 
         // right recursion
         for(int i = rhs.size() - 1; i >= 0; i--) {
-            if(rhs.get(i).equals(lhs)) {
+            if(grammar.rightRecursive.containsEntry(lhs, rhs.get(i))) {
                 rightRecursivePos = i;
                 break;
             }

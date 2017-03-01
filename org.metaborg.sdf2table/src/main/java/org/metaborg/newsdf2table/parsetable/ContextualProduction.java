@@ -27,31 +27,38 @@ public class ContextualProduction implements IProduction {
         this.rhs = rhs;
     }
 
-    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args,
-        boolean isBracket) {
+    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args) {
+        // initial production with conflicting argument
+        lhs = orig_prod.leftHand();
+        this.orig_prod = orig_prod;
+        rhs = Lists.newArrayList();
+        
+        for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+            if(args.contains(i)) {
+                rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
+            } else {
+                rhs.add(orig_prod.rightHand().get(i));
+            }
+        }
+    }
+
+    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts,
+        Queue<ContextualSymbol> contextual_symbols, Set<ContextualSymbol> processed_symbols) {
         this.orig_prod = orig_prod;
         rhs = Lists.newArrayList();
 
-        if(args.contains(-1)) {
-            // derived production passing the context to possible conflicting arguments (left and right recursive)
-            lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
-            for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
-                    rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
-                } else {
-                    rhs.add(orig_prod.rightHand().get(i));
+        // derived production passing the context to possible conflicting arguments (left and right recursive)
+        lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
+        for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+            if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                ContextualSymbol new_symbol = new ContextualSymbol(orig_prod.rightHand().get(i), contexts);
+                if((contextual_symbols != null && processed_symbols != null) && !processed_symbols.contains(new_symbol)
+                    && !contextual_symbols.contains(new_symbol)) {
+                    contextual_symbols.add(new_symbol);
                 }
-            }
-
-        } else {
-            // initial production with conflicting argument
-            lhs = orig_prod.leftHand();
-            for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                if(args.contains(i)) {
-                    rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
-                } else {
-                    rhs.add(orig_prod.rightHand().get(i));
-                }
+                rhs.add(new_symbol);
+            } else {
+                rhs.add(orig_prod.rightHand().get(i));
             }
         }
     }
@@ -81,20 +88,13 @@ public class ContextualProduction implements IProduction {
         return orig_prod.followSet();
     }
 
-    @Override public boolean isBracket(ParseTable pt) {
-        return orig_prod.isBracket(pt);
-    }
-
-    @Override public Set<Integer> deepConflictingArgs(ParseTable pt, IProduction p) {
-        return orig_prod.deepConflictingArgs(pt, p);
-    }
-
     public void addContext(IProduction context, Set<Integer> conflicting_args) {
         Symbol new_lhs = null;
         List<Symbol> new_rhs = Lists.newArrayList();
         Set<IProduction> contexts = Sets.newHashSet();
         contexts.add(context);
 
+        // add context to all possible conflicting symbols
         if(conflicting_args.contains(-1)) {
             if(lhs instanceof ContextualSymbol) {
                 new_lhs = ((ContextualSymbol) lhs).addContext(context);
@@ -109,7 +109,7 @@ public class ContextualProduction implements IProduction {
                     new_rhs.add(orig_prod.rightHand().get(i));
                 }
             }
-        } else {
+        } else { // add context to conflicting args
             for(int i = 0; i < rhs.size(); i++) {
                 if(conflicting_args.contains(i)) {
                     if(rhs.get(i) instanceof ContextualSymbol) {
@@ -130,7 +130,8 @@ public class ContextualProduction implements IProduction {
 
     }
 
-    public ContextualProduction mergeContext(Set<IProduction> context, Queue<ContextualSymbol> contextual_symbols, Set<ContextualSymbol> processed_symbols) {
+    public ContextualProduction mergeContext(Set<IProduction> context, Queue<ContextualSymbol> contextual_symbols,
+        Set<ContextualSymbol> processed_symbols) {
         Symbol new_lhs = null;
         List<Symbol> new_rhs = Lists.newArrayList();
         Set<IProduction> contexts = Sets.newHashSet();
@@ -213,8 +214,8 @@ public class ContextualProduction implements IProduction {
         return orig_prod.rightRecursivePosition();
     }
 
-    @Override public void calculateRecursivity(NormGrammar grammar) {
+    @Override public void calculateRecursion(NormGrammar grammar) {
         // This should not be called in a Contextual production
-        orig_prod.calculateRecursivity(grammar);
+        orig_prod.calculateRecursion(grammar);
     }
 }

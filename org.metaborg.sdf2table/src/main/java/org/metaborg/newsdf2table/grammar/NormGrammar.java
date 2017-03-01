@@ -18,16 +18,23 @@ public class NormGrammar implements INormGrammar {
 
     public IProduction initial_prod;
 
-    public Map<UniqueProduction, IProduction> prods;
+    
+    
     // to handle Sort.Cons in priorities
     public Map<ProductionReference, IProduction> sort_cons_prods;
-    // extra map to merge same productions with different attributes
+    
+    // merging same productions with different attributes
     public SetMultimap<IProduction, IAttribute> prod_attrs;
 
+    // necessary for calculating deep priority conflicts
+    public Map<UniqueProduction, IProduction> prods;
     public BiMap<IProduction, ContextualProduction> contextual_prods;
     public Set<ContextualProduction> derived_contextual_prods;
     public Set<ContextualSymbol> contextual_symbols;
-
+    public SetMultimap<Symbol, Symbol> leftRecursive;
+    public SetMultimap<Symbol, Symbol> rightRecursive;
+    
+    // priorities
     public Set<IPriority> transitive_prio;
     public Set<IPriority> non_transitive_prio;
     SetMultimap<IPriority, Integer> prios = HashMultimap.create();
@@ -39,23 +46,26 @@ public class NormGrammar implements INormGrammar {
     public SetMultimap<IPriority, Integer> non_trans_prio_arguments;
 
     public HashMap<String, Symbol> symbols_read; // caching symbols read
-    public HashMap<String, IProduction> productions_read; // caching symbols read
+    public HashMap<String, IProduction> productions_read; // caching productions read
 
+    // get all productions for a certain symbol
     public SetMultimap<Symbol, IProduction> symbol_prods;
     
     public NormGrammar() {
         this.prods = Maps.newHashMap();
         this.sort_cons_prods = Maps.newHashMap();
         this.contextual_prods = HashBiMap.create();
+        this.leftRecursive = HashMultimap.create();
+        this.rightRecursive = HashMultimap.create();
         this.derived_contextual_prods = Sets.newHashSet();
         this.contextual_symbols = Sets.newHashSet();
         this.prod_attrs = HashMultimap.create();
         this.transitive_prio = Sets.newHashSet();
         this.non_transitive_prio = Sets.newHashSet();
-        prio_prods = Sets.newHashSet();
-        trans_prio_arguments = HashMultimap.create();
-        non_trans_prio_arguments = HashMultimap.create();
-        symbol_prods = HashMultimap.create();
+        this.prio_prods = Sets.newHashSet();
+        this.trans_prio_arguments = HashMultimap.create();
+        this.non_trans_prio_arguments = HashMultimap.create();
+        this.symbol_prods = HashMultimap.create();
         this.symbols_read = Maps.newHashMap();
         this.productions_read = Maps.newHashMap();
     }
