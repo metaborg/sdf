@@ -418,7 +418,7 @@ public class ParseTable {
                 handleMirroredDanglingElseConflict(prio, higher, lower);
             } // regular priority indirect recursion conflict
             else {
-                handleIndirectRecursionConflict(prio, higher);
+                // handleIndirectRecursionConflict(prio, higher);
             }
 
         }
