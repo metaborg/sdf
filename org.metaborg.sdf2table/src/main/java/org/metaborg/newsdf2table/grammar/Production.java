@@ -2,7 +2,6 @@ package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
 
-import org.metaborg.newsdf2table.parsetable.ParseTable;
 import org.metaborg.newsdf2table.parsetable.TableSet;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;

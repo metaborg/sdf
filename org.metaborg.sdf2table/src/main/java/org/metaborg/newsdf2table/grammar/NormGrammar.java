@@ -37,8 +37,7 @@ public class NormGrammar implements INormGrammar {
     // priorities
     public Set<IPriority> transitive_prio;
     public Set<IPriority> non_transitive_prio;
-    SetMultimap<IPriority, Integer> prios = HashMultimap.create();
-    SetMultimap<IPriority, Integer> deep_prios = HashMultimap.create();
+    SetMultimap<IPriority, Integer> prios;
 
     // extra collections to calculate the transitive closure
     public Set<IProduction> prio_prods;
@@ -60,6 +59,7 @@ public class NormGrammar implements INormGrammar {
         this.derived_contextual_prods = Sets.newHashSet();
         this.contextual_symbols = Sets.newHashSet();
         this.prod_attrs = HashMultimap.create();
+        this.prios = HashMultimap.create();
         this.transitive_prio = Sets.newHashSet();
         this.non_transitive_prio = Sets.newHashSet();
         this.prio_prods = Sets.newHashSet();
@@ -110,11 +110,6 @@ public class NormGrammar implements INormGrammar {
 
         prios.putAll(non_trans_prio_arguments);
         prios.putAll(trans_prio_arguments);
-    }
-
-
-    public SetMultimap<IPriority, Integer> deep_priorities() {
-        return deep_prios;
-    }
+    }    
 
 }
