@@ -90,10 +90,14 @@ public class State implements Comparable<State> {
                     checkKernel(new_kernel, new_gotos, new_shifts);
                 }
             } else {
+                
+                // if s_at_dot is a contextual symbol A with a shallow context ctx
+                // and it is the same symbol as the lhs of the context
+                // remove the shallow context, expand with the original symbol except for the context production                
 
                 for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
 
-                    // p might be the problematic contextual production
+                    // p might be a contextual production
                     if(pt.getGrammar().contextual_prods.get(p) != null) {
                         p = pt.getGrammar().contextual_prods.get(p);
                     }
@@ -120,7 +124,6 @@ public class State implements Comparable<State> {
         // for each item p_i : A = A0 ... AN .
         // add a reduce action reduce([0-256] / follow(A), p_i)
         for(LRItem item : items) {
-
 
             if(item.dotPosition == item.prod.rightHand().size()) {
                 int prod_label = pt.prod_labels.get(item.prod);
