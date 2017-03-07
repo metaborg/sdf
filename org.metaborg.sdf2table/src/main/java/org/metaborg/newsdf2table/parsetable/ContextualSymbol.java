@@ -2,7 +2,6 @@ package org.metaborg.newsdf2table.parsetable;
 
 import java.util.Set;
 
-import org.metaborg.newsdf2table.grammar.IProduction;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -12,20 +11,26 @@ import com.google.common.collect.Sets;
 public class ContextualSymbol extends Symbol {
 
     Symbol s;
-    Set<IProduction> context;
+    Set<Context> contexts;
 
-    public ContextualSymbol(Symbol s, Set<IProduction> context) {
+    public ContextualSymbol(Symbol s, Set<Context> context) {
         this.s = s;
-        this.context = context;
+        this.contexts = context;
+    }
+    
+    public ContextualSymbol(Symbol s, Context context) {
+        this.s = s;
+        Set<Context> contexts = Sets.newHashSet(context);
+        this.contexts = contexts;
     }
     
     @Override public String name() {
         String buf = "";
         buf += s.name();
-        if(!context.isEmpty()) {
+        if(!contexts.isEmpty()) {
             int i = 0;
             buf += "[";
-            for(IProduction p : context) {
+            for(Context p : contexts) {
                 if(i != 0)
                     buf += ", ";
                 buf += p;
@@ -43,7 +48,7 @@ public class ContextualSymbol extends Symbol {
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
+        result = prime * result + ((contexts == null) ? 0 : contexts.hashCode());
         result = prime * result + ((s == null) ? 0 : s.hashCode());
         return result;
     }
@@ -56,10 +61,10 @@ public class ContextualSymbol extends Symbol {
         if(getClass() != obj.getClass())
             return false;
         ContextualSymbol other = (ContextualSymbol) obj;
-        if(context == null) {
-            if(other.context != null)
+        if(contexts == null) {
+            if(other.contexts != null)
                 return false;
-        } else if(!context.equals(other.context))
+        } else if(!contexts.equals(other.contexts))
             return false;
         if(s == null) {
             if(other.s != null)
@@ -73,19 +78,19 @@ public class ContextualSymbol extends Symbol {
         return s.followRestriction();
     }
 
-    public Symbol addContext(IProduction new_context) {
-        Set<IProduction> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(context);
+    public ContextualSymbol addContext(Context new_context) {
+        Set<Context> new_contexts = Sets.newHashSet();
+        new_contexts.addAll(contexts);
         new_contexts.add(new_context);
         
         return new ContextualSymbol(s, new_contexts);
     }
     
     
-    public ContextualSymbol addContexts(Set<IProduction> contexts) {
-        Set<IProduction> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(context);
+    public ContextualSymbol addContexts(Set<Context> contexts) {
+        Set<Context> new_contexts = Sets.newHashSet();
         new_contexts.addAll(contexts);
+        new_contexts.addAll(this.contexts);
         
         return new ContextualSymbol(s, new_contexts);
     }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.newsdf2table.grammar.ConstructorAttribute;
 import org.metaborg.newsdf2table.grammar.IAttribute;
 import org.metaborg.newsdf2table.grammar.IProduction;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
@@ -27,12 +28,12 @@ public class ContextualProduction implements IProduction {
         this.rhs = rhs;
     }
 
-    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts, Set<Integer> args) {
+    public ContextualProduction(IProduction orig_prod, Set<Context> contexts, Set<Integer> args) {
         // initial production with conflicting argument
         lhs = orig_prod.leftHand();
         this.orig_prod = orig_prod;
         rhs = Lists.newArrayList();
-        
+
         for(int i = 0; i < orig_prod.rightHand().size(); i++) {
             if(args.contains(i)) {
                 rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
@@ -42,25 +43,67 @@ public class ContextualProduction implements IProduction {
         }
     }
 
-    public ContextualProduction(IProduction orig_prod, Set<IProduction> contexts,
-        Queue<ContextualSymbol> contextual_symbols, Set<ContextualSymbol> processed_symbols) {
+    public ContextualProduction(IProduction orig_prod, Set<Context> contexts,
+        Queue<ContextualSymbol> contextual_symbols, Set<ContextualSymbol> processed_symbols,
+        SetMultimap<IProduction, IAttribute> prod_attrs) {
         this.orig_prod = orig_prod;
-        rhs = Lists.newArrayList();
-
-        // derived production passing the context to possible conflicting arguments (left and right recursive)
+        rhs = Lists.newArrayList(orig_prod.rightHand());
         lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
-        for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-            if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
-                ContextualSymbol new_symbol = new ContextualSymbol(orig_prod.rightHand().get(i), contexts);
+
+        for(Context c : contexts) {
+            if(c.type.equals(ContextType.DEEP)) {
+                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                    if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                        ContextualSymbol new_symbol;
+                        if(rhs.get(i) instanceof ContextualSymbol) {
+                            new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                        } else {
+                            new_symbol = new ContextualSymbol(rhs.get(i), c);
+                        }
+                        rhs.set(i, new_symbol);
+                    }
+                }
+            } else if(c.type.equals(ContextType.SHALLOW)) {
+                if(c.context.leftHand().equals(orig_prod.leftHand())) { // stop passing the shallow context
+                    continue;
+                }
+                // if production has a constructor, do not pass the shallow context
+                boolean hasConstructor = false;
+                for(IAttribute attr : prod_attrs.get(orig_prod)) {
+                    if(attr instanceof ConstructorAttribute) {
+                        hasConstructor = true;
+                        break;
+                    }
+                }
+                if(hasConstructor) continue;
+                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                    // shallow context should be passed to correct position
+                    if((i == orig_prod.leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
+                        || (i == orig_prod.rightRecursivePosition() && c.position.equals(ContextPosition.RIGHTMOST))) {
+                        ContextualSymbol new_symbol;
+                        if(rhs.get(i) instanceof ContextualSymbol) {
+                            new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                        } else {
+                            new_symbol = new ContextualSymbol(rhs.get(i), c);
+                        }
+                        rhs.set(i, new_symbol);
+                    }
+                }
+            }
+        }
+
+        for(Symbol s : rhs) {
+            if(s instanceof ContextualSymbol) {
+                ContextualSymbol new_symbol = (ContextualSymbol) s;
+                // creating a new contextual symbol
                 if((contextual_symbols != null && processed_symbols != null) && !processed_symbols.contains(new_symbol)
                     && !contextual_symbols.contains(new_symbol)) {
                     contextual_symbols.add(new_symbol);
                 }
-                rhs.add(new_symbol);
-            } else {
-                rhs.add(orig_prod.rightHand().get(i));
             }
         }
+
+
     }
 
     @Override public Symbol leftHand() {
@@ -88,10 +131,10 @@ public class ContextualProduction implements IProduction {
         return orig_prod.followSet();
     }
 
-    public void addContext(IProduction context, Set<Integer> conflicting_args) {
+    public void addContext(Context context, Set<Integer> conflicting_args) {
         Symbol new_lhs = null;
         List<Symbol> new_rhs = Lists.newArrayList();
-        Set<IProduction> contexts = Sets.newHashSet();
+        Set<Context> contexts = Sets.newHashSet();
         contexts.add(context);
 
         // add context to all possible conflicting symbols
@@ -130,28 +173,65 @@ public class ContextualProduction implements IProduction {
 
     }
 
-    public ContextualProduction mergeContext(Set<IProduction> context, Queue<ContextualSymbol> contextual_symbols,
-        Set<ContextualSymbol> processed_symbols) {
-        Symbol new_lhs = null;
-        List<Symbol> new_rhs = Lists.newArrayList();
-        Set<IProduction> contexts = Sets.newHashSet();
+    public ContextualProduction mergeContext(Set<Context> context, Queue<ContextualSymbol> contextual_symbols,
+        Set<ContextualSymbol> processed_symbols, SetMultimap<IProduction, IAttribute> prod_attrs) {
+
+        List<Symbol> new_rhs = Lists.newArrayList(rhs);
+        Set<Context> contexts = Sets.newHashSet();
         contexts.addAll(context);
 
-        new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
+        Symbol new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
 
-        for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-            if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
-                if(rhs.get(i) instanceof ContextualSymbol) {
-                    ContextualSymbol mergedSymbol = ((ContextualSymbol) rhs.get(i)).addContexts(context);
-                    if(!processed_symbols.contains(mergedSymbol) && !contextual_symbols.contains(mergedSymbol)) {
-                        contextual_symbols.add(mergedSymbol);
+        for(Context c : contexts) {
+            if(c.type.equals(ContextType.DEEP)) {
+                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                    if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                        ContextualSymbol new_symbol;
+                        if(new_rhs.get(i) instanceof ContextualSymbol) {
+                            new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
+                        } else {
+                            new_symbol = new ContextualSymbol(new_rhs.get(i), c);
+                        }
+                        new_rhs.set(i, new_symbol);
                     }
-                    new_rhs.add(mergedSymbol);
-                } else {
-                    new_rhs.add(new ContextualSymbol(orig_prod.rightHand().get(i), contexts));
                 }
-            } else {
-                new_rhs.add(rhs.get(i));
+            } else if(c.type.equals(ContextType.SHALLOW)) {
+                if(c.context.leftHand().equals(orig_prod.leftHand())) { // stop passing the shallow context
+                    continue;
+                }
+                // if production has a constructor, do not pass the shallow context
+                boolean hasConstructor = false;
+                for(IAttribute attr : prod_attrs.get(orig_prod)) {
+                    if(attr instanceof ConstructorAttribute) {
+                        hasConstructor = true;
+                        break;
+                    }
+                }
+                if(hasConstructor) continue;
+                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                    // shallow context should be passed to correct position
+                    if((i == orig_prod.leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
+                        || (i == orig_prod.rightRecursivePosition() && c.position.equals(ContextPosition.RIGHTMOST))) {
+                        ContextualSymbol new_symbol;
+                        if(new_rhs.get(i) instanceof ContextualSymbol) {
+                            new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
+                        } else {
+                            new_symbol = new ContextualSymbol(new_rhs.get(i), c);
+                        }
+                        new_rhs.set(i, new_symbol);
+                    }
+                }
+            }
+        }
+
+        for(Symbol s : new_rhs) {
+            if(s instanceof ContextualSymbol) {
+                ContextualSymbol new_symbol = (ContextualSymbol) s;
+                // creating a new contextual symbol
+                if((contextual_symbols != null && processed_symbols != null) && !processed_symbols.contains(new_symbol)
+                    && !contextual_symbols.contains(new_symbol)) {
+                    contextual_symbols.add(new_symbol);
+                }
             }
         }
 
