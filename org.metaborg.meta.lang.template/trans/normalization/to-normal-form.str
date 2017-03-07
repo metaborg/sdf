@@ -1100,43 +1100,48 @@ rules
             
      //left or assoc associativity productions       
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons))), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons)))])
-
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs@Rhs(symbols*), attrs) -> Assoc(group, Left(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(Left()) + ?Assoc(Assoc()))> attrs
         with
-            p := SdfProduction(symbol, rhs, attrs)
+            group := SimpleRefGroup(SortConsRef(symbol, Constructor(cons)))
         
      assoc-prio-fun:
-        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)])
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) ->  Assoc(group, Left(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(Left()) + ?Assoc(Assoc()))> attrs
+        with
+            group := SimpleGroup(SdfProduction(symbol, Rhs(symbols*), NoAttrs()))
     
      //right associativity productions
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons))), Default(["0"]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))> symbol, Constructor(cons)))])
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), rhs, attrs) -> Assoc(group, Right(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(Right()))> attrs
-      with
-          p := SdfProduction(symbol, rhs, attrs)
+        with
+            group := SimpleRefGroup(SortConsRef(symbol, Constructor(cons)))
         
      assoc-prio-fun:
-        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Assoc(group, Right(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(Right()))> attrs
+        with
+            group := SimpleGroup(SdfProduction(symbol, Rhs(symbols*), NoAttrs()))
            
      //non-assoc associativity productions    
      assoc-prio-fun:
-        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons))), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons)))]),  Chain([NonTransitive(WithArguments(SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons))), Default(["0"]))), SimpleRefGroup(SortConsRef(<topdown(try(?SortDef(x); !Sort(x)))>symbol, Constructor(cons)))])]
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> Assoc(group, NonAssoc(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
         with
-            p := SdfProduction(symbol, Rhs(symbols*), attrs)
+            group := SimpleRefGroup(SortConsRef(symbol, Constructor(cons)))
         
      assoc-prio-fun:
-        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p), Default([ <filter(not(?Cf(Opt(Layout())))); length; dec; int-to-string> symbols*]))), SimpleGroup(p)]),  Chain([NonTransitive(WithArguments(SimpleGroup(p), Default(["0"]))), SimpleGroup(p)])]
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Assoc(group, NonAssoc(), group)
         where
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
+        with
+            group := SimpleGroup(SdfProduction(symbol, Rhs(symbols*), NoAttrs()))
          
      norm-prio-fun(|tokenize-chars) :
         Chain([first-prod | pps]) -> [first-binary, <try(norm-prio-fun(|tokenize-chars))> Chain([<try(remove-constructor)> second-prod | ppss])]  

@@ -687,10 +687,10 @@ public class GrammarReader {
             } else {
                 g.non_transitive_prio.add(p);
                 if(arguments.isEmpty()) {
-                    g.trans_prio_arguments.put(p, -1);
+                    g.non_trans_prio_arguments.put(p, -1);
                 } else {
                     for(Integer arg : arguments) {
-                        g.trans_prio_arguments.put(p, arg);
+                        g.non_trans_prio_arguments.put(p, arg);
                     }
                 }
             }
@@ -707,14 +707,15 @@ public class GrammarReader {
             Priority p = new Priority(higher, lower, false);
 
             g.non_transitive_prio.add(p);
-
+            
+            // actual argument values will be processed later when defining recursion
             if(assoc.toString().contains("Left")) {
-                g.trans_prio_arguments.put(p, higher.rightHand().size()-1);
+                g.non_trans_prio_arguments.put(p, Integer.MAX_VALUE);
             } else if(assoc.toString().contains("Right")) {
-                g.trans_prio_arguments.put(p, 0);
+                g.non_trans_prio_arguments.put(p, Integer.MIN_VALUE);
             } else {
-                g.trans_prio_arguments.put(p, 0);
-                g.trans_prio_arguments.put(p, higher.rightHand().size()-1);
+                g.non_trans_prio_arguments.put(p, Integer.MIN_VALUE);
+                g.non_trans_prio_arguments.put(p, Integer.MAX_VALUE);
             }
 
         } else {
