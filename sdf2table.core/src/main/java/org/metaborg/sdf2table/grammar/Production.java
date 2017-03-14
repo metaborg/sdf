@@ -229,7 +229,7 @@ public abstract class Production{
 	 * For a production P = "A0 A1 ... An -> B", the set of direct dependencies is decided as follow:
 	 * 
 	 * 1. if P is empty then FIRST(P) depends on FOLLOW(P).
-	 * 2. if A0 if a non-terminal then for all production Q that produce A0 and does not conflict P at position 0, FIRST(P) depends on FIRST(Q).
+	 * 2. if A0 is a non-terminal then for all production Q that produce A0 and does not conflict P at position 0, FIRST(P) depends on FIRST(Q).
 	 * 3. for all Ai of P,
 	 * 		if i < n then for all production Q that produce Ai+1 and does not conflict P at position i+1, FOLLOW(Ai) depends on FIRST(Q).
 	 * 		if i = n then FOLLOW(Ai) depends on FOLLOW(P).
@@ -379,7 +379,6 @@ public abstract class Production{
 	}
 	
 	/**
-	 * 
 	 * @param np A symbol production.
 	 * @param pos The position in the production.
 	 * @return true if it is not possible to use the production {@code prod} to expend the symbol at position {@code pos}.

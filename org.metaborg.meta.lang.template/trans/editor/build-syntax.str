@@ -64,7 +64,7 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     with
     <?Module(Unparameterized(mn), i*, sections)> ast ;
-    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3")> mn;
+    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3_")> mn;
     result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> selected  
     
   sdf3-to-normal-form-abstract:
