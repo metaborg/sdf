@@ -15,7 +15,7 @@ import com.google.common.collect.Sets;
 
 public class State implements Comparable<State> {
 
-    ParseTable pt;
+    ParseTableGenerator pt;
 
     int label;
     Set<GoTo> gotos;
@@ -29,7 +29,7 @@ public class State implements Comparable<State> {
 
     public static Set<State> states = Sets.newHashSet();
 
-    public State(IProduction p, ParseTable pt) {
+    public State(IProduction p, ParseTableGenerator pt) {
         items = Sets.newHashSet();
         actions = Sets.newHashSet();
         gotos = Sets.newHashSet();
@@ -48,7 +48,7 @@ public class State implements Comparable<State> {
         closure();
     }
 
-    public State(Set<LRItem> kernel, ParseTable pt) {
+    public State(Set<LRItem> kernel, ParseTableGenerator pt) {
         items = Sets.newHashSet();
         actions = Sets.newHashSet();
         gotos = Sets.newHashSet();

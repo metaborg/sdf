@@ -11,11 +11,11 @@ import com.google.common.collect.Sets;
 
 public class LRItem {
 
-    ParseTable pt;
+    ParseTableGenerator pt;
     IProduction prod;
     int dotPosition;
 
-    public LRItem(IProduction prod, int dotPosition, ParseTable pt) {
+    public LRItem(IProduction prod, int dotPosition, ParseTableGenerator pt) {
         if(!(prod instanceof ContextualProduction) && pt.getGrammar().contextual_prods.containsKey(prod)) {
             this.prod = pt.getGrammar().contextual_prods.get(prod);
         } else {

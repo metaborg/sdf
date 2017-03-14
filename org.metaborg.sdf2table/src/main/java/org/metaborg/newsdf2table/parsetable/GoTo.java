@@ -6,29 +6,29 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 public class GoTo {
 
-    ParseTable pt;
+    ParseTableGenerator pt;
     int label = -1;
     CharacterClass cc = null;
     private int state;
 
-    public GoTo(CharacterClass cc, int toState, ParseTable pt) {
+    public GoTo(CharacterClass cc, int toState, ParseTableGenerator pt) {
         this.pt = pt;
         this.cc = cc;
         this.setState(toState);
     }
 
-    public GoTo(CharacterClass cc, ParseTable pt) {
+    public GoTo(CharacterClass cc, ParseTableGenerator pt) {
         this.pt = pt;
         this.cc = cc;
     }
 
-    public GoTo(int label, int toState, ParseTable pt) {
+    public GoTo(int label, int toState, ParseTableGenerator pt) {
         this.pt = pt;
         this.label = label;
         this.setState(toState);
     }
 
-    public GoTo(int label, ParseTable pt) {
+    public GoTo(int label, ParseTableGenerator pt) {
         this.pt = pt;
         this.label = label;
     }

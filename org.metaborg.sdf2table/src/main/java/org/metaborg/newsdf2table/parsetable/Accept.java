@@ -8,7 +8,7 @@ public class Accept extends Action {
     public Accept() {
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTable pt) {
+    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTableGenerator pt) {
         return tf.makeAppl(tf.makeConstructor("accept", 0));
     }
     

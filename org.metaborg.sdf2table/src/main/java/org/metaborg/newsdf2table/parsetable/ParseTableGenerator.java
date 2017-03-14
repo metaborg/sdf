@@ -3,13 +3,11 @@ package org.metaborg.newsdf2table.parsetable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import org.metaborg.newsdf2table.grammar.CharacterClass;
 import org.metaborg.newsdf2table.grammar.IPriority;
@@ -33,7 +31,7 @@ import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class ParseTable {
+public class ParseTableGenerator {
 
     private NormGrammar grammar;
     final int version_number = 6;
@@ -42,11 +40,13 @@ public class ParseTable {
     BiMap<IProduction, Integer> prod_labels;
     IProduction initial_prod;
 
+    /* TODO Calculate first and follow sets
     // Tarjan's index
     int index = 0;
     Stack<TableSet> tarjanStack;
     Set<Set<TableSet>> first_components;
     Set<Set<TableSet>> follow_components;
+    */
 
     Queue<State> stateQueue = Lists.newLinkedList();
     Set<State> processedStates = Sets.newHashSet();
@@ -63,7 +63,7 @@ public class ParseTable {
     boolean generateParenthesize;
     private final static ITermFactory termFactory = new TermFactory();
 
-    public ParseTable(File input, File output, List<String> paths, boolean parenthesize) {
+    public ParseTableGenerator(File input, File output, List<String> paths, boolean parenthesize) {
         this.input = input;
         this.output = output;
         this.paths = paths;
@@ -129,8 +129,6 @@ public class ParseTable {
         processStateQueue();
         Collections.sort(states);
         _end_time = System.currentTimeMillis();
-
-        List<ContextualProduction> list_derivedContextualProd = new ArrayList<>(grammar.derived_contextual_prods);
 
         long generationTime = _end_time - _start_time;
         Benchmark.printStatistics("Generation: ", generationTime);
@@ -475,6 +473,7 @@ public class ParseTable {
             || grammar.rightRecursive.get(p.higher().leftHand()).contains(p.lower().leftHand());
     }
 
+    /* TODO calculate first and follow sets
     private void calculateFirstFollow() {
         for(IProduction p : getGrammar().prods.values()) {
             p.calculateDependencies(getGrammar());
@@ -489,6 +488,7 @@ public class ParseTable {
         }
     }
 
+    
     private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) {
         // Set the depth index for v to the smallest unused index
         v.index = index;
@@ -522,6 +522,7 @@ public class ParseTable {
             components.add(component);
         }
     }
+    */
 
     private void deepConflictsAnalysis() {
         for(IPriority prio : grammar.priorities().keySet()) {
@@ -947,9 +948,11 @@ public class ParseTable {
         this.grammar = grammar;
     }
 
-
-
     public static ITermFactory getTermfactory() {
         return termFactory;
+    }
+
+    public Set<File> requiredFiles() {
+        return grammar.sdf3_files;
     }
 }

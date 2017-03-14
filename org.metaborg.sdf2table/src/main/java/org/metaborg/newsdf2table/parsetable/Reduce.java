@@ -46,7 +46,7 @@ public class Reduce extends Action {
         this.cc = cc;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTable pt) {
+    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTableGenerator pt) {
         int status = 0;
         for(IAttribute attr : pt.getGrammar().prod_attrs.get(prod)) {
             if(attr instanceof GeneralAttribute) {
