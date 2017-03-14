@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,10 +16,11 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class NormGrammar implements INormGrammar {
+    
+    // all files used in this grammar
+    public Set<File> sdf3_files;
 
     public IProduction initial_prod;
-
-    
     
     // to handle Sort.Cons in priorities
     public Map<ProductionReference, IProduction> sort_cons_prods;
@@ -51,6 +53,7 @@ public class NormGrammar implements INormGrammar {
     public SetMultimap<Symbol, IProduction> symbol_prods;
     
     public NormGrammar() {
+        this.sdf3_files = Sets.newHashSet();
         this.prods = Maps.newHashMap();
         this.sort_cons_prods = Maps.newHashMap();
         this.contextual_prods = HashBiMap.create();

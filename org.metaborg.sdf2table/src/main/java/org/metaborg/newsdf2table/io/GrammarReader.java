@@ -41,7 +41,7 @@ import org.metaborg.newsdf2table.grammar.StartSymbol;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.TermAttribute;
 import org.metaborg.newsdf2table.grammar.UniqueProduction;
-import org.metaborg.newsdf2table.parsetable.ParseTable;
+import org.metaborg.newsdf2table.parsetable.ParseTableGenerator;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoString;
@@ -59,17 +59,16 @@ public class GrammarReader {
 
     public static NormGrammar readGrammar(File input, File output, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
-
+        NormGrammar grammar = new NormGrammar();
+        
         long _start_time, _end_time;
 
         _start_time = System.currentTimeMillis();
-        IStrategoTerm mainModule = termFromFile(input);
+        IStrategoTerm mainModule = termFromFile(input, grammar);
         _end_time = System.currentTimeMillis();
 
         long readAtermTime = _end_time - _start_time;
-        Benchmark.printStatistics("Read Aterm: ", readAtermTime);
-
-        NormGrammar grammar = new NormGrammar();
+        Benchmark.printStatistics("Read Aterm: ", readAtermTime);        
 
         _start_time = System.currentTimeMillis();
         generateGrammar(grammar, mainModule, modules, paths);
@@ -130,7 +129,7 @@ public class GrammarReader {
                                         String filename = path + "/" + iname + ".aterm";
                                         File file = new File(filename);
                                         if(file.exists() && !file.isDirectory()) {
-                                            IStrategoTerm iModule = termFromFile(file);
+                                            IStrategoTerm iModule = termFromFile(file, g);
                                             generateGrammar(g, iModule, modules, paths);
                                             break;
                                         } else {
@@ -498,7 +497,7 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return ParseTable.getTermfactory().makeAppl(ParseTable.getTermfactory().makeConstructor(cons_name, arity),
+            return ParseTableGenerator.getTermfactory().makeAppl(ParseTableGenerator.getTermfactory().makeConstructor(cons_name, arity),
                 subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
@@ -506,18 +505,18 @@ public class GrammarReader {
                 termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
                     termName.length() - 1);
             }
-            return ParseTable.getTermfactory().makeString(termName);
+            return ParseTableGenerator.getTermfactory().makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int ivalue = Integer.parseInt(svalue);
-            return ParseTable.getTermfactory().makeInt(ivalue);
+            return ParseTableGenerator.getTermfactory().makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
             List<IStrategoTerm> terms = Lists.newArrayList();
             for(IStrategoTerm t : term_list) {
                 terms.add(createStrategoTermAttribute((IStrategoAppl) t));
             }
-            return ParseTable.getTermfactory().makeList(terms);
+            return ParseTableGenerator.getTermfactory().makeList(terms);
         }
         System.err.println("sdf2table : importAttribute: unknown stratego term attribute `" + term.getName() + "'.");
         throw new UnexpectedTermException(term.toString());
@@ -778,7 +777,7 @@ public class GrammarReader {
         return production;
     }
 
-    private static IStrategoTerm termFromFile(File file) {
+    private static IStrategoTerm termFromFile(File file, NormGrammar grammar) {
         FileReader reader = null;
         IStrategoTerm term = null;
 
@@ -789,7 +788,8 @@ public class GrammarReader {
             String aterm = new String(chars);
             reader.close();
 
-            term = ParseTable.getTermfactory().parseFromString(aterm);
+            term = ParseTableGenerator.getTermfactory().parseFromString(aterm);
+            grammar.sdf3_files.add(file);            
         } catch(IOException e) {
             System.err.println("Cannot open module file `" + file.getPath() + "'");
         } finally {
