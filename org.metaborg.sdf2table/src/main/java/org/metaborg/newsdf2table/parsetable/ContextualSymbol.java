@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.parsetable;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.Symbol;
@@ -10,8 +11,8 @@ import com.google.common.collect.Sets;
 
 public class ContextualSymbol extends Symbol {
 
-    Symbol s;
-    Set<Context> contexts;
+    private final Symbol s;
+    private final Set<Context> contexts;
 
     public ContextualSymbol(Symbol s, Set<Context> context) {
         this.s = s;
@@ -26,23 +27,56 @@ public class ContextualSymbol extends Symbol {
     
     @Override public String name() {
         String buf = "";
-        buf += s.name();
-        if(!contexts.isEmpty()) {
+        buf += getOrigSymbol().name();
+        if(!getContexts().isEmpty()) {
             int i = 0;
-            buf += "[";
-            for(Context p : contexts) {
+            buf += "{";
+            for(Context p : getContexts()) {
                 if(i != 0)
                     buf += ", ";
                 buf += p;
                 i++;
             }
-            buf += "]";
+            buf += "}";
         }
         return buf;
     }
 
+    @Override public Set<Symbol> followRestriction() {
+        return getOrigSymbol().followRestriction();
+    }
+
+    public Set<Context> getContexts() {
+        return contexts;
+    }
+
+    public Symbol getOrigSymbol() {
+        return s;
+    }
+
+    public ContextualSymbol addContext(Context new_context) {
+        Set<Context> new_contexts = Sets.newHashSet();
+        new_contexts.addAll(getContexts());
+        new_contexts.add(new_context);
+        
+        return new ContextualSymbol(getOrigSymbol(), new_contexts);
+    }
+
+    public ContextualSymbol addContexts(Set<Context> contexts) {
+        Set<Context> new_contexts = Sets.newHashSet();
+        new_contexts.addAll(contexts);
+        new_contexts.addAll(this.getContexts());
+        
+        return new ContextualSymbol(getOrigSymbol(), new_contexts);
+    }
+
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        return s.toAterm(tf);
+        return getOrigSymbol().toAterm(tf);
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return getOrigSymbol().toSDF3Aterm(tf, ctx_vals, ctx_vals.get(getContexts()));
     }
 
     @Override public int hashCode() {
@@ -56,7 +90,7 @@ public class ContextualSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
@@ -72,27 +106,6 @@ public class ContextualSymbol extends Symbol {
         } else if(!s.equals(other.s))
             return false;
         return true;
-    }
-    
-    @Override public Set<Symbol> followRestriction() {
-        return s.followRestriction();
-    }
-
-    public ContextualSymbol addContext(Context new_context) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(contexts);
-        new_contexts.add(new_context);
-        
-        return new ContextualSymbol(s, new_contexts);
-    }
-    
-    
-    public ContextualSymbol addContexts(Set<Context> contexts) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(contexts);
-        new_contexts.addAll(this.contexts);
-        
-        return new ContextualSymbol(s, new_contexts);
     }
     
 }

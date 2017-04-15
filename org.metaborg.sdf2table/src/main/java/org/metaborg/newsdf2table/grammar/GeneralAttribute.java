@@ -15,21 +15,6 @@ public class GeneralAttribute implements IAttribute {
         return getName();
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        switch(getName()) {
-            case "right":
-            case "assoc":
-            case "left":
-                return tf.makeAppl(tf.makeConstructor("assoc", 1), tf.makeAppl(tf.makeConstructor(getName(), 0)));
-            case "prefer":
-            case "reject":
-            case "avoid":
-                return tf.makeAppl(tf.makeConstructor(getName(), 0));
-            default:
-                return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor(getName(), 0)));
-        }
-    }
-
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -59,5 +44,41 @@ public class GeneralAttribute implements IAttribute {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override public IStrategoTerm toAterm(ITermFactory tf) {
+        switch(getName()) {
+            case "right":
+            case "assoc":
+            case "left":
+                return tf.makeAppl(tf.makeConstructor("assoc", 1), tf.makeAppl(tf.makeConstructor(getName(), 0)));
+            case "prefer":
+            case "reject":
+            case "avoid":
+                return tf.makeAppl(tf.makeConstructor(getName(), 0));
+            default:
+                return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor(getName(), 0)));
+        }
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
+        switch(getName()) {
+            case "right":
+                return tf.makeAppl(tf.makeConstructor("Assoc", 1), tf.makeAppl(tf.makeConstructor("Right", 0)));
+            case "assoc":
+                return tf.makeAppl(tf.makeConstructor("Assoc", 1), tf.makeAppl(tf.makeConstructor("Assoc", 0)));
+            case "left":
+                return tf.makeAppl(tf.makeConstructor("Assoc", 1), tf.makeAppl(tf.makeConstructor("Left", 0)));
+            case "prefer":
+                return tf.makeAppl(tf.makeConstructor("Prefer", 0));
+            case "reject":
+                return tf.makeAppl(tf.makeConstructor("Reject", 0));
+            case "avoid":
+                return tf.makeAppl(tf.makeConstructor("Avoid", 0));
+            default:
+                return tf.makeAppl(tf.makeConstructor("Term", 1),
+                    tf.makeAppl(tf.makeConstructor("Default", 1), tf.makeAppl(tf.makeConstructor("Fun", 1),
+                        tf.makeAppl(tf.makeConstructor("Unquoted", 1), tf.makeString(name)))));
+        }
     }
 }

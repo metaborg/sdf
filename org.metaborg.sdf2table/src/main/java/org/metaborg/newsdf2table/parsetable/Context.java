@@ -21,13 +21,13 @@ public class Context {
         this.position = position;
     }   
     
-    @Override public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        result = prime * result + ((position == null) ? 0 : position.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        return result;
+    @Override public String toString() {
+        if(type == ContextType.SHALLOW && position == ContextPosition.LEFTMOST) {
+            return "SHALLOW-LEFT: " + context;
+        } else if (type == ContextType.SHALLOW && position == ContextPosition.RIGHTMOST) {
+            return "SHALLOW-RIGHT: " + context;
+        }
+        return context.toString();
     }
 
     @Override public boolean equals(Object obj) {
@@ -50,12 +50,12 @@ public class Context {
         return true;
     }
 
-    @Override public String toString() {
-        if(type == ContextType.SHALLOW && position == ContextPosition.LEFTMOST) {
-            return "SHALLOW-LEFT: " + context;
-        } else if (type == ContextType.SHALLOW && position == ContextPosition.RIGHTMOST) {
-            return "SHALLOW-RIGHT: " + context;
-        }
-        return context.toString();
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((context == null) ? 0 : context.hashCode());
+        result = prime * result + ((position == null) ? 0 : position.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
     }
 }

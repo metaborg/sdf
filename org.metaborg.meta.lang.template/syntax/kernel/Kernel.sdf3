@@ -35,6 +35,7 @@ Attribute.LayoutConstraint = <layout(<Constraint>)>
 Attribute.IgnoreLayout = <ignore-layout>
 Attribute.EnforceNewLine = <enforce-newline>
 Attribute.LongestMatch = <longest-match>
+Attribute.NewLongestMatch = <nlm>
 
 Attribute.CaseInsensitive = <case-insensitive>
 Attribute.Deprecated = <deprecated>  

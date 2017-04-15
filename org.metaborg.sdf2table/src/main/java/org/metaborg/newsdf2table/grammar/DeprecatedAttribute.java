@@ -30,4 +30,12 @@ public class DeprecatedAttribute implements IAttribute {
         }
     }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
+        if(message == null) {
+            return tf.makeAppl(tf.makeConstructor("Deprecated", 0));
+        } else {
+            return tf.makeAppl(tf.makeConstructor("Deprecated", 1), tf.makeString("\"" + message + "\""));
+        }
+    }
+
 }

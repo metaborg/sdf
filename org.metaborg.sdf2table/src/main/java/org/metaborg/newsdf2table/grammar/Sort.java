@@ -1,5 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -7,8 +11,8 @@ import com.google.common.collect.Sets;
 
 public class Sort extends Symbol {
 
-    String name;
-    LiteralType type;
+    private final String name;
+    private final LiteralType type;
 
     public Sort(String name) {
         this.name = name;
@@ -42,6 +46,19 @@ public class Sort extends Symbol {
         return tf.makeAppl(tf.makeConstructor("sort", 1), tf.makeString(name));
     }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals,
+        Integer ctx_val) {
+        if(type == LiteralType.CiLit) {
+            return tf.makeAppl(tf.makeConstructor("CiLit", 1), tf.makeString("\"" + name + "\""));
+        } else if(type == LiteralType.Lit) {
+            return tf.makeAppl(tf.makeConstructor("Lit", 1), tf.makeString("\"" + name + "\""));
+        }
+        if(ctx_val != null) {
+            return tf.makeAppl(tf.makeConstructor("Sort", 1), tf.makeString(name + ctx_val));
+        }
+        return tf.makeAppl(tf.makeConstructor("Sort", 1), tf.makeString(name));
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -53,7 +70,7 @@ public class Sort extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;

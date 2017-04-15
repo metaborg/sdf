@@ -1,7 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -10,8 +13,8 @@ import com.google.common.collect.Lists;
 
 public class CharacterClassConc extends Symbol {
 
-    Symbol first;
-    Symbol second;
+    private final Symbol first;
+    private final Symbol second;
 
     public CharacterClassConc(Symbol first, Symbol second) {
         this.first = first;
@@ -20,60 +23,6 @@ public class CharacterClassConc extends Symbol {
 
     public String name() {
         return first.name() + second.name();
-    }
-
-    @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        List<IStrategoTerm> terms = Lists.newArrayList();
-
-        IStrategoTerm firstAterm = first.toAterm(tf);
-        IStrategoTerm secondAterm = second.toAterm(tf);
-
-        if(firstAterm instanceof IStrategoList) {
-            for(IStrategoTerm t : firstAterm.getAllSubterms()) {
-                terms.add(t);
-            }
-        } else {
-            terms.add(firstAterm);
-        }
-
-        if(secondAterm instanceof IStrategoList) {
-            for(IStrategoTerm t : secondAterm.getAllSubterms()) {
-                terms.add(t);
-            }
-        } else {
-            terms.add(secondAterm);
-        }
-
-        return tf.makeList(terms);
-    }
-
-    @Override public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((first == null) ? 0 : first.hashCode());
-        result = prime * result + ((second == null) ? 0 : second.hashCode());
-        return result;
-    }
-
-    @Override public boolean equals(Object obj) {
-        if(this == obj)
-            return true;
-        if(!super.equals(obj))
-            return false;
-        if(getClass() != obj.getClass())
-            return false;
-        CharacterClassConc other = (CharacterClassConc) obj;
-        if(first == null) {
-            if(other.first != null)
-                return false;
-        } else if(!first.equals(other.first))
-            return false;
-        if(second == null) {
-            if(other.second != null)
-                return false;
-        } else if(!second.equals(other.second))
-            return false;
-        return true;
     }
 
     public boolean contains(int c) {
@@ -151,15 +100,74 @@ public class CharacterClassConc extends Symbol {
         } else {
             cc_second = ((CharacterClassConc) second).difference(ary);
         }
-        
+
         if(cc_first != null && cc_second == null)
             return cc_first;
         if(cc_first == null && cc_second != null)
             return cc_second;
         if(cc_first != null && cc_second != null)
             return CharacterClass.union(cc_first, cc_second);
-        
+
         return new CharacterClass(null);
+    }
+
+    @Override public IStrategoTerm toAterm(ITermFactory tf) {
+        List<IStrategoTerm> terms = Lists.newArrayList();
+
+        IStrategoTerm firstAterm = first.toAterm(tf);
+        IStrategoTerm secondAterm = second.toAterm(tf);
+
+        if(firstAterm instanceof IStrategoList) {
+            for(IStrategoTerm t : firstAterm.getAllSubterms()) {
+                terms.add(t);
+            }
+        } else {
+            terms.add(firstAterm);
+        }
+
+        if(secondAterm instanceof IStrategoList) {
+            for(IStrategoTerm t : secondAterm.getAllSubterms()) {
+                terms.add(t);
+            }
+        } else {
+            terms.add(secondAterm);
+        }
+
+        return tf.makeList(terms);
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("Conc", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val), second.toSDF3Aterm(tf, ctx_vals, ctx_val));
+    }
+
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((first == null) ? 0 : first.hashCode());
+        result = prime * result + ((second == null) ? 0 : second.hashCode());
+        return result;
+    }
+
+    @Override public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(getClass() != obj.getClass())
+            return false;
+        CharacterClassConc other = (CharacterClassConc) obj;
+        if(first == null) {
+            if(other.first != null)
+                return false;
+        } else if(!first.equals(other.first))
+            return false;
+        if(second == null) {
+            if(other.second != null)
+                return false;
+        } else if(!second.equals(other.second))
+            return false;
+        return true;
     }
 
 }

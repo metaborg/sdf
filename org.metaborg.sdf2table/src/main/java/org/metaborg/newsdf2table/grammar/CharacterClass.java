@@ -1,7 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -12,10 +15,9 @@ public class CharacterClass extends Symbol {
 
     public static CharacterClass maxCC =
         new CharacterClass(new CharacterClassRange(new CharacterClassNumeric(0), new CharacterClassNumeric(256)));
-    public static CharacterClass emptyCC =
-        new CharacterClass(null);    
-    
-    Symbol cc;
+    public static CharacterClass emptyCC = new CharacterClass(null);
+
+    private final Symbol cc;
 
     public CharacterClass(Symbol s) {
         this.cc = s;
@@ -76,18 +78,18 @@ public class CharacterClass extends Symbol {
     public static CharacterClass intersection(CharacterClass... ary) {
         int _min = minimum(ary);
         int _max = maximum(ary);
-    
+
         // We want to find all sub ranges that are not included in {restrictions}.
         // min and max correspond to the current valid range.
         int min = -1;
         int max = -1;
-    
+
         // The final restricted terminal.
         Symbol rt = null;
         // For each value of the range (plus a last iteration).
         for(int c = _min; c <= _max + 1; ++c) {
             boolean ok = false; // The value is valid or not (restricted or not).
-    
+
             // if we are in the range...
             if(c <= _max) {
                 ok = true;
@@ -97,14 +99,14 @@ public class CharacterClass extends Symbol {
                         break;
                     }
                 }
-    
+
                 if(ok) { // We augment our current range (or create it if min == -1).
                     if(min == -1)
                         min = c;
                     max = c;
                 }
             }
-    
+
             // We are out of a valid range, but we have detected one.
             if(!ok && min != -1) {
                 Symbol t;
@@ -112,7 +114,7 @@ public class CharacterClass extends Symbol {
                     t = new CharacterClassNumeric(min); // Single-value range, a numeric.
                 else
                     t = new CharacterClassRange(new CharacterClassNumeric(min), new CharacterClassNumeric(max));
-    
+
                 if(rt == null)
                     rt = t; // it's the first, and may be the only, range.
                 else
@@ -121,13 +123,14 @@ public class CharacterClass extends Symbol {
                 min = max = -1;
             }
         }
-    
+
         return new CharacterClass(rt);
     }
 
     public boolean contains(int c) {
-        if (cc == null) return false;
-        
+        if(cc == null)
+            return false;
+
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).contains(c);
         } else if(cc instanceof CharacterClassRange) {
@@ -138,9 +141,10 @@ public class CharacterClass extends Symbol {
     }
 
     public int minimum() {
-        
-        if (cc == null) return Integer.MAX_VALUE;
-        
+
+        if(cc == null)
+            return Integer.MAX_VALUE;
+
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).minimum();
         } else if(cc instanceof CharacterClassRange) {
@@ -151,9 +155,10 @@ public class CharacterClass extends Symbol {
     }
 
     public int maximum() {
-        
-        if (cc == null) return Integer.MIN_VALUE;
-        
+
+        if(cc == null)
+            return Integer.MIN_VALUE;
+
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).maximum();
         } else if(cc instanceof CharacterClassRange) {
@@ -184,8 +189,9 @@ public class CharacterClass extends Symbol {
     }
 
     public CharacterClass difference(CharacterClass... ary) {
-        if (cc == null) return this;
-        
+        if(cc == null)
+            return this;
+
         if(cc instanceof CharacterClassNumeric) {
             return ((CharacterClassNumeric) cc).difference(ary);
         } else if(cc instanceof CharacterClassRange) {
@@ -196,7 +202,8 @@ public class CharacterClass extends Symbol {
     }
 
     @Override public String name() {
-        if(cc == null) return "[]";
+        if(cc == null)
+            return "[]";
         String name = "[";
         name += cc.name() + "]";
         return name;
@@ -219,30 +226,6 @@ public class CharacterClass extends Symbol {
 
     }
 
-
-    @Override public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((cc == null) ? 0 : cc.hashCode());
-        return result;
-    }
-
-    @Override public boolean equals(Object obj) {
-        if(this == obj)
-            return true;
-        if(!super.equals(obj))
-            return false;
-        if(getClass() != obj.getClass())
-            return false;
-        CharacterClass other = (CharacterClass) obj;
-        if(cc == null) {
-            if(other.cc != null)
-                return false;
-        } else if(!cc.equals(other.cc))
-            return false;
-        return true;
-    }
-
     public IStrategoTerm toStateAterm(ITermFactory tf) {
         if(cc == null) {
             return tf.makeList();
@@ -257,5 +240,38 @@ public class CharacterClass extends Symbol {
             return tf.makeList(terms);
         }
         return tf.makeList(cc_aterm);
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        if(cc == null) {
+            return tf.makeAppl(tf.makeConstructor("CharClass", 1),
+                tf.makeAppl(tf.makeConstructor("Simple", 1), tf.makeAppl(tf.makeConstructor("Absent", 0))));
+        }
+        return tf.makeAppl(tf.makeConstructor("CharClass", 1), tf.makeAppl(tf.makeConstructor("Simple", 1),
+            tf.makeAppl(tf.makeConstructor("Present", 1), cc.toSDF3Aterm(tf, ctx_vals, ctx_val))));
+    }
+
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((cc == null) ? 0 : cc.hashCode());
+        return result;
+    }
+
+    @Override public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(getClass() != obj.getClass())
+            return false;
+        CharacterClass other = (CharacterClass) obj;
+        if(cc == null) {
+            if(other.cc != null)
+                return false;
+        } else if(!cc.equals(other.cc))
+            return false;
+        return true;
     }
 }

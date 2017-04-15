@@ -1,5 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -7,9 +11,9 @@ import com.google.common.collect.Sets;
 
 public class AltSymbol extends Symbol {
 
-    Symbol alt1;
-    Symbol alt2;
-        
+    private final Symbol alt1;
+    private final Symbol alt2;
+
     public AltSymbol(Symbol alt1, Symbol alt2) {
         this.alt1 = alt1;
         this.alt2 = alt2;
@@ -22,6 +26,11 @@ public class AltSymbol extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         return tf.makeAppl(tf.makeConstructor("alt", 2), alt1.toAterm(tf), alt2.toAterm(tf));
+    }    
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("Alt", 2), alt1.toSDF3Aterm(tf, ctx_vals, ctx_val), alt2.toSDF3Aterm(tf, ctx_vals, ctx_val));
     }
 
     @Override public int hashCode() {
@@ -35,7 +44,7 @@ public class AltSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;

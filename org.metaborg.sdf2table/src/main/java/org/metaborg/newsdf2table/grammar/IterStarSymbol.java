@@ -1,5 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -7,15 +11,19 @@ import com.google.common.collect.Sets;
 
 public class IterStarSymbol extends Symbol {
 
-    Symbol symbol;
+    private final Symbol symbol;
 
     public IterStarSymbol(Symbol symbol) {
         this.symbol = symbol;
         followRestrictions = Sets.newHashSet();
     }
 
+    public Symbol getSymbol() {
+        return symbol;
+    }
+
     @Override public String name() {
-        return symbol.name() + "*";
+        return getSymbol().name() + "*";
     }
 
     @Override public String toString() {
@@ -23,7 +31,12 @@ public class IterStarSymbol extends Symbol {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        return tf.makeAppl(tf.makeConstructor("iter-star", 1), symbol.toAterm(tf));
+        return tf.makeAppl(tf.makeConstructor("iter-star", 1), getSymbol().toAterm(tf));
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("IterStar", 1), getSymbol().toSDF3Aterm(tf, ctx_vals, ctx_val));
     }
 
     @Override public int hashCode() {
@@ -36,7 +49,7 @@ public class IterStarSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;

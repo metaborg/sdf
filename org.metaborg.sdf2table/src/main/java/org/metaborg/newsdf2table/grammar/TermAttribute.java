@@ -42,5 +42,9 @@ public class TermAttribute implements IAttribute {
         } else if(!term_name.equals(other.term_name))
             return false;
         return true;
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
+        return tf.makeAppl(tf.makeConstructor("Term", 1), term);
     }   
 }

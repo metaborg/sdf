@@ -35,6 +35,7 @@ menus
       action: "Generate SDF (concrete)"   = generate-sdf-concrete
       action: "to Normal Form"            = sdf3-to-normal-form 
       action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract 
+      action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract
     end
     
     submenu: "Signature"

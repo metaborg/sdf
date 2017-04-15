@@ -571,6 +571,10 @@ rules //conversion of SDF3 terms into SDF2
   special-term-to-sdf:
     LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
     
+  special-term-to-sdf:
+    NewLongestMatch() -> term(default(fun(unquoted("nlm"))))      
+  
+    
   terms-to-sdf:
     [term | tail] -> <id>
 

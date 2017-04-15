@@ -1,7 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.metaborg.newsdf2table.parsetable.TableSet;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -11,8 +14,8 @@ import com.google.common.collect.SetMultimap;
 
 public class Production implements IProduction {
 
-    private Symbol lhs;
-    private List<Symbol> rhs;
+    private final Symbol lhs;
+    private final List<Symbol> rhs;
 
     // First and Follow Sets
     private TableSet firstSet = new TableSet(this);
@@ -166,6 +169,31 @@ public class Production implements IProduction {
                 break;
             }
         }
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
+        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
+        for(Symbol s : rhs) {
+            rhs_terms.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
+        }
+
+        for(IAttribute a : prod_attrs.get(this)) {
+            attrs_terms.add(a.toSDF3Aterm(tf));
+        }
+
+        if(attrs_terms.isEmpty()) {
+            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+                tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
+                tf.makeAppl(tf.makeConstructor("NoAttrs", 0)));
+        } else {
+            // with constructor
+        }
+
+        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
+            tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
     }
 
 }

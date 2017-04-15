@@ -10,6 +10,9 @@ imports
   normalization/to-normal-form
   trans/pp
   
+rules 
+  get-contextual-grammar = prim("SSL_EXT_get_contextual_grammar", <id>) <+ "file not found"
+  
 rules
   generate-sdf-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -73,4 +76,13 @@ rules
     <?Module(Unparameterized(mn), i*, sections)> ast ;
     filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
     result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected      
+       
+         
+  read-contextual-grammar-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+   where
+   <debug(!"project-path ")> project-path;
+   ctx-ast      := <get-contextual-grammar> project-path; 
+   filename     := <create-src-gen(|project-path, "syntax", ".sdf3_")> "contextualGrammar";
+   result       := <pp-SDF3-string> ctx-ast     
        

@@ -74,6 +74,7 @@ context-free syntax
     ATermAttribute = <deprecated(<StrCon>)> {reject}
     ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
     ATermAttribute = <id(<ModuleName>)> {reject}
+    ATermAttribute = <nlm> {reject}
     
 
   restrictions

@@ -1,29 +1,58 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClassNumeric extends Symbol {
 
-    Integer character;
-    
+    private final Integer character;
+
     public CharacterClassNumeric(Integer c) {
         character = c;
     }
 
     @Override public String name() {
         String name = "\\";
-        name += character.intValue();
+        name += getCharacter().intValue();
         return name;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf) {        
-        return tf.makeInt(character);
+    @Override public IStrategoTerm toAterm(ITermFactory tf) {
+        return tf.makeInt(getCharacter());
+    }    
+
+    public boolean contains(int c) {
+        return getCharacter() == c;
     }
-    
-//    public Symbol union(Symbol cc) {
-//        return null;
-//    }
+
+    public int minimum() {
+        return getCharacter();
+    }
+
+    public int maximum() {
+        return getCharacter();
+    }
+
+    public CharacterClass difference(CharacterClass[] ary) {
+        for(CharacterClass r : ary) {
+            if(r.contains(getCharacter()))
+                return new CharacterClass(null);
+        }
+        return new CharacterClass(this);
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("Numeric", 1), tf.makeString("\\" + getCharacter()));
+    }
+
+    public Integer getCharacter() {
+        return character;
+    }
 
     @Override public int hashCode() {
         final int prime = 31;
@@ -35,7 +64,7 @@ public class CharacterClassNumeric extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
@@ -48,24 +77,4 @@ public class CharacterClassNumeric extends Symbol {
         return true;
     }
 
-    public boolean contains(int c) {
-        return character == c;
-    }
-
-    public int minimum() {
-        return character;
-    }
-
-    public int maximum() {
-        return character;
-    }
-
-    public CharacterClass difference(CharacterClass[] ary) {
-        for(CharacterClass r : ary){
-            if(r.contains(character))
-                return new CharacterClass(null);
-        }
-        return new CharacterClass(this);
-    }
-    
 }

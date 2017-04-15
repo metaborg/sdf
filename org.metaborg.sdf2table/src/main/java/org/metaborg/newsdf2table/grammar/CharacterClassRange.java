@@ -1,12 +1,16 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClassRange extends Symbol {
 
-    Symbol start;
-    Symbol end;
+    private final Symbol start;
+    private final Symbol end;
 
     public CharacterClassRange(Symbol iSymbol, Symbol iSymbol2) {
         this.start = iSymbol;
@@ -19,35 +23,6 @@ public class CharacterClassRange extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         return tf.makeAppl(tf.makeConstructor("range", 2), start.toAterm(tf), end.toAterm(tf));
-    }
-
-    @Override public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((end == null) ? 0 : end.hashCode());
-        result = prime * result + ((start == null) ? 0 : start.hashCode());
-        return result;
-    }
-
-    @Override public boolean equals(Object obj) {
-        if(this == obj)
-            return true;
-        if(!super.equals(obj))
-            return false;
-        if(getClass() != obj.getClass())
-            return false;
-        CharacterClassRange other = (CharacterClassRange) obj;
-        if(end == null) {
-            if(other.end != null)
-                return false;
-        } else if(!end.equals(other.end))
-            return false;
-        if(start == null) {
-            if(other.start != null)
-                return false;
-        } else if(!start.equals(other.start))
-            return false;
-        return true;
     }
 
     public Symbol union(Symbol cc) {
@@ -97,8 +72,8 @@ public class CharacterClassRange extends Symbol {
             return null;
         }
 
-        int start_value = ((CharacterClassNumeric) start).character;
-        int end_value = ((CharacterClassNumeric) end).character;
+        int start_value = ((CharacterClassNumeric) start).getCharacter();
+        int end_value = ((CharacterClassNumeric) end).getCharacter();
 
 
         // For each value of the range (plus a last iteration).
@@ -141,4 +116,37 @@ public class CharacterClassRange extends Symbol {
         return new CharacterClass(rt);
     }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("Range", 2), start.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            end.toSDF3Aterm(tf, ctx_vals, ctx_val));
+    }
+
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((end == null) ? 0 : end.hashCode());
+        result = prime * result + ((start == null) ? 0 : start.hashCode());
+        return result;
+    }
+
+    @Override public boolean equals(Object obj) {
+        if(this == obj)
+            return true;
+        if(obj == null)
+            return false;
+        if(getClass() != obj.getClass())
+            return false;
+        CharacterClassRange other = (CharacterClassRange) obj;
+        if(end == null) {
+            if(other.end != null)
+                return false;
+        } else if(!end.equals(other.end))
+            return false;
+        if(start == null) {
+            if(other.start != null)
+                return false;
+        } else if(!start.equals(other.start))
+            return false;
+        return true;
+    }
 }

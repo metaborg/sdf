@@ -1,7 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -10,8 +13,8 @@ import com.google.common.collect.Sets;
 
 public class SequenceSymbol extends Symbol {
 
-    Symbol first;
-    List<Symbol> tail;
+    private final Symbol first;
+    private final List<Symbol> tail;
 
     public SequenceSymbol(Symbol first, List<Symbol> tail) {        
         this.first = first;
@@ -33,12 +36,23 @@ public class SequenceSymbol extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         List<IStrategoTerm> tail_aterm = Lists.newArrayList();
-
+    
         for(Symbol s : tail) {
             tail_aterm.add(s.toAterm(tf));
         }
-
+    
         return tf.makeAppl(tf.makeConstructor("seq", 2), first.toAterm(tf), tf.makeList(tail_aterm));
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        List<IStrategoTerm> tail_aterm = Lists.newArrayList();
+        
+        for(Symbol s : tail) {
+            tail_aterm.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
+        }
+    
+        return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val), tf.makeList(tail_aterm));
     }
 
     @Override public int hashCode() {
@@ -52,7 +66,7 @@ public class SequenceSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
