@@ -2,8 +2,8 @@
 <feature
   id="org.metaborg.meta.lang.template.eclipse.feature"
   label="template language Eclipse plugin"
-  version="2.2.0.qualifier"
+  version="2.2.0"
 >
-  <plugin id="org.metaborg.meta.lang.template.eclipse" version="2.2.0.qualifier" unpack="true" />
+  <plugin id="org.metaborg.meta.lang.template.eclipse" version="2.2.0" unpack="true" />
   <includes id="org.metaborg.spoofax.eclipse.feature" version="0" />
 </feature>
