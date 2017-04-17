@@ -8,7 +8,6 @@ imports
   utils/misc
   utils/tokenize
   names/analysis/names
-  runtime/nabl/utils
   analysis/attributes
   analysis/desugar
   pp/layout-constraints/Layout-Constraints-pp
@@ -549,7 +548,7 @@ rules //conversion of SDF3 terms into SDF2
     Sequence(t1, t2*) -> seq(t1, t2*)
 
   special-term-to-sdf:
-    LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+    LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
 
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))

@@ -133,7 +133,7 @@ rules
   
   pp-SDF3-string =
     parenthesize-TemplateLang;
-    prettyprint-Module 
+    prettyprint-TemplateLang-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
       

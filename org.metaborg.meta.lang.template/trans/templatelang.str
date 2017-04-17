@@ -10,14 +10,12 @@ imports
   pp/TemplateLang-parenthesize
   outline
   EditorService
-  stratego/metaborg
   runtime/analysis/-
   runtime/nabl/-
   runtime/task/-
   runtime/index/-
   runtime/properties/-
   runtime/types/-
-  runtime/editor/-
   analysis/-
   generation/completion/-
   generation/gen-utils/-
@@ -31,7 +29,6 @@ imports
   editor/build-sig
   editor/build-syntax
   editor/build-utils
-  editor/build-sdf-completions
   names/analysis/names
   types/analysis/types-ts
   generation/completion/-
@@ -116,7 +113,6 @@ rules
       with(
         handle := <fopen> (filename, "w");
         <fputs> (string, handle);
-        <fclose> handle;
-        <refresh-workspace-file> filename
+        <fclose> handle
       )
     end

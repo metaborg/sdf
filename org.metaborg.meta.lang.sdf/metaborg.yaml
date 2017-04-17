@@ -1,13 +1,15 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.sdf:${metaborgVersion}
 name: SDF
-metaborgVersion: 2.1.0
-metaborgBaselineVersion: 2.0.0-baseline-20160405-142357
+metaborgVersion: 2.2.0-SNAPSHOT
+metaborgBaselineVersion: 2.1.0
 dependencies:
   compile:
   - org.metaborg:org.metaborg.meta.lang.esv:${metaborgVersion}
   source:
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
+  # Required for SDF3, which depends on baseline SDF3, which still generates imports to lib.analysis
+  # Can be removed after bootstrapping
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 pardonedLanguages:
@@ -21,7 +23,7 @@ language:
     - -Idef
     - ${path:root}/lib/SDF.def
   stratego:
-    format: ctree
+    format: jar
     args:
     - -la
     - stratego-lib

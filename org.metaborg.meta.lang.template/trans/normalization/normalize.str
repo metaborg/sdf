@@ -6,7 +6,7 @@ imports
   signatures/TemplateLang-sig
   utils/attributes
   utils/misc
-  runtime/editor/origins
+  libspoofax/term/origin
   names/analysis/names
   generation/pp/remove-template
   analysis/desugar

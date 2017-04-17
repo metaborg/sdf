@@ -4,7 +4,7 @@ imports
   signatures/TemplateLang-sig
   trans/utils/attributes
   trans/utils/misc
-  runtime/editor/origins
+  libspoofax/term/origin
   names/analysis/names
 
    rules

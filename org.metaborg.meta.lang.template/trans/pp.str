@@ -3,7 +3,7 @@ module trans/pp
 imports
 
   libstratego-gpp
-  runtime/refactoring/-
+  libspoofax/editor/refactoring/-
   pp/TemplateLang-pp
   pp/modules/Modules-pp
   pp/TemplateLang-parenthesize
@@ -12,13 +12,13 @@ rules
   
   pp-SDF3-string =
     parenthesize-TemplateLang;
-    prettyprint-Module 
+    prettyprint-TemplateLang-Module 
     ; !V([], <id>)
     ; box2text-string(|120)
   
   
   pp-SDF3-string-abstract =
-    prettyprint-Module 
+    prettyprint-TemplateLang-Module 
     ; !V([], <id>)
       
   pp-partial-SDF3-string =

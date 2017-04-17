@@ -175,7 +175,7 @@ public class ParseTable extends CollisionSet<State> {
         task.start();
 
         NonTerminal start = _syntax.startProduction().product();
-
+        
         if(_ppolicy == PriorityPolicy.DEEP) {
             Benchmark.SingleTask t = task.newSingleTask("Contextual symbols");
 

@@ -2,7 +2,7 @@ module ds/pp/Module-pp
 
 imports
   libstratego-gpp
-  runtime/tmpl/pp
+  libspoofax/sdf/pp
   libstratego-sglr
   ds/signatures/Module-sig
 

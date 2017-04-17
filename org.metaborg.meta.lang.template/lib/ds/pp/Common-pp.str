@@ -2,7 +2,7 @@ module ds/pp/Common-pp
 
 imports
   libstratego-gpp
-  runtime/tmpl/pp
+  libspoofax/sdf/pp
   libstratego-sglr
   ds/signatures/Common-sig
 
