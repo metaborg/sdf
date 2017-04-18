@@ -49,6 +49,7 @@ rules
     ; lang := <language-spec-name>
     ; g1   := Strategies([ SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))
                          , SDefNoArgs($[prettyprint-[lang]], Fail())
+                         , SDefT($[prettyprint-[lang]], [], [DefaultVarDec("sort")], Fail())
                          ])
     ; g2   := Strategies([ SDefNoArgs($[prettyprint-SDF-start-symbols], CallNoArgs(SVar($[prettyprint-[lang]-start-symbols])))
                          , SDefNoArgs($[prettyprint-[lang]-start-symbols], Fail())
