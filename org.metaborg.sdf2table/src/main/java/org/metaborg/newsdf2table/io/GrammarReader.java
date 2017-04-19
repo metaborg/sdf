@@ -61,29 +61,10 @@ public class GrammarReader {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
 
-        long _start_time, _end_time;
-
-        _start_time = System.currentTimeMillis();
         IStrategoTerm mainModule = termFromFile(input, grammar);
-        _end_time = System.currentTimeMillis();
-
-        long readAtermTime = _end_time - _start_time;
-        Benchmark.printStatistics("Read Aterm: ", readAtermTime);
-
-        _start_time = System.currentTimeMillis();
         generateGrammar(grammar, mainModule, modules, paths);
-        _end_time = System.currentTimeMillis();
-
-        long processAtermTime = _end_time - _start_time;
-        Benchmark.printStatistics("Process Aterm: ", processAtermTime);
-
-        _start_time = System.currentTimeMillis();
         grammar.priorityTransitiveClosure();
-        _end_time = System.currentTimeMillis();
-
-        long transitiveClosureTime = _end_time - _start_time;
-        Benchmark.printStatistics("Priorities Transitive Closure: ", transitiveClosureTime);
-
+        
         return grammar;
     }
 

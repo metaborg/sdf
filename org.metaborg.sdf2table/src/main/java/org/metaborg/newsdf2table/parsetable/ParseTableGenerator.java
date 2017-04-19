@@ -22,8 +22,9 @@ import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.UniqueProduction;
-import org.metaborg.newsdf2table.io.Benchmark;
 import org.metaborg.newsdf2table.io.GrammarReader;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.TermFactory;
@@ -33,14 +34,13 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class ParseTableGenerator {
-
+    
+    private static final ILogger logger = LoggerUtils.logger(ParseTableGenerator.class);
     private NormGrammar grammar;
     final int version_number = 6;
     final int initialState_number = 0;
@@ -84,53 +84,23 @@ public class ParseTableGenerator {
 
         _start_time = System.currentTimeMillis();
         setGrammar(GrammarReader.readGrammar(input, output, paths));
-        _end_time = System.currentTimeMillis();
-
-        long importTime = _end_time - _start_time;
-        Benchmark.printStatistics("Import: ", importTime);
 
         // calculate nullable symbols
-        _start_time = System.currentTimeMillis();
         calculateNullable();
-        _end_time = System.currentTimeMillis();
-
-        long nullableTime = _end_time - _start_time;
-        Benchmark.printStatistics("Nullable: ", nullableTime);
 
         // calculate left and right recursive productions (considering nullable symbols)
-        _start_time = System.currentTimeMillis();
         calculateRecursion();
-        _end_time = System.currentTimeMillis();
-
-        long recursionTime = _end_time - _start_time;
-        Benchmark.printStatistics("Recursion: ", recursionTime);
 
         // normalize priorities according to recursion
-        _start_time = System.currentTimeMillis();
         normalizePriorities();
-        _end_time = System.currentTimeMillis();
-
-        long normPriorities = _end_time - _start_time;
-        Benchmark.printStatistics("Normalizing Priorities: ", normPriorities);
-
 
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
-        _start_time = System.currentTimeMillis();
         deepConflictsAnalysis();
         prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
-        _end_time = System.currentTimeMillis();
-
-        long deepPrioritiesTime = _end_time - _start_time;
-        Benchmark.printStatistics("Deep Priorities: ", deepPrioritiesTime);
 
         // output Aterm contextual Grammar
-        _start_time = System.currentTimeMillis();
         generateContextualGrammar();
-        _end_time = System.currentTimeMillis();
-
-        long exportCtxGrammarTime = _end_time - _start_time;
-        Benchmark.printStatistics("Export Ctx Grammar: ", exportCtxGrammarTime);
 
         // TODO Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
         // create first/follow sets by calculating dependencies and using Tarjan's algorithm
@@ -138,20 +108,13 @@ public class ParseTableGenerator {
         // calculateFirstFollow();
 
         // create states
-        _start_time = System.currentTimeMillis();
         initial_prod = getGrammar().initial_prod;
         State s0 = new State(initial_prod, this);
         stateQueue.add(s0);
         processStateQueue();
         Collections.sort(states);
-        _end_time = System.currentTimeMillis();
-
-        long generationTime = _end_time - _start_time;
-        Benchmark.printStatistics("Generation: ", generationTime);
-
 
         // output table
-        _start_time = System.currentTimeMillis();
         IStrategoTerm result = generateATerm();
         if(output != null) {
             FileWriter out = null;
@@ -165,13 +128,10 @@ public class ParseTableGenerator {
         } else {
             System.out.println(result.toString());
         }
+
         _end_time = System.currentTimeMillis();
-
-        long exportTime = _end_time - _start_time;
-        Benchmark.printStatistics("Export: ", exportTime);
-
-
-        Benchmark.printStatistics("Total: ", importTime + nullableTime + recursionTime + generationTime + exportTime);
+        
+        printStatistics("Time spent: ", _end_time - _start_time);
 
     }
 
@@ -1051,5 +1011,12 @@ public class ParseTableGenerator {
 
     public Set<File> requiredFiles() {
         return grammar.sdf3_files;
+    }
+    
+    public void printStatistics(String step, long totalTime) {
+        String millis = String.valueOf(totalTime % 1000);
+        while(millis.length() < 3)
+            millis = "0" + millis;
+        logger.debug(step + "{}.{}s", String.valueOf(totalTime / 1000), millis);
     }
 }
