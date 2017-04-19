@@ -422,7 +422,7 @@ public class GrammarReader {
             StrategoAppl app = (StrategoAppl) term;
             switch(app.getName()) {
                 case "Absent":
-                    return CharacterClass.emptyCC;
+                    return null;
                 case "Simple":
                     return processCharClass(app.getSubterm(0));
                 case "Present":

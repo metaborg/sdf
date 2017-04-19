@@ -27,11 +27,24 @@ public class ContextualSymbol extends Symbol {
     
     @Override public String name() {
         String buf = "";
+        if(!getContexts().isEmpty()) {
+            int i = 0;
+            buf += "{";
+            for(Context p : getContexts()) {
+                if(p.position == ContextPosition.RIGHTMOST) continue;
+                if(i != 0)
+                    buf += ", ";
+                buf += p;
+                i++;
+            }
+            buf += "}";
+        }
         buf += getOrigSymbol().name();
         if(!getContexts().isEmpty()) {
             int i = 0;
             buf += "{";
             for(Context p : getContexts()) {
+                if(p.position == ContextPosition.LEFTMOST) continue;
                 if(i != 0)
                     buf += ", ";
                 buf += p;

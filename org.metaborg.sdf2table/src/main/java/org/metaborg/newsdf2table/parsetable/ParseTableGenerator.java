@@ -33,6 +33,8 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -115,7 +117,7 @@ public class ParseTableGenerator {
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
         _start_time = System.currentTimeMillis();
-         deepConflictsAnalysis();
+        deepConflictsAnalysis();
         prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
         _end_time = System.currentTimeMillis();
 
@@ -146,6 +148,7 @@ public class ParseTableGenerator {
 
         long generationTime = _end_time - _start_time;
         Benchmark.printStatistics("Generation: ", generationTime);
+
 
         // output table
         _start_time = System.currentTimeMillis();
@@ -357,39 +360,41 @@ public class ParseTableGenerator {
                     // infix-prefix, infix-postfix productions
 
                     // if p1 : A = pre E in E and p2 : A = pre E or p1 : A = pre E in E and p2 : A = E in E
-                    if(p.higher().rightRecursivePosition() != -1 && p.higher().leftRecursivePosition() == -1
-                        && p.lower().rightRecursivePosition() != -1
-                        && p.higher().rightHand().size() > p.lower().rightHand().size()) {
+                    if(p.higher().leftRecursivePosition() == -1 && p.lower().leftRecursivePosition() == -1
+                        && (p.lower().rightRecursivePosition() != -1 || p.higher().rightRecursivePosition() != -1)) {
 
                         // if p1 : A = pre E in E and p2 : A = E in E
-                        if(p.lower().leftRecursivePosition() != -1) {
-                            boolean matchSuffix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(p.higher().rightHand().size() - 1 - i) // suffix matches
-                                    .equals(p.lower().rightHand().get(p.lower().rightHand().size() - 1 - i))) {
-                                    matchSuffix = true;
-                                } else {
-                                    matchSuffix = false;
-                                    break;
-                                }
-                            }
-                            if(matchSuffix) {
-                                new_values.add(p.higher().rightHand().size() - p.lower().rightHand().size());
-                            }
-                        } else { // dangling else (p1 : A = pre E in E and p2 : A = pre E)
-                            boolean matchPrefix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
-                                    matchPrefix = true;
-                                } else {
-                                    matchPrefix = false;
-                                    break;
-                                }
-                            }
-                            if(matchPrefix) {
-                                new_values.add(p.lower().rightRecursivePosition());
+                        // if(p.lower().leftRecursivePosition() != -1) {
+                        // boolean matchSuffix = false;
+                        // for(int i = 0; i < p.lower().rightHand().size(); i++) {
+                        // if(p.higher().rightHand().get(p.higher().rightHand().size() - 1 - i) // suffix matches
+                        // .equals(p.lower().rightHand().get(p.lower().rightHand().size() - 1 - i))) {
+                        // matchSuffix = true;
+                        // } else {
+                        // matchSuffix = false;
+                        // break;
+                        // }
+                        // }
+                        // if(matchSuffix) {
+                        // new_values.add(p.higher().rightHand().size() - p.lower().rightHand().size());
+                        // }
+                        // } else {
+
+                        // dangling else (p1 : A = pre E in E and p2 : A = pre E)
+                        boolean matchPrefix = false;
+                        for(int i = 0; i < Math.min(p.higher().rightHand().size(), p.lower().rightHand().size()); i++) {
+                            if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
+                                matchPrefix = true;
+                            } else {
+                                matchPrefix = false;
+                                break;
                             }
                         }
+                        if(matchPrefix) {
+                            new_values
+                                .add(Math.min(p.higher().rightRecursivePosition(), p.lower().rightRecursivePosition()));
+                        }
+                        // }
                     }
 
                     // if p1 : A = E in E pos and p2 : A = E pos or p1 : A = E in E pos and p2 : A = E in E
@@ -531,24 +536,26 @@ public class ParseTableGenerator {
             IProduction higher = prio.higher();
             IProduction lower = prio.lower();
 
-            // infix-prefix conflict
-            if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+            // postfix-prefix conflict
+            if(higher.leftRecursivePosition() != -1 && // higher is postfix
                 lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1 && // lower is prefix
                 mutuallyRecursive(prio) && // the productions are mutually recursive
                 grammar.priorities().containsEntry(prio, 0)) { // the priority is E.In right E.Pre
 
                 handleInfixPrefixConflict(prio, higher, lower);
-            } // infix-postfix conflict
-            else if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+            } // prefix-postfix conflict
+            else if(higher.rightRecursivePosition() != -1 && // higher is prefix
                 lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
                 mutuallyRecursive(prio) && // the productions are mutually recursive
                 grammar.priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the priority is
                                                                                            // E.In left E.Pos
                 handleInfixPostFixConflict(prio, higher, lower);
             } // dangling else conflict
-            else if(higher.leftRecursivePosition() == -1 && higher.rightRecursivePosition() != -1 // higher has prefix
-                && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
-                && lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1) { // lower is prefix)
+            else if(higher.leftRecursivePosition() == -1 // && higher.rightRecursivePosition() != -1 // higher has
+                                                         // prefix
+                // && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
+                && lower.leftRecursivePosition() == -1) { // && lower.rightRecursivePosition() != -1) { // lower is
+                                                          // prefix)
                 handleDanglingElseConflict(prio, higher, lower);
 
             } // mirrored dangling else conflict
@@ -581,15 +588,14 @@ public class ParseTableGenerator {
         int conflict_pos = higher.leftRecursivePosition();
 
         Set<Context> contexts = Sets.newHashSet();
-        Context new_context = new Context(prio.lower(), ContextType.DEEP);
+        Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.RIGHTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
         conflicting_args.add(conflict_pos);
 
         // create production E = E<lower> in E
-        ContextualProduction p =
-            new ContextualProduction(prio.higher(), contexts, conflicting_args);
+        ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
         // if contextual production does not exist add it
         if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -613,15 +619,14 @@ public class ParseTableGenerator {
         int conflict_pos = higher.rightRecursivePosition();
 
         Set<Context> contexts = Sets.newHashSet();
-        Context new_context = new Context(prio.lower(), ContextType.DEEP);
+        Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.LEFTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
         conflicting_args.add(conflict_pos);
 
         // create production E = E in E<lower>
-        ContextualProduction p =
-            new ContextualProduction(prio.higher(), contexts, conflicting_args);
+        ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
         // if contextual production does not exist add it
         if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -649,15 +654,14 @@ public class ParseTableGenerator {
             }
             if(matchPrefix && !higher.equals(lower)) {
                 Set<Context> contexts = Sets.newHashSet();
-                Context new_context = new Context(prio.lower(), ContextType.DEEP);
+                Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.RIGHTMOST);
                 contexts.add(new_context);
 
                 Set<Integer> conflicting_args = Sets.newHashSet();
                 conflicting_args.add(conflict);
 
                 // create production E = pre E<lower> in E
-                ContextualProduction p =
-                    new ContextualProduction(prio.higher(), contexts, conflicting_args);
+                ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
                 // if contextual production does not exist add it
                 if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -691,15 +695,14 @@ public class ParseTableGenerator {
             }
             if(matchSuffix && !higher.equals(lower)) {
                 Set<Context> contexts = Sets.newHashSet();
-                Context new_context = new Context(prio.lower(), ContextType.DEEP);
+                Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.LEFTMOST);
                 contexts.add(new_context);
 
                 Set<Integer> conflicting_args = Sets.newHashSet();
                 conflicting_args.add(conflict);
 
                 // create production E = E in E<lower> pos
-                ContextualProduction p =
-                    new ContextualProduction(prio.higher(), contexts, conflicting_args);
+                ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
                 // if contextual production does not exist add it
                 if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -734,8 +737,7 @@ public class ParseTableGenerator {
                 contexts.add(new_context);
 
                 // create production E = A<lower> beta
-                ContextualProduction p =
-                    new ContextualProduction(prio.higher(), contexts, conflicting_args);
+                ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
                 // if contextual production does not exist add it
                 if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -762,8 +764,7 @@ public class ParseTableGenerator {
                 contexts.add(new_context);
 
                 // create production E = alpha B<lower>
-                ContextualProduction p =
-                    new ContextualProduction(prio.higher(), contexts, conflicting_args);
+                ContextualProduction p = new ContextualProduction(prio.higher(), contexts, conflicting_args);
 
                 // if contextual production does not exist add it
                 if(!grammar.contextual_prods.containsKey(prio.higher())) {
@@ -781,7 +782,7 @@ public class ParseTableGenerator {
     private void handleLongestMatchConflict(Symbol s) {
         Set<Context> contexts = Sets.newHashSet();
         for(IProduction p : grammar.longest_match_prods.get(s)) {
-            Context new_context = new Context(p, ContextType.DEEP);
+            Context new_context = new Context(p, ContextType.DEEP, ContextPosition.RIGHTMOST);
             contexts.add(new_context);
         }
 
@@ -811,8 +812,7 @@ public class ParseTableGenerator {
         // change production A+ -> A+ A to A+ -> A+<ctx> A
         for(IProduction p : grammar.symbol_prods.get(iterList)) {
             if(p.rightHand().size() > 1) {
-                ContextualProduction ctx_p =
-                    new ContextualProduction(p, contexts, Sets.newHashSet(0));
+                ContextualProduction ctx_p = new ContextualProduction(p, contexts, Sets.newHashSet(0));
                 // if contextual production does not exist add it
                 if(!grammar.contextual_prods.containsKey(p)) {
                     grammar.contextual_prods.put(p, ctx_p);
@@ -899,8 +899,9 @@ public class ParseTableGenerator {
                 }
 
                 // generate new productions for deep contexts
-                Context deep_ctx = new Context(p, ContextType.DEEP);
-                if(ctx_s.getContexts().contains(deep_ctx)) {
+                Context deepLeft_ctx = new Context(p, ContextType.DEEP, ContextPosition.LEFTMOST);
+                Context deepRight_ctx = new Context(p, ContextType.DEEP, ContextPosition.RIGHTMOST);
+                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)) {
                     continue;
                 }
 
@@ -914,16 +915,15 @@ public class ParseTableGenerator {
                         processed_symbols, grammar.prod_attrs);
                     grammar.derived_contextual_prods.add(new_prod);
                     grammar.symbol_prods.put(ctx_s, new_prod);
-                } else if(!ctx_s.getContexts().contains(deep_ctx)) {
-                    ContextualProduction new_prod = new ContextualProduction(p, ctx_s.getContexts(),
-                        contextual_symbols, processed_symbols, grammar.prod_attrs);
+                } else if(!(ctx_s.getContexts().contains(deepLeft_ctx)
+                    || ctx_s.getContexts().contains(deepRight_ctx))) {
+                    ContextualProduction new_prod = new ContextualProduction(p, ctx_s.getContexts(), contextual_symbols,
+                        processed_symbols, grammar.prod_attrs);
                     grammar.derived_contextual_prods.add(new_prod);
                     grammar.symbol_prods.put(ctx_s, new_prod);
                 }
             }
-
         }
-        System.out.println("");
     }
 
     private IStrategoTerm generateATerm() throws Exception {

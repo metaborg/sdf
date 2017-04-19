@@ -54,7 +54,10 @@ public class ContextualProduction implements IProduction {
         for(Context c : contexts) {
             if(c.type.equals(ContextType.DEEP)) {
                 for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                    if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                    if((i == orig_prod.leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
+                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
+                        || (i == orig_prod.rightRecursivePosition() && (c.position.equals(ContextPosition.RIGHTMOST)
+                            || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
@@ -223,8 +226,11 @@ public class ContextualProduction implements IProduction {
         for(Context c : contexts) {
             if(c.type.equals(ContextType.DEEP)) {
                 for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
-                    if(i == getOrigProduction().leftRecursivePosition()
-                        || i == getOrigProduction().rightRecursivePosition()) {
+                    if((i == getOrigProduction().leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
+                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
+                        || (i == getOrigProduction().rightRecursivePosition()
+                            && (c.position.equals(ContextPosition.RIGHTMOST)
+                                || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(new_rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
@@ -292,7 +298,7 @@ public class ContextualProduction implements IProduction {
         return prod;
     }
 
-    
+
 
     @Override public int leftRecursivePosition() {
         return getOrigProduction().leftRecursivePosition();
