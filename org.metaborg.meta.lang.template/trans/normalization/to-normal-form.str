@@ -210,8 +210,22 @@ rules
   generate-follow-restrictions-reject-keywords(|kfr, chars, kattrs) = filter(follow-restrictions-template-prods(|kfr, chars, kattrs)); flatten-list
   
   follow-restrictions-template-prods(|kfr, chars, kattrs):
-    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, SDFSection(LexicalSyntax(reject-prods*))]
+    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, plhd-restr*, SDFSection(LexicalSyntax(reject-prods*))]
       where 
+      // lexical restrictions for placeholders
+      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, None()))> prods*;
+      // explicit placeholder prods
+      sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;      
+      if [] := sorts* then
+              plhdr-restr* := []
+          else
+              (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
+              plhd-restr* := [SDFSection(LexicalRestrictions([Follow(<map(!Lit(<concat-strings; double-quote> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, 
+                                                                        Single(CharClass(Simple(Present(
+                                                                                       Conc(Range(Short("a"), Short("z"))
+                                                                                          , Range(Short("A"), Short("Z"))))))))]))]
+          end;                                                                                     
       // lexical restrictions
         x    := <filter(case-sensitive-template-prods); nub> prods*;
         ci-x := <filter(case-insensitive-template-prods); nub> prods*;
