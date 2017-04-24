@@ -13,6 +13,8 @@ import com.google.common.collect.Lists;
 
 public class CharacterClass extends Symbol {
 
+    private static final long serialVersionUID = 1619024888383357090L;
+
     public static CharacterClass maxCC =
         new CharacterClass(new CharacterClassRange(new CharacterClassNumeric(0), new CharacterClassNumeric(256)));
     public static CharacterClass emptyCC = new CharacterClass(null);

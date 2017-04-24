@@ -9,6 +9,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClassSeq extends Symbol {
 
+    private static final long serialVersionUID = 5369777341906641907L;
+
     private final Symbol head;
     private final Set<Symbol> tail;
 

@@ -1,6 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
-public class Priority implements IPriority {
+import java.io.Serializable;
+
+public class Priority implements IPriority, Serializable {
+
+    private static final long serialVersionUID = 4019550894781189141L;
 
     IProduction higher;
     IProduction lower;

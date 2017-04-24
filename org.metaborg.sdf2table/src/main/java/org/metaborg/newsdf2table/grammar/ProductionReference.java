@@ -1,7 +1,11 @@
 package org.metaborg.newsdf2table.grammar;
 
-public class ProductionReference {
+import java.io.Serializable;
+
+public class ProductionReference implements Serializable {
     
+    private static final long serialVersionUID = -7256082373948196902L;
+
     private Symbol sort;
     private ConstructorAttribute cons;
     

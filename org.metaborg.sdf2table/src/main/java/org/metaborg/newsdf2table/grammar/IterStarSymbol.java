@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class IterStarSymbol extends Symbol {
 
+    private static final long serialVersionUID = -3914306024796865195L;
+
     private final Symbol symbol;
 
     public IterStarSymbol(Symbol symbol) {

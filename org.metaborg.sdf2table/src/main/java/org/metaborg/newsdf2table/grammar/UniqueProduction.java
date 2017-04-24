@@ -1,8 +1,11 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class UniqueProduction {
+public class UniqueProduction implements Serializable{
+
+    private static final long serialVersionUID = 3033929538492911319L;
 
     private Symbol lhs;
     private List<Symbol> rhs;

@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class Sort extends Symbol {
 
+    private static final long serialVersionUID = 9143763814850136478L;
+    
     private final String name;
     private final LiteralType type;
 

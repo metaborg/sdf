@@ -13,6 +13,8 @@ import com.google.common.collect.Sets;
 
 public class SequenceSymbol extends Symbol {
 
+    private static final long serialVersionUID = -1328952925094286799L;
+
     private final Symbol first;
     private final List<Symbol> tail;
 

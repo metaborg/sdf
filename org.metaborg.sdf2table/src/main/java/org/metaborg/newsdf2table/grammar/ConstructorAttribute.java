@@ -1,9 +1,13 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
+
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class ConstructorAttribute implements IAttribute {
+public class ConstructorAttribute implements IAttribute, Serializable {
+
+    private static final long serialVersionUID = 8983042557760579298L;
 
     String constructor;
 

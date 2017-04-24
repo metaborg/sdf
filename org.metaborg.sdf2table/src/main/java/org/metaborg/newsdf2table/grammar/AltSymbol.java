@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class AltSymbol extends Symbol {
 
+    private static final long serialVersionUID = 7308097160726417422L;
+
     private final Symbol alt1;
     private final Symbol alt2;
 

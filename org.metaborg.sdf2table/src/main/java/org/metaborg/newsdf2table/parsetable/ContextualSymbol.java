@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class ContextualSymbol extends Symbol {
 
+    private static final long serialVersionUID = -2886358954796970390L;
+
     private final Symbol s;
     private final Set<Context> contexts;
 

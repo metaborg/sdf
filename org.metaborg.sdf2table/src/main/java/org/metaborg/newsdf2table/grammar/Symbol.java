@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -7,7 +8,9 @@ import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public abstract class Symbol {
+public abstract class Symbol implements Serializable {
+
+    private static final long serialVersionUID = -9135946758836485558L;
 
     Set<Symbol> followRestrictions;
     

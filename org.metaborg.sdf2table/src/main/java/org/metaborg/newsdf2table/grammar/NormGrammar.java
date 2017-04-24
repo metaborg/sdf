@@ -1,6 +1,7 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,8 +16,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class NormGrammar implements INormGrammar {
+public class NormGrammar implements INormGrammar, Serializable {
     
+    private static final long serialVersionUID = -13739894962185282L;
+
     // all files used in this grammar
     public Set<File> sdf3_files;
 

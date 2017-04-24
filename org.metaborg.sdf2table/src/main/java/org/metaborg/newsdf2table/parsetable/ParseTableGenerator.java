@@ -1,8 +1,10 @@
 package org.metaborg.newsdf2table.parsetable;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +41,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class ParseTableGenerator {
-    
+
     private static final ILogger logger = LoggerUtils.logger(ParseTableGenerator.class);
     private NormGrammar grammar;
     final int version_number = 6;
@@ -64,17 +66,19 @@ public class ParseTableGenerator {
     int totalStates = 0;
 
     File input;
-    File output;
-    File ctxGrammar;
+    File outputFile;
+    File ctxGrammarFile;
+    File normGrammarFile;
     List<String> paths;
     boolean generateParenthesize;
     private final static ITermFactory termFactory = new TermFactory();
 
-    public ParseTableGenerator(File input, File output, File ctxGrammar, List<String> paths, boolean parenthesize) {
+    public ParseTableGenerator(File input, File output, File normGrammar, File ctxGrammar, List<String> paths, boolean parenthesize) {
         this.input = input;
-        this.output = output;
+        this.outputFile = output;
         this.paths = paths;
-        this.ctxGrammar = ctxGrammar;
+        this.normGrammarFile = normGrammar;
+        this.ctxGrammarFile = ctxGrammar;
         this.generateParenthesize = parenthesize;
     }
 
@@ -83,7 +87,7 @@ public class ParseTableGenerator {
         long _end_time;
 
         _start_time = System.currentTimeMillis();
-        setGrammar(GrammarReader.readGrammar(input, output, paths));
+        setGrammar(GrammarReader.readGrammar(input, outputFile, paths));
 
         // calculate nullable symbols
         calculateNullable();
@@ -116,10 +120,10 @@ public class ParseTableGenerator {
 
         // output table
         IStrategoTerm result = generateATerm();
-        if(output != null) {
+        if(outputFile != null) {
             FileWriter out = null;
             try {
-                out = new FileWriter(output);
+                out = new FileWriter(outputFile);
                 out.write(result.toString());
                 out.close();
             } catch(IOException e) {
@@ -129,8 +133,11 @@ public class ParseTableGenerator {
             System.out.println(result.toString());
         }
 
+        // output normalized grammar
+
+
         _end_time = System.currentTimeMillis();
-        
+
         printStatistics("Time spent: ", _end_time - _start_time);
 
     }
@@ -138,11 +145,26 @@ public class ParseTableGenerator {
     public void generateContextualGrammar() {
         IStrategoTerm ctxGrammarResult = generateATermContextualGrammar();
 
-        if(ctxGrammar != null && ctxGrammarResult != null) {
+        if(ctxGrammarFile != null && ctxGrammarResult != null) {
             FileWriter out = null;
             try {
-                out = new FileWriter(ctxGrammar);
+                out = new FileWriter(ctxGrammarFile);
                 out.write(ctxGrammarResult.toString());
+                out.close();
+            } catch(IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+
+        if(grammar != null && normGrammarFile != null) {
+            FileOutputStream out = null;
+            ObjectOutputStream outObj = null;
+            try {
+                String name = normGrammarFile.getAbsolutePath();
+                out = new FileOutputStream(name);                
+                outObj = new ObjectOutputStream(out);
+                outObj.writeObject(grammar);
+                outObj.close();
                 out.close();
             } catch(IOException e) {
                 System.err.println(e.getMessage());
@@ -1012,7 +1034,7 @@ public class ParseTableGenerator {
     public Set<File> requiredFiles() {
         return grammar.sdf3_files;
     }
-    
+
     public void printStatistics(String step, long totalTime) {
         String millis = String.valueOf(totalTime % 1000);
         while(millis.length() < 3)

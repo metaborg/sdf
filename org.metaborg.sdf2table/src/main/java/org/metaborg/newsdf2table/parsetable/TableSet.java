@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.CharacterClass;
@@ -7,7 +8,9 @@ import org.metaborg.newsdf2table.grammar.IProduction;
 
 import com.google.common.collect.Sets;
 
-public class TableSet {
+public class TableSet implements Serializable {
+    
+    private static final long serialVersionUID = 3001311608137161789L;
     
     IProduction p;
     CharacterClass value;

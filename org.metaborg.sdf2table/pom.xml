@@ -17,18 +17,22 @@
 			<version>${metaborg-version}</version>
 		</dependency>
 		<dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.util</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+		<dependency>
 			<groupId>org.metaborg</groupId>
 			<artifactId>strategoxt-min-jar</artifactId>
 			<version>${metaborg-version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.metaborg</groupId>
-			<artifactId>org.strategoxt.strj</artifactId>
-			<version>${metaborg-version}</version>
-		</dependency>
-		<dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>

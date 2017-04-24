@@ -10,6 +10,9 @@ import org.spoofax.interpreter.terms.ITermFactory;
 import com.google.common.collect.Sets;
 
 public class FileStartSymbol extends Symbol {
+
+    private static final long serialVersionUID = 3822777948371151629L;
+
     public FileStartSymbol() {
         followRestrictions = Sets.newHashSet();
     }

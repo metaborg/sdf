@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class IterSepSymbol extends Symbol {
 
+    private static final long serialVersionUID = -3470718150418144669L;
+
     private final Symbol symbol;
     private final Sort sep;
 

@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -17,7 +18,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class ContextualProduction implements IProduction {
+public class ContextualProduction implements IProduction, Serializable {
+
+    private static final long serialVersionUID = -8597347751774753273L;
 
     private final IProduction orig_prod;
     private final Symbol lhs;

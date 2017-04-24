@@ -1,9 +1,13 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
+
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class LayoutConstraintAttribute implements IAttribute {
+public class LayoutConstraintAttribute implements IAttribute, Serializable {
+
+    private static final long serialVersionUID = -6962864785117290116L;
 
     String constraint;
 

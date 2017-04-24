@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class OptionalSymbol extends Symbol {
 
+    private static final long serialVersionUID = 3163408581771229167L;
+
     private final Symbol symbol;
     
     public OptionalSymbol(Symbol symbol) {

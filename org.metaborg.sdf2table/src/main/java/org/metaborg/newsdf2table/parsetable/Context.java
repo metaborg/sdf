@@ -1,8 +1,12 @@
 package org.metaborg.newsdf2table.parsetable;
 
+import java.io.Serializable;
+
 import org.metaborg.newsdf2table.grammar.IProduction;
 
-public class Context {
+public class Context implements Serializable {
+
+    private static final long serialVersionUID = -4581589940398341265L;
 
     IProduction context;
     ContextType type;

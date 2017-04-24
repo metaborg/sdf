@@ -1,10 +1,14 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
+
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class DeprecatedAttribute implements IAttribute {
+public class DeprecatedAttribute implements IAttribute, Serializable {
 
+    private static final long serialVersionUID = -7202401718360224664L;
+    
     String message;
 
     public DeprecatedAttribute(String message) {

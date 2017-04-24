@@ -1,5 +1,6 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +13,9 @@ import org.spoofax.interpreter.terms.ITermFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 
-public class Production implements IProduction {
+public class Production implements IProduction, Serializable {
+
+    private static final long serialVersionUID = 5887433349870067696L;
 
     private final Symbol lhs;
     private final List<Symbol> rhs;

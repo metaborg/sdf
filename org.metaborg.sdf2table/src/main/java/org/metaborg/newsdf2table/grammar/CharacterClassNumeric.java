@@ -9,6 +9,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClassNumeric extends Symbol {
 
+    private static final long serialVersionUID = 3189979808970159756L;
+
     private final Integer character;
 
     public CharacterClassNumeric(Integer c) {

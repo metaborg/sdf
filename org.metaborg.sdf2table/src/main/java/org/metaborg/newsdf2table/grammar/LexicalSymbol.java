@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class LexicalSymbol extends Symbol {
     
+    private static final long serialVersionUID = 1481976564637864975L;
+
     private final Symbol symbol;
 
     public LexicalSymbol(Symbol symbol) {

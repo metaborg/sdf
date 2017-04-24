@@ -11,6 +11,8 @@ import com.google.common.collect.Sets;
 
 public class Layout extends Symbol {
 
+    private static final long serialVersionUID = -2539873583275536984L;
+
     public Layout() {
         followRestrictions = Sets.newHashSet();
     }
