@@ -20,7 +20,7 @@ public class State implements Comparable<State> {
     int label;
     Set<GoTo> gotos;
     Set<Action> actions;
-    Set<LRItem> kernel;
+    final Set<LRItem> kernel;
     Set<LRItem> items;
     SetMultimap<Symbol, LRItem> symbol_items;
     SetMultimap<CharacterClass, Action> lr_actions;
@@ -221,11 +221,11 @@ public class State implements Comparable<State> {
         IProduction lower = p;
 
         if(higher instanceof ContextualProduction) {
-            higher = ((ContextualProduction) higher).orig_prod;
+            higher = ((ContextualProduction) higher).getOrigProduction();
         }
 
         if(lower instanceof ContextualProduction) {
-            lower = ((ContextualProduction) lower).orig_prod;
+            lower = ((ContextualProduction) lower).getOrigProduction();
         }
 
         Priority prio = new Priority(higher, lower, false);
@@ -256,23 +256,23 @@ public class State implements Comparable<State> {
             buf += g;
             i++;
         }
-        if(!lr_actions.isEmpty()) {
-            buf += "\nActions: ";
-        }
-        i = 0;
-        for(CharacterClass cc : lr_actions.keySet()) {
-            if(i != 0)
-                buf += "\n       , ";
-            buf += cc + ": ";
-            int j = 0;
-            for(Action a : lr_actions.get(cc)) {
-                if(j != 0)
-                    buf += ", ";
-                buf += a;
-                j++;
-            }
-            i++;
-        }
+//        if(!lr_actions.isEmpty()) {
+//            buf += "\nActions: ";
+//        }
+//        i = 0;
+//        for(CharacterClass cc : lr_actions.keySet()) {
+//            if(i != 0)
+//                buf += "\n       , ";
+//            buf += cc + ": ";
+//            int j = 0;
+//            for(Action a : lr_actions.get(cc)) {
+//                if(j != 0)
+//                    buf += ", ";
+//                buf += a;
+//                j++;
+//            }
+//            i++;
+//        }
         if(!items.isEmpty()) {
             buf += "\nItems: ";
         }

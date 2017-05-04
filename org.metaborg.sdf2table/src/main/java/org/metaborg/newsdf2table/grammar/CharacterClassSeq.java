@@ -1,17 +1,19 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClassSeq extends Symbol {
 
-    private Symbol head;
-    Set<Symbol> tail;
+    private final Symbol head;
+    private final Set<Symbol> tail;
 
     public CharacterClassSeq(Symbol head, Set<Symbol> second) {
-        this.setHead(head);
+        this.head = head;
         this.tail = second;
     }
 
@@ -30,15 +32,29 @@ public class CharacterClassSeq extends Symbol {
         return buf;
     }
 
+    public Set<Symbol> getTail() {
+        return tail;
+    }    
+
+    public Symbol getHead() {
+        return head;
+    }    
+
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         // only shows up in follow restrictions and not in the parse table
+        return null;
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        // TODO Implement this
         return null;
     }
 
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((getHead() == null) ? 0 : getHead().hashCode());
+        result = prime * result + ((head == null) ? 0 : head.hashCode());
         result = prime * result + ((tail == null) ? 0 : tail.hashCode());
         return result;
     }
@@ -46,15 +62,15 @@ public class CharacterClassSeq extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
         CharacterClassSeq other = (CharacterClassSeq) obj;
-        if(getHead() == null) {
-            if(other.getHead() != null)
+        if(head == null) {
+            if(other.head != null)
                 return false;
-        } else if(!getHead().equals(other.getHead()))
+        } else if(!head.equals(other.head))
             return false;
         if(tail == null) {
             if(other.tail != null)
@@ -63,21 +79,4 @@ public class CharacterClassSeq extends Symbol {
             return false;
         return true;
     }
-
-    public Set<Symbol> getTail() {
-        return tail;
-    }
-
-    public void setTail(Set<Symbol> tail) {
-        this.tail = tail;
-    }
-
-    public Symbol getHead() {
-        return head;
-    }
-
-    public void setHead(Symbol head) {
-        this.head = head;
-    }
-
 }

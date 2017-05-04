@@ -60,30 +60,11 @@ public class GrammarReader {
     public static NormGrammar readGrammar(File input, File output, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
-        
-        long _start_time, _end_time;
 
-        _start_time = System.currentTimeMillis();
         IStrategoTerm mainModule = termFromFile(input, grammar);
-        _end_time = System.currentTimeMillis();
-
-        long readAtermTime = _end_time - _start_time;
-        Benchmark.printStatistics("Read Aterm: ", readAtermTime);        
-
-        _start_time = System.currentTimeMillis();
         generateGrammar(grammar, mainModule, modules, paths);
-        _end_time = System.currentTimeMillis();
-
-        long processAtermTime = _end_time - _start_time;
-        Benchmark.printStatistics("Process Aterm: ", processAtermTime);
-
-        _start_time = System.currentTimeMillis();
         grammar.priorityTransitiveClosure();
-        _end_time = System.currentTimeMillis();
-
-        long transitiveClosureTime = _end_time - _start_time;
-        Benchmark.printStatistics("Priorities Transitive Closure: ", transitiveClosureTime);
-
+        
         return grammar;
     }
 
@@ -146,8 +127,20 @@ public class GrammarReader {
                 // Processing sections
                 StrategoList sdf_sections = (StrategoList) app.getSubterm(2);
                 for(IStrategoTerm t : sdf_sections) {
-                    StrategoAppl tsection = (StrategoAppl) t.getSubterm(0);
+                    StrategoAppl tsection = null;
+                    if(!(t.getSubterm(0) instanceof StrategoAppl)) continue;
+                    try {
+                        tsection = (StrategoAppl) t.getSubterm(0);
+                    } catch (Exception e) {
+                        System.out.println("here");
+                    }
                     switch(tsection.getName()) {
+                        case "ContextFreeSyntax":
+                            addProds(g, tsection);
+                            break;
+                        case "LexicalSyntax":
+                            addProds(g, tsection);
+                            break;
                         case "Kernel":
                             addProds(g, tsection);
                             break;
@@ -170,7 +163,20 @@ public class GrammarReader {
     private static void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
-            if(app.getName().equals("Kernel")) {
+            
+            if(app.getName().equals("ContextFreeSyntax")) {
+                StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
+                for(IStrategoTerm t : sdf_productions) {
+                    processProduction(g, t);
+                }
+            }  if(app.getName().equals("LexicalSyntax")) {
+                StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
+                for(IStrategoTerm t : sdf_productions) {
+                    processProduction(g, t);
+                }
+            }
+            
+            else if(app.getName().equals("Kernel")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
                     processProduction(g, t);
@@ -224,8 +230,9 @@ public class GrammarReader {
                         StrategoList talist = (StrategoList) tattrs.getSubterm(0);
                         for(IStrategoTerm ta : talist) {
                             IAttribute attr = processAttribute(ta);
-                            if(attr != null)
+                            if(attr != null) {
                                 attrs.add(attr);
+                            }
                         }
                         break;
                     default:
@@ -266,6 +273,9 @@ public class GrammarReader {
                 }
 
                 for(IAttribute a : attrs) {
+                    if(a.toString().equals("nlm")) {
+                        g.longest_match_prods.put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
+                    }
                     g.prod_attrs.put(prod, a);
                 }
 
@@ -409,7 +419,7 @@ public class GrammarReader {
                         processCharClass(app.getSubterm(1)));
                 default:
                     System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
-                    return null;
+                    return CharacterClass.emptyCC;
             }
         }
 
@@ -467,6 +477,8 @@ public class GrammarReader {
                     return new GeneralAttribute("placeholder-insertion");
                 case "LiteralCompletion":
                     return new GeneralAttribute("literal-completion");
+                case "NewLongestMatch":
+                    return new GeneralAttribute("nlm");
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);
@@ -497,8 +509,8 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return ParseTableGenerator.getTermfactory().makeAppl(ParseTableGenerator.getTermfactory().makeConstructor(cons_name, arity),
-                subterms);
+            return ParseTableGenerator.getTermfactory()
+                .makeAppl(ParseTableGenerator.getTermfactory().makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
@@ -706,7 +718,7 @@ public class GrammarReader {
             Priority p = new Priority(higher, lower, false);
 
             g.non_transitive_prio.add(p);
-            
+
             // actual argument values will be processed later when defining recursion
             if(assoc.toString().contains("Left")) {
                 g.non_trans_prio_arguments.put(p, Integer.MAX_VALUE);
@@ -789,7 +801,7 @@ public class GrammarReader {
             reader.close();
 
             term = ParseTableGenerator.getTermfactory().parseFromString(aterm);
-            grammar.sdf3_files.add(file);            
+            grammar.sdf3_files.add(file);
         } catch(IOException e) {
             System.err.println("Cannot open module file `" + file.getPath() + "'");
         } finally {

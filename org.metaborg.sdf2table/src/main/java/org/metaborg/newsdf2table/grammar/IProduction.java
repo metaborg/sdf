@@ -1,7 +1,10 @@
 package org.metaborg.newsdf2table.grammar;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.metaborg.newsdf2table.parsetable.TableSet;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -33,6 +36,7 @@ public interface IProduction {
     @Override boolean equals(Object obj);
 
     IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs);
+    IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
 
     void calculateDependencies(NormGrammar g);
 

@@ -1,5 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -7,8 +11,8 @@ import com.google.common.collect.Sets;
 
 public class IterSepSymbol extends Symbol {
 
-    Symbol symbol;
-    Sort sep;
+    private final Symbol symbol;
+    private final Sort sep;
 
     public IterSepSymbol(Symbol symbol, Symbol iSymbol) {
         this.symbol = symbol;
@@ -28,6 +32,11 @@ public class IterSepSymbol extends Symbol {
         return tf.makeAppl(tf.makeConstructor("iter-sep", 2), symbol.toAterm(tf), sep.toAterm(tf));
     }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("IterSep", 2), symbol.toSDF3Aterm(tf, ctx_vals, ctx_val), sep.toSDF3Aterm(tf, ctx_vals, ctx_val));
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -39,7 +48,7 @@ public class IterSepSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
@@ -56,5 +65,4 @@ public class IterSepSymbol extends Symbol {
             return false;
         return true;
     }
-
 }

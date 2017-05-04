@@ -70,7 +70,7 @@ rules // Debugging
 
   debug-show-aterm:
     (selected, position, ast, path, project-path) -> (filename, selected)
-    with
+    with     
       filename := <guarantee-extension(|"aterm")> path
 
   debug-show-desugared:

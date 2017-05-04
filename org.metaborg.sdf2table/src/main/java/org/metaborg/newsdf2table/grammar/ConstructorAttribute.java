@@ -11,11 +11,20 @@ public class ConstructorAttribute implements IAttribute {
         this.constructor = constructor;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf) {
+    @Override public String toString() {
+        return "cons(\"" + constructor + "\")";
+    }
 
+    @Override public IStrategoTerm toAterm(ITermFactory tf) {
+    
         return tf.makeAppl(tf.makeConstructor("term", 1),
             tf.makeAppl(tf.makeConstructor("cons", 1), tf.makeString(constructor)));
+    
+    }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
+        // TODO Auto-generated method stub
+        return tf.makeAppl(tf.makeConstructor("Constructor", 1), tf.makeString("\"" + constructor + "\""));
     }
 
     @Override public int hashCode() {
@@ -40,9 +49,4 @@ public class ConstructorAttribute implements IAttribute {
             return false;
         return true;
     }
-    
-    @Override public String toString() {
-        return "cons(\"" + constructor + "\")";
-    }
-
 }

@@ -1,6 +1,7 @@
 package org.metaborg.newsdf2table.parsetable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -18,9 +19,9 @@ import com.google.common.collect.Sets;
 
 public class ContextualProduction implements IProduction {
 
-    IProduction orig_prod;
-    Symbol lhs;
-    List<Symbol> rhs;
+    private final IProduction orig_prod;
+    private final Symbol lhs;
+    private final List<Symbol> rhs;
 
     public ContextualProduction(IProduction orig_prod, Symbol lhs, List<Symbol> rhs) {
         this.orig_prod = orig_prod;
@@ -53,7 +54,10 @@ public class ContextualProduction implements IProduction {
         for(Context c : contexts) {
             if(c.type.equals(ContextType.DEEP)) {
                 for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                    if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                    if((i == orig_prod.leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
+                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
+                        || (i == orig_prod.rightRecursivePosition() && (c.position.equals(ContextPosition.RIGHTMOST)
+                            || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
@@ -75,7 +79,8 @@ public class ContextualProduction implements IProduction {
                         break;
                     }
                 }
-                if(hasConstructor) continue;
+                if(hasConstructor)
+                    continue;
                 for(int i = 0; i < orig_prod.rightHand().size(); i++) {
                     // shallow context should be passed to correct position
                     if((i == orig_prod.leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
@@ -106,6 +111,10 @@ public class ContextualProduction implements IProduction {
 
     }
 
+    public IProduction getOrigProduction() {
+        return getOrig_prod();
+    }
+
     @Override public Symbol leftHand() {
         return lhs;
     }
@@ -114,25 +123,21 @@ public class ContextualProduction implements IProduction {
         return rhs;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs) {
-        return orig_prod.toAterm(tf, prod_attrs);
-    }
-
     @Override public void calculateDependencies(NormGrammar g) {
-        orig_prod.calculateDependencies(g);
+        getOrigProduction().calculateDependencies(g);
 
     }
 
     @Override public TableSet firstSet() {
-        return orig_prod.firstSet();
+        return getOrigProduction().firstSet();
     }
 
     @Override public TableSet followSet() {
-        return orig_prod.followSet();
+        return getOrigProduction().followSet();
     }
 
-    public void addContext(Context context, Set<Integer> conflicting_args) {
-        Symbol new_lhs = null;
+    public ContextualProduction addContext(Context context, Set<Integer> conflicting_args) {
+        Symbol new_lhs = lhs;
         List<Symbol> new_rhs = Lists.newArrayList();
         Set<Context> contexts = Sets.newHashSet();
         contexts.add(context);
@@ -142,14 +147,15 @@ public class ContextualProduction implements IProduction {
             if(lhs instanceof ContextualSymbol) {
                 new_lhs = ((ContextualSymbol) lhs).addContext(context);
             } else {
-                new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
+                new_lhs = new ContextualSymbol(getOrigProduction().leftHand(), contexts);
             }
 
-            for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+            for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
+                if(i == getOrigProduction().leftRecursivePosition()
+                    || i == getOrigProduction().rightRecursivePosition()) {
                     new_rhs.add(((ContextualSymbol) rhs.get(i)).addContext(context));
                 } else {
-                    new_rhs.add(orig_prod.rightHand().get(i));
+                    new_rhs.add(getOrigProduction().rightHand().get(i));
                 }
             }
         } else { // add context to conflicting args
@@ -166,10 +172,45 @@ public class ContextualProduction implements IProduction {
             }
         }
 
-        if(new_lhs != null) {
-            lhs = new_lhs;
+        return new ContextualProduction(getOrigProduction(), new_lhs, new_rhs);
+
+    }
+
+    public ContextualProduction addContexts(Set<Context> contexts, Set<Integer> conflicting_args) {
+        Symbol new_lhs = lhs;
+        List<Symbol> new_rhs = Lists.newArrayList();
+
+        // add context to all possible conflicting symbols
+        if(conflicting_args.contains(-1)) {
+            if(lhs instanceof ContextualSymbol) {
+                new_lhs = ((ContextualSymbol) lhs).addContexts(contexts);
+            } else {
+                new_lhs = new ContextualSymbol(getOrigProduction().leftHand(), contexts);
+            }
+
+            for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
+                if(i == getOrigProduction().leftRecursivePosition()
+                    || i == getOrigProduction().rightRecursivePosition()) {
+                    new_rhs.add(((ContextualSymbol) rhs.get(i)).addContexts(contexts));
+                } else {
+                    new_rhs.add(getOrigProduction().rightHand().get(i));
+                }
+            }
+        } else { // add context to conflicting args
+            for(int i = 0; i < rhs.size(); i++) {
+                if(conflicting_args.contains(i)) {
+                    if(rhs.get(i) instanceof ContextualSymbol) {
+                        new_rhs.add(((ContextualSymbol) rhs.get(i)).addContexts(contexts));
+                    } else {
+                        new_rhs.add(new ContextualSymbol(rhs.get(i), contexts));
+                    }
+                } else {
+                    new_rhs.add(rhs.get(i));
+                }
+            }
         }
-        rhs = new_rhs;
+
+        return new ContextualProduction(getOrigProduction(), new_lhs, new_rhs);
 
     }
 
@@ -180,12 +221,16 @@ public class ContextualProduction implements IProduction {
         Set<Context> contexts = Sets.newHashSet();
         contexts.addAll(context);
 
-        Symbol new_lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
+        Symbol new_lhs = new ContextualSymbol(getOrigProduction().leftHand(), contexts);
 
         for(Context c : contexts) {
             if(c.type.equals(ContextType.DEEP)) {
-                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                    if(i == orig_prod.leftRecursivePosition() || i == orig_prod.rightRecursivePosition()) {
+                for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
+                    if((i == getOrigProduction().leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
+                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
+                        || (i == getOrigProduction().rightRecursivePosition()
+                            && (c.position.equals(ContextPosition.RIGHTMOST)
+                                || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(new_rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
@@ -196,22 +241,24 @@ public class ContextualProduction implements IProduction {
                     }
                 }
             } else if(c.type.equals(ContextType.SHALLOW)) {
-                if(c.context.leftHand().equals(orig_prod.leftHand())) { // stop passing the shallow context
+                if(c.context.leftHand().equals(getOrigProduction().leftHand())) { // stop passing the shallow context
                     continue;
                 }
                 // if production has a constructor, do not pass the shallow context
                 boolean hasConstructor = false;
-                for(IAttribute attr : prod_attrs.get(orig_prod)) {
+                for(IAttribute attr : prod_attrs.get(getOrigProduction())) {
                     if(attr instanceof ConstructorAttribute) {
                         hasConstructor = true;
                         break;
                     }
                 }
-                if(hasConstructor) continue;
-                for(int i = 0; i < orig_prod.rightHand().size(); i++) {
+                if(hasConstructor)
+                    continue;
+                for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
                     // shallow context should be passed to correct position
-                    if((i == orig_prod.leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
-                        || (i == orig_prod.rightRecursivePosition() && c.position.equals(ContextPosition.RIGHTMOST))) {
+                    if((i == getOrigProduction().leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
+                        || (i == getOrigProduction().rightRecursivePosition()
+                            && c.position.equals(ContextPosition.RIGHTMOST))) {
                         ContextualSymbol new_symbol;
                         if(new_rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
@@ -236,7 +283,7 @@ public class ContextualProduction implements IProduction {
         }
 
 
-        return new ContextualProduction(orig_prod, new_lhs, new_rhs);
+        return new ContextualProduction(getOrigProduction(), new_lhs, new_rhs);
     }
 
     @Override public String toString() {
@@ -251,11 +298,56 @@ public class ContextualProduction implements IProduction {
         return prod;
     }
 
+
+
+    @Override public int leftRecursivePosition() {
+        return getOrigProduction().leftRecursivePosition();
+    }
+
+    @Override public int rightRecursivePosition() {
+        return getOrigProduction().rightRecursivePosition();
+    }
+
+    @Override public void calculateRecursion(NormGrammar grammar) {
+        // This should not be called in a Contextual production
+        getOrigProduction().calculateRecursion(grammar);
+    }
+
+    @Override public IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs) {
+        return getOrigProduction().toAterm(tf, prod_attrs);
+    }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
+        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
+        for(Symbol s : rhs) {
+            rhs_terms.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
+        }
+
+        for(IAttribute a : prod_attrs.get(getOrigProduction())) {
+            attrs_terms.add(a.toSDF3Aterm(tf));
+        }
+
+        if(attrs_terms.isEmpty()) {
+            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+                tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
+                tf.makeAppl(tf.makeConstructor("NoAttrs", 0)));
+        } else {
+            // with constructor
+        }
+
+        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
+            tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
+
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((lhs == null) ? 0 : lhs.hashCode());
-        result = prime * result + ((orig_prod == null) ? 0 : orig_prod.hashCode());
+        result = prime * result + ((getOrig_prod() == null) ? 0 : getOrig_prod().hashCode());
         result = prime * result + ((rhs == null) ? 0 : rhs.hashCode());
         return result;
     }
@@ -273,10 +365,10 @@ public class ContextualProduction implements IProduction {
                 return false;
         } else if(!lhs.equals(other.lhs))
             return false;
-        if(orig_prod == null) {
-            if(other.orig_prod != null)
+        if(getOrig_prod() == null) {
+            if(other.getOrig_prod() != null)
                 return false;
-        } else if(!orig_prod.equals(other.orig_prod))
+        } else if(!getOrig_prod().equals(other.getOrig_prod()))
             return false;
         if(rhs == null) {
             if(other.rhs != null)
@@ -286,16 +378,7 @@ public class ContextualProduction implements IProduction {
         return true;
     }
 
-    @Override public int leftRecursivePosition() {
-        return orig_prod.leftRecursivePosition();
-    }
-
-    @Override public int rightRecursivePosition() {
-        return orig_prod.rightRecursivePosition();
-    }
-
-    @Override public void calculateRecursion(NormGrammar grammar) {
-        // This should not be called in a Contextual production
-        orig_prod.calculateRecursion(grammar);
+    public IProduction getOrig_prod() {
+        return orig_prod;
     }
 }

@@ -10,14 +10,21 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.metaborg.newsdf2table.grammar.CharacterClass;
+import org.metaborg.newsdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.newsdf2table.grammar.IPriority;
 import org.metaborg.newsdf2table.grammar.IProduction;
+import org.metaborg.newsdf2table.grammar.IterSepSymbol;
+import org.metaborg.newsdf2table.grammar.IterStarSepSymbol;
+import org.metaborg.newsdf2table.grammar.IterStarSymbol;
+import org.metaborg.newsdf2table.grammar.IterSymbol;
+import org.metaborg.newsdf2table.grammar.LexicalSymbol;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.Priority;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.UniqueProduction;
-import org.metaborg.newsdf2table.io.Benchmark;
 import org.metaborg.newsdf2table.io.GrammarReader;
+import org.metaborg.util.log.ILogger;
+import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.TermFactory;
@@ -32,7 +39,8 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class ParseTableGenerator {
-
+    
+    private static final ILogger logger = LoggerUtils.logger(ParseTableGenerator.class);
     private NormGrammar grammar;
     final int version_number = 6;
     final int initialState_number = 0;
@@ -40,13 +48,10 @@ public class ParseTableGenerator {
     BiMap<IProduction, Integer> prod_labels;
     IProduction initial_prod;
 
-    /* TODO Calculate first and follow sets
-    // Tarjan's index
-    int index = 0;
-    Stack<TableSet> tarjanStack;
-    Set<Set<TableSet>> first_components;
-    Set<Set<TableSet>> follow_components;
-    */
+    /*
+     * TODO Calculate first and follow sets // Tarjan's index int index = 0; Stack<TableSet> tarjanStack;
+     * Set<Set<TableSet>> first_components; Set<Set<TableSet>> follow_components;
+     */
 
     Queue<State> stateQueue = Lists.newLinkedList();
     Set<State> processedStates = Sets.newHashSet();
@@ -54,19 +59,22 @@ public class ParseTableGenerator {
 
     Map<Set<LRItem>, State> kernel_states = Maps.newHashMap();
     Map<LRItem, Set<LRItem>> item_derivedItems = Maps.newHashMap();
+    Map<Set<Context>, Integer> ctx_vals = Maps.newHashMap();
 
     int totalStates = 0;
 
     File input;
     File output;
+    File ctxGrammar;
     List<String> paths;
     boolean generateParenthesize;
     private final static ITermFactory termFactory = new TermFactory();
 
-    public ParseTableGenerator(File input, File output, List<String> paths, boolean parenthesize) {
+    public ParseTableGenerator(File input, File output, File ctxGrammar, List<String> paths, boolean parenthesize) {
         this.input = input;
         this.output = output;
         this.paths = paths;
+        this.ctxGrammar = ctxGrammar;
         this.generateParenthesize = parenthesize;
     }
 
@@ -76,45 +84,23 @@ public class ParseTableGenerator {
 
         _start_time = System.currentTimeMillis();
         setGrammar(GrammarReader.readGrammar(input, output, paths));
-        _end_time = System.currentTimeMillis();
-
-        long importTime = _end_time - _start_time;
-        Benchmark.printStatistics("Import: ", importTime);
 
         // calculate nullable symbols
-        _start_time = System.currentTimeMillis();
         calculateNullable();
-        _end_time = System.currentTimeMillis();
-
-        long nullableTime = _end_time - _start_time;
-        Benchmark.printStatistics("Nullable: ", nullableTime);
 
         // calculate left and right recursive productions (considering nullable symbols)
-        _start_time = System.currentTimeMillis();
         calculateRecursion();
-        _end_time = System.currentTimeMillis();
-
-        long recursionTime = _end_time - _start_time;
-        Benchmark.printStatistics("Recursion: ", recursionTime);
 
         // normalize priorities according to recursion
-        _start_time = System.currentTimeMillis();
         normalizePriorities();
-        _end_time = System.currentTimeMillis();
-
-        long normPriorities = _end_time - _start_time;
-        Benchmark.printStatistics("Normalizing Priorities: ", normPriorities);
-
 
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
-        _start_time = System.currentTimeMillis();
         deepConflictsAnalysis();
         prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
-        _end_time = System.currentTimeMillis();
 
-        long deepPrioritiesTime = _end_time - _start_time;
-        Benchmark.printStatistics("Deep Priorities: ", deepPrioritiesTime);
+        // output Aterm contextual Grammar
+        generateContextualGrammar();
 
         // TODO Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
         // create first/follow sets by calculating dependencies and using Tarjan's algorithm
@@ -122,19 +108,13 @@ public class ParseTableGenerator {
         // calculateFirstFollow();
 
         // create states
-        _start_time = System.currentTimeMillis();
         initial_prod = getGrammar().initial_prod;
         State s0 = new State(initial_prod, this);
         stateQueue.add(s0);
         processStateQueue();
         Collections.sort(states);
-        _end_time = System.currentTimeMillis();
-
-        long generationTime = _end_time - _start_time;
-        Benchmark.printStatistics("Generation: ", generationTime);
 
         // output table
-        _start_time = System.currentTimeMillis();
         IStrategoTerm result = generateATerm();
         if(output != null) {
             FileWriter out = null;
@@ -148,14 +128,26 @@ public class ParseTableGenerator {
         } else {
             System.out.println(result.toString());
         }
+
         _end_time = System.currentTimeMillis();
+        
+        printStatistics("Time spent: ", _end_time - _start_time);
 
-        long exportTime = _end_time - _start_time;
-        Benchmark.printStatistics("Export: ", exportTime);
+    }
 
+    public void generateContextualGrammar() {
+        IStrategoTerm ctxGrammarResult = generateATermContextualGrammar();
 
-        Benchmark.printStatistics("Total: ", importTime + nullableTime + recursionTime + generationTime + exportTime);
-
+        if(ctxGrammar != null && ctxGrammarResult != null) {
+            FileWriter out = null;
+            try {
+                out = new FileWriter(ctxGrammar);
+                out.write(ctxGrammarResult.toString());
+                out.close();
+            } catch(IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
     }
 
     private void calculateNullable() {
@@ -328,39 +320,41 @@ public class ParseTableGenerator {
                     // infix-prefix, infix-postfix productions
 
                     // if p1 : A = pre E in E and p2 : A = pre E or p1 : A = pre E in E and p2 : A = E in E
-                    if(p.higher().rightRecursivePosition() != -1 && p.higher().leftRecursivePosition() == -1
-                        && p.lower().rightRecursivePosition() != -1
-                        && p.higher().rightHand().size() > p.lower().rightHand().size()) {
+                    if(p.higher().leftRecursivePosition() == -1 && p.lower().leftRecursivePosition() == -1
+                        && (p.lower().rightRecursivePosition() != -1 || p.higher().rightRecursivePosition() != -1)) {
 
                         // if p1 : A = pre E in E and p2 : A = E in E
-                        if(p.lower().leftRecursivePosition() != -1) {
-                            boolean matchSuffix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(p.higher().rightHand().size() - 1 - i) // suffix matches
-                                    .equals(p.lower().rightHand().get(p.lower().rightHand().size() - 1 - i))) {
-                                    matchSuffix = true;
-                                } else {
-                                    matchSuffix = false;
-                                    break;
-                                }
-                            }
-                            if(matchSuffix) {
-                                new_values.add(p.higher().rightHand().size() - p.lower().rightHand().size());
-                            }
-                        } else { // dangling else (p1 : A = pre E in E and p2 : A = pre E)
-                            boolean matchPrefix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
-                                    matchPrefix = true;
-                                } else {
-                                    matchPrefix = false;
-                                    break;
-                                }
-                            }
-                            if(matchPrefix) {
-                                new_values.add(p.lower().rightRecursivePosition());
+                        // if(p.lower().leftRecursivePosition() != -1) {
+                        // boolean matchSuffix = false;
+                        // for(int i = 0; i < p.lower().rightHand().size(); i++) {
+                        // if(p.higher().rightHand().get(p.higher().rightHand().size() - 1 - i) // suffix matches
+                        // .equals(p.lower().rightHand().get(p.lower().rightHand().size() - 1 - i))) {
+                        // matchSuffix = true;
+                        // } else {
+                        // matchSuffix = false;
+                        // break;
+                        // }
+                        // }
+                        // if(matchSuffix) {
+                        // new_values.add(p.higher().rightHand().size() - p.lower().rightHand().size());
+                        // }
+                        // } else {
+
+                        // dangling else (p1 : A = pre E in E and p2 : A = pre E)
+                        boolean matchPrefix = false;
+                        for(int i = 0; i < Math.min(p.higher().rightHand().size(), p.lower().rightHand().size()); i++) {
+                            if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
+                                matchPrefix = true;
+                            } else {
+                                matchPrefix = false;
+                                break;
                             }
                         }
+                        if(matchPrefix) {
+                            new_values
+                                .add(Math.min(p.higher().rightRecursivePosition(), p.lower().rightRecursivePosition()));
+                        }
+                        // }
                     }
 
                     // if p1 : A = E in E pos and p2 : A = E pos or p1 : A = E in E pos and p2 : A = E in E
@@ -425,8 +419,9 @@ public class ParseTableGenerator {
         for(IPriority p : grammar.priorities().keySet()) {
             // right associative
             if(grammar.priorities().get(p).contains(Integer.MIN_VALUE)) {
-                if(p.higher().leftRecursivePosition() == -1) continue;
-                
+                if(p.higher().leftRecursivePosition() == -1)
+                    continue;
+
                 // p right p and indirect recursion on p
                 Symbol leftRecursive = p.higher().rightHand().get(p.higher().leftRecursivePosition());
                 if(p.higher().equals(p.lower()) && !leftRecursive.equals(p.higher().leftHand())) {
@@ -445,7 +440,8 @@ public class ParseTableGenerator {
             }
             // left associative
             if(grammar.priorities().get(p).contains(Integer.MAX_VALUE)) {
-                if(p.higher().rightRecursivePosition() == -1) continue;                
+                if(p.higher().rightRecursivePosition() == -1)
+                    continue;
 
                 // p left p and indirect recursion on p
                 Symbol rightRecursive = p.higher().rightHand().get(p.higher().rightRecursivePosition());
@@ -473,80 +469,53 @@ public class ParseTableGenerator {
             || grammar.rightRecursive.get(p.higher().leftHand()).contains(p.lower().leftHand());
     }
 
-    /* TODO calculate first and follow sets
-    private void calculateFirstFollow() {
-        for(IProduction p : getGrammar().prods.values()) {
-            p.calculateDependencies(getGrammar());
-        }
-
-        tarjanStack = new Stack<>();
-        first_components = Sets.newHashSet();
-        for(IProduction p : getGrammar().prods.values()) {
-            if(p.firstSet().index == -1) {
-                stronglyConnectedTarjan(p.firstSet(), first_components);
-            }
-        }
-    }
-
-    
-    private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) {
-        // Set the depth index for v to the smallest unused index
-        v.index = index;
-        v.low_link = index;
-        index++;
-        tarjanStack.push(v);
-        v.onStack = true;
-
-        for(TableSet d : v.depends_on) {
-            if(d.index == -1) {
-                // Successor w has not yet been visited; recurse on it
-                stronglyConnectedTarjan(d, components);
-                v.add(d.value);
-                d.low_link = Math.min(v.low_link, d.low_link);
-            } else if(d.onStack) {
-                // Successor w is in stack S and hence in the current SCC
-                v.low_link = Math.min(v.low_link, d.index);
-            }
-        }
-
-        TableSet t;
-        // If v is a root node, pop the stack and generate an SCC
-        if(v.low_link == v.index) {
-            Set<TableSet> component = Sets.newHashSet();
-            do {
-                t = tarjanStack.pop();
-                t.onStack = false;
-                t.add(v.value);
-                component.add(t);
-            } while(t != v);
-            components.add(component);
-        }
-    }
-    */
+    /*
+     * TODO calculate first and follow sets private void calculateFirstFollow() { for(IProduction p :
+     * getGrammar().prods.values()) { p.calculateDependencies(getGrammar()); }
+     * 
+     * tarjanStack = new Stack<>(); first_components = Sets.newHashSet(); for(IProduction p :
+     * getGrammar().prods.values()) { if(p.firstSet().index == -1) { stronglyConnectedTarjan(p.firstSet(),
+     * first_components); } } }
+     * 
+     * 
+     * private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) { // Set the depth index for v to
+     * the smallest unused index v.index = index; v.low_link = index; index++; tarjanStack.push(v); v.onStack = true;
+     * 
+     * for(TableSet d : v.depends_on) { if(d.index == -1) { // Successor w has not yet been visited; recurse on it
+     * stronglyConnectedTarjan(d, components); v.add(d.value); d.low_link = Math.min(v.low_link, d.low_link); } else
+     * if(d.onStack) { // Successor w is in stack S and hence in the current SCC v.low_link = Math.min(v.low_link,
+     * d.index); } }
+     * 
+     * TableSet t; // If v is a root node, pop the stack and generate an SCC if(v.low_link == v.index) { Set<TableSet>
+     * component = Sets.newHashSet(); do { t = tarjanStack.pop(); t.onStack = false; t.add(v.value); component.add(t); }
+     * while(t != v); components.add(component); } }
+     */
 
     private void deepConflictsAnalysis() {
         for(IPriority prio : grammar.priorities().keySet()) {
             IProduction higher = prio.higher();
             IProduction lower = prio.lower();
 
-            // infix-prefix conflict
-            if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+            // postfix-prefix conflict
+            if(higher.leftRecursivePosition() != -1 && // higher is postfix
                 lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1 && // lower is prefix
                 mutuallyRecursive(prio) && // the productions are mutually recursive
                 grammar.priorities().containsEntry(prio, 0)) { // the priority is E.In right E.Pre
 
                 handleInfixPrefixConflict(prio, higher, lower);
-            } // infix-postfix conflict
-            else if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() != -1 && // higher is infix
+            } // prefix-postfix conflict
+            else if(higher.rightRecursivePosition() != -1 && // higher is prefix
                 lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
                 mutuallyRecursive(prio) && // the productions are mutually recursive
                 grammar.priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the priority is
                                                                                            // E.In left E.Pos
                 handleInfixPostFixConflict(prio, higher, lower);
             } // dangling else conflict
-            else if(higher.leftRecursivePosition() == -1 && higher.rightRecursivePosition() != -1 // higher has prefix
-                && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
-                && lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1) { // lower is prefix)
+            else if(higher.leftRecursivePosition() == -1 // && higher.rightRecursivePosition() != -1 // higher has
+                                                         // prefix
+                // && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
+                && lower.leftRecursivePosition() == -1) { // && lower.rightRecursivePosition() != -1) { // lower is
+                                                          // prefix)
                 handleDanglingElseConflict(prio, higher, lower);
 
             } // mirrored dangling else conflict
@@ -559,6 +528,10 @@ public class ParseTableGenerator {
                 handleIndirectRecursionConflict(prio, higher);
             }
 
+        }
+        // longest-match conflicts
+        for(Symbol s : grammar.longest_match_prods.keySet()) {
+            handleLongestMatchConflict(s);
         }
 
     }
@@ -575,7 +548,7 @@ public class ParseTableGenerator {
         int conflict_pos = higher.leftRecursivePosition();
 
         Set<Context> contexts = Sets.newHashSet();
-        Context new_context = new Context(prio.lower(), ContextType.DEEP);
+        Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.RIGHTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
@@ -590,7 +563,7 @@ public class ParseTableGenerator {
         } else {
             // add new context to correct arguments of existing contextual production
             ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-            existing_prod.addContext(new_context, conflicting_args);
+            grammar.contextual_prods.replace(prio.higher(), existing_prod.addContext(new_context, conflicting_args));
         }
     }
 
@@ -606,7 +579,7 @@ public class ParseTableGenerator {
         int conflict_pos = higher.rightRecursivePosition();
 
         Set<Context> contexts = Sets.newHashSet();
-        Context new_context = new Context(prio.lower(), ContextType.DEEP);
+        Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.LEFTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
@@ -621,7 +594,7 @@ public class ParseTableGenerator {
         } else {
             // add new context to correct arguments of existing contextual production
             ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-            existing_prod.addContext(new_context, conflicting_args);
+            grammar.contextual_prods.replace(prio.higher(), existing_prod.addContext(new_context, conflicting_args));
         }
     }
 
@@ -641,7 +614,7 @@ public class ParseTableGenerator {
             }
             if(matchPrefix && !higher.equals(lower)) {
                 Set<Context> contexts = Sets.newHashSet();
-                Context new_context = new Context(prio.lower(), ContextType.DEEP);
+                Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.RIGHTMOST);
                 contexts.add(new_context);
 
                 Set<Integer> conflicting_args = Sets.newHashSet();
@@ -656,7 +629,9 @@ public class ParseTableGenerator {
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-                    existing_prod.addContext(new_context, conflicting_args);
+                    grammar.contextual_prods.replace(prio.higher(),
+                        existing_prod.addContext(new_context, conflicting_args));
+                    // existing_prod.addContext(new_context, conflicting_args);
                 }
             }
         }
@@ -680,7 +655,7 @@ public class ParseTableGenerator {
             }
             if(matchSuffix && !higher.equals(lower)) {
                 Set<Context> contexts = Sets.newHashSet();
-                Context new_context = new Context(prio.lower(), ContextType.DEEP);
+                Context new_context = new Context(prio.lower(), ContextType.DEEP, ContextPosition.LEFTMOST);
                 contexts.add(new_context);
 
                 Set<Integer> conflicting_args = Sets.newHashSet();
@@ -695,7 +670,8 @@ public class ParseTableGenerator {
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-                    existing_prod.addContext(new_context, conflicting_args);
+                    grammar.contextual_prods.replace(prio.higher(),
+                        existing_prod.addContext(new_context, conflicting_args));
                 }
             }
         }
@@ -729,7 +705,8 @@ public class ParseTableGenerator {
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-                    existing_prod.addContext(new_context, conflicting_args);
+                    grammar.contextual_prods.replace(prio.higher(),
+                        existing_prod.addContext(new_context, conflicting_args));
                 }
             }
             // the priority refers to a right recursive conflict
@@ -755,10 +732,59 @@ public class ParseTableGenerator {
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = grammar.contextual_prods.get(prio.higher());
-                    existing_prod.addContext(new_context, conflicting_args);
+                    grammar.contextual_prods.replace(prio.higher(),
+                        existing_prod.addContext(new_context, conflicting_args));
                 }
             }
         }
+    }
+
+    private void handleLongestMatchConflict(Symbol s) {
+        Set<Context> contexts = Sets.newHashSet();
+        for(IProduction p : grammar.longest_match_prods.get(s)) {
+            Context new_context = new Context(p, ContextType.DEEP, ContextPosition.RIGHTMOST);
+            contexts.add(new_context);
+        }
+
+        Symbol iterList = s;
+
+        if(s instanceof ContextFreeSymbol) {
+            // check whether s is a * list
+            Symbol list = ((ContextFreeSymbol) s).getSymbol();
+            if(list instanceof IterStarSymbol) {
+                iterList = new ContextFreeSymbol(new IterSymbol(((IterStarSymbol) list).getSymbol()));
+            } else if(list instanceof IterStarSepSymbol) {
+                iterList = new ContextFreeSymbol(new IterSepSymbol(((IterStarSepSymbol) list).getSymbol(),
+                    ((IterStarSepSymbol) list).getSeparator()));
+            }
+        }
+        if(s instanceof LexicalSymbol) {
+            // check whether s is a * list
+            Symbol list = ((LexicalSymbol) s).getSymbol();
+            if(list instanceof IterStarSymbol) {
+                iterList = new LexicalSymbol(new IterSymbol(((IterStarSymbol) list).getSymbol()));
+            } else if(list instanceof IterStarSepSymbol) {
+                iterList = new LexicalSymbol(new IterSepSymbol(((IterStarSepSymbol) list).getSymbol(),
+                    ((IterStarSepSymbol) list).getSeparator()));
+            }
+        }
+
+        // change production A+ -> A+ A to A+ -> A+<ctx> A
+        for(IProduction p : grammar.symbol_prods.get(iterList)) {
+            if(p.rightHand().size() > 1) {
+                ContextualProduction ctx_p = new ContextualProduction(p, contexts, Sets.newHashSet(0));
+                // if contextual production does not exist add it
+                if(!grammar.contextual_prods.containsKey(p)) {
+                    grammar.contextual_prods.put(p, ctx_p);
+                } else {
+                    // add new context to correct arguments of existing contextual production
+                    ContextualProduction existing_prod = grammar.contextual_prods.get(p);
+                    grammar.contextual_prods.replace(p, existing_prod.addContexts(contexts, Sets.newHashSet(0)));
+                }
+            }
+        }
+
+
     }
 
     private void processStateQueue() {
@@ -782,56 +808,7 @@ public class ParseTableGenerator {
         Map<IProduction, ContextualProduction> contextual_prods, int label) {
         BiMap<IProduction, Integer> labels = HashBiMap.create();
 
-        for(ContextualProduction p : grammar.contextual_prods.values()) {
-            for(Symbol s : p.rhs) {
-                if(s instanceof ContextualSymbol) {
-                    grammar.contextual_symbols.add((ContextualSymbol) s);
-                }
-            }
-        }
-
-        Queue<ContextualSymbol> contextual_symbols = Queues.newArrayDeque(grammar.contextual_symbols);
-        Set<ContextualSymbol> processed_symbols = Sets.newHashSet();
-
-        while(!contextual_symbols.isEmpty()) {
-            ContextualSymbol ctx_s = contextual_symbols.poll();
-            if(processed_symbols.contains(ctx_s))
-                continue;
-            processed_symbols.add(ctx_s);
-
-            for(IProduction p : grammar.symbol_prods.get(ctx_s.s)) {
-                // generate new productions for shallow contexts
-                Context shallowRight_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.RIGHTMOST);
-                Context shallowLeft_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.LEFTMOST);
-                if(ctx_s.contexts.contains(shallowRight_ctx) || ctx_s.contexts.contains(shallowLeft_ctx)) {
-                    continue;
-                }
-
-                // generate new productions for deep contexts
-                Context deep_ctx = new Context(p, ContextType.DEEP);
-                if(ctx_s.contexts.contains(deep_ctx)) {
-                    continue;
-                }
-
-                ContextualProduction ctx_p = null;
-                if(grammar.contextual_prods.get(p) != null) {
-                    ctx_p = grammar.contextual_prods.get(p);
-                }
-
-                if(ctx_p != null) {
-                    ContextualProduction new_prod =
-                        ctx_p.mergeContext(ctx_s.contexts, contextual_symbols, processed_symbols, grammar.prod_attrs);
-                    grammar.derived_contextual_prods.add(new_prod);
-                    grammar.symbol_prods.put(ctx_s, new_prod);
-                } else if(!ctx_s.contexts.contains(deep_ctx)) {
-                    ContextualProduction new_prod =
-                        new ContextualProduction(p, ctx_s.contexts, contextual_symbols, processed_symbols, grammar.prod_attrs);
-                    grammar.derived_contextual_prods.add(new_prod);
-                    grammar.symbol_prods.put(ctx_s, new_prod);
-                }
-            }
-
-        }
+        deriveContextualProductions();
 
         label = label + prods.size() + grammar.derived_contextual_prods.size() - 1;
 
@@ -852,6 +829,63 @@ public class ParseTableGenerator {
         return labels;
     }
 
+    private void deriveContextualProductions() {
+        for(ContextualProduction p : grammar.contextual_prods.values()) {
+            for(Symbol s : p.rightHand()) {
+                if(s instanceof ContextualSymbol) {
+                    grammar.contextual_symbols.add((ContextualSymbol) s);
+                }
+            }
+        }
+
+        Queue<ContextualSymbol> contextual_symbols = Queues.newArrayDeque(grammar.contextual_symbols);
+        Set<ContextualSymbol> processed_symbols = Sets.newHashSet();
+
+        while(!contextual_symbols.isEmpty()) {
+            ContextualSymbol ctx_s = contextual_symbols.poll();
+            if(processed_symbols.contains(ctx_s))
+                continue;
+            processed_symbols.add(ctx_s);
+            if(!ctx_vals.containsKey(ctx_s.getContexts())) {
+                ctx_vals.put(ctx_s.getContexts(), ctx_vals.size());
+            }
+
+            for(IProduction p : grammar.symbol_prods.get(ctx_s.getOrigSymbol())) {
+                // generate new productions for shallow contexts
+                Context shallowRight_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.RIGHTMOST);
+                Context shallowLeft_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.LEFTMOST);
+                if(ctx_s.getContexts().contains(shallowRight_ctx) || ctx_s.getContexts().contains(shallowLeft_ctx)) {
+                    continue;
+                }
+
+                // generate new productions for deep contexts
+                Context deepLeft_ctx = new Context(p, ContextType.DEEP, ContextPosition.LEFTMOST);
+                Context deepRight_ctx = new Context(p, ContextType.DEEP, ContextPosition.RIGHTMOST);
+                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)) {
+                    continue;
+                }
+
+                ContextualProduction ctx_p = null;
+                if(grammar.contextual_prods.get(p) != null) {
+                    ctx_p = grammar.contextual_prods.get(p);
+                }
+
+                if(ctx_p != null) {
+                    ContextualProduction new_prod = ctx_p.mergeContext(ctx_s.getContexts(), contextual_symbols,
+                        processed_symbols, grammar.prod_attrs);
+                    grammar.derived_contextual_prods.add(new_prod);
+                    grammar.symbol_prods.put(ctx_s, new_prod);
+                } else if(!(ctx_s.getContexts().contains(deepLeft_ctx)
+                    || ctx_s.getContexts().contains(deepRight_ctx))) {
+                    ContextualProduction new_prod = new ContextualProduction(p, ctx_s.getContexts(), contextual_symbols,
+                        processed_symbols, grammar.prod_attrs);
+                    grammar.derived_contextual_prods.add(new_prod);
+                    grammar.symbol_prods.put(ctx_s, new_prod);
+                }
+            }
+        }
+    }
+
     private IStrategoTerm generateATerm() throws Exception {
 
         IStrategoTerm version = termFactory.makeInt(version_number);
@@ -866,6 +900,29 @@ public class ParseTableGenerator {
 
         return termFactory.makeAppl(termFactory.makeConstructor("parse-table", 5), version, initialState, labels,
             states, priorities);
+    }
+
+    private IStrategoTerm generateATermContextualGrammar() {
+
+        List<IStrategoTerm> productions = Lists.newArrayList();
+        List<IStrategoTerm> priorities = Lists.newArrayList();
+        for(IProduction p : prod_labels.keySet()) {
+            productions.add(p.toSDF3Aterm(termFactory, grammar.prod_attrs, ctx_vals, null));
+        }
+
+        IStrategoTerm syntaxSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
+            termFactory.makeAppl(termFactory.makeConstructor("Kernel", 1), termFactory.makeList(productions)));
+
+        IStrategoTerm prioritiesSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
+            termFactory.makeAppl(termFactory.makeConstructor("Priorities", 1), termFactory.makeList(priorities)));
+
+        IStrategoTerm restrictionsSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
+            termFactory.makeAppl(termFactory.makeConstructor("Restrictions", 1), termFactory.makeList(priorities)));
+
+        return termFactory.makeAppl(termFactory.makeConstructor("Module", 3),
+            termFactory.makeAppl(termFactory.makeConstructor("Unparameterized", 1),
+                termFactory.makeString("contextual-grammar")),
+            termFactory.makeList(), termFactory.makeList(syntaxSection, prioritiesSection, restrictionsSection));
     }
 
     private IStrategoTerm generateStatesAterm() {
@@ -954,5 +1011,12 @@ public class ParseTableGenerator {
 
     public Set<File> requiredFiles() {
         return grammar.sdf3_files;
+    }
+    
+    public void printStatistics(String step, long totalTime) {
+        String millis = String.valueOf(totalTime % 1000);
+        while(millis.length() < 3)
+            millis = "0" + millis;
+        logger.debug(step + "{}.{}s", String.valueOf(totalTime / 1000), millis);
     }
 }

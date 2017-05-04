@@ -25,4 +25,12 @@ public class LayoutConstraintAttribute implements IAttribute {
         
         return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("layout", 1), tf.makeString(constraint)));
     }
+
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
+        if (constraint == "ignore-layout") {
+            return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("IgnoreLayout", 0)));
+        }
+        
+        return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("layout", 1), tf.makeString(constraint)));
+    }
 }

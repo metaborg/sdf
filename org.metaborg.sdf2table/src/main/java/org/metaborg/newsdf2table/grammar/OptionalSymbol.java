@@ -1,5 +1,9 @@
 package org.metaborg.newsdf2table.grammar;
 
+import java.util.Map;
+import java.util.Set;
+
+import org.metaborg.newsdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -7,7 +11,7 @@ import com.google.common.collect.Sets;
 
 public class OptionalSymbol extends Symbol {
 
-    Symbol symbol;
+    private final Symbol symbol;
     
     public OptionalSymbol(Symbol symbol) {
         this.symbol = symbol;
@@ -26,6 +30,11 @@ public class OptionalSymbol extends Symbol {
         return tf.makeAppl(tf.makeConstructor("opt", 1), symbol.toAterm(tf));
     }
 
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("Opt", 1), symbol.toSDF3Aterm(tf, ctx_vals, ctx_val));
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -36,7 +45,7 @@ public class OptionalSymbol extends Symbol {
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
-        if(!super.equals(obj))
+        if(obj == null)
             return false;
         if(getClass() != obj.getClass())
             return false;
@@ -48,5 +57,4 @@ public class OptionalSymbol extends Symbol {
             return false;
         return true;
     }
-
 }

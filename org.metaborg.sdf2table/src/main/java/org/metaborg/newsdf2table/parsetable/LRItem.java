@@ -14,6 +14,7 @@ public class LRItem {
     ParseTableGenerator pt;
     IProduction prod;
     int dotPosition;
+    int prod_label;
 
     public LRItem(IProduction prod, int dotPosition, ParseTableGenerator pt) {
         if(!(prod instanceof ContextualProduction) && pt.getGrammar().contextual_prods.containsKey(prod)) {
@@ -23,6 +24,7 @@ public class LRItem {
         }
         this.pt = pt;
         this.dotPosition = dotPosition;
+        this.prod_label = pt.prod_labels.get(prod);
     }
 
     public void process(Set<LRItem> items, SetMultimap<Symbol, LRItem> symbol_items) {
@@ -83,11 +85,11 @@ public class LRItem {
         IProduction lower = p;
 
         if(higher instanceof ContextualProduction) {
-            higher = ((ContextualProduction) higher).orig_prod;
+            higher = ((ContextualProduction) higher).getOrig_prod();
         }
 
         if(lower instanceof ContextualProduction) {
-            lower = ((ContextualProduction) lower).orig_prod;
+            lower = ((ContextualProduction) lower).getOrig_prod();
         }
 
         Priority prio = new Priority(higher, lower, false);
@@ -127,7 +129,7 @@ public class LRItem {
         final int prime = 31;
         int result = 1;
         result = prime * result + dotPosition;
-        result = prime * result + ((prod == null) ? 0 : prod.hashCode());
+        result = prime * result + prod_label;
         return result;
     }
 
@@ -141,12 +143,11 @@ public class LRItem {
         LRItem other = (LRItem) obj;
         if(dotPosition != other.dotPosition)
             return false;
-        if(prod == null) {
-            if(other.prod != null)
-                return false;
-        } else if(!prod.equals(other.prod))
+        if(prod_label != other.prod_label)
             return false;
         return true;
     }
+
+    
 
 }

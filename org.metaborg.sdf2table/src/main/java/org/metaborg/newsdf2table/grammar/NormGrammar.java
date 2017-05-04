@@ -35,6 +35,7 @@ public class NormGrammar implements INormGrammar {
     public Set<ContextualSymbol> contextual_symbols;
     public SetMultimap<Symbol, Symbol> leftRecursive;
     public SetMultimap<Symbol, Symbol> rightRecursive;
+    public SetMultimap<Symbol, IProduction> longest_match_prods;    
     
     // priorities
     public Set<IPriority> transitive_prio;
@@ -61,6 +62,7 @@ public class NormGrammar implements INormGrammar {
         this.rightRecursive = HashMultimap.create();
         this.derived_contextual_prods = Sets.newHashSet();
         this.contextual_symbols = Sets.newHashSet();
+        this.longest_match_prods = HashMultimap.create();
         this.prod_attrs = HashMultimap.create();
         this.prios = HashMultimap.create();
         this.transitive_prio = Sets.newHashSet();
