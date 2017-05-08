@@ -15,53 +15,52 @@ import com.google.common.collect.Sets;
 
 public class State implements Comparable<State> {
 
-    ParseTableGenerator pt;
+    ITableGenerator pt;
 
-    int label;
-    Set<GoTo> gotos;
-    Set<Action> actions;
-    final Set<LRItem> kernel;
-    Set<LRItem> items;
-    SetMultimap<Symbol, LRItem> symbol_items;
-    SetMultimap<CharacterClass, Action> lr_actions;
-
-    Set<LRItem> processedItems;
+    private final int label;
+    private Set<GoTo> gotos;
+    private final Set<LRItem> kernel;
+    private Set<LRItem> items;
+    private SetMultimap<Symbol, LRItem> symbol_items;
+    private SetMultimap<CharacterClass, Action> lr_actions;
+    
+    private boolean processed = false;
 
     public static Set<State> states = Sets.newHashSet();
 
-    public State(IProduction p, ParseTableGenerator pt) {
+    public State(IProduction p, ITableGenerator pt) {
         items = Sets.newHashSet();
-        actions = Sets.newHashSet();
         gotos = Sets.newHashSet();
         kernel = Sets.newHashSet();
         symbol_items = HashMultimap.create();
         lr_actions = HashMultimap.create();
 
         this.pt = pt;
-        label = this.pt.totalStates;
-        this.pt.totalStates++;
+        label = this.pt.totalStates();
+        this.pt.state_labels().put(label, this);
+        this.pt.incTotalStates();
 
         LRItem item = new LRItem(p, 0, pt);
         kernel.add(item);
-        pt.kernel_states.put(kernel, this);
+        pt.kernelMap().put(kernel, this);
 
         closure();
     }
 
-    public State(Set<LRItem> kernel, ParseTableGenerator pt) {
+    public State(Set<LRItem> kernel, ITableGenerator pt) {
         items = Sets.newHashSet();
-        actions = Sets.newHashSet();
         gotos = Sets.newHashSet();
         symbol_items = HashMultimap.create();
         lr_actions = HashMultimap.create();
 
         this.kernel = Sets.newHashSet();
         this.kernel.addAll(kernel);
-        pt.kernel_states.put(kernel, this);
+        pt.kernelMap().put(kernel, this);
 
         this.pt = pt;
-        label = this.pt.totalStates;
-        this.pt.totalStates++;
+        label = this.pt.totalStates();
+        this.pt.state_labels().put(label, this);
+        this.pt.incTotalStates();
 
         closure();
     }
@@ -81,7 +80,7 @@ public class State implements Comparable<State> {
                 for(LRItem item : symbol_items.get(s_at_dot)) {
                     Shift shift = new Shift((CharacterClass) s_at_dot);
                     new_kernel.add(item.shiftDot());
-                    if(!(item.prod.equals(pt.initial_prod) && item.dotPosition == 1)) {
+                    if(!(item.prod.equals(pt.initialProduction()) && item.dotPosition == 1)) {
                         new_shifts.add(shift);
                     }
                     new_gotos.add(new GoTo((CharacterClass) s_at_dot, pt));
@@ -95,11 +94,11 @@ public class State implements Comparable<State> {
                 // and it is the same symbol as the lhs of the context
                 // remove the shallow context, expand with the original symbol except for the context production                
 
-                for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
+                for(IProduction p : pt.normalizedGrammar().symbol_prods.get(s_at_dot)) {
 
                     // p might be a contextual production
-                    if(pt.getGrammar().contextual_prods.get(p) != null) {
-                        p = pt.getGrammar().contextual_prods.get(p);
+                    if(pt.normalizedGrammar().contextual_prods.get(p) != null) {
+                        p = pt.normalizedGrammar().contextual_prods.get(p);
                     }
 
                     Set<LRItem> new_kernel = Sets.newHashSet();
@@ -109,7 +108,7 @@ public class State implements Comparable<State> {
                         // if item.prod does not conflict with p
                         if(!isPriorityConflict(item, p)) {
                             new_kernel.add(item.shiftDot());
-                            new_gotos.add(new GoTo(pt.prod_labels.get(p), pt));
+                            new_gotos.add(new GoTo(pt.labels().get(p), pt));
                         }
                     }
                     if(!new_kernel.isEmpty()) {
@@ -126,7 +125,7 @@ public class State implements Comparable<State> {
         for(LRItem item : items) {
 
             if(item.dotPosition == item.prod.rightHand().size()) {
-                int prod_label = pt.prod_labels.get(item.prod);
+                int prod_label = pt.labels().get(item.prod);
 
                 if(item.prod.leftHand().followRestriction().isEmpty()) {
                     addReduceAction(item.prod, prod_label, CharacterClass.maxCC, null);
@@ -157,7 +156,7 @@ public class State implements Comparable<State> {
                 }
             }
             // <Start> = <START> . EOF
-            if(item.prod.equals(pt.initial_prod) && item.dotPosition == 1) {
+            if(item.prod.equals(pt.initialProduction()) && item.dotPosition == 1) {
                 lr_actions.put(new CharacterClass(new CharacterClassNumeric(256)), new Accept());
             }
         }
@@ -186,15 +185,14 @@ public class State implements Comparable<State> {
     }
 
     private void checkKernel(Set<LRItem> new_kernel, Set<GoTo> new_gotos, Set<Shift> new_shifts) {
-        if(pt.kernel_states.containsKey(new_kernel)) {
-            int stateNumber = pt.kernel_states.get(new_kernel).label;
+        if(pt.kernelMap().containsKey(new_kernel)) {
+            int stateNumber = pt.kernelMap().get(new_kernel).getLabel();
             // set recently added shift and goto actions to new state
             for(Shift shift : new_shifts) {
                 shift.setState(stateNumber);
 
                 this.lr_actions.put(shift.cc, shift);
                 // this.lr_actions.add(new LRAction(shift.cc, shift));
-                this.actions.add(shift);
             }
             for(GoTo g : new_gotos) {
                 g.setState(stateNumber);
@@ -203,16 +201,15 @@ public class State implements Comparable<State> {
         } else {
             State new_state = new State(new_kernel, pt);
             for(Shift shift : new_shifts) {
-                shift.setState(new_state.label);
+                shift.setState(new_state.getLabel());
                 this.lr_actions.put(shift.cc, shift);
                 // this.lr_actions.add(new LRAction(shift.cc, shift));
-                this.actions.add(shift);
             }
             for(GoTo g : new_gotos) {
-                g.setState(new_state.label);
+                g.setState(new_state.getLabel());
                 this.gotos.add(g);
             }
-            pt.stateQueue.add(new_state);
+            pt.stateQueue().add(new_state);
         }
     }
 
@@ -230,8 +227,8 @@ public class State implements Comparable<State> {
 
         Priority prio = new Priority(higher, lower, false);
 
-        if(pt.getGrammar().priorities().containsKey(prio)) {
-            Set<Integer> arguments = pt.getGrammar().priorities().get(prio);
+        if(pt.normalizedGrammar().priorities().containsKey(prio)) {
+            Set<Integer> arguments = pt.normalizedGrammar().priorities().get(prio);
             for(int i : arguments) {
                 if(i == item.dotPosition) {
                     return true;
@@ -246,7 +243,7 @@ public class State implements Comparable<State> {
     @Override public String toString() {
         String buf = "";
         int i = 0;
-        buf += "State " + label;
+        buf += "State " + getLabel();
         if(!gotos.isEmpty()) {
             buf += "\nGotos: ";
         }
@@ -256,23 +253,23 @@ public class State implements Comparable<State> {
             buf += g;
             i++;
         }
-//        if(!lr_actions.isEmpty()) {
-//            buf += "\nActions: ";
-//        }
-//        i = 0;
-//        for(CharacterClass cc : lr_actions.keySet()) {
-//            if(i != 0)
-//                buf += "\n       , ";
-//            buf += cc + ": ";
-//            int j = 0;
-//            for(Action a : lr_actions.get(cc)) {
-//                if(j != 0)
-//                    buf += ", ";
-//                buf += a;
-//                j++;
-//            }
-//            i++;
-//        }
+        if(!lr_actions.isEmpty()) {
+            buf += "\nActions: ";
+        }
+        i = 0;
+        for(CharacterClass cc : lr_actions.keySet()) {
+            if(i != 0)
+                buf += "\n       , ";
+            buf += cc + ": ";
+            int j = 0;
+            for(Action a : lr_actions.get(cc)) {
+                if(j != 0)
+                    buf += ", ";
+                buf += a;
+                j++;
+            }
+            i++;
+        }
         if(!items.isEmpty()) {
             buf += "\nItems: ";
         }
@@ -311,7 +308,27 @@ public class State implements Comparable<State> {
     }
 
     @Override public int compareTo(State o) {
-        return this.label - o.label;
+        return this.getLabel() - o.getLabel();
+    }
+
+    public int getLabel() {
+        return label;
+    }
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
+    }
+
+    public SetMultimap<CharacterClass, Action> actions() {
+        return lr_actions;
+    }
+
+    public Set<GoTo> gotos() {
+        return gotos;
     }
 
 

@@ -12,12 +12,6 @@ public class Context implements Serializable {
     ContextType type;
     // propagate shallow context only to leftmost or rightmost symbols
     ContextPosition position;
-
-    public Context(IProduction context, ContextType type) {
-        this.context = context;
-        this.type = type;
-        this.position = ContextPosition.LEFTANDRIGHTMOST;
-    }
     
     public Context(IProduction context, ContextType type, ContextPosition position) {
         this.context = context;

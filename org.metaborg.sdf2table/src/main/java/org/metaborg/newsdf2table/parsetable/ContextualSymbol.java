@@ -20,39 +20,59 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = context;
     }
-    
+
     public ContextualSymbol(Symbol s, Context context) {
         this.s = s;
         Set<Context> contexts = Sets.newHashSet(context);
         this.contexts = contexts;
     }
-    
+
     @Override public String name() {
         String buf = "";
         if(!getContexts().isEmpty()) {
-            int i = 0;
-            buf += "{";
+            boolean hasLeftContext = false;
             for(Context p : getContexts()) {
-                if(p.position == ContextPosition.RIGHTMOST) continue;
-                if(i != 0)
-                    buf += ", ";
-                buf += p;
-                i++;
+                if(p.position == ContextPosition.LEFTMOST) {
+                    hasLeftContext = true;
+                    break;
+                }
             }
-            buf += "}";
+            if(hasLeftContext) {
+                int i = 0;
+                buf += "{";
+                for(Context p : getContexts()) {
+                    if(p.position == ContextPosition.RIGHTMOST)
+                        continue;
+                    if(i != 0)
+                        buf += ", ";
+                    buf += p;
+                    i++;
+                }
+                buf += "}";
+            }
         }
         buf += getOrigSymbol().name();
         if(!getContexts().isEmpty()) {
-            int i = 0;
-            buf += "{";
+            boolean hasRightContext = false;
             for(Context p : getContexts()) {
-                if(p.position == ContextPosition.LEFTMOST) continue;
-                if(i != 0)
-                    buf += ", ";
-                buf += p;
-                i++;
+                if(p.position == ContextPosition.RIGHTMOST) {
+                    hasRightContext = true;
+                    break;
+                }
             }
-            buf += "}";
+            if(hasRightContext) {
+                int i = 0;
+                buf += "{";
+                for(Context p : getContexts()) {
+                    if(p.position == ContextPosition.LEFTMOST)
+                        continue;
+                    if(i != 0)
+                        buf += ", ";
+                    buf += p;
+                    i++;
+                }
+                buf += "}";
+            }
         }
         return buf;
     }
@@ -73,7 +93,7 @@ public class ContextualSymbol extends Symbol {
         Set<Context> new_contexts = Sets.newHashSet();
         new_contexts.addAll(getContexts());
         new_contexts.add(new_context);
-        
+
         return new ContextualSymbol(getOrigSymbol(), new_contexts);
     }
 
@@ -81,7 +101,7 @@ public class ContextualSymbol extends Symbol {
         Set<Context> new_contexts = Sets.newHashSet();
         new_contexts.addAll(contexts);
         new_contexts.addAll(this.getContexts());
-        
+
         return new ContextualSymbol(getOrigSymbol(), new_contexts);
     }
 
@@ -89,8 +109,7 @@ public class ContextualSymbol extends Symbol {
         return getOrigSymbol().toAterm(tf);
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
-        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         return getOrigSymbol().toSDF3Aterm(tf, ctx_vals, ctx_vals.get(getContexts()));
     }
 
@@ -122,5 +141,5 @@ public class ContextualSymbol extends Symbol {
             return false;
         return true;
     }
-    
+
 }

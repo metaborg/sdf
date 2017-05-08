@@ -39,6 +39,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     public SetMultimap<Symbol, Symbol> leftRecursive;
     public SetMultimap<Symbol, Symbol> rightRecursive;
     public SetMultimap<Symbol, IProduction> longest_match_prods;    
+    BiMap<IProduction, Integer> prod_labels;
     
     // priorities
     public Set<IPriority> transitive_prio;
@@ -118,6 +119,16 @@ public class NormGrammar implements INormGrammar, Serializable {
 
         prios.putAll(non_trans_prio_arguments);
         prios.putAll(trans_prio_arguments);
+    }
+
+
+    public BiMap<IProduction, Integer> getProdLabels() {
+        return prod_labels;
+    }
+
+
+    public void setProdLabels(BiMap<IProduction, Integer> prod_labels) {
+        this.prod_labels = prod_labels;
     }    
 
 }

@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -22,6 +21,7 @@ import org.metaborg.newsdf2table.grammar.IterSymbol;
 import org.metaborg.newsdf2table.grammar.LexicalSymbol;
 import org.metaborg.newsdf2table.grammar.NormGrammar;
 import org.metaborg.newsdf2table.grammar.Priority;
+import org.metaborg.newsdf2table.grammar.Production;
 import org.metaborg.newsdf2table.grammar.Symbol;
 import org.metaborg.newsdf2table.grammar.UniqueProduction;
 import org.metaborg.newsdf2table.io.GrammarReader;
@@ -40,14 +40,14 @@ import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class ParseTableGenerator {
+public class ParseTableGenerator implements ITableGenerator {
 
     private static final ILogger logger = LoggerUtils.logger(ParseTableGenerator.class);
     private NormGrammar grammar;
     final int version_number = 6;
     final int initialState_number = 0;
 
-    BiMap<IProduction, Integer> prod_labels;
+
     IProduction initial_prod;
 
     /*
@@ -56,8 +56,7 @@ public class ParseTableGenerator {
      */
 
     Queue<State> stateQueue = Lists.newLinkedList();
-    Set<State> processedStates = Sets.newHashSet();
-    List<State> states = Lists.newArrayList();
+    Map<Integer, State> state_labels = Maps.newHashMap();
 
     Map<Set<LRItem>, State> kernel_states = Maps.newHashMap();
     Map<LRItem, Set<LRItem>> item_derivedItems = Maps.newHashMap();
@@ -73,13 +72,26 @@ public class ParseTableGenerator {
     boolean generateParenthesize;
     private final static ITermFactory termFactory = new TermFactory();
 
-    public ParseTableGenerator(File input, File output, File normGrammar, File ctxGrammar, List<String> paths, boolean parenthesize) {
+    public ParseTableGenerator(File input, File output, File normGrammar, File ctxGrammar, List<String> paths,
+        boolean parenthesize) {
         this.input = input;
         this.outputFile = output;
         this.paths = paths;
         this.normGrammarFile = normGrammar;
         this.ctxGrammarFile = ctxGrammar;
         this.generateParenthesize = parenthesize;
+    }
+
+    public ParseTableGenerator(NormGrammar ng) {
+        this.grammar = ng;
+
+        grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
+
+        // create states
+        initial_prod = grammar.initial_prod;
+        State s0 = new State(initial_prod, this);
+        stateQueue.add(s0);
+        processStateQueue();
     }
 
     public void createTable() throws Exception {
@@ -101,7 +113,7 @@ public class ParseTableGenerator {
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
         deepConflictsAnalysis();
-        prod_labels = createLabels(getGrammar().prods, getGrammar().contextual_prods, 257);
+        grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
 
         // output Aterm contextual Grammar
         generateContextualGrammar();
@@ -112,11 +124,10 @@ public class ParseTableGenerator {
         // calculateFirstFollow();
 
         // create states
-        initial_prod = getGrammar().initial_prod;
-        State s0 = new State(initial_prod, this);
-        stateQueue.add(s0);
-        processStateQueue();
-        Collections.sort(states);
+        initial_prod = grammar.initial_prod;
+        // State s0 = new State(initial_prod, this);
+        // stateQueue.add(s0);
+        // processStateQueue();
 
         // output table
         IStrategoTerm result = generateATerm();
@@ -161,7 +172,7 @@ public class ParseTableGenerator {
             ObjectOutputStream outObj = null;
             try {
                 String name = normGrammarFile.getAbsolutePath();
-                out = new FileOutputStream(name);                
+                out = new FileOutputStream(name);
                 outObj = new ObjectOutputStream(out);
                 outObj.writeObject(grammar);
                 outObj.close();
@@ -176,7 +187,7 @@ public class ParseTableGenerator {
         boolean markedNullable = false;
         do {
             markedNullable = false;
-            for(IProduction p : getGrammar().prods.values()) {
+            for(IProduction p : grammar.prods.values()) {
                 if(p.rightHand().isEmpty() && !p.leftHand().nullable) {
                     p.leftHand().nullable = true;
                     markedNullable = true;
@@ -203,20 +214,20 @@ public class ParseTableGenerator {
         // depth first search, whenever finding a cycle, those symbols are left recursive with respect to each other
         List<Symbol> seen = Lists.newArrayList();
         List<IProduction> prodsVisited = Lists.newArrayList();
-        for(IProduction p : getGrammar().prods.values()) {
+        for(IProduction p : grammar.prods.values()) {
             seen.clear();
             leftRecursive(p, seen, prodsVisited);
         }
 
         // similar idea with right recursion
         prodsVisited.clear();
-        for(IProduction p : getGrammar().prods.values()) {
+        for(IProduction p : grammar.prods.values()) {
             seen.clear();
             rightRecursive(p, seen, prodsVisited);
         }
 
-        for(IProduction p : getGrammar().prods.values()) {
-            p.calculateRecursion(getGrammar());
+        for(IProduction p : grammar.prods.values()) {
+            p.calculateRecursion(grammar);
         }
     }
 
@@ -417,18 +428,20 @@ public class ParseTableGenerator {
 
                     new_values.addAll(grammar.priorities().get(p));
                     grammar.priorities().replaceValues(p, new_values);
-                } else {
-                    // tree filtering : non (mutually) recursive productions
-                    Set<Integer> new_values = Sets.newHashSet();
-                    for(int i = 0; i < p.higher().rightHand().size(); i++) {
-                        if(p.higher().rightHand().get(i).equals(p.lower().leftHand())) {
-                            new_values.add(i);
-                        }
-                    }
-
-                    new_values.addAll(grammar.priorities().get(p));
-                    grammar.priorities().replaceValues(p, new_values);
                 }
+
+                // else {
+                // // tree filtering : non (mutually) recursive productions
+                // Set<Integer> new_values = Sets.newHashSet();
+                // for(int i = 0; i < p.higher().rightHand().size(); i++) {
+                // if(p.higher().rightHand().get(i).equals(p.lower().leftHand())) {
+                // new_values.add(i);
+                // }
+                // }
+                //
+                // new_values.addAll(grammar.priorities().get(p));
+                // grammar.priorities().replaceValues(p, new_values);
+                // }
             }
         }
     }
@@ -773,8 +786,56 @@ public class ParseTableGenerator {
         if(s instanceof ContextFreeSymbol) {
             // check whether s is a * list
             Symbol list = ((ContextFreeSymbol) s).getSymbol();
+
             if(list instanceof IterStarSymbol) {
                 iterList = new ContextFreeSymbol(new IterSymbol(((IterStarSymbol) list).getSymbol()));
+                // FIXME: is there a better way to do this?
+                // the previous symbol can derive a non-empty list only if this list is empty
+                // thus, generate the contextual productions A.C = α A S*{S* = S+} and A.C = α A{C} S+
+                for(IProduction p : grammar.longest_match_prods.get(s)) {
+                    if(p.rightHand().size() < 0)
+                        continue;
+                    int pos = p.rightHand().size() - 3; // second to last symbol
+                    Symbol spos = p.rightHand().get(pos);
+                    if(grammar.rightRecursive.get(spos).contains(p.leftHand())) {
+                        // add A.C = α A S*{S* = S+}
+                        IProduction nullableListProd = null;
+                        IProduction nonNullableListProd = null;
+
+                        // FIXME only works with current normalization method
+                        for(IProduction list_p : grammar.symbol_prods.get(s)) {
+                            if(list_p.rightHand().size() == 1) {
+                                nullableListProd = list_p;
+                            } else {
+                                nonNullableListProd = list_p;
+                            }
+                        }
+                        if(nullableListProd != null) {
+                            ContextualProduction ctx_p1 = new ContextualProduction(p,
+                                Sets.newHashSet(
+                                    new Context(nullableListProd, ContextType.SHALLOW, ContextPosition.RIGHTMOST)),
+                                Sets.newHashSet(p.rightHand().size() - 1));
+                            // FIXME this works but it is a bit hack-y
+                            grammar.derived_contextual_prods.add(ctx_p1);
+                            grammar.symbol_prods.put(p.leftHand(), ctx_p1);
+                        }
+
+                        // add A.C = α A{C} S*{S* = }
+                        if(!grammar.contextual_prods.containsKey(p)) {
+                            ContextualProduction ctx_p2 = new ContextualProduction(p, contexts, Sets.newHashSet(pos));
+                            ctx_p2 = ctx_p2.addContext(
+                                new Context(nonNullableListProd, ContextType.SHALLOW, ContextPosition.RIGHTMOST),
+                                Sets.newHashSet(p.rightHand().size() - 1));
+                            grammar.contextual_prods.put(p, ctx_p2);
+                        } else {
+                            // add new context to correct arguments of existing contextual production
+                            ContextualProduction existing_prod = grammar.contextual_prods.get(p);
+                            grammar.contextual_prods.replace(p,
+                                existing_prod.addContexts(contexts, Sets.newHashSet(pos)));
+                        }
+                    }
+
+                }
             } else if(list instanceof IterStarSepSymbol) {
                 iterList = new ContextFreeSymbol(new IterSepSymbol(((IterStarSepSymbol) list).getSymbol(),
                     ((IterStarSepSymbol) list).getSeparator()));
@@ -812,18 +873,16 @@ public class ParseTableGenerator {
     private void processStateQueue() {
         while(!stateQueue.isEmpty()) {
             State state = stateQueue.poll();
-            if(!processedStates.contains(state)) {
+            if(!state.isProcessed()) {
                 processState(state);
             }
         }
     }
 
     private void processState(State state) {
-        processedStates.add(state);
-
         state.doShift();
-        states.add(state);
         state.doReduces();
+        state.setProcessed(true);
     }
 
     private BiMap<IProduction, Integer> createLabels(Map<UniqueProduction, IProduction> prods,
@@ -853,6 +912,14 @@ public class ParseTableGenerator {
 
     private void deriveContextualProductions() {
         for(ContextualProduction p : grammar.contextual_prods.values()) {
+            for(Symbol s : p.rightHand()) {
+                if(s instanceof ContextualSymbol) {
+                    grammar.contextual_symbols.add((ContextualSymbol) s);
+                }
+            }
+        }
+
+        for(ContextualProduction p : grammar.derived_contextual_prods) {
             for(Symbol s : p.rightHand()) {
                 if(s instanceof ContextualSymbol) {
                     grammar.contextual_symbols.add((ContextualSymbol) s);
@@ -928,7 +995,7 @@ public class ParseTableGenerator {
 
         List<IStrategoTerm> productions = Lists.newArrayList();
         List<IStrategoTerm> priorities = Lists.newArrayList();
-        for(IProduction p : prod_labels.keySet()) {
+        for(IProduction p : labels().keySet()) {
             productions.add(p.toSDF3Aterm(termFactory, grammar.prod_attrs, ctx_vals, null));
         }
 
@@ -949,23 +1016,25 @@ public class ParseTableGenerator {
 
     private IStrategoTerm generateStatesAterm() {
         List<IStrategoTerm> terms = Lists.newArrayList();
-        for(State s : states) {
+        for(int i = 0; i < totalStates; i++) {
+            State s = state_labels.get(i);
             List<IStrategoTerm> goto_terms = Lists.newArrayList();
             List<IStrategoTerm> action_terms = Lists.newArrayList();
-            for(GoTo goto_action : s.gotos) {
+            for(GoTo goto_action : s.gotos()) {
                 goto_terms.add(goto_action.toAterm(termFactory));
             }
-            for(CharacterClass cc : s.lr_actions.keySet()) {
+            for(CharacterClass cc : s.actions().keySet()) {
                 List<IStrategoTerm> actions = Lists.newArrayList();
-                for(Action a : s.lr_actions.get(cc)) {
+                for(Action a : s.actions().get(cc)) {
                     actions.add(a.toAterm(termFactory, this));
                 }
                 action_terms.add(termFactory.makeAppl(termFactory.makeConstructor("action", 2),
                     cc.toStateAterm(termFactory), termFactory.makeList(actions)));
                 // action_terms.add(action.toAterm(termFactory, this));
             }
-            terms.add(termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.label),
-                termFactory.makeList(goto_terms), termFactory.makeList(action_terms)));
+            terms.add(
+                termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.getLabel()),
+                    termFactory.makeList(goto_terms), termFactory.makeList(action_terms)));
         }
 
         return termFactory.makeAppl(termFactory.makeConstructor("states", 1), termFactory.makeList(terms));
@@ -973,7 +1042,7 @@ public class ParseTableGenerator {
 
     private IStrategoTerm generatePrioritiesAterm() throws Exception {
         List<IStrategoTerm> terms = Lists.newArrayList();
-        for(java.util.Map.Entry<IPriority, Integer> e : getGrammar().priorities().entries()) {
+        for(java.util.Map.Entry<IPriority, Integer> e : grammar.priorities().entries()) {
             IProduction prod_higher = e.getKey().higher();
             IProduction prod_lower = e.getKey().lower();
             // because non-contextual production got replaced
@@ -983,8 +1052,8 @@ public class ParseTableGenerator {
             if(grammar.contextual_prods.containsKey(prod_lower)) {
                 prod_lower = grammar.contextual_prods.get(e.getKey().lower());
             }
-            Integer label_higher = prod_labels.get(prod_higher);
-            Integer label_lower = prod_labels.get(prod_lower);
+            Integer label_higher = labels().get(prod_higher);
+            Integer label_lower = labels().get(prod_lower);
             if(label_higher == null || label_lower == null) {
                 throw new Exception("Production label not found.");
             }
@@ -993,6 +1062,8 @@ public class ParseTableGenerator {
                     termFactory.makeInt(label_higher), termFactory.makeInt(label_lower));
                 terms.add(prio_term);
             } else {
+                if(e.getValue() == Integer.MAX_VALUE || e.getValue() == Integer.MIN_VALUE)
+                    continue;
 
                 IStrategoTerm prio_term = termFactory.makeAppl(termFactory.makeConstructor("arg-gtr-prio", 3),
                     termFactory.makeInt(label_higher), termFactory.makeInt(e.getValue()),
@@ -1008,19 +1079,15 @@ public class ParseTableGenerator {
     private IStrategoTerm generateLabelsAterm() {
         List<IStrategoTerm> terms = Lists.newArrayList();
 
-        for(int i = 257 + prod_labels.size() - 1; i >= 257; i--) {
-            IProduction p = prod_labels.inverse().get(i);
+        for(int i = 257 + labels().size() - 1; i >= 257; i--) {
+            IProduction p = labels().inverse().get(i);
 
             IStrategoTerm p_term = termFactory.makeAppl(termFactory.makeConstructor("label", 2),
-                p.toAterm(termFactory, getGrammar().prod_attrs), termFactory.makeInt(i));
+                p.toAterm(termFactory, grammar.prod_attrs), termFactory.makeInt(i));
             terms.add(p_term);
         }
 
         return termFactory.makeList(terms);
-    }
-
-    public NormGrammar getGrammar() {
-        return grammar;
     }
 
     public void setGrammar(NormGrammar grammar) {
@@ -1040,5 +1107,41 @@ public class ParseTableGenerator {
         while(millis.length() < 3)
             millis = "0" + millis;
         logger.debug(step + "{}.{}s", String.valueOf(totalTime / 1000), millis);
+    }
+
+    @Override public int totalStates() {
+        return totalStates;
+    }
+
+    @Override public void incTotalStates() {
+        totalStates++;
+    }
+
+    @Override public Map<Set<LRItem>, State> kernelMap() {
+        return kernel_states;
+    }
+
+    @Override public IProduction initialProduction() {
+        return initial_prod;
+    }
+
+    @Override public NormGrammar normalizedGrammar() {
+        return grammar;
+    }
+
+    @Override public BiMap<IProduction, Integer> labels() {
+        return grammar.getProdLabels();
+    }
+
+    @Override public Map<LRItem, Set<LRItem>> cachedItems() {
+        return item_derivedItems;
+    }
+
+    @Override public Queue<State> stateQueue() {
+        return stateQueue;
+    }
+
+    @Override public Map<Integer, State> state_labels() {
+        return state_labels;
     }
 }

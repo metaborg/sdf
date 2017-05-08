@@ -10,6 +10,52 @@ import org.spoofax.interpreter.terms.ITermFactory;
 public class Reduce extends Action {
 
     int prod_label;
+    IProduction prod;
+    CharacterClass lookahead = null;
+
+    public Reduce(IProduction prod, int prod_label, CharacterClass cc, CharacterClass lookahead) {
+        this.prod = prod;
+        this.prod_label = prod_label;
+        this.lookahead = lookahead;
+        this.cc = cc;
+    }
+
+    @Override public IStrategoTerm toAterm(ITermFactory tf, ITableGenerator pt) {
+        int status = 0;
+        for(IAttribute attr : pt.normalizedGrammar().prod_attrs.get(prod)) {
+            if(attr instanceof GeneralAttribute) {
+                GeneralAttribute ga = (GeneralAttribute) attr;
+                if(ga.getName().equals("reject")) {
+                    status = 1;
+                } else if(ga.getName().equals("prefer")) {
+                    status = 2;
+                } else if(ga.getName().equals("avoid")) {
+                    status = 4;
+                }
+            }
+        }
+
+        if(lookahead == null) {
+            return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.rightHand().size()),
+                tf.makeInt(prod_label), tf.makeInt(status));
+        } else {
+            return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.rightHand().size()),
+                tf.makeInt(prod_label), tf.makeInt(status), tf.makeList(
+                    tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookahead.toAterm(tf)))));
+        }
+
+    }
+
+    @Override public String toString() {
+        if(lookahead == null) {
+            return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status))";
+        } else {
+            return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status, " + lookahead
+                + ")";
+        }
+        // return "";
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -34,53 +80,6 @@ public class Reduce extends Action {
         if(prod_label != other.prod_label)
             return false;
         return true;
-    }
-
-    IProduction prod;
-    CharacterClass lookahead = null;
-
-    public Reduce(IProduction prod, int prod_label, CharacterClass cc, CharacterClass lookahead) {
-        this.prod = prod;
-        this.prod_label = prod_label;
-        this.lookahead = lookahead;
-        this.cc = cc;
-    }
-
-    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTableGenerator pt) {
-        int status = 0;
-        for(IAttribute attr : pt.getGrammar().prod_attrs.get(prod)) {
-            if(attr instanceof GeneralAttribute) {
-                GeneralAttribute ga = (GeneralAttribute) attr;
-                if(ga.getName().equals("reject")) {
-                    status = 1;
-                } else if(ga.getName().equals("prefer")) {
-                    status = 2;
-                } else if(ga.getName().equals("avoid")) {
-                    status = 4;
-                }
-            }
-
-        }
-
-        if(lookahead == null) {
-            return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.rightHand().size()),
-                tf.makeInt(prod_label), tf.makeInt(status));
-        } else {
-            return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.rightHand().size()),
-                tf.makeInt(prod_label), tf.makeInt(status), tf.makeList(
-                    tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookahead.toAterm(tf)))));
-        }
-
-    }
-
-    @Override public String toString() {
-        if(lookahead == null) {
-            return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status))";
-        } else {
-            return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status, " + lookahead
-                + ")";
-        }
-        // return "";
     }
 
 

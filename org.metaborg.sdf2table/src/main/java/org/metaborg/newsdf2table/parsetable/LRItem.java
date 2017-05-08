@@ -11,28 +11,28 @@ import com.google.common.collect.Sets;
 
 public class LRItem {
 
-    ParseTableGenerator pt;
+    ITableGenerator pt;
     IProduction prod;
     int dotPosition;
     int prod_label;
 
-    public LRItem(IProduction prod, int dotPosition, ParseTableGenerator pt) {
-        if(!(prod instanceof ContextualProduction) && pt.getGrammar().contextual_prods.containsKey(prod)) {
-            this.prod = pt.getGrammar().contextual_prods.get(prod);
+    public LRItem(IProduction prod, int dotPosition, ITableGenerator pt) {
+        if(!(prod instanceof ContextualProduction) && pt.normalizedGrammar().contextual_prods.containsKey(prod)) {
+            this.prod = pt.normalizedGrammar().contextual_prods.get(prod);
         } else {
             this.prod = prod;
         }
         this.pt = pt;
         this.dotPosition = dotPosition;
-        this.prod_label = pt.prod_labels.get(prod);
+        this.prod_label = pt.labels().get(prod);
     }
 
     public void process(Set<LRItem> items, SetMultimap<Symbol, LRItem> symbol_items) {
         
         // items that have been already calculated
-        if(pt.item_derivedItems.containsKey(this)) {            
+        if(pt.cachedItems().containsKey(this)) {            
             items.add(this);
-            for(LRItem item : pt.item_derivedItems.get(this)) {
+            for(LRItem item : pt.cachedItems().get(this)) {
                 if(!items.contains(item)) {
                     item.process(items, symbol_items);
                 }
@@ -50,12 +50,12 @@ public class LRItem {
             if(dotPosition < prod.rightHand().size()) {
                 Symbol s_at_dot = prod.rightHand().get(dotPosition);
 
-                for(IProduction p : pt.getGrammar().symbol_prods.get(s_at_dot)) {
+                for(IProduction p : pt.normalizedGrammar().symbol_prods.get(s_at_dot)) {
 
                     if(!isPriorityConflict(this, p)) {
                         // p might be the problematic contextual production
-                        if(pt.getGrammar().contextual_prods.get(p) != null) {
-                            p = pt.getGrammar().contextual_prods.get(p);
+                        if(pt.normalizedGrammar().contextual_prods.get(p) != null) {
+                            p = pt.normalizedGrammar().contextual_prods.get(p);
                         }
 
                         LRItem newItem = new LRItem(p, 0, pt);
@@ -68,7 +68,7 @@ public class LRItem {
                 }
             }
 
-            pt.item_derivedItems.put(this, derivedItems);
+            pt.cachedItems().put(this, derivedItems);
             
             if(this.dotPosition < prod.rightHand().size()) {
                 symbol_items.put(prod.rightHand().get(this.dotPosition), this);
@@ -93,8 +93,8 @@ public class LRItem {
         }
 
         Priority prio = new Priority(higher, lower, false);
-        if(pt.getGrammar().priorities().containsKey(prio)) {
-            Set<Integer> arguments = pt.getGrammar().priorities().get(prio);
+        if(pt.normalizedGrammar().priorities().containsKey(prio)) {
+            Set<Integer> arguments = pt.normalizedGrammar().priorities().get(prio);
             for(int i : arguments) {
                 if(i == item.dotPosition) {
                     return true;
