@@ -35,6 +35,8 @@ public class Production implements IProduction, Serializable {
     public Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
         this.rhs = rhs;
+        leftRecursivePos = leftRecPos;
+        rightRecursivePos = rightRecPos;
     }
 
     @Override public Symbol leftHand() {

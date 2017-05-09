@@ -125,9 +125,9 @@ public class ParseTableGenerator implements ITableGenerator {
 
         // create states
         initial_prod = grammar.initial_prod;
-        // State s0 = new State(initial_prod, this);
-        // stateQueue.add(s0);
-        // processStateQueue();
+         State s0 = new State(initial_prod, this);
+         stateQueue.add(s0);
+         processStateQueue();
 
         // output table
         IStrategoTerm result = generateATerm();
@@ -798,40 +798,60 @@ public class ParseTableGenerator implements ITableGenerator {
                     int pos = p.rightHand().size() - 3; // second to last symbol
                     Symbol spos = p.rightHand().get(pos);
                     if(grammar.rightRecursive.get(spos).contains(p.leftHand())) {
-                        // add A.C = α A S*{S* = S+}
+
                         IProduction nullableListProd = null;
                         IProduction nonNullableListProd = null;
 
                         // FIXME only works with current normalization method
                         for(IProduction list_p : grammar.symbol_prods.get(s)) {
                             if(list_p.rightHand().size() == 1) {
-                                nullableListProd = list_p;
-                            } else {
                                 nonNullableListProd = list_p;
+                            } else {
+                                nullableListProd = list_p;
                             }
                         }
-                        if(nullableListProd != null) {
-                            ContextualProduction ctx_p1 = new ContextualProduction(p,
-                                Sets.newHashSet(
-                                    new Context(nullableListProd, ContextType.SHALLOW, ContextPosition.RIGHTMOST)),
-                                Sets.newHashSet(p.rightHand().size() - 1));
-                            // FIXME this works but it is a bit hack-y
-                            grammar.derived_contextual_prods.add(ctx_p1);
-                            grammar.symbol_prods.put(p.leftHand(), ctx_p1);
-                        }
+                        if(nullableListProd != null && nonNullableListProd != null) {
+                            // add A.C = α A S*{S* = S+}
+                            if(!grammar.contextual_prods.containsKey(p)) {
+                                // TODO Might need to recalculate recursive pos
+                                ContextualProduction ctx_p = new ContextualProduction(p, Sets.newHashSet(
+                                    new Context(nonNullableListProd, ContextType.SHALLOW, ContextPosition.RIGHTMOST)),
+                                    Sets.newHashSet(p.rightHand().size() - 1));
+                                grammar.contextual_prods.put(p, ctx_p);
+                            } else {
+                                // add new context to correct arguments of existing contextual production
+                                ContextualProduction existing_prod = grammar.contextual_prods.get(p);
+                                grammar.contextual_prods
+                                    .replace(p,
+                                        existing_prod.addContexts(
+                                            Sets.newHashSet(new Context(nonNullableListProd, ContextType.SHALLOW,
+                                                ContextPosition.RIGHTMOST)),
+                                            Sets.newHashSet(p.rightHand().size() - 1)));
+                            }
 
-                        // add A.C = α A{C} S*{S* = }
-                        if(!grammar.contextual_prods.containsKey(p)) {
-                            ContextualProduction ctx_p2 = new ContextualProduction(p, contexts, Sets.newHashSet(pos));
-                            ctx_p2 = ctx_p2.addContext(
-                                new Context(nonNullableListProd, ContextType.SHALLOW, ContextPosition.RIGHTMOST),
-                                Sets.newHashSet(p.rightHand().size() - 1));
-                            grammar.contextual_prods.put(p, ctx_p2);
-                        } else {
-                            // add new context to correct arguments of existing contextual production
-                            ContextualProduction existing_prod = grammar.contextual_prods.get(p);
-                            grammar.contextual_prods.replace(p,
-                                existing_prod.addContexts(contexts, Sets.newHashSet(pos)));
+                            // add A.C = α A{C} S+
+                            List<Symbol> new_rhs = Lists.newArrayList();
+                            for(int i = 0; i < p.rightHand().size() - 1; i++) {
+                                new_rhs.add(p.rightHand().get(i));
+                            }
+                            new_rhs.add(iterList);
+                            Production newProd = new Production(p.leftHand(), new_rhs, p.leftRecursivePosition(),
+                                p.rightRecursivePosition());
+                            UniqueProduction uniqueProd = new UniqueProduction(p.leftHand(), new_rhs);
+                            grammar.prods.put(uniqueProd, newProd);
+                            grammar.symbol_prods.put(p.leftHand(), newProd);
+                            contexts.add(new Context(newProd, ContextType.DEEP, ContextPosition.RIGHTMOST));
+
+                            if(!grammar.contextual_prods.containsKey(newProd)) {
+                                ContextualProduction ctx_p2 =
+                                    new ContextualProduction(newProd, contexts, Sets.newHashSet(pos));
+                                grammar.contextual_prods.put(newProd, ctx_p2);
+                            } else {
+                                // add new context to correct arguments of existing contextual production
+                                ContextualProduction existing_prod = grammar.contextual_prods.get(p);
+                                grammar.contextual_prods.replace(newProd,
+                                    existing_prod.addContexts(contexts, Sets.newHashSet(pos)));
+                            }
                         }
                     }
 

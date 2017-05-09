@@ -83,6 +83,8 @@ public class LRItem {
     private boolean isPriorityConflict(LRItem item, IProduction p) {
         IProduction higher = item.prod;
         IProduction lower = p;
+        
+        
 
         if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).getOrig_prod();
