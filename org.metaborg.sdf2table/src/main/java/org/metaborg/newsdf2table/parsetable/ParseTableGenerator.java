@@ -125,9 +125,9 @@ public class ParseTableGenerator implements ITableGenerator {
 
         // create states
         initial_prod = grammar.initial_prod;
-         State s0 = new State(initial_prod, this);
-         stateQueue.add(s0);
-         processStateQueue();
+//         State s0 = new State(initial_prod, this);
+//         stateQueue.add(s0);
+//         processStateQueue();
 
         // output table
         IStrategoTerm result = generateATerm();

@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.metaborg</groupId>
-			<artifactId>sdf2table.core</artifactId>
+			<artifactId>sdf2table</artifactId>
 			<version>${metaborg-version}</version>
 		</dependency>
 		<dependency>
