@@ -94,7 +94,7 @@ public class ParseTableGenerator implements ITableGenerator {
         processStateQueue();
     }
 
-    public void createTable() throws Exception {
+    public void createTable(boolean dynamic) throws Exception {
         long _start_time;
         long _end_time;
 
@@ -123,11 +123,14 @@ public class ParseTableGenerator implements ITableGenerator {
         // see http://compilers.iecc.com/comparch/article/01-04-079
         // calculateFirstFollow();
 
-        // create states
+        // create states if the table should not be generated dynamically
         initial_prod = grammar.initial_prod;
-//         State s0 = new State(initial_prod, this);
-//         stateQueue.add(s0);
-//         processStateQueue();
+        
+        if(!dynamic) {
+            State s0 = new State(initial_prod, this);
+            stateQueue.add(s0);
+            processStateQueue();
+        }
 
         // output table
         IStrategoTerm result = generateATerm();
