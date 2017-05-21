@@ -82,24 +82,13 @@ public class ParseTableGenerator implements ITableGenerator {
         this.generateParenthesize = parenthesize;
     }
 
-    public ParseTableGenerator(NormGrammar ng) {
-        this.grammar = ng;
 
-        grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
-
-        // create states
-        initial_prod = grammar.initial_prod;
-        State s0 = new State(initial_prod, this);
-        stateQueue.add(s0);
-        processStateQueue();
-    }
-
-    public void createTable(boolean dynamic) throws Exception {
+    public void createTable(boolean dynamic, boolean generateCtxGrammar) throws Exception {
         long _start_time;
         long _end_time;
 
         _start_time = System.currentTimeMillis();
-        setGrammar(GrammarReader.readGrammar(input, outputFile, paths));
+        setGrammar(GrammarReader.readGrammar(input, paths));
 
         // calculate nullable symbols
         calculateNullable();
@@ -116,7 +105,7 @@ public class ParseTableGenerator implements ITableGenerator {
         grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
 
         // output Aterm contextual Grammar
-        generateContextualGrammar();
+        generateContextualGrammar(dynamic, generateCtxGrammar);
 
         // TODO Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
         // create first/follow sets by calculating dependencies and using Tarjan's algorithm
@@ -158,10 +147,31 @@ public class ParseTableGenerator implements ITableGenerator {
 
     }
 
-    public void generateContextualGrammar() {
+    public IStrategoTerm createDynamicTable(boolean operatorPrecedence, boolean danglingElse, boolean longestMatch,
+        boolean indirectRecursion) throws Exception {
+        setGrammar(GrammarReader.readGrammar(input, paths));
+        // calculate nullable symbols
+        calculateNullable();
+
+        // calculate left and right recursive productions (considering nullable symbols)
+        calculateRecursion();
+
+        // normalize priorities according to recursion
+        normalizePriorities();
+
+        // calculate deep priority conflicts based on current priorities
+        // and generate contextual productions
+        deepConflictsAnalysis(operatorPrecedence, danglingElse, longestMatch, indirectRecursion);
+        grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
+
+        return generateATerm();
+    }
+
+
+    public void generateContextualGrammar(boolean dynamic, boolean generateCtxGrammar) {
         IStrategoTerm ctxGrammarResult = generateATermContextualGrammar();
 
-        if(ctxGrammarFile != null && ctxGrammarResult != null) {
+        if(generateCtxGrammar && ctxGrammarFile != null && ctxGrammarResult != null) {
             FileWriter out = null;
             try {
                 out = new FileWriter(ctxGrammarFile);
@@ -172,7 +182,7 @@ public class ParseTableGenerator implements ITableGenerator {
             }
         }
 
-        if(grammar != null && normGrammarFile != null) {
+        if(dynamic && grammar != null && normGrammarFile != null) {
             FileOutputStream out = null;
             ObjectOutputStream outObj = null;
             try {
@@ -531,49 +541,60 @@ public class ParseTableGenerator implements ITableGenerator {
      * while(t != v); components.add(component); } }
      */
 
-    private void deepConflictsAnalysis() {
+    private void deepConflictsAnalysis(boolean operatorPrecedence, boolean danglingElse, boolean longestMatch,
+        boolean indirectRecursion) {
         for(IPriority prio : grammar.priorities().keySet()) {
             IProduction higher = prio.higher();
             IProduction lower = prio.lower();
 
-            // postfix-prefix conflict
-            if(higher.leftRecursivePosition() != -1 && // higher is postfix
-                lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1 && // lower is prefix
-                mutuallyRecursive(prio) && // the productions are mutually recursive
-                grammar.priorities().containsEntry(prio, 0)) { // the priority is E.In right E.Pre
+            if(operatorPrecedence) {
+                // postfix-prefix conflict
+                if(higher.leftRecursivePosition() != -1 && // higher is postfix
+                    lower.leftRecursivePosition() == -1 && lower.rightRecursivePosition() != -1 && // lower is prefix
+                    mutuallyRecursive(prio) && // the productions are mutually recursive
+                    grammar.priorities().containsEntry(prio, 0)) { // the priority is E.In right E.Pre
 
-                handleInfixPrefixConflict(prio, higher, lower);
-            } // prefix-postfix conflict
-            else if(higher.rightRecursivePosition() != -1 && // higher is prefix
-                lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
-                mutuallyRecursive(prio) && // the productions are mutually recursive
-                grammar.priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the priority is
-                                                                                           // E.In left E.Pos
-                handleInfixPostFixConflict(prio, higher, lower);
-            } // dangling else conflict
-            else if(higher.leftRecursivePosition() == -1 // && higher.rightRecursivePosition() != -1 // higher has
-                                                         // prefix
-                // && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
-                && lower.leftRecursivePosition() == -1) { // && lower.rightRecursivePosition() != -1) { // lower is
-                                                          // prefix)
-                handleDanglingElseConflict(prio, higher, lower);
-
-            } // mirrored dangling else conflict
-            else if(higher.leftRecursivePosition() != -1 && higher.rightRecursivePosition() == -1 // higher has postfix
-                && higher.rightHand().size() > lower.rightHand().size() // |higher.rhs| > |lower.rhs|
-                && lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1) { // lower is postfix)
-                handleMirroredDanglingElseConflict(prio, higher, lower);
-            } // regular priority indirect recursion conflict
-            else {
-                handleIndirectRecursionConflict(prio, higher);
+                    handleInfixPrefixConflict(prio, higher, lower);
+                } // prefix-postfix conflict
+                else if(operatorPrecedence && higher.rightRecursivePosition() != -1 && // higher is prefix
+                    lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
+                    mutuallyRecursive(prio) && // the productions are mutually recursive
+                    grammar.priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the priority is
+                                                                                               // E.In left E.Pos
+                    handleInfixPostFixConflict(prio, higher, lower);
+                }
             }
 
-        }
-        // longest-match conflicts
-        for(Symbol s : grammar.longest_match_prods.keySet()) {
-            handleLongestMatchConflict(s);
+            if(danglingElse) {
+                // dangling else conflict
+                if(higher.leftRecursivePosition() == -1 // higher has prefix
+                    && lower.leftRecursivePosition() == -1) { // lower is prefix
+                    handleDanglingElseConflict(prio, higher, lower);
+
+                } // mirrored dangling else conflict
+                else if(higher.rightRecursivePosition() == -1 // higher has postfix
+                    && lower.rightRecursivePosition() == -1) { // lower is postfix
+                    handleMirroredDanglingElseConflict(prio, higher, lower);
+                }
+            }
+
+            if(indirectRecursion) {
+                // regular priority indirect recursion conflict
+                handleIndirectRecursionConflict(prio, higher);
+            }
         }
 
+        if(longestMatch) {
+            // longest-match conflicts
+            for(Symbol s : grammar.longest_match_prods.keySet()) {
+                handleLongestMatchConflict(s);
+            }
+        }
+
+    }
+
+    private void deepConflictsAnalysis() {
+        deepConflictsAnalysis(true, true, true, true);
     }
 
     private void handleInfixPrefixConflict(IPriority prio, IProduction higher, IProduction lower) {
@@ -844,6 +865,7 @@ public class ParseTableGenerator implements ITableGenerator {
                                 p.rightRecursivePosition());
                             UniqueProduction uniqueProd = new UniqueProduction(p.leftHand(), new_rhs);
                             grammar.prods.put(uniqueProd, newProd);
+                            grammar.prod_attrs.putAll(newProd, grammar.prod_attrs.get(p));
                             grammar.symbol_prods.put(p.leftHand(), newProd);
                             contexts.add(new Context(newProd, ContextType.DEEP, ContextPosition.RIGHTMOST));
 
@@ -1114,6 +1136,11 @@ public class ParseTableGenerator implements ITableGenerator {
 
         return termFactory.makeList(terms);
     }
+
+    public NormGrammar getGrammar() {
+        return grammar;
+    }
+
 
     public void setGrammar(NormGrammar grammar) {
         this.grammar = grammar;

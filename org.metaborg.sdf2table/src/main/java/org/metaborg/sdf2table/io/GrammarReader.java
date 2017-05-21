@@ -57,7 +57,7 @@ import com.google.common.collect.Sets;
 public class GrammarReader {
 
     
-    public static NormGrammar readGrammar(File input, File output, List<String> paths) throws Exception {
+    public static NormGrammar readGrammar(File input, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
 

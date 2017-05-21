@@ -1524,6 +1524,7 @@ rules
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
             new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(second-prod), associativity, SimpleGroup(first-prod)),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [first-prod | ppss])]),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [second-prod | ppss])])
                           ]
@@ -1534,6 +1535,7 @@ rules
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
             new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(second-prod), associativity, SimpleRefGroup(first-prod)),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [first-prod | ppss])]),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [second-prod | ppss])])
                           ]

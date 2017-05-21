@@ -31,8 +31,8 @@ public class DynamicParseTableGenerator implements ITableGenerator {
 
     Queue<State> stateQueue = Lists.newLinkedList();
     private Map<Set<LRItem>, State> kernel_states = Maps.newHashMap();
-    int totalStates = 0;
-    int processedStates = 0;
+    private int totalStates = 0;
+    private int processedStates = 0;
 
     Map<LRItem, Set<LRItem>> cachedItems = Maps.newHashMap();
 
@@ -49,6 +49,10 @@ public class DynamicParseTableGenerator implements ITableGenerator {
             e.printStackTrace();
         }
         
+    }
+    
+    public DynamicParseTableGenerator(NormGrammar grammar) {
+        this.grammar = grammar;
     }
 
     public State getInitialState() {
@@ -78,6 +82,10 @@ public class DynamicParseTableGenerator implements ITableGenerator {
 
     @Override public int totalStates() {
         return totalStates;
+    }
+
+    public int getProcessedStates() {
+        return processedStates;
     }
 
     @Override public void incTotalStates() {
