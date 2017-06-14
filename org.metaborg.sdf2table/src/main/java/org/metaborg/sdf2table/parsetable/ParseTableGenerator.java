@@ -125,7 +125,7 @@ public class ParseTableGenerator implements ITableGenerator {
 
         // create states if the table should not be generated dynamically
         initial_prod = grammar.initial_prod;
-        
+
         if(!dynamic) {
             State s0 = new State(initial_prod, this);
             stateQueue.add(s0);
@@ -135,13 +135,15 @@ public class ParseTableGenerator implements ITableGenerator {
         // output table
         IStrategoTerm result = generateATerm();
         if(outputFile != null) {
+            outputFile.getParentFile().mkdirs();
+            outputFile.createNewFile();
             FileWriter out = null;
             try {
                 out = new FileWriter(outputFile);
                 out.write(result.toString());
                 out.close();
             } catch(IOException e) {
-                System.err.println(e.getMessage());
+                logger.error("Could not write parse table", e);
             }
         } else {
             System.out.println(result.toString());
