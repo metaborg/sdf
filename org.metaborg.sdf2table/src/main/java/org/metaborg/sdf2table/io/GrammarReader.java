@@ -41,11 +41,11 @@ import org.metaborg.sdf2table.grammar.StartSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
 import org.metaborg.sdf2table.grammar.UniqueProduction;
-import org.metaborg.sdf2table.parsetable.ParseTableGenerator;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
@@ -55,9 +55,15 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
-
     
-    public static NormGrammar readGrammar(File input, List<String> paths) throws Exception {
+    
+    private final ITermFactory termFactory;  
+    
+    public GrammarReader(ITermFactory termFactory) {
+        this.termFactory = termFactory;
+    }
+
+    public NormGrammar readGrammar(File input, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
 
@@ -68,7 +74,7 @@ public class GrammarReader {
         return grammar;
     }
 
-    private static void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules,
+    private void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules,
         List<String> paths) throws Exception {
 
         if(module instanceof StrategoAppl) {
@@ -160,7 +166,7 @@ public class GrammarReader {
         }
     }
 
-    private static void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
+    private void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
             
@@ -185,7 +191,7 @@ public class GrammarReader {
         }
     }
 
-    private static IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
         IProduction prod = null;
         prod = g.productions_read.get(term.toString());
 
@@ -294,7 +300,7 @@ public class GrammarReader {
         throw new UnexpectedTermException(term.toString(), "SdfProduction");
     }
 
-    private static Symbol processSymbol(NormGrammar g, IStrategoTerm term) {
+    private Symbol processSymbol(NormGrammar g, IStrategoTerm term) {
         Symbol symbol = null;
         String enquoted;
 
@@ -380,7 +386,7 @@ public class GrammarReader {
     }
 
 
-    public static List<Symbol> processSymbolList(NormGrammar g, IStrategoTerm term) {
+    public List<Symbol> processSymbolList(NormGrammar g, IStrategoTerm term) {
         List<Symbol> list = Lists.newLinkedList();
 
         if(term instanceof StrategoList) {
@@ -398,7 +404,7 @@ public class GrammarReader {
         return list;
     }
 
-    public static Symbol processCharClass(IStrategoTerm term) {
+    public Symbol processCharClass(IStrategoTerm term) {
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             switch(app.getName()) {
@@ -427,7 +433,7 @@ public class GrammarReader {
         return null;
     }
 
-    private static IAttribute processAttribute(IStrategoTerm ta) throws UnexpectedTermException {
+    private IAttribute processAttribute(IStrategoTerm ta) throws UnexpectedTermException {
         if(ta instanceof StrategoAppl) {
             StrategoAppl a = (StrategoAppl) ta;
             switch(a.getName()) { // This is just to get a proper name for the attribute.
@@ -500,7 +506,7 @@ public class GrammarReader {
         return null;
     }
 
-    private static IStrategoTerm createStrategoTermAttribute(IStrategoAppl term) throws UnexpectedTermException {
+    private IStrategoTerm createStrategoTermAttribute(IStrategoAppl term) throws UnexpectedTermException {
         if(term.getConstructor().getName().equals("Appl")) {
             String cons_name = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int arity = term.getSubterm(1).getSubtermCount();
@@ -509,32 +515,32 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return ParseTableGenerator.getTermfactory()
-                .makeAppl(ParseTableGenerator.getTermfactory().makeConstructor(cons_name, arity), subterms);
+            return termFactory
+                .makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
                 termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
                     termName.length() - 1);
             }
-            return ParseTableGenerator.getTermfactory().makeString(termName);
+            return termFactory.makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int ivalue = Integer.parseInt(svalue);
-            return ParseTableGenerator.getTermfactory().makeInt(ivalue);
+            return termFactory.makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
             List<IStrategoTerm> terms = Lists.newArrayList();
             for(IStrategoTerm t : term_list) {
                 terms.add(createStrategoTermAttribute((IStrategoAppl) t));
             }
-            return ParseTableGenerator.getTermfactory().makeList(terms);
+            return termFactory.makeList(terms);
         }
         System.err.println("sdf2table : importAttribute: unknown stratego term attribute `" + term.getName() + "'.");
         throw new UnexpectedTermException(term.toString());
     }
 
-    private static void addRestrictions(NormGrammar g, StrategoAppl tsection) throws UnexpectedTermException {
+    private void addRestrictions(NormGrammar g, StrategoAppl tsection) throws UnexpectedTermException {
         if(tsection instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) tsection;
             if(app.getName().equals("Restrictions")) {
@@ -546,7 +552,7 @@ public class GrammarReader {
         }
     }
 
-    private static void processRestriction(NormGrammar g, IStrategoTerm restriction) throws UnexpectedTermException {
+    private void processRestriction(NormGrammar g, IStrategoTerm restriction) throws UnexpectedTermException {
         if(restriction instanceof StrategoAppl) {
             StrategoAppl res = (StrategoAppl) restriction;
             switch(res.getName()) {
@@ -566,7 +572,7 @@ public class GrammarReader {
         }
     }
 
-    public static Set<Symbol> importLookaheadList(IStrategoTerm term) throws UnexpectedTermException {
+    public Set<Symbol> importLookaheadList(IStrategoTerm term) throws UnexpectedTermException {
         Set<Symbol> set = Sets.newHashSet();
 
         StrategoList slist;
@@ -600,7 +606,7 @@ public class GrammarReader {
         return set;
     }
 
-    private static void addPriorities(NormGrammar g, StrategoAppl tsection) throws Exception {
+    private void addPriorities(NormGrammar g, StrategoAppl tsection) throws Exception {
         if(tsection instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) tsection;
             if(app.getName().equals("Priorities")) {
@@ -612,7 +618,7 @@ public class GrammarReader {
         }
     }
 
-    private static void processPriorityChain(NormGrammar g, IStrategoTerm chain) throws Exception {
+    private void processPriorityChain(NormGrammar g, IStrategoTerm chain) throws Exception {
         if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Chain")) {
             StrategoList groups = (StrategoList) chain.getSubterm(0);
             IProduction higher = null, lower = null;
@@ -734,7 +740,7 @@ public class GrammarReader {
         }
     }
 
-    private static List<Integer> normalizePriorityArguments(IProduction production, List<Integer> arguments) {
+    private List<Integer> normalizePriorityArguments(IProduction production, List<Integer> arguments) {
         Symbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
         List<Integer> norm_arguments = Lists.newArrayList();
         for(int arg : arguments) {
@@ -760,7 +766,7 @@ public class GrammarReader {
         return arguments;
     }
 
-    private static IProduction processGroup(NormGrammar g, IStrategoTerm group)
+    private IProduction processGroup(NormGrammar g, IStrategoTerm group)
         throws UnexpectedTermException, Exception {
 
         IProduction production = null;
@@ -789,7 +795,7 @@ public class GrammarReader {
         return production;
     }
 
-    private static IStrategoTerm termFromFile(File file, NormGrammar grammar) {
+    private IStrategoTerm termFromFile(File file, NormGrammar grammar) {
         FileReader reader = null;
         IStrategoTerm term = null;
 
@@ -800,7 +806,7 @@ public class GrammarReader {
             String aterm = new String(chars);
             reader.close();
 
-            term = ParseTableGenerator.getTermfactory().parseFromString(aterm);
+            term = termFactory.parseFromString(aterm);
             grammar.sdf3_files.add(file);
         } catch(IOException e) {
             System.err.println("Cannot open module file `" + file.getPath() + "'");

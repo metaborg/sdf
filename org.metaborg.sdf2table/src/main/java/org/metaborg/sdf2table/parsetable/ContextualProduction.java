@@ -55,12 +55,12 @@ public class ContextualProduction implements IProduction, Serializable {
         lhs = new ContextualSymbol(orig_prod.leftHand(), contexts);
 
         for(Context c : contexts) {
-            if(c.type.equals(ContextType.DEEP)) {
+            if(c.getType().equals(ContextType.DEEP)) {
                 for(int i = 0; i < orig_prod.rightHand().size(); i++) {
-                    if((i == orig_prod.leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
-                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
-                        || (i == orig_prod.rightRecursivePosition() && (c.position.equals(ContextPosition.RIGHTMOST)
-                            || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
+                    if((i == orig_prod.leftRecursivePosition() && (c.getPosition().equals(ContextPosition.LEFTMOST)
+                        || c.getPosition().equals(ContextPosition.LEFTANDRIGHTMOST)))
+                        || (i == orig_prod.rightRecursivePosition() && (c.getPosition().equals(ContextPosition.RIGHTMOST)
+                            || c.getPosition().equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
@@ -70,8 +70,8 @@ public class ContextualProduction implements IProduction, Serializable {
                         rhs.set(i, new_symbol);
                     }
                 }
-            } else if(c.type.equals(ContextType.SHALLOW)) {
-                if(c.context.leftHand().equals(orig_prod.leftHand())) { // stop passing the shallow context
+            } else if(c.getType().equals(ContextType.SHALLOW)) {
+                if(c.getContext().leftHand().equals(orig_prod.leftHand())) { // stop passing the shallow context
                     continue;
                 }
                 // if production has a constructor, do not pass the shallow context
@@ -86,8 +86,8 @@ public class ContextualProduction implements IProduction, Serializable {
                     continue;
                 for(int i = 0; i < orig_prod.rightHand().size(); i++) {
                     // shallow context should be passed to correct position
-                    if((i == orig_prod.leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
-                        || (i == orig_prod.rightRecursivePosition() && c.position.equals(ContextPosition.RIGHTMOST))) {
+                    if((i == orig_prod.leftRecursivePosition() && c.getPosition().equals(ContextPosition.LEFTMOST))
+                        || (i == orig_prod.rightRecursivePosition() && c.getPosition().equals(ContextPosition.RIGHTMOST))) {
                         ContextualSymbol new_symbol;
                         if(rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
@@ -115,7 +115,7 @@ public class ContextualProduction implements IProduction, Serializable {
     }
 
     public IProduction getOrigProduction() {
-        return getOrig_prod();
+        return orig_prod;
     }
 
     @Override public Symbol leftHand() {
@@ -227,13 +227,13 @@ public class ContextualProduction implements IProduction, Serializable {
         Symbol new_lhs = new ContextualSymbol(getOrigProduction().leftHand(), contexts);
 
         for(Context c : contexts) {
-            if(c.type.equals(ContextType.DEEP)) {
+            if(c.getType().equals(ContextType.DEEP)) {
                 for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
-                    if((i == getOrigProduction().leftRecursivePosition() && (c.position.equals(ContextPosition.LEFTMOST)
-                        || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))
+                    if((i == getOrigProduction().leftRecursivePosition() && (c.getPosition().equals(ContextPosition.LEFTMOST)
+                        || c.getPosition().equals(ContextPosition.LEFTANDRIGHTMOST)))
                         || (i == getOrigProduction().rightRecursivePosition()
-                            && (c.position.equals(ContextPosition.RIGHTMOST)
-                                || c.position.equals(ContextPosition.LEFTANDRIGHTMOST)))) {
+                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)
+                                || c.getPosition().equals(ContextPosition.LEFTANDRIGHTMOST)))) {
                         ContextualSymbol new_symbol;
                         if(new_rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
@@ -243,8 +243,8 @@ public class ContextualProduction implements IProduction, Serializable {
                         new_rhs.set(i, new_symbol);
                     }
                 }
-            } else if(c.type.equals(ContextType.SHALLOW)) {
-                if(c.context.leftHand().equals(getOrigProduction().leftHand())) { // stop passing the shallow context
+            } else if(c.getType().equals(ContextType.SHALLOW)) {
+                if(c.getContext().leftHand().equals(getOrigProduction().leftHand())) { // stop passing the shallow context
                     continue;
                 }
                 // if production has a constructor, do not pass the shallow context
@@ -259,9 +259,9 @@ public class ContextualProduction implements IProduction, Serializable {
                     continue;
                 for(int i = 0; i < getOrigProduction().rightHand().size(); i++) {
                     // shallow context should be passed to correct position
-                    if((i == getOrigProduction().leftRecursivePosition() && c.position.equals(ContextPosition.LEFTMOST))
+                    if((i == getOrigProduction().leftRecursivePosition() && c.getPosition().equals(ContextPosition.LEFTMOST))
                         || (i == getOrigProduction().rightRecursivePosition()
-                            && c.position.equals(ContextPosition.RIGHTMOST))) {
+                            && c.getPosition().equals(ContextPosition.RIGHTMOST))) {
                         ContextualSymbol new_symbol;
                         if(new_rhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
@@ -350,7 +350,7 @@ public class ContextualProduction implements IProduction, Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((lhs == null) ? 0 : lhs.hashCode());
-        result = prime * result + ((getOrig_prod() == null) ? 0 : getOrig_prod().hashCode());
+        result = prime * result + ((getOrigProduction() == null) ? 0 : getOrigProduction().hashCode());
         result = prime * result + ((rhs == null) ? 0 : rhs.hashCode());
         return result;
     }
@@ -368,10 +368,10 @@ public class ContextualProduction implements IProduction, Serializable {
                 return false;
         } else if(!lhs.equals(other.lhs))
             return false;
-        if(getOrig_prod() == null) {
-            if(other.getOrig_prod() != null)
+        if(getOrigProduction() == null) {
+            if(other.getOrigProduction() != null)
                 return false;
-        } else if(!getOrig_prod().equals(other.getOrig_prod()))
+        } else if(!getOrigProduction().equals(other.getOrigProduction()))
             return false;
         if(rhs == null) {
             if(other.rhs != null)
@@ -379,9 +379,5 @@ public class ContextualProduction implements IProduction, Serializable {
         } else if(!rhs.equals(other.rhs))
             return false;
         return true;
-    }
-
-    public IProduction getOrig_prod() {
-        return orig_prod;
     }
 }

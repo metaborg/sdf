@@ -46,6 +46,7 @@ public class ParseTableGenerator implements ITableGenerator {
     private NormGrammar grammar;
     final int version_number = 6;
     final int initialState_number = 0;
+    private boolean expanded = false;
 
 
     IProduction initial_prod;
@@ -70,7 +71,7 @@ public class ParseTableGenerator implements ITableGenerator {
     File normGrammarFile;
     List<String> paths;
     boolean generateParenthesize;
-    private final static ITermFactory termFactory = new TermFactory();
+    private final ITermFactory termFactory = new TermFactory();
 
     public ParseTableGenerator(File input, File output, File normGrammar, File ctxGrammar, List<String> paths,
         boolean parenthesize) {
@@ -86,9 +87,10 @@ public class ParseTableGenerator implements ITableGenerator {
     public void createTable(boolean dynamic, boolean generateCtxGrammar) throws Exception {
         long _start_time;
         long _end_time;
+        generateCtxGrammar = true;
 
         _start_time = System.currentTimeMillis();
-        setGrammar(GrammarReader.readGrammar(input, paths));
+        setGrammar(new GrammarReader(termFactory).readGrammar(input, paths));
 
         // calculate nullable symbols
         calculateNullable();
@@ -121,6 +123,8 @@ public class ParseTableGenerator implements ITableGenerator {
             processStateQueue();
         }
 
+        expanded = true;
+
         // output table
         IStrategoTerm result = generateATerm();
         if(outputFile != null) {
@@ -147,9 +151,10 @@ public class ParseTableGenerator implements ITableGenerator {
 
     }
 
-    public IStrategoTerm createDynamicTable(boolean operatorPrecedence, boolean danglingElse, boolean longestMatch,
+    public void createPartialTable(boolean operatorPrecedence, boolean danglingElse, boolean longestMatch,
         boolean indirectRecursion) throws Exception {
-        setGrammar(GrammarReader.readGrammar(input, paths));
+        setGrammar(new GrammarReader(termFactory).readGrammar(input, paths));
+
         // calculate nullable symbols
         calculateNullable();
 
@@ -164,7 +169,42 @@ public class ParseTableGenerator implements ITableGenerator {
         deepConflictsAnalysis(operatorPrecedence, danglingElse, longestMatch, indirectRecursion);
         grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
 
+        // create states if the table should not be generated dynamically
+        initial_prod = grammar.initial_prod;
+
+        State s0 = new State(initial_prod, this);
+        stateQueue.add(s0);
+        processStateQueue();
+    }
+
+    public IStrategoTerm createDynamicTable(boolean operatorPrecedence, boolean danglingElse, boolean longestMatch,
+        boolean indirectRecursion) throws Exception {
+        setGrammar(new GrammarReader(termFactory).readGrammar(input, paths));
+        // calculate nullable symbols
+        calculateNullable();
+
+        // calculate left and right recursive productions (considering nullable symbols)
+        calculateRecursion();
+
+        // normalize priorities according to recursion
+        normalizePriorities();
+
+
+        // calculate deep priority conflicts based on current priorities
+        // and generate contextual productions
+        deepConflictsAnalysis(operatorPrecedence, danglingElse, longestMatch, indirectRecursion);
+        grammar.setProdLabels(createLabels(grammar.prods, grammar.contextual_prods, 257));
+
         return generateATerm();
+    }
+
+    public void createCompleteTable() {
+        if(expanded == false) {
+            initial_prod = grammar.initial_prod;
+            State s0 = new State(initial_prod, this);
+            stateQueue.add(s0);
+            processStateQueue();
+        }
     }
 
 
@@ -227,18 +267,16 @@ public class ParseTableGenerator implements ITableGenerator {
     private void calculateRecursion() {
         // direct and indirect left recursion :
         // depth first search, whenever finding a cycle, those symbols are left recursive with respect to each other
-        List<Symbol> seen = Lists.newArrayList();
+
         List<IProduction> prodsVisited = Lists.newArrayList();
         for(IProduction p : grammar.prods.values()) {
-            seen.clear();
-            leftRecursive(p, seen, prodsVisited);
+            leftRecursive(p, Lists.newArrayList(), Lists.newArrayList());
         }
 
         // similar idea with right recursion
         prodsVisited.clear();
         for(IProduction p : grammar.prods.values()) {
-            seen.clear();
-            rightRecursive(p, seen, prodsVisited);
+            rightRecursive(p, Lists.newArrayList(), Lists.newArrayList());
         }
 
         for(IProduction p : grammar.prods.values()) {
@@ -332,6 +370,7 @@ public class ParseTableGenerator implements ITableGenerator {
     }
 
     private void normalizePriorities() {
+
         normalizeAssociativePriorities();
 
         for(IPriority p : grammar.priorities().keySet()) {
@@ -1146,7 +1185,7 @@ public class ParseTableGenerator implements ITableGenerator {
         this.grammar = grammar;
     }
 
-    public static ITermFactory getTermfactory() {
+    public ITermFactory getTermfactory() {
         return termFactory;
     }
 

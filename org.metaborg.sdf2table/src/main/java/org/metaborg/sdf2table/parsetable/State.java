@@ -26,7 +26,7 @@ public class State implements Comparable<State> {
     
     private boolean processed = false;
 
-    public static Set<State> states = Sets.newHashSet();
+    public Set<State> states = Sets.newHashSet();
 
     public State(IProduction p, ITableGenerator pt) {
         items = Sets.newHashSet();

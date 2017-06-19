@@ -32,7 +32,7 @@ public class ContextualSymbol extends Symbol {
         if(!getContexts().isEmpty()) {
             boolean hasLeftContext = false;
             for(Context p : getContexts()) {
-                if(p.position == ContextPosition.LEFTMOST) {
+                if(p.getPosition() == ContextPosition.LEFTMOST) {
                     hasLeftContext = true;
                     break;
                 }
@@ -41,7 +41,7 @@ public class ContextualSymbol extends Symbol {
                 int i = 0;
                 buf += "{";
                 for(Context p : getContexts()) {
-                    if(p.position == ContextPosition.RIGHTMOST)
+                    if(p.getPosition() == ContextPosition.RIGHTMOST)
                         continue;
                     if(i != 0)
                         buf += ", ";
@@ -55,7 +55,7 @@ public class ContextualSymbol extends Symbol {
         if(!getContexts().isEmpty()) {
             boolean hasRightContext = false;
             for(Context p : getContexts()) {
-                if(p.position == ContextPosition.RIGHTMOST) {
+                if(p.getPosition() == ContextPosition.RIGHTMOST) {
                     hasRightContext = true;
                     break;
                 }
@@ -64,7 +64,7 @@ public class ContextualSymbol extends Symbol {
                 int i = 0;
                 buf += "{";
                 for(Context p : getContexts()) {
-                    if(p.position == ContextPosition.LEFTMOST)
+                    if(p.getPosition() == ContextPosition.LEFTMOST)
                         continue;
                     if(i != 0)
                         buf += ", ";

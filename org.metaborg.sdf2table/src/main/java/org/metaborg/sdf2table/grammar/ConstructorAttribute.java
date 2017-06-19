@@ -9,7 +9,7 @@ public class ConstructorAttribute implements IAttribute, Serializable {
 
     private static final long serialVersionUID = 8983042557760579298L;
 
-    String constructor;
+    private final String constructor;
 
     public ConstructorAttribute(String constructor) {
         this.constructor = constructor;
@@ -29,6 +29,10 @@ public class ConstructorAttribute implements IAttribute, Serializable {
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
         // TODO Auto-generated method stub
         return tf.makeAppl(tf.makeConstructor("Constructor", 1), tf.makeString("\"" + constructor + "\""));
+    }
+
+    public String getConstructor() {
+        return constructor;
     }
 
     @Override public int hashCode() {

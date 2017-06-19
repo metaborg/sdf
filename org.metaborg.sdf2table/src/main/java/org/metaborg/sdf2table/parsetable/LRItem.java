@@ -87,11 +87,11 @@ public class LRItem {
         
 
         if(higher instanceof ContextualProduction) {
-            higher = ((ContextualProduction) higher).getOrig_prod();
+            higher = ((ContextualProduction) higher).getOrigProduction();
         }
 
         if(lower instanceof ContextualProduction) {
-            lower = ((ContextualProduction) lower).getOrig_prod();
+            lower = ((ContextualProduction) lower).getOrigProduction();
         }
 
         Priority prio = new Priority(higher, lower, false);

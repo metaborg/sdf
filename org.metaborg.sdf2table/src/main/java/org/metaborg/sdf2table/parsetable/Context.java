@@ -8,10 +8,10 @@ public class Context implements Serializable {
 
     private static final long serialVersionUID = -4581589940398341265L;
 
-    IProduction context;
-    ContextType type;
+    private final IProduction context;
+    private final ContextType type;
     // propagate shallow context only to leftmost or rightmost symbols
-    ContextPosition position;
+    private final ContextPosition position;
     
     public Context(IProduction context, ContextType type, ContextPosition position) {
         this.context = context;
@@ -20,12 +20,12 @@ public class Context implements Serializable {
     }   
     
     @Override public String toString() {
-        if(type == ContextType.SHALLOW && position == ContextPosition.LEFTMOST) {
-            return "SHALLOW-LEFT: " + context;
-        } else if (type == ContextType.SHALLOW && position == ContextPosition.RIGHTMOST) {
-            return "SHALLOW-RIGHT: " + context;
+        if(getType() == ContextType.SHALLOW && getPosition() == ContextPosition.LEFTMOST) {
+            return "SHALLOW-LEFT: " + getContext();
+        } else if (getType() == ContextType.SHALLOW && getPosition() == ContextPosition.RIGHTMOST) {
+            return "SHALLOW-RIGHT: " + getContext();
         }
-        return context.toString();
+        return getContext().toString();
     }
 
     @Override public boolean equals(Object obj) {
@@ -36,14 +36,14 @@ public class Context implements Serializable {
         if(getClass() != obj.getClass())
             return false;
         Context other = (Context) obj;
-        if(context == null) {
-            if(other.context != null)
+        if(getContext() == null) {
+            if(other.getContext() != null)
                 return false;
-        } else if(!context.equals(other.context))
+        } else if(!getContext().equals(other.getContext()))
             return false;
-        if(position != other.position)
+        if(getPosition() != other.getPosition())
             return false;
-        if(type != other.type)
+        if(getType() != other.getType())
             return false;
         return true;
     }
@@ -51,9 +51,21 @@ public class Context implements Serializable {
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        result = prime * result + ((position == null) ? 0 : position.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((getContext() == null) ? 0 : getContext().hashCode());
+        result = prime * result + ((getPosition() == null) ? 0 : getPosition().hashCode());
+        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         return result;
+    }
+
+    public ContextType getType() {
+        return type;
+    }
+
+    public ContextPosition getPosition() {
+        return position;
+    }
+
+    public IProduction getContext() {
+        return context;
     }
 }
