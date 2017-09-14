@@ -7,7 +7,7 @@ import org.spoofax.interpreter.terms.ITermFactory;
 public abstract class Action {
     
     CharacterClass cc;
-    public abstract IStrategoTerm toAterm(ITermFactory tf, ITableGenerator pt);
+    public abstract IStrategoTerm toAterm(ITermFactory tf, IParseTable pt);
     
     public abstract int hashCode();
     public abstract boolean equals(Object obj);

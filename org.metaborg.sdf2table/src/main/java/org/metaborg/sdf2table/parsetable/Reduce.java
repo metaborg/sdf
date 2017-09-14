@@ -20,9 +20,9 @@ public class Reduce extends Action {
         this.cc = cc;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, ITableGenerator pt) {
+    @Override public IStrategoTerm toAterm(ITermFactory tf, IParseTable pt) {
         int status = 0;
-        for(IAttribute attr : pt.normalizedGrammar().prod_attrs.get(prod)) {
+        for(IAttribute attr : pt.normalizedGrammar().getProductionAttributesMapping().get(prod)) {
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
                 if(ga.getName().equals("reject")) {

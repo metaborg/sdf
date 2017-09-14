@@ -17,118 +17,312 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class NormGrammar implements INormGrammar, Serializable {
-    
+
     private static final long serialVersionUID = -13739894962185282L;
 
     // all files used in this grammar
-    public Set<File> sdf3_files;
+    private Set<File> filesRead;
 
-    public IProduction initial_prod;
-    
+    private IProduction initialProduction;
+
     // to handle Sort.Cons in priorities
-    public Map<ProductionReference, IProduction> sort_cons_prods;
-    
+    private Map<ProductionReference, IProduction> sortConsProductionMapping;
+
     // merging same productions with different attributes
-    public SetMultimap<IProduction, IAttribute> prod_attrs;
+    private SetMultimap<IProduction, IAttribute> productionAttributesMapping;
 
     // necessary for calculating deep priority conflicts
-    public Map<UniqueProduction, IProduction> prods;
-    public BiMap<IProduction, ContextualProduction> contextual_prods;
-    public Set<ContextualProduction> derived_contextual_prods;
-    public Set<ContextualSymbol> contextual_symbols;
-    public SetMultimap<Symbol, Symbol> leftRecursive;
-    public SetMultimap<Symbol, Symbol> rightRecursive;
-    public SetMultimap<Symbol, IProduction> longest_match_prods;    
-    BiMap<IProduction, Integer> prod_labels;
-    
+    private Map<UniqueProduction, IProduction> uniqueProductionMapping;
+    private BiMap<IProduction, ContextualProduction> prodContextualProdMapping;
+    private Set<ContextualProduction> derivedContextualProds;
+    private Set<ContextualSymbol> contextualSymbols;
+    private SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping;
+    private SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping;
+    private SetMultimap<Symbol, IProduction> longestMatchProds;    
+
     // priorities
-    public Set<IPriority> transitive_prio;
-    public Set<IPriority> non_transitive_prio;
-    SetMultimap<IPriority, Integer> prios;
+    private Set<IPriority> transitivePriorities;
+    private Set<IPriority> nonTransitivePriorities;
+    private SetMultimap<IPriority, Integer> priorities;
 
     // extra collections to calculate the transitive closure
-    public Set<IProduction> prio_prods;
-    public SetMultimap<IPriority, Integer> trans_prio_arguments;
-    public SetMultimap<IPriority, Integer> non_trans_prio_arguments;
+    private Set<IProduction> productionsOnPriorities;
+    private SetMultimap<IPriority, Integer> transitivePriorityArgs;
+    private SetMultimap<IPriority, Integer> nonTransitivePriorityArgs;
+    private SetMultimap<IProduction, IPriority> higherPriorityProductions;
 
-    public HashMap<String, Symbol> symbols_read; // caching symbols read
-    public HashMap<String, IProduction> productions_read; // caching productions read
+
+    private HashMap<String, Symbol> cacheSymbolsRead; // caching symbols read
+    private HashMap<String, IProduction> cacheProductionsRead; // caching productions read
 
     // get all productions for a certain symbol
-    public SetMultimap<Symbol, IProduction> symbol_prods;
-    
+    private SetMultimap<Symbol, IProduction> symbolProductionsMapping;
+
     public NormGrammar() {
-        this.sdf3_files = Sets.newHashSet();
-        this.prods = Maps.newHashMap();
-        this.sort_cons_prods = Maps.newHashMap();
-        this.contextual_prods = HashBiMap.create();
-        this.leftRecursive = HashMultimap.create();
-        this.rightRecursive = HashMultimap.create();
-        this.derived_contextual_prods = Sets.newHashSet();
-        this.contextual_symbols = Sets.newHashSet();
-        this.longest_match_prods = HashMultimap.create();
-        this.prod_attrs = HashMultimap.create();
-        this.prios = HashMultimap.create();
-        this.transitive_prio = Sets.newHashSet();
-        this.non_transitive_prio = Sets.newHashSet();
-        this.prio_prods = Sets.newHashSet();
-        this.trans_prio_arguments = HashMultimap.create();
-        this.non_trans_prio_arguments = HashMultimap.create();
-        this.symbol_prods = HashMultimap.create();
-        this.symbols_read = Maps.newHashMap();
-        this.productions_read = Maps.newHashMap();
+        this.setFilesRead(Sets.newHashSet());
+        this.setUniqueProductionMapping(Maps.newHashMap());
+        this.setSortConsProductionMapping(Maps.newHashMap());
+        this.setProdContextualProdMapping(HashBiMap.create());
+        this.setLeftRecursiveSymbolsMapping(HashMultimap.create());
+        this.setRightRecursiveSymbolsMapping(HashMultimap.create());
+        this.setDerivedContextualProds(Sets.newHashSet());
+        this.setContextualSymbols(Sets.newHashSet());
+        this.setLongestMatchProds(HashMultimap.create());
+        this.setProductionAttributesMapping(HashMultimap.create());
+        this.priorities = HashMultimap.create();        
+        this.setTransitivePriorities(Sets.newHashSet());
+        this.setNonTransitivePriorities(Sets.newHashSet());
+        this.setProductionsOnPriorities(Sets.newHashSet());
+        this.setTransitivePriorityArgs(HashMultimap.create());
+        this.setNonTransitivePriorityArgs(HashMultimap.create());
+        this.setHigherPriorityProductions(HashMultimap.create());
+        this.setSymbolProductionsMapping(HashMultimap.create());
+        this.setCacheSymbolsRead(Maps.newHashMap());
+        this.setCacheProductionsRead(Maps.newHashMap());
     }
 
 
     @Override public Map<UniqueProduction, IProduction> syntax() {
-        return prods;
+        return getUniqueProductionMapping();
     }
 
 
     @Override public SetMultimap<IPriority, Integer> priorities() {
-        return prios;
+        return priorities;
     }
 
     public void priorityTransitiveClosure() {
-        prios = HashMultimap.create();
-
+        if(priorities == null) {
+            priorities = HashMultimap.create();
+        }
+        
         // Floyd Warshall Algorithm to calculate the transitive closure
-        for(IProduction intermediate_prod : prio_prods) {
-            for(IProduction first_prod : prio_prods) {
-                for(IProduction second_prod : prio_prods) {
+        for(IProduction intermediate_prod : getProductionsOnPriorities()) {
+            for(IProduction first_prod : getProductionsOnPriorities()) {
+                for(IProduction second_prod : getProductionsOnPriorities()) {
                     IPriority first_sec = new Priority(first_prod, second_prod, true);
                     IPriority first_k = new Priority(first_prod, intermediate_prod, true);
                     IPriority k_second = new Priority(intermediate_prod, second_prod, true);
                     // if there is no priority first_prod > second_prod
-                    if(!transitive_prio.contains(first_sec)) {
+                    if(!getTransitivePriorities().contains(first_sec)) {
                         // if there are priorities first_prod > intermediate_prod and
                         // intermediate_prod > second_prod
                         // add priority first_prod > second_prod
-                        if(transitive_prio.contains(first_k) && transitive_prio.contains(k_second)) {
-                            transitive_prio.add(first_sec);
-                            trans_prio_arguments.putAll(first_sec, trans_prio_arguments.get(first_k));
+                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                            getTransitivePriorities().add(first_sec);
+                            getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     } else {
-                        if(transitive_prio.contains(first_k) && transitive_prio.contains(k_second)) {
-                            trans_prio_arguments.putAll(first_sec, trans_prio_arguments.get(first_k));
+                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                            getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     }
                 }
             }
         }
-
-        prios.putAll(non_trans_prio_arguments);
-        prios.putAll(trans_prio_arguments);
+ 
+        priorities.putAll(getNonTransitivePriorityArgs());
+        priorities.putAll(getTransitivePriorityArgs());
     }
 
 
-    public BiMap<IProduction, Integer> getProdLabels() {
-        return prod_labels;
+    public IProduction getInitialProduction() {
+        return initialProduction;
     }
 
 
-    public void setProdLabels(BiMap<IProduction, Integer> prod_labels) {
-        this.prod_labels = prod_labels;
-    }    
+    public void setInitialProduction(IProduction initialProduction) {
+        this.initialProduction = initialProduction;
+    }
+
+
+    public Set<File> getFilesRead() {
+        return filesRead;
+    }
+
+
+    public void setFilesRead(Set<File> filesRead) {
+        this.filesRead = filesRead;
+    }
+
+
+    public Map<ProductionReference, IProduction> getSortConsProductionMapping() {
+        return sortConsProductionMapping;
+    }
+
+
+    public void setSortConsProductionMapping(Map<ProductionReference, IProduction> sortConsProductionMapping) {
+        this.sortConsProductionMapping = sortConsProductionMapping;
+    }
+
+
+    public SetMultimap<IProduction, IAttribute> getProductionAttributesMapping() {
+        return productionAttributesMapping;
+    }
+
+
+    public void setProductionAttributesMapping(SetMultimap<IProduction, IAttribute> productionAttributesMapping) {
+        this.productionAttributesMapping = productionAttributesMapping;
+    }
+
+
+    public Map<UniqueProduction, IProduction> getUniqueProductionMapping() {
+        return uniqueProductionMapping;
+    }
+
+
+    public void setUniqueProductionMapping(Map<UniqueProduction, IProduction> uniqueProductionMapping) {
+        this.uniqueProductionMapping = uniqueProductionMapping;
+    }
+
+
+    public BiMap<IProduction, ContextualProduction> getProdContextualProdMapping() {
+        return prodContextualProdMapping;
+    }
+
+
+    public void setProdContextualProdMapping(BiMap<IProduction, ContextualProduction> prodContextualProdMapping) {
+        this.prodContextualProdMapping = prodContextualProdMapping;
+    }
+
+
+    public Set<ContextualProduction> getDerivedContextualProds() {
+        return derivedContextualProds;
+    }
+
+
+    public void setDerivedContextualProds(Set<ContextualProduction> derivedContextualProds) {
+        this.derivedContextualProds = derivedContextualProds;
+    }
+
+
+    public Set<ContextualSymbol> getContextualSymbols() {
+        return contextualSymbols;
+    }
+
+
+    public void setContextualSymbols(Set<ContextualSymbol> contextualSymbols) {
+        this.contextualSymbols = contextualSymbols;
+    }
+
+
+    public SetMultimap<Symbol, Symbol> getLeftRecursiveSymbolsMapping() {
+        return leftRecursiveSymbolsMapping;
+    }
+
+
+    public void setLeftRecursiveSymbolsMapping(SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping) {
+        this.leftRecursiveSymbolsMapping = leftRecursiveSymbolsMapping;
+    }
+
+
+    public SetMultimap<Symbol, Symbol> getRightRecursiveSymbolsMapping() {
+        return rightRecursiveSymbolsMapping;
+    }
+
+
+    public void setRightRecursiveSymbolsMapping(SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping) {
+        this.rightRecursiveSymbolsMapping = rightRecursiveSymbolsMapping;
+    }
+
+
+    public SetMultimap<Symbol, IProduction> getLongestMatchProds() {
+        return longestMatchProds;
+    }
+
+
+    public void setLongestMatchProds(SetMultimap<Symbol, IProduction> longestMatchProds) {
+        this.longestMatchProds = longestMatchProds;
+    }
+
+
+    public Set<IPriority> getTransitivePriorities() {
+        return transitivePriorities;
+    }
+
+
+    public void setTransitivePriorities(Set<IPriority> transitivePriorities) {
+        this.transitivePriorities = transitivePriorities;
+    }
+
+
+    public Set<IPriority> getNonTransitivePriorities() {
+        return nonTransitivePriorities;
+    }
+
+
+    public void setNonTransitivePriorities(Set<IPriority> nonTransitivePriorities) {
+        this.nonTransitivePriorities = nonTransitivePriorities;
+    }
+
+
+    public Set<IProduction> getProductionsOnPriorities() {
+        return productionsOnPriorities;
+    }
+
+
+    public void setProductionsOnPriorities(Set<IProduction> productionsOnPriorities) {
+        this.productionsOnPriorities = productionsOnPriorities;
+    }
+
+
+    public SetMultimap<IPriority, Integer> getTransitivePriorityArgs() {
+        return transitivePriorityArgs;
+    }
+
+
+    public void setTransitivePriorityArgs(SetMultimap<IPriority, Integer> transitivePriorityArgs) {
+        this.transitivePriorityArgs = transitivePriorityArgs;
+    }
+
+
+    public SetMultimap<IPriority, Integer> getNonTransitivePriorityArgs() {
+        return nonTransitivePriorityArgs;
+    }
+
+
+    public void setNonTransitivePriorityArgs(SetMultimap<IPriority, Integer> nonTransitivePriorityArgs) {
+        this.nonTransitivePriorityArgs = nonTransitivePriorityArgs;
+    }
+
+
+    public HashMap<String, Symbol> getCacheSymbolsRead() {
+        return cacheSymbolsRead;
+    }
+
+
+    public void setCacheSymbolsRead(HashMap<String, Symbol> cacheSymbolsRead) {
+        this.cacheSymbolsRead = cacheSymbolsRead;
+    }
+
+
+    public HashMap<String, IProduction> getCacheProductionsRead() {
+        return cacheProductionsRead;
+    }
+
+
+    public void setCacheProductionsRead(HashMap<String, IProduction> cacheProductionsRead) {
+        this.cacheProductionsRead = cacheProductionsRead;
+    }
+
+
+    public SetMultimap<Symbol, IProduction> getSymbolProductionsMapping() {
+        return symbolProductionsMapping;
+    }
+
+
+    public void setSymbolProductionsMapping(SetMultimap<Symbol, IProduction> symbolProductionsMapping) {
+        this.symbolProductionsMapping = symbolProductionsMapping;
+    }
+
+
+    public SetMultimap<IProduction, IPriority> getHigherPriorityProductions() {
+        return higherPriorityProductions;
+    }
+
+
+    public void setHigherPriorityProductions(SetMultimap<IProduction, IPriority> higherPriorityProductions) {
+        this.higherPriorityProductions = higherPriorityProductions;
+    }
 
 }

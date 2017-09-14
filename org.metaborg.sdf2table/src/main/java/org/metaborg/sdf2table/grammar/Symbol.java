@@ -13,7 +13,10 @@ public abstract class Symbol implements Serializable {
     private static final long serialVersionUID = -9135946758836485558L;
 
     Set<Symbol> followRestrictions;
-    
+
+    // TODO: implement follow restriction interval for each symbol
+    // CharacterClass cc_followRestriction;
+
     public boolean nullable = false;
 
     public abstract String name();
@@ -27,8 +30,10 @@ public abstract class Symbol implements Serializable {
     }
 
     public abstract int hashCode();
+
     public abstract boolean equals(Object s);
 
     public abstract IStrategoTerm toAterm(ITermFactory tf);
+
     public abstract IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
 }

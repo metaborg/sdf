@@ -21,6 +21,14 @@ public class AltSymbol extends Symbol {
         this.alt2 = alt2;
         followRestrictions = Sets.newHashSet();
     }
+    
+    public Symbol left() {
+        return alt1;
+    }
+    
+    public Symbol right() {
+        return alt2;
+    }
 
     @Override public String name() {
         return alt1.name() + " | " + alt2.name();

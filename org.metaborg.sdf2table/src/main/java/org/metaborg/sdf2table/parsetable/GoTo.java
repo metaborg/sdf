@@ -6,29 +6,29 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 public class GoTo {
 
-    ITableGenerator pt;
+    IParseTable pt;
     int label = -1;
     CharacterClass cc = null;
     private int state;
 
-    public GoTo(CharacterClass cc, int toState, ITableGenerator pt) {
+    public GoTo(CharacterClass cc, int toState, IParseTable pt) {
         this.pt = pt;
         this.cc = cc;
         this.setState(toState);
     }
 
-    public GoTo(CharacterClass cc, ITableGenerator pt) {
+    public GoTo(CharacterClass cc, IParseTable pt) {
         this.pt = pt;
         this.cc = cc;
     }
 
-    public GoTo(int label, int toState, ITableGenerator pt) {
+    public GoTo(int label, int toState, IParseTable pt) {
         this.pt = pt;
         this.label = label;
         this.setState(toState);
     }
 
-    public GoTo(int label, ITableGenerator pt) {
+    public GoTo(int label, IParseTable pt) {
         this.pt = pt;
         this.label = label;
     }
@@ -45,7 +45,7 @@ public class GoTo {
         if(label == -1) {
             return "goto(" + cc + ", " + state + ")";
         }
-        return "goto(" + label + ": " + pt.labels().inverse().get(label) + ", " + state + ")";
+        return "goto(" + label + ": " + pt.productionLabels().inverse().get(label) + ", " + state + ")";
     }
 
     @Override public int hashCode() {

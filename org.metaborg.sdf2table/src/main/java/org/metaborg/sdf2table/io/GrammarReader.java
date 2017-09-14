@@ -193,7 +193,7 @@ public class GrammarReader {
 
     private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
         IProduction prod = null;
-        prod = g.productions_read.get(term.toString());
+        prod = g.getCacheProductionsRead().get(term.toString());
 
         if(prod != null) {
             return prod;
@@ -252,16 +252,16 @@ public class GrammarReader {
 
                 UniqueProduction unique_prod = new UniqueProduction(symbol, rhs_symbols);
 
-                prod = g.prods.get(unique_prod);
+                prod = g.getUniqueProductionMapping().get(unique_prod);
 
                 // production already exists
                 if(prod != null) {
                     for(IAttribute a : attrs) {
-                        g.prod_attrs.put(prod, a);
+                        g.getProductionAttributesMapping().put(prod, a);
                     }
 
                     if(g != null && symbol != null) {
-                        g.productions_read.put(term.toString(), prod);
+                        g.getCacheProductionsRead().put(term.toString(), prod);
                     }
 
                     return prod;
@@ -271,26 +271,26 @@ public class GrammarReader {
                 prod = new Production(symbol, rhs_symbols);
 
                 if(cons_attr != null) {
-                    g.sort_cons_prods.put(new ProductionReference(symbol, cons_attr), prod);
+                    g.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
                 }
 
-                if(symbol instanceof FileStartSymbol && g.initial_prod == null) {
-                    g.initial_prod = prod;
+                if(symbol instanceof FileStartSymbol && g.getInitialProduction() == null) {
+                    g.setInitialProduction(prod);
                 }
 
                 for(IAttribute a : attrs) {
                     if(a.toString().equals("nlm")) {
-                        g.longest_match_prods.put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
+                        g.getLongestMatchProds().put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
                     }
-                    g.prod_attrs.put(prod, a);
+                    g.getProductionAttributesMapping().put(prod, a);
                 }
 
                 if(g != null && symbol != null) {
-                    g.productions_read.put(term.toString(), prod);
+                    g.getCacheProductionsRead().put(term.toString(), prod);
                 }
 
-                g.symbol_prods.put(symbol, prod);
-                g.prods.put(unique_prod, prod);
+                g.getSymbolProductionsMapping().put(symbol, prod);
+                g.getUniqueProductionMapping().put(unique_prod, prod);
 
                 return prod;
             } else {
@@ -304,7 +304,7 @@ public class GrammarReader {
         Symbol symbol = null;
         String enquoted;
 
-        symbol = g.symbols_read.get(term.toString());
+        symbol = g.getCacheSymbolsRead().get(term.toString());
 
         if(symbol != null) {
             return symbol;
@@ -379,7 +379,7 @@ public class GrammarReader {
         }
 
         if(g != null && symbol != null) {
-            g.symbols_read.put(term.toString(), symbol);
+            g.getCacheSymbolsRead().put(term.toString(), symbol);
         }
 
         return symbol;
@@ -690,24 +690,24 @@ public class GrammarReader {
             Priority p = new Priority(higher, lower, transitive);
 
             if(transitive) {
-                g.transitive_prio.add(p);
-                g.prio_prods.add(higher);
-                g.prio_prods.add(lower);
+                g.getTransitivePriorities().add(p);
+                g.getProductionsOnPriorities().add(higher);
+                g.getProductionsOnPriorities().add(lower);
 
                 if(arguments.isEmpty()) {
-                    g.trans_prio_arguments.put(p, -1);
+                    g.getTransitivePriorityArgs().put(p, -1);
                 } else {
                     for(Integer arg : arguments) {
-                        g.trans_prio_arguments.put(p, arg);
+                        g.getTransitivePriorityArgs().put(p, arg);
                     }
                 }
             } else {
-                g.non_transitive_prio.add(p);
+                g.getNonTransitivePriorities().add(p);
                 if(arguments.isEmpty()) {
-                    g.non_trans_prio_arguments.put(p, -1);
+                    g.getNonTransitivePriorityArgs().put(p, -1);
                 } else {
                     for(Integer arg : arguments) {
-                        g.non_trans_prio_arguments.put(p, arg);
+                        g.getNonTransitivePriorityArgs().put(p, arg);
                     }
                 }
             }
@@ -723,16 +723,16 @@ public class GrammarReader {
 
             Priority p = new Priority(higher, lower, false);
 
-            g.non_transitive_prio.add(p);
+            g.getNonTransitivePriorities().add(p);
 
             // actual argument values will be processed later when defining recursion
             if(assoc.toString().contains("Left")) {
-                g.non_trans_prio_arguments.put(p, Integer.MAX_VALUE);
+                g.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
             } else if(assoc.toString().contains("Right")) {
-                g.non_trans_prio_arguments.put(p, Integer.MIN_VALUE);
+                g.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
             } else {
-                g.non_trans_prio_arguments.put(p, Integer.MIN_VALUE);
-                g.non_trans_prio_arguments.put(p, Integer.MAX_VALUE);
+                g.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
+                g.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
             }
 
         } else {
@@ -781,7 +781,7 @@ public class GrammarReader {
             ProductionReference prod_ref =
                 new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
 
-            production = g.sort_cons_prods.get(prod_ref);
+            production = g.getSortConsProductionMapping().get(prod_ref);
             if(production == null) {
                 throw new Exception("Production referenced by " + prod_ref + " could not be found.");
             }
@@ -807,7 +807,7 @@ public class GrammarReader {
             reader.close();
 
             term = termFactory.parseFromString(aterm);
-            grammar.sdf3_files.add(file);
+            grammar.getFilesRead().add(file);
         } catch(IOException e) {
             System.err.println("Cannot open module file `" + file.getPath() + "'");
         } finally {

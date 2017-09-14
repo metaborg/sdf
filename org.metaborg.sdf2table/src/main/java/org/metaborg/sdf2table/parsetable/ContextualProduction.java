@@ -126,19 +126,6 @@ public class ContextualProduction implements IProduction, Serializable {
         return rhs;
     }
 
-    @Override public void calculateDependencies(NormGrammar g) {
-        getOrigProduction().calculateDependencies(g);
-
-    }
-
-    @Override public TableSet firstSet() {
-        return getOrigProduction().firstSet();
-    }
-
-    @Override public TableSet followSet() {
-        return getOrigProduction().followSet();
-    }
-
     public ContextualProduction addContext(Context context, Set<Integer> conflicting_args) {
         Symbol new_lhs = lhs;
         List<Symbol> new_rhs = Lists.newArrayList();

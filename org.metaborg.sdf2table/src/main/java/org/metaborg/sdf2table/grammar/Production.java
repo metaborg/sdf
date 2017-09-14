@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.sdf2table.parsetable.Context;
-import org.metaborg.sdf2table.parsetable.TableSet;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -19,10 +18,6 @@ public class Production implements IProduction, Serializable {
 
     private final Symbol lhs;
     private final List<Symbol> rhs;
-
-    // First and Follow Sets
-    private TableSet firstSet = new TableSet(this);
-    private TableSet followSet = new TableSet(this);
 
     private int leftRecursivePos = -1;
     private int rightRecursivePos = -1;
@@ -47,50 +42,11 @@ public class Production implements IProduction, Serializable {
         return rhs;
     }
 
-    @Override public TableSet firstSet() {
-        return firstSet;
-    }
-
-    @Override public TableSet followSet() {
-        return followSet;
-    }
-
-    @Override public void calculateDependencies(NormGrammar g) {
-        // first dependencies
-        calculateFirstSetDependencies(g, 0);
-        // if rhs = A1 ... AN
-        // if A1 is a CharacterClass
-        // firstSet.add(A1);
-        // else firstSet.AddDependency(A1)
-        // if A1 is nullable
-        // calculateDependency(A2)
-
-    }
-
-    private void calculateFirstSetDependencies(NormGrammar g, int symbol) {
-        if(symbol < rhs.size()) {
-            Symbol s = rhs.get(symbol);
-            if(s instanceof CharacterClass) {
-                firstSet.add((CharacterClass) s);
-            } else {
-                for(IProduction p : g.symbol_prods.get(s)) {
-                    firstSet.addDependency(p.firstSet());
-                }
-                if(s.nullable) {
-                    calculateFirstSetDependencies(g, symbol + 1);
-                }
-            }
-        }
-    }
-
     @Override public int rightRecursivePosition() {
-        // TODO Consider indirect recursion?
         return rightRecursivePos;
     }
 
-
     @Override public int leftRecursivePosition() {
-        // TODO Consider indirect recursion?
         return leftRecursivePos;
     }
 
@@ -160,7 +116,7 @@ public class Production implements IProduction, Serializable {
 
         // left recursion
         for(int i = 0; i < rhs.size(); i++) {
-            if(grammar.leftRecursive.containsEntry(lhs, rhs.get(i))) {
+            if(grammar.getLeftRecursiveSymbolsMapping().containsEntry(lhs, rhs.get(i))) {
                 leftRecursivePos = i;
                 break;
             }
@@ -171,7 +127,7 @@ public class Production implements IProduction, Serializable {
 
         // right recursion
         for(int i = rhs.size() - 1; i >= 0; i--) {
-            if(grammar.rightRecursive.containsEntry(lhs, rhs.get(i))) {
+            if(grammar.getRightRecursiveSymbolsMapping().containsEntry(lhs, rhs.get(i))) {
                 rightRecursivePos = i;
                 break;
             }

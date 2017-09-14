@@ -25,7 +25,7 @@ public class Shift extends Action {
         this.state = state;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, ITableGenerator pt) {
+    @Override public IStrategoTerm toAterm(ITermFactory tf, IParseTable pt) {
         return tf.makeAppl(tf.makeConstructor("shift", 1), tf.makeInt(state));
     }
 

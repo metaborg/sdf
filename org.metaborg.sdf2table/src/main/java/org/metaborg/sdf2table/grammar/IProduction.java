@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.sdf2table.parsetable.Context;
-import org.metaborg.sdf2table.parsetable.TableSet;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -14,32 +13,38 @@ import com.google.common.collect.SetMultimap;
 public interface IProduction {
 
     /**
-    * Gets the left hand side of a production.
-    *
-    * @return The left hand symbol.
-    */    
+     * Gets the left hand side of a production.
+     *
+     * @return The left hand symbol.
+     */
     Symbol leftHand();
-        
+
     /**
      * Gets the left hand side of a production.
      *
      * @return The left hand symbol.
-     */    
+     */
     List<Symbol> rightHand();
-    
-    // To calculate Deep Priority Conflicts 
+
+    // To calculate Deep Priority Conflicts
     int leftRecursivePosition();
-    int rightRecursivePosition();    
+
+    int rightRecursivePosition();
+
     void calculateRecursion(NormGrammar grammar);
-        
+
     @Override int hashCode();
+
     @Override boolean equals(Object obj);
 
     IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs);
-    IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
 
-    void calculateDependencies(NormGrammar g);
+    IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
 
-    TableSet firstSet();
-    TableSet followSet();   
+    // TODO: FIRST AND FOLLOW SETS OF PRODUCTIONS
+    // void calculateDependencies(NormGrammar g);
+    //
+    // TableSet firstSet();
+    // TableSet followSet();
 }
