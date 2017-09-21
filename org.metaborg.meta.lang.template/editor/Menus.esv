@@ -34,8 +34,10 @@ menus
       action: "Generate SDF (abstract)"   = generate-sdf-abstract (meta)
       action: "Generate SDF (concrete)"   = generate-sdf-concrete
       action: "to Normal Form"            = sdf3-to-normal-form 
-      action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract 
-      action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract
+      action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract (meta)
+      action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract (meta)
+      action: "Generate Permissive Grammar (abstract)" = generate-permissive-abstract (meta)
+      action: "Generate Permissive Grammar" = generate-permissive-concrete
     end
     
     submenu: "Signature"
@@ -58,8 +60,7 @@ menus
 //    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
 //    action: "Generate AST checker"            = generate-ast-checker-concrete
          
-//    action: "Generate Permissive Grammar (abstract, starting from current)" = generate-permissive-abstract
-//    action: "Generate Permissive Grammar (starting from current)" = generate-permissive-concrete
+    
      	
   menu: "Format" (openeditor) (realtime)
     

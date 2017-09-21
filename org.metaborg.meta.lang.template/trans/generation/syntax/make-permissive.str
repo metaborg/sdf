@@ -8,16 +8,34 @@ imports
   analysis/attributes
   analysis/lifting
   generation/gen-utils/remove-template
-  signatures/modules/Modules-sig
-  signatures/literals/Literals-sig
-  signatures/sorts/Sorts-sig
-  signatures/restrictions/Restrictions-sig
-  signatures/sdf2-core/Sdf2-Syntax-sig  
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
 
 rules
 
-  module-to-permissive(|path):
-    Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-Permissive-Custom]), [import-main], [water-prods*, SDFSection(LexicalSyntax([closing-brckts-lit*, opening-brckts-lit*]))])
+  module-to-permissive-productions:
+    Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized($[[mn]-permissive]), [import-main], [SDFSection(LexicalSyntax([closing-brckts-lit*, opening-brckts-lit*]))])
     where
         mn'  := <strip-annos> mn;
         rules(expanded-module-permissive: mn' -> <id>)
@@ -26,14 +44,26 @@ rules
         import-names*       := <collect(?Module(Unparameterized(<id>)))> i*; 
         chars               := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
         sections'*          := <desugar-templates; remove-templates(|chars)> sections*;
-        imported-sections*  := <filter(expand-import-permissive(|path)); flatten-list> import-names*;
+//        imported-sections*  := <filter(expand-import-permissive(|path)); flatten-list> import-names*;
         water-prods*        := <get-boilerplate-water>;
-        cf-prods*           := <filter(?SDFSection(ContextFreeSyntax(<id>))); debug(!"prods "); concat> [imported-sections*, sections'*];
+        cf-prods*           := <filter(?SDFSection(ContextFreeSyntax(<id>))); concat> [sections'*];
         closing-brckts-lit* := <filter(fetch-closing-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* ;
-        opening-brckts-lit* := <filter(fetch-opening-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* ;
-        closing-lit-no-nl*  := [];
-        closing-lit-nl*     := []
+        opening-brckts-lit* := <filter(fetch-opening-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* 
                 
+  module-to-permissive:
+    Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized(mn), i*, [sections*, SDFSection(LexicalSyntax([closing-brckts-lit*, opening-brckts-lit*]))])
+    where
+        mn'  := <strip-annos> mn
+    where
+        import-main         := Imports([Module(Unparameterized(mn))]);
+        import-names*       := <collect(?Module(Unparameterized(<id>)))> i*; 
+        chars               := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
+        sections'*          := <desugar-templates; remove-templates(|chars)> sections*;
+        water-prods*        := <get-boilerplate-water>;
+        cf-prods*           := <filter(?SDFSection(ContextFreeSyntax(<id>))); concat> [sections'*];
+        closing-brckts-lit* := <filter(fetch-closing-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* ;
+        opening-brckts-lit* := <filter(fetch-opening-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* 
+   
   expand-import-permissive(|path):
     name -> file
     where
@@ -67,6 +97,12 @@ rules
     where
         <?Lit(_)> h;
         symbol := <last; ?Lit(_)> hs
+        
+  fetch-closing-brackets-lit:
+    SdfProduction(_, Rhs(rhs*@[h | hs]), _) -> symbol
+    where
+        <?Lit(_)> h;
+        symbol := <last; ?Lit(_)> hs      
         
   make-recover-insertion-prod:
     l@Lit(_) -> SdfProductionWithCons(SortCons(l, Constructor("INSERTION")), Rhs([]), Attrs([Term(Default(Fun(Unquoted("recover"))))]))

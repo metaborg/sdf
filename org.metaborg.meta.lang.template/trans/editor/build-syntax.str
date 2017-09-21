@@ -51,17 +51,17 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
-        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.aterm")> mn;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-permissive.aterm")> mn;
         ast'     := <desugar-templates> selected;
-        result := <module-to-permissive(|$[[project-path]/[<dirname> path]])> ast'
+        result := <module-to-permissive-productions> ast'
   
   generate-permissive-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
-        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-Permissive-Custom.sdf3")> mn;
+        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-permissive.sdf3")> mn;
         ast'     := <desugar-templates> selected;
-        result   := <module-to-permissive(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> ast'     
+        result   := <module-to-permissive-productions; pp-SDF3-string> ast'     
         
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)

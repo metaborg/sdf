@@ -64,19 +64,11 @@ rules
       ds-sig-filename      := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn;
       <write-string-to-file> (ds-sig-filename, ds-sig-ast)
     where
-      chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
-      newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
-      kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
-      kattrs               := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
-      sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
-      sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
-      <write-string-to-file> (sdf-filename, sdf-ast)  
-    where
     version             := <check-sdf2table>;
       if <?"java" <+ ?"dynamic" <+ ?"incremental"> version then
         // regular table     
         norm-filename       := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
-        norm-ast            := <to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
+        norm-ast            := <module-to-permissive; to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
         <write-string-to-file> (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast);
         
         // completions table 
@@ -84,6 +76,14 @@ rules
         sdf-completions-ast              := <module-to-sdf3-completions; to-normal-form(|$[[project-path]/[<dirname> path]]) <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
         <write-string-to-file> (sdf-completions-filename, <aterm-escape-strings; pp-aterm> sdf-completions-ast)  
       else
+		chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+  		newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+	  	kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+	  	kattrs               := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
+	  	sdf-filename         := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+	  	sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
+	  	<write-string-to-file> (sdf-filename, sdf-ast);
+	      
         // to completions table from sdf2table
         sdf-completions-filename         := <create-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf")> mn;
         sdf-completions-ast              := <module-to-sdf-completions; pp-sdf-to-string  <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
