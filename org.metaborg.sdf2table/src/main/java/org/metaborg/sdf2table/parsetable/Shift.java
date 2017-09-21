@@ -1,12 +1,18 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
+
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Shift extends Action {
+public class Shift extends Action implements Serializable {
 
-    private int state;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8243181585007870077L;
+	private int state;
 
     public Shift(CharacterClass cc, int state) {
         this.cc = cc;

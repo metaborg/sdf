@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.IPriority;
@@ -10,9 +11,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class SymbolStatesMapping {
+public class SymbolStatesMapping implements Serializable {
 
-    public SetMultimap<Symbol, LRItem> symbolItems;
+	private static final long serialVersionUID = 1109889933255986338L;
+
+	public SetMultimap<Symbol, LRItem> symbolItems;
     public SetMultimap<LRItem, State> itemStates;
 
     public SymbolStatesMapping() {

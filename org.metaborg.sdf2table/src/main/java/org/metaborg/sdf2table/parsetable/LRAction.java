@@ -1,14 +1,17 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.metaborg.sdf2table.grammar.CharacterClass;
 
 import com.google.common.collect.Lists;
 
-public class LRAction {
+public class LRAction implements Serializable {
 
-    CharacterClass cc;
+	private static final long serialVersionUID = -2956512784678386226L;
+
+	CharacterClass cc;
     List<Action> actions;
     
     public LRAction(CharacterClass cc, Action a) {

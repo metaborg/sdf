@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.CharacterClass;
@@ -12,9 +13,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class State implements Comparable<State> {
+public class State implements Comparable<State>, Serializable {
 
-    IParseTable pt;
+	private static final long serialVersionUID = 7118071460461287164L;
+
+	IParseTable pt;
 
     private final int label;
     private Set<GoTo> gotos;

@@ -1,12 +1,16 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class LabelFactory {
-    private int nextLabel;
+public class LabelFactory implements Serializable {
+
+	private static final long serialVersionUID = -8515280863057691520L;
+
+	private int nextLabel;
     private Set<Integer> labelPool;
 
     public LabelFactory(int initialLabel) {

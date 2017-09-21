@@ -34,31 +34,28 @@ public class ParseTableGenerator {
     private File input;
     private File outputFile;
     private File ctxGrammarFile;
-    private File normGrammarFile;
+    private File persistedTableFile;
     private List<String> paths;
     private final ITermFactory termFactory = new TermFactory();
     private boolean tableCreated = false;
     private ParseTable pt;
 
-    public ParseTableGenerator(File input, File output, File normGrammar, File ctxGrammar, List<String> paths) {
+    public ParseTableGenerator(File input, File output, File persistedTable, File ctxGrammar, List<String> paths) {
         this.input = input;
         this.outputFile = output;
         this.paths = paths;
-        this.normGrammarFile = normGrammar;
+        this.persistedTableFile = persistedTable;
         this.ctxGrammarFile = ctxGrammar;
     }
 
-    public ParseTableGenerator(FileObject grammarFile) throws Exception {
-        NormGrammar grammar;
-
-        InputStream out = grammarFile.getContent().getInputStream();
+    public ParseTableGenerator(FileObject tableFile) throws Exception {
+        InputStream out = tableFile.getContent().getInputStream();
         ObjectInputStream ois = new ObjectInputStream(out);
         // read persisted normalized grammar
-        grammar = (NormGrammar) ois.readObject();
+        pt = (ParseTable) ois.readObject();
         ois.close();
         out.close();
 
-        pt = new ParseTable(grammar, true);
         tableCreated = true;
     }
 
@@ -73,7 +70,8 @@ public class ParseTableGenerator {
             createParseTable(dynamic);
         }
         // FIXME add option to generate the contextual grammar in the Yaml file
-        if(ctxGrammarFile != null) {
+        boolean generateContextualGrammar = false;
+        if(ctxGrammarFile != null && generateContextualGrammar) {
             IStrategoTerm ctxGrammar = generateATermContextualGrammar(pt);
             outputToFile(ctxGrammar.toString(), ctxGrammarFile);
         }
@@ -88,8 +86,8 @@ public class ParseTableGenerator {
         // }
 
         // output binary normalized grammar
-        if(normGrammarFile != null) {
-            persistObjectToFile(pt.normalizedGrammar(), normGrammarFile);
+        if(persistedTableFile != null) {
+            persistObjectToFile(pt, persistedTableFile);
         }
 
         IStrategoTerm ptAterm = generateATerm(pt);
@@ -239,14 +237,14 @@ public class ParseTableGenerator {
 
     }
 
-    private void persistObjectToFile(NormGrammar grammar, File output) {
+    private void persistObjectToFile(ParseTable pt, File output) {
         FileOutputStream out = null;
         ObjectOutputStream outObj = null;
         try {
-            String name = normGrammarFile.getAbsolutePath();
+            String name = persistedTableFile.getAbsolutePath();
             out = new FileOutputStream(name);
             outObj = new ObjectOutputStream(out);
-            outObj.writeObject(grammar);
+            outObj.writeObject(pt);
             outObj.close();
             out.close();
         } catch(IOException e) {

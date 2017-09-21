@@ -1,11 +1,15 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
+
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Accept extends Action {
+public class Accept extends Action implements Serializable {
 
-    public Accept() {
+	private static final long serialVersionUID = 4299391769734003915L;
+
+	public Accept() {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf, IParseTable pt) {

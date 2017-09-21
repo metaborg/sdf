@@ -1,5 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
+
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IAttribute;
@@ -7,9 +9,11 @@ import org.metaborg.sdf2table.grammar.IProduction;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Reduce extends Action {
+public class Reduce extends Action implements Serializable {
 
-    int prod_label;
+	private static final long serialVersionUID = 4938045344795755011L;
+
+	int prod_label;
     IProduction prod;
     CharacterClass lookahead = null;
 

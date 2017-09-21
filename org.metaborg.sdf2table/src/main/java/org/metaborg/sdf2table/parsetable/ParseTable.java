@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -14,8 +15,6 @@ import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.UniqueProduction;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
-import org.spoofax.interpreter.terms.ITermFactory;
-import org.spoofax.terms.TermFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -26,9 +25,11 @@ import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class ParseTable implements IParseTable {
+public class ParseTable implements IParseTable, Serializable {
 
-    public static final int FIRST_PRODUCTION_LABEL = 257;
+	private static final long serialVersionUID = -1845408435423897026L;
+	
+	public static final int FIRST_PRODUCTION_LABEL = 257;
     public static final int INITIAL_STATE_NUMBER = 0;
     public static final int VERSION_NUMBER = 6;
 
@@ -61,8 +62,6 @@ public class ParseTable implements IParseTable {
     private Map<Set<Context>, Integer> ctxUniqueInt = Maps.newHashMap();
 
     int totalStates = 0;
-
-    private final ITermFactory termFactory = new TermFactory();
 
     public ParseTable(NormGrammar grammar, boolean dynamic) {
         this.grammar = grammar;
@@ -512,10 +511,6 @@ public class ParseTable implements IParseTable {
 
     public void setGrammar(NormGrammar grammar) {
         this.grammar = grammar;
-    }
-
-    public ITermFactory getTermfactory() {
-        return termFactory;
     }
 
     public Set<File> requiredFiles() {

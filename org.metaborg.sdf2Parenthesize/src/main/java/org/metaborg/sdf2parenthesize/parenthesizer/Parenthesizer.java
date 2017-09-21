@@ -40,8 +40,8 @@ public class Parenthesizer {
 
     public static IStrategoTerm generateParenthesizer(String moduleName, File outputFile, NormGrammar grammar) {
         // add pp/
-        final String name = moduleName.replace("-parenthesize", "");
-        moduleName = "pp/" + moduleName;
+        final String name = moduleName;
+        moduleName = "pp/" + moduleName + "-parenthesize";
         final String rule_name = name + "Parenthesize";
 
         // FIXME import all subfolders

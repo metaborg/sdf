@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.IPriority;
@@ -10,9 +11,11 @@ import org.metaborg.sdf2table.grammar.Symbol;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class LRItem {
+public class LRItem implements Serializable {
 
-    private IParseTable pt;
+	private static final long serialVersionUID = 6331111365917952694L;
+
+	private IParseTable pt;
     private IProduction prod;
     private int dotPosition;
     private int prod_label;

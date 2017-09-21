@@ -1,12 +1,16 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.io.Serializable;
+
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class GoTo {
+public class GoTo implements Serializable {
 
-    IParseTable pt;
+	private static final long serialVersionUID = -6437393243737838862L;
+	
+	IParseTable pt;
     int label = -1;
     CharacterClass cc = null;
     private int state;
