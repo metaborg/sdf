@@ -55,10 +55,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
-    
-    
-    private final ITermFactory termFactory;  
-    
+
+
+    private final ITermFactory termFactory;
+
     public GrammarReader(ITermFactory termFactory) {
         this.termFactory = termFactory;
     }
@@ -70,12 +70,12 @@ public class GrammarReader {
         IStrategoTerm mainModule = termFromFile(input, grammar);
         generateGrammar(grammar, mainModule, modules, paths);
         grammar.priorityTransitiveClosure();
-        
+
         return grammar;
     }
 
-    private void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules,
-        List<String> paths) throws Exception {
+    private void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules, List<String> paths)
+        throws Exception {
 
         if(module instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) module;
@@ -134,10 +134,11 @@ public class GrammarReader {
                 StrategoList sdf_sections = (StrategoList) app.getSubterm(2);
                 for(IStrategoTerm t : sdf_sections) {
                     StrategoAppl tsection = null;
-                    if(!(t.getSubterm(0) instanceof StrategoAppl)) continue;
+                    if(!(t.getSubterm(0) instanceof StrategoAppl))
+                        continue;
                     try {
                         tsection = (StrategoAppl) t.getSubterm(0);
-                    } catch (Exception e) {
+                    } catch(Exception e) {
                         System.out.println("here");
                     }
                     switch(tsection.getName()) {
@@ -169,19 +170,20 @@ public class GrammarReader {
     private void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
-            
+
             if(app.getName().equals("ContextFreeSyntax")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
                     processProduction(g, t);
                 }
-            }  if(app.getName().equals("LexicalSyntax")) {
+            }
+            if(app.getName().equals("LexicalSyntax")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
                     processProduction(g, t);
                 }
             }
-            
+
             else if(app.getName().equals("Kernel")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
@@ -515,8 +517,7 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return termFactory
-                .makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
+            return termFactory.makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
@@ -626,7 +627,8 @@ public class GrammarReader {
             List<Integer> arguments = Lists.newArrayList();
 
             if(groups.size() != 2) {
-                throw new Exception("Expecting only binary priority relations");
+                throw new Exception("Unexpected normalized priority: " + chain.toString()
+                    + ".\nExpecting only binary priority relations.");
             }
 
             IStrategoTerm first_group = groups.getSubterm(0);
@@ -766,8 +768,7 @@ public class GrammarReader {
         return arguments;
     }
 
-    private IProduction processGroup(NormGrammar g, IStrategoTerm group)
-        throws UnexpectedTermException, Exception {
+    private IProduction processGroup(NormGrammar g, IStrategoTerm group) throws UnexpectedTermException, Exception {
 
         IProduction production = null;
 

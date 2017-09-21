@@ -187,7 +187,7 @@ rules
   add-placeholder-prods:
     SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
     with
-      //content complete prods
+      //content completion prods
         sorts*                 := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
                                   ; nub> prods*;
         placeholder-prods*     := <map(add-plhdr-prod)> sorts*
@@ -1172,7 +1172,7 @@ rules
      norm-prio-fun(|tokenize-chars):
         Chain([group]) -> []  
         where
-          <check-group(?ProdsGroup([]) + ?ProdsRefGroup([]))> group 
+          <check-group(?ProdsGroup(_) + ?ProdsRefGroup(_))> group 
      
      norm-prio-fun(|tokenize-chars):
         Chain([group1, group2]) -> []

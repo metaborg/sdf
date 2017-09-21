@@ -67,7 +67,12 @@ public class ParseTableGenerator {
 
     public void outputTable(boolean dynamic) throws Exception {
         if(tableCreated == false) {
-            createParseTable(dynamic);
+            try {
+                createParseTable(dynamic);
+            } catch(Exception e) {
+                logger.error(e.getMessage());
+                throw e;
+            }
         }
         // FIXME add option to generate the contextual grammar in the Yaml file
         boolean generateContextualGrammar = false;
@@ -79,9 +84,11 @@ public class ParseTableGenerator {
         // if(parenthesizerFile != null) {
         // // output parenthesizer in Stratego
         // IStrategoTerm parenthesizer = Parenthesizer.generateParenthesizer(
-        // FilenameUtils.getBaseName(parenthesizerFile.getName()), pt.getGrammar(), termFactory);
+        // FilenameUtils.getBaseName(parenthesizerFile.getName()), pt.getGrammar(),
+        // termFactory);
         // // fixed location of the parenthesizer at src-gen/pp/<Lang>-Parenthesizer?
-        // // FIXME need to depend on stratego-jar to pretty-print stratego, but that creates problems
+        // // FIXME need to depend on stratego-jar to pretty-print stratego, but that
+        // creates problems
         // outputToFile(parenthesizer.toString(), parenthesizerFile);
         // }
 
@@ -101,12 +108,9 @@ public class ParseTableGenerator {
         IStrategoTerm version = termFactory.makeInt(ParseTable.VERSION_NUMBER);
         IStrategoTerm initialState = termFactory.makeInt(ParseTable.INITIAL_STATE_NUMBER);
 
-
         IStrategoTerm labels = generateLabelsAterm(pt);
         IStrategoTerm priorities = generatePrioritiesAterm(pt);
         IStrategoTerm states = generateStatesAterm(pt);
-
-
 
         return termFactory.makeAppl(termFactory.makeConstructor("parse-table", 5), version, initialState, labels,
             states, priorities);
