@@ -75,7 +75,7 @@ context-free syntax
     ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
     ATermAttribute = <id(<ModuleName>)> {reject}
     ATermAttribute = <nlm> {reject}
-    
+    ATermAttribute = <recover> {reject}
 
   restrictions
     Sort-CF

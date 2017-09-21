@@ -578,6 +578,9 @@ rules //conversion of SDF3 terms into SDF2
     
   special-term-to-sdf:
     NewLongestMatch() -> term(default(fun(unquoted("nlm"))))      
+    
+  special-term-to-sdf:
+    NewLongestMatch() -> term(default(fun(unquoted("recover"))))
   
     
   terms-to-sdf:

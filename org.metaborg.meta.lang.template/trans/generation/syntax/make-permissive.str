@@ -56,7 +56,7 @@ rules
         mn'  := <strip-annos> mn
     where
         import-main         := Imports([Module(Unparameterized(mn))]);
-        import-names*       := <collect(?Module(Unparameterized(<id>)))> i*; 
+//        import-names*       := <collect(?Module(Unparameterized(<id>)))> i*; 
         chars               := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
         sections'*          := <desugar-templates; remove-templates(|chars)> sections*;
         water-prods*        := <get-boilerplate-water>;

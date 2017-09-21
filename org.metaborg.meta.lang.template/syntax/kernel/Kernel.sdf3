@@ -36,6 +36,7 @@ Attribute.IgnoreLayout = <ignore-layout>
 Attribute.EnforceNewLine = <enforce-newline>
 Attribute.LongestMatch = <longest-match>
 Attribute.NewLongestMatch = <nlm>
+Attribute.Recover         = <recover>
 
 Attribute.CaseInsensitive = <case-insensitive>
 Attribute.Deprecated = <deprecated>  

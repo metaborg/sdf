@@ -455,6 +455,8 @@ public class GrammarReader {
                             break;
                     }
                     break;
+                case "Recover":
+                    return new GeneralAttribute("recover");
                 case "Reject":
                     return new GeneralAttribute("reject");
                 case "Prefer":
@@ -524,7 +526,7 @@ public class GrammarReader {
                 termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
                     termName.length() - 1);
             }
-            return termFactory.makeString(termName);
+            return termFactory.makeAppl(termFactory.makeConstructor(termName, 0));
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int ivalue = Integer.parseInt(svalue);

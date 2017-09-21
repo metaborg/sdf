@@ -79,6 +79,8 @@ public class GeneralAttribute implements IAttribute, Serializable {
                 return tf.makeAppl(tf.makeConstructor("Reject", 0));
             case "avoid":
                 return tf.makeAppl(tf.makeConstructor("Avoid", 0));
+            case "recover":
+                return tf.makeAppl(tf.makeConstructor("Recover", 0));
             default:
                 return tf.makeAppl(tf.makeConstructor("Term", 1),
                     tf.makeAppl(tf.makeConstructor("Default", 1), tf.makeAppl(tf.makeConstructor("Fun", 1),
