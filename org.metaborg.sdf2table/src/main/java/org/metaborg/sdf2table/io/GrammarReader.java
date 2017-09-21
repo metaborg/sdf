@@ -796,7 +796,7 @@ public class GrammarReader {
         return production;
     }
 
-    private IStrategoTerm termFromFile(File file, NormGrammar grammar) {
+    private IStrategoTerm termFromFile(File file, NormGrammar grammar) throws Exception {
         FileReader reader = null;
         IStrategoTerm term = null;
 
@@ -810,7 +810,7 @@ public class GrammarReader {
             term = termFactory.parseFromString(aterm);
             grammar.getFilesRead().add(file);
         } catch(IOException e) {
-            System.err.println("Cannot open module file `" + file.getPath() + "'");
+            throw new Exception("Cannot open module file '" + file.getPath() + "'. Try cleaning the project and rebuilding.");
         } finally {
             if(reader != null) {
                 try {

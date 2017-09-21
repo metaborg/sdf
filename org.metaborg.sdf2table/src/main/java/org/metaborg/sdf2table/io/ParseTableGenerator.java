@@ -81,17 +81,6 @@ public class ParseTableGenerator {
             outputToFile(ctxGrammar.toString(), ctxGrammarFile);
         }
 
-        // if(parenthesizerFile != null) {
-        // // output parenthesizer in Stratego
-        // IStrategoTerm parenthesizer = Parenthesizer.generateParenthesizer(
-        // FilenameUtils.getBaseName(parenthesizerFile.getName()), pt.getGrammar(),
-        // termFactory);
-        // // fixed location of the parenthesizer at src-gen/pp/<Lang>-Parenthesizer?
-        // // FIXME need to depend on stratego-jar to pretty-print stratego, but that
-        // creates problems
-        // outputToFile(parenthesizer.toString(), parenthesizerFile);
-        // }
-
         // output binary normalized grammar
         if(persistedTableFile != null) {
             persistObjectToFile(pt, persistedTableFile);
