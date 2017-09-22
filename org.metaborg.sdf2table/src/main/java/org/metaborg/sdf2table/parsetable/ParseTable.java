@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
@@ -97,6 +99,9 @@ public class ParseTable implements IParseTable, Serializable {
         do {
             markedNullable = false;
             for(IProduction p : grammar.getUniqueProductionMapping().values()) {
+                if(grammar.getProductionAttributesMapping().get(p).contains(new GeneralAttribute("recover"))) {
+                    continue;
+                }                
                 if(p.rightHand().isEmpty() && !p.leftHand().nullable) {
                     p.leftHand().nullable = true;
                     markedNullable = true;

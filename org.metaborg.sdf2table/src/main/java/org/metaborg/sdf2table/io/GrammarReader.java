@@ -493,6 +493,9 @@ public class GrammarReader {
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);
                     try {
+                        if(term.toString().equals("Fun(Unquoted(\"recover\"))")) {
+                            return new GeneralAttribute("recover");
+                        }
                         IStrategoTerm termAttribute = createStrategoTermAttribute(term);
                         return new TermAttribute(termAttribute, termAttribute.toString());
                     } catch(Exception e) {
