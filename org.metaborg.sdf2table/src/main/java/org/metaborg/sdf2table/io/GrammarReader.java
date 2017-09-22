@@ -526,7 +526,7 @@ public class GrammarReader {
                 termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
                     termName.length() - 1);
             }
-            return termFactory.makeAppl(termFactory.makeConstructor(termName, 0));
+            return termFactory.makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int ivalue = Integer.parseInt(svalue);
@@ -812,7 +812,8 @@ public class GrammarReader {
             term = termFactory.parseFromString(aterm);
             grammar.getFilesRead().add(file);
         } catch(IOException e) {
-            throw new Exception("Cannot open module file '" + file.getPath() + "'. Try cleaning the project and rebuilding.");
+            throw new Exception(
+                "Cannot open module file '" + file.getPath() + "'. Try cleaning the project and rebuilding.");
         } finally {
             if(reader != null) {
                 try {
