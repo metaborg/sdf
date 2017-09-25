@@ -1,6 +1,5 @@
 package org.metaborg.sdf2table.parsetable;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +7,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
-import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
@@ -516,10 +514,6 @@ public class ParseTable implements IParseTable, Serializable {
 
     public void setGrammar(NormGrammar grammar) {
         this.grammar = grammar;
-    }
-
-    public Set<File> requiredFiles() {
-        return grammar.getFilesRead();
     }
 
     public void printStatistics(String step, long totalTime) {
