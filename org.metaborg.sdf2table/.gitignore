@@ -4,3 +4,5 @@
 /META-INF
 /bin
 /target
+/.idea
+/*.iml
