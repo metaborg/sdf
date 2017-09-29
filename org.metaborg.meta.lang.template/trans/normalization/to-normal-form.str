@@ -187,7 +187,7 @@ rules
   add-placeholder-prods:
     SDFSection(ContextFreeSyntax(prods*)) -> SDFSection(ContextFreeSyntax([placeholder-prods*]))
     with
-      //content complete prods
+      //content completion prods
         sorts*                 := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
                                   ; nub> prods*;
         placeholder-prods*     := <map(add-plhdr-prod)> sorts*
@@ -210,8 +210,22 @@ rules
   generate-follow-restrictions-reject-keywords(|kfr, chars, kattrs) = filter(follow-restrictions-template-prods(|kfr, chars, kattrs)); flatten-list
   
   follow-restrictions-template-prods(|kfr, chars, kattrs):
-    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, SDFSection(LexicalSyntax(reject-prods*))]
+    SDFSection(ContextFreeSyntax(prods*)) -> [restr*, plhd-restr*, SDFSection(LexicalSyntax(reject-prods*))]
       where 
+      // lexical restrictions for placeholders
+      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, None()))> prods*;
+      // explicit placeholder prods
+      sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+                        ; nub> prods*;      
+      if [] := sorts* then
+              plhdr-restr* := []
+          else
+              (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
+              plhd-restr* := [SDFSection(LexicalRestrictions([Follow(<map(!Lit(<concat-strings; double-quote> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, 
+                                                                        Single(CharClass(Simple(Present(
+                                                                                       Conc(Range(Short("a"), Short("z"))
+                                                                                          , Range(Short("A"), Short("Z"))))))))]))]
+          end;                                                                                     
       // lexical restrictions
         x    := <filter(case-sensitive-template-prods); nub> prods*;
         ci-x := <filter(case-insensitive-template-prods); nub> prods*;
@@ -1158,7 +1172,7 @@ rules
      norm-prio-fun(|tokenize-chars):
         Chain([group]) -> []  
         where
-          <check-group(?ProdsGroup([]) + ?ProdsRefGroup([]))> group 
+          <check-group(?ProdsGroup(_) + ?ProdsRefGroup(_))> group 
      
      norm-prio-fun(|tokenize-chars):
         Chain([group1, group2]) -> []
@@ -1510,6 +1524,7 @@ rules
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
             new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(first-prod), associativity, SimpleGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(second-prod), associativity, SimpleGroup(first-prod)),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [first-prod | ppss])]),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocGroup(associativity, [second-prod | ppss])])
                           ]
@@ -1520,6 +1535,7 @@ rules
             <?[second-prod | ppss]> pps;
             <not(?[])> ppss;
             new-assocs := [<norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(first-prod), associativity, SimpleRefGroup(second-prod)), 
+                           <norm-prio-fun(|tokenize-chars)> Assoc(SimpleRefGroup(second-prod), associativity, SimpleRefGroup(first-prod)),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [first-prod | ppss])]),
                            <norm-prio-fun(|tokenize-chars)> Chain([AssocRefGroup(associativity, [second-prod | ppss])])
                           ]

@@ -112,7 +112,7 @@ rules
 
   //productive productions section
   section-to-sdf(|chars, newline, kfr, kattrs):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, restr*]
+  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, plhdr-restr*, restr*]
   	with
   		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
   		// explicit placeholder prods
@@ -120,9 +120,14 @@ rules
                         ; nub> prods*;
       plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
       if [] := sorts* then
-              plhdr-prods* := []
+              plhdr-prods* := [];
+              plhdr-restr* := []
           else
-              plhdr-prods* := [context-free-syntax([plhdr*])]
+              (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
+              plhdr-prods* := [context-free-syntax([plhdr*])];
+              plhdr-restr* := [lexical-restrictions([follow(<map(!lit(<concat-strings> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, single(char-class(simple-charclass(
+                                                                                            present(conc(range(short("a"), short("z")), 
+                                                                                                         range(short("A"), short("Z"))))))))])]
           end;                    
       // lexical restrictions
       x    := <filter(case-sensitive-template-prods); nub> prods*;
@@ -573,6 +578,9 @@ rules //conversion of SDF3 terms into SDF2
     
   special-term-to-sdf:
     NewLongestMatch() -> term(default(fun(unquoted("nlm"))))      
+    
+  special-term-to-sdf:
+    Recover() -> term(default(fun(unquoted("recover"))))
   
     
   terms-to-sdf:
