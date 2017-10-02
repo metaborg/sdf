@@ -9,7 +9,6 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class SequenceSymbol extends Symbol {
 
@@ -21,7 +20,8 @@ public class SequenceSymbol extends Symbol {
     public SequenceSymbol(Symbol first, List<Symbol> tail) {        
         this.first = first;
         this.tail = tail;
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     @Override public String name() {

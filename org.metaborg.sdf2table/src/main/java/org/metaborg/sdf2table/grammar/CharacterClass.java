@@ -175,8 +175,8 @@ public class CharacterClass extends Symbol {
     }
 
     public static int minimum(CharacterClass... ary) {
-        int min = ary[0].minimum();
-        for(int i = 1; i < ary.length; ++i) {
+        int min = Integer.MAX_VALUE;
+        for(int i = 0; i < ary.length; ++i) {
             if(ary[i].minimum() < min)
                 min = ary[i].minimum();
         }
@@ -185,8 +185,8 @@ public class CharacterClass extends Symbol {
     }
 
     public static int maximum(CharacterClass... ary) {
-        int max = ary[0].maximum();
-        for(int i = 1; i < ary.length; ++i) {
+        int max = Integer.MIN_VALUE;
+        for(int i = 0; i < ary.length; ++i) {
             if(ary[i].maximum() > max)
                 max = ary[i].maximum();
         }

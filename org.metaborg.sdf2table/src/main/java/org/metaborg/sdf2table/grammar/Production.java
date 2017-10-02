@@ -120,7 +120,7 @@ public class Production implements IProduction, Serializable {
                 leftRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).nullable) {
+            if(!rhs.get(i).isNullable()) {
                 break;
             }
         }
@@ -131,7 +131,7 @@ public class Production implements IProduction, Serializable {
                 rightRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).nullable) {
+            if(!rhs.get(i).isNullable()) {
                 break;
             }
         }

@@ -9,16 +9,18 @@ import org.metaborg.sdf2table.grammar.IProduction;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Reduce extends Action implements Serializable {
+public class ReduceLookahead extends Action implements Serializable {
 
     private static final long serialVersionUID = 4938045344795755011L;
 
     int prod_label;
     IProduction prod;
+    CharacterClass[] lookahead = null;
 
-    public Reduce(IProduction prod, int prod_label, CharacterClass cc) {
+    public ReduceLookahead(IProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
         this.prod = prod;
         this.prod_label = prod_label;
+        this.lookahead = lookahead;
         this.cc = cc;
     }
 
@@ -37,17 +39,24 @@ public class Reduce extends Action implements Serializable {
             }
         }
 
-        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.rightHand().size()), tf.makeInt(prod_label),
-            tf.makeInt(status));
+
+        IStrategoTerm[] lookaheadTerm = new IStrategoTerm[lookahead.length];
+        for(int i = 0; i < lookahead.length; i++) {
+            lookaheadTerm[i] = lookahead[i].toAterm(tf);
+        }
+        return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.rightHand().size()), tf.makeInt(prod_label),
+            tf.makeInt(status),
+            tf.makeList(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookaheadTerm))));
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status))";
+        return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status, " + lookahead + ")";
     }
 
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((lookahead == null) ? 0 : lookahead.hashCode());
         result = prime * result + prod_label;
         return result;
     }
@@ -59,10 +68,17 @@ public class Reduce extends Action implements Serializable {
             return false;
         if(getClass() != obj.getClass())
             return false;
-        Reduce other = (Reduce) obj;
+        ReduceLookahead other = (ReduceLookahead) obj;
+        if(lookahead == null) {
+            if(other.lookahead != null)
+                return false;
+        } else if(!lookahead.equals(other.lookahead))
+            return false;
         if(prod_label != other.prod_label)
             return false;
         return true;
     }
+
+
 
 }

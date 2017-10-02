@@ -7,14 +7,15 @@ import org.metaborg.sdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class FileStartSymbol extends Symbol {
 
     private static final long serialVersionUID = 3822777948371151629L;
 
     public FileStartSymbol() {
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     @Override public String name() {

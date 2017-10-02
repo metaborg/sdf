@@ -1,11 +1,11 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.CharacterClassNumeric;
-import org.metaborg.sdf2table.grammar.CharacterClassSeq;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Symbol;
 
@@ -15,9 +15,9 @@ import com.google.common.collect.Sets;
 
 public class State implements Comparable<State>, Serializable {
 
-	private static final long serialVersionUID = 7118071460461287164L;
+    private static final long serialVersionUID = 7118071460461287164L;
 
-	IParseTable pt;
+    IParseTable pt;
 
     private final int label;
     private Set<GoTo> gotos;
@@ -67,9 +67,9 @@ public class State implements Comparable<State>, Serializable {
 
     public void closure() {
         for(LRItem item : kernel) {
-//            if(item.getDotPosition() < item.getProd().rightHand().size()) {
-//                pt.symbolStatesMapping().put(item.getProd().rightHand().get(item.getDotPosition()), this);
-//            }
+            // if(item.getDotPosition() < item.getProd().rightHand().size()) {
+            // pt.symbolStatesMapping().put(item.getProd().rightHand().get(item.getDotPosition()), this);
+            // }
             item.process(items, symbol_items, this);
         }
     }
@@ -130,30 +130,19 @@ public class State implements Comparable<State>, Serializable {
             if(item.getDotPosition() == item.getProd().rightHand().size()) {
                 int prod_label = pt.productionLabels().get(item.getProd());
 
-                if(item.getProd().leftHand().followRestriction().isEmpty()) {
+                if(item.getProd().leftHand().followRestriction() == null
+                    || item.getProd().leftHand().followRestriction().equals(CharacterClass.emptyCC)) {
                     addReduceAction(item.getProd(), prod_label, CharacterClass.maxCC, null);
                 } else {
-                    CharacterClass final_range = CharacterClass.maxCC;
-                    for(Symbol s : item.getProd().leftHand().followRestriction()) {
-                        if(s instanceof CharacterClassSeq) {
-                            Symbol cc_restriction = ((CharacterClassSeq) s).getHead();
-                            Set<Symbol> lookahead_symbols = ((CharacterClassSeq) s).getTail();
-                            CharacterClass[] lookahead_array = new CharacterClass[lookahead_symbols.size()];
-                            int i = 0;
-                            for(Symbol lookahead_symbol : lookahead_symbols) {
-                                lookahead_array[i] = new CharacterClass(lookahead_symbol);
-                                i++;
-                            }
-                            CharacterClass lookahead = CharacterClass.union(lookahead_array);
-                            CharacterClass reduction_range =
-                                CharacterClass.intersection(CharacterClass.maxCC, new CharacterClass(cc_restriction));
-                            if(!reduction_range.equals(CharacterClass.emptyCC)) {
-                                final_range = final_range.difference(reduction_range);
-                                addReduceAction(item.getProd(), prod_label, reduction_range, lookahead);
-                            }
-                        } else {
-                            final_range = final_range.difference(new CharacterClass(s));
-                        }
+                    // Not based on first and follow sets thus, only considering the follow restrictions
+                    CharacterClass final_range =
+                        CharacterClass.maxCC.difference(item.getProd().leftHand().followRestriction());
+                    for(CharacterClass[] s : item.getProd().leftHand().followRestrictionLookahead()) {
+                        final_range.difference(s[0]);
+
+                        // create reduce Lookahead actions
+                        CharacterClass[] lookahead = Arrays.copyOfRange(s, 1, s.length);
+                        addReduceAction(item.getProd(), prod_label, s[0], lookahead);
                     }
                     addReduceAction(item.getProd(), prod_label, final_range, null);
                 }
@@ -166,7 +155,7 @@ public class State implements Comparable<State>, Serializable {
     }
 
 
-    private void addReduceAction(IProduction prod, Integer label, CharacterClass cc, CharacterClass lookahead) {
+    private void addReduceAction(IProduction prod, Integer label, CharacterClass cc, CharacterClass[] lookahead) {
         CharacterClass final_range = cc;
 
         for(CharacterClass range : lr_actions.keySet()) {
@@ -176,14 +165,22 @@ public class State implements Comparable<State>, Serializable {
             CharacterClass intersection = CharacterClass.intersection(final_range, range);
             if(!intersection.equals(CharacterClass.emptyCC)) {
                 if(intersection.equals(range)) {
-                    lr_actions.put(intersection, new Reduce(prod, label, range, lookahead));
+                    if(lookahead != null) {
+                        lr_actions.put(intersection, new ReduceLookahead(prod, label, range, lookahead));
+                    } else {
+                        lr_actions.put(intersection, new Reduce(prod, label, range));
+                    }
                     final_range = final_range.difference(intersection);
                 }
             }
         }
 
         if(!final_range.equals(CharacterClass.emptyCC)) {
-            lr_actions.put(final_range, new Reduce(prod, label, final_range, lookahead));
+            if(lookahead != null) {
+                lr_actions.put(final_range, new ReduceLookahead(prod, label, final_range, lookahead));
+            } else {
+                lr_actions.put(final_range, new Reduce(prod, label, final_range));
+            }
         }
     }
 

@@ -25,6 +25,9 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     private IProduction initialProduction;
 
+    // all symbols in this grammar
+    private Set<Symbol> symbols;
+
     // to handle Sort.Cons in priorities
     private Map<ProductionReference, IProduction> sortConsProductionMapping;
 
@@ -38,7 +41,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<ContextualSymbol> contextualSymbols;
     private SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping;
     private SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, IProduction> longestMatchProds;    
+    private SetMultimap<Symbol, IProduction> longestMatchProds;
 
     // priorities
     private Set<IPriority> transitivePriorities;
@@ -69,7 +72,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setContextualSymbols(Sets.newHashSet());
         this.setLongestMatchProds(HashMultimap.create());
         this.setProductionAttributesMapping(HashMultimap.create());
-        this.priorities = HashMultimap.create();        
+        this.priorities = HashMultimap.create();
         this.setTransitivePriorities(Sets.newHashSet());
         this.setNonTransitivePriorities(Sets.newHashSet());
         this.setProductionsOnPriorities(Sets.newHashSet());
@@ -79,6 +82,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setSymbolProductionsMapping(HashMultimap.create());
         this.setCacheSymbolsRead(Maps.newHashMap());
         this.setCacheProductionsRead(Maps.newHashMap());
+        this.setSymbols(Sets.newHashSet());
     }
 
 
@@ -95,7 +99,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         if(priorities == null) {
             priorities = HashMultimap.create();
         }
-        
+
         // Floyd Warshall Algorithm to calculate the transitive closure
         for(IProduction intermediate_prod : getProductionsOnPriorities()) {
             for(IProduction first_prod : getProductionsOnPriorities()) {
@@ -108,19 +112,21 @@ public class NormGrammar implements INormGrammar, Serializable {
                         // if there are priorities first_prod > intermediate_prod and
                         // intermediate_prod > second_prod
                         // add priority first_prod > second_prod
-                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                        if(getTransitivePriorities().contains(first_k)
+                            && getTransitivePriorities().contains(k_second)) {
                             getTransitivePriorities().add(first_sec);
                             getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     } else {
-                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                        if(getTransitivePriorities().contains(first_k)
+                            && getTransitivePriorities().contains(k_second)) {
                             getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     }
                 }
             }
         }
- 
+
         priorities.putAll(getNonTransitivePriorityArgs());
         priorities.putAll(getTransitivePriorityArgs());
     }
@@ -143,6 +149,16 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setFilesRead(Set<File> filesRead) {
         this.filesRead = filesRead;
+    }
+
+
+    public Set<Symbol> getSymbols() {
+        return symbols;
+    }
+
+
+    public void setSymbols(Set<Symbol> symbols) {
+        this.symbols = symbols;
     }
 
 
@@ -323,6 +339,14 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setHigherPriorityProductions(SetMultimap<IProduction, IPriority> higherPriorityProductions) {
         this.higherPriorityProductions = higherPriorityProductions;
+    }
+
+
+    public void normalizeFollowRestrictionLookahead() {
+        for(Symbol s : symbols) {
+            s.normalizeFollowRestrictionLookahead();
+        }
+
     }
 
 }

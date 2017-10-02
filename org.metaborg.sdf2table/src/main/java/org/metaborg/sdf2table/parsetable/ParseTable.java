@@ -100,19 +100,19 @@ public class ParseTable implements IParseTable, Serializable {
                 if(grammar.getProductionAttributesMapping().get(p).contains(new GeneralAttribute("recover"))) {
                     continue;
                 }                
-                if(p.rightHand().isEmpty() && !p.leftHand().nullable) {
-                    p.leftHand().nullable = true;
+                if(p.rightHand().isEmpty() && !p.leftHand().isNullable()) {
+                    p.leftHand().setNullable(true);
                     markedNullable = true;
                 } else {
                     boolean nullable = true;
                     for(Symbol s : p.rightHand()) {
-                        if(s.nullable == false) {
+                        if(s.isNullable() == false) {
                             nullable = false;
                             break;
                         }
                     }
-                    if(nullable == true && !p.leftHand().nullable) {
-                        p.leftHand().nullable = nullable;
+                    if(nullable == true && !p.leftHand().isNullable()) {
+                        p.leftHand().setNullable(nullable);
                         markedNullable = true;
                     }
                 }
@@ -175,7 +175,7 @@ public class ParseTable implements IParseTable, Serializable {
                     leftRecursive(p, just_seen, prodsVisited);
                 }
             }
-            if(!s.nullable) {
+            if(!s.isNullable()) {
                 break;
             }
         }
@@ -217,7 +217,7 @@ public class ParseTable implements IParseTable, Serializable {
                     rightRecursive(p, just_seen, prodsVisited);
                 }
             }
-            if(!s.nullable) {
+            if(!s.isNullable()) {
                 break;
             }
         }

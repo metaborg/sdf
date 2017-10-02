@@ -1,8 +1,10 @@
 package org.metaborg.sdf2table.parsetable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -77,8 +79,12 @@ public class ContextualSymbol extends Symbol {
         return buf;
     }
 
-    @Override public Set<Symbol> followRestriction() {
+    @Override public CharacterClass followRestriction() {
         return getOrigSymbol().followRestriction();
+    }
+
+    @Override public List<CharacterClass[]> followRestrictionLookahead() {
+        return getOrigSymbol().followRestrictionLookahead();
     }
 
     public Set<Context> getContexts() {

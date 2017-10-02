@@ -14,7 +14,6 @@ import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.CharacterClassConc;
 import org.metaborg.sdf2table.grammar.CharacterClassNumeric;
 import org.metaborg.sdf2table.grammar.CharacterClassRange;
-import org.metaborg.sdf2table.grammar.CharacterClassSeq;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.sdf2table.grammar.DeprecatedAttribute;
@@ -70,6 +69,7 @@ public class GrammarReader {
         IStrategoTerm mainModule = termFromFile(input, grammar);
         generateGrammar(grammar, mainModule, modules, paths);
         grammar.priorityTransitiveClosure();
+        grammar.normalizeFollowRestrictionLookahead();
 
         return grammar;
     }
@@ -309,6 +309,7 @@ public class GrammarReader {
         symbol = g.getCacheSymbolsRead().get(term.toString());
 
         if(symbol != null) {
+            g.getSymbols().add(symbol);
             return symbol;
         }
 
@@ -384,6 +385,7 @@ public class GrammarReader {
             g.getCacheSymbolsRead().put(term.toString(), symbol);
         }
 
+        g.getSymbols().add(symbol);
         return symbol;
     }
 
@@ -563,11 +565,14 @@ public class GrammarReader {
             StrategoAppl res = (StrategoAppl) restriction;
             switch(res.getName()) {
                 case "Follow":
-                    Set<Symbol> ccs = importLookaheadList(res.getSubterm(1));
+                    List<CharacterClass[]> restrictionLookahead = Lists.newArrayList();
+                    CharacterClass restrictionNoLookahead =
+                        importFollowRestriction(res.getSubterm(1), restrictionLookahead);
                     StrategoList subjects = (StrategoList) res.getSubterm(0);
                     for(IStrategoTerm subject : subjects) {
                         Symbol s = processSymbol(g, subject);
-                        s.followRestriction().addAll(ccs);
+                        s.addFollowRestriction(restrictionNoLookahead);
+                        s.addFollowRestrictionsLookahead(restrictionLookahead);
                     }
                     break;
                 default:
@@ -578,8 +583,43 @@ public class GrammarReader {
         }
     }
 
-    public Set<Symbol> importLookaheadList(IStrategoTerm term) throws UnexpectedTermException {
-        Set<Symbol> set = Sets.newHashSet();
+    public CharacterClass importFollowRestriction(IStrategoTerm term, List<CharacterClass[]> restrictionsLookahead)
+        throws UnexpectedTermException {
+        StrategoList slist;
+
+        CharacterClass restriction = new CharacterClass(null);
+
+        if(term instanceof StrategoAppl) {
+            StrategoAppl app = (StrategoAppl) term;
+            switch(app.getName()) {
+                case "List":
+                    slist = (StrategoList) app.getSubterm(0);
+                    for(IStrategoTerm t : slist) {
+                        restriction =
+                            CharacterClass.union(importFollowRestriction(t, restrictionsLookahead), restriction);
+                    }
+                    break;
+                // NON TERMINALS
+                case "Seq":
+                    List<CharacterClass> lookahead =
+                        Lists.newArrayList(new CharacterClass(processCharClass(app.getSubterm(0))));
+                    createNewLookahead(app.getSubterm(1), lookahead, restrictionsLookahead);
+                    break;
+                // TERMINALS
+                case "CharClass":
+                    restriction =
+                        CharacterClass.union(restriction, new CharacterClass(processCharClass(app.getSubterm(0))));
+                    break;
+                default:
+                    throw new UnexpectedTermException(app.toString(), "List or Seq or CharClass");
+            }
+        }
+
+        return restriction;
+    }
+
+    private void createNewLookahead(IStrategoTerm term, List<CharacterClass> lookahead,
+        List<CharacterClass[]> restrictionsLookahead) throws UnexpectedTermException {
 
         StrategoList slist;
 
@@ -589,28 +629,29 @@ public class GrammarReader {
                 case "List":
                     slist = (StrategoList) app.getSubterm(0);
                     for(IStrategoTerm t : slist) {
-                        Set<Symbol> ccs = importLookaheadList(t);
-                        for(Symbol cc : ccs) {
-                            set.add(cc);
-                        }
+                        List<CharacterClass> firstChars = Lists.newArrayList(lookahead);
+                        createNewLookahead(t, firstChars, restrictionsLookahead);
                     }
                     break;
                 // NON TERMINALS
                 case "Seq":
-                    Symbol head = processCharClass(app.getSubterm(0));
-                    set.add(new CharacterClassSeq(head, importLookaheadList(app.getSubterm(1))));
-
+                    lookahead.add(new CharacterClass(processCharClass(app.getSubterm(0))));
+                    createNewLookahead(app.getSubterm(1), lookahead, restrictionsLookahead);
                     break;
                 // TERMINALS
                 case "CharClass":
-                    set.add(processCharClass(app.getSubterm(0)));
+                    CharacterClass lastChar = new CharacterClass(processCharClass(app.getSubterm(0)));
+                    lookahead.add(lastChar);
+                    restrictionsLookahead.add(lookahead.toArray(new CharacterClass[lookahead.size()]));
                     break;
                 default:
                     throw new UnexpectedTermException(app.toString(), "List or Seq or CharClass");
             }
         }
-        return set;
+
     }
+
+
 
     private void addPriorities(NormGrammar g, StrategoAppl tsection) throws Exception {
         if(tsection instanceof StrategoAppl) {

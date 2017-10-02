@@ -7,7 +7,7 @@ import org.metaborg.sdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class IterStarSepSymbol extends Symbol {
 
@@ -19,7 +19,8 @@ public class IterStarSepSymbol extends Symbol {
     public IterStarSepSymbol(Symbol symbol, Symbol sep) {
         this.symbol = symbol;
         this.sep = (Sort) sep;
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     public Symbol getSymbol() {

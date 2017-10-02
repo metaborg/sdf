@@ -7,7 +7,7 @@ import org.metaborg.sdf2table.parsetable.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class AltSymbol extends Symbol {
 
@@ -19,7 +19,8 @@ public class AltSymbol extends Symbol {
     public AltSymbol(Symbol alt1, Symbol alt2) {
         this.alt1 = alt1;
         this.alt2 = alt2;
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
     
     public Symbol left() {
