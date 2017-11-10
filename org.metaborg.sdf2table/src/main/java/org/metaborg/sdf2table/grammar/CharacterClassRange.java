@@ -19,6 +19,14 @@ public class CharacterClassRange extends Symbol {
         this.end = iSymbol2;
     }
 
+    public Symbol start() {
+        return start;
+    }
+
+    public Symbol end() {
+        return end;
+    }
+
     public String name() {
         return start.name() + "-" + end.name();
     }

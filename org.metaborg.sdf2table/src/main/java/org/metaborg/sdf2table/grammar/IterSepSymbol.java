@@ -22,6 +22,10 @@ public class IterSepSymbol extends Symbol {
         followRestrictions = Sets.newHashSet();
     }
 
+    public Symbol getSymbol() {
+        return symbol;
+    }
+
     @Override public String name() {
         return "{" + symbol.name() + " " + sep.name() + "}+";
     }
