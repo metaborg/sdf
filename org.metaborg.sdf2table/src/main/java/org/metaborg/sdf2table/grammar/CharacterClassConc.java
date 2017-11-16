@@ -23,6 +23,14 @@ public class CharacterClassConc extends Symbol {
         this.second = second;
     }
 
+    public Symbol first() {
+        return first;
+    }
+
+    public Symbol second() {
+        return second;
+    }
+
     public String name() {
         return first.name() + second.name();
     }

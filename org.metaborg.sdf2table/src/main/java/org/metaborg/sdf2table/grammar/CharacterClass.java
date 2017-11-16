@@ -25,6 +25,10 @@ public class CharacterClass extends Symbol {
         this.cc = s;
     }
 
+    public Symbol symbol() {
+        return cc;
+    }
+
     public static CharacterClass union(CharacterClass... ary) {
         int _min = minimum(ary);
         int _max = maximum(ary);
