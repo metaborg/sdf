@@ -3,15 +3,17 @@ package org.metaborg.sdf2table.grammar;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.ContextualProduction;
-import org.metaborg.sdf2table.parsetable.ContextualSymbol;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -63,14 +65,14 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public NormGrammar() {
         this.setFilesRead(Sets.newHashSet());
-        this.setUniqueProductionMapping(Maps.newHashMap());
+        this.setUniqueProductionMapping(Maps.newLinkedHashMap());
         this.setSortConsProductionMapping(Maps.newHashMap());
         this.setProdContextualProdMapping(HashBiMap.create());
         this.setLeftRecursiveSymbolsMapping(HashMultimap.create());
         this.setRightRecursiveSymbolsMapping(HashMultimap.create());
         this.setDerivedContextualProds(Sets.newHashSet());
         this.setContextualSymbols(Sets.newHashSet());
-        this.setLongestMatchProds(HashMultimap.create());
+        this.setLongestMatchProds(LinkedHashMultimap.create());
         this.setProductionAttributesMapping(HashMultimap.create());
         this.priorities = HashMultimap.create();
         this.setTransitivePriorities(Sets.newHashSet());
@@ -187,7 +189,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public void setUniqueProductionMapping(Map<UniqueProduction, IProduction> uniqueProductionMapping) {
+    public void setUniqueProductionMapping(LinkedHashMap<UniqueProduction, IProduction> uniqueProductionMapping) {
         this.uniqueProductionMapping = uniqueProductionMapping;
     }
 

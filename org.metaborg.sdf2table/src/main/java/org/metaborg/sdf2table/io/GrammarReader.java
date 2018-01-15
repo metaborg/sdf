@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,9 +12,6 @@ import org.metaborg.sdf2table.exceptions.ModuleNotFoundException;
 import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
 import org.metaborg.sdf2table.grammar.AltSymbol;
 import org.metaborg.sdf2table.grammar.CharacterClass;
-import org.metaborg.sdf2table.grammar.CharacterClassConc;
-import org.metaborg.sdf2table.grammar.CharacterClassNumeric;
-import org.metaborg.sdf2table.grammar.CharacterClassRange;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.sdf2table.grammar.DeprecatedAttribute;
@@ -408,28 +406,36 @@ public class GrammarReader {
         return list;
     }
 
-    public Symbol processCharClass(IStrategoTerm term) {
+    public BitSet processCharClass(IStrategoTerm term) {
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             switch(app.getName()) {
                 case "Absent":
-                    return null;
+                    return new BitSet(257);
                 case "Simple":
                     return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    return new CharacterClassRange((processCharClass(app.getSubterm(0))),
-                        (processCharClass(app.getSubterm(1))));
+                    BitSet bsRange = new BitSet(257);
+                    String strStart =  ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
+                    String strEnd =  ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
+                    int start = Integer.parseInt(strStart.substring(1));
+                    int end = Integer.parseInt(strEnd.substring(1));
+                    bsRange.set(start, end+1);
+                    return bsRange;
                 case "Numeric":
                     String str = ((StrategoString) app.getSubterm(0)).stringValue();
-                    return new CharacterClassNumeric(Integer.parseInt(str.substring(1)));
+                    BitSet bsNum = new BitSet(257);
+                    bsNum.set(Integer.parseInt(str.substring(1)));
+                    return bsNum;
                 case "Conc":
-                    return new CharacterClassConc(processCharClass(app.getSubterm(0)),
-                        processCharClass(app.getSubterm(1)));
+                    BitSet bsConc = processCharClass(app.getSubterm(0));
+                    bsConc.or(processCharClass(app.getSubterm(1)));
+                    return bsConc;
                 default:
                     System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
-                    return CharacterClass.emptyCC;
+                    return new BitSet(257);
             }
         }
 

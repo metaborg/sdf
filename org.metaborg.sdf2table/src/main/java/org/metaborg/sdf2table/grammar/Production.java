@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Context;
+import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -26,7 +26,7 @@ public class Production implements IProduction, Serializable {
         this.lhs = lhs;
         this.rhs = rhs;
     }
-    
+
     public Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
         this.rhs = rhs;
@@ -161,5 +161,4 @@ public class Production implements IProduction, Serializable {
             tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
             tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
     }
-
 }

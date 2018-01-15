@@ -5,28 +5,30 @@ import java.io.Serializable;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.jsglrinterfaces.ISGLRCharacters;
+import org.metaborg.sdf2table.jsglrinterfaces.ISGLRProduction;
+import org.metaborg.sdf2table.jsglrinterfaces.ISGLRReduceLookahead;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class ReduceLookahead extends Action implements Serializable {
+public class ReduceLookahead extends Action implements ISGLRReduceLookahead, Serializable {
 
     private static final long serialVersionUID = 4938045344795755011L;
 
     int prod_label;
-    IProduction prod;
+    ParseTableProduction prod;
     CharacterClass[] lookahead = null;
 
-    public ReduceLookahead(IProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
+    public ReduceLookahead(ParseTableProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
         this.prod = prod;
         this.prod_label = prod_label;
         this.lookahead = lookahead;
         this.cc = cc;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, IParseTable pt) {
+    @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTable pt) {
         int status = 0;
-        for(IAttribute attr : pt.normalizedGrammar().getProductionAttributesMapping().get(prod)) {
+        for(IAttribute attr : pt.normalizedGrammar().getProductionAttributesMapping().get(prod.getProduction())) {
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
                 if(ga.getName().equals("reject")) {
@@ -44,13 +46,14 @@ public class ReduceLookahead extends Action implements Serializable {
         for(int i = 0; i < lookahead.length; i++) {
             lookaheadTerm[i] = lookahead[i].toAterm(tf);
         }
-        return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.rightHand().size()), tf.makeInt(prod_label),
-            tf.makeInt(status),
+        return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.getProduction().rightHand().size()),
+            tf.makeInt(prod_label), tf.makeInt(status),
             tf.makeList(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookaheadTerm))));
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.rightHand().size() + ", " + prod_label + ", status, " + lookahead + ")";
+        return "reduce(" + prod.getProduction().rightHand().size() + ", " + prod_label + ", " + productionType() + ", "
+            + lookahead + ")";
     }
 
     @Override public int hashCode() {
@@ -77,6 +80,38 @@ public class ReduceLookahead extends Action implements Serializable {
         if(prod_label != other.prod_label)
             return false;
         return true;
+    }
+
+    @Override public ISGLRProduction production() {
+        return prod;
+    }
+
+    @Override public ProductionType productionType() {
+        return prod.getProductionType();
+    }
+
+    @Override public int arity() {
+        return prod.getProduction().rightHand().size();
+    }
+
+    @Override public ISGLRCharacters characters() {
+        return cc;
+    }
+
+    @Override public boolean allowsLookahead(String lookaheadChars) {
+        if(lookaheadChars.length() != lookahead.length)
+            return true;
+
+        for(int i = 0; i < lookahead.length; i++) {
+            if(!lookahead[i].containsCharacter(lookaheadChars.charAt(i)))
+                return true;
+        }
+
+        return false;
+    }
+
+    @Override public int lookaheadSize() {
+        return lookahead.length;
     }
 
 

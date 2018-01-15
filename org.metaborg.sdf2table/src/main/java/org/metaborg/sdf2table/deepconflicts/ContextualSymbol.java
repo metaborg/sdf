@@ -1,4 +1,4 @@
-package org.metaborg.sdf2table.parsetable;
+package org.metaborg.sdf2table.deepconflicts;
 
 import java.util.List;
 import java.util.Map;
@@ -18,15 +18,39 @@ public class ContextualSymbol extends Symbol {
     private final Symbol s;
     private final Set<Context> contexts;
 
-    public ContextualSymbol(Symbol s, Set<Context> context) {
+    private long deepContextBitmap = 0L;
+
+    public ContextualSymbol(Symbol s, Set<Context> contexts, long deepContextBitmap) {
         this.s = s;
-        this.contexts = context;
+        this.contexts = contexts;
+        this.deepContextBitmap = deepContextBitmap;
+        
+    }
+
+    public ContextualSymbol(Symbol s, Context context, long deepContextBitmap) {
+        this.s = s;
+        this.contexts = Sets.newHashSet(context);
+        this.deepContextBitmap = deepContextBitmap;
+    }
+
+    public ContextualSymbol(Symbol s, Set<Context> contexts) {
+        this.s = s;
+        this.contexts = contexts;
+
+        for (Context context : contexts) {
+            if (context.getType() == ContextType.DEEP) {
+                deepContextBitmap |= context.getContextBitmap();
+            }
+        }
     }
 
     public ContextualSymbol(Symbol s, Context context) {
         this.s = s;
-        Set<Context> contexts = Sets.newHashSet(context);
-        this.contexts = contexts;
+        this.contexts = Sets.newHashSet(context);
+
+        if (context.getType() == ContextType.DEEP) {
+            deepContextBitmap |= context.getContextBitmap();
+        }
     }
 
     @Override public String name() {
@@ -91,24 +115,40 @@ public class ContextualSymbol extends Symbol {
         return contexts;
     }
 
+    public long deepContexts() {
+        return deepContextBitmap;
+    }
+
     public Symbol getOrigSymbol() {
         return s;
     }
 
-    public ContextualSymbol addContext(Context new_context) {
+    public ContextualSymbol addContext(Context context) {
         Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(getContexts());
-        new_contexts.add(new_context);
+        new_contexts.addAll(this.getContexts());
+        new_contexts.add(context);
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts);
+        if (context.getType() == ContextType.DEEP) {
+            return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap | context.getContextBitmap());
+        }
+
+        return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap);
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
         Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(contexts);
         new_contexts.addAll(this.getContexts());
+        new_contexts.addAll(contexts);
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts);
+        long updatedDeepContextBitmap = deepContextBitmap;
+
+        for (Context context : contexts) {
+            if (context.getType() == ContextType.DEEP) {
+                updatedDeepContextBitmap |= context.getContextBitmap();
+            }
+        }
+
+        return new ContextualSymbol(getOrigSymbol(), new_contexts, updatedDeepContextBitmap);
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {

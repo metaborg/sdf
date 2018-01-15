@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.sdf2table.deepconflicts.Context;
+import org.metaborg.sdf2table.deepconflicts.ContextPosition;
+import org.metaborg.sdf2table.deepconflicts.ContextType;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.sdf2table.grammar.IAttribute;
@@ -14,11 +19,7 @@ import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.parsetable.Context;
-import org.metaborg.sdf2table.parsetable.ContextPosition;
-import org.metaborg.sdf2table.parsetable.ContextType;
-import org.metaborg.sdf2table.parsetable.ContextualProduction;
-import org.metaborg.sdf2table.parsetable.ContextualSymbol;
+import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -38,11 +39,12 @@ public class Parenthesizer {
     private static final ILogger logger = LoggerUtils.logger(Parenthesizer.class);
     private final static ITermFactory tf = new TermFactory();
 
-    public static IStrategoTerm generateParenthesizer(String moduleName, File outputFile, NormGrammar grammar) {
+    public static IStrategoTerm generateParenthesizer(String moduleName, File outputFile, ParseTable table) {
         // add pp/
         final String name = moduleName;
         moduleName = "pp/" + moduleName + "-parenthesize";
         final String rule_name = name + "Parenthesize";
+        NormGrammar grammar = table.normalizedGrammar();
 
         // FIXME import all subfolders
 
@@ -130,16 +132,14 @@ public class Parenthesizer {
                     if(s instanceof ContextualSymbol) {
                         for(Context ctx : ((ContextualSymbol) s).getContexts()) {
                             if(ctx.getType() == ContextType.DEEP
-                                && (ctx.getPosition() == ContextPosition.LEFTANDRIGHTMOST
-                                    || ctx.getPosition() == ContextPosition.LEFTMOST)
-                                && getConstructor(ctx.getContext(), grammar) != null) {
-                                leftConflicts.put(i, ctx.getContext());
+                                && ctx.getPosition() == ContextPosition.LEFTMOST
+                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
+                                leftConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));
                             }
                             if(ctx.getType() == ContextType.DEEP
-                                && (ctx.getPosition() == ContextPosition.LEFTANDRIGHTMOST
-                                    || ctx.getPosition() == ContextPosition.RIGHTMOST)
-                                && getConstructor(ctx.getContext(), grammar) != null) {
-                                rightConflicts.put(i, ctx.getContext());
+                                && ctx.getPosition() == ContextPosition.RIGHTMOST
+                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
+                                rightConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));
                             }
                         }
                     }
