@@ -2,16 +2,16 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
+import org.metaborg.parsetable.IProduction;
+import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRCharacters;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRProduction;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRReduce;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Reduce extends Action implements ISGLRReduce, Serializable {
+public class Reduce extends Action implements IReduce, Serializable {
 
     private static final long serialVersionUID = 4938045344795755011L;
 
@@ -67,11 +67,7 @@ public class Reduce extends Action implements ISGLRReduce, Serializable {
         return true;
     }
 
-    @Override public ISGLRCharacters characters() {
-        return cc;
-    }
-
-    @Override public ISGLRProduction production() {
+    @Override public IProduction production() {
         return prod;
     }
 
@@ -82,5 +78,7 @@ public class Reduce extends Action implements ISGLRReduce, Serializable {
     @Override public int arity() {
         return prod.getProduction().rightHand().size();
     }
+
+    
 
 }

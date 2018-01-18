@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1516270099163
+Build-Jdk: 1.8.0_144
+Built-By: udesou
+Bundle-Description: Maven parent POM for Java projects
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: characterclasses
+Bundle-SymbolicName: characterclasses
+Bundle-Version: 2.5.0.qualifier
+Created-By: Apache Maven Bundle Plugin
+Eclipse-BuddyPolicy: registered
+Embed-Transitive: true
+Export-Package: org.metaborg.characterclasses,org.metaborg.characterclas
+ ses.util
+Import-Package: org.metaborg.parsetable.characterclasses,com.google.comm
+ on.collect;provider=metaborg;mandatory:=provider;version=0
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Tool: Bnd-2.4.1.201501161923

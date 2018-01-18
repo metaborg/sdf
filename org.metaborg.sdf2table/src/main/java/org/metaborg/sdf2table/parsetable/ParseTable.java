@@ -1,19 +1,36 @@
 package org.metaborg.sdf2table.parsetable;
 
-import com.google.common.collect.*;
-import org.metaborg.sdf2table.deepconflicts.*;
-import org.metaborg.sdf2table.grammar.*;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRParseTable;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRProduction;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRState;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class ParseTable implements ISGLRParseTable, Serializable {
+import org.metaborg.parsetable.IParseTable;
+import org.metaborg.parsetable.IState;
+import org.metaborg.sdf2table.deepconflicts.Context;
+import org.metaborg.sdf2table.deepconflicts.ContextPosition;
+import org.metaborg.sdf2table.deepconflicts.ContextType;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
+import org.metaborg.sdf2table.deepconflicts.DeepConflictsAnalyzer;
+import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IPriority;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.NormGrammar;
+import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Symbol;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Queues;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
+
+public class ParseTable implements IParseTable, Serializable {
 
     private static final long serialVersionUID = -1845408435423897026L;
 
@@ -40,7 +57,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
 
     private BiMap<IProduction, Integer> productionLabels;
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
-    private Map<Integer, ISGLRState> stateLabels = Maps.newLinkedHashMap();
+    private Map<Integer, State> stateLabels = Maps.newLinkedHashMap();
 
     // mapping from a symbol X to all items A = α . X β to all states s that have that item
     private SymbolStatesMapping symbolStatesMapping = new SymbolStatesMapping();
@@ -56,7 +73,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
 
     private int totalStates = 0;
 
-    private List<ISGLRProduction> productions = Lists.newArrayList();
+    private List<org.metaborg.parsetable.IProduction> productions = Lists.newArrayList();
     Map<IProduction, ParseTableProduction> productionsMapping = Maps.newLinkedHashMap();
 
     public ParseTable(NormGrammar grammar, boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) {
@@ -591,6 +608,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
         state.closure();
         state.doShift();
         state.doReduces();
+        state.calculateActionsForCharacter();
         state.setStatus(StateStatus.PROCESSED);
     }
 
@@ -602,13 +620,14 @@ public class ParseTable implements ISGLRParseTable, Serializable {
         this.grammar = grammar;
     }
 
-    public ISGLRState startState() {
+    public IState startState() {
         State s0;
         if(totalStates == 0) {
             s0 = new State(initialProduction(), this);
             s0.closure();
             s0.doShift();
             s0.doReduces();
+            s0.calculateActionsForCharacter();
             s0.setStatus(StateStatus.PROCESSED);
             setProcessedStates(getProcessedStates() + 1);
         } else if(((State) stateLabels.get(0)).status() != StateStatus.PROCESSED) {
@@ -621,6 +640,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
             s0.closure();
             s0.doShift();
             s0.doReduces();
+            s0.calculateActionsForCharacter();
             s0.setStatus(StateStatus.PROCESSED);
         } else {
             return stateLabels.get(0);
@@ -628,7 +648,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
         return s0;
     }
 
-    public ISGLRState getState(int index) {
+    public IState getState(int index) {
         State s = (State) stateLabels.get(index);
         if(s.status() != StateStatus.PROCESSED) {
             if(s.status() == StateStatus.DIRTY) {
@@ -639,6 +659,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
             s.closure();
             s.doShift();
             s.doReduces();
+            s.calculateActionsForCharacter();
             s.setStatus(StateStatus.PROCESSED);
             setProcessedStates(getProcessedStates() + 1);
         }
@@ -689,7 +710,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
         return stateQueue;
     }
 
-    public Map<Integer, ISGLRState> stateLabels() {
+    public Map<Integer, State> stateLabels() {
         return stateLabels;
     }
 
@@ -717,8 +738,7 @@ public class ParseTable implements ISGLRParseTable, Serializable {
         this.symbolStatesMapping = symbolStatesMapping;
     }
 
-    @Override
-    public List<ISGLRProduction> productions() {
+    public List<org.metaborg.parsetable.IProduction> productions() {
         return productions;
     }
 
@@ -732,6 +752,10 @@ public class ParseTable implements ISGLRParseTable, Serializable {
 
     public Map<Integer, Integer> getRightmostContextsMapping() {
         return rightmostContextsMapping;
+    }
+
+    @Override public IState getStartState() {
+        return startState();
     }
 
 

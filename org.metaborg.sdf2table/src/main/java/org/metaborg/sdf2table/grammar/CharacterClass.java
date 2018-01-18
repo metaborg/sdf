@@ -5,96 +5,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.deepconflicts.Context;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRCharacters;
+import org.metaborg.sdf2table.io.ParseTableGenerator;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public class CharacterClass extends Symbol implements ISGLRCharacters {
+public class CharacterClass extends Symbol implements ICharacterClass {
 
     private static final long serialVersionUID = 1619024888383357090L;
+    private ICharacterClass cc;
 
-    private final BitSet bs;
+    // private final BitSet bs;
 
-    public CharacterClass(BitSet bs) {
-        this.bs = bs;
+    public CharacterClass(ICharacterClass cc) {
+        this.cc = cc;
     }
 
-    public BitSet getBitSet() {
-        return bs;
-    }
-
-    public static CharacterClass union(CharacterClass... ary) {
-        BitSet bs = new BitSet(257);
-
-        for(CharacterClass i : ary) {
-            if(i.bs != null) {
-                bs.or(i.bs);
-            }
-        }
-
-        return new CharacterClass(bs);
-    }
-
-    public static CharacterClass intersection(CharacterClass... ary) {
-        BitSet bs = new BitSet(257);
-        bs.set(0, 257);
-
-        for(CharacterClass i : ary) {
-            if(i.bs != null) {
-                bs.and(i.bs);
-            }
-        }
-
-        return new CharacterClass(bs);
-    }
-
-    @Override public boolean containsCharacter(int character) {
-        if(bs == null)
-            return false;
-
-        return bs.get(character);
-    }
-
-    public CharacterClass difference(CharacterClass... ary) {
-        if(bs == null)
-            return this;
-
-        BitSet diff = (BitSet) bs.clone();
-
-        for(CharacterClass i : ary) {
-            BitSet temp = (BitSet) diff.clone();
-            temp.and(i.bs);
-            diff.xor(temp);
-        }
-
-        return new CharacterClass(diff);
+    public boolean contains(int character) {
+        return cc.contains(character);
     }
 
     @Override public String name() {
-        if(bs == null)
-            return "[]";
-
-        String name = "[";
-        for(int i = 0; i < 257; i++) {
-            if(bs.get(i)) {
-                name += "\\" + i;
-                int next = bs.nextClearBit(i);
-                if(next != i + 1) {
-                    name += "-\\" + (next - 1);
-                }
-                i = next;
-            }
-        }
-        name += "]";
-        return name;
+        return cc.toString();
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        if(bs == null) {
+        if(cc == null) {
             return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList());
+        }
+
+        // FIXME optimize this based on the concrete implementation of CharacterClass
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
+            }
         }
 
         List<IStrategoTerm> terms = Lists.newArrayList();
@@ -111,13 +60,21 @@ public class CharacterClass extends Symbol implements ISGLRCharacters {
         }
 
         return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(terms));
-
     }
 
     public IStrategoTerm toStateAterm(ITermFactory tf) {
-        if(bs == null) {
+        if(cc == null) {
             return tf.makeList();
         }
+
+        // FIXME optimize this based on the concrete implementation of CharacterClass
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
+            }
+        }
+
         List<IStrategoTerm> terms = Lists.newArrayList();
         for(int i = 0; i < 257; i++) {
             if(bs.get(i)) {
@@ -141,10 +98,48 @@ public class CharacterClass extends Symbol implements ISGLRCharacters {
 
     }
 
+    public static CharacterClass getFullCharacterClass() {
+        return new CharacterClass(CharacterClassFactory.FULL_RANGE);
+    }
+
+    public boolean isEmptyCC() {
+        if(cc == null) {
+            return true;
+        }
+
+        if(cc.min() == -1 && cc.max() == -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static CharacterClass union(CharacterClass cc1, CharacterClass cc2) {
+        if(cc1.cc == null && cc2.cc != null) {
+            return cc2;
+        }
+        if(cc2.cc == null && cc1.cc != null) {
+            return cc1;
+        }
+        if(cc1.cc == null && cc2.cc == null) {
+            return new CharacterClass(CharacterClassFactory.EMPTY_CHARACTER_CLASS);
+        }
+
+        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().union(cc1.cc, cc2.cc));
+    }
+
+    @Override public int min() {
+        return cc.min();
+    }
+
+    @Override public int max() {
+        return cc.max();
+    }
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((bs == null) ? 0 : bs.hashCode());
+        result = prime * result + ((cc == null) ? 0 : cc.hashCode());
         return result;
     }
 
@@ -156,30 +151,31 @@ public class CharacterClass extends Symbol implements ISGLRCharacters {
         if(getClass() != obj.getClass())
             return false;
         CharacterClass other = (CharacterClass) obj;
-        if(bs == null) {
-            if(other.bs != null)
+        if(cc == null) {
+            if(other.cc != null)
                 return false;
-        } else if(!bs.equals(other.bs))
+        } else if(!cc.equals(other.cc))
             return false;
         return true;
     }
 
-    public static CharacterClass getFullCharacterClass() {
-        BitSet bs = new BitSet(257);
-        bs.set(0, 257);
-        return new CharacterClass(bs);
+    public static CharacterClass intersection(CharacterClass cc1, CharacterClass cc2) {
+        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().intersection(cc1.cc, cc2.cc));
     }
 
-    public boolean isEmptyCC() {
-        if(bs == null) {
-            return true;
-        }
-        
-        if(bs.isEmpty()) {
-            return true;
-        }
-        
-        return false;
+    public CharacterClass difference(CharacterClass cc2) {
+        CharacterClass result = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().difference(cc, cc2.cc));
+   
+        return result;
     }
 
+    @Deprecated public BitSet getBitSet() {
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
+            }
+        }
+        return bs;
+    }
 }

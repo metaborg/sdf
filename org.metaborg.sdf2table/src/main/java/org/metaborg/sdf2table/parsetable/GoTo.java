@@ -2,12 +2,12 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
+import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.sdf2table.grammar.CharacterClass;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRGoto;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class GoTo implements Serializable, ISGLRGoto {
+public class GoTo implements Serializable, IGoto {
 
     private static final long serialVersionUID = -6437393243737838862L;
 
@@ -89,11 +89,12 @@ public class GoTo implements Serializable, ISGLRGoto {
         return tf.makeAppl(tf.makeConstructor("goto", 2), cc.toStateAterm(tf), tf.makeInt(state));
     }
 
-    @Override public int[] productions() {
+    @Override public int[] productionIds() {
         return new int[] { label };
     }
 
-    @Override public int gotoState() {
+    @Override public int gotoStateId() {
         return state;
     }
+
 }

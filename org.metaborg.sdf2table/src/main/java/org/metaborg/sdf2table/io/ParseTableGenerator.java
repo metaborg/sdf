@@ -10,13 +10,13 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import org.apache.commons.vfs2.FileObject;
+import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.actions.IAction;
+import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRAction;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRGoto;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRState;
 import org.metaborg.sdf2table.parsetable.Action;
 import org.metaborg.sdf2table.parsetable.GoTo;
 import org.metaborg.sdf2table.parsetable.ParseTable;
@@ -38,7 +38,8 @@ public class ParseTableGenerator {
     private File ctxGrammarFile;
     private File persistedTableFile;
     private List<String> paths;
-    private final ITermFactory termFactory = new TermFactory();
+    private final static ITermFactory termFactory = new TermFactory();
+    private final static CharacterClassFactory ccFactory = new CharacterClassFactory(true, true);
     private boolean tableCreated = false;
     private ParseTable pt;
 
@@ -62,13 +63,13 @@ public class ParseTableGenerator {
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent) throws Exception {
-        NormGrammar grammar = new GrammarReader(termFactory).readGrammar(input, paths);
+        NormGrammar grammar = new GrammarReader().readGrammar(input, paths);
         pt = new ParseTable(grammar, dynamic, dataDependent, true);
         tableCreated = true;
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) throws Exception {
-        NormGrammar grammar = new GrammarReader(termFactory).readGrammar(input, paths);
+        NormGrammar grammar = new GrammarReader().readGrammar(input, paths);
         pt = new ParseTable(grammar, dynamic, dataDependent, solveDeepConflicts);
         tableCreated = true;
     }
@@ -120,7 +121,7 @@ public class ParseTableGenerator {
         List<IStrategoTerm> productions = Lists.newArrayList();
         List<IStrategoTerm> priorities = Lists.newArrayList();
         for(IProduction p : pt.productionLabels().keySet()) {
-            productions.add(p.toSDF3Aterm(termFactory, pt.normalizedGrammar().getProductionAttributesMapping(),
+            productions.add(p.toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
                 ((ParseTable) pt).getCtxUniqueInt(), null));
         }
 
@@ -142,15 +143,15 @@ public class ParseTableGenerator {
     private IStrategoTerm generateStatesAterm(ParseTable pt) {
         List<IStrategoTerm> terms = Lists.newArrayList();
         for(int i = 0; i < pt.totalStates(); i++) {
-            ISGLRState s = pt.stateLabels().get(i);
+            State s = pt.stateLabels().get(i);
             List<IStrategoTerm> goto_terms = Lists.newArrayList();
             List<IStrategoTerm> action_terms = Lists.newArrayList();
-            for(ISGLRGoto goto_action : s.gotos()) {
+            for(IGoto goto_action : s.gotos()) {
                 goto_terms.add(((GoTo) goto_action).toAterm(termFactory));
             }
             for(CharacterClass cc : ((State) s).actionsMapping().keySet()) {
                 List<IStrategoTerm> actions = Lists.newArrayList();
-                for(ISGLRAction a : ((State) s).actionsMapping().get(cc)) {
+                for(IAction a : ((State) s).actionsMapping().get(cc)) {
                     actions.add(((Action) a).toAterm(termFactory, pt));
                 }
                 action_terms.add(termFactory.makeAppl(termFactory.makeConstructor("action", 2),
@@ -158,7 +159,7 @@ public class ParseTableGenerator {
                 // action_terms.add(action.toAterm(termFactory, this));
             }
             terms.add(
-                termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.stateNumber()),
+                termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.id()),
                     termFactory.makeList(goto_terms), termFactory.makeList(action_terms)));
         }
 
@@ -208,7 +209,7 @@ public class ParseTableGenerator {
             IProduction p = pt.productionLabels().inverse().get(i);
 
             IStrategoTerm p_term = termFactory.makeAppl(termFactory.makeConstructor("label", 2),
-                p.toAterm(termFactory, pt.normalizedGrammar().getProductionAttributesMapping()),
+                p.toAterm(pt.normalizedGrammar().getProductionAttributesMapping()),
                 termFactory.makeInt(i));
             terms.add(p_term);
         }
@@ -254,6 +255,14 @@ public class ParseTableGenerator {
             logger.error("Could not persist normalized grammar", e);
         }
 
+    }
+
+    public static ITermFactory getTermfactory() {
+        return termFactory;
+    }
+
+    public static CharacterClassFactory getCharacterClassFactory() {
+        return ccFactory;
     }
 
 }

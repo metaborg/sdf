@@ -3,11 +3,12 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.exceptions.ModuleNotFoundException;
 import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
 import org.metaborg.sdf2table.grammar.AltSymbol;
@@ -52,14 +53,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
-
-
-    private final ITermFactory termFactory;
-
-    public GrammarReader(ITermFactory termFactory) {
-        this.termFactory = termFactory;
-    }
-
+    
     public NormGrammar readGrammar(File input, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
@@ -406,36 +400,32 @@ public class GrammarReader {
         return list;
     }
 
-    public BitSet processCharClass(IStrategoTerm term) {
+    public ICharacterClass processCharClass(IStrategoTerm term) {
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
+            CharacterClassFactory ccFactory = ParseTableGenerator.getCharacterClassFactory();
             switch(app.getName()) {
                 case "Absent":
-                    return new BitSet(257);
+                    return ccFactory .fromEmpty();
                 case "Simple":
                     return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    BitSet bsRange = new BitSet(257);
                     String strStart =  ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
                     String strEnd =  ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
                     int start = Integer.parseInt(strStart.substring(1));
                     int end = Integer.parseInt(strEnd.substring(1));
-                    bsRange.set(start, end+1);
-                    return bsRange;
+                    return ccFactory.fromRange(start, end);
                 case "Numeric":
                     String str = ((StrategoString) app.getSubterm(0)).stringValue();
-                    BitSet bsNum = new BitSet(257);
-                    bsNum.set(Integer.parseInt(str.substring(1)));
-                    return bsNum;
+                    return ccFactory.fromSingle(Integer.parseInt(str.substring(1)));
                 case "Conc":
-                    BitSet bsConc = processCharClass(app.getSubterm(0));
-                    bsConc.or(processCharClass(app.getSubterm(1)));
-                    return bsConc;
+                    ICharacterClass head = processCharClass(app.getSubterm(0));
+                    return ccFactory.union(head, processCharClass(app.getSubterm(1)));
                 default:
                     System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
-                    return new BitSet(257);
+                    return ccFactory.fromEmpty();
             }
         }
 
@@ -522,6 +512,7 @@ public class GrammarReader {
     }
 
     private IStrategoTerm createStrategoTermAttribute(IStrategoAppl term) throws UnexpectedTermException {
+        ITermFactory termFactory = ParseTableGenerator.getTermfactory();
         if(term.getConstructor().getName().equals("Appl")) {
             String cons_name = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int arity = term.getSubterm(1).getSubtermCount();
@@ -530,7 +521,7 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return termFactory.makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
+            return termFactory .makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
@@ -851,6 +842,7 @@ public class GrammarReader {
     private IStrategoTerm termFromFile(File file, NormGrammar grammar) throws Exception {
         FileReader reader = null;
         IStrategoTerm term = null;
+        ITermFactory termFactory = ParseTableGenerator.getTermfactory();
 
         try {
             reader = new FileReader(file);

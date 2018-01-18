@@ -2,16 +2,17 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
+import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IProduction;
+import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.actions.IReduceLookahead;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRCharacters;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRProduction;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRReduceLookahead;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class ReduceLookahead extends Action implements ISGLRReduceLookahead, Serializable {
+public class ReduceLookahead extends Action implements IReduceLookahead, Serializable {
 
     private static final long serialVersionUID = 4938045344795755011L;
 
@@ -82,7 +83,7 @@ public class ReduceLookahead extends Action implements ISGLRReduceLookahead, Ser
         return true;
     }
 
-    @Override public ISGLRProduction production() {
+    @Override public IProduction production() {
         return prod;
     }
 
@@ -94,24 +95,17 @@ public class ReduceLookahead extends Action implements ISGLRReduceLookahead, Ser
         return prod.getProduction().rightHand().size();
     }
 
-    @Override public ISGLRCharacters characters() {
-        return cc;
-    }
-
-    @Override public boolean allowsLookahead(String lookaheadChars) {
+    @Override public boolean allowsLookahead(IParseInput parseInput) {
+        String lookaheadChars = parseInput.getLookahead(lookahead.length);
         if(lookaheadChars.length() != lookahead.length)
             return true;
 
         for(int i = 0; i < lookahead.length; i++) {
-            if(!lookahead[i].containsCharacter(lookaheadChars.charAt(i)))
+            if(!lookahead[i].contains(lookaheadChars.charAt(i)))
                 return true;
         }
 
         return false;
-    }
-
-    @Override public int lookaheadSize() {
-        return lookahead.length;
     }
 
 

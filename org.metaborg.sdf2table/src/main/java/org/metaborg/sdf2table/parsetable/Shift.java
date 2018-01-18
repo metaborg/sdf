@@ -2,13 +2,12 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
+import org.metaborg.parsetable.actions.IShift;
 import org.metaborg.sdf2table.grammar.CharacterClass;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRCharacters;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRShift;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class Shift extends Action implements ISGLRShift, Serializable {
+public class Shift extends Action implements IShift, Serializable {
 
 	private static final long serialVersionUID = -8243181585007870077L;
 	private int state;
@@ -58,11 +57,7 @@ public class Shift extends Action implements ISGLRShift, Serializable {
         return "shift(" + state + ")";
     }
 
-    @Override public ISGLRCharacters characters() {
-        return cc;
-    }
-
-    @Override public int shiftState() {
+    @Override public int shiftStateId() {
         return state;
     }
 

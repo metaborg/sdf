@@ -68,4 +68,8 @@ public class IterSepSymbol extends Symbol {
             return false;
         return true;
     }
+
+    public Symbol getSymbol() {
+        return symbol;
+    }
 }

@@ -35,5 +35,15 @@
       <artifactId>jsr305</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>tableinterfaces</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>characterclasses</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
   </dependencies>
 </project>

@@ -56,8 +56,9 @@ public abstract class Symbol implements Serializable {
                     continue;
                 }
                 
-                CharacterClass intersection = CharacterClass.intersection(frl[0], currentFRL[0]);
-                if(intersection.equals(currentFRL[0])) {
+                CharacterClass intersection = CharacterClass.intersection(currentFRL[0], frl[0]);
+                boolean equals = intersection.equals(currentFRL[0]);
+                if(equals) {
                     currentFRL[1] = CharacterClass.union(currentFRL[1], frl[1]);
                     merged = true;
                 }

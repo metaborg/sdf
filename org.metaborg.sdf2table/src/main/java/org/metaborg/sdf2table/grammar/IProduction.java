@@ -24,8 +24,8 @@ public interface IProduction {
     @Override int hashCode();
     @Override boolean equals(Object obj);
 
-    IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs);
-    IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+    IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs);
+    IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
 
     // TODO: FIRST AND FOLLOW SETS OF PRODUCTIONS

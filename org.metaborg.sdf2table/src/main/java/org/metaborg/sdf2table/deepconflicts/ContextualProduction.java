@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import org.metaborg.sdf2table.grammar.*;
+import org.metaborg.sdf2table.io.ParseTableGenerator;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -74,13 +75,12 @@ public class ContextualProduction implements IProduction, Serializable {
                                         .addContext(new Context(c.getContext(), c.getType(), c.getPosition(), false,
                                             pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
                                 } else {
-                                    new_symbol = ((ContextualSymbol) rhs.get(i))
-                                        .addContext(c);
+                                    new_symbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
                                 }
-                            } else {                                
+                            } else {
                                 if(lefthandSymbolFromContext.equals(rhs.get(i))) {
-                                    new_symbol = ((ContextualSymbol) rhs.get(i))
-                                        .addContext(new Context(c.getContext(), c.getType(), c.getPosition(), false,
+                                    new_symbol = new ContextualSymbol(rhs.get(i),
+                                        new Context(c.getContext(), c.getType(), c.getPosition(), false,
                                             pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
                                 } else {
                                     new_symbol = new ContextualSymbol(rhs.get(i), c);
@@ -122,13 +122,11 @@ public class ContextualProduction implements IProduction, Serializable {
 
     }
 
-    @Override
-    public Symbol leftHand() {
+    @Override public Symbol leftHand() {
         return lhs;
     }
 
-    @Override
-    public List<Symbol> rightHand() {
+    @Override public List<Symbol> rightHand() {
         return rhs;
     }
 
@@ -242,13 +240,12 @@ public class ContextualProduction implements IProduction, Serializable {
                                         .addContext(new Context(c.getContext(), c.getType(), c.getPosition(), false,
                                             pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
                                 } else {
-                                    new_symbol = ((ContextualSymbol) new_rhs.get(i))
-                                        .addContext(c);
+                                    new_symbol = ((ContextualSymbol) new_rhs.get(i)).addContext(c);
                                 }
-                            } else {                                
+                            } else {
                                 if(lefthandSymbolFromContext.equals(new_rhs.get(i))) {
-                                    new_symbol = ((ContextualSymbol) new_rhs.get(i))
-                                        .addContext(new Context(c.getContext(), c.getType(), c.getPosition(), false,
+                                    new_symbol = new ContextualSymbol(new_rhs.get(i),
+                                        new Context(c.getContext(), c.getType(), c.getPosition(), false,
                                             pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
                                 } else {
                                     new_symbol = new ContextualSymbol(new_rhs.get(i), c);
@@ -300,8 +297,7 @@ public class ContextualProduction implements IProduction, Serializable {
         return originalProductionLabel;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         String prod = "";
         prod += lhs.name();
 
@@ -315,30 +311,26 @@ public class ContextualProduction implements IProduction, Serializable {
 
 
 
-    @Override
-    public int leftRecursivePosition() {
+    @Override public int leftRecursivePosition() {
         return getOrigProduction().leftRecursivePosition();
     }
 
-    @Override
-    public int rightRecursivePosition() {
+    @Override public int rightRecursivePosition() {
         return getOrigProduction().rightRecursivePosition();
     }
 
-    @Override
-    public void calculateRecursion(NormGrammar grammar) {
+    @Override public void calculateRecursion(NormGrammar grammar) {
         // This should not be called in a Contextual production
         getOrigProduction().calculateRecursion(grammar);
     }
 
-    @Override
-    public IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs) {
-        return getOrigProduction().toAterm(tf, prod_attrs);
+    @Override public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
+        return getOrigProduction().toAterm(prod_attrs);
     }
 
-    @Override
-    public IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+    @Override public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        ITermFactory tf = ParseTableGenerator.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
         for(Symbol s : rhs) {
@@ -363,8 +355,7 @@ public class ContextualProduction implements IProduction, Serializable {
 
     }
 
-    @Override
-    public int hashCode() {
+    @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((lhs == null) ? 0 : lhs.hashCode());
@@ -373,8 +364,7 @@ public class ContextualProduction implements IProduction, Serializable {
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
+    @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
         if(obj == null)

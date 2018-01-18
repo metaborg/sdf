@@ -1,16 +1,34 @@
 package org.metaborg.sdf2table.parsetable;
 
-import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.grammar.*;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRProduction;
-
 import java.io.Serializable;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ParseTableProduction implements ISGLRProduction, Serializable {
+import org.metaborg.parsetable.ProductionType;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.grammar.AltSymbol;
+import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.sdf2table.grammar.ConstructorAttribute;
+import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
+import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.IterSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSymbol;
+import org.metaborg.sdf2table.grammar.IterSymbol;
+import org.metaborg.sdf2table.grammar.Layout;
+import org.metaborg.sdf2table.grammar.LexicalSymbol;
+import org.metaborg.sdf2table.grammar.OptionalSymbol;
+import org.metaborg.sdf2table.grammar.SequenceSymbol;
+import org.metaborg.sdf2table.grammar.Sort;
+import org.metaborg.sdf2table.grammar.StartSymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
+import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.io.ParseTableGenerator;
+
+public class ParseTableProduction implements org.metaborg.parsetable.IProduction, Serializable {
 
     private static final long serialVersionUID = -7825374345958769969L;
 
@@ -22,6 +40,7 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
     private final boolean isLiteral;
     private final boolean isLexical;
     private final boolean isLexicalRhs;
+    private final boolean isSkippableInParseForest;
     private final boolean isList;
     private final boolean isOptional;
     private final boolean isStringLiteral;
@@ -38,13 +57,13 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping) {
         this.p = p;
 
-        if (leftmostContextsMapping.containsKey(productionNumber)) {
+        if(leftmostContextsMapping.containsKey(productionNumber)) {
             cachedContextBitmapL = 1L << leftmostContextsMapping.get(productionNumber);
         } else {
             cachedContextBitmapL = 0L;
         }
 
-        if (rightmostContextsMapping.containsKey(productionNumber)) {
+        if(rightmostContextsMapping.containsKey(productionNumber)) {
             int offset = leftmostContextsMapping.keySet().size();
             cachedContextBitmapR = 1L << (rightmostContextsMapping.get(productionNumber) + offset);
         } else {
@@ -86,17 +105,7 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         isCompletionOrRecovery = completionOrRecovery;
         type = t;
 
-        boolean isLayout = false;
-        Symbol symb = p.leftHand();
-        if(symb instanceof ContextFreeSymbol) {
-            symb = ((ContextFreeSymbol) symb).getSymbol();
-        }
-        if(symb instanceof OptionalSymbol) {
-            symb = ((OptionalSymbol) symb).getSymbol();
-        }
-        if(symb instanceof Layout) {
-            isLayout = true;
-        }
+        boolean isLayout = getIsLayout();
         this.isLayout = isLayout;
 
         boolean isLiteral = false;
@@ -123,6 +132,13 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         }
 
         this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
+        
+        boolean isLayoutParent = getIsLayoutParent();
+        boolean skippableLayout = isLayout && !isLayoutParent;
+        boolean skippableLexical = sort == null && (isLexical || (isLexicalRhs && !isLiteral));
+
+        isSkippableInParseForest = skippableLayout || skippableLexical;
+        
 
         boolean isList = false;
         Symbol symb2 = p.leftHand();
@@ -150,6 +166,27 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
     }
 
+    private boolean getIsLayout() {
+        boolean isLayout = false;
+        Symbol symb = getProduction().leftHand();
+        if(symb instanceof ContextFreeSymbol) {
+            symb = ((ContextFreeSymbol) symb).getSymbol();
+        }
+        if(symb instanceof OptionalSymbol) {
+            symb = ((OptionalSymbol) symb).getSymbol();
+        }
+        if(symb instanceof Layout) {
+            isLayout = true;
+        }
+        return isLayout;
+    }
+
+    private boolean getIsLayoutParent() {
+        return getIsLayout() && (getProduction().leftHand() instanceof ContextFreeSymbol) &&
+            !this.toString().equals("LAYOUT-CF = LAYOUT-CF LAYOUT-CF")
+            && !this.toString().equals("LAYOUT?-CF = ");
+    }
+
     private boolean checkNotIsLetter(Symbol s) {
         if(s instanceof Sort) {
             for(int i = 0; i < s.name().length(); i++) {
@@ -167,9 +204,9 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         for(Symbol s : rhs) {
             s = getFirstRange(s);
             if(s instanceof CharacterClass) {
-                BitSet bs = ((CharacterClass) s).getBitSet();
-                if(bs != null) {
-                    if(bs.get(48, 58).cardinality() == 10) {
+                CharacterClass intCC = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().fromRange(48, 57));
+                if(!((CharacterClass) s).isEmptyCC()) {
+                    if(intCC.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
                         return (CharacterClass) s;
                     }
                 } else {
@@ -197,7 +234,7 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
         // This function has been copied from the JSGLR1 with the following comment:
         // Return true if any character range of this contains spaces
         for(Symbol s : rightHand) {
-            if(s instanceof CharacterClass && ((CharacterClass) s).containsCharacter('0')) {
+            if(s instanceof CharacterClass && ((CharacterClass) s).contains('0')) {
                 return true;
             }
         }
@@ -232,10 +269,6 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
             return getSort(((AltSymbol) s).left()) + "_" + getSort(((AltSymbol) s).right());
         }
         return null;
-    }
-
-    @Override public int productionNumber() {
-        return productionNumber;
     }
 
     public IProduction getProduction() {
@@ -328,6 +361,25 @@ public class ParseTableProduction implements ISGLRProduction, Serializable {
 
     public final long contextR() {
         return cachedContextBitmapR;
+    }
+
+    @Override public int id() {
+        return productionNumber;
+    }
+
+    @Override public String startSymbolSort() {
+        if(getProduction().leftHand() instanceof StartSymbol) {
+            for(Symbol s : getProduction().rightHand()) {
+                if(getSort(s) != null) {
+                    return getSort(s);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override public boolean isSkippableInParseForest() {
+        return isSkippableInParseForest;
     }
 
 }

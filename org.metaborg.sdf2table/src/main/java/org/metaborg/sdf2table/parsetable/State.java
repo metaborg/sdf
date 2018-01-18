@@ -1,37 +1,45 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IState;
+import org.metaborg.parsetable.actions.IAction;
+import org.metaborg.parsetable.actions.IGoto;
+import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRAction;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRGoto;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRReduce;
-import org.metaborg.sdf2table.jsglrinterfaces.ISGLRState;
+import org.metaborg.sdf2table.parsetable.query.ActionsForCharacterDisjointSorted;
+import org.metaborg.sdf2table.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.sdf2table.parsetable.query.IActionsForCharacter;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class State implements ISGLRState, Comparable<State>, Serializable {
+public class State implements IState, Comparable<State>, Serializable {
 
     private static final long serialVersionUID = 7118071460461287164L;
 
     ParseTable pt;
 
     private final int label;
-    private Set<ISGLRGoto> gotos;
-    private Map<Integer, ISGLRGoto> gotosMapping;
+    private Set<GoTo> gotos;
+    private Map<Integer, IGoto> gotosMapping;
     private final Set<LRItem> kernel;
     private Set<LRItem> items;
     private LinkedHashMultimap<Symbol, LRItem> symbol_items;
-    private LinkedHashMultimap<CharacterClass, ISGLRAction> lr_actions;
+    private LinkedHashMultimap<CharacterClass, Action> lr_actions;
+    IActionsForCharacter actionsForCharacter;
+    private boolean rejectable;
 
     private StateStatus status = StateStatus.VISIBLE;
 
@@ -44,6 +52,7 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         kernel = Sets.newLinkedHashSet();
         symbol_items = LinkedHashMultimap.create();
         lr_actions = LinkedHashMultimap.create();
+        this.rejectable = false;
 
         this.pt = pt;
         label = this.pt.totalStates();
@@ -61,6 +70,7 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         gotosMapping = Maps.newHashMap();
         symbol_items = LinkedHashMultimap.create();
         lr_actions = LinkedHashMultimap.create();
+        this.rejectable = false;
 
         this.kernel = Sets.newLinkedHashSet();
         this.kernel.addAll(kernel);
@@ -151,9 +161,8 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
             }
             // <Start> = <START> . EOF
             if(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1) {
-                BitSet bs = new BitSet(257);
-                bs.set(256);
-                lr_actions.put(new CharacterClass(bs), new Accept(new CharacterClass(bs)));
+                lr_actions.put(new CharacterClass(CharacterClassFactory.EOF_SINGLETON),
+                    new Accept(new CharacterClass(CharacterClassFactory.EOF_SINGLETON)));
             }
         }
     }
@@ -163,6 +172,7 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         CharacterClass final_range = cc;
         ParseTableProduction prod = pt.productionsMapping().get(p);
 
+        LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();;
         for(CharacterClass range : lr_actions.keySet()) {
             if(final_range.isEmptyCC()) {
                 break;
@@ -171,14 +181,16 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
             if(!intersection.isEmptyCC()) {
                 if(intersection.equals(range)) {
                     if(lookahead != null) {
-                        lr_actions.put(intersection, new ReduceLookahead(prod, label, intersection, lookahead));
+                        newLR_actions.put(intersection, new ReduceLookahead(prod, label, intersection, lookahead));
                     } else {
-                        lr_actions.put(intersection, new Reduce(prod, label, intersection));
+                        newLR_actions.put(intersection, new Reduce(prod, label, intersection));
                     }
                     final_range = final_range.difference(intersection);
                 }
             }
         }
+        
+        lr_actions.putAll(newLR_actions);
 
         if(!final_range.isEmptyCC()) {
             if(lookahead != null) {
@@ -220,15 +232,14 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         }
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         String buf = "";
         int i = 0;
         buf += "State " + getLabel();
         if(!gotos.isEmpty()) {
             buf += "\nGotos: ";
         }
-        for(ISGLRGoto g : gotos) {
+        for(IGoto g : gotos) {
             if(i != 0)
                 buf += "\n     , ";
             buf += g;
@@ -243,7 +254,7 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
                 buf += "\n       , ";
             buf += cc + ": ";
             int j = 0;
-            for(ISGLRAction a : lr_actions.get(cc)) {
+            for(IAction a : lr_actions.get(cc)) {
                 if(j != 0)
                     buf += ", ";
                 buf += a;
@@ -276,16 +287,14 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         return buf;
     }
 
-    @Override
-    public int hashCode() {
+    @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((kernel == null) ? 0 : kernel.hashCode());
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
+    @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
         if(obj == null)
@@ -301,8 +310,7 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         return true;
     }
 
-    @Override
-    public int compareTo(State o) {
+    @Override public int compareTo(State o) {
         return this.getLabel() - o.getLabel();
     }
 
@@ -329,62 +337,60 @@ public class State implements ISGLRState, Comparable<State>, Serializable {
         this.setStatus(StateStatus.DIRTY);
     }
 
-    @Override
-    public int stateNumber() {
-        return label;
-    }
-
-    @Override
-    public Set<ISGLRGoto> gotos() {
+    public Set<GoTo> gotos() {
         return gotos;
     }
 
-    @Override
-    public Iterable<ISGLRAction> actions() {
-        Set<ISGLRAction> actions = Sets.newHashSet(lr_actions.values());
+    public Iterable<Action> actions() {
+        Set<Action> actions = Sets.newHashSet(lr_actions.values());
         return actions;
     }
 
-    public SetMultimap<CharacterClass, ISGLRAction> actionsMapping() {
+    public SetMultimap<CharacterClass, Action> actionsMapping() {
         return lr_actions;
     }
 
     @Override
     public boolean isRejectable() {
-        // TODO implement this
-        return false;
+        return rejectable;
     }
 
-    @Override
-    public Iterable<ISGLRAction> applicableActions(int character) {
-        Set<ISGLRAction> applicableActions = Sets.newHashSet();
+    public void markRejectable() {
+        this.rejectable = true;
+    }
+
+    @Override public int id() {
+        return label;
+    }
+
+    @Override public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
+        return actionsForCharacter.getApplicableActions(parseInput);
+    }
+
+    @Override public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
+        return actionsForCharacter.getApplicableReduceActions(parseInput);
+    }
+
+    @Override public int getGotoId(int productionId) {
+        return gotosMapping.get(productionId).gotoStateId();
+    }
+
+    public void calculateActionsForCharacter() {
+        ActionsPerCharacterClass[] actions = readActions();
+
+        actionsForCharacter = new ActionsForCharacterDisjointSorted(actions);
+    }
+
+    private ActionsPerCharacterClass[] readActions() {
+        List<ActionsPerCharacterClass> actionsPerCharacterClasses =
+            new ArrayList<ActionsPerCharacterClass>(lr_actions.size());
+
         for(CharacterClass cc : lr_actions.keySet()) {
-            if(cc.containsCharacter(character)) {
-                applicableActions.addAll(lr_actions.get(cc));
-            }
+            actionsPerCharacterClasses.add(
+                new ActionsPerCharacterClass(cc, lr_actions.get(cc).toArray(new IAction[lr_actions.get(cc).size()])));
         }
-        return applicableActions;
-    }
 
-    @Override
-    public Iterable<ISGLRReduce> applicableReduceActions(int character) {
-        Set<ISGLRReduce> reduceActions = Sets.newHashSet();
-        for(CharacterClass cc : lr_actions.keySet()) {
-            if(cc.containsCharacter(character)) {
-                for(ISGLRAction action : lr_actions.get(cc)) {
-                    if(action instanceof ISGLRReduce) {
-                        reduceActions.add((ISGLRReduce) action);
-                    }
-                }
-
-            }
-        }
-        return reduceActions;
-    }
-
-    @Override
-    public ISGLRGoto getGoto(int productionNumber) {
-        return gotosMapping.get(productionNumber);
+        return actionsPerCharacterClasses.toArray(new ActionsPerCharacterClass[actionsPerCharacterClasses.size()]);
     }
 
 

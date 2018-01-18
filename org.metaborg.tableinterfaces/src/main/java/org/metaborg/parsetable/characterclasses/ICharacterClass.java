@@ -12,8 +12,6 @@ import java.util.List;
  */
 public interface ICharacterClass {
 
-    
-
     boolean contains(int character);
 
     int min();
@@ -46,5 +44,8 @@ public interface ICharacterClass {
 
         return true;
     }
+    
+    @Override boolean equals(Object obj);
+    @Override int hashCode();
 
 }
