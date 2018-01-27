@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 name: TemplateLang
-metaborgVersion: 2.5.0-SNAPSHOT
+metaborgVersion: 2.4.1
 metaborgBaselineVersion: 2.3.0
 dependencies:
   compile:
