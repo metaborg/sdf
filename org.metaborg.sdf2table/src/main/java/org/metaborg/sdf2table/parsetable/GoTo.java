@@ -2,37 +2,38 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
+import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class GoTo implements Serializable {
+public class GoTo implements Serializable, IGoto {
 
-	private static final long serialVersionUID = -6437393243737838862L;
-	
-	IParseTable pt;
+    private static final long serialVersionUID = -6437393243737838862L;
+
+    ParseTable pt;
     int label = -1;
     CharacterClass cc = null;
     private int state;
 
-    public GoTo(CharacterClass cc, int toState, IParseTable pt) {
+    public GoTo(CharacterClass cc, int toState, ParseTable pt) {
         this.pt = pt;
         this.cc = cc;
         this.setState(toState);
     }
 
-    public GoTo(CharacterClass cc, IParseTable pt) {
+    public GoTo(CharacterClass cc, ParseTable pt) {
         this.pt = pt;
         this.cc = cc;
     }
 
-    public GoTo(int label, int toState, IParseTable pt) {
+    public GoTo(int label, int toState, ParseTable pt) {
         this.pt = pt;
         this.label = label;
         this.setState(toState);
     }
 
-    public GoTo(int label, IParseTable pt) {
+    public GoTo(int label, ParseTable pt) {
         this.pt = pt;
         this.label = label;
     }
@@ -87,4 +88,13 @@ public class GoTo implements Serializable {
         }
         return tf.makeAppl(tf.makeConstructor("goto", 2), cc.toStateAterm(tf), tf.makeInt(state));
     }
+
+    @Override public int[] productionIds() {
+        return new int[] { label };
+    }
+
+    @Override public int gotoStateId() {
+        return state;
+    }
+
 }

@@ -27,7 +27,6 @@ public class ConstructorAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
-        // TODO Auto-generated method stub
         return tf.makeAppl(tf.makeConstructor("Constructor", 1), tf.makeString("\"" + constructor + "\""));
     }
 

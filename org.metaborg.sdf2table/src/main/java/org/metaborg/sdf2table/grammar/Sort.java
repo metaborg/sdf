@@ -3,11 +3,11 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Context;
+import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class Sort extends Symbol {
 
@@ -19,13 +19,15 @@ public class Sort extends Symbol {
     public Sort(String name) {
         this.name = name;
         this.type = null;
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     public Sort(String name, LiteralType type) {
         this.name = name;
         this.type = type;
-        followRestrictions = Sets.newHashSet();
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     @Override public String name() {
@@ -35,6 +37,10 @@ public class Sort extends Symbol {
             return "'" + name + "'";
         else
             return "\"" + name + "\"";
+    }
+
+    public LiteralType getType() {
+        return type;
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {

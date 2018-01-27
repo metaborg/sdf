@@ -3,15 +3,17 @@ package org.metaborg.sdf2table.grammar;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.ContextualProduction;
-import org.metaborg.sdf2table.parsetable.ContextualSymbol;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -24,6 +26,9 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<File> filesRead;
 
     private IProduction initialProduction;
+
+    // all symbols in this grammar
+    private Set<Symbol> symbols;
 
     // to handle Sort.Cons in priorities
     private Map<ProductionReference, IProduction> sortConsProductionMapping;
@@ -38,7 +43,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<ContextualSymbol> contextualSymbols;
     private SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping;
     private SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, IProduction> longestMatchProds;    
+    private SetMultimap<Symbol, IProduction> longestMatchProds;
 
     // priorities
     private Set<IPriority> transitivePriorities;
@@ -60,16 +65,16 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public NormGrammar() {
         this.setFilesRead(Sets.newHashSet());
-        this.setUniqueProductionMapping(Maps.newHashMap());
+        this.setUniqueProductionMapping(Maps.newLinkedHashMap());
         this.setSortConsProductionMapping(Maps.newHashMap());
         this.setProdContextualProdMapping(HashBiMap.create());
         this.setLeftRecursiveSymbolsMapping(HashMultimap.create());
         this.setRightRecursiveSymbolsMapping(HashMultimap.create());
         this.setDerivedContextualProds(Sets.newHashSet());
         this.setContextualSymbols(Sets.newHashSet());
-        this.setLongestMatchProds(HashMultimap.create());
+        this.setLongestMatchProds(LinkedHashMultimap.create());
         this.setProductionAttributesMapping(HashMultimap.create());
-        this.priorities = HashMultimap.create();        
+        this.priorities = HashMultimap.create();
         this.setTransitivePriorities(Sets.newHashSet());
         this.setNonTransitivePriorities(Sets.newHashSet());
         this.setProductionsOnPriorities(Sets.newHashSet());
@@ -79,6 +84,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setSymbolProductionsMapping(HashMultimap.create());
         this.setCacheSymbolsRead(Maps.newHashMap());
         this.setCacheProductionsRead(Maps.newHashMap());
+        this.setSymbols(Sets.newHashSet());
     }
 
 
@@ -95,7 +101,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         if(priorities == null) {
             priorities = HashMultimap.create();
         }
-        
+
         // Floyd Warshall Algorithm to calculate the transitive closure
         for(IProduction intermediate_prod : getProductionsOnPriorities()) {
             for(IProduction first_prod : getProductionsOnPriorities()) {
@@ -108,19 +114,21 @@ public class NormGrammar implements INormGrammar, Serializable {
                         // if there are priorities first_prod > intermediate_prod and
                         // intermediate_prod > second_prod
                         // add priority first_prod > second_prod
-                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                        if(getTransitivePriorities().contains(first_k)
+                            && getTransitivePriorities().contains(k_second)) {
                             getTransitivePriorities().add(first_sec);
                             getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     } else {
-                        if(getTransitivePriorities().contains(first_k) && getTransitivePriorities().contains(k_second)) {
+                        if(getTransitivePriorities().contains(first_k)
+                            && getTransitivePriorities().contains(k_second)) {
                             getTransitivePriorityArgs().putAll(first_sec, getTransitivePriorityArgs().get(first_k));
                         }
                     }
                 }
             }
         }
- 
+
         priorities.putAll(getNonTransitivePriorityArgs());
         priorities.putAll(getTransitivePriorityArgs());
     }
@@ -143,6 +151,16 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setFilesRead(Set<File> filesRead) {
         this.filesRead = filesRead;
+    }
+
+
+    public Set<Symbol> getSymbols() {
+        return symbols;
+    }
+
+
+    public void setSymbols(Set<Symbol> symbols) {
+        this.symbols = symbols;
     }
 
 
@@ -171,7 +189,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public void setUniqueProductionMapping(Map<UniqueProduction, IProduction> uniqueProductionMapping) {
+    public void setUniqueProductionMapping(LinkedHashMap<UniqueProduction, IProduction> uniqueProductionMapping) {
         this.uniqueProductionMapping = uniqueProductionMapping;
     }
 
@@ -323,6 +341,14 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setHigherPriorityProductions(SetMultimap<IProduction, IPriority> higherPriorityProductions) {
         this.higherPriorityProductions = higherPriorityProductions;
+    }
+
+
+    public void normalizeFollowRestrictionLookahead() {
+        for(Symbol s : symbols) {
+            s.normalizeFollowRestrictionLookahead();
+        }
+
     }
 
 }

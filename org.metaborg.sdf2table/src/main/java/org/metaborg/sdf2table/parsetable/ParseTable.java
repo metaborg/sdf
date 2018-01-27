@@ -6,15 +6,20 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.parsetable.IParseTable;
+import org.metaborg.parsetable.IState;
+import org.metaborg.sdf2table.deepconflicts.Context;
+import org.metaborg.sdf2table.deepconflicts.ContextPosition;
+import org.metaborg.sdf2table.deepconflicts.ContextType;
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
+import org.metaborg.sdf2table.deepconflicts.DeepConflictsAnalyzer;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.grammar.UniqueProduction;
-import org.metaborg.util.log.ILogger;
-import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -27,13 +32,13 @@ import com.google.common.collect.Sets;
 
 public class ParseTable implements IParseTable, Serializable {
 
-	private static final long serialVersionUID = -1845408435423897026L;
-	
-	public static final int FIRST_PRODUCTION_LABEL = 257;
+    private static final long serialVersionUID = -1845408435423897026L;
+
+    public static final int FIRST_PRODUCTION_LABEL = 257;
     public static final int INITIAL_STATE_NUMBER = 0;
     public static final int VERSION_NUMBER = 6;
 
-    private static final ILogger logger = LoggerUtils.logger(ParseTable.class);
+    // private static final ILogger logger = LoggerUtils.logger(ParseTable.class);
     private NormGrammar grammar;
 
     private final int initialStateNumber = 0;
@@ -45,26 +50,35 @@ public class ParseTable implements IParseTable, Serializable {
     // create first/follow sets by calculating dependencies and using Tarjan's algorithm
     // see http://compilers.iecc.com/comparch/article/01-04-079
 
+    // deep priority conflict resolution is left to parse time
+    private final boolean dataDependent;
 
     private Queue<State> stateQueue = Lists.newLinkedList();
 
-    BiMap<IProduction, Integer> productionLabels;
+    private BiMap<IProduction, Integer> productionLabels;
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
-    private Map<Integer, State> stateLabels = Maps.newHashMap();
+    private Map<Integer, State> stateLabels = Maps.newLinkedHashMap();
 
     // mapping from a symbol X to all items A = α . X β to all states s that have that item
     private SymbolStatesMapping symbolStatesMapping = new SymbolStatesMapping();
 
-    private Map<Set<LRItem>, State> kernelStatesMapping = Maps.newHashMap();
-    private Map<LRItem, Set<LRItem>> itemDerivedItemsCache = Maps.newHashMap();
+    private Map<Set<LRItem>, State> kernelStatesMapping = Maps.newLinkedHashMap();
+    private Map<LRItem, Set<LRItem>> itemDerivedItemsCache = Maps.newLinkedHashMap();
 
     // maps a set of contexts to a unique integer
     private Map<Set<Context>, Integer> ctxUniqueInt = Maps.newHashMap();
 
-    int totalStates = 0;
+    private final Map<Integer, Integer> leftmostContextsMapping = Maps.newLinkedHashMap();
+    private final Map<Integer, Integer> rightmostContextsMapping = Maps.newLinkedHashMap();
 
-    public ParseTable(NormGrammar grammar, boolean dynamic) {
+    private int totalStates = 0;
+
+    private List<org.metaborg.parsetable.IProduction> productions = Lists.newArrayList();
+    Map<IProduction, ParseTableProduction> productionsMapping = Maps.newLinkedHashMap();
+
+    public ParseTable(NormGrammar grammar, boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) {
         this.grammar = grammar;
+        this.dataDependent = dataDependent;
 
         // calculate nullable symbols
         calculateNullable();
@@ -75,11 +89,19 @@ public class ParseTable implements IParseTable, Serializable {
         // normalize priorities according to recursion
         normalizePriorities();
 
+        // create labels for productions
+        createLabels();
+
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
-        DeepConflictsAnalyzer.deepConflictAnalysis(this);
+        if (solveDeepConflicts) {
+            final DeepConflictsAnalyzer analysis = DeepConflictsAnalyzer.fromParseTable(this);
+            analysis.patchParseTable();
 
-        productionLabels = createLabels(grammar.getUniqueProductionMapping(), grammar.getProdContextualProdMapping());
+            updateLabelsContextualProductions();
+        }
+
+        createJSGLRParseTableProductions(productionLabels);
 
         // create states if the table should not be generated dynamically
         initialProduction = grammar.getInitialProduction();
@@ -99,20 +121,20 @@ public class ParseTable implements IParseTable, Serializable {
             for(IProduction p : grammar.getUniqueProductionMapping().values()) {
                 if(grammar.getProductionAttributesMapping().get(p).contains(new GeneralAttribute("recover"))) {
                     continue;
-                }                
-                if(p.rightHand().isEmpty() && !p.leftHand().nullable) {
-                    p.leftHand().nullable = true;
+                }
+                if(p.rightHand().isEmpty() && !p.leftHand().isNullable()) {
+                    p.leftHand().setNullable(true);
                     markedNullable = true;
                 } else {
                     boolean nullable = true;
                     for(Symbol s : p.rightHand()) {
-                        if(s.nullable == false) {
+                        if(s.isNullable() == false) {
                             nullable = false;
                             break;
                         }
                     }
-                    if(nullable == true && !p.leftHand().nullable) {
-                        p.leftHand().nullable = nullable;
+                    if(nullable == true && !p.leftHand().isNullable()) {
+                        p.leftHand().setNullable(nullable);
                         markedNullable = true;
                     }
                 }
@@ -175,7 +197,7 @@ public class ParseTable implements IParseTable, Serializable {
                     leftRecursive(p, just_seen, prodsVisited);
                 }
             }
-            if(!s.nullable) {
+            if(!s.isNullable()) {
                 break;
             }
         }
@@ -217,7 +239,7 @@ public class ParseTable implements IParseTable, Serializable {
                     rightRecursive(p, just_seen, prodsVisited);
                 }
             }
-            if(!s.nullable) {
+            if(!s.isNullable()) {
                 break;
             }
         }
@@ -359,6 +381,7 @@ public class ParseTable implements IParseTable, Serializable {
             }
             // left associative
             if(grammar.priorities().get(p).contains(Integer.MAX_VALUE)) {
+                // if production is not both right and left recursive
                 if(p.higher().rightRecursivePosition() == -1)
                     continue;
 
@@ -410,53 +433,118 @@ public class ParseTable implements IParseTable, Serializable {
      * while(t != v); components.add(component); } }
      */
 
-    private void processStateQueue() {
-        while(!stateQueue.isEmpty()) {
-            State state = stateQueue.poll();
-            if(state.status() != StateStatus.PROCESSED) {
-                processState(state);
-            }
-        }
-    }
-
-    private void processState(State state) {
-        state.closure();
-        state.doShift();
-        state.doReduces();
-        state.setStatus(StateStatus.PROCESSED);
-    }
-
-    private BiMap<IProduction, Integer> createLabels(Map<UniqueProduction, IProduction> prods,
-        Map<IProduction, ContextualProduction> contextual_prods) {
+    private void createLabels() {
         BiMap<IProduction, Integer> labels = HashBiMap.create();
 
-        deriveContextualProductions();
-
-        for(IProduction p : prods.values()) {
-            if(contextual_prods.containsKey(p)) {
-                labels.put(contextual_prods.get(p), prodLabelFactory.getNextLabel());
-            } else {
-                labels.put(p, prodLabelFactory.getNextLabel());
-            }
-        }
-
-        for(ContextualProduction p : grammar.getDerivedContextualProds()) {
+        for(IProduction p : grammar.getUniqueProductionMapping().values()) {
             labels.put(p, prodLabelFactory.getNextLabel());
         }
 
-        return labels;
+        productionLabels = labels;
+    }
+
+    // private BiMap<IProduction, Integer> createLabels(Map<UniqueProduction, IProduction> prods,
+    // Map<IProduction, ContextualProduction> contextual_prods) {
+    // BiMap<IProduction, Integer> labels = HashBiMap.create();
+    //
+    // if(!dataDependent) {
+    // deriveContextualProductions();
+    // } else {
+    // // the productions for the contextual symbol are the same as the ones for the original symbol
+    // for(ContextualProduction p : grammar.getProdContextualProdMapping().values()) {
+    // for(Symbol s : p.rightHand()) {
+    // if(s instanceof ContextualSymbol) {
+    // grammar.getContextualSymbols().add((ContextualSymbol) s);
+    // Set<IProduction> productions =
+    // grammar.getSymbolProductionsMapping().get(((ContextualSymbol) s).getOrigSymbol());
+    // grammar.getSymbolProductionsMapping().putAll(s, productions);
+    // }
+    // }
+    // }
+    // }
+    //
+    // for(IProduction p : prods.values()) {
+    // if(contextual_prods.containsKey(p)) {
+    // labels.put(contextual_prods.get(p), prodLabelFactory.getNextLabel());
+    // } else {
+    // labels.put(p, prodLabelFactory.getNextLabel());
+    // }
+    // }
+    //
+    // for(ContextualProduction p : grammar.getDerivedContextualProds()) {
+    // labels.put(p, prodLabelFactory.getNextLabel());
+    // }
+    //
+    // for(int i = 0; i < labels.size(); i++) {
+    // IProduction p = labels.inverse().get(i + FIRST_PRODUCTION_LABEL);
+    // IProduction orig_p = p;
+    // if(p instanceof ContextualProduction) {
+    // orig_p = ((ContextualProduction) p).getOrigProduction();
+    // }
+    // ParseTableProduction prod = new ParseTableProduction(i + FIRST_PRODUCTION_LABEL, p,
+    // grammar.getProductionAttributesMapping().get(orig_p));
+    // productions.add(prod);
+    // productionsMapping.put(p, prod);
+    // }
+    //
+    // return labels;
+    // }
+
+
+    private void updateLabelsContextualProductions() {
+        BiMap<IProduction, Integer> labels = productionLabels;
+
+        if(!dataDependent) {
+            deriveContextualProductions();
+
+            for(IProduction p : grammar.getUniqueProductionMapping().values()) {
+                if (grammar.getProdContextualProdMapping().containsKey(p)) {
+                    labels.inverse().put(labels.get(p), grammar.getProdContextualProdMapping().get(p));
+                }
+            }
+
+            for(ContextualProduction p : grammar.getDerivedContextualProds()) {
+                labels.put(p, prodLabelFactory.getNextLabel());
+            }
+        } else {
+            // the productions for the contextual symbol are the same as the ones for the original symbol
+            for(ContextualProduction p : grammar.getProdContextualProdMapping().values()) {
+                for(Symbol s : p.rightHand()) {
+                    if(s instanceof ContextualSymbol) {
+                        grammar.getContextualSymbols().add((ContextualSymbol) s);
+                        Set<IProduction> productions =
+                            grammar.getSymbolProductionsMapping().get(((ContextualSymbol) s).getOrigSymbol());
+                        grammar.getSymbolProductionsMapping().putAll(s, productions);
+                    }
+                }
+            }
+
+            for(IProduction p : grammar.getUniqueProductionMapping().values()) {
+                if (grammar.getProdContextualProdMapping().containsKey(p)) {
+                    labels.inverse().put(labels.get(p), grammar.getProdContextualProdMapping().get(p));
+                }
+            }
+        }
+    }
+
+    private void createJSGLRParseTableProductions(BiMap<IProduction, Integer> labels) {
+        for(int i = 0; i < labels.size(); i++) {
+            IProduction p = labels.inverse().get(i + FIRST_PRODUCTION_LABEL);
+            IProduction orig_p = p;
+            if(p instanceof ContextualProduction) {
+                orig_p = ((ContextualProduction) p).getOrigProduction();
+            }
+
+            ParseTableProduction prod = new ParseTableProduction(i + FIRST_PRODUCTION_LABEL, p,
+                grammar.getProductionAttributesMapping().get(orig_p), leftmostContextsMapping,
+                rightmostContextsMapping);
+            productions.add(prod);
+            productionsMapping.put(p, prod);
+        }
     }
 
     private void deriveContextualProductions() {
         for(ContextualProduction p : grammar.getProdContextualProdMapping().values()) {
-            for(Symbol s : p.rightHand()) {
-                if(s instanceof ContextualSymbol) {
-                    grammar.getContextualSymbols().add((ContextualSymbol) s);
-                }
-            }
-        }
-
-        for(ContextualProduction p : grammar.getDerivedContextualProds()) {
             for(Symbol s : p.rightHand()) {
                 if(s instanceof ContextualSymbol) {
                     grammar.getContextualSymbols().add((ContextualSymbol) s);
@@ -477,16 +565,11 @@ public class ParseTable implements IParseTable, Serializable {
             }
 
             for(IProduction p : grammar.getSymbolProductionsMapping().get(ctx_s.getOrigSymbol())) {
-                // generate new productions for shallow contexts
-                Context shallowRight_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.RIGHTMOST);
-                Context shallowLeft_ctx = new Context(p, ContextType.SHALLOW, ContextPosition.LEFTMOST);
-                if(ctx_s.getContexts().contains(shallowRight_ctx) || ctx_s.getContexts().contains(shallowLeft_ctx)) {
-                    continue;
-                }
+                int labelP = productionLabels.get(p);
 
                 // generate new productions for deep contexts
-                Context deepLeft_ctx = new Context(p, ContextType.DEEP, ContextPosition.LEFTMOST);
-                Context deepRight_ctx = new Context(p, ContextType.DEEP, ContextPosition.RIGHTMOST);
+                Context deepLeft_ctx = new Context(labelP, ContextType.DEEP, ContextPosition.LEFTMOST, false, leftmostContextsMapping, rightmostContextsMapping);
+                Context deepRight_ctx = new Context(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, false, leftmostContextsMapping, rightmostContextsMapping);
                 if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)) {
                     continue;
                 }
@@ -498,13 +581,13 @@ public class ParseTable implements IParseTable, Serializable {
 
                 if(ctx_p != null) {
                     ContextualProduction new_prod = ctx_p.mergeContext(ctx_s.getContexts(), contextual_symbols,
-                        processed_symbols, grammar.getProductionAttributesMapping());
+                        processed_symbols, grammar.getProductionAttributesMapping(), this);
                     grammar.getDerivedContextualProds().add(new_prod);
                     grammar.getSymbolProductionsMapping().put(ctx_s, new_prod);
                 } else if(!(ctx_s.getContexts().contains(deepLeft_ctx)
                     || ctx_s.getContexts().contains(deepRight_ctx))) {
                     ContextualProduction new_prod = new ContextualProduction(p, ctx_s.getContexts(), contextual_symbols,
-                        processed_symbols, grammar.getProductionAttributesMapping());
+                        processed_symbols, grammar.getProductionAttributesMapping(), productionLabels.get(p), this);
                     grammar.getDerivedContextualProds().add(new_prod);
                     grammar.getSymbolProductionsMapping().put(ctx_s, new_prod);
                 }
@@ -512,28 +595,43 @@ public class ParseTable implements IParseTable, Serializable {
         }
     }
 
+    private void processStateQueue() {
+        while(!stateQueue.isEmpty()) {
+            State state = stateQueue.poll();
+            if(state.status() != StateStatus.PROCESSED) {
+                processState(state);
+            }
+        }
+    }
+
+    private void processState(State state) {
+        state.closure();
+        state.doShift();
+        state.doReduces();
+        state.calculateActionsForCharacter();
+        state.setStatus(StateStatus.PROCESSED);
+    }
+
+    public boolean isDataDependent() {
+        return dataDependent;
+    }
+
     public void setGrammar(NormGrammar grammar) {
         this.grammar = grammar;
     }
 
-    public void printStatistics(String step, long totalTime) {
-        String millis = String.valueOf(totalTime % 1000);
-        while(millis.length() < 3)
-            millis = "0" + millis;
-        logger.debug(step + "{}.{}s", String.valueOf(totalTime / 1000), millis);
-    }
-
-    public State initialState() {
+    public IState startState() {
         State s0;
         if(totalStates == 0) {
             s0 = new State(initialProduction(), this);
             s0.closure();
             s0.doShift();
             s0.doReduces();
+            s0.calculateActionsForCharacter();
             s0.setStatus(StateStatus.PROCESSED);
             setProcessedStates(getProcessedStates() + 1);
-        } else if(stateLabels.get(0).status() != StateStatus.PROCESSED) {
-            s0 = stateLabels.get(0);
+        } else if(((State) stateLabels.get(0)).status() != StateStatus.PROCESSED) {
+            s0 = (State) stateLabels.get(0);
             if(s0.status() == StateStatus.DIRTY) {
                 // TODO: garbage collection of unreferenced states
                 // uncheckOldReferences(s0.gotos());
@@ -542,6 +640,7 @@ public class ParseTable implements IParseTable, Serializable {
             s0.closure();
             s0.doShift();
             s0.doReduces();
+            s0.calculateActionsForCharacter();
             s0.setStatus(StateStatus.PROCESSED);
         } else {
             return stateLabels.get(0);
@@ -549,8 +648,8 @@ public class ParseTable implements IParseTable, Serializable {
         return s0;
     }
 
-    public State getState(int index) {
-        State s = stateLabels.get(index);
+    public IState getState(int index) {
+        State s = (State) stateLabels.get(index);
         if(s.status() != StateStatus.PROCESSED) {
             if(s.status() == StateStatus.DIRTY) {
                 // TODO: garbage collection of unreferenced states
@@ -560,13 +659,14 @@ public class ParseTable implements IParseTable, Serializable {
             s.closure();
             s.doShift();
             s.doReduces();
+            s.calculateActionsForCharacter();
             s.setStatus(StateStatus.PROCESSED);
             setProcessedStates(getProcessedStates() + 1);
         }
         return s;
     }
 
-    @Override public int totalStates() {
+    public int totalStates() {
         return totalStates;
     }
 
@@ -578,23 +678,23 @@ public class ParseTable implements IParseTable, Serializable {
         this.processedStates = processedStates;
     }
 
-    @Override public void incTotalStates() {
+    public void incTotalStates() {
         totalStates++;
     }
 
-    @Override public Map<Set<LRItem>, State> kernelMap() {
+    public Map<Set<LRItem>, State> kernelMap() {
         return kernelStatesMapping;
     }
 
-    @Override public IProduction initialProduction() {
+    public IProduction initialProduction() {
         return initialProduction;
     }
 
-    @Override public NormGrammar normalizedGrammar() {
+    public NormGrammar normalizedGrammar() {
         return grammar;
     }
 
-    @Override public BiMap<IProduction, Integer> productionLabels() {
+    public BiMap<IProduction, Integer> productionLabels() {
         return productionLabels;
     }
 
@@ -602,15 +702,15 @@ public class ParseTable implements IParseTable, Serializable {
         return prodLabelFactory;
     }
 
-    @Override public Map<LRItem, Set<LRItem>> cachedItems() {
+    public Map<LRItem, Set<LRItem>> cachedItems() {
         return itemDerivedItemsCache;
     }
 
-    @Override public Queue<State> stateQueue() {
+    public Queue<State> stateQueue() {
         return stateQueue;
     }
 
-    @Override public Map<Integer, State> stateLabels() {
+    public Map<Integer, State> stateLabels() {
         return stateLabels;
     }
 
@@ -637,4 +737,26 @@ public class ParseTable implements IParseTable, Serializable {
     public void setSymbolStatesMapping(SymbolStatesMapping symbolStatesMapping) {
         this.symbolStatesMapping = symbolStatesMapping;
     }
+
+    public List<org.metaborg.parsetable.IProduction> productions() {
+        return productions;
+    }
+
+    public Map<IProduction, ParseTableProduction> productionsMapping() {
+        return productionsMapping;
+    }
+
+    public Map<Integer, Integer> getLeftmostContextsMapping() {
+        return leftmostContextsMapping;
+    }
+
+    public Map<Integer, Integer> getRightmostContextsMapping() {
+        return rightmostContextsMapping;
+    }
+
+    @Override public IState getStartState() {
+        return startState();
+    }
+
+
 }

@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Context;
+import org.metaborg.sdf2table.deepconflicts.Context;
+import org.metaborg.sdf2table.io.ParseTableGenerator;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -26,7 +27,7 @@ public class Production implements IProduction, Serializable {
         this.lhs = lhs;
         this.rhs = rhs;
     }
-    
+
     public Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
         this.rhs = rhs;
@@ -63,7 +64,8 @@ public class Production implements IProduction, Serializable {
         return prod;
     }
 
-    @Override public IStrategoTerm toAterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs) {
+    @Override public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
+        ITermFactory tf = ParseTableGenerator.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
         for(Symbol s : rhs) {
@@ -120,7 +122,7 @@ public class Production implements IProduction, Serializable {
                 leftRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).nullable) {
+            if(!rhs.get(i).isNullable()) {
                 break;
             }
         }
@@ -131,14 +133,15 @@ public class Production implements IProduction, Serializable {
                 rightRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).nullable) {
+            if(!rhs.get(i).isNullable()) {
                 break;
             }
         }
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, SetMultimap<IProduction, IAttribute> prod_attrs,
+    @Override public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        ITermFactory tf = ParseTableGenerator.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
         for(Symbol s : rhs) {
@@ -161,5 +164,4 @@ public class Production implements IProduction, Serializable {
             tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
             tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
     }
-
 }

@@ -1,218 +1,36 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Context;
-import org.spoofax.interpreter.terms.IStrategoList;
+import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.sdf2table.deepconflicts.Context;
+import org.metaborg.sdf2table.io.ParseTableGenerator;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public class CharacterClass extends Symbol {
+public class CharacterClass extends Symbol implements ICharacterClass {
 
     private static final long serialVersionUID = 1619024888383357090L;
+    private ICharacterClass cc;
 
-    public static CharacterClass maxCC =
-        new CharacterClass(new CharacterClassRange(new CharacterClassNumeric(0), new CharacterClassNumeric(256)));
-    public static CharacterClass emptyCC = new CharacterClass(null);
+    // private final BitSet bs;
 
-    private final Symbol cc;
-
-    public CharacterClass(Symbol s) {
-        this.cc = s;
+    public CharacterClass(ICharacterClass cc) {
+        this.cc = cc;
     }
 
-    public Symbol symbol() {
-        return cc;
-    }
-
-    public static CharacterClass union(CharacterClass... ary) {
-        int _min = minimum(ary);
-        int _max = maximum(ary);
-
-        // We want to find all sub ranges that are not included in {restrictions}.
-        // min and max correspond to the current valid range.
-        int min = -1;
-        int max = -1;
-
-        // The final restricted terminal.
-        Symbol rt = null;
-
-        // For each value of the range (plus a last iteration).
-        for(int c = _min; c <= _max + 1; ++c) {
-            boolean ok = false; // The value is valid or not (restricted or not).
-
-            // if we are in the range...
-            if(c <= _max) {
-                ok = false;
-                for(CharacterClass cc : ary) {
-                    if(cc.contains(c)) {
-                        ok = true; // valid.
-                        break;
-                    }
-                }
-
-                if(ok) { // We augment our current range (or create it if min == -1).
-                    if(min == -1)
-                        min = c;
-                    max = c;
-                }
-            }
-
-            // We are out of a valid range, but we have detected one.
-            if(!ok && min != -1) {
-                Symbol t;
-                if(min == max)
-                    t = new CharacterClassNumeric(min); // Single-value range, a numeric.
-                else
-                    t = new CharacterClassRange(new CharacterClassNumeric(min), new CharacterClassNumeric(max));
-
-                if(rt == null)
-                    rt = t; // it's the first, and may be the only, range.
-                else
-                    rt = new CharacterClassConc(rt, t); // Not the first one, we merge them.
-                min = max = -1;
-            }
-        }
-
-        return new CharacterClass(rt);
-    }
-
-    public static CharacterClass intersection(CharacterClass... ary) {
-        int _min = minimum(ary);
-        int _max = maximum(ary);
-
-        // We want to find all sub ranges that are not included in {restrictions}.
-        // min and max correspond to the current valid range.
-        int min = -1;
-        int max = -1;
-
-        // The final restricted terminal.
-        Symbol rt = null;
-        // For each value of the range (plus a last iteration).
-        for(int c = _min; c <= _max + 1; ++c) {
-            boolean ok = false; // The value is valid or not (restricted or not).
-
-            // if we are in the range...
-            if(c <= _max) {
-                ok = true;
-                for(CharacterClass cc : ary) {
-                    if(!cc.contains(c)) {
-                        ok = false; // invalid.
-                        break;
-                    }
-                }
-
-                if(ok) { // We augment our current range (or create it if min == -1).
-                    if(min == -1)
-                        min = c;
-                    max = c;
-                }
-            }
-
-            // We are out of a valid range, but we have detected one.
-            if(!ok && min != -1) {
-                Symbol t;
-                if(min == max)
-                    t = new CharacterClassNumeric(min); // Single-value range, a numeric.
-                else
-                    t = new CharacterClassRange(new CharacterClassNumeric(min), new CharacterClassNumeric(max));
-
-                if(rt == null)
-                    rt = t; // it's the first, and may be the only, range.
-                else
-                    rt = CharacterClass.union(new CharacterClass(rt), new CharacterClass(t)).cc; // Not the first one,
-                                                                                                 // we merge them.
-                min = max = -1;
-            }
-        }
-
-        return new CharacterClass(rt);
-    }
-
-    public boolean contains(int c) {
-        if(cc == null)
-            return false;
-
-        if(cc instanceof CharacterClassNumeric) {
-            return ((CharacterClassNumeric) cc).contains(c);
-        } else if(cc instanceof CharacterClassRange) {
-            return ((CharacterClassRange) cc).contains(c);
-        } else {
-            return ((CharacterClassConc) cc).contains(c);
-        }
-    }
-
-    public int minimum() {
-
-        if(cc == null)
-            return Integer.MAX_VALUE;
-
-        if(cc instanceof CharacterClassNumeric) {
-            return ((CharacterClassNumeric) cc).minimum();
-        } else if(cc instanceof CharacterClassRange) {
-            return ((CharacterClassRange) cc).minimum();
-        } else {
-            return ((CharacterClassConc) cc).minimum();
-        }
-    }
-
-    public int maximum() {
-
-        if(cc == null)
-            return Integer.MIN_VALUE;
-
-        if(cc instanceof CharacterClassNumeric) {
-            return ((CharacterClassNumeric) cc).maximum();
-        } else if(cc instanceof CharacterClassRange) {
-            return ((CharacterClassRange) cc).maximum();
-        } else {
-            return ((CharacterClassConc) cc).maximum();
-        }
-    }
-
-    public static int minimum(CharacterClass... ary) {
-        int min = ary[0].minimum();
-        for(int i = 1; i < ary.length; ++i) {
-            if(ary[i].minimum() < min)
-                min = ary[i].minimum();
-        }
-
-        return min;
-    }
-
-    public static int maximum(CharacterClass... ary) {
-        int max = ary[0].maximum();
-        for(int i = 1; i < ary.length; ++i) {
-            if(ary[i].maximum() > max)
-                max = ary[i].maximum();
-        }
-
-        return max;
-    }
-
-    public CharacterClass difference(CharacterClass... ary) {
-        if(cc == null)
-            return this;
-
-        if(cc instanceof CharacterClassNumeric) {
-            return ((CharacterClassNumeric) cc).difference(ary);
-        } else if(cc instanceof CharacterClassRange) {
-            return ((CharacterClassRange) cc).difference(ary);
-        } else {
-            return ((CharacterClassConc) cc).difference(ary);
-        }
+    public boolean contains(int character) {
+        return cc.contains(character);
     }
 
     @Override public String name() {
-        if(cc == null)
-            return "[]";
-        String name = "[";
-        name += cc.name() + "]";
-        return name;
+        return cc.toString();
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
@@ -220,16 +38,28 @@ public class CharacterClass extends Symbol {
             return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList());
         }
 
-        IStrategoTerm cc_aterm = cc.toAterm(tf);
-        if(cc_aterm instanceof IStrategoList) {
-            List<IStrategoTerm> terms = Lists.newArrayList();
-            for(IStrategoTerm child : cc_aterm.getAllSubterms()) {
-                terms.add(child);
+        // FIXME optimize this based on the concrete implementation of CharacterClass
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
             }
-            return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(terms));
         }
-        return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(cc_aterm));
 
+        List<IStrategoTerm> terms = Lists.newArrayList();
+        for(int i = 0; i < 257; i++) {
+            if(bs.get(i)) {
+                int next = bs.nextClearBit(i);
+                if(next != i + 1) {
+                    terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(i), tf.makeInt(next - 1)));
+                } else {
+                    terms.add(tf.makeInt(i));
+                }
+                i = next;
+            }
+        }
+
+        return tf.makeAppl(tf.makeConstructor("char-class", 1), tf.makeList(terms));
     }
 
     public IStrategoTerm toStateAterm(ITermFactory tf) {
@@ -237,25 +67,73 @@ public class CharacterClass extends Symbol {
             return tf.makeList();
         }
 
-        IStrategoTerm cc_aterm = cc.toAterm(tf);
-        if(cc_aterm instanceof IStrategoList) {
-            List<IStrategoTerm> terms = Lists.newArrayList();
-            for(IStrategoTerm child : cc_aterm.getAllSubterms()) {
-                terms.add(child);
+        // FIXME optimize this based on the concrete implementation of CharacterClass
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
             }
-            return tf.makeList(terms);
         }
-        return tf.makeList(cc_aterm);
+
+        List<IStrategoTerm> terms = Lists.newArrayList();
+        for(int i = 0; i < 257; i++) {
+            if(bs.get(i)) {
+                int next = bs.nextClearBit(i);
+                if(next != i + 1) {
+                    terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(i), tf.makeInt(next - 1)));
+                } else {
+                    terms.add(tf.makeInt(i));
+                }
+                i = next;
+            }
+        }
+
+
+        return tf.makeList(terms);
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
-        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        return tf.makeAppl(tf.makeConstructor("CharClass", 1),
+            tf.makeAppl(tf.makeConstructor("Simple", 1), tf.makeAppl(tf.makeConstructor("Absent", 0))));
+
+    }
+
+    public static CharacterClass getFullCharacterClass() {
+        return new CharacterClass(CharacterClassFactory.FULL_RANGE);
+    }
+
+    public boolean isEmptyCC() {
         if(cc == null) {
-            return tf.makeAppl(tf.makeConstructor("CharClass", 1),
-                tf.makeAppl(tf.makeConstructor("Simple", 1), tf.makeAppl(tf.makeConstructor("Absent", 0))));
+            return true;
         }
-        return tf.makeAppl(tf.makeConstructor("CharClass", 1), tf.makeAppl(tf.makeConstructor("Simple", 1),
-            tf.makeAppl(tf.makeConstructor("Present", 1), cc.toSDF3Aterm(tf, ctx_vals, ctx_val))));
+
+        if(cc.min() == -1 && cc.max() == -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static CharacterClass union(CharacterClass cc1, CharacterClass cc2) {
+        if(cc1.cc == null && cc2.cc != null) {
+            return cc2;
+        }
+        if(cc2.cc == null && cc1.cc != null) {
+            return cc1;
+        }
+        if(cc1.cc == null && cc2.cc == null) {
+            return new CharacterClass(CharacterClassFactory.EMPTY_CHARACTER_CLASS);
+        }
+
+        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().union(cc1.cc, cc2.cc));
+    }
+
+    @Override public int min() {
+        return cc.min();
+    }
+
+    @Override public int max() {
+        return cc.max();
     }
 
     @Override public int hashCode() {
@@ -279,5 +157,25 @@ public class CharacterClass extends Symbol {
         } else if(!cc.equals(other.cc))
             return false;
         return true;
+    }
+
+    public static CharacterClass intersection(CharacterClass cc1, CharacterClass cc2) {
+        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().intersection(cc1.cc, cc2.cc));
+    }
+
+    public CharacterClass difference(CharacterClass cc2) {
+        CharacterClass result = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().difference(cc, cc2.cc));
+   
+        return result;
+    }
+
+    @Deprecated public BitSet getBitSet() {
+        BitSet bs = new BitSet();
+        for(int i = 0; i < 257; i++) {
+            if(cc.contains(i)) {
+                bs.set(i);
+            }
+        }
+        return bs;
     }
 }

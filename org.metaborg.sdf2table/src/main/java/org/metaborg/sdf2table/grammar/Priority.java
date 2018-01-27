@@ -32,17 +32,6 @@ public class Priority implements IPriority, Serializable {
         String buf = higher.toString();
         if(!transitive)
             buf += ". ";
-//        if(!arguments.isEmpty()) {
-//            buf += "<";
-//            int i = 0;
-//            for(Integer arg : arguments) {
-//                if(i != 0) {
-//                    buf += ", ";
-//                }
-//                buf += arg;
-//            }
-//            buf += ">";
-//        }
         buf += " > ";
         buf += lower.toString();
         return buf;

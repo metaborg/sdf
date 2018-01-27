@@ -3,11 +3,11 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.parsetable.Context;
+import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class IterSepSymbol extends Symbol {
 
@@ -19,11 +19,8 @@ public class IterSepSymbol extends Symbol {
     public IterSepSymbol(Symbol symbol, Symbol iSymbol) {
         this.symbol = symbol;
         this.sep = (Sort) iSymbol;
-        followRestrictions = Sets.newHashSet();
-    }
-
-    public Symbol getSymbol() {
-        return symbol;
+        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsNoLookahead = null;
     }
 
     @Override public String name() {
@@ -70,5 +67,9 @@ public class IterSepSymbol extends Symbol {
         } else if(!symbol.equals(other.symbol))
             return false;
         return true;
+    }
+
+    public Symbol getSymbol() {
+        return symbol;
     }
 }

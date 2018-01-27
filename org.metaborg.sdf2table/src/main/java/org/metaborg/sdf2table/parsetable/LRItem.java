@@ -3,6 +3,8 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Priority;
@@ -15,12 +17,12 @@ public class LRItem implements Serializable {
 
 	private static final long serialVersionUID = 6331111365917952694L;
 
-	private IParseTable pt;
+	private ParseTable pt;
     private IProduction prod;
     private int dotPosition;
     private int prod_label;
 
-    public LRItem(IProduction prod, int dotPosition, IParseTable pt) {
+    public LRItem(IProduction prod, int dotPosition, ParseTable pt) {
         if(!(prod instanceof ContextualProduction) && pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod)) {
             this.prod = pt.normalizedGrammar().getProdContextualProdMapping().get(prod);
         } else {
@@ -75,8 +77,15 @@ public class LRItem implements Serializable {
         }
 
         if(this.dotPosition < prod.rightHand().size()) {
-            symbol_items.put(prod.rightHand().get(this.dotPosition), this);
-            ((ParseTable) pt).getSymbolStatesMapping().addLink(prod.rightHand().get(this.dotPosition), this, originalState);
+            Symbol atPosition = prod.rightHand().get(this.dotPosition);
+            if(pt.isDataDependent()) {
+                // use original symbol when mapping it to this item and state
+                if(atPosition instanceof ContextualSymbol) {
+                    atPosition = ((ContextualSymbol) atPosition).getOrigSymbol();
+                }
+            }
+            symbol_items.put(atPosition, this);
+            ((ParseTable) pt).getSymbolStatesMapping().addLink(atPosition, this, originalState);
         }
     }
 
