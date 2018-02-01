@@ -26,6 +26,8 @@ import org.metaborg.sdf2table.grammar.IterStarSymbol;
 import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.Layout;
 import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
+import org.metaborg.sdf2table.grammar.LayoutConstraintNewAttribute;
+import org.metaborg.sdf2table.grammar.LayoutConstraintType;
 import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.LiteralType;
 import org.metaborg.sdf2table.grammar.NormGrammar;
@@ -53,7 +55,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
-    
+
     public NormGrammar readGrammar(File input, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
@@ -406,14 +408,14 @@ public class GrammarReader {
             CharacterClassFactory ccFactory = ParseTableGenerator.getCharacterClassFactory();
             switch(app.getName()) {
                 case "Absent":
-                    return ccFactory .fromEmpty();
+                    return ccFactory.fromEmpty();
                 case "Simple":
                     return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    String strStart =  ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
-                    String strEnd =  ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
+                    String strStart = ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
+                    String strEnd = ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
                     int start = Integer.parseInt(strStart.substring(1));
                     int end = Integer.parseInt(strEnd.substring(1));
                     return ccFactory.fromRange(start, end);
@@ -465,6 +467,86 @@ public class GrammarReader {
                     return new GeneralAttribute("bracket");
                 case "LayoutConstraint":
                     return new LayoutConstraintAttribute(a.getSubterm(0).toString());
+                case "NoConstraint":
+                    return new LayoutConstraintNewAttribute(true);
+                case "NewLayoutConstraint":
+                    try {
+                        IStrategoTerm constraint = a.getSubterm(0);
+                                                    
+                        String constructorFirstExp =
+                            ((IStrategoAppl) constraint.getSubterm(0)).getConstructor().getName();
+                        String constructorOperand =
+                            ((IStrategoAppl) constraint.getSubterm(1)).getConstructor().getName();
+                        String constructorSecondExp =
+                            ((IStrategoAppl) constraint.getSubterm(2)).getConstructor().getName();
+
+                        int indexFirstExp = (constructorFirstExp.equals("LineParent")
+                            || constructorFirstExp.equals("EndLineParent") || constructorFirstExp.equals("ColumnParent")
+                            || constructorFirstExp.equals("EndColumnParent"))
+                                ? -1
+                                : Integer
+                                    .parseInt(((IStrategoString) constraint.getSubterm(0).getSubterm(0).getSubterm(0))
+                                        .stringValue().replaceAll("^\"|\"$", ""));
+                        
+                        int indexSecondExp =
+                            (constructorSecondExp.equals("LineParent") || constructorSecondExp.equals("EndLineParent")
+                                || constructorSecondExp.equals("ColumnParent")
+                                || constructorSecondExp.equals("EndColumnParent"))
+                                    ? -1
+                                    : Integer.parseInt(
+                                        ((IStrategoString) constraint.getSubterm(2).getSubterm(0).getSubterm(0))
+                                            .stringValue().replaceAll("^\"|\"$", ""));
+
+                        LayoutConstraintType exp1Type;
+                        if(constructorFirstExp.equals("LineParent") || constructorFirstExp.equals("Line")) {
+                            exp1Type = LayoutConstraintType.Line;
+                        } else if(constructorFirstExp.equals("EndLineParent") || constructorFirstExp.equals("EndLine")) {
+                            exp1Type = LayoutConstraintType.EndLine;
+                        } else if(constructorFirstExp.equals("ColumnParent") || constructorFirstExp.equals("Column")) {
+                            exp1Type = LayoutConstraintType.Column;
+                        } else {
+                            exp1Type = LayoutConstraintType.EndColumn;
+                        }
+                        
+                        LayoutConstraintType exp2Type;
+                        if(constructorSecondExp.equals("LineParent") || constructorSecondExp.equals("Line")) {
+                            exp2Type = LayoutConstraintType.Line;
+                        } else if(constructorSecondExp.equals("EndLineParent") || constructorSecondExp.equals("EndLine")) {
+                            exp2Type = LayoutConstraintType.EndLine;
+                        } else if(constructorSecondExp.equals("ColumnParent") || constructorSecondExp.equals("Column")) {
+                            exp2Type = LayoutConstraintType.Column;
+                        } else {
+                            exp2Type = LayoutConstraintType.EndColumn;
+                        }
+
+                        String operation;
+
+                        switch(constructorOperand) {
+                            case "GreaterThan":
+                                operation = ">";
+                                break;
+                            case "GreaterThanEqual":
+                                operation = ">=";
+                                break;
+                            case "LessThan":
+                                operation = "<";
+                                break;
+                            case "LessThanEqual":
+                                operation = "<=";
+                                break;
+                            case "Equal":
+                            default:
+                                operation = "==";
+                                break;
+                        }
+
+
+                        return new LayoutConstraintNewAttribute(exp1Type, indexFirstExp, exp2Type, indexSecondExp,
+                            operation);
+                    } catch(Exception e) {
+                        System.err.println("sdf2table : could not parse layout constraint `" + a.getName() + "'.");
+                        throw new UnexpectedTermException(a.toString());
+                    }
                 case "IgnoreLayout":
                     return new LayoutConstraintAttribute("ignore-layout");
                 case "EnforceNewLine":
@@ -521,7 +603,7 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return termFactory .makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
+            return termFactory.makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {

@@ -19,6 +19,7 @@ import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
 import org.metaborg.sdf2table.grammar.IterStarSymbol;
 import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.Layout;
+import org.metaborg.sdf2table.grammar.LayoutConstraintNewAttribute;
 import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.OptionalSymbol;
 import org.metaborg.sdf2table.grammar.SequenceSymbol;
@@ -27,6 +28,8 @@ import org.metaborg.sdf2table.grammar.StartSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
 import org.metaborg.sdf2table.io.ParseTableGenerator;
+
+import com.google.common.collect.Sets;
 
 public class ParseTableProduction implements org.metaborg.parsetable.IProduction, Serializable {
 
@@ -49,6 +52,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private final boolean isCompletionOrRecovery;
     private final ConstructorAttribute constructor;
     private final ProductionType type;
+    private final Set<LayoutConstraintNewAttribute> layoutConstraints;
+    private boolean isIgnoreLayoutConstraint = false;
 
     private final long cachedContextBitmapL;
     private final long cachedContextBitmapR;
@@ -164,6 +169,17 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         this.isNumberLiteral = (cc != null);
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
+        
+        layoutConstraints = Sets.newHashSet();
+        for(IAttribute attr : attrs) {
+            if(attr instanceof LayoutConstraintNewAttribute) {
+                layoutConstraints.add((LayoutConstraintNewAttribute) attr);
+                if(((LayoutConstraintNewAttribute) attr).isNoLayoutConstraint()) {
+                    this.isIgnoreLayoutConstraint = true;
+                    break;
+                }
+            }
+        }
     }
 
     private boolean getIsLayout() {
@@ -334,6 +350,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return isOperator;
     }
 
+    public boolean isIgnoreLayoutConstraint() {
+        return isIgnoreLayoutConstraint;
+    }
+
     @Override public String toString() {
         String s = p.leftHand().toString();
         if(constructor != null) {
@@ -353,6 +373,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     public ProductionType getProductionType() {
         return type;
+    }
+
+    public Set<LayoutConstraintNewAttribute> getLayoutConstraints() {
+        return layoutConstraints;
     }
 
     public final long contextL() {

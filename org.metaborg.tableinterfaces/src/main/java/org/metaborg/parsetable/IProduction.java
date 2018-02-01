@@ -44,5 +44,7 @@ public interface IProduction {
     boolean isNumberLiteral();
 
     boolean isOperator();
+    
+    boolean isIgnoreLayoutConstraint();
 
 }

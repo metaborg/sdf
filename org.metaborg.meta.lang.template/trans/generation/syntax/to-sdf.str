@@ -554,6 +554,19 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+    
+  special-term-to-sdf:
+    NewLayoutConstraint(constr) -> term(default(appl(unquoted("lc"), [fun(quoted($["[<prettyprint-TemplateLang-NewLayoutConstraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
+    where
+      <?Constraint(_, _, _)> constr
+      
+  special-term-to-sdf:
+    NewLayoutConstraint(constr) -> term(default(fun(unquoted("no-lc"))))
+    where
+      <?NoConstraint()> constr    
+      
+  special-term-to-sdf:
+    IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))

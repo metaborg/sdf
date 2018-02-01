@@ -13,8 +13,7 @@ lexical restrictions
   "all" -/- [a-zA-Z0-9]
 
 context-free syntax
-  
-  
+    
   Constraint.Tree = NatCon 
   Constraint.Num = <num(<NatCon>)> 
   Constraint = LayoutVar 
@@ -58,3 +57,24 @@ context-free priorities
     Constraint.Ge} > {right:
     Constraint.And} > {right:
     Constraint.Or}
+    
+    
+context-free syntax
+
+  NewLayoutConstraint.Constraint   = <<LCOperand> <LCOperation> <LCOperand>>
+  
+  
+  LCOperation.GreaterThan        = [>]
+  LCOperation.GreaterThanEqual   = [>=]
+  LCOperation.LessThan           = [<]
+  LCOperation.LessThanEqual      = [<=]
+  LCOperation.Equal              = [==]
+  LCOperand.Line                 = <l_<LCTreeIndex>>
+  LCOperand.Column               = <c_<LCTreeIndex>>
+  LCOperand.EndLine              = <el_<LCTreeIndex>>
+  LCOperand.EndColumn            = <ec_<LCTreeIndex>>
+  LCOperand.LineParent           = <l>
+  LCOperand.ColumnParent         = <c>
+  LCOperand.EndLineParent        = <el>
+  LCOperand.EndColumnParent      = <ec>
+  LCTreeIndex.Idx                = NatCon
