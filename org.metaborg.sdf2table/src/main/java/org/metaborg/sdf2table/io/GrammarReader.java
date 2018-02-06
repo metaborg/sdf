@@ -106,16 +106,18 @@ public class GrammarReader {
                                 }
                                 // processing import in case it has not been processed yet
                                 if(iname != null && modules.get(iname) == null) {
+                                    IStrategoTerm iModule = null;
                                     for(String path : paths) {
                                         String filename = path + "/" + iname + ".aterm";
                                         File file = new File(filename);
                                         if(file.exists() && !file.isDirectory()) {
-                                            IStrategoTerm iModule = termFromFile(file, g);
+                                            iModule = termFromFile(file, g);
                                             generateGrammar(g, iModule, modules, paths);
                                             break;
-                                        } else {
-                                            throw new ModuleNotFoundException(iname, modName);
                                         }
+                                    }
+                                    if(iModule == null) {
+                                        throw new ModuleNotFoundException(iname, modName);
                                     }
                                 }
 
