@@ -51,6 +51,7 @@ rules
     <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
     <+ ?SdfProduction(SortDef(<id>),_,_)
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+    <+ ?DeclSort(<id>)
                        
   sort-to-ds-sig-sort = !SortDecl(<ds-escape-sortname>)
   
