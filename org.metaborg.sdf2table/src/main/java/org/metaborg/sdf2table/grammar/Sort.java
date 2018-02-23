@@ -45,7 +45,7 @@ public class Sort extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         if(type == LiteralType.CiLit) {
-            return tf.makeAppl(tf.makeConstructor("ci-lit", 1),
+            return tf.makeAppl(tf.makeConstructor("cilit", 1),
                 tf.makeString(name.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'")));
         } else if(type == LiteralType.Lit) {
             return tf.makeAppl(tf.makeConstructor("lit", 1),
