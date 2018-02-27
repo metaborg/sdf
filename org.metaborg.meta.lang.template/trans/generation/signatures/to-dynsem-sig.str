@@ -9,10 +9,10 @@ imports
   runtime/task/-
   runtime/types/-
   lib/ds/signatures/-
-  lib/ds/pp/-  
+  lib/ds/pp/-
   generation/gen-utils/to-str
   generation/signatures/to-sig
-    
+
 imports
   signatures/aliases/-
   signatures/aterms/-
@@ -34,42 +34,71 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig  
-  
-rules 
-  
+  signatures/TemplateLang-sig
+
+rules
+
   module-to-ds-sig:
-    Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([Sorts(sorts*), signatures*])])
+    Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, Signatures([Sorts(sorts*), aliases*, signatures*])])
     with
       m'  := <conc-strings> ("ds-signatures/", m, "-sig");
       is* := <map(to-str-import(|"-sig", "ds-signatures"))> i*;
       sorts* := <filter(not(?SDFSection(LexicalSyntax(_)))); collect-all(collect-sorts); nub; map(sort-to-ds-sig-sort)> s*;
+      aliases* := <filter(section-to-ds-aliases)> s*;
       signatures* := <filter(section-to-ds-sig)> s*
- 
+
   collect-sorts =
-    ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
+       ?DeclSort(<id>)
+    <+ ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
     <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
     <+ ?SdfProduction(SortDef(<id>),_,_)
     <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+    <+ ?SdfProduction(Cf(SortDef(<id>)), _, _)
+    <+ ?SdfProductionWithCons(SortCons(Cf(SortDef(<id>)), _), _, _)
     <+ ?DeclSort(<id>)
-                       
+
   sort-to-ds-sig-sort = !SortDecl(<ds-escape-sortname>)
-  
+
 rules // lexical syntax
 
-  section-to-ds-sig:
+  section-to-ds-aliases:
     SDFSection(LexicalSyntax(p*)) -> Aliases(alias*)
     where
-      alias* := <filter(get-sort-from-prod); nub; map(lexsort-to-ds-alias); not(?[])> p* 
-  
+      alias* := <filter(lex-to-ds-alias); nub; not(?[])> p*
+
+  section-to-ds-aliases:
+    SDFSection(Kernel(p*)) -> Aliases(alias*)
+    where
+      alias* := <filter(lex-to-ds-alias); nub; not(?[])> p*
+
+  lex-to-ds-alias:
+    SdfProduction(SortDef(s), _, Attrs(a*)) -> <lexsort-to-ds-alias> s
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  lex-to-ds-alias:
+    SdfProductionWithCons(SortCons(SortDef(s), _) , _ , Attrs(a*)) -> <lexsort-to-ds-alias> s
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  lex-to-ds-alias:
+    SdfProduction(Lex(SortDef(s)), _, Attrs(a*)) -> <lexsort-to-ds-alias> s
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  lex-to-ds-alias:
+    SdfProductionWithCons(SortCons(Lex(SortDef(s)), _), _, Attrs(a*)) -> <lexsort-to-ds-alias> s
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   lexsort-to-ds-alias:
     s -> AliasDecl(s, SimpleSort("String"))
-  
+
 rules // special ds names
-  
+
   ds-reserved-consnames = !["List", "Map"]
   ds-reserved-sortnames = !["List", "Map", "Int", "Long", "Float", "Real", "Bool", "String"]
-  
+
   ds-escape-consname:
     name -> name''
     where
@@ -94,18 +123,18 @@ rules // context free syntax
     SDFSection(ContextFreeSyntax(p*)) -> Constructors(sig*)
     where
       sig* := <filter(cfg-to-ds-sig <+ template-to-ds-sig); not(?[])> p*
-  
-  section-to-ds-sig:
-    SDFSection(Kernel(p*)) -> Constructors(sig*)
-    where
-      sig* := <filter(cfg-to-ds-sig); not(?[])> p*    
-      
+
   section-to-ds-sig:
     TemplateSection(t*) -> Constructors(sig*)
     with
       sig* := <filter(template-to-ds-sig); not(?[])> t*
 
-  cfg-to-ds-sig:      
+  section-to-ds-sig:
+    SDFSection(Kernel(p*)) -> Constructors(sig*)
+    where
+      sig* := <filter(cfg-to-ds-sig); not(?[])> p*
+
+  cfg-to-ds-sig:
     SdfProduction(SortDef(s1), Rhs([Sort(s2)]), Attrs(a*)) -> <inj-to-ds-decl> (s1, s2)
     where
       <not(fetch-elem(?Reject()))> a*
@@ -114,28 +143,38 @@ rules // context free syntax
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-   
+
   cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-       
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   cfg-to-ds-sig:
     SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a* 
-  
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  cfg-to-ds-sig:
+    SdfProduction(Cf(SortDef(s1)), Rhs([Cf(Sort(s2))]), Attrs(a*)) -> <inj-to-ds-decl> (s1, s2)
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
+  cfg-to-ds-sig:
+    SdfProduction(Cf(SortDef(s1)), Rhs([Lex(Sort(s2))]), Attrs(a*)) -> <inj-to-ds-decl> (s1, s2)
+    where
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   template-to-ds-sig:
     TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-ds-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-  
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   inj-to-ds-decl:
     (s1, s2) -> ConsDecl($[__[s2]2[s1]__], [SimpleSort(s2')], SimpleSort(s1'), Annos([ImplicitAnno()]))
     where
       s2' := <ds-escape-sortname> s2;
       s1' := <ds-escape-sortname> s1
-  
+
   cons-to-ds-decl:
     Constructor(c) -> cons-decl
     with
@@ -150,16 +189,15 @@ rules // context free syntax
       else
         cons-decl := NullaryConsDecl(c', sort', NoAnnos())
       end
-    
-  get-sort-name:     
+
+  get-sort-name:
     ConstType(SortNoArgs(t)) -> SimpleSort(<ds-escape-sortname> t)
-    
+
   get-sort-name:
     ConstType(Sort("List",[SortNoArgs(s)])) -> ListSort(SimpleSort(<ds-escape-sortname> s))
-  
+
   // FIXME: this is not entirely true
   get-sort-name:
     ConstType(Sort("Option",[SortNoArgs(t)])) -> SimpleSort(<ds-escape-sortname>t)
-    
+
   check-fun-type: FunType([], t) -> t
-          
