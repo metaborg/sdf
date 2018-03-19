@@ -13,17 +13,17 @@ lexical restrictions
   "all" -/- [a-zA-Z0-9]
 
 context-free syntax
-    
-  Constraint.Tree = NatCon 
+   
+  ConstraintTree.Tree = NatCon 
   Constraint.Num = <num(<NatCon>)> 
   Constraint = LayoutVar 
   Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> 
-  Constraint.First = <<Constraint>.first> 
-  Constraint.Left = <<Constraint>.left> 
-  Constraint.Right = <<Constraint>.right> 
-  Constraint.Last = <<Constraint>.last> 
-  Constraint.Line = <<Constraint>.line> 
-  Constraint.Col = <<Constraint>.col> 
+  ConstraintToken.First = <<ConstraintTree>.first> 
+  ConstraintToken.Left = <<ConstraintTree>.left> 
+  ConstraintToken.Right = <<ConstraintTree>.right> 
+  ConstraintToken.Last = <<ConstraintTree>.last> 
+  Constraint.Line = <<ConstraintToken>.line> 
+  Constraint.Col = <<ConstraintToken>.col> 
   Constraint.Not = <!<Constraint>> 
   Constraint.Mul = <<Constraint> * <Constraint>> 
   Constraint.Div = <<Constraint> / <Constraint>> 
@@ -39,13 +39,7 @@ context-free syntax
 
 context-free priorities
 
-  {Constraint.First
-   Constraint.Left
-   Constraint.Right
-   Constraint.Last
-   Constraint.Line
-   Constraint.Col
-   Constraint.Not} > {right:
+    Constraint.Not > {right:
     Constraint.Mul
     Constraint.Div } > {right:
     Constraint.Add
