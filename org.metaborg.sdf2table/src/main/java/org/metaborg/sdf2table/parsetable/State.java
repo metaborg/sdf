@@ -142,13 +142,15 @@ public class State implements IState, Comparable<State>, Serializable {
             if(item.getDotPosition() == item.getProd().rightHand().size()) {
                 int prod_label = pt.productionLabels().get(item.getProd());
 
-                if(item.getProd().leftHand().followRestriction() == null
-                    || item.getProd().leftHand().followRestriction().isEmptyCC()) {
+                CharacterClass fr = item.getProd().leftHand().followRestriction();
+                if((fr == null || fr.isEmptyCC()) && item.getProd().leftHand().followRestrictionLookahead() == null) {
                     addReduceAction(item.getProd(), prod_label, CharacterClass.getFullCharacterClass(), null);
                 } else {
+                    CharacterClass final_range = CharacterClass.getFullCharacterClass();
                     // Not based on first and follow sets thus, only considering the follow restrictions
-                    CharacterClass final_range = CharacterClass.getFullCharacterClass()
-                        .difference(item.getProd().leftHand().followRestriction());
+                    if(fr != null && !fr.isEmptyCC()) {
+                        final_range = final_range.difference(item.getProd().leftHand().followRestriction());
+                    }
                     for(CharacterClass[] s : item.getProd().leftHand().followRestrictionLookahead()) {
                         final_range = final_range.difference(s[0]);
 
@@ -172,7 +174,8 @@ public class State implements IState, Comparable<State>, Serializable {
         CharacterClass final_range = cc;
         ParseTableProduction prod = pt.productionsMapping().get(p);
 
-        LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();;
+        LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();
+        
         for(CharacterClass range : lr_actions.keySet()) {
             if(final_range.isEmptyCC()) {
                 break;
@@ -189,7 +192,7 @@ public class State implements IState, Comparable<State>, Serializable {
                 }
             }
         }
-        
+
         lr_actions.putAll(newLR_actions);
 
         if(!final_range.isEmptyCC()) {
@@ -350,8 +353,7 @@ public class State implements IState, Comparable<State>, Serializable {
         return lr_actions;
     }
 
-    @Override
-    public boolean isRejectable() {
+    @Override public boolean isRejectable() {
         return rejectable;
     }
 
