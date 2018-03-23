@@ -75,7 +75,7 @@ rules
             new-lex-restrictions*      := <generate-follow-restrictions-reject-keywords(|kfr, tokenize-chars, kattrs)> desugared-sections*;
             non-template-sections*     := <remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> [desugared-sections*, new-lex-restrictions*];
             
-            non-template-sections'*    := <flatten-list; normalize-layout-constraints> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
+            non-template-sections'*    := <flatten-list> [non-template-sections*, <filter(add-placeholder-prods)> non-template-sections*];
                        
             import-names*              := <collect(?Module(Unparameterized(<id>))); map(!Module(Unparameterized(<concat-strings>["normalized/", <id>, "-norm"])))> i*;
             imports                    := <?[] <+ ![Imports(<id>)]> import-names*;

@@ -19,7 +19,7 @@ import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
 import org.metaborg.sdf2table.grammar.IterStarSymbol;
 import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.Layout;
-import org.metaborg.sdf2table.grammar.LayoutConstraintNewAttribute;
+import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
 import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.OptionalSymbol;
 import org.metaborg.sdf2table.grammar.SequenceSymbol;
@@ -52,7 +52,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private final boolean isCompletionOrRecovery;
     private final ConstructorAttribute constructor;
     private final ProductionType type;
-    private final Set<LayoutConstraintNewAttribute> layoutConstraints;
+    private final Set<LayoutConstraintAttribute> layoutConstraints;
     private boolean isIgnoreLayoutConstraint = false;
 
     private final long cachedContextBitmapL;
@@ -172,12 +172,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         
         layoutConstraints = Sets.newHashSet();
         for(IAttribute attr : attrs) {
-            if(attr instanceof LayoutConstraintNewAttribute) {
-                layoutConstraints.add((LayoutConstraintNewAttribute) attr);
-                if(((LayoutConstraintNewAttribute) attr).isNoLayoutConstraint()) {
-                    this.isIgnoreLayoutConstraint = true;
-                    break;
-                }
+            if(attr instanceof LayoutConstraintAttribute) {
+                layoutConstraints.add((LayoutConstraintAttribute) attr);
             }
         }
     }
@@ -375,7 +371,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return type;
     }
 
-    public Set<LayoutConstraintNewAttribute> getLayoutConstraints() {
+    public Set<LayoutConstraintAttribute> getLayoutConstraints() {
         return layoutConstraints;
     }
 

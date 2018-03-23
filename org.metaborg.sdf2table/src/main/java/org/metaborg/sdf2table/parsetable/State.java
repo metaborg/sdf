@@ -169,13 +169,11 @@ public class State implements IState, Comparable<State>, Serializable {
         }
     }
 
-
     private void addReduceAction(IProduction p, Integer label, CharacterClass cc, CharacterClass[] lookahead) {
         CharacterClass final_range = cc;
         ParseTableProduction prod = pt.productionsMapping().get(p);
 
-        LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();
-        
+        LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();;
         for(CharacterClass range : lr_actions.keySet()) {
             if(final_range.isEmptyCC()) {
                 break;
@@ -192,7 +190,7 @@ public class State implements IState, Comparable<State>, Serializable {
                 }
             }
         }
-
+        
         lr_actions.putAll(newLR_actions);
 
         if(!final_range.isEmptyCC()) {
@@ -353,7 +351,8 @@ public class State implements IState, Comparable<State>, Serializable {
         return lr_actions;
     }
 
-    @Override public boolean isRejectable() {
+    @Override
+    public boolean isRejectable() {
         return rejectable;
     }
 

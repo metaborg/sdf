@@ -26,8 +26,6 @@ import org.metaborg.sdf2table.grammar.IterStarSymbol;
 import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.Layout;
 import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
-import org.metaborg.sdf2table.grammar.LayoutConstraintNewAttribute;
-import org.metaborg.sdf2table.grammar.LayoutConstraintType;
 import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.LiteralType;
 import org.metaborg.sdf2table.grammar.NormGrammar;
@@ -163,7 +161,7 @@ public class GrammarReader {
         }
     }
 
-    private void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
+    private void addProds(NormGrammar g, StrategoAppl section) throws Exception {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
 
@@ -189,7 +187,7 @@ public class GrammarReader {
         }
     }
 
-    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws Exception {
         IProduction prod = null;
         prod = g.getCacheProductionsRead().get(term.toString());
 
@@ -437,7 +435,7 @@ public class GrammarReader {
         return null;
     }
 
-    private IAttribute processAttribute(IStrategoTerm ta) throws UnexpectedTermException {
+    private IAttribute processAttribute(IStrategoTerm ta) throws Exception {
         if(ta instanceof StrategoAppl) {
             StrategoAppl a = (StrategoAppl) ta;
             switch(a.getName()) { // This is just to get a proper name for the attribute.
@@ -468,89 +466,9 @@ public class GrammarReader {
                 case "Bracket":
                     return new GeneralAttribute("bracket");
                 case "LayoutConstraint":
-                    return new LayoutConstraintAttribute(a.getSubterm(0).toString());
-                case "NoConstraint":
-                    return new LayoutConstraintNewAttribute(true);
-                case "NewLayoutConstraint":
-                    try {
-                        IStrategoTerm constraint = a.getSubterm(0);
-                                                    
-                        String constructorFirstExp =
-                            ((IStrategoAppl) constraint.getSubterm(0)).getConstructor().getName();
-                        String constructorOperand =
-                            ((IStrategoAppl) constraint.getSubterm(1)).getConstructor().getName();
-                        String constructorSecondExp =
-                            ((IStrategoAppl) constraint.getSubterm(2)).getConstructor().getName();
-
-                        int indexFirstExp = (constructorFirstExp.equals("LineParent")
-                            || constructorFirstExp.equals("EndLineParent") || constructorFirstExp.equals("ColumnParent")
-                            || constructorFirstExp.equals("EndColumnParent"))
-                                ? -1
-                                : Integer
-                                    .parseInt(((IStrategoString) constraint.getSubterm(0).getSubterm(0).getSubterm(0))
-                                        .stringValue().replaceAll("^\"|\"$", ""));
-                        
-                        int indexSecondExp =
-                            (constructorSecondExp.equals("LineParent") || constructorSecondExp.equals("EndLineParent")
-                                || constructorSecondExp.equals("ColumnParent")
-                                || constructorSecondExp.equals("EndColumnParent"))
-                                    ? -1
-                                    : Integer.parseInt(
-                                        ((IStrategoString) constraint.getSubterm(2).getSubterm(0).getSubterm(0))
-                                            .stringValue().replaceAll("^\"|\"$", ""));
-
-                        LayoutConstraintType exp1Type;
-                        if(constructorFirstExp.equals("LineParent") || constructorFirstExp.equals("Line")) {
-                            exp1Type = LayoutConstraintType.Line;
-                        } else if(constructorFirstExp.equals("EndLineParent") || constructorFirstExp.equals("EndLine")) {
-                            exp1Type = LayoutConstraintType.EndLine;
-                        } else if(constructorFirstExp.equals("ColumnParent") || constructorFirstExp.equals("Column")) {
-                            exp1Type = LayoutConstraintType.Column;
-                        } else {
-                            exp1Type = LayoutConstraintType.EndColumn;
-                        }
-                        
-                        LayoutConstraintType exp2Type;
-                        if(constructorSecondExp.equals("LineParent") || constructorSecondExp.equals("Line")) {
-                            exp2Type = LayoutConstraintType.Line;
-                        } else if(constructorSecondExp.equals("EndLineParent") || constructorSecondExp.equals("EndLine")) {
-                            exp2Type = LayoutConstraintType.EndLine;
-                        } else if(constructorSecondExp.equals("ColumnParent") || constructorSecondExp.equals("Column")) {
-                            exp2Type = LayoutConstraintType.Column;
-                        } else {
-                            exp2Type = LayoutConstraintType.EndColumn;
-                        }
-
-                        String operation;
-
-                        switch(constructorOperand) {
-                            case "GreaterThan":
-                                operation = ">";
-                                break;
-                            case "GreaterThanEqual":
-                                operation = ">=";
-                                break;
-                            case "LessThan":
-                                operation = "<";
-                                break;
-                            case "LessThanEqual":
-                                operation = "<=";
-                                break;
-                            case "Equal":
-                            default:
-                                operation = "==";
-                                break;
-                        }
-
-
-                        return new LayoutConstraintNewAttribute(exp1Type, indexFirstExp, exp2Type, indexSecondExp,
-                            operation);
-                    } catch(Exception e) {
-                        System.err.println("sdf2table : could not parse layout constraint `" + a.getName() + "'.");
-                        throw new UnexpectedTermException(a.toString());
-                    }
+                    return new LayoutConstraintAttribute(a.getSubterm(0));
                 case "IgnoreLayout":
-                    return new LayoutConstraintAttribute("ignore-layout");
+                    return new LayoutConstraintAttribute(a);
                 case "EnforceNewLine":
                     return new GeneralAttribute("enforce-newline");
                 case "LongestMatch":
