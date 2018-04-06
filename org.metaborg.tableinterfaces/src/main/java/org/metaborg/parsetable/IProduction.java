@@ -46,5 +46,7 @@ public interface IProduction {
     boolean isOperator();
     
     boolean isIgnoreLayoutConstraint();
+    
+    boolean isLongestMatch();
 
 }

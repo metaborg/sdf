@@ -443,54 +443,6 @@ public class ParseTable implements IParseTable, Serializable {
         productionLabels = labels;
     }
 
-    // private BiMap<IProduction, Integer> createLabels(Map<UniqueProduction, IProduction> prods,
-    // Map<IProduction, ContextualProduction> contextual_prods) {
-    // BiMap<IProduction, Integer> labels = HashBiMap.create();
-    //
-    // if(!dataDependent) {
-    // deriveContextualProductions();
-    // } else {
-    // // the productions for the contextual symbol are the same as the ones for the original symbol
-    // for(ContextualProduction p : grammar.getProdContextualProdMapping().values()) {
-    // for(Symbol s : p.rightHand()) {
-    // if(s instanceof ContextualSymbol) {
-    // grammar.getContextualSymbols().add((ContextualSymbol) s);
-    // Set<IProduction> productions =
-    // grammar.getSymbolProductionsMapping().get(((ContextualSymbol) s).getOrigSymbol());
-    // grammar.getSymbolProductionsMapping().putAll(s, productions);
-    // }
-    // }
-    // }
-    // }
-    //
-    // for(IProduction p : prods.values()) {
-    // if(contextual_prods.containsKey(p)) {
-    // labels.put(contextual_prods.get(p), prodLabelFactory.getNextLabel());
-    // } else {
-    // labels.put(p, prodLabelFactory.getNextLabel());
-    // }
-    // }
-    //
-    // for(ContextualProduction p : grammar.getDerivedContextualProds()) {
-    // labels.put(p, prodLabelFactory.getNextLabel());
-    // }
-    //
-    // for(int i = 0; i < labels.size(); i++) {
-    // IProduction p = labels.inverse().get(i + FIRST_PRODUCTION_LABEL);
-    // IProduction orig_p = p;
-    // if(p instanceof ContextualProduction) {
-    // orig_p = ((ContextualProduction) p).getOrigProduction();
-    // }
-    // ParseTableProduction prod = new ParseTableProduction(i + FIRST_PRODUCTION_LABEL, p,
-    // grammar.getProductionAttributesMapping().get(orig_p));
-    // productions.add(prod);
-    // productionsMapping.put(p, prod);
-    // }
-    //
-    // return labels;
-    // }
-
-
     private void updateLabelsContextualProductions() {
         BiMap<IProduction, Integer> labels = productionLabels;
 

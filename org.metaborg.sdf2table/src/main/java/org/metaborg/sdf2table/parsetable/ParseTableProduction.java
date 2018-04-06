@@ -27,6 +27,7 @@ import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.StartSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableGenerator;
 
 import com.google.common.collect.Sets;
@@ -53,7 +54,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private final ConstructorAttribute constructor;
     private final ProductionType type;
     private final Set<LayoutConstraintAttribute> layoutConstraints;
-    private boolean isIgnoreLayoutConstraint = false;
+    private final boolean isIgnoreLayoutConstraint;
+    private final boolean isLongestMatch;
 
     private final long cachedContextBitmapL;
     private final long cachedContextBitmapR;
@@ -171,11 +173,22 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
         
         layoutConstraints = Sets.newHashSet();
+        boolean ignoreLayout = false;
+        boolean longestMatch = false;
         for(IAttribute attr : attrs) {
             if(attr instanceof LayoutConstraintAttribute) {
-                layoutConstraints.add((LayoutConstraintAttribute) attr);
+                if(((LayoutConstraintAttribute) attr).getLayoutConstraint() instanceof IgnoreLayoutConstraint) {
+                    ignoreLayout = true;
+                } else {
+                    layoutConstraints.add((LayoutConstraintAttribute) attr);
+                }                
+            }
+            if(attr instanceof GeneralAttribute && ((GeneralAttribute) attr).getName().equals("longest-match")) {
+                longestMatch = true;
             }
         }
+        isLongestMatch = longestMatch;
+        isIgnoreLayoutConstraint = ignoreLayout;
     }
 
     private boolean getIsLayout() {
@@ -218,7 +231,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
             if(s instanceof CharacterClass) {
                 CharacterClass intCC = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().fromRange(48, 57));
                 if(!((CharacterClass) s).isEmptyCC()) {
-                    if(intCC.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
+                    if(s.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
                         return (CharacterClass) s;
                     }
                 } else {
@@ -400,6 +413,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     @Override public boolean isSkippableInParseForest() {
         return isSkippableInParseForest;
+    }
+
+    @Override public boolean isLongestMatch() {
+        return isLongestMatch;
     }
 
 }

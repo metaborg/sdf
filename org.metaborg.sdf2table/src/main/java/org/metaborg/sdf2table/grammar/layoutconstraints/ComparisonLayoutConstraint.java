@@ -6,9 +6,9 @@ public class ComparisonLayoutConstraint implements Serializable, ILayoutConstrai
 
     private static final long serialVersionUID = 1242424170982278419L;
 
-    ILayoutConstraint c1;
-    LayoutConstraintComparisonOperator op;
-    ILayoutConstraint c2;
+    private final ILayoutConstraint c1;
+    private final LayoutConstraintComparisonOperator op;
+    private final ILayoutConstraint c2;
     
     public ComparisonLayoutConstraint(ILayoutConstraint c1, LayoutConstraintComparisonOperator op, ILayoutConstraint c2) {
         this.c1 = c1;
@@ -18,5 +18,17 @@ public class ComparisonLayoutConstraint implements Serializable, ILayoutConstrai
     
     @Override public String toString() {        
         return c1.toString() + " " + op.toString() + " " + c2.toString();
+    }
+
+    public ILayoutConstraint getC1() {
+        return c1;
+    }
+
+    public LayoutConstraintComparisonOperator getOp() {
+        return op;
+    }
+
+    public ILayoutConstraint getC2() {
+        return c2;
     }
 }

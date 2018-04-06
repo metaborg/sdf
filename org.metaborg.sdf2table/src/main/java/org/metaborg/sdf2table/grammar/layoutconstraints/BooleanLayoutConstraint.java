@@ -6,9 +6,9 @@ public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint 
 
     private static final long serialVersionUID = -3495667446825489885L;
 
-    ILayoutConstraint c1;
-    LayoutConstraintBooleanOperator op;
-    ILayoutConstraint c2;
+    private final ILayoutConstraint c1;
+    private final LayoutConstraintBooleanOperator op;
+    private final ILayoutConstraint c2;
 
     public BooleanLayoutConstraint(ILayoutConstraint c1, LayoutConstraintBooleanOperator op, ILayoutConstraint c2) {
         this.c1 = c1;
@@ -22,5 +22,17 @@ public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint 
         } else {
             return c1.toString() + " " + op.toString() + " " + c2.toString();
         }
+    }
+
+    public ILayoutConstraint getC1() {
+        return c1;
+    }
+
+    public LayoutConstraintBooleanOperator getOp() {
+        return op;
+    }
+
+    public ILayoutConstraint getC2() {
+        return c2;
     }
 }

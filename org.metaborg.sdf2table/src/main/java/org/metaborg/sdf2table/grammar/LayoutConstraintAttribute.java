@@ -34,8 +34,9 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     @Override public String toString() {
         if(constraint instanceof IStrategoAppl && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
             return "ignore-layout";
-        } else
-            return "layout(\"" + constraint + "\")";
+        } else {
+            return lc.toString();
+        }
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
@@ -45,9 +46,8 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
         try {
             IStrategoTerm sdf2Constraint = toSDF2constraint(constraint, tf);
-            return tf.makeAppl(tf.makeConstructor("term", 1),
-                tf.makeAppl(tf.makeConstructor("layout", 1), (sdf2Constraint != null
-                    ? sdf2Constraint : tf.makeAppl(tf.makeConstructor("null", 0)))));
+            return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("layout", 1),
+                (sdf2Constraint != null ? sdf2Constraint : tf.makeAppl(tf.makeConstructor("null", 0)))));
         } catch(Exception e) {
             System.err.println("Layout constraint could not be transformed to SDF2 constraint.");
             return tf.makeAppl(tf.makeConstructor("layout", 1), tf.makeAppl(tf.makeConstructor("null", 0)));
@@ -200,7 +200,8 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Right")) {
             return tf.makeAppl(tf.makeConstructor("right", 1), toSDF2constraint(c.getSubterm(0), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Tree")) {
-            return c.getSubterm(1);
+            String tree = c.getSubterm(0).toString();
+            return tf.makeInt(Integer.parseInt(tree.substring(1, tree.length() - 1)));
         } else {
             throw new Exception("Not a valid Layout Constraint: " + c);
         }
