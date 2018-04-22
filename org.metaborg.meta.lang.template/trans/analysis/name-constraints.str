@@ -308,7 +308,7 @@ rules
           <not(fetch-elem(?Reject()))> attrs*;
           s' := <strip-annos> s;
             bracketanno := <fetch-elem(?Bracket())> attrs*; //it has the bracket anno
-            <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> rhs* //it does not follow the bracket structure
+            <not(?[_, Sort(sort), _])> rhs* //it does not follow the bracket structure
 
     prod-with-illegal-brackets:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> bracketanno
@@ -317,7 +317,7 @@ rules
           s'      := <strip-annos> s;
             rhs     := <template-to-sdf(|["(", ")"], None(), "")> template;
             bracketanno := <fetch-elem(?Bracket())> attrs*;
-            <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs
+            <not(?[_, sort(sort), _])> rhs
 
     prod-with-illegal-brackets:
         SdfProductionWithCons(sc, rhs, Attrs(attrs*)) -> bracketanno
