@@ -31,6 +31,10 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     public static boolean isNewLine(int character) {
         return character != EOF_INT && ((char) character) == '\n';
     }
+    
+    public static boolean isTab(int character) {
+        return character != EOF_INT && ((char) character) == '\t';
+    }
 
     public CharacterClassFactory(boolean optimize, boolean cache) {
         this.optimize = optimize;
