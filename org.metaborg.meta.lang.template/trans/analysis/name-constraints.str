@@ -15,10 +15,30 @@ imports
   generation/syntax/to-sdf
   analysis/desugar
   runtime/properties/-
-  signatures/TemplateLang-sig
-  signatures/modules/Modules-sig
-  signatures/sorts/Sorts-sig
-  signatures/sdf2-core/Sdf2-sig
+  generation/gen-utils/remove-template
+  
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig 
+  
 
 strategies
 
@@ -79,6 +99,20 @@ rules
         <has-annotation(?Use(task))> c;
         msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
         <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+        
+    nabl-constraint(|ctx):
+      sc@LabelRef(l) -> <fail>
+      where
+        <has-annotation(?Use(task))> l;
+        msg := $[Invalid tree selector - undefined label '[l]'];
+        <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
+        
+    nabl-constraint(|ctx):
+      sc@LabelRef(l) -> <fail>
+      where
+        <has-annotation(?Use(task))> l;
+        msg := $[Invalid tree selector - multiple definitions for label '[l]'];
+        <task-create-error-on-triggers(|ctx, [Multiple(task)], msg)> sc    
     
     nabl-constraint(|ctx):
       Module(Unparameterized(m)) -> <fail>
@@ -132,9 +166,72 @@ rules
     
    
     
-    
-    
+    nabl-constraint(|ctx):
+      Module(Unparameterized(m), i*, s*) -> <fail>
+    where
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> s*;
+      prods* := <filter(?SDFSection(ContextFreeSyntax(<id>)) <+ ?SDFSection(Kernel(<id>))); flatten-list> s*;
+      positions* := <filter(check-for-pos-ref(|chars)); flatten-list> prods*;
+      literals*  := <filter(check-for-literals(|chars)); flatten-list> prods*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*
+      
+    check-for-pos-ref(|chars) :
+        prod -> invalid* 
+        where
+          posRef* := <collect-all(?PosRef(<id>), collapse-lists)> prod;
+          invalid* := <filter(is-invalid-pos(|prod, chars))> posRef* 
           
+    is-invalid-pos(|p, chars) :
+        position -> <id>
+        where
+          intPos := <string-to-int> position; 
+          <gt> (intPos, <production-arity(|chars)> p) 
+    
+    production-arity(|chars) :
+      SdfProduction(_, Rhs(rhs*), _) -> <length> rhs*
+      
+    production-arity(|chars) :
+      SdfProductionWithCons(_, Rhs(rhs*), _) -> <length> rhs*
+      
+    production-arity(|chars) :
+      t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
+      
+    production-arity(|chars) :
+      t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
+          
+    collapse-lists:
+      (l1*, l2*) -> [l1*, l2*]
+        
+    check-for-literals(|chars) :
+        prod -> invalid*
+    where
+       litRef* := <collect-all(?LiteralRef(<id>), collapse-lists)> prod;
+       invalid* := <filter(is-invalid-lit(|prod, chars))> litRef*
+    
+    is-invalid-lit(|prod, chars):
+      lit -> <id>
+      where
+        literal := Lit(lit);
+        <not( get-production-rhs(|chars); is-defined-not-duplicated-literal(|literal))> prod
+        
+    get-production-rhs(|chars):
+      SdfProduction(_, Rhs(rhs*), _) -> rhs*
+    
+    get-production-rhs(|chars):
+      SdfProductionWithCons(_, Rhs(rhs*), _) -> rhs*
+      
+    get-production-rhs(|chars):
+      t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
+    
+    get-production-rhs(|chars):
+      t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
+      
+    is-defined-not-duplicated-literal(|lit):
+      rhs* ->  <eq> (1, <length> rhs'*)
+        where
+          rhs'* := <filter(?lit)> rhs*        
+      
     nabl-constraint(|lang, ctx, uri*):
       String(s) -> <fail>
     where

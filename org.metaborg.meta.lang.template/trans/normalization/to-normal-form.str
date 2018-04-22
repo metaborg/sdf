@@ -71,7 +71,7 @@ rules
             kfr                        := <collect-one(?KeywordFollowRestriction(<id>)) <+ !None()> sections*;
             kattrs                     := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections*;
             
-            desugared-sections*        := <lift-all; desugar-templates> sections*;
+            desugared-sections*        := <lift-all; desugar-templates; desugar-layout-constraints(|tokenize-chars)> sections*;
             new-lex-restrictions*      := <generate-follow-restrictions-reject-keywords(|kfr, tokenize-chars, kattrs)> desugared-sections*;
             non-template-sections*     := <remove-templates(|tokenize-chars); topdown(try(sugar-attributes))> [desugared-sections*, new-lex-restrictions*];
             

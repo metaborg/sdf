@@ -366,6 +366,9 @@ public class GrammarReader {
                 case "FileStart":
                     symbol = new FileStartSymbol();
                     break;
+                case "Label":
+                    symbol = processSymbol(g, app.getSubterm(1));
+                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;

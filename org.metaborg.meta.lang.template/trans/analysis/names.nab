@@ -35,18 +35,23 @@ binding rules
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
+    scopes Label
+      
       
   p@SdfProduction(Lex(SortDef(s)), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)
+    scopes Label
    
    p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)  of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
+    scopes Label
       
   p@SdfProduction(Cf(SortDef(s)), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)
+    scopes Label
   
   //Regular Productions
   p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs): 
@@ -54,18 +59,22 @@ binding rules
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
+    scopes Label
   
   p@SdfProduction(SortDef(s), rhs, attrs): 
     defines non-unique Sort s of type SortType(s)
+    scopes Label
           
   p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs): 
     defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
      where t has type ty*
+     scopes Label
   
   p@TemplateProduction(SortDef(s), t, attrs): 
     defines non-unique Sort s of type SortType(s) 
+    scopes Label
  
  DeclSort(s):
   defines non-unique Sort s of type SortType(s) 
@@ -84,4 +93,9 @@ binding rules
   	  	
  Sort(s):
  	refers to Sort s 
-  	
+  
+ Label(Unquoted(l), _): 
+  defines unique Label l
+  
+ LabelRef(l):
+  refers to Label l

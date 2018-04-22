@@ -6,6 +6,7 @@ imports
   utils/misc
   libspoofax/term/origin
   libspoofax/term/annotation
+  analysis/name-constraints
 
 signature constructors
 	// desugar templates with one line into a single line template
@@ -164,5 +165,106 @@ rules
   
   desugar-brackets:
   	Angled(p) ->  p
+  	
+rules
+
+  desugar-layout-constraints(|chars):
+    sections* -> sections'*
+    where
+      sections'* := <map(desugar-lc-section(|chars) <+ id)> sections*
+      
+  desugar-lc-section(|chars):
+    SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax(p'*))
+    where
+      p'* := <map(desugar-lc-prod(|chars))> p*
+      
+  desugar-lc-section(|chars):
+    SDFSection(Kernel(p*)) -> SDFSection(Kernel(p'*))
+    where
+      p'* := <map(desugar-lc-prod(|chars))> p*
+      
+  desugar-lc-prod(|chars):
+    SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
+    where
+      attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
+      
+  desugar-lc-prod(|chars):
+    SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs'*))
+      where
+      attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
+      
+  desugar-lc-prod(|chars):
+    t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> TemplateProduction(lhs, rhs, Attrs(attrs'*))
+    where
+      rhs*    := <get-production-rhs(|chars)> t;
+      attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
+      
+  desugar-lc-prod(|chars):
+    t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> TemplateProductionWithCons(lhs, rhs, Attrs(attrs'*))
+    where
+      rhs*    := <get-production-rhs(|chars)> t;
+      attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
   
+  desugar-lc-attr(|rhs*):
+    LayoutConstraint(constraint) -> LayoutConstraint(constraint') 
+    where
+      constraint' := <topdown(try(rewrite-constraint(|rhs*)))> constraint 
+      
+  rewrite-constraint(|rhs*):
+    Indent(ref-pos, pos*) -> constraint
+    where
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      constraint := <map(get-tree-position(|rhs*); create-indent-constraint(|ref-pos')); combine-constraints> pos*
+    
+  rewrite-constraint(|rhs*):
+    Offside(ref-pos, pos*) -> constraint
+    where
+      <not(?[])> pos*;
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      constraint := <map(get-tree-position(|rhs*); create-offside-constraint(|ref-pos')); combine-constraints> pos*
+      
+  combine-constraints:
+    [x | xs] -> And(x, <combine-constraints> xs)
+    where
+      <not(?[])> xs    
   
+  combine-constraints:
+    [x] -> x
+      
+  rewrite-constraint(|rhs*):
+    Offside(ref-pos, pos*) -> Gt(Col(Left(ref-pos')), Col(First(ref-pos')))
+    where
+      <?[]> pos*;
+      ref-pos' := <get-tree-position(|rhs*)> ref-pos
+    
+  rewrite-constraint(|rhs*):
+    Align(ref-pos, pos*) -> constraint
+    where
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); combine-constraints> pos*
+    
+  get-tree-position(|rhs*):
+    PosRef(p) -> Tree(p)  
+  
+  get-tree-position(|rhs*):
+    LiteralRef(l) -> Tree(<int-to-string> p)
+    where
+      p := <get-index> (Lit(l), rhs*)
+      
+  get-tree-position(|rhs*):
+    LabelRef(l) -> Tree(<int-to-string> p)
+    where
+      l'    := <strip-annos> l;
+      rhs'* := <strip-annos> rhs*;
+      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*;
+      p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)  
+  
+  create-offside-constraint(|ref-pos):
+    Tree(p) -> Gt(Col(Left(Tree(p))), Col(First(ref-pos)))
+    
+  create-indent-constraint(|ref-pos):
+    Tree(p) -> Gt(Col(First(Tree(p))), Col(First(ref-pos)))
+    
+  create-align-constraint(|ref-pos):
+    Tree(p) -> Eq(Col(First(Tree(p))), Col(First(ref-pos)))
+    

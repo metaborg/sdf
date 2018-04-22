@@ -1,6 +1,8 @@
 module layout-constraints/Layout-Constraints
 
 imports constants/NatCon
+        constants/StrCon
+        constants/IdentifierCon
 
 lexical syntax
 
@@ -36,21 +38,34 @@ context-free syntax
   Constraint.Ge = <<Constraint> \>= <Constraint>> 
   Constraint.And = <<Constraint> && <Constraint>> 
   Constraint.Or = <<Constraint> || <Constraint>> 
-
+  
+  ShortConstraint.And = <<ShortConstraint> && <ShortConstraint>> {left}
+  ShortConstraint.Or  = <<ShortConstraint> || <ShortConstraint>> {left}
+  ShortConstraint.Offside = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.Indent  = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align   = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  
+  ConstraintTreeReference.PosRef   = NatCon
+  ConstraintTreeReference.LiteralRef = StrCon
+  ConstraintTreeReference.LabelRef = IdCon
+  
+  
 context-free priorities
 
-    Constraint.Not > {right:
+    Constraint.Not > {left:
     Constraint.Mul
-    Constraint.Div } > {right:
+    Constraint.Div } > {left:
     Constraint.Add
-    Constraint.Sub} > {right:
+    Constraint.Sub} > {left:
     Constraint.Eq 
     Constraint.Lt 
     Constraint.Le
     Constraint.Gt 
-    Constraint.Ge} > {right:
-    Constraint.And} > {right:
-    Constraint.Or}
+    Constraint.Ge} > {left:
+    Constraint.And} > {left:
+    Constraint.Or},
+    
+    {left: ShortConstraint.And ShortConstraint.Or}
     
     
 context-free syntax

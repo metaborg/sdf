@@ -71,6 +71,7 @@ context-free syntax
     ATermAttribute = <placeholder-insertion> {reject}
     ATermAttribute = <literal-completion> {reject}
     ATermAttribute = <layout(<Constraint>)> {reject}
+    ATermAttribute = <layout(<ShortConstraint>)> {reject}
     ATermAttribute = <lc(<NewLayoutConstraint>)> {reject}
     ATermAttribute = <no-lc> {reject}
     ATermAttribute = <deprecated(<StrCon>)> {reject}
