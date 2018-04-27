@@ -43,7 +43,7 @@ context-free syntax
   ShortConstraint.Or  = <<ShortConstraint> || <ShortConstraint>> {left}
   ShortConstraint.Offside = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
   ShortConstraint.Indent  = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align   = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align   = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
   
   ConstraintTreeReference.PosRef   = NatCon
   ConstraintTreeReference.LiteralRef = StrCon

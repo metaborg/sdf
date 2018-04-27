@@ -7,6 +7,28 @@ imports
   libspoofax/term/origin
   libspoofax/term/annotation
   analysis/name-constraints
+  
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig 
 
 signature constructors
 	// desugar templates with one line into a single line template
@@ -174,15 +196,59 @@ rules
       sections'* := <map(desugar-lc-section(|chars) <+ id)> sections*
       
   desugar-lc-section(|chars):
-    SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax(p'*))
+    SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax([p'*, align-list*]))
     where
-      p'* := <map(desugar-lc-prod(|chars))> p*
+      align-list* := <filter(create-productions-align-list(|chars)); flatten-list> p*;
+      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(flatten-list))> p*
       
   desugar-lc-section(|chars):
-    SDFSection(Kernel(p*)) -> SDFSection(Kernel(p'*))
+    SDFSection(Kernel(p*)) -> SDFSection(Kernel([p'*, align-list*]))
     where
-      p'* := <map(desugar-lc-prod(|chars))> p*
+      align-list* := <filter(create-productions-align-list(|chars)); flatten-list> p*;
+      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(flatten-list))> p*
       
+  create-productions-align-list(|chars):
+    SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
+    where
+      pos*           := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> attrs*;
+      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
+      prods*         := <filter(generate-align-productions)> non-terminals*
+            
+  create-productions-align-list(|chars):
+    SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
+    where
+      pos*           := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> attrs*;
+      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
+      prods*         := <filter(generate-align-productions)> non-terminals*
+            
+  create-productions-align-list(|chars):
+    t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
+    where
+      rhs*           := <get-production-rhs(|chars)> t;
+      pos*           := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> attrs*;
+      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
+      prods*         := <filter(generate-align-productions)> non-terminals*
+      
+  create-productions-align-list(|chars):
+    t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
+    where
+      rhs*           := <get-production-rhs(|chars)> t;
+      pos*           := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> attrs*;
+      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
+      prods*         := <filter(generate-align-productions)> non-terminals* 
+      
+  generate-align-productions:
+    Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
+  
+  generate-align-productions:
+    IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
+  
+  generate-align-productions:
+    IterSep(s, sep) -> SdfProduction(Iter(s), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+    
+  generate-align-productions:
+    IterStarSep(s, sep) -> SdfProduction(Iter(s), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+        
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
     where
@@ -214,14 +280,14 @@ rules
     Indent(ref-pos, pos*) -> constraint
     where
       ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
-      constraint := <map(get-tree-position(|rhs*); create-indent-constraint(|ref-pos')); combine-constraints> pos*
+      constraint := <map(get-tree-position(|rhs*); create-indent-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
     
   rewrite-constraint(|rhs*):
     Offside(ref-pos, pos*) -> constraint
     where
       <not(?[])> pos*;
       ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
-      constraint := <map(get-tree-position(|rhs*); create-offside-constraint(|ref-pos')); combine-constraints> pos*
+      constraint := <map(get-tree-position(|rhs*); create-offside-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
       
   combine-constraints:
     [x | xs] -> And(x, <combine-constraints> xs)
@@ -240,8 +306,9 @@ rules
   rewrite-constraint(|rhs*):
     Align(ref-pos, pos*) -> constraint
     where
+      <not(?[])> pos*;
       ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
-      constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); combine-constraints> pos*
+      constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
     
   get-tree-position(|rhs*):
     PosRef(p) -> Tree(p)  
@@ -258,6 +325,24 @@ rules
       rhs'* := <strip-annos> rhs*;
       <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*;
       p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)  
+      
+  get-non-terminal-symbol(|rhs*):
+    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int> p, rhs*)
+    
+  get-non-terminal-symbol(|rhs*):
+    PosRef(p) -> <index> (<string-to-int> p, rhs*)
+      
+  get-non-terminal-symbol(|rhs*):
+    LabelRef(l) -> symbol
+    where
+      l'    := <strip-annos> l;
+      rhs'* := <strip-annos> rhs*;
+      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'* 
+  
+  get-non-terminal-symbol(|rhs*):
+    LiteralRef(l) -> symbol
+    where
+      symbol := <fetch-elem(?Lit(l))> rhs*
   
   create-offside-constraint(|ref-pos):
     Tree(p) -> Gt(Col(Left(Tree(p))), Col(First(ref-pos)))
@@ -267,4 +352,18 @@ rules
     
   create-align-constraint(|ref-pos):
     Tree(p) -> Eq(Col(First(Tree(p))), Col(First(ref-pos)))
+   
+  remove-align-list-constraints:
+    And(Align(_, []), c) -> c
     
+  remove-align-list-constraints:
+    And(c, Align(_, [])) -> c
+  
+  remove-align-list-constraints:
+    Or(Align(_, []), c) -> c
+  
+  remove-align-list-constraints:
+    Or(c, Align(_, [])) -> c
+    
+  remove-align-list-constraints:
+    LayoutConstraint(Align(_, [])) -> []

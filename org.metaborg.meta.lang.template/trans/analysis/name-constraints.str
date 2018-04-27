@@ -169,17 +169,19 @@ rules
     nabl-constraint(|ctx):
       Module(Unparameterized(m), i*, s*) -> <fail>
     where
-      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> s*;
-      prods* := <filter(?SDFSection(ContextFreeSyntax(<id>)) <+ ?SDFSection(Kernel(<id>))); flatten-list> s*;
-      positions* := <filter(check-for-pos-ref(|chars)); flatten-list> prods*;
-      literals*  := <filter(check-for-literals(|chars)); flatten-list> prods*;
+      chars       := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> s*;
+      prods*      := <filter(?SDFSection(ContextFreeSyntax(<id>)) <+ ?SDFSection(Kernel(<id>))); flatten-list> s*;
+      positions*  := <filter(check-for-pos-ref(|chars)); flatten-list> prods*;
+      literals*   := <filter(check-for-literals(|chars)); flatten-list> prods*;
+      align-list* := <filter(check-align-list(|chars)); flatten-list> prods*;
       <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*
+      <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - unary align should be applied to list non-terminal]))> align-list*
       
     check-for-pos-ref(|chars) :
         prod -> invalid* 
         where
-          posRef* := <collect-all(?PosRef(<id>), collapse-lists)> prod;
+          posRef*  := <collect-all(?PosRef(<id>), collapse-lists)> prod;
           invalid* := <filter(is-invalid-pos(|prod, chars))> posRef* 
           
     is-invalid-pos(|p, chars) :
@@ -213,7 +215,7 @@ rules
       lit -> <id>
       where
         literal := Lit(lit);
-        <not( get-production-rhs(|chars); is-defined-not-duplicated-literal(|literal))> prod
+        <not(get-production-rhs(|chars); is-defined-not-duplicated-literal(|literal))> prod
         
     get-production-rhs(|chars):
       SdfProduction(_, Rhs(rhs*), _) -> rhs*
@@ -227,10 +229,34 @@ rules
     get-production-rhs(|chars):
       t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
       
+    get-production-attrs:
+      SdfProduction(_, _, Attrs(attrs*)) -> attrs*
+    
+    get-production-attrs:
+      SdfProductionWithCons(_, _, Attrs(attrs*)) -> attrs*
+      
+    get-production-attrs:
+      TemplateProduction(_, _, Attrs(attrs*)) -> attrs*
+      
+    get-production-attrs:
+      TemplateProductionWithCons(_, _, Attrs(attrs*)) -> attrs*      
+      
     is-defined-not-duplicated-literal(|lit):
       rhs* ->  <eq> (1, <length> rhs'*)
         where
-          rhs'* := <filter(?lit)> rhs*        
+          rhs'* := <filter(?lit)> rhs*       
+          
+    check-align-list(|chars):
+      prod -> invalid*
+        where
+          rhs*     := <get-production-rhs(|chars)> prod;
+          pos*     := <get-production-attrs; collect-all(?Align(<id>, []), collapse-lists); not(?[])> prod;
+          invalid* := <filter(check-non-terminal-symbol(|rhs*))> pos*
+          
+    check-non-terminal-symbol(|rhs*):
+      pos -> <id>
+      where
+        <get-non-terminal-symbol(|rhs*); not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _)) > pos
       
     nabl-constraint(|lang, ctx, uri*):
       String(s) -> <fail>

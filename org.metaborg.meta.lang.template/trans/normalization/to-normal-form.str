@@ -529,6 +529,9 @@ rules
 //            ;new-priorities* := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, kernel-symbols*]
                   
     regular-norm-symbol:
+      Label(_, s) -> <regular-norm-symbol> s              
+                  
+    regular-norm-symbol:
         s@Lex(Sequence(h, tail*)) -> [SdfProduction(s, Rhs(lex-s*), NoAttrs()), lex-injs*, regular-prods-lex-s*]
         with
           lex-s-injs*             := <map(lex-norm-symb <+ !(<id>, []))> [h | tail*];
