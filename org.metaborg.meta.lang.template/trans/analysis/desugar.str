@@ -198,14 +198,14 @@ rules
   desugar-lc-section(|chars):
     SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax([p'*, align-list*]))
     where
-      align-list* := <filter(create-productions-align-list(|chars)); flatten-list> p*;
-      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(flatten-list))> p*
+      align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
+      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(remove-align-list-constraint)); topdown(try(flatten-list))> p*
       
   desugar-lc-section(|chars):
     SDFSection(Kernel(p*)) -> SDFSection(Kernel([p'*, align-list*]))
     where
-      align-list* := <filter(create-productions-align-list(|chars)); flatten-list> p*;
-      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(flatten-list))> p*
+      align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
+      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(remove-align-list-constraint)); topdown(try(flatten-list))> p*
       
   create-productions-align-list(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
@@ -365,5 +365,5 @@ rules
   remove-align-list-constraints:
     Or(c, Align(_, [])) -> c
     
-  remove-align-list-constraints:
+  remove-align-list-constraint:
     LayoutConstraint(Align(_, [])) -> []
