@@ -199,7 +199,7 @@ rules
     SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax([p'*, align-list*]))
     where
       align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
-      p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-constraints)); topdown(try(remove-align-list-constraint)); topdown(try(flatten-list))> p*
+      p'*         := <map(desugar-lc-prod(|chars)); innermost(remove-align-list-constraints); topdown(try(remove-align-list-constraint)); topdown(try(flatten-list))> p*
       
   desugar-lc-section(|chars):
     SDFSection(Kernel(p*)) -> SDFSection(Kernel([p'*, align-list*]))
@@ -244,10 +244,10 @@ rules
     IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
   
   generate-align-productions:
-    IterSep(s, sep) -> SdfProduction(Iter(s), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+    IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
     
   generate-align-productions:
-    IterStarSep(s, sep) -> SdfProduction(Iter(s), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+    IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
         
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
