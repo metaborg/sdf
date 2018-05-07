@@ -529,7 +529,13 @@ rules
 //            ;new-priorities* := <filter(regular-norm-symbol-prio); flatten-list>  [cf-symbols*, lex-symbols*, kernel-symbols*]
                   
     regular-norm-symbol:
-      Label(_, s) -> <regular-norm-symbol> s              
+      Label(_, s) -> <regular-norm-symbol> s
+      
+    regular-norm-symbol:
+      Cf(Label(_, s)) -> <strip-annos; regular-norm-symbol> Cf(s)
+      
+    regular-norm-symbol:
+      Lex(Label(_, s)) -> <strip-annos; regular-norm-symbol> Lex(s)             
                   
     regular-norm-symbol:
         s@Lex(Sequence(h, tail*)) -> [SdfProduction(s, Rhs(lex-s*), NoAttrs()), lex-injs*, regular-prods-lex-s*]
