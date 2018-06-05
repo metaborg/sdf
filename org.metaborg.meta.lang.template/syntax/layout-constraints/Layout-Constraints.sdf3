@@ -39,11 +39,22 @@ context-free syntax
   Constraint.And = <<Constraint> && <Constraint>> 
   Constraint.Or = <<Constraint> || <Constraint>> 
   
-  ShortConstraint.And = <<ShortConstraint> && <ShortConstraint>> {left}
-  ShortConstraint.Or  = <<ShortConstraint> || <ShortConstraint>> {left}
-  ShortConstraint.Offside = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
-  ShortConstraint.Indent  = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align   = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.And              = <<ShortConstraint> && <ShortConstraint>> {left}
+  ShortConstraint.Or               = <<ShortConstraint> || <ShortConstraint>> {left}
+  
+  ShortConstraint.Offside         = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.Indent          = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align           = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align           = <align-list <ConstraintTreeReference>>
+  ShortConstraint.NewLineIndent   = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+//  ShortConstraint.NewLineIndentBy = <newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  
+  ShortConstraint.PPOffside         = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.PPIndent          = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign           = <pp-align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign           = <pp-align-list <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineIndent   = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
   
   ConstraintTreeReference.PosRef   = NatCon
   ConstraintTreeReference.LiteralRef = StrCon

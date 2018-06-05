@@ -267,7 +267,7 @@ rules
     with
         <reset-counter> "pp";
         line'*           := <map(introduce-labels-line)> line*;
-        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?Align(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?Align(_) <+ ?PPOffside(_, []) <+ ?PPAlign(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
         line''*          := <annotate-lines(|lc-selectors*)> line'*;
         output           := <map(template-line-to-stratego(|lang))> line''*;
         arg*             := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -283,7 +283,9 @@ rules
         <set-current-layout> "";
         switch-ws*       := <map(get-leading-ws-pp); flatten-list> line'*
     with
-        layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _), collapse-lists)> a*;// collect layout constraints ;
+        layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
+                                           ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
+                                           ?PPNewLineIndentBy(_, _, _), collapse-lists)> a*;// collect layout constraints ;
         if <?[]> layout-constraints then
           rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
         else
@@ -295,13 +297,13 @@ rules
   apply-align-layout-constraint(|t, a*):
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     where
-      pos-ref* := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
       elem'*   := <replace-list-align(|pos-ref*)> (1, elem*)
       
   apply-align-layout-constraint(|t, a*):
     Template(line*) -> Template(line'*)
     where
-      pos-ref* := <collect-all(?Align(<id>, []), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
       line'*   := <replace-list-align-line(|pos-ref*)> (1, line*)
       
   replace-list-align-line(|pos-ref*):
@@ -535,7 +537,7 @@ rules
     with
       <reset-counter> "pp";
       line'*        := <map(introduce-labels-line)> line*;
-      lc-selectors* := <collect-om(?Align(_, []) <+ ?Offside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+      lc-selectors* := <collect-om(?Align(_) <+ ?Offside(_, []) <+ ?PPAlign(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
       line''*       := <annotate-lines(|lc-selectors*)> line'*;
       output        := <map(template-line-to-stratego(|lang))> line''*;
       arg*          := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -557,22 +559,48 @@ rules
         (output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
     with
-      align-constraints := <collect-all(?Align(_, [_ | _]), collapse-lists)> a*;
-      if <?[]> align-constraints then
-        rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
-      else
-        rule := Rule(NoAnnoList(input), App(CallT(SVar("add-annotations"), [], [ NoAnnoList(List(<map(create-constraint-term)> align-constraints))])
-                                          , NoAnnoList(List(output'))), cond*)
-      end
+        layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
+                                           ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
+                                           ?PPNewLineIndentBy(_, _, _), collapse-lists)> a*;// collect layout constraints ;
+        if <?[]> layout-constraints then
+          rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
+        else
+          rule := Rule(NoAnnoList(input), App(CallT(SVar("add-annotations"), [], [ NoAnnoList(List(<map(create-constraint-term)> layout-constraints))])
+                                            , NoAnnoList(List(output'))), cond*)
+        end
       
   create-constraint-term:
     Align(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPAlign(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+  
+  create-constraint-term:
+    Align(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    
+  create-constraint-term:
+    PPAlign(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
   
   create-constraint-term:
     Offside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPOffside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
   
   create-constraint-term:
     Indent(ref, target*) -> NoAnnoList(Op("Indent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPIndent(ref, target*) -> NoAnnoList(Op("Indent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    NewLineIndent(ref, target*) -> NoAnnoList(Op("NewLineIndent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))    
+    
+  create-constraint-term:
+    PPNewLineIndent(ref, target*) -> NoAnnoList(Op("NewLineIndent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))  
+    
+  create-constraint-term:
+    PPNewLineIndentBy(nspaces, ref, target*) -> NoAnnoList(Op("NewLineIndentBy", [NoAnnoList(Int(nspaces)), <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))    
 
   create-term-from-ref:
     LabelRef(str) -> NoAnnoList(Op("LabelRef", [NoAnnoList(Str($[[str]]))]))  
@@ -633,10 +661,14 @@ rules
       else
         elem'' := elem'
       end;
-      if align-list-or-offside-constraint := <fetch-elem(?Align(LabelRef(label'), []) + 
-                                                         ?Align(PosRef(start-pos'), []) +
+      if align-list-or-offside-constraint := <fetch-elem(?Align(LabelRef(label')) + 
+                                                         ?Align(PosRef(start-pos')) +
+                                                         ?PPAlign(LabelRef(label')) + 
+                                                         ?PPAlign(PosRef(start-pos')) +
                                                          ?Offside(LabelRef(label'), []) +
-                                                         ?Offside(PosRef(start-pos'), []))> lc-selectors* then 
+                                                         ?Offside(PosRef(start-pos'), []) +
+                                                         ?PPOffside(LabelRef(label'), []) +
+                                                         ?PPOffside(PosRef(start-pos'), []))> lc-selectors* then 
         elem''' := <add-annotation(|align-list-or-offside-constraint)> elem''
       else
         elem''' := elem''
