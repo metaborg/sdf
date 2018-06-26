@@ -34,6 +34,10 @@ public interface IProduction {
 
     boolean isList();
 
+    boolean isListLeftChild();
+
+    boolean isListRightChild();
+
     boolean isOptional();
 
     boolean isCompletionOrRecovery();
