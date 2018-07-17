@@ -1,6 +1,9 @@
 package org.metaborg.sdf2table.grammar.layoutconstraints;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.metaborg.sdf2table.grammar.Symbol;
 
 public class NumericLayoutConstraint implements Serializable, ILayoutConstraint {
 
@@ -8,7 +11,7 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
     
     private final ConstraintElement elem;
     private final ConstraintSelector token;
-    private final int tree;
+    private int tree;
     
     public NumericLayoutConstraint(ConstraintElement elem, ConstraintSelector token, int tree) {
         this.elem = elem;
@@ -31,4 +34,22 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
     public int getTree() {
         return tree;
     }       
+    
+    public void normalizeConstraint(List<Symbol> rhs) {
+        int normalizedtree = 0;
+        int count = tree;
+        for(Symbol s : rhs) {
+            if(s.toString().equals("LAYOUT?-CF")) {
+                normalizedtree++;
+                continue;
+            } else {
+                count--;
+            } 
+            if(count == 0) {
+                tree = normalizedtree;
+                return;
+            }
+            normalizedtree++;
+        }
+    }
 }

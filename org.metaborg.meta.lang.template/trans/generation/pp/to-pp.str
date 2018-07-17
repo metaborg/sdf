@@ -523,7 +523,7 @@ rules
         <?IterSep(_, Lit(sep)) + ?IterStarSep(_, Lit(sep))> sort                              
   
   template-to-pp(|lang):
-    TemplateProduction(SortDef(s), t, Attrs(a*)) ->
+    template-prod@TemplateProduction(SortDef(s), t, Attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[lang]-[s]]
       , rule 
@@ -531,9 +531,11 @@ rules
     where
         not(<fetch-elem(?Reject())> a*)
     with
-        !t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
+        t' := <try(apply-align-layout-constraint(|template-prod, a*))> t    
+    with
+        !t' => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
       < line* := [Line([Layout(""), elem*])] 
-      + !t => Template(line*)
+      + !t' => Template(line*)
     with
       <reset-counter> "pp";
       line'*        := <map(introduce-labels-line)> line*;

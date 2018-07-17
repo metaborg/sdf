@@ -180,7 +180,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
                 if(((LayoutConstraintAttribute) attr).getLayoutConstraint() instanceof IgnoreLayoutConstraint) {
                     ignoreLayout = true;
                 } else {
-                    layoutConstraints.add((LayoutConstraintAttribute) attr);
+                    layoutConstraints.add(normalizeConstraint((LayoutConstraintAttribute) attr, p.rightHand()));
                 }                
             }
             if(attr instanceof GeneralAttribute && ((GeneralAttribute) attr).getName().equals("longest-match")) {
@@ -189,6 +189,11 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         }
         isLongestMatch = longestMatch;
         isIgnoreLayoutConstraint = ignoreLayout;
+    }
+
+    private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<Symbol> rightHand) {
+        attr.getLayoutConstraint().normalizeConstraint(rightHand);
+        return attr;
     }
 
     private boolean getIsLayout() {
