@@ -31,7 +31,7 @@ context-free syntax
   Constraint.Div = <<Constraint> / <Constraint>> 
   Constraint.Add = <<Constraint> + <Constraint>> 
   Constraint.Sub = <<Constraint> - <Constraint>> 
-  Constraint.Eq = <<Constraint> == <Constraint>> 
+  Constraint.Eq = <<Constraint> == <Constraint>>  
   Constraint.Lt = <<Constraint> \< <Constraint>> 
   Constraint.Le = <<Constraint> \<= <Constraint>> 
   Constraint.Gt = <<Constraint> \> <Constraint>> 
@@ -55,6 +55,8 @@ context-free syntax
   ShortConstraint.PPAlign           = <pp-align-list <ConstraintTreeReference>>
   ShortConstraint.PPNewLineIndent   = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
   ShortConstraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPNewLine         = <pp-newline <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineBy       = <pp-newline(<NatCon>) <ConstraintTreeReference>>
   
   ConstraintTreeReference.PosRef   = NatCon
   ConstraintTreeReference.LiteralRef = StrCon

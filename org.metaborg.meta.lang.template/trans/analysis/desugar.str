@@ -377,4 +377,4 @@ rules
   remove-align-list-and-pp-constraints:
     LayoutConstraint(<remove-constraint>) -> []
   
-  remove-constraint = ?Align(_) + ?PPAlign(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _)
+  remove-constraint = ?Align(_) + ?PPAlign(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _)

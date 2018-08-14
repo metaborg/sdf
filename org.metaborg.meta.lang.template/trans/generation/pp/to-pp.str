@@ -285,7 +285,7 @@ rules
     with
         layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
                                            ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
-                                           ?PPNewLineIndentBy(_, _, _), collapse-lists)> a*;// collect layout constraints ;
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
         if <?[]> layout-constraints then
           rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
         else
@@ -563,7 +563,7 @@ rules
     with
         layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
                                            ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
-                                           ?PPNewLineIndentBy(_, _, _), collapse-lists)> a*;// collect layout constraints ;
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
         if <?[]> layout-constraints then
           rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
         else
@@ -600,6 +600,12 @@ rules
     
   create-constraint-term:
     PPNewLineIndent(ref, target*) -> NoAnnoList(Op("NewLineIndent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))  
+    
+  create-constraint-term:
+    PPNewLine(ref) -> NoAnnoList(Op("NewLine", [ <create-term-from-ref> ref ]))    
+    
+  create-constraint-term:
+    PPNewLineBy(nspaces, ref) -> NoAnnoList(Op("NewLineBy", [NoAnnoList(Int(nspaces)), <create-term-from-ref> ref ]))    
     
   create-constraint-term:
     PPNewLineIndentBy(nspaces, ref, target*) -> NoAnnoList(Op("NewLineIndentBy", [NoAnnoList(Int(nspaces)), <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))    
