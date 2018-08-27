@@ -1,6 +1,9 @@
 package org.metaborg.sdf2table.grammar.layoutconstraints;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.metaborg.sdf2table.grammar.Symbol;
 
 public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint {
 
@@ -34,5 +37,11 @@ public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint 
 
     public ILayoutConstraint getC2() {
         return c2;
+    }
+
+    @Override public void normalizeConstraint(List<Symbol> rhs) {
+        c1.normalizeConstraint(rhs);
+        c2.normalizeConstraint(rhs);
+        
     }
 }

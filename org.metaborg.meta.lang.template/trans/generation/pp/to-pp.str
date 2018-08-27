@@ -8,6 +8,8 @@ imports
   analysis/desugar
   generation/gen-utils/to-template
   generation/gen-utils/to-str
+  analysis/name-constraints
+  libspoofax/term/annotation
 
 imports
   signatures/aliases/-
@@ -43,7 +45,7 @@ rules
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0   := Imports([Import("libstratego-gpp"), Import("libspoofax/sdf/pp"), Import("libspoofax/term/origin"), Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0   := Imports([Import("libstratego-gpp"), Import("libspoofax/sdf/pp"), Import("libspoofax/term/origin"), Import("libspoofax/term/annotation"), Import("libstratego-sglr"),  Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
     ; lang := <language-spec-name>
@@ -228,6 +230,160 @@ rules
   sort-to-pp-amb(|lang):
     x -> RDefNoArgs($[prettyprint-[lang]-[x]], RuleNoCond(NoAnnoList(Op("amb", [NoAnnoList(ListTail([Var("h")], Var("hs")))])), App(CallNoArgs(SVar($[prettyprint-[lang]-[x]])), Var("h"))))
   
+  // non-empty production
+  template-to-pp(|lang):
+    template-prod@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
+      [RDefNoArgs(
+        $[prettyprint-[lang]-[s]]
+      , rule
+      ), SDefNoArgs($[is-[lang]-[s]], Match(NoAnnoList(Op(c, WldArg*)))),
+      
+      RDefNoArgs($[[lang]-get-indent], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("indent"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-indent*, Assign(Var("indent"), NoAnnoList(Str("\"\"")))))]))
+      
+      , RDefNoArgs($[[lang]-get-separator], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("separator"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-sep*, Assign(Var("separator"), NoAnnoList(Str("\"\"")))))]))
+        
+      , RDefNoArgs($[[lang]-get-leading-ws], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("ws"), 
+      [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
+        WithClause(SwitchChoice(Build(Var("index")), switch-ws*, Assign(Var("ws"), NoAnnoList(Str("\"\"")))))]))
+      ]
+    where 
+      <not(?SingleLineTemplate([]))> t
+    where
+        not(<fetch-elem(?Reject())> a*)
+    where
+        not(<fetch-elem(?PlaceholderInsertion())> a*)
+    where
+         not(<fetch-elem(?LiteralCompletion())> a*)
+    with
+        t' := <try(apply-align-layout-constraint(|template-prod, a*))> t
+    with
+        !t' => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
+      < line* := [Line([Layout(""), elem*])] 
+      + !t' => Template(line*)
+    with
+        <reset-counter> "pp";
+        line'*           := <map(introduce-labels-line)> line*;
+        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?Align(_) <+ ?PPOffside(_, []) <+ ?PPAlign(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+        line''*          := <annotate-lines(|lc-selectors*)> line'*;
+        output           := <map(template-line-to-stratego(|lang))> line''*;
+        arg*             := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+        WldArg*          := <map(!Wld())> arg*;
+        (output', with*) := <thread-alltd(extract-app)> (output, []);
+        input            := Op(c, arg*)
+    with
+        <reset-counter> "switch";
+        switch-indent*   := <map(get-indent-template-line); flatten-list> line'*;
+        <reset-counter> "switch";
+        switch-sep*      := <map(get-sep-template-line); flatten-list> line'*;
+        <reset-counter> "switch";
+        <set-current-layout> "";
+        switch-ws*       := <map(get-leading-ws-pp); flatten-list> line'*
+    with
+        layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
+                                           ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
+        if <?[]> layout-constraints then
+          rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
+        else
+          rule := Rule(NoAnnoList(input), App(CallT(SVar("add-annotations"), [], [ NoAnnoList(List(<map(create-constraint-term)> layout-constraints))])
+                                            , NoAnnoList(List(output'))), with*)
+        end
+  
+  // for all placeholders X for lists which the list in align constraint X => {X "sep\n"}*
+  apply-align-layout-constraint(|t, a*):
+    SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
+    where
+      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      elem'*   := <replace-list-align(|pos-ref*)> (1, elem*)
+      
+  apply-align-layout-constraint(|t, a*):
+    Template(line*) -> Template(line'*)
+    where
+      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      line'*   := <replace-list-align-line(|pos-ref*)> (1, line*)
+      
+  replace-list-align-line(|pos-ref*):
+    (idx, [Line(elem*) | hs]) -> [Line(elem'*) | <replace-list-align-line(|pos-ref*)> (<addi> (idx, idx'), hs)]    
+    where
+      idx'   := <get-number-elems(|0)> elem*;
+      elem'* := <replace-list-align(|pos-ref*)> (idx, elem*)
+      
+  replace-list-align-line(|pos-ref*):
+    (idx, []) -> []
+  
+  get-number-elems(|n):
+    [h | hs] -> <addi> (<inc> n, <get-number-elems(|n)> hs)
+    where
+      <?String(_) <+ ?Placeholder(_, _)> h
+     
+  get-number-elems(|n):
+    [h | hs] -> <addi> (n, <get-number-elems(|n)> hs)
+    where
+      <not(?String(_) <+ ?Placeholder(_, _))> h   
+   
+  get-number-elems(|n):
+    [] -> n
+  
+  // PosRef(X) or LabelRef(X)    
+  replace-list-align(|pos-ref*):
+    (idx, [h | hs]) -> [h' | <replace-list-align(|pos-ref*)> (<inc> idx, hs)]
+    where
+      <?String(_) <+ ?Placeholder(_, _)> h;
+      label := <try(?Placeholder(Label(Unquoted(<id>), _), _)); strip-annos> h;
+      if <elem> (PosRef(<int-to-string> idx), pos-ref*) 
+         <+ <elem> (LabelRef(label), <strip-annos> pos-ref*) then
+        h' := <try(replace-placeholder-align)> h 
+      else 
+        h' := h
+      end
+      
+  replace-list-align(|pos-ref*):
+    (idx, [h | hs]) -> [h | <replace-list-align(|pos-ref*)> (idx, hs)]
+    where
+      <not(?String(_) <+ ?Placeholder(_, _))> h
+      
+  // PosRef(X) or LabelRef(X)    
+  replace-list-align(|pos-ref*):
+    (idx, []) -> []
+   
+   
+  replace-placeholder-align:
+    Placeholder(Iter(sort), option*) -> Placeholder(IterSep(sort, Lit("\"\\n\"")), option*)
+    
+  replace-placeholder-align:
+    Placeholder(IterStar(sort), option*) -> Placeholder(IterStarSep(sort, Lit("\"\\n\"")), option*)
+      
+  replace-placeholder-align:
+    Placeholder(Label(l, Iter(sort)), option*) -> Placeholder(Label(l, IterSep(sort, Lit("\"\\n\""))), option*)
+    
+  replace-placeholder-align:
+    Placeholder(Label(l, IterStar(sort)), option*) -> Placeholder(Label(l, IterStarSep(sort, Lit("\"\\n\""))), option*)
+  
+  replace-placeholder-align:
+    Placeholder(IterSep(sort, Lit(sep)), option*) -> Placeholder(IterSep(sort, Lit(<conc-strings; double-quote> (<un-double-quote> sep, "\n"))), option*)
+    where
+      <not(string-ends-with(|"\\n\""))> sep
+    
+  replace-placeholder-align:
+    Placeholder(IterStarSep(sort, Lit(sep)), option*) -> Placeholder(IterStarSep(sort, Lit(<conc-strings; double-quote> (<un-double-quote> sep, "\n"))), option*) 
+    where
+      <not(string-ends-with(|"\\n\""))> sep
+      
+  replace-placeholder-align:
+    Placeholder(Label(l, IterSep(sort, Lit(sep))), option*) -> Placeholder(Label(l, IterSep(sort, Lit(<conc-strings; double-quote> (<un-double-quote> sep, "\n")))), option*)
+    where
+      <not(string-ends-with(|"\\n\""))> sep
+    
+  replace-placeholder-align:
+    Placeholder(Label(l, IterStarSep(sort, Lit(sep))), option*) -> Placeholder(Label(l, IterStarSep(sort, Lit(<conc-strings; double-quote> (<un-double-quote> sep, "\n")))), option*)
+    where
+      <not(string-ends-with(|"\\n\""))> sep
+        
+  // empty production 
   template-to-pp(|lang):
     TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, Attrs(a*)) ->
       [RDefNoArgs(
@@ -246,7 +402,11 @@ rules
       , RDefNoArgs($[[lang]-get-leading-ws], Rule(NoAnnoList(Tuple([ As(Var("t"), NoAnnoList(input)), Var("index")])), Var("ws"), 
       [ WhereClause(Seq(Assign(Var("sort"), App(CallNoArgs(SVar("ia-get-sort")), Var("t"))), BA(Match(NoAnnoList(Str(s))), Var("sort")))),
         WithClause(SwitchChoice(Build(Var("index")), switch-ws*, Assign(Var("ws"), NoAnnoList(Str("\"\"")))))]))
+      ,
+        SDefNoArgs("check-nonterminal-isEmpty", Match(NoAnnoList(Op(c, []))))
       ]
+    where 
+      <?SingleLineTemplate([])> t
     where
         not(<fetch-elem(?Reject())> a*)
     where
@@ -363,22 +523,26 @@ rules
         <?IterSep(_, Lit(sep)) + ?IterStarSep(_, Lit(sep))> sort                              
   
   template-to-pp(|lang):
-    TemplateProduction(SortDef(s), t, Attrs(a*)) ->
+    template-prod@TemplateProduction(SortDef(s), t, Attrs(a*)) ->
       RDefNoArgs(
         $[prettyprint-[lang]-[s]]
-      , Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
+      , rule 
       )
     where
         not(<fetch-elem(?Reject())> a*)
     with
-        !t => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
+        t' := <try(apply-align-layout-constraint(|template-prod, a*))> t    
+    with
+        !t' => SingleLineTemplate(elem*) //either line is [Line([Layout(""), elem*])] or a list of TemplateLines
       < line* := [Line([Layout(""), elem*])] 
-      + !t => Template(line*)
+      + !t' => Template(line*)
     with
       <reset-counter> "pp";
-      line'*      := <map(introduce-labels-line)> line*;
-      output      := <map(template-line-to-stratego(|lang))> line'*;
-      arg*        := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
+      line'*        := <map(introduce-labels-line)> line*;
+      lc-selectors* := <collect-om(?Align(_) <+ ?Offside(_, []) <+ ?PPAlign(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+      line''*       := <annotate-lines(|lc-selectors*)> line'*;
+      output        := <map(template-line-to-stratego(|lang))> line''*;
+      arg*          := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
       if !arg* => [arg] then
           if <fetch-elem(?Bracket())> a* then
             input := Op("Parenthetical", arg*);
@@ -396,6 +560,133 @@ rules
         input            := Tuple(arg*);
         (output', cond*) := <thread-alltd(extract-app)> (output, [])
       end
+    with
+        layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
+                                           ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
+        if <?[]> layout-constraints then
+          rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
+        else
+          rule := Rule(NoAnnoList(input), App(CallT(SVar("add-annotations"), [], [ NoAnnoList(List(<map(create-constraint-term)> layout-constraints))])
+                                            , NoAnnoList(List(output'))), cond*)
+        end
+      
+  create-constraint-term:
+    Align(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPAlign(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+  
+  create-constraint-term:
+    Align(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    
+  create-constraint-term:
+    PPAlign(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+  
+  create-constraint-term:
+    Offside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPOffside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+  
+  create-constraint-term:
+    Indent(ref, target*) -> NoAnnoList(Op("Indent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    PPIndent(ref, target*) -> NoAnnoList(Op("Indent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
+    
+  create-constraint-term:
+    NewLineIndent(ref, target*) -> NoAnnoList(Op("NewLineIndent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))    
+    
+  create-constraint-term:
+    PPNewLineIndent(ref, target*) -> NoAnnoList(Op("NewLineIndent", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))  
+    
+  create-constraint-term:
+    PPNewLine(ref) -> NoAnnoList(Op("NewLine", [ <create-term-from-ref> ref ]))    
+    
+  create-constraint-term:
+    PPNewLineBy(nspaces, ref) -> NoAnnoList(Op("NewLineBy", [NoAnnoList(Int(nspaces)), <create-term-from-ref> ref ]))    
+    
+  create-constraint-term:
+    PPNewLineIndentBy(nspaces, ref, target*) -> NoAnnoList(Op("NewLineIndentBy", [NoAnnoList(Int(nspaces)), <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))    
+
+  create-term-from-ref:
+    LabelRef(str) -> NoAnnoList(Op("LabelRef", [NoAnnoList(Str($[[str]]))]))  
+    
+  create-term-from-ref:
+    LiteralRef(str) -> NoAnnoList(Op("LiteralRef", [NoAnnoList(Str($[[str]]))]))    
+    
+  create-term-from-ref:
+    PosRef(str) -> NoAnnoList(Op("PosRef", [NoAnnoList(Int($[[str]]))]))     
+    
+  annotate-lines(|lc-selectors*):
+    lines* -> lines'*
+    with
+      lines'* := <annotate-lines(|lc-selectors*, 1)> lines*
+      
+  annotate-lines(|lc-selectors*, start-pos):
+    [line | lines] -> [line' | <annotate-lines(|lc-selectors*, start-pos')> lines]
+    with
+      (line', start-pos') := <annotate-line(|lc-selectors*, start-pos)> line
+  
+  annotate-lines(|lc-selectors*, start-pos):
+    [] -> []
+      
+  annotate-line(|lc-selectors*, start-pos):
+    Line(elem*) -> (Line(elem'*), <addi> (start-pos, elem-count))
+    with
+      elem-count := <filter(?String(_) + ?Placeholder(_, _)); length> elem*;
+      elem'*     := <annotate-elem(|lc-selectors*, start-pos)> elem*
+       
+  annotate-elem(|lc-selectors*, start-pos):
+    [s@String(t) | elems] -> [elem'' | <annotate-elem(|lc-selectors*, <inc> start-pos)> elems]
+    with
+      t' := <double-quote> t;
+      if <fetch-elem(?LiteralRef(t'))> lc-selectors* then
+        elem' := <add-annotation(|LiteralRef(t))> s
+      else
+        elem' := s
+      end;
+      start-pos' := <int-to-string> start-pos;
+      if <fetch-elem(?PosRef(start-pos'))> lc-selectors* then
+        elem'' := <add-annotation(|PosRef(start-pos))> elem'
+      else
+        elem'' := elem'
+      end
+        
+  annotate-elem(|lc-selectors*, start-pos):
+    [p@Placeholder(Label(Unquoted(label), _), _) | elems] -> [elem''' | <annotate-elem(|lc-selectors*, <inc> start-pos)> elems]
+    with
+      label' := <rtrim-chars(?'_')> label;
+      if <fetch-elem(?LabelRef(label'))> lc-selectors* then
+        elem' := <add-annotation(|LabelRef(<rtrim-chars(?'_')> label))> p
+      else
+        elem' := p
+      end;
+      start-pos' := <int-to-string> start-pos;
+      if <fetch-elem(?PosRef(start-pos'))> lc-selectors* then
+        elem'' := <add-annotation(|PosRef(start-pos))> elem'
+      else
+        elem'' := elem'
+      end;
+      if align-list-or-offside-constraint := <fetch-elem(?Align(LabelRef(label')) + 
+                                                         ?Align(PosRef(start-pos')) +
+                                                         ?PPAlign(LabelRef(label')) + 
+                                                         ?PPAlign(PosRef(start-pos')) +
+                                                         ?Offside(LabelRef(label'), []) +
+                                                         ?Offside(PosRef(start-pos'), []) +
+                                                         ?PPOffside(LabelRef(label'), []) +
+                                                         ?PPOffside(PosRef(start-pos'), []))> lc-selectors* then 
+        elem''' := <add-annotation(|align-list-or-offside-constraint)> elem''
+      else
+        elem''' := elem''
+      end
+        
+  annotate-elem(|lc-selectors*, start-pos):
+    [l@Layout(_) | elems] -> [l | <annotate-elem(|lc-selectors*, start-pos)> elems]
+      
+  annotate-elem(|lc-selectors*, start-pos):
+    [] -> []
   
   is-sort-fail(|lang):                       //needs to be generated for every sort to avoid undefined strategy
     s -> SDefNoArgs($[is-[lang]-[s]], Fail())
@@ -436,7 +727,18 @@ rules
   template-line-to-stratego(|lang):   //template line starting with indentation
     Line([Layout(indent) | elem*]) -> 
       App(
-          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])
+        Seq(
+            CallT(
+              SVar("clean-layout-empty-symbols")
+            , []
+            , [ NoAnnoList(Str("\"\""))
+              , NoAnnoList(Op("FALSE", []))
+              , NoAnnoList(Op("FALSE", []))
+              ]
+            )
+          , Seq(
+              CallNoArgs(SVar("flatten-list")),
+          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])))
         , NoAnnoList(List(elem'*))
       )
     where
@@ -446,8 +748,14 @@ rules
       elem'* := <template-line-elements-to-stratego(|lang)> elem*
  
   template-line-to-stratego(|lang): //template line starting with empty layout
-    Line([Layout("") | elem*]) -> NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
-                    , NoAnnoList(List([t*]))]))   //H([SOpt(HS(), "0")], [t*])
+    Line([Layout("") | elem*]) -> 
+                      NoAnnoList(Op("H", [ NoAnnoList(List([ NoAnnoList(Op("SOpt", [NoAnnoList(Op("HS", [])), NoAnnoList(Str("\"0\""))]))]))
+                                    , App(Seq(
+                                 CallT(SVar("clean-layout-empty-symbols"), [], 
+                                   [NoAnnoList(Str("\"\"")), 
+                                    NoAnnoList(Op("FALSE", [])), 
+                                    NoAnnoList(Op("FALSE", []))]
+                                    ), CallNoArgs(SVar("flatten-list"))) , NoAnnoList(List([t*])))]))   // H([SOpt(HS(), "0")], <clean-layout-empty-symbols(|"", FALSE(), FALSE()); flatten-list> [t*])
     where
       not(!elem* => []);
       t* := <template-line-elements-to-stratego(|lang)> elem*
@@ -461,7 +769,7 @@ rules
     map(try(\Layout(t) -> String(t)\));
     // 2. Collapse consecutive Strings into single String.
     // (Optional, improves readability and performance of generated code.)
-    concatenate-consecutive-strings;
+//    concatenate-consecutive-strings;
     // 3. Map template elements to strings of Stratego code and String cons,
     //    while removing empty strings.
     // (The latter is necessary to prevent spurious blank lines:
@@ -469,8 +777,25 @@ rules
     filter(template-element-to-stratego(|lang))
         
   template-element-to-stratego(|lang):
-    String(t) -> NoAnnoList(Op("S", [NoAnnoList(Str(t'))]))
+    s@String(t){a*} -> NoAnnoList(Op("S", [NoAnnoList(Str(t'))]))
     where
+      <?[]> a*;
+      not(!t => "");
+      t' := <escape; double-quote> t
+      
+  template-element-to-stratego(|lang):
+    s@String(t){a*} -> NoAnnoList(
+                    App(
+                      CallT(
+                        SVar("add-annotations")
+                      , []
+                      , [ NoAnnoList(List(<map(create-term-from-ref)> a*)) ]
+                      )
+                    , NoAnnoList(Op("S", [NoAnnoList(Str(t'))]))
+                    )
+                  )
+    where
+      <not(?[])> a*;
       not(!t => "");
       t' := <escape; double-quote> t
       
@@ -481,14 +806,36 @@ rules
   
   
   template-element-to-stratego(|lang):
-    p@Placeholder(Label(Unquoted(l), Opt(Sort(x))), _) -> App(Call(SVar("pp-option"), [s]), Var(l))
+    p@Placeholder(Label(Unquoted(l), Opt(Sort(x))), _) -> App(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id())
+                                                                        , Call(SVar("pp-option"), [s]))
+                                                            , Var(l))
     with
        s := <placeholder-to-pp-one(|lang)> p
       
   placeholder-to-pp-one(|lang):
-    Placeholder(symbol, option*) -> LChoice(Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[lang]-[s]]))]), 
-                                            Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))
+    Placeholder(symbol, option*){a*} -> LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id())
+                                                 ,  LChoice(Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[lang]-[s]]))]), 
+                                            Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])))
     where
+      <collect-om(?Sort(s))> symbol;
+      <?[]> a*
+    with
+       if <fetch-elem(?Anchor())> option* then
+         ppo := "pp-one-V"
+       else
+         ppo := "pp-one-Z"
+       end
+       
+  placeholder-to-pp-one(|lang):
+    Placeholder(symbol, option*){a*} -> Seq(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id())
+                                         ,  LChoice(Call(SVar(ppo), [CallNoArgs(SVar($[prettyprint-[lang]-[s]]))]), 
+                                            Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))),
+                                              CallT(SVar("add-annotations")
+                                            , []
+                                            , [ NoAnnoList(List(<map(create-constraint-term <+ create-term-from-ref)> a*)) ]
+                                            ))
+    where
+      <not(?[])> a*;
       <collect-om(?Sort(s))> symbol
     with
        if <fetch-elem(?Anchor())> option* then
@@ -499,8 +846,30 @@ rules
     
   //Label(l), Sort(x), <Star() + Plus()>
   template-element-to-stratego(|lang):
-    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*) -> App(LChoice(s,
-                                                                                                   Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])), Var(l))
+    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*){a*} -> App(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id())
+                                                                                         , LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))), 
+                                                                                           Var(l))
+    where
+      <?[]> a*
+    with
+        <fetch-elem(?Wrap())> option* < 
+          <fetch-elem(?Anchor())> option* < 
+            ppl := SVar("pp-HV-list") // wrap and anchor
+              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+        + ppl := SVar("pp-H-list")  // !wrap and !anchor
+    with 
+        ppx := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));
+          // no separator => horizontal box
+          s := Call(ppl, [ppx])
+          
+  //Label(l), Sort(x), <Star() + Plus()>
+  template-element-to-stratego(|lang):
+    Placeholder(Label(Unquoted(l), <?Iter(Sort(x)) + ?IterStar(Sort(x))>), option*){a*} -> App(Seq(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id())
+                                                                                                        , LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))), 
+                                                                                                   CallT(SVar("add-annotations"), [], [NoAnnoList(List(<map(create-constraint-term <+ create-term-from-ref)> a*))])), 
+                                                                                           Var(l))
+    where
+      <not(?[])> a*
     with
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
@@ -513,9 +882,51 @@ rules
           s := Call(ppl, [ppx])
            
   template-element-to-stratego(|lang):
-    Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*) -> App(LChoice(s, 
-                                                                                                                 Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])), Var(l))
-    with
+    placeholder@Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*){a*} -> App(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id()), 
+                                                                                                                     LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))]))), 
+                                                                                                                     Var(l))
+    where 
+        <?[]> a*
+    with 
+        <fetch-elem(?Wrap())> option* < 
+          <fetch-elem(?Anchor())> option* < 
+            ppl := SVar("pp-HV-list") // wrap and anchor
+              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+        + ppl := SVar("pp-H-list")  // !wrap and !anchor
+    with 
+        ppx       := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));
+        vs        := <un-double-quote; unescape; explode-string; occurrences(?'\n'); dec> sep;
+        literals  := <un-double-quote; string-replace(|"\\n", ""); string-replace(|"_from_kernel", "")> sep;
+        kernel    := <un-double-quote; is-substring(!"_from_kernel") < !"1"+ !"0"> sep;
+        literals' := NoAnnoList(Str(<double-quote> literals));
+        switch !(vs, literals, kernel)
+          case ?(_, _, "1"):
+            literals'' := <string-replace(|"_from_kernel", "")> sep;
+            s          := CallT(ppl, [ppx], [NoAnnoList(Str(literals''))])
+          case ?(-1, _, "0"):
+            // separator with literals only => horizontal box with sep option
+            s := CallT(ppl, [ppx], [literals'])
+          case ?(0, "", "0"):
+            // separator is a line break => vertical box
+            s := Call(SVar("pp-V-list"), [ppx])
+          case ?(_, "", "0"):
+            // separator is multiple line breaks => vertical box with vs option
+            svs := <int-to-string; double-quote> vs;
+            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(svs))])
+          otherwise:
+            // separator has mixed line breaks and literals => vertical box with vs and sep options
+            svs := <int-to-string; double-quote> vs;
+            s := CallT(SVar("pp-V-list"), [ppx], [NoAnnoList(Str(svs)), literals'])
+       end
+       
+  template-element-to-stratego(|lang):
+    placeholder@Placeholder(Label(Unquoted(l), <?IterSep(Sort(x), Lit(sep)) + ?IterStarSep(Sort(x), Lit(sep))>), option*){a*} -> App(Seq(LChoice(Seq(CallNoArgs(SVar("check-nonterminal-isEmpty")), Id()), 
+                                                                                                                                       LChoice(s, Call(SVar("pp-one-Z"), [CallNoArgs(SVar("prettyprint-completion-aux"))])))
+                                                                                                                                       , CallT(SVar("add-annotations"), [], [NoAnnoList(List(<map(create-constraint-term <+ create-term-from-ref)> a*))])), 
+                                                                                                                                       Var(l))
+    where 
+        <not(?[])> a*
+    with 
         <fetch-elem(?Wrap())> option* < 
           <fetch-elem(?Anchor())> option* < 
             ppl := SVar("pp-HV-list") // wrap and anchor
