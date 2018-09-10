@@ -1,6 +1,8 @@
 module layout-constraints/Layout-Constraints
 
 imports constants/NatCon
+        constants/StrCon
+        constants/IdentifierCon
 
 lexical syntax
 
@@ -13,48 +15,88 @@ lexical restrictions
   "all" -/- [a-zA-Z0-9]
 
 context-free syntax
-  
-  
-  Constraint.Tree = NatCon 
+   
+  ConstraintTree.Tree = NatCon 
   Constraint.Num = <num(<NatCon>)> 
   Constraint = LayoutVar 
   Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> 
-  Constraint.First = <<Constraint>.first> 
-  Constraint.Left = <<Constraint>.left> 
-  Constraint.Right = <<Constraint>.right> 
-  Constraint.Last = <<Constraint>.last> 
-  Constraint.Line = <<Constraint>.line> 
-  Constraint.Col = <<Constraint>.col> 
+  ConstraintToken.First = <<ConstraintTree>.first> 
+  ConstraintToken.Left = <<ConstraintTree>.left> 
+  ConstraintToken.Right = <<ConstraintTree>.right> 
+  ConstraintToken.Last = <<ConstraintTree>.last> 
+  Constraint.Line = <<ConstraintToken>.line> 
+  Constraint.Col = <<ConstraintToken>.col> 
   Constraint.Not = <!<Constraint>> 
   Constraint.Mul = <<Constraint> * <Constraint>> 
   Constraint.Div = <<Constraint> / <Constraint>> 
   Constraint.Add = <<Constraint> + <Constraint>> 
   Constraint.Sub = <<Constraint> - <Constraint>> 
-  Constraint.Eq = <<Constraint> == <Constraint>> 
+  Constraint.Eq = <<Constraint> == <Constraint>>  
   Constraint.Lt = <<Constraint> \< <Constraint>> 
   Constraint.Le = <<Constraint> \<= <Constraint>> 
   Constraint.Gt = <<Constraint> \> <Constraint>> 
   Constraint.Ge = <<Constraint> \>= <Constraint>> 
   Constraint.And = <<Constraint> && <Constraint>> 
   Constraint.Or = <<Constraint> || <Constraint>> 
-
+  
+  ShortConstraint.And              = <<ShortConstraint> && <ShortConstraint>> {left}
+  ShortConstraint.Or               = <<ShortConstraint> || <ShortConstraint>> {left}
+  
+  ShortConstraint.Offside         = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.Indent          = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align           = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align           = <align-list <ConstraintTreeReference>>
+  ShortConstraint.NewLineIndent   = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+//  ShortConstraint.NewLineIndentBy = <newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  
+  ShortConstraint.PPOffside         = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.PPIndent          = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign           = <pp-align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign           = <pp-align-list <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineIndent   = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPNewLine         = <pp-newline <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineBy       = <pp-newline(<NatCon>) <ConstraintTreeReference>>
+  
+  ConstraintTreeReference.PosRef   = NatCon
+  ConstraintTreeReference.LiteralRef = StrCon
+  ConstraintTreeReference.LabelRef = IdCon
+  
+  
 context-free priorities
 
-  {Constraint.First
-   Constraint.Left
-   Constraint.Right
-   Constraint.Last
-   Constraint.Line
-   Constraint.Col
-   Constraint.Not} > {right:
+    Constraint.Not > {left:
     Constraint.Mul
-    Constraint.Div } > {right:
+    Constraint.Div } > {left:
     Constraint.Add
-    Constraint.Sub} > {right:
+    Constraint.Sub} > {left:
     Constraint.Eq 
     Constraint.Lt 
     Constraint.Le
     Constraint.Gt 
-    Constraint.Ge} > {right:
-    Constraint.And} > {right:
-    Constraint.Or}
+    Constraint.Ge} > {left:
+    Constraint.And} > {left:
+    Constraint.Or},
+    
+    {left: ShortConstraint.And ShortConstraint.Or}
+    
+    
+context-free syntax
+
+  NewLayoutConstraint.Constraint   = <<LCOperand> <LCOperation> <LCOperand>>
+  
+  
+  LCOperation.GreaterThan        = [>]
+  LCOperation.GreaterThanEqual   = [>=]
+  LCOperation.LessThan           = [<]
+  LCOperation.LessThanEqual      = [<=]
+  LCOperation.Equal              = [==]
+  LCOperand.Line                 = <l_<LCTreeIndex>>
+  LCOperand.Column               = <c_<LCTreeIndex>>
+  LCOperand.EndLine              = <el_<LCTreeIndex>>
+  LCOperand.EndColumn            = <ec_<LCTreeIndex>>
+  LCOperand.LineParent           = <l>
+  LCOperand.ColumnParent         = <c>
+  LCOperand.EndLineParent        = <el>
+  LCOperand.EndColumnParent      = <ec>
+  LCTreeIndex.Idx                = NatCon

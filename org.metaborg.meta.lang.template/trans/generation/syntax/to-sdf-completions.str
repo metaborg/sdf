@@ -48,7 +48,7 @@ rules
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections* ;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections* 
     with
-      sections'* := <flatten-list> [ <filter(section-to-sdf3-completions(|chars, newline))> sections*, 
+      sections'* := <flatten-list> [ <desugar-layout-constraints(|chars); filter(section-to-sdf3-completions(|chars, newline))> sections*, 
                       SDFSection(LexicalSyntax([SdfProduction(SortDef("COMPLETION-INSERTION"), Rhs([]), NoAttrs())]))];       
       i'* := <map(imports-to-sdf3-completions)> i*
 
@@ -113,7 +113,7 @@ rules
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       newline := <collect-one(?Newlines(<id>)) <+ !None()> sections 
      with
-      exports-completion := exports(<filter(section-to-sdf-completions(|chars, newline)); flatten-list> sections); 
+      exports-completion := exports(<desugar-layout-constraints(|chars); filter(section-to-sdf-completions(|chars, newline)); flatten-list> sections); 
       if exports([]) := exports-completion
       then
         exports := [exports(lexical-syntax([ prod([], sort("COMPLETION-INSERTION"), no-attrs())]))]

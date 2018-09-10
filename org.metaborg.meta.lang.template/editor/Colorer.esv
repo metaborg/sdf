@@ -20,3 +20,6 @@ colorer
 	_.Lit: 0 0 255
 	_.CiLit: 0 0 255
 	Label._ : 128 128 128
+	_.PosRef : 0 128 0
+	_.LabelRef: 128 128 128
+	_.LiteralRef: 0 0 255

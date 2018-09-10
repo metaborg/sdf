@@ -53,7 +53,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
-    
+
     public NormGrammar readGrammar(File input, List<String> paths) throws Exception {
         Map<String, Boolean> modules = Maps.newHashMap();
         NormGrammar grammar = new NormGrammar();
@@ -104,16 +104,18 @@ public class GrammarReader {
                                 }
                                 // processing import in case it has not been processed yet
                                 if(iname != null && modules.get(iname) == null) {
+                                    IStrategoTerm iModule = null;
                                     for(String path : paths) {
                                         String filename = path + "/" + iname + ".aterm";
                                         File file = new File(filename);
                                         if(file.exists() && !file.isDirectory()) {
-                                            IStrategoTerm iModule = termFromFile(file, g);
+                                            iModule = termFromFile(file, g);
                                             generateGrammar(g, iModule, modules, paths);
                                             break;
-                                        } else {
-                                            throw new ModuleNotFoundException(iname, modName);
                                         }
+                                    }
+                                    if(iModule == null) {
+                                        throw new ModuleNotFoundException(iname, modName);
                                     }
                                 }
 
@@ -159,7 +161,7 @@ public class GrammarReader {
         }
     }
 
-    private void addProds(NormGrammar g, StrategoAppl section) throws UnexpectedTermException {
+    private void addProds(NormGrammar g, StrategoAppl section) throws Exception {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
 
@@ -185,7 +187,7 @@ public class GrammarReader {
         }
     }
 
-    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws UnexpectedTermException {
+    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws Exception {
         IProduction prod = null;
         prod = g.getCacheProductionsRead().get(term.toString());
 
@@ -364,6 +366,9 @@ public class GrammarReader {
                 case "FileStart":
                     symbol = new FileStartSymbol();
                     break;
+                case "Label":
+                    symbol = processSymbol(g, app.getSubterm(1));
+                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;
@@ -406,14 +411,14 @@ public class GrammarReader {
             CharacterClassFactory ccFactory = ParseTableGenerator.getCharacterClassFactory();
             switch(app.getName()) {
                 case "Absent":
-                    return ccFactory .fromEmpty();
+                    return ccFactory.fromEmpty();
                 case "Simple":
                     return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    String strStart =  ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
-                    String strEnd =  ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
+                    String strStart = ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
+                    String strEnd = ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
                     int start = Integer.parseInt(strStart.substring(1));
                     int end = Integer.parseInt(strEnd.substring(1));
                     return ccFactory.fromRange(start, end);
@@ -433,7 +438,7 @@ public class GrammarReader {
         return null;
     }
 
-    private IAttribute processAttribute(IStrategoTerm ta) throws UnexpectedTermException {
+    private IAttribute processAttribute(IStrategoTerm ta) throws Exception {
         if(ta instanceof StrategoAppl) {
             StrategoAppl a = (StrategoAppl) ta;
             switch(a.getName()) { // This is just to get a proper name for the attribute.
@@ -464,9 +469,9 @@ public class GrammarReader {
                 case "Bracket":
                     return new GeneralAttribute("bracket");
                 case "LayoutConstraint":
-                    return new LayoutConstraintAttribute(a.getSubterm(0).toString());
+                    return new LayoutConstraintAttribute(a.getSubterm(0));
                 case "IgnoreLayout":
-                    return new LayoutConstraintAttribute("ignore-layout");
+                    return new LayoutConstraintAttribute(a);
                 case "EnforceNewLine":
                     return new GeneralAttribute("enforce-newline");
                 case "LongestMatch":
@@ -521,7 +526,7 @@ public class GrammarReader {
                 IStrategoTerm child = ((IStrategoList) term.getSubterm(1)).getSubterm(i);
                 subterms[i] = createStrategoTermAttribute((IStrategoAppl) child);
             }
-            return termFactory .makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
+            return termFactory.makeAppl(termFactory.makeConstructor(cons_name, arity), subterms);
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {

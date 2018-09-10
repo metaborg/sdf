@@ -19,6 +19,7 @@ import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
 import org.metaborg.sdf2table.grammar.IterStarSymbol;
 import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.Layout;
+import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
 import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.OptionalSymbol;
 import org.metaborg.sdf2table.grammar.SequenceSymbol;
@@ -26,7 +27,10 @@ import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.StartSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableGenerator;
+
+import com.google.common.collect.Sets;
 
 public class ParseTableProduction implements org.metaborg.parsetable.IProduction, Serializable {
 
@@ -49,6 +53,9 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private final boolean isCompletionOrRecovery;
     private final ConstructorAttribute constructor;
     private final ProductionType type;
+    private final Set<LayoutConstraintAttribute> layoutConstraints;
+    private final boolean isIgnoreLayoutConstraint;
+    private final boolean isLongestMatch;
 
     private final long cachedContextBitmapL;
     private final long cachedContextBitmapR;
@@ -164,6 +171,29 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         this.isNumberLiteral = (cc != null);
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
+        
+        layoutConstraints = Sets.newHashSet();
+        boolean ignoreLayout = false;
+        boolean longestMatch = false;
+        for(IAttribute attr : attrs) {
+            if(attr instanceof LayoutConstraintAttribute) {
+                if(((LayoutConstraintAttribute) attr).getLayoutConstraint() instanceof IgnoreLayoutConstraint) {
+                    ignoreLayout = true;
+                } else {
+                    layoutConstraints.add(normalizeConstraint((LayoutConstraintAttribute) attr, p.rightHand()));
+                }                
+            }
+            if(attr instanceof GeneralAttribute && ((GeneralAttribute) attr).getName().equals("longest-match")) {
+                longestMatch = true;
+            }
+        }
+        isLongestMatch = longestMatch;
+        isIgnoreLayoutConstraint = ignoreLayout;
+    }
+
+    private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<Symbol> rightHand) {
+        attr.getLayoutConstraint().normalizeConstraint(rightHand);
+        return attr;
     }
 
     private boolean getIsLayout() {
@@ -206,7 +236,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
             if(s instanceof CharacterClass) {
                 CharacterClass intCC = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().fromRange(48, 57));
                 if(!((CharacterClass) s).isEmptyCC()) {
-                    if(intCC.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
+                    if(s.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
                         return (CharacterClass) s;
                     }
                 } else {
@@ -334,6 +364,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return isOperator;
     }
 
+    public boolean isIgnoreLayoutConstraint() {
+        return isIgnoreLayoutConstraint;
+    }
+
     @Override public String toString() {
         String s = p.leftHand().toString();
         if(constructor != null) {
@@ -353,6 +387,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     public ProductionType getProductionType() {
         return type;
+    }
+
+    public Set<LayoutConstraintAttribute> getLayoutConstraints() {
+        return layoutConstraints;
     }
 
     public final long contextL() {
@@ -380,6 +418,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     @Override public boolean isSkippableInParseForest() {
         return isSkippableInParseForest;
+    }
+
+    @Override public boolean isLongestMatch() {
+        return isLongestMatch;
     }
 
 }
