@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,22 +54,39 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class GrammarReader {
+    
+    private final Map<String, Boolean> modules;
+    private final NormGrammar grammar;
+    private final List<String> paths;
+    
+    public GrammarReader() {
+        this.modules = Maps.newHashMap();
+        this.grammar = new NormGrammar();
+        this.paths = Collections.emptyList();
+    }
+    
+    public GrammarReader(List<String> paths) {
+        this.modules = Maps.newHashMap();
+        this.grammar = new NormGrammar();
+        this.paths = paths;
+    }
 
-    public NormGrammar readGrammar(File input, List<String> paths) throws Exception {
-        Map<String, Boolean> modules = Maps.newHashMap();
-        NormGrammar grammar = new NormGrammar();
+    public NormGrammar readGrammar(File input) throws Exception {
+        IStrategoTerm mainModule = termFromFile(input);
 
-        IStrategoTerm mainModule = termFromFile(input, grammar);
-        generateGrammar(grammar, mainModule, modules, paths);
+        return readGrammar(mainModule);
+    }
+
+    public NormGrammar readGrammar(IStrategoTerm mainModule) throws Exception {
+        readModule(mainModule);
+        
         grammar.priorityTransitiveClosure();
         grammar.normalizeFollowRestrictionLookahead();
 
         return grammar;
     }
 
-    private void generateGrammar(NormGrammar g, IStrategoTerm module, Map<String, Boolean> modules, List<String> paths)
-        throws Exception {
-
+    private void readModule(IStrategoTerm module) throws Exception {
         if(module instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) module;
             if(app.getName().equals("Module")) {
@@ -109,8 +127,8 @@ public class GrammarReader {
                                         String filename = path + "/" + iname + ".aterm";
                                         File file = new File(filename);
                                         if(file.exists() && !file.isDirectory()) {
-                                            iModule = termFromFile(file, g);
-                                            generateGrammar(g, iModule, modules, paths);
+                                            iModule = termFromFile(file);
+                                            readModule(iModule);
                                             break;
                                         }
                                     }
@@ -137,19 +155,19 @@ public class GrammarReader {
                     }
                     switch(tsection.getName()) {
                         case "ContextFreeSyntax":
-                            addProds(g, tsection);
+                            addProds(tsection);
                             break;
                         case "LexicalSyntax":
-                            addProds(g, tsection);
+                            addProds(tsection);
                             break;
                         case "Kernel":
-                            addProds(g, tsection);
+                            addProds(tsection);
                             break;
                         case "Restrictions":
-                            addRestrictions(g, tsection);
+                            addRestrictions(tsection);
                             break;
                         case "Priorities":
-                            addPriorities(g, tsection);
+                            addPriorities(tsection);
                             break;
                         default:
                             System.err.println("Unknown module section `" + tsection.getName() + "'");
@@ -161,35 +179,35 @@ public class GrammarReader {
         }
     }
 
-    private void addProds(NormGrammar g, StrategoAppl section) throws Exception {
+    private void addProds(StrategoAppl section) throws Exception {
         if(section instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) section;
 
             if(app.getName().equals("ContextFreeSyntax")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
-                    processProduction(g, t);
+                    processProduction(t);
                 }
             }
             if(app.getName().equals("LexicalSyntax")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
-                    processProduction(g, t);
+                    processProduction(t);
                 }
             }
 
             else if(app.getName().equals("Kernel")) {
                 StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm t : sdf_productions) {
-                    processProduction(g, t);
+                    processProduction(t);
                 }
             }
         }
     }
 
-    private IProduction processProduction(NormGrammar g, IStrategoTerm term) throws Exception {
+    private IProduction processProduction(IStrategoTerm term) throws Exception {
         IProduction prod = null;
-        prod = g.getCacheProductionsRead().get(term.toString());
+        prod = grammar.getCacheProductionsRead().get(term.toString());
 
         if(prod != null) {
             return prod;
@@ -208,16 +226,16 @@ public class GrammarReader {
 
                 if(with_cons) {
                     // SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
-                    symbol = processSymbol(g, app.getSubterm(0).getSubterm(0));
+                    symbol = processSymbol(app.getSubterm(0).getSubterm(0));
                     cons = ((StrategoString) app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
                 } else {
-                    symbol = processSymbol(g, app.getSubterm(0));
+                    symbol = processSymbol(app.getSubterm(0));
                 }
 
                 // Read right hand side of the equation: Rhs([<symbols>])
                 StrategoList rhs = (StrategoList) app.getSubterm(1).getSubterm(0);
                 for(IStrategoTerm t : rhs) {
-                    Symbol s = processSymbol(g, t);
+                    Symbol s = processSymbol(t);
                     if(s != null)
                         rhs_symbols.add(s);
                 }
@@ -248,16 +266,16 @@ public class GrammarReader {
 
                 UniqueProduction unique_prod = new UniqueProduction(symbol, rhs_symbols);
 
-                prod = g.getUniqueProductionMapping().get(unique_prod);
+                prod = grammar.getUniqueProductionMapping().get(unique_prod);
 
                 // production already exists
                 if(prod != null) {
                     for(IAttribute a : attrs) {
-                        g.getProductionAttributesMapping().put(prod, a);
+                        grammar.getProductionAttributesMapping().put(prod, a);
                     }
 
-                    if(g != null && symbol != null) {
-                        g.getCacheProductionsRead().put(term.toString(), prod);
+                    if(grammar != null && symbol != null) {
+                        grammar.getCacheProductionsRead().put(term.toString(), prod);
                     }
 
                     return prod;
@@ -267,26 +285,26 @@ public class GrammarReader {
                 prod = new Production(symbol, rhs_symbols);
 
                 if(cons_attr != null) {
-                    g.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
+                    grammar.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
                 }
 
-                if(symbol instanceof FileStartSymbol && g.getInitialProduction() == null) {
-                    g.setInitialProduction(prod);
+                if(symbol instanceof FileStartSymbol && grammar.getInitialProduction() == null) {
+                    grammar.setInitialProduction(prod);
                 }
 
                 for(IAttribute a : attrs) {
                     if(a.toString().equals("nlm")) {
-                        g.getLongestMatchProds().put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
+                        grammar.getLongestMatchProds().put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
                     }
-                    g.getProductionAttributesMapping().put(prod, a);
+                    grammar.getProductionAttributesMapping().put(prod, a);
                 }
 
-                if(g != null && symbol != null) {
-                    g.getCacheProductionsRead().put(term.toString(), prod);
+                if(grammar != null && symbol != null) {
+                    grammar.getCacheProductionsRead().put(term.toString(), prod);
                 }
 
-                g.getSymbolProductionsMapping().put(symbol, prod);
-                g.getUniqueProductionMapping().put(unique_prod, prod);
+                grammar.getSymbolProductionsMapping().put(symbol, prod);
+                grammar.getUniqueProductionMapping().put(unique_prod, prod);
 
                 return prod;
             } else {
@@ -296,14 +314,14 @@ public class GrammarReader {
         throw new UnexpectedTermException(term.toString(), "SdfProduction");
     }
 
-    private Symbol processSymbol(NormGrammar g, IStrategoTerm term) {
+    private Symbol processSymbol(IStrategoTerm term) {
         Symbol symbol = null;
         String enquoted;
 
-        symbol = g.getCacheSymbolsRead().get(term.toString());
+        symbol = grammar.getCacheSymbolsRead().get(term.toString());
 
         if(symbol != null) {
-            g.getSymbols().add(symbol);
+            grammar.getSymbols().add(symbol);
             return symbol;
         }
 
@@ -331,34 +349,34 @@ public class GrammarReader {
                     symbol = new Sort(enquoted.substring(1, enquoted.length() - 1), LiteralType.CiLit);
                     break;
                 case "Opt":
-                    symbol = new OptionalSymbol(processSymbol(g, app.getSubterm(0)));
+                    symbol = new OptionalSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Alt":
-                    symbol = new AltSymbol(processSymbol(g, app.getSubterm(0)), processSymbol(g, app.getSubterm(1)));
+                    symbol = new AltSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
                     break;
                 case "Sequence":
-                    symbol = new SequenceSymbol(processSymbol(g, app.getSubterm(0)),
-                        processSymbolList(g, app.getSubterm(1)));
+                    symbol = new SequenceSymbol(processSymbol(app.getSubterm(0)),
+                        processSymbolList(app.getSubterm(1)));
                     break;
                 case "Iter":
-                    symbol = new IterSymbol(processSymbol(g, app.getSubterm(0)));
+                    symbol = new IterSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterStar":
-                    symbol = new IterStarSymbol(processSymbol(g, app.getSubterm(0)));
+                    symbol = new IterStarSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterSep":
                     symbol =
-                        new IterSepSymbol(processSymbol(g, app.getSubterm(0)), processSymbol(g, app.getSubterm(1)));
+                        new IterSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
                     break;
                 case "IterStarSep":
                     symbol =
-                        new IterStarSepSymbol(processSymbol(g, app.getSubterm(0)), processSymbol(g, app.getSubterm(1)));
+                        new IterStarSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
                     break;
                 case "Lex":
-                    symbol = new LexicalSymbol(processSymbol(g, app.getSubterm(0)));
+                    symbol = new LexicalSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Cf":
-                    symbol = new ContextFreeSymbol(processSymbol(g, app.getSubterm(0)));
+                    symbol = new ContextFreeSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Start":
                     symbol = new StartSymbol();
@@ -367,7 +385,7 @@ public class GrammarReader {
                     symbol = new FileStartSymbol();
                     break;
                 case "Label":
-                    symbol = processSymbol(g, app.getSubterm(1));
+                    symbol = processSymbol(app.getSubterm(1));
                     break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
@@ -378,23 +396,22 @@ public class GrammarReader {
             return null;
         }
 
-        if(g != null && symbol != null) {
-            g.getCacheSymbolsRead().put(term.toString(), symbol);
+        if(grammar != null && symbol != null) {
+            grammar.getCacheSymbolsRead().put(term.toString(), symbol);
         }
 
-        g.getSymbols().add(symbol);
+        grammar.getSymbols().add(symbol);
         return symbol;
     }
 
-
-    public List<Symbol> processSymbolList(NormGrammar g, IStrategoTerm term) {
+    public List<Symbol> processSymbolList(IStrategoTerm term) {
         List<Symbol> list = Lists.newLinkedList();
 
         if(term instanceof StrategoList) {
             StrategoList slist = (StrategoList) term;
 
             for(IStrategoTerm t : slist) {
-                Symbol s = processSymbol(g, t);
+                Symbol s = processSymbol(t);
                 if(s != null)
                     list.add(s);
             }
@@ -550,19 +567,19 @@ public class GrammarReader {
         throw new UnexpectedTermException(term.toString());
     }
 
-    private void addRestrictions(NormGrammar g, StrategoAppl tsection) throws UnexpectedTermException {
+    private void addRestrictions(StrategoAppl tsection) throws UnexpectedTermException {
         if(tsection instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) tsection;
             if(app.getName().equals("Restrictions")) {
                 StrategoList restrictions = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm restriction : restrictions) {
-                    processRestriction(g, restriction);
+                    processRestriction(restriction);
                 }
             }
         }
     }
 
-    private void processRestriction(NormGrammar g, IStrategoTerm restriction) throws UnexpectedTermException {
+    private void processRestriction(IStrategoTerm restriction) throws UnexpectedTermException {
         if(restriction instanceof StrategoAppl) {
             StrategoAppl res = (StrategoAppl) restriction;
             switch(res.getName()) {
@@ -572,7 +589,7 @@ public class GrammarReader {
                         importFollowRestriction(res.getSubterm(1), restrictionLookahead);
                     StrategoList subjects = (StrategoList) res.getSubterm(0);
                     for(IStrategoTerm subject : subjects) {
-                        Symbol s = processSymbol(g, subject);
+                        Symbol s = processSymbol(subject);
                         s.addFollowRestriction(restrictionNoLookahead);
                         s.addFollowRestrictionsLookahead(restrictionLookahead);
                     }
@@ -655,19 +672,19 @@ public class GrammarReader {
 
 
 
-    private void addPriorities(NormGrammar g, StrategoAppl tsection) throws Exception {
+    private void addPriorities(StrategoAppl tsection) throws Exception {
         if(tsection instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) tsection;
             if(app.getName().equals("Priorities")) {
                 StrategoList chains = (StrategoList) app.getSubterm(0);
                 for(IStrategoTerm chain : chains) {
-                    processPriorityChain(g, chain);
+                    processPriorityChain(chain);
                 }
             }
         }
     }
 
-    private void processPriorityChain(NormGrammar g, IStrategoTerm chain) throws Exception {
+    private void processPriorityChain(IStrategoTerm chain) throws Exception {
         if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Chain")) {
             StrategoList groups = (StrategoList) chain.getSubterm(0);
             IProduction higher = null, lower = null;
@@ -709,7 +726,7 @@ public class GrammarReader {
                 }
             }
 
-            higher = processGroup(g, first_group);
+            higher = processGroup(first_group);
 
             // in case the priority is Sort.Cons <arg> > p2
             if(first_group instanceof StrategoAppl && ((StrategoAppl) first_group).getName().equals("SimpleRefGroup")) {
@@ -735,29 +752,29 @@ public class GrammarReader {
                 }
             }
 
-            lower = processGroup(g, second_group);
+            lower = processGroup(second_group);
 
             Priority p = new Priority(higher, lower, transitive);
 
             if(transitive) {
-                g.getTransitivePriorities().add(p);
-                g.getProductionsOnPriorities().add(higher);
-                g.getProductionsOnPriorities().add(lower);
+                grammar.getTransitivePriorities().add(p);
+                grammar.getProductionsOnPriorities().add(higher);
+                grammar.getProductionsOnPriorities().add(lower);
 
                 if(arguments.isEmpty()) {
-                    g.getTransitivePriorityArgs().put(p, -1);
+                    grammar.getTransitivePriorityArgs().put(p, -1);
                 } else {
                     for(Integer arg : arguments) {
-                        g.getTransitivePriorityArgs().put(p, arg);
+                        grammar.getTransitivePriorityArgs().put(p, arg);
                     }
                 }
             } else {
-                g.getNonTransitivePriorities().add(p);
+                grammar.getNonTransitivePriorities().add(p);
                 if(arguments.isEmpty()) {
-                    g.getNonTransitivePriorityArgs().put(p, -1);
+                    grammar.getNonTransitivePriorityArgs().put(p, -1);
                 } else {
                     for(Integer arg : arguments) {
-                        g.getNonTransitivePriorityArgs().put(p, arg);
+                        grammar.getNonTransitivePriorityArgs().put(p, arg);
                     }
                 }
             }
@@ -768,21 +785,21 @@ public class GrammarReader {
             IStrategoTerm second_group = chain.getSubterm(2);
 
 
-            IProduction higher = processGroup(g, first_group);
-            IProduction lower = processGroup(g, second_group);
+            IProduction higher = processGroup(first_group);
+            IProduction lower = processGroup(second_group);
 
             Priority p = new Priority(higher, lower, false);
 
-            g.getNonTransitivePriorities().add(p);
+            grammar.getNonTransitivePriorities().add(p);
 
             // actual argument values will be processed later when defining recursion
             if(assoc.toString().contains("Left")) {
-                g.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
+                grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
             } else if(assoc.toString().contains("Right")) {
-                g.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
+                grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
             } else {
-                g.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
-                g.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
+                grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
+                grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
             }
 
         } else {
@@ -816,21 +833,21 @@ public class GrammarReader {
         return arguments;
     }
 
-    private IProduction processGroup(NormGrammar g, IStrategoTerm group) throws UnexpectedTermException, Exception {
+    private IProduction processGroup(IStrategoTerm group) throws UnexpectedTermException, Exception {
 
         IProduction production = null;
 
         if(group instanceof StrategoAppl && ((StrategoAppl) group).getName().equals("SimpleGroup")) {
-            production = processProduction(g, group.getSubterm(0));
+            production = processProduction(group.getSubterm(0));
         } else if(group instanceof StrategoAppl && ((StrategoAppl) group).getName().equals("SimpleRefGroup")) {
             IStrategoTerm sort = group.getSubterm(0).getSubterm(0);
             IStrategoTerm constructor = group.getSubterm(0).getSubterm(1);
             String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
 
             ProductionReference prod_ref =
-                new ProductionReference(processSymbol(g, sort), new ConstructorAttribute(cons_name));
+                new ProductionReference(processSymbol(sort), new ConstructorAttribute(cons_name));
 
-            production = g.getSortConsProductionMapping().get(prod_ref);
+            production = grammar.getSortConsProductionMapping().get(prod_ref);
             if(production == null) {
                 throw new Exception("Production referenced by " + prod_ref + " could not be found.");
             }
@@ -844,7 +861,7 @@ public class GrammarReader {
         return production;
     }
 
-    private IStrategoTerm termFromFile(File file, NormGrammar grammar) throws Exception {
+    private IStrategoTerm termFromFile(File file) throws Exception {
         FileReader reader = null;
         IStrategoTerm term = null;
         ITermFactory termFactory = ParseTableGenerator.getTermfactory();

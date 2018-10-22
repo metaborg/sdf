@@ -63,13 +63,13 @@ public class ParseTableGenerator {
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent) throws Exception {
-        NormGrammar grammar = new GrammarReader().readGrammar(input, paths);
+        NormGrammar grammar = new GrammarReader(paths).readGrammar(input);
         pt = new ParseTable(grammar, dynamic, dataDependent, true);
         tableCreated = true;
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) throws Exception {
-        NormGrammar grammar = new GrammarReader().readGrammar(input, paths);
+        NormGrammar grammar = new GrammarReader(paths).readGrammar(input);
         pt = new ParseTable(grammar, dynamic, dataDependent, solveDeepConflicts);
         tableCreated = true;
     }
