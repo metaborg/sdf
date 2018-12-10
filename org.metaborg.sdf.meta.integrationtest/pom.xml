@@ -16,12 +16,28 @@
   </parent>
   
   <dependencies>
+    <!-- compile -->
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.meta.lang.esv</artifactId>
+      <version>${metaborg-version}</version>
+      <type>spoofax-language</type>
+    </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
       <artifactId>org.metaborg.meta.lang.spt</artifactId>
       <version>${metaborg-version}</version>
       <type>spoofax-language</type>
       <scope>test</scope>
+    </dependency>
+
+    <!-- source -->
+    <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>meta.lib.spoofax</artifactId>
+      <version>${metaborg-version}</version>
+      <type>spoofax-language</type>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   
