@@ -1,0 +1,21 @@
+module sdf-meta-integrationtest
+
+exports
+
+  context-free start-symbols
+  
+    Start
+    
+  lexical syntax
+    [\t\ \n\r] -> LAYOUT
+    [a-z]+     -> VAR
+
+  context-free syntax
+  
+    Stmt        -> Start { "Program" }
+    Exp ";"     -> Stmt { "Stmt" }
+    Exp "+" Exp -> Exp { "Add" }
+    VAR         -> Exp { "Var" }
+
+  context-free restrictions
+    LAYOUT? -/- [\ \t\n\r]

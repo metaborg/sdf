@@ -1,0 +1,12 @@
+module Stratego-sdf-meta-integrationtest
+
+imports
+
+    StrategoMix[StrategoHost]
+    sdf-meta-integrationtest-embedded[PreTerm[[StrategoHost]] Term[[StrategoHost]]]
+
+exports
+
+  context-free start-symbols
+  
+    Module[[StrategoHost]]
