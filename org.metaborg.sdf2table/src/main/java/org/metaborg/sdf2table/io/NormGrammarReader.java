@@ -3,7 +3,9 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,22 +55,33 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class GrammarReader {
+public class NormGrammarReader {
     
     private final Map<String, Boolean> modules;
     private final NormGrammar grammar;
     private final List<String> paths;
+    private final Collection<FileVisitor> fileVisitors;
     
-    public GrammarReader() {
+    public NormGrammarReader() {
         this.modules = Maps.newHashMap();
         this.grammar = new NormGrammar();
         this.paths = Collections.emptyList();
+        this.fileVisitors = new LinkedList<>();
     }
     
-    public GrammarReader(List<String> paths) {
+    public NormGrammarReader(List<String> paths) {
         this.modules = Maps.newHashMap();
         this.grammar = new NormGrammar();
         this.paths = paths;
+        this.fileVisitors = new LinkedList<>();
+    }
+    
+    public static interface FileVisitor {
+        void visit(File file);
+    }
+    
+    public void accept(FileVisitor fileVisitor) {
+        this.fileVisitors.add(fileVisitor);
     }
 
     public NormGrammar readGrammar(File input) throws Exception {
@@ -425,7 +438,7 @@ public class GrammarReader {
     public ICharacterClass processCharClass(IStrategoTerm term) {
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
-            CharacterClassFactory ccFactory = ParseTableGenerator.getCharacterClassFactory();
+            CharacterClassFactory ccFactory = ParseTableIO.getCharacterClassFactory();
             switch(app.getName()) {
                 case "Absent":
                     return ccFactory.fromEmpty();
@@ -534,7 +547,7 @@ public class GrammarReader {
     }
 
     private IStrategoTerm createStrategoTermAttribute(IStrategoAppl term) throws UnexpectedTermException {
-        ITermFactory termFactory = ParseTableGenerator.getTermfactory();
+        ITermFactory termFactory = ParseTableIO.getTermfactory();
         if(term.getConstructor().getName().equals("Appl")) {
             String cons_name = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             int arity = term.getSubterm(1).getSubtermCount();
@@ -669,8 +682,6 @@ public class GrammarReader {
         }
 
     }
-
-
 
     private void addPriorities(StrategoAppl tsection) throws Exception {
         if(tsection instanceof StrategoAppl) {
@@ -862,9 +873,11 @@ public class GrammarReader {
     }
 
     private IStrategoTerm termFromFile(File file) throws Exception {
+        fileVisitors.forEach(visitor -> visitor.visit(file));
+        
         FileReader reader = null;
         IStrategoTerm term = null;
-        ITermFactory termFactory = ParseTableGenerator.getTermfactory();
+        ITermFactory termFactory = ParseTableIO.getTermfactory();
 
         try {
             reader = new FileReader(file);

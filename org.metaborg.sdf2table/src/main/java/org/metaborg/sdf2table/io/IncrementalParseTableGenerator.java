@@ -19,7 +19,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
-public class IncrementalParseTableGenerator extends ParseTableGenerator {
+public class IncrementalParseTableGenerator extends ParseTableIO {
 
     private Set<IProduction> additionalProds;
     private SetMultimap<IProduction, IAttribute> additionalProdAttributes = null;
