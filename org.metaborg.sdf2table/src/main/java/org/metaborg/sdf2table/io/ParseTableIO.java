@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.io;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,13 +52,20 @@ public class ParseTableIO {
         this.ctxGrammarFile = ctxGrammar;
     }
 
+    public ParseTableIO(File tableFile) throws Exception {
+        this(new FileInputStream(tableFile));
+    }
+
     public ParseTableIO(FileObject tableFile) throws Exception {
-        InputStream out = tableFile.getContent().getInputStream();
-        ObjectInputStream ois = new ObjectInputStream(out);
+        this(tableFile.getContent().getInputStream());
+    }
+
+    public ParseTableIO(InputStream is) throws Exception {
+        ObjectInputStream ois = new ObjectInputStream(is);
         // read persisted normalized grammar
         pt = (ParseTable) ois.readObject();
         ois.close();
-        out.close();
+        is.close();
 
         tableCreated = true;
     }
