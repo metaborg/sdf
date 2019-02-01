@@ -28,7 +28,7 @@ import org.metaborg.sdf2table.grammar.StartSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
-import org.metaborg.sdf2table.io.ParseTableGenerator;
+import org.metaborg.sdf2table.io.ParseTableIO;
 
 import com.google.common.collect.Sets;
 
@@ -234,7 +234,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         for(Symbol s : rhs) {
             s = getFirstRange(s);
             if(s instanceof CharacterClass) {
-                CharacterClass intCC = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().fromRange(48, 57));
+                CharacterClass intCC = new CharacterClass(ParseTableIO.getCharacterClassFactory().fromRange(48, 57));
                 if(!((CharacterClass) s).isEmptyCC()) {
                     if(s.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
                         return (CharacterClass) s;

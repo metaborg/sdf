@@ -8,7 +8,7 @@ import java.util.Set;
 import org.metaborg.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.deepconflicts.Context;
-import org.metaborg.sdf2table.io.ParseTableGenerator;
+import org.metaborg.sdf2table.io.ParseTableIO;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -125,7 +125,7 @@ public class CharacterClass extends Symbol implements ICharacterClass {
             return new CharacterClass(CharacterClassFactory.EMPTY_CHARACTER_CLASS);
         }
 
-        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().union(cc1.cc, cc2.cc));
+        return new CharacterClass(ParseTableIO.getCharacterClassFactory().union(cc1.cc, cc2.cc));
     }
 
     @Override public int min() {
@@ -160,11 +160,11 @@ public class CharacterClass extends Symbol implements ICharacterClass {
     }
 
     public static CharacterClass intersection(CharacterClass cc1, CharacterClass cc2) {
-        return new CharacterClass(ParseTableGenerator.getCharacterClassFactory().intersection(cc1.cc, cc2.cc));
+        return new CharacterClass(ParseTableIO.getCharacterClassFactory().intersection(cc1.cc, cc2.cc));
     }
 
     public CharacterClass difference(CharacterClass cc2) {
-        CharacterClass result = new CharacterClass(ParseTableGenerator.getCharacterClassFactory().difference(cc, cc2.cc));
+        CharacterClass result = new CharacterClass(ParseTableIO.getCharacterClassFactory().difference(cc, cc2.cc));
    
         return result;
     }

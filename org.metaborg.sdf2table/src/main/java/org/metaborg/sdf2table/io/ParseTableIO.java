@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.io;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,9 +30,9 @@ import org.spoofax.terms.TermFactory;
 
 import com.google.common.collect.Lists;
 
-public class ParseTableGenerator {
+public class ParseTableIO {
 
-    private static final ILogger logger = LoggerUtils.logger(ParseTableGenerator.class);
+    private static final ILogger logger = LoggerUtils.logger(ParseTableIO.class);
 
     private File input;
     private File outputFile;
@@ -43,7 +44,7 @@ public class ParseTableGenerator {
     private boolean tableCreated = false;
     private ParseTable pt;
 
-    public ParseTableGenerator(File input, File output, File persistedTable, File ctxGrammar, List<String> paths) {
+    public ParseTableIO(File input, File output, File persistedTable, File ctxGrammar, List<String> paths) {
         this.input = input;
         this.outputFile = output;
         this.paths = paths;
@@ -51,25 +52,32 @@ public class ParseTableGenerator {
         this.ctxGrammarFile = ctxGrammar;
     }
 
-    public ParseTableGenerator(FileObject tableFile) throws Exception {
-        InputStream out = tableFile.getContent().getInputStream();
-        ObjectInputStream ois = new ObjectInputStream(out);
+    public ParseTableIO(File tableFile) throws Exception {
+        this(new FileInputStream(tableFile));
+    }
+
+    public ParseTableIO(FileObject tableFile) throws Exception {
+        this(tableFile.getContent().getInputStream());
+    }
+
+    public ParseTableIO(InputStream is) throws Exception {
+        ObjectInputStream ois = new ObjectInputStream(is);
         // read persisted normalized grammar
         pt = (ParseTable) ois.readObject();
         ois.close();
-        out.close();
+        is.close();
 
         tableCreated = true;
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent) throws Exception {
-        NormGrammar grammar = new GrammarReader(paths).readGrammar(input);
+        NormGrammar grammar = new NormGrammarReader(paths).readGrammar(input);
         pt = new ParseTable(grammar, dynamic, dataDependent, true);
         tableCreated = true;
     }
 
     public void createParseTable(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) throws Exception {
-        NormGrammar grammar = new GrammarReader(paths).readGrammar(input);
+        NormGrammar grammar = new NormGrammarReader(paths).readGrammar(input);
         pt = new ParseTable(grammar, dynamic, dataDependent, solveDeepConflicts);
         tableCreated = true;
     }
@@ -103,7 +111,7 @@ public class ParseTableGenerator {
 
     }
 
-    public IStrategoTerm generateATerm(ParseTable pt) throws Exception {
+    public static IStrategoTerm generateATerm(ParseTable pt) throws Exception {
 
         IStrategoTerm version = termFactory.makeInt(ParseTable.VERSION_NUMBER);
         IStrategoTerm initialState = termFactory.makeInt(ParseTable.INITIAL_STATE_NUMBER);
@@ -140,7 +148,7 @@ public class ParseTableGenerator {
             termFactory.makeList(), termFactory.makeList(syntaxSection, prioritiesSection, restrictionsSection));
     }
 
-    private IStrategoTerm generateStatesAterm(ParseTable pt) {
+    private static IStrategoTerm generateStatesAterm(ParseTable pt) {
         List<IStrategoTerm> terms = Lists.newArrayList();
         for(int i = 0; i < pt.totalStates(); i++) {
             State s = pt.stateLabels().get(i);
@@ -166,7 +174,7 @@ public class ParseTableGenerator {
         return termFactory.makeAppl(termFactory.makeConstructor("states", 1), termFactory.makeList(terms));
     }
 
-    private IStrategoTerm generatePrioritiesAterm(ParseTable pt) throws Exception {
+    private static IStrategoTerm generatePrioritiesAterm(ParseTable pt) throws Exception {
         List<IStrategoTerm> terms = Lists.newArrayList();
         for(java.util.Map.Entry<IPriority, Integer> e : pt.normalizedGrammar().priorities().entries()) {
             IProduction prod_higher = e.getKey().higher();
@@ -202,7 +210,7 @@ public class ParseTableGenerator {
 
     }
 
-    private IStrategoTerm generateLabelsAterm(ParseTable pt) {
+    private static IStrategoTerm generateLabelsAterm(ParseTable pt) {
         List<IStrategoTerm> terms = Lists.newArrayList();
 
         for(int i = 257 + pt.productionLabels().size() - 1; i >= 257; i--) {
@@ -225,7 +233,7 @@ public class ParseTableGenerator {
         this.pt = pt;
     }
 
-    private void outputToFile(String outputString, File output) {
+    public static void outputToFile(String outputString, File output) {
         if(output != null) {
             output.getParentFile().mkdirs();
             try {
@@ -241,11 +249,11 @@ public class ParseTableGenerator {
 
     }
 
-    private void persistObjectToFile(ParseTable pt, File output) {
+    public static void persistObjectToFile(ParseTable pt, File output) {
         FileOutputStream out = null;
         ObjectOutputStream outObj = null;
         try {
-            String name = persistedTableFile.getAbsolutePath();
+            String name = output.getAbsolutePath();
             out = new FileOutputStream(name);
             outObj = new ObjectOutputStream(out);
             outObj.writeObject(pt);
