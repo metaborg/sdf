@@ -1,6 +1,6 @@
 package org.metaborg.sdf2table.parsetable.query;
 
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -15,12 +15,12 @@ public interface IActionsForCharacter {
     /*
      * Returns actions applicable to the given configuration (i.e. current character and lookahead).
      */
-    Iterable<IAction> getApplicableActions(IParseInput parseInput);
+    Iterable<IAction> getApplicableActions(IActionQuery actionQuery);
 
     /*
      * Returns reduce actions (possibly with lookahead) applicable to the given configuration (i.e. current character
      * and lookahead).
      */
-    Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput);
+    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery);
 
 }

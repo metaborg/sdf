@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.metaborg.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -94,7 +94,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     }
 
     @Override
-    public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
+    public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
         if(actionsForSortedDisjointRanges.length > 0) {
             int low = 0, high = actionsForSortedDisjointRanges.length - 1;
 
@@ -103,10 +103,10 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
                 ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
 
-                int currentChar = parseInput.getCurrentChar();
+                int currentChar = actionQuery.actionQueryCharacter();
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
-                    return actionsForMidRange.getApplicableActions(parseInput);
+                    return actionsForMidRange.getApplicableActions(actionQuery);
                 else if(currentChar < actionsForMidRange.from)
                     high = mid - 1;
                 else if(actionsForMidRange.to < currentChar)
@@ -120,7 +120,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     }
 
     @Override
-    public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
+    public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         if(actionsForSortedDisjointRanges.length > 0) {
             int low = 0, high = actionsForSortedDisjointRanges.length - 1;
 
@@ -129,10 +129,10 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
                 ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
 
-                int currentChar = parseInput.getCurrentChar();
+                int currentChar = actionQuery.actionQueryCharacter();
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
-                    return actionsForMidRange.getApplicableReduceActions(parseInput);
+                    return actionsForMidRange.getApplicableReduceActions(actionQuery);
                 else if(currentChar < actionsForMidRange.from)
                     high = mid - 1;
                 else if(actionsForMidRange.to < currentChar)

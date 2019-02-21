@@ -1,6 +1,6 @@
 package org.metaborg.parsetable.actions;
 
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 
 public interface IReduceLookahead extends IReduce {
 
@@ -9,6 +9,6 @@ public interface IReduceLookahead extends IReduce {
         return ActionType.REDUCE_LOOKAHEAD;
     }
 
-    boolean allowsLookahead(IParseInput parseInput);
+    boolean allowsLookahead(IActionQuery actionQuery);
 
 }

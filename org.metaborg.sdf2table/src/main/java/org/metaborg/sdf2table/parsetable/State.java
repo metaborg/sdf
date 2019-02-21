@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
@@ -364,12 +364,12 @@ public class State implements IState, Comparable<State>, Serializable {
         return label;
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
-        return actionsForCharacter.getApplicableActions(parseInput);
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+        return actionsForCharacter.getApplicableActions(actionQuery);
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
-        return actionsForCharacter.getApplicableReduceActions(parseInput);
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+        return actionsForCharacter.getApplicableReduceActions(actionQuery);
     }
 
     @Override public int getGotoId(int productionId) {

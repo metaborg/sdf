@@ -2,7 +2,7 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.IProduction;
 import org.metaborg.parsetable.ProductionType;
 import org.metaborg.parsetable.actions.IReduceLookahead;
@@ -95,8 +95,8 @@ public class ReduceLookahead extends Action implements IReduceLookahead, Seriali
         return prod.getProduction().rightHand().size();
     }
 
-    @Override public boolean allowsLookahead(IParseInput parseInput) {
-        String lookaheadChars = parseInput.getLookahead(lookahead.length);
+    @Override public boolean allowsLookahead(IActionQuery actionQuery) {
+        String lookaheadChars = actionQuery.actionQueryLookahead(lookahead.length);
         if(lookaheadChars.length() != lookahead.length)
             return true;
 

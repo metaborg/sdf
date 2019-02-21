@@ -9,9 +9,9 @@ public interface IState {
 
     boolean isRejectable();
 
-    Iterable<IAction> getApplicableActions(IParseInput parseInput);
+    Iterable<IAction> getApplicableActions(IActionQuery actionQuery);
 
-    Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput);
+    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery);
 
     int getGotoId(int productionId);
 
