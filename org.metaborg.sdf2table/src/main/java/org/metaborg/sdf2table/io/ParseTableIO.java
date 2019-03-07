@@ -19,7 +19,7 @@ import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.parsetable.Action;
-import org.metaborg.sdf2table.parsetable.GoTo;
+import org.metaborg.sdf2table.parsetable.Goto;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.parsetable.State;
 import org.metaborg.util.log.ILogger;
@@ -155,7 +155,7 @@ public class ParseTableIO {
             List<IStrategoTerm> goto_terms = Lists.newArrayList();
             List<IStrategoTerm> action_terms = Lists.newArrayList();
             for(IGoto goto_action : s.gotos()) {
-                goto_terms.add(((GoTo) goto_action).toAterm(termFactory));
+                goto_terms.add(((Goto) goto_action).toAterm(termFactory));
             }
             for(CharacterClass cc : ((State) s).actionsMapping().keySet()) {
                 List<IStrategoTerm> actions = Lists.newArrayList();
