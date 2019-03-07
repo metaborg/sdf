@@ -6,14 +6,7 @@ public interface IAction {
 
     ActionType actionType();
 
-    static boolean allowsLookahead(IAction action, IActionQuery actionQuery) {
-        return action.actionType() != ActionType.REDUCE_LOOKAHEAD
-            || ((IReduceLookahead) action).allowsLookahead(actionQuery);
-    }
+    boolean allowsLookahead(IActionQuery actionQuery);
 
-    static boolean isApplicableReduce(IAction action, IActionQuery actionQuery) {
-        return action.actionType() == ActionType.REDUCE || (action.actionType() == ActionType.REDUCE_LOOKAHEAD
-            && ((IReduceLookahead) action).allowsLookahead(actionQuery));
-    }
-
+    boolean isApplicableReduce(IActionQuery actionQuery);
 }
