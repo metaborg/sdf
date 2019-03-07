@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.actions;
 
 import org.metaborg.parsetable.IActionQuery;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public interface IReduceLookahead extends IReduce {
 
@@ -8,9 +9,24 @@ public interface IReduceLookahead extends IReduce {
         return ActionType.REDUCE_LOOKAHEAD;
     }
 
-    @Override boolean allowsLookahead(IActionQuery actionQuery);
+    @Override default boolean allowsLookahead(IActionQuery actionQuery) {
+        ICharacterClass[] followRestriction = lookahead();
+        String lookahead = actionQuery.actionQueryLookahead(followRestriction.length);
+
+        if(lookahead.length() != followRestriction.length)
+            return true;
+
+        for(int i = 0; i < followRestriction.length; i++) {
+            if(!followRestriction[i].contains(lookahead.charAt(i)))
+                return true;
+        }
+
+        return false;
+    }
 
     @Override default boolean isApplicableReduce(IActionQuery actionQuery) {
-        return this.allowsLookahead(actionQuery);
+        return allowsLookahead(actionQuery);
     }
+
+    ICharacterClass[] lookahead();
 }

@@ -25,22 +25,28 @@ public class Reduce extends Action implements IReduce, Serializable {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTable pt) {
-        int status = 0;
+        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().rightHand().size()),
+            tf.makeInt(prod_label), tf.makeInt(getStatusFromParseTableProduction(pt)));
+    }
+
+    /**
+     * @return A status integer that indicates whether the production rule is a "reject", "prefer", or "avoid" rule.
+     */
+    protected int getStatusFromParseTableProduction(ParseTable pt) {
         for(IAttribute attr : pt.normalizedGrammar().getProductionAttributesMapping().get(prod.getProduction())) {
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
-                if(ga.getName().equals("reject")) {
-                    status = 1;
-                } else if(ga.getName().equals("prefer")) {
-                    status = 2;
-                } else if(ga.getName().equals("avoid")) {
-                    status = 4;
+                switch(ga.getName()) {
+                    case "reject":
+                        return 1;
+                    case "prefer":
+                        return 2;
+                    case "avoid":
+                        return 4;
                 }
             }
         }
-
-        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().rightHand().size()),
-            tf.makeInt(prod_label), tf.makeInt(status));
+        return 0;
     }
 
     @Override public String toString() {
