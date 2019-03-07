@@ -27,8 +27,8 @@ public class Accept extends Action implements Serializable, IAccept {
         return "accept".hashCode();
     }
 
-    @Override public boolean equals(Object obj) {
-        return true;
+    @Override public boolean equals(Object o) {
+        return this == o || (o != null && getClass() != o.getClass());
     }
 
 }
