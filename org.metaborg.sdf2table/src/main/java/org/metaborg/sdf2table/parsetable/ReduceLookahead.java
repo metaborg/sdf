@@ -108,6 +108,4 @@ public class ReduceLookahead extends Action implements IReduceLookahead, Seriali
         return false;
     }
 
-
-
 }

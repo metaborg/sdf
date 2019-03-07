@@ -5,8 +5,7 @@ import org.metaborg.parsetable.ProductionType;
 
 public interface IReduce extends IAction {
 
-    @Override
-    default ActionType actionType() {
+    @Override default ActionType actionType() {
         return ActionType.REDUCE;
     }
 

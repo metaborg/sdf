@@ -39,8 +39,8 @@ public class Reduce extends Action implements IReduce, Serializable {
             }
         }
 
-        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().rightHand().size()), tf.makeInt(prod_label),
-            tf.makeInt(status));
+        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().rightHand().size()),
+            tf.makeInt(prod_label), tf.makeInt(status));
     }
 
     @Override public String toString() {
@@ -78,7 +78,5 @@ public class Reduce extends Action implements IReduce, Serializable {
     @Override public int arity() {
         return prod.getProduction().rightHand().size();
     }
-
-    
 
 }

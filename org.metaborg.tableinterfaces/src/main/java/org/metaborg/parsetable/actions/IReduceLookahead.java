@@ -4,8 +4,7 @@ import org.metaborg.parsetable.IActionQuery;
 
 public interface IReduceLookahead extends IReduce {
 
-    @Override
-    default ActionType actionType() {
+    @Override default ActionType actionType() {
         return ActionType.REDUCE_LOOKAHEAD;
     }
 
