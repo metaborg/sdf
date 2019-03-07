@@ -47,7 +47,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
             @Override
             public boolean hasNext() {
                 while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
-                    && IAction.allowsLookahead(actions[index].action, actionQuery))) {
+                    && actions[index].action.allowsLookahead(actionQuery))) {
                     index++;
                 }
                 return index < actions.length;
@@ -68,7 +68,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
             @Override
             public boolean hasNext() {
                 while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
-                    && IAction.isApplicableReduce(actions[index].action, actionQuery))) {
+                    && actions[index].action.isApplicableReduce(actionQuery))) {
                     index++;
                 }
                 return index < actions.length;

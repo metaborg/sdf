@@ -8,6 +8,9 @@ public interface IReduceLookahead extends IReduce {
         return ActionType.REDUCE_LOOKAHEAD;
     }
 
-    boolean allowsLookahead(IActionQuery actionQuery);
+    @Override boolean allowsLookahead(IActionQuery actionQuery);
 
+    @Override default boolean isApplicableReduce(IActionQuery actionQuery) {
+        return this.allowsLookahead(actionQuery);
+    }
 }

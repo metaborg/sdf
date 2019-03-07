@@ -28,7 +28,7 @@ public class ActionsForRange implements Serializable {
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !IAction.allowsLookahead(actions[index], actionQuery)) {
+                while(index < actions.length && !actions[index].allowsLookahead(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;
@@ -47,7 +47,7 @@ public class ActionsForRange implements Serializable {
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !IAction.isApplicableReduce(actions[index], actionQuery)) {
+                while(index < actions.length && !actions[index].isApplicableReduce(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;
