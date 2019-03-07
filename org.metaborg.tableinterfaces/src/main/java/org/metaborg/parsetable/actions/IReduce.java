@@ -20,6 +20,10 @@ public interface IReduce extends IAction {
         return productionType() == ProductionType.REJECT;
     }
 
+    @Override default boolean allowsLookahead(IActionQuery actionQuery) {
+        return true;
+    }
+
     @Override default boolean isApplicableReduce(IActionQuery actionQuery) {
         return true;
     }

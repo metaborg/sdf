@@ -6,12 +6,7 @@ public interface IAction {
 
     ActionType actionType();
 
-    default boolean allowsLookahead(IActionQuery actionQuery) {
-        return true;
-    }
+    boolean allowsLookahead(IActionQuery actionQuery);
 
-    default boolean isApplicableReduce(IActionQuery actionQuery) {
-        return false;
-    }
-
+    boolean isApplicableReduce(IActionQuery actionQuery);
 }
