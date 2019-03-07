@@ -44,7 +44,7 @@ public class Reduce extends Action implements IReduce, Serializable {
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.getProduction().rightHand().size() + ", " + prod_label + ", " + productionType() + "))";
+        return "reduce(" + prod.getProduction().rightHand().size() + "," + prod_label + "," + productionType() + ")";
     }
 
     @Override public int hashCode() {

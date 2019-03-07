@@ -43,7 +43,7 @@ public class Reduce implements IReduce {
     }
 
     @Override public String toString() {
-        return "REDUCE(" + production.id() + ")";
+        return "reduce(" + arity + "," + production.id() + "," + productionType + ")";
     }
 
     @Override public int hashCode() {

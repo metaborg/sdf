@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.IProduction;
@@ -18,7 +19,7 @@ public class ReduceLookahead extends Action implements IReduceLookahead, Seriali
 
     int prod_label;
     ParseTableProduction prod;
-    CharacterClass[] lookahead = null;
+    CharacterClass[] lookahead;
 
     public ReduceLookahead(ParseTableProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
         this.prod = prod;
@@ -53,8 +54,8 @@ public class ReduceLookahead extends Action implements IReduceLookahead, Seriali
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.getProduction().rightHand().size() + ", " + prod_label + ", " + productionType() + ", "
-            + lookahead + ")";
+        return "reduce(" + prod.getProduction().rightHand().size() + "," + prod_label + ","
+            + productionType() + ",follow-restriction" + Arrays.toString(lookahead) + ")";
     }
 
     @Override public int hashCode() {
