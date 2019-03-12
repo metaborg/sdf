@@ -1,0 +1,15 @@
+module sdf-meta-integrationtest-embedded[E1 E2]
+
+imports
+  
+  sdf-meta-integrationtest
+
+exports
+
+  context-free syntax
+  
+           "|[" Stmt "]|"  -> E1 {cons("ToTerm")}
+    "stmt" "|[" Stmt "]|"  -> E1 {cons("ToTerm")}
+  
+    "~"      E2 -> Exp {cons("FromTerm")}
+    "~exp:"  E2 -> Exp {cons("FromTerm")}

@@ -58,7 +58,9 @@ rules
     // m[def](m) is missing here. Basically expand imports for a determined top module (current one?)
     to-normal-form(|path) = module-to-normal-form(|path)
     
-    module-to-normal-form(|path) :
+    module-to-normal-form(|path) = module-to-normal-form
+    
+    module-to-normal-form:
         m@Module(Unparameterized(mn), i*, sections*) -> <bottomup(try(strip-annos); try(replace-sort-def))> Module(Unparameterized($[normalized/[mn]-norm]), imports, new-sections)
         with
             //<debug(!"normalizing grammar ")> mn;

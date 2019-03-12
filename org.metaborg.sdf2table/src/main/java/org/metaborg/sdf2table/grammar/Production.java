@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.sdf2table.deepconflicts.Context;
-import org.metaborg.sdf2table.io.ParseTableGenerator;
+import org.metaborg.sdf2table.io.ParseTableIO;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -65,7 +65,7 @@ public class Production implements IProduction, Serializable {
     }
 
     @Override public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
-        ITermFactory tf = ParseTableGenerator.getTermfactory();
+        ITermFactory tf = ParseTableIO.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
         for(Symbol s : rhs) {
@@ -141,7 +141,7 @@ public class Production implements IProduction, Serializable {
 
     @Override public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
-        ITermFactory tf = ParseTableGenerator.getTermfactory();
+        ITermFactory tf = ParseTableIO.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
         for(Symbol s : rhs) {
