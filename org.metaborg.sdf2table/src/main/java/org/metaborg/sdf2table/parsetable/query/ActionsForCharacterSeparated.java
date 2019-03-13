@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -40,14 +40,14 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
     }
 
     @Override
-    public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
+    public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
         return () -> new Iterator<IAction>() {
             int index = 0;
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !(actions[index].appliesTo(parseInput.getCurrentChar())
-                    && IAction.allowsLookahead(actions[index].action, parseInput))) {
+                while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
+                    && actions[index].action.allowsLookahead(actionQuery))) {
                     index++;
                 }
                 return index < actions.length;
@@ -61,14 +61,14 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
     }
 
     @Override
-    public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
+    public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         return () -> new Iterator<IReduce>() {
             int index = 0;
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !(actions[index].appliesTo(parseInput.getCurrentChar())
-                    && IAction.isApplicableReduce(actions[index].action, parseInput))) {
+                while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
+                    && actions[index].action.isApplicableReduce(actionQuery))) {
                     index++;
                 }
                 return index < actions.length;

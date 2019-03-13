@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
@@ -32,7 +32,7 @@ public class State implements IState, Comparable<State>, Serializable {
     ParseTable pt;
 
     private final int label;
-    private Set<GoTo> gotos;
+    private Set<Goto> gotos;
     private Map<Integer, IGoto> gotosMapping;
     private final Set<LRItem> kernel;
     private Set<LRItem> items;
@@ -95,7 +95,7 @@ public class State implements IState, Comparable<State>, Serializable {
         for(Symbol s_at_dot : symbol_items.keySet()) {
             if(s_at_dot instanceof CharacterClass) {
                 Set<LRItem> new_kernel = Sets.newLinkedHashSet();
-                Set<GoTo> new_gotos = Sets.newLinkedHashSet();
+                Set<Goto> new_gotos = Sets.newLinkedHashSet();
                 Set<Shift> new_shifts = Sets.newLinkedHashSet();
                 for(LRItem item : symbol_items.get(s_at_dot)) {
                     Shift shift = new Shift((CharacterClass) s_at_dot);
@@ -103,7 +103,7 @@ public class State implements IState, Comparable<State>, Serializable {
                     if(!(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1)) {
                         new_shifts.add(shift);
                     }
-                    new_gotos.add(new GoTo((CharacterClass) s_at_dot, pt));
+                    new_gotos.add(new Goto((CharacterClass) s_at_dot, pt));
                 }
                 if(!new_kernel.isEmpty()) {
                     checkKernel(new_kernel, new_gotos, new_shifts);
@@ -117,13 +117,13 @@ public class State implements IState, Comparable<State>, Serializable {
                     }
 
                     Set<LRItem> new_kernel = Sets.newLinkedHashSet();
-                    Set<GoTo> new_gotos = Sets.newLinkedHashSet();
+                    Set<Goto> new_gotos = Sets.newLinkedHashSet();
                     Set<Shift> new_shifts = Sets.newLinkedHashSet();
                     for(LRItem item : symbol_items.get(s_at_dot)) {
                         // if item.prod does not conflict with p
                         if(!LRItem.isPriorityConflict(item, p, pt.normalizedGrammar().priorities())) {
                             new_kernel.add(item.shiftDot());
-                            new_gotos.add(new GoTo(pt.productionLabels().get(p), pt));
+                            new_gotos.add(new Goto(pt.productionLabels().get(p), pt));
                         }
                     }
                     if(!new_kernel.isEmpty()) {
@@ -203,7 +203,7 @@ public class State implements IState, Comparable<State>, Serializable {
         }
     }
 
-    private void checkKernel(Set<LRItem> new_kernel, Set<GoTo> new_gotos, Set<Shift> new_shifts) {
+    private void checkKernel(Set<LRItem> new_kernel, Set<Goto> new_gotos, Set<Shift> new_shifts) {
         if(pt.kernelMap().containsKey(new_kernel)) {
             int stateNumber = pt.kernelMap().get(new_kernel).getLabel();
             // set recently added shift and goto actions to new state
@@ -213,7 +213,7 @@ public class State implements IState, Comparable<State>, Serializable {
                 this.lr_actions.put(shift.cc, shift);
                 // this.lr_actions.add(new LRAction(shift.cc, shift));
             }
-            for(GoTo g : new_gotos) {
+            for(Goto g : new_gotos) {
                 g.setState(stateNumber);
                 this.gotos.add(g);
                 this.gotosMapping.put(g.label, g);
@@ -225,7 +225,7 @@ public class State implements IState, Comparable<State>, Serializable {
                 this.lr_actions.put(shift.cc, shift);
                 // this.lr_actions.add(new LRAction(shift.cc, shift));
             }
-            for(GoTo g : new_gotos) {
+            for(Goto g : new_gotos) {
                 g.setState(new_state.getLabel());
                 this.gotos.add(g);
                 this.gotosMapping.put(g.label, g);
@@ -339,7 +339,7 @@ public class State implements IState, Comparable<State>, Serializable {
         this.setStatus(StateStatus.DIRTY);
     }
 
-    public Set<GoTo> gotos() {
+    public Set<Goto> gotos() {
         return gotos;
     }
 
@@ -364,12 +364,12 @@ public class State implements IState, Comparable<State>, Serializable {
         return label;
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
-        return actionsForCharacter.getApplicableActions(parseInput);
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+        return actionsForCharacter.getApplicableActions(actionQuery);
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
-        return actionsForCharacter.getApplicableReduceActions(parseInput);
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+        return actionsForCharacter.getApplicableReduceActions(actionQuery);
     }
 
     @Override public int getGotoId(int productionId) {

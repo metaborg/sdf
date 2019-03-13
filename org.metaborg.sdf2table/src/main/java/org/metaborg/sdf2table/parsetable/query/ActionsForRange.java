@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.metaborg.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -22,13 +22,13 @@ public class ActionsForRange implements Serializable {
         this.to = to;
     }
 
-    public final Iterable<IAction> getApplicableActions(IParseInput parseInput) {
+    public final Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
         return () -> new Iterator<IAction>() {
             int index = 0;
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !IAction.allowsLookahead(actions[index], parseInput)) {
+                while(index < actions.length && !actions[index].allowsLookahead(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;
@@ -41,13 +41,13 @@ public class ActionsForRange implements Serializable {
         };
     }
 
-    public final Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
+    public final Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         return () -> new Iterator<IReduce>() {
             int index = 0;
 
             @Override
             public boolean hasNext() {
-                while(index < actions.length && !IAction.isApplicableReduce(actions[index], parseInput)) {
+                while(index < actions.length && !actions[index].isApplicableReduce(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;

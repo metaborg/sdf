@@ -9,8 +9,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 public class Shift extends Action implements IShift, Serializable {
 
-	private static final long serialVersionUID = -8243181585007870077L;
-	private int state;
+    private static final long serialVersionUID = -8243181585007870077L;
+    private int state;
 
     public Shift(CharacterClass cc, int state) {
         this.cc = cc;
