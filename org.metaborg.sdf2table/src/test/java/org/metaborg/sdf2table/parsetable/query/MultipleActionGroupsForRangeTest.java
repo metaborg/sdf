@@ -68,7 +68,7 @@ public class MultipleActionGroupsForRangeTest {
         IActionsForCharacter disjointSorted = new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses);
 
         for(int character = 0; character <= CharacterClassFactory.EOF_INT; character++) {
-            IActionQuery actionQuery = new MockParseInput(character);
+            IActionQuery actionQuery = new MockActionQuery(character);
 
             Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
             Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
@@ -87,4 +87,20 @@ public class MultipleActionGroupsForRangeTest {
         return set;
     }
 
+    private static class MockActionQuery implements IActionQuery {
+
+        private final int character;
+
+        MockActionQuery(int character) {
+            this.character = character;
+        }
+
+        @Override public int actionQueryCharacter() {
+            return character;
+        }
+
+        @Override public String actionQueryLookahead(int length) {
+            return "";
+        }
+    }
 }
