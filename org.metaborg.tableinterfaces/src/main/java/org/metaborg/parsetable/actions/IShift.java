@@ -8,8 +8,6 @@ public interface IShift extends IAction {
         return ActionType.SHIFT;
     }
 
-    int shiftStateId();
-
     @Override default boolean allowsLookahead(IActionQuery actionQuery) {
         return true;
     }
@@ -17,4 +15,6 @@ public interface IShift extends IAction {
     @Override default boolean isApplicableReduce(IActionQuery actionQuery) {
         return false;
     }
+
+    int shiftStateId();
 }
