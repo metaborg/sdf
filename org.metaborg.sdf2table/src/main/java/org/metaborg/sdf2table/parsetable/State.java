@@ -1,9 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -174,7 +172,7 @@ public class State implements IState, Comparable<State>, Serializable {
         ParseTableProduction prod = pt.productionsMapping().get(p);
 
         LinkedHashMultimap<CharacterClass, Action> newLR_actions = LinkedHashMultimap.create();
-        
+
         for(CharacterClass range : lr_actions.keySet()) {
             if(final_range.isEmptyCC()) {
                 break;
@@ -377,21 +375,21 @@ public class State implements IState, Comparable<State>, Serializable {
     }
 
     public void calculateActionsForCharacter() {
-        ActionsPerCharacterClass[] actions = readActions();
-
-        actionsForCharacter = new ActionsForCharacterDisjointSorted(actions);
+        actionsForCharacter = new ActionsForCharacterDisjointSorted(readActions());
     }
 
     private ActionsPerCharacterClass[] readActions() {
-        List<ActionsPerCharacterClass> actionsPerCharacterClasses =
-            new ArrayList<ActionsPerCharacterClass>(lr_actions.size());
+        Set<CharacterClass> characterClasses = lr_actions.keySet();
 
-        for(CharacterClass cc : lr_actions.keySet()) {
-            actionsPerCharacterClasses.add(
-                new ActionsPerCharacterClass(cc, lr_actions.get(cc).toArray(new IAction[lr_actions.get(cc).size()])));
+        ActionsPerCharacterClass[] actionsPerCharacterClasses = new ActionsPerCharacterClass[characterClasses.size()];
+
+        int i = 0;
+        for(CharacterClass cc : characterClasses) {
+            actionsPerCharacterClasses[i++] =
+                new ActionsPerCharacterClass(cc, lr_actions.get(cc).toArray(new IAction[0]));
         }
 
-        return actionsPerCharacterClasses.toArray(new ActionsPerCharacterClass[actionsPerCharacterClasses.size()]);
+        return actionsPerCharacterClasses;
     }
 
 
