@@ -86,7 +86,7 @@ public class LRItem implements Serializable {
                 }
             }
             symbol_items.put(atPosition, this);
-            ((ParseTable) pt).getSymbolStatesMapping().addLink(atPosition, this, originalState);
+            pt.getSymbolStatesMapping().addLink(atPosition, this, originalState);
         }
     }
 
