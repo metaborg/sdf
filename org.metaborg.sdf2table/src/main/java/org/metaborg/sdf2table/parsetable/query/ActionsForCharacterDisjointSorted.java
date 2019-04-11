@@ -123,13 +123,12 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         if(actionsForSortedDisjointRanges.length > 0) {
             int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+            int currentChar = actionQuery.actionQueryCharacter();
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
                 ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
-
-                int currentChar = actionQuery.actionQueryCharacter();
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
                     return actionsForMidRange.getApplicableReduceActions(actionQuery);
