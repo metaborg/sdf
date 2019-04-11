@@ -134,10 +134,8 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
                     return actionsForMidRange.getApplicableReduceActions(actionQuery);
                 else if(currentChar < actionsForMidRange.from)
                     high = mid - 1;
-                else if(actionsForMidRange.to < currentChar)
-                    low = mid + 1;
                 else
-                    break;
+                    low = mid + 1;
             }
         }
 
