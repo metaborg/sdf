@@ -15,15 +15,16 @@ import com.google.common.collect.Sets;
 
 public class LRItem implements Serializable {
 
-	private static final long serialVersionUID = 6331111365917952694L;
+    private static final long serialVersionUID = 6331111365917952694L;
 
-	private ParseTable pt;
+    private ParseTable pt;
     private IProduction prod;
     private int dotPosition;
     private int prod_label;
 
     public LRItem(IProduction prod, int dotPosition, ParseTable pt) {
-        if(!(prod instanceof ContextualProduction) && pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod)) {
+        if(!(prod instanceof ContextualProduction)
+            && pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod)) {
             this.prod = pt.normalizedGrammar().getProdContextualProdMapping().get(prod);
         } else {
             this.prod = prod;
@@ -136,25 +137,21 @@ public class LRItem implements Serializable {
         if(getClass() != obj.getClass())
             return false;
         LRItem other = (LRItem) obj;
-        if(dotPosition != other.dotPosition)
-            return false;
-        if(prod_label != other.prod_label)
-            return false;
-        return true;
+        return dotPosition == other.dotPosition && prod_label == other.prod_label;
     }
 
     public static boolean isPriorityConflict(LRItem item, IProduction p, SetMultimap<IPriority, Integer> priorities) {
         IProduction higher = item.prod;
         IProduction lower = p;
-        
+
         if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).getOrigProduction();
         }
-    
+
         if(lower instanceof ContextualProduction) {
             lower = ((ContextualProduction) lower).getOrigProduction();
         }
-    
+
         Priority prio = new Priority(higher, lower, false);
         if(priorities.containsKey(prio)) {
             Set<Integer> arguments = priorities.get(prio);
