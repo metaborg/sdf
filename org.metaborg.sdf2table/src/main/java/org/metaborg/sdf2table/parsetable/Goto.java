@@ -7,7 +7,7 @@ import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-public class GoTo implements Serializable, IGoto {
+public class Goto implements Serializable, IGoto {
 
     private static final long serialVersionUID = -6437393243737838862L;
 
@@ -16,24 +16,24 @@ public class GoTo implements Serializable, IGoto {
     CharacterClass cc = null;
     private int state;
 
-    public GoTo(CharacterClass cc, int toState, ParseTable pt) {
+    public Goto(CharacterClass cc, int toState, ParseTable pt) {
         this.pt = pt;
         this.cc = cc;
         this.setState(toState);
     }
 
-    public GoTo(CharacterClass cc, ParseTable pt) {
+    public Goto(CharacterClass cc, ParseTable pt) {
         this.pt = pt;
         this.cc = cc;
     }
 
-    public GoTo(int label, int toState, ParseTable pt) {
+    public Goto(int label, int toState, ParseTable pt) {
         this.pt = pt;
         this.label = label;
         this.setState(toState);
     }
 
-    public GoTo(int label, ParseTable pt) {
+    public Goto(int label, ParseTable pt) {
         this.pt = pt;
         this.label = label;
     }
@@ -69,7 +69,7 @@ public class GoTo implements Serializable, IGoto {
             return false;
         if(getClass() != obj.getClass())
             return false;
-        GoTo other = (GoTo) obj;
+        Goto other = (Goto) obj;
         if(cc == null) {
             if(other.cc != null)
                 return false;

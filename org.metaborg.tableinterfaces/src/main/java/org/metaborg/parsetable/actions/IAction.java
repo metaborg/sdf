@@ -1,19 +1,12 @@
 package org.metaborg.parsetable.actions;
 
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 
 public interface IAction {
 
     ActionType actionType();
 
-    static boolean allowsLookahead(IAction action, IParseInput parseInput) {
-        return action.actionType() != ActionType.REDUCE_LOOKAHEAD
-            || ((IReduceLookahead) action).allowsLookahead(parseInput);
-    }
+    boolean allowsLookahead(IActionQuery actionQuery);
 
-    static boolean isApplicableReduce(IAction action, IParseInput parseInput) {
-        return action.actionType() == ActionType.REDUCE || (action.actionType() == ActionType.REDUCE_LOOKAHEAD
-            && ((IReduceLookahead) action).allowsLookahead(parseInput));
-    }
-
+    boolean isApplicableReduce(IActionQuery actionQuery);
 }

@@ -1,14 +1,10 @@
 package org.metaborg.sdf2table.parsetable.query;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IParseInput;
+import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -81,8 +77,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return actionsForRanges.toArray(new ActionsForRange[actionsForRanges.size()]);
     }
 
-    @Override
-    public IAction[] getActions() {
+    @Override public IAction[] getActions() {
         List<IAction> res = new ArrayList<>();
 
         for(ActionsForRange actionsForRange : actionsForSortedDisjointRanges) {
@@ -93,8 +88,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return res.toArray(new IAction[res.size()]);
     }
 
-    @Override
-    public Iterable<IAction> getApplicableActions(IParseInput parseInput) {
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
         if(actionsForSortedDisjointRanges.length > 0) {
             int low = 0, high = actionsForSortedDisjointRanges.length - 1;
 
@@ -103,10 +97,10 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
                 ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
 
-                int currentChar = parseInput.getCurrentChar();
+                int currentChar = actionQuery.actionQueryCharacter();
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
-                    return actionsForMidRange.getApplicableActions(parseInput);
+                    return actionsForMidRange.getApplicableActions(actionQuery);
                 else if(currentChar < actionsForMidRange.from)
                     high = mid - 1;
                 else if(actionsForMidRange.to < currentChar)
@@ -119,26 +113,22 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return Collections.emptyList();
     }
 
-    @Override
-    public Iterable<IReduce> getApplicableReduceActions(IParseInput parseInput) {
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         if(actionsForSortedDisjointRanges.length > 0) {
             int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+            int currentChar = actionQuery.actionQueryCharacter();
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
                 ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
 
-                int currentChar = parseInput.getCurrentChar();
-
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
-                    return actionsForMidRange.getApplicableReduceActions(parseInput);
+                    return actionsForMidRange.getApplicableReduceActions(actionQuery);
                 else if(currentChar < actionsForMidRange.from)
                     high = mid - 1;
-                else if(actionsForMidRange.to < currentChar)
-                    low = mid + 1;
                 else
-                    break;
+                    low = mid + 1;
             }
         }
 
