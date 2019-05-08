@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
+import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.actions.IAction;
@@ -61,7 +62,10 @@ public class ParseTableIO {
     }
 
     public ParseTableIO(InputStream is) throws Exception {
-        ObjectInputStream ois = new ObjectInputStream(is);
+        // Use ClassLoaderObjectInputStream instead of regular ObjectInputStream to ensure that objects get deserialized
+        // with the classloader of this class, instead of some other arbitrary classloader chosen by the JVM which is
+        // wrong in environments with custom classloaders such as Maven and Gradle plugins.
+        ObjectInputStream ois = new ClassLoaderObjectInputStream(getClass().getClassLoader(), is);
         // read persisted normalized grammar
         pt = (ParseTable) ois.readObject();
         ois.close();

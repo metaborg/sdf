@@ -1,5 +1,5 @@
 ---
-id: org.metaborg:sdf.meta.integrationtest:2.5.3
+id: org.metaborg:sdf.meta.integrationtest:2.6.0-SNAPSHOT
 name: sdf-meta-integrationtest
 dependencies:
   compile:
