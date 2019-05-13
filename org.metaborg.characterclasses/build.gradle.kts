@@ -8,7 +8,7 @@ dependencies {
 
   api(project(":tableinterfaces"))
 
-  api("com.google.inject:guice")
+  api("com.google.guava:guava")
 
   compileOnly("com.google.code.findbugs:jsr305")
 
