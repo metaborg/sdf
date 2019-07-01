@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 
 import org.metaborg.parsetable.actions.IShift;
-import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -12,12 +12,12 @@ public class Shift extends Action implements IShift, Serializable {
     private static final long serialVersionUID = -8243181585007870077L;
     private int state;
 
-    public Shift(CharacterClass cc, int state) {
+    public Shift(ICharacterClass cc, int state) {
         this.cc = cc;
         this.setState(state);
     }
 
-    public Shift(CharacterClass cc) {
+    public Shift(ICharacterClass cc) {
         this.cc = cc;
     }
 

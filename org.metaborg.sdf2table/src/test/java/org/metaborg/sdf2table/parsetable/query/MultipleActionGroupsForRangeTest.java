@@ -50,7 +50,7 @@ public class MultipleActionGroupsForRangeTest {
     }
 
     @Test public void test2() {
-        ICharacterClass union = characterClassFactory.union(characterClassFactory.union(a, ce), gz);
+        ICharacterClass union = a.union(ce).union(gz);
         // @formatter:off
         ActionsPerCharacterClass[] actionsPerCharacterClasses =
             new ActionsPerCharacterClass[] {

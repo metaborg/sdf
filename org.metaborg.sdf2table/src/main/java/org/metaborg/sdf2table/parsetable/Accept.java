@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 
 import org.metaborg.parsetable.actions.IAccept;
-import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -11,7 +11,7 @@ public class Accept extends Action implements Serializable, IAccept {
 
     private static final long serialVersionUID = 4299391769734003915L;
 
-    public Accept(CharacterClass cc) {
+    public Accept(ICharacterClass cc) {
         this.cc = cc;
     }
 

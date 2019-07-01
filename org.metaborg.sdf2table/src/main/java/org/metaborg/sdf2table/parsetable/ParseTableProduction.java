@@ -6,27 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.grammar.AltSymbol;
-import org.metaborg.sdf2table.grammar.CharacterClass;
-import org.metaborg.sdf2table.grammar.ConstructorAttribute;
-import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
-import org.metaborg.sdf2table.grammar.GeneralAttribute;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.IterSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSymbol;
-import org.metaborg.sdf2table.grammar.IterSymbol;
-import org.metaborg.sdf2table.grammar.Layout;
-import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
-import org.metaborg.sdf2table.grammar.LexicalSymbol;
-import org.metaborg.sdf2table.grammar.OptionalSymbol;
-import org.metaborg.sdf2table.grammar.SequenceSymbol;
-import org.metaborg.sdf2table.grammar.Sort;
-import org.metaborg.sdf2table.grammar.StartSymbol;
-import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
 
@@ -128,7 +110,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         if(p.rightHand().size() > 0) {
             boolean lexRhs = true;
             for(Symbol s : p.rightHand()) {
-                if(!(s instanceof CharacterClass)) {
+                if(!(s instanceof CharacterClassSymbol)) {
                     lexRhs = false;
                     break;
                 }
@@ -139,13 +121,13 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         }
 
         this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
-        
+
         boolean isLayoutParent = getIsLayoutParent();
         boolean skippableLayout = isLayout && !isLayoutParent;
         boolean skippableLexical = sort == null && (isLexical || (isLexicalRhs && !isLiteral));
 
         isSkippableInParseForest = skippableLayout || skippableLexical;
-        
+
 
         boolean isList = false;
         Symbol symb2 = p.leftHand();
@@ -167,11 +149,11 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
         this.isStringLiteral = topdownHasSpaces(p.rightHand());
 
-        CharacterClass cc = checkFirstRange(p.rightHand());
+        CharacterClassSymbol cc = checkFirstRange(p.rightHand());
         this.isNumberLiteral = (cc != null);
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
-        
+
         layoutConstraints = Sets.newHashSet();
         boolean ignoreLayout = false;
         boolean longestMatch = false;
@@ -181,7 +163,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
                     ignoreLayout = true;
                 } else {
                     layoutConstraints.add(normalizeConstraint((LayoutConstraintAttribute) attr, p.rightHand()));
-                }                
+                }
             }
             if(attr instanceof GeneralAttribute && ((GeneralAttribute) attr).getName().equals("longest-match")) {
                 longestMatch = true;
@@ -212,9 +194,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     }
 
     private boolean getIsLayoutParent() {
-        return getIsLayout() && (getProduction().leftHand() instanceof ContextFreeSymbol) &&
-            !this.toString().equals("LAYOUT-CF = LAYOUT-CF LAYOUT-CF")
-            && !this.toString().equals("LAYOUT?-CF = ");
+        return getIsLayout() && (getProduction().leftHand() instanceof ContextFreeSymbol)
+            && !this.toString().equals("LAYOUT-CF = LAYOUT-CF LAYOUT-CF") && !this.toString().equals("LAYOUT?-CF = ");
     }
 
     private boolean checkNotIsLetter(Symbol s) {
@@ -230,14 +211,16 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return false;
     }
 
-    private CharacterClass checkFirstRange(List<Symbol> rhs) {
+    private CharacterClassSymbol checkFirstRange(List<Symbol> rhs) {
         for(Symbol s : rhs) {
             s = getFirstRange(s);
-            if(s instanceof CharacterClass) {
-                CharacterClass intCC = new CharacterClass(ParseTableIO.getCharacterClassFactory().fromRange(48, 57));
-                if(!((CharacterClass) s).isEmptyCC()) {
-                    if(s.equals(CharacterClass.intersection(intCC, (CharacterClass) s))) {
-                        return (CharacterClass) s;
+            if(s instanceof CharacterClassSymbol) {
+                CharacterClassSymbol characterClassSymbol = (CharacterClassSymbol) s;
+                ICharacterClass cc = characterClassSymbol.getCC();
+                ICharacterClass intCC = ParseTableIO.getCharacterClassFactory().fromRange(48, 57);
+                if(!cc.isEmpty()) {
+                    if(cc.equals(intCC.intersection(cc))) {
+                        return characterClassSymbol;
                     }
                 } else {
                     return null;
@@ -254,7 +237,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
             return getFirstRange(((IterStarSymbol) s).getSymbol());
         } else if(s instanceof IterSymbol) {
             return getFirstRange(((IterSymbol) s).getSymbol());
-        } else if(s instanceof CharacterClass) {
+        } else if(s instanceof CharacterClassSymbol) {
             return s;
         }
         return null;
@@ -264,7 +247,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         // This function has been copied from the JSGLR1 with the following comment:
         // Return true if any character range of this contains spaces
         for(Symbol s : rightHand) {
-            if(s instanceof CharacterClass && ((CharacterClass) s).contains('0')) {
+            if(s instanceof CharacterClassSymbol && ((CharacterClassSymbol) s).getCC().contains('0')) {
                 return true;
             }
         }

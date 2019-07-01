@@ -1,10 +1,9 @@
 package org.metaborg.characterclasses;
 
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
-
 import java.io.Serializable;
 
 import org.metaborg.characterclasses.util.Cache;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public class CharacterClassFactory implements ICharacterClassFactory, Serializable {
 
@@ -31,7 +30,7 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     public static boolean isNewLine(int character) {
         return character != EOF_INT && ((char) character) == '\n';
     }
-    
+
     public static boolean isTab(int character) {
         return character != EOF_INT && ((char) character) == '\t';
     }
@@ -54,101 +53,6 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
 
     @Override public final ICharacterClass fromRange(int from, int to) {
         return fromEmpty().addRange(from, to);
-    }
-
-    @Override public final ICharacterClass union(ICharacterClass one, ICharacterClass two) {
-        boolean aIsRangeSet = one instanceof CharacterClassRangeSet;
-        boolean bIsRangeSet = two instanceof CharacterClassRangeSet;
-
-        if(aIsRangeSet || bIsRangeSet) {
-            CharacterClassRangeSet rangeSet;
-            ICharacterClass other;
-
-            if(aIsRangeSet) {
-                rangeSet = (CharacterClassRangeSet) one;
-                other = two;
-            } else {
-                rangeSet = (CharacterClassRangeSet) two;
-                other = one;
-            }
-
-            return rangeSetUnion(rangeSet, other);
-        } else {
-            CharacterClassRangeSet result = fromEmpty();
-
-            result = rangeSetUnion(result, one);
-            result = rangeSetUnion(result, two);
-
-            return result;
-        }
-    }
-
-    @Override public final ICharacterClass intersection(ICharacterClass a, ICharacterClass b) {
-        boolean aIsRangeSet = a instanceof CharacterClassRangeSet;
-        boolean bIsRangeSet = b instanceof CharacterClassRangeSet;
-
-        if(aIsRangeSet || bIsRangeSet) {
-            CharacterClassRangeSet rangeSet;
-            ICharacterClass other;
-
-            if(aIsRangeSet) {
-                rangeSet = (CharacterClassRangeSet) a;
-                other = b;
-            } else {
-                rangeSet = (CharacterClassRangeSet) b;
-                other = a;
-            }
-
-            return rangeSetIntersection(rangeSet, other);
-        } else {
-            CharacterClassRangeSet result = fromEmpty();
-
-            result = rangeSetUnion(result, a);
-            result = rangeSetIntersection(result, b);
-
-            return result;
-        }
-    }
-
-    @Override public final ICharacterClass difference(ICharacterClass a, ICharacterClass b) {
-        CharacterClassRangeSet aRangeSet;
-
-        if(a instanceof CharacterClassRangeSet)
-            aRangeSet = (CharacterClassRangeSet) a;
-        else {
-            aRangeSet = fromEmpty();
-
-            aRangeSet = rangeSetUnion(aRangeSet, a);
-        }
-
-        return rangeSetDifference(aRangeSet, b);
-    }
-
-    private final CharacterClassRangeSet rangeSetUnion(CharacterClassRangeSet rangeSet, ICharacterClass other) {
-        if(other instanceof CharacterClassRangeSet)
-            return ((CharacterClassRangeSet) other).rangeSetUnion(rangeSet);
-        else if(other instanceof CharacterClassSingle)
-            return ((CharacterClassSingle) other).rangeSetUnion(rangeSet);
-        else
-            throw new IllegalStateException();
-    }
-
-    private final CharacterClassRangeSet rangeSetIntersection(CharacterClassRangeSet rangeSet, ICharacterClass other) {
-        if(other instanceof CharacterClassRangeSet)
-            return ((CharacterClassRangeSet) other).rangeSetIntersection(rangeSet);
-        else if(other instanceof CharacterClassSingle)
-            return ((CharacterClassSingle) other).rangeSetIntersection(rangeSet);
-        else
-            throw new IllegalStateException();
-    }
-
-    private final CharacterClassRangeSet rangeSetDifference(CharacterClassRangeSet rangeSet, ICharacterClass other) {
-        if(other instanceof CharacterClassRangeSet)
-            return ((CharacterClassRangeSet) other).rangeSetDifference(rangeSet);
-        else if(other instanceof CharacterClassSingle)
-            return ((CharacterClassSingle) other).rangeSetDifference(rangeSet);
-        else
-            throw new IllegalStateException();
     }
 
     @Override public ICharacterClass finalize(ICharacterClass characterClass) {

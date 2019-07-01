@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.metaborg.parsetable.actions.IReduceLookahead;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -13,9 +12,9 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
 
     private static final long serialVersionUID = 4938045344795755011L;
 
-    CharacterClass[] lookahead;
+    private ICharacterClass[] lookahead;
 
-    public ReduceLookahead(ParseTableProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
+    public ReduceLookahead(ParseTableProduction prod, int prod_label, ICharacterClass cc, ICharacterClass[] lookahead) {
         super(prod, prod_label, cc);
         this.lookahead = lookahead;
     }

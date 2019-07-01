@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -24,7 +24,6 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = contexts;
         this.deepContextBitmap = deepContextBitmap;
-        
     }
 
     public ContextualSymbol(Symbol s, Context context, long deepContextBitmap) {
@@ -37,8 +36,8 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = contexts;
 
-        for (Context context : contexts) {
-            if (context.getType() == ContextType.DEEP) {
+        for(Context context : contexts) {
+            if(context.getType() == ContextType.DEEP) {
                 deepContextBitmap |= context.getContextBitmap();
             }
         }
@@ -48,7 +47,7 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = Sets.newHashSet(context);
 
-        if (context.getType() == ContextType.DEEP) {
+        if(context.getType() == ContextType.DEEP) {
             deepContextBitmap |= context.getContextBitmap();
         }
     }
@@ -103,11 +102,11 @@ public class ContextualSymbol extends Symbol {
         return buf;
     }
 
-    @Override public CharacterClass followRestriction() {
+    @Override public ICharacterClass followRestriction() {
         return getOrigSymbol().followRestriction();
     }
 
-    @Override public List<CharacterClass[]> followRestrictionLookahead() {
+    @Override public List<ICharacterClass[]> followRestrictionLookahead() {
         return getOrigSymbol().followRestrictionLookahead();
     }
 
@@ -128,7 +127,7 @@ public class ContextualSymbol extends Symbol {
         new_contexts.addAll(this.getContexts());
         new_contexts.add(context);
 
-        if (context.getType() == ContextType.DEEP) {
+        if(context.getType() == ContextType.DEEP) {
             return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap | context.getContextBitmap());
         }
 
@@ -142,8 +141,8 @@ public class ContextualSymbol extends Symbol {
 
         long updatedDeepContextBitmap = deepContextBitmap;
 
-        for (Context context : contexts) {
-            if (context.getType() == ContextType.DEEP) {
+        for(Context context : contexts) {
+            if(context.getType() == ContextType.DEEP) {
                 updatedDeepContextBitmap |= context.getContextBitmap();
             }
         }
