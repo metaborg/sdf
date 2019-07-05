@@ -1,6 +1,7 @@
 package org.metaborg.characterclasses;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.metaborg.characterclasses.CharacterClassFactory.FULL_RANGE;
 
 import java.util.Arrays;
@@ -135,6 +136,24 @@ public class CharacterClassTest {
         testCharacterClass(factory.fromRange(75, 85).difference(factory.fromRange(70, 80)), factory.fromRange(81, 85));
     }
 
+    @Test public void testOptimized() {
+        testCharacterClass(x, factory.finalize(x));
+        testCharacterClass(AZ, factory.finalize(AZ));
+        testCharacterClass(eof, factory.finalize(eof));
+        testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
+        testCharacterClass(factory.fromRange(0, 256), factory.finalize(factory.fromRange(0, 256)));
+
+        assertTrue(factory.finalize(x) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(AZ) instanceof CharacterClassOptimized);
+        assertTrue(factory.finalize(eof) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(factory.fromRange(0, 256)) instanceof CharacterClassOptimized);
+    }
+
+    @Test(expected = IllegalStateException.class) public void testOptimizedEmpty() {
+        factory.finalize(factory.fromEmpty());
+    }
+
     @Test public void testNewLineDetection() {
         char newLineChar = '\n';
         int newLineInt = (int) newLineChar;
@@ -156,7 +175,7 @@ public class CharacterClassTest {
         assertEquals(ICharacterClass.comparator().compare(eof, az), 1);
     }
 
-    @Test public void testDisjointSortanble() {
+    @Test public void testDisjointSortable() {
         assertEquals(ICharacterClass.disjointSorted(Arrays.asList(AZ, az)), true);
         assertEquals(ICharacterClass.disjointSorted(Arrays.asList(az, AZ)), false);
         assertEquals(ICharacterClass.disjointSorted(Arrays.asList(AZ, AZ)), false);

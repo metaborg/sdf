@@ -221,10 +221,18 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     }
 
     public final ICharacterClass optimized() {
+        if(rangeSet.isEmpty() && containsEOF)
+            return CharacterClassFactory.EOF_SINGLETON;
+
         if(rangeSet.isEmpty())
-            return containsEOF ? CharacterClassFactory.EOF_SINGLETON : new CharacterClassOptimized();
-        else
-            return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
+            throw new IllegalStateException("Empty character classes are not allowed");
+
+        // Reduce to single character if possible
+        Range<Integer> span = rangeSet.span().canonical(DiscreteDomain.integers()); // canonical normalizes to [..,..)
+        if(span.lowerEndpoint() == span.upperEndpoint() - 1)
+            return new CharacterClassSingle(rangeSet.asSet(DiscreteDomain.integers()).first());
+
+        return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {

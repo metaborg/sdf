@@ -17,18 +17,13 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     private boolean containsEOF; // [256]
 
     private int min, max;
-    // This field is derived from the fields wordX and containsEOF, and is therefore not used in hashCode and equals
-    private boolean empty;
-
-    public CharacterClassOptimized() {
-        this.containsEOF = false;
-        this.min = this.max = -1;
-
-        throw new IllegalStateException("empty character classes not allowed");
-    }
 
     public CharacterClassOptimized(long word0, long word1, long word2, long word3, boolean containsEOF, int min,
         int max) {
+
+        if(word0 == 0 && word1 == 0 && word2 == 0 && word3 == 0 && !containsEOF)
+            throw new IllegalStateException("Empty character classes are not allowed");
+
         this.word0 = word0;
         this.word1 = word1;
         this.word2 = word2;
@@ -36,7 +31,6 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
         this.containsEOF = containsEOF;
         this.min = min;
         this.max = max;
-        this.empty = word0 == 0 && word1 == 0 && word2 == 0 && word3 == 0 && !containsEOF;
     }
 
     @Override public final boolean contains(int character) {
@@ -74,7 +68,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     }
 
     @Override public boolean isEmpty() {
-        return empty;
+        return false;
     }
 
     @Override public ICharacterClass union(ICharacterClass other) {
