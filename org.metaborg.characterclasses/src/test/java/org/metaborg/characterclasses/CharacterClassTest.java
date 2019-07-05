@@ -10,7 +10,7 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public class CharacterClassTest {
 
-    ICharacterClassFactory factory = new CharacterClassFactory(true, true);
+    ICharacterClassFactory factory = new CharacterClassFactory();
 
     ICharacterClass AZ = factory.fromRange(65, 90);
     ICharacterClass az = factory.fromRange(97, 122);

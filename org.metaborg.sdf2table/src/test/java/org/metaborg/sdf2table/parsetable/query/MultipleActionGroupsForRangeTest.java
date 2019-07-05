@@ -15,7 +15,7 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public class MultipleActionGroupsForRangeTest {
 
-    ICharacterClassFactory characterClassFactory = new CharacterClassFactory(true, true);
+    ICharacterClassFactory characterClassFactory = new CharacterClassFactory();
 
     ICharacterClass AZ = characterClassFactory.fromRange(65, 90);
     ICharacterClass az = characterClassFactory.fromRange(97, 122);

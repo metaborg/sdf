@@ -36,6 +36,10 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
         return character != EOF_INT && ((char) character) == '\t';
     }
 
+    public CharacterClassFactory() {
+        this(true, true);
+    }
+
     public CharacterClassFactory(boolean optimize, boolean cache) {
         this.optimize = optimize;
         this.cache = cache;

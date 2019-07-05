@@ -41,7 +41,7 @@ public class ParseTableIO {
     private File persistedTableFile;
     private List<String> paths;
     private final static ITermFactory termFactory = new TermFactory();
-    private final static CharacterClassFactory ccFactory = new CharacterClassFactory(true, true);
+    private final static CharacterClassFactory ccFactory = new CharacterClassFactory();
     private boolean tableCreated = false;
     private ParseTable pt;
 
