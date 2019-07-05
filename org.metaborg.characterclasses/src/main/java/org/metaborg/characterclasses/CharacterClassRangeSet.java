@@ -183,54 +183,56 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     }
 
     private boolean tryOptimize() {
-        if(!rangeSet.isEmpty()) {
-            final BitSet bitSet = convertToBitSet(rangeSet);
-
-            final long[] words = bitSet.toLongArray();
-            switch(words.length) {
-                case 4:
-                    word3 = words[3];
-                case 3:
-                    word2 = words[2];
-                case 2:
-                    word1 = words[1];
-                case 1:
-                    word0 = words[0];
-            }
-            return true;
-        } else {
+        if(rangeSet.isEmpty()) {
             return false;
         }
+
+        final BitSet bitSet = convertToBitSet();
+
+        final long[] words = bitSet.toLongArray();
+        switch(words.length) {
+            case 4:
+                word3 = words[3];
+            case 3:
+                word2 = words[2];
+            case 2:
+                word1 = words[1];
+            case 1:
+                word0 = words[0];
+        }
+        return true;
     }
 
-    private final BitSet convertToBitSet(final RangeSet<Integer> rangeSet) {
+    private final BitSet convertToBitSet() {
         if(rangeSet.isEmpty()) {
             return new BitSet();
         }
 
         final BitSet bitSet = new BitSet(rangeSet.span().upperEndpoint());
 
-        rangeSet.asRanges().forEach(range -> {
-            if(!range.canonical(DiscreteDomain.integers()).isEmpty()) {
-                Range<Integer> closedRange = ContiguousSet.create(range, DiscreteDomain.integers()).range();
-                bitSet.set(closedRange.lowerEndpoint(), closedRange.upperEndpoint() + 1);
+        for(Range<Integer> range : rangeSet.asRanges()) {
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(!canonical.isEmpty()) {
+                bitSet.set(canonical.lowerEndpoint(), canonical.upperEndpoint());
             }
-        });
+        }
 
         return bitSet;
     }
 
     public final ICharacterClass optimized() {
-        if(rangeSet.isEmpty() && containsEOF)
-            return CharacterClassFactory.EOF_SINGLETON;
-
         if(rangeSet.isEmpty())
-            throw new IllegalStateException("Empty character classes are not allowed");
+            if(containsEOF)
+                return CharacterClassFactory.EOF_SINGLETON;
+            else
+                throw new IllegalStateException("Empty character classes are not allowed");
 
-        // Reduce to single character if possible
-        Range<Integer> span = rangeSet.span().canonical(DiscreteDomain.integers()); // canonical normalizes to [..,..)
-        if(span.lowerEndpoint() == span.upperEndpoint() - 1)
-            return new CharacterClassSingle(rangeSet.asSet(DiscreteDomain.integers()).first());
+        // Reduce to single character, this is possible when it does not contain EOF and the canonical span is [x,x+1)
+        if(!containsEOF) {
+            Range<Integer> span = rangeSet.span().canonical(DiscreteDomain.integers());
+            if(span.lowerEndpoint() == span.upperEndpoint() - 1)
+                return new CharacterClassSingle(span.lowerEndpoint());
+        }
 
         return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
     }
@@ -239,22 +241,26 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         List<IStrategoTerm> terms = new ArrayList<>();
         boolean hasEOF = false;
         for(Range<Integer> range : rangeSet.asRanges()) {
-            // In a RangeSet, ranges are represented using open and closed boundaries.
-            // E.g. the range [97,99) must be normalized to [97,98], (96,99] to [97,99], etc.
-            // To do this: if the lower bound is open, increase by one; if the upper bound is open, decrease by one.
-            int lower = range.lowerEndpoint() + (range.lowerBoundType() == BoundType.OPEN ? 1 : 0);
-            int upper = range.upperEndpoint() - (range.upperBoundType() == BoundType.OPEN ? 1 : 0);
+            // In a RangeSet, ranges are represented using mixed open and closed boundaries.
+            // Converting to canonical will always return a range of the form [x,y).
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(canonical.isEmpty()) {
+                continue;
+            }
 
-            if(containsEOF && upper == EOF_INT - 1) {
+            int from = canonical.lowerEndpoint();
+            int to = canonical.upperEndpoint() - 1;
+
+            if(containsEOF && to == EOF_INT - 1) {
                 // Make EOF (256) be included in the range if it ends with 255
-                upper++;
+                to++;
                 hasEOF = true;
             }
 
-            if(lower == upper)
-                terms.add(tf.makeInt(lower));
+            if(from == to)
+                terms.add(tf.makeInt(from));
             else
-                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(lower), tf.makeInt(upper)));
+                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(from), tf.makeInt(to)));
         }
 
         if(containsEOF && !hasEOF)
@@ -291,18 +297,20 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     @Override public String toString() {
         final List<String> ranges = new ArrayList<>();
 
-        rangeSet.asRanges().forEach(range -> {
-            if(!range.isEmpty()) {
-                Range<Integer> closedRange = ContiguousSet.create(range, DiscreteDomain.integers()).range();
-                final int from = closedRange.lowerEndpoint();
-                final int to = closedRange.upperEndpoint();
-
-                if(from != to)
-                    ranges.add("" + from + "-" + to);
-                else
-                    ranges.add("" + from);
+        for(Range<Integer> range : rangeSet.asRanges()) {
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(canonical.isEmpty()) {
+                continue;
             }
-        });
+
+            final int from = canonical.lowerEndpoint();
+            final int to = canonical.upperEndpoint() - 1;
+
+            if(from != to)
+                ranges.add("" + from + "-" + to);
+            else
+                ranges.add("" + from);
+        }
 
         if(containsEOF)
             ranges.add("EOF");

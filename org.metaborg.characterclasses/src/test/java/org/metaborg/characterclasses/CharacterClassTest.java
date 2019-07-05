@@ -140,12 +140,14 @@ public class CharacterClassTest {
         testCharacterClass(x, factory.finalize(x));
         testCharacterClass(AZ, factory.finalize(AZ));
         testCharacterClass(eof, factory.finalize(eof));
+        testCharacterClass(x.union(eof), factory.finalize(x.union(eof)));
         testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
         testCharacterClass(factory.fromRange(0, 256), factory.finalize(factory.fromRange(0, 256)));
 
         assertTrue(factory.finalize(x) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(AZ) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(eof) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(x.union(eof)) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(factory.fromRange(0, 256)) instanceof CharacterClassOptimized);
     }
@@ -203,6 +205,10 @@ public class CharacterClassTest {
         // This test checks whether the open ranges are correctly normalized to closed ranges when converting to ATerm.
         assertEquals("[range(97,98),range(100,119),range(121,122)]",
             az.difference(c.union(x)).toAtermList(tf).toString());
+        // {[97,99),(99,120),(120,122]} - {[100],[120]} = {[97,99),(99,100),(100,120),(120,122]}
+        // The empty range (99,100) must be removed
+        assertEquals("[range(97,98),range(101,119),range(121,122)]",
+                az.difference(c.union(x)).difference(factory.fromSingle(100).union(x)).toAtermList(tf).toString());
     }
 
 }
