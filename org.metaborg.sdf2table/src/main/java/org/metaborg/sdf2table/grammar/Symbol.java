@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-
-import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
 import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
@@ -24,12 +23,15 @@ public abstract class Symbol implements Serializable, ISymbol {
     protected List<ICharacterClass[]> followRestrictionsLookahead;
 
     private boolean nullable = false;
+    private ICharacterClass first = CharacterClassFactory.EMPTY_CHARACTER_CLASS;
+    private ICharacterClass follow = CharacterClassFactory.EMPTY_CHARACTER_CLASS;
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see org.metaborg.sdf2table.grammar.ISymbol#name()
      */
-    @Override
-    public abstract String name();
+    @Override public abstract String name();
 
     public boolean isNullable() {
         return nullable;
@@ -37,6 +39,22 @@ public abstract class Symbol implements Serializable, ISymbol {
 
     public void setNullable(boolean nullable) {
         this.nullable = nullable;
+    }
+
+    @Override public ICharacterClass getFirst() {
+        return first;
+    }
+
+    @Override public void setFirst(ICharacterClass first) {
+        this.first = first;
+    }
+
+    @Override public ICharacterClass getFollow() {
+        return follow;
+    }
+
+    @Override public void setFollow(ICharacterClass follow) {
+        this.follow = follow;
     }
 
     @Override public String toString() {
@@ -149,5 +167,6 @@ public abstract class Symbol implements Serializable, ISymbol {
         return toParseTableSymbol(null, null);
     }
 
-    public abstract org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality);
+    public abstract org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol(SyntaxContext syntaxContext,
+        SortCardinality cardinality);
 }
