@@ -1,19 +1,18 @@
 package org.metaborg.characterclasses;
 
 
+import static org.metaborg.characterclasses.CharacterClassFactory.EOF_INT;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.ImmutableRangeSet;
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeSet;
-import com.google.common.collect.TreeRangeSet;
+import com.google.common.collect.*;
 
 public final class CharacterClassRangeSet implements ICharacterClass, Serializable {
 
@@ -39,13 +38,13 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
     private CharacterClassRangeSet(final ImmutableRangeSet<Integer> rangeSet, boolean containsEOF) {
         assert rangeSet.isEmpty() || rangeSet.span().lowerEndpoint() >= 0;
-        assert rangeSet.isEmpty() || rangeSet.span().upperEndpoint() < CharacterClassFactory.EOF_INT;
+        assert rangeSet.isEmpty() || rangeSet.span().upperEndpoint() < EOF_INT;
 
         if(rangeSet.isEmpty()) {
-            this.min = this.max = containsEOF ? CharacterClassFactory.EOF_INT : -1;
+            this.min = this.max = containsEOF ? EOF_INT : -1;
         } else {
             this.min = rangeSet.span().lowerEndpoint();
-            this.max = Math.max(rangeSet.span().upperEndpoint(), containsEOF ? CharacterClassFactory.EOF_INT : -1);
+            this.max = Math.max(rangeSet.span().upperEndpoint(), containsEOF ? EOF_INT : -1);
         }
 
         this.rangeSet = rangeSet;
@@ -70,7 +69,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     }
 
     @Override public final boolean contains(int character) {
-        if(character == CharacterClassFactory.EOF_INT)
+        if(character == EOF_INT)
             return containsEOF;
 
         if(useCachedBitSet) {
@@ -90,112 +89,184 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         return max;
     }
 
+    @Override public boolean isEmpty() {
+        return rangeSet.isEmpty() && !containsEOF;
+    }
+
+    @Override public ICharacterClass union(ICharacterClass other) {
+        if(other instanceof CharacterClassSingle)
+            return addSingle(other.min());
+
+        if(other instanceof CharacterClassRangeSet) {
+            final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
+            CharacterClassRangeSet otherRangeSet = (CharacterClassRangeSet) other;
+
+            mutableRangeSet.addAll(this.rangeSet);
+            mutableRangeSet.addAll(otherRangeSet.rangeSet);
+
+            boolean containsEOF = this.containsEOF || otherRangeSet.containsEOF;
+
+            return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
+        }
+
+        throw new IllegalStateException("Union can only be done with Single and RangeSet character classes");
+    }
+
+    @Override public ICharacterClass intersection(ICharacterClass other) {
+        if(other instanceof CharacterClassSingle)
+            if(contains(other.min()))
+                return other;
+            else
+                return EMPTY_CONSTANT;
+
+        if(other instanceof CharacterClassRangeSet) {
+            final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
+            CharacterClassRangeSet otherRangeSet = (CharacterClassRangeSet) other;
+
+            for(Range<Integer> range : this.rangeSet.asRanges()) {
+                mutableRangeSet.addAll(otherRangeSet.rangeSet.subRangeSet(range));
+            }
+
+            boolean containsEOF = this.containsEOF && otherRangeSet.containsEOF;
+
+            return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
+        }
+
+        throw new IllegalStateException("Intersection can only be done with Single and RangeSet character classes");
+    }
+
+    @Override public ICharacterClass difference(ICharacterClass other) {
+        if(other instanceof CharacterClassSingle)
+            return removeSingle(other.min());
+
+        if(other instanceof CharacterClassRangeSet) {
+            final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
+            CharacterClassRangeSet otherRangeSet = (CharacterClassRangeSet) other;
+
+            mutableRangeSet.addAll(this.rangeSet);
+            mutableRangeSet.removeAll(otherRangeSet.rangeSet);
+
+            boolean containsEOF = this.containsEOF && !otherRangeSet.containsEOF;
+
+            return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
+        }
+
+        throw new IllegalStateException("Difference can only be done with Single and RangeSet character classes");
+    }
+
     protected final CharacterClassRangeSet addRange(int from, int to) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
         mutableRangeSet.add(Range.closed(from, Math.min(255, to)));
 
-        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet),
-            containsEOF || to == CharacterClassFactory.EOF_INT);
+        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF || to == EOF_INT);
     }
 
     protected final CharacterClassRangeSet addSingle(int character) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        if(character < CharacterClassFactory.EOF_INT)
+        if(character < EOF_INT)
             mutableRangeSet.add(Range.singleton(character));
 
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet),
-            containsEOF || character == CharacterClassFactory.EOF_INT);
+            containsEOF || character == EOF_INT);
     }
 
     protected final CharacterClassRangeSet removeSingle(int character) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        if(character < CharacterClassFactory.EOF_INT)
+        if(character < EOF_INT)
             mutableRangeSet.remove(Range.open(character - 1, character + 1));
 
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet),
-            containsEOF && character != CharacterClassFactory.EOF_INT);
+            containsEOF && character != EOF_INT);
     }
 
     private boolean tryOptimize() {
-        if(!rangeSet.isEmpty()) {
-            final BitSet bitSet = convertToBitSet(rangeSet);
-
-            final long[] words = bitSet.toLongArray();
-            switch(words.length) {
-                case 4:
-                    word3 = words[3];
-                case 3:
-                    word2 = words[2];
-                case 2:
-                    word1 = words[1];
-                case 1:
-                    word0 = words[0];
-            }
-            return true;
-        } else {
+        if(rangeSet.isEmpty()) {
             return false;
         }
+
+        final BitSet bitSet = convertToBitSet();
+
+        final long[] words = bitSet.toLongArray();
+        switch(words.length) {
+            case 4:
+                word3 = words[3];
+            case 3:
+                word2 = words[2];
+            case 2:
+                word1 = words[1];
+            case 1:
+                word0 = words[0];
+        }
+        return true;
     }
 
-    private final BitSet convertToBitSet(final RangeSet<Integer> rangeSet) {
+    private final BitSet convertToBitSet() {
         if(rangeSet.isEmpty()) {
             return new BitSet();
         }
 
         final BitSet bitSet = new BitSet(rangeSet.span().upperEndpoint());
 
-        rangeSet.asRanges().forEach(range -> {
-            if(!range.canonical(DiscreteDomain.integers()).isEmpty()) {
-                Range<Integer> closedRange = ContiguousSet.create(range, DiscreteDomain.integers()).range();
-                bitSet.set(closedRange.lowerEndpoint(), closedRange.upperEndpoint() + 1);
+        for(Range<Integer> range : rangeSet.asRanges()) {
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(!canonical.isEmpty()) {
+                bitSet.set(canonical.lowerEndpoint(), canonical.upperEndpoint());
             }
-        });
+        }
 
         return bitSet;
     }
 
-    public final CharacterClassRangeSet rangeSetUnion(CharacterClassRangeSet other) {
-        final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
-
-        mutableRangeSet.addAll(this.rangeSet);
-        mutableRangeSet.addAll(other.rangeSet);
-
-        boolean containsEOF = this.containsEOF || other.containsEOF;
-
-        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
-    }
-
-    public CharacterClassRangeSet rangeSetIntersection(CharacterClassRangeSet other) {
-        final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
-
-        for(Range<Integer> range : this.rangeSet.asRanges()) {
-            mutableRangeSet.addAll(other.rangeSet.subRangeSet(range));
-        }
-
-        boolean containsEOF = this.containsEOF && other.containsEOF;
-
-        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
-    }
-
-    public CharacterClassRangeSet rangeSetDifference(CharacterClassRangeSet other) {
-        final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create();
-
-        mutableRangeSet.addAll(other.rangeSet);
-        mutableRangeSet.removeAll(this.rangeSet);
-
-        boolean containsEOF = other.containsEOF && !this.containsEOF;
-
-        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
-    }
-
     public final ICharacterClass optimized() {
         if(rangeSet.isEmpty())
-            return containsEOF ? CharacterClassFactory.EOF_SINGLETON : new CharacterClassOptimized();
-        else
-            return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
+            if(containsEOF)
+                return CharacterClassFactory.EOF_SINGLETON;
+            else
+                throw new IllegalStateException("Empty character classes are not allowed");
+
+        // Reduce to single character, this is possible when it does not contain EOF and the canonical span is [x,x+1)
+        if(!containsEOF) {
+            Range<Integer> span = rangeSet.span().canonical(DiscreteDomain.integers());
+            if(span.lowerEndpoint() == span.upperEndpoint() - 1)
+                return new CharacterClassSingle(span.lowerEndpoint());
+        }
+
+        return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
+    }
+
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
+        List<IStrategoTerm> terms = new ArrayList<>();
+        boolean hasEOF = false;
+        for(Range<Integer> range : rangeSet.asRanges()) {
+            // In a RangeSet, ranges are represented using mixed open and closed boundaries.
+            // Converting to canonical will always return a range of the form [x,y).
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(canonical.isEmpty()) {
+                continue;
+            }
+
+            int from = canonical.lowerEndpoint();
+            int to = canonical.upperEndpoint() - 1;
+
+            if(containsEOF && to == EOF_INT - 1) {
+                // Make EOF (256) be included in the range if it ends with 255
+                to++;
+                hasEOF = true;
+            }
+
+            if(from == to)
+                terms.add(tf.makeInt(from));
+            else
+                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(from), tf.makeInt(to)));
+        }
+
+        if(containsEOF && !hasEOF)
+            terms.add(tf.makeInt(EOF_INT));
+
+        return tf.makeList(terms);
     }
 
     @Override public int hashCode() {
@@ -213,7 +284,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
                 return false;
             }
         }
-        
+
         if(o == null || getClass() != o.getClass()) {
             return false;
         }
@@ -226,18 +297,20 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     @Override public String toString() {
         final List<String> ranges = new ArrayList<>();
 
-        rangeSet.asRanges().forEach(range -> {
-            if(!range.isEmpty()) {
-                Range<Integer> closedRange = ContiguousSet.create(range, DiscreteDomain.integers()).range();
-                final int from = closedRange.lowerEndpoint();
-                final int to = closedRange.upperEndpoint();
-
-                if(from != to)
-                    ranges.add("" + from + "-" + to);
-                else
-                    ranges.add("" + from);
+        for(Range<Integer> range : rangeSet.asRanges()) {
+            Range<Integer> canonical = range.canonical(DiscreteDomain.integers());
+            if(canonical.isEmpty()) {
+                continue;
             }
-        });
+
+            final int from = canonical.lowerEndpoint();
+            final int to = canonical.upperEndpoint() - 1;
+
+            if(from != to)
+                ranges.add("" + from + "-" + to);
+            else
+                ranges.add("" + from);
+        }
 
         if(containsEOF)
             ranges.add("EOF");

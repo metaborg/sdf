@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.metaborg.parsetable.IProduction;
 import org.metaborg.parsetable.ProductionType;
 import org.metaborg.parsetable.actions.IReduce;
-import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
 import org.metaborg.sdf2table.grammar.IAttribute;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -18,7 +18,7 @@ public class Reduce extends Action implements IReduce, Serializable {
     int prod_label;
     ParseTableProduction prod;
 
-    public Reduce(ParseTableProduction prod, int prod_label, CharacterClass cc) {
+    public Reduce(ParseTableProduction prod, int prod_label, ICharacterClass cc) {
         this.prod = prod;
         this.prod_label = prod_label;
         this.cc = cc;

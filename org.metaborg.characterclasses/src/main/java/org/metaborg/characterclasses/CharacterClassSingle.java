@@ -3,6 +3,8 @@ package org.metaborg.characterclasses;
 import java.io.Serializable;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.interpreter.terms.ITermFactory;
 
 public final class CharacterClassSingle implements ICharacterClass, Serializable {
 
@@ -13,44 +15,65 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         this.character = character;
     }
 
-    @Override
-    public final boolean contains(int character) {
+    @Override public final boolean contains(int character) {
         return this.character == character;
     }
 
-    @Override
-    public int min() {
+    @Override public int min() {
         return character;
     }
 
-    @Override
-    public int max() {
+    @Override public int max() {
         return character;
     }
 
-    public final CharacterClassRangeSet rangeSetUnion(CharacterClassRangeSet rangeSet) {
-        return rangeSet.addSingle(character);
+    @Override public boolean isEmpty() {
+        return false;
     }
-    
-    public final CharacterClassRangeSet rangeSetIntersection(CharacterClassRangeSet rangeSet) {
-        if(rangeSet.contains(character)) {
-            return CharacterClassRangeSet.EMPTY_CONSTANT.addSingle(character);
-        } else {
+
+    @Override public ICharacterClass union(ICharacterClass other) {
+        if(other instanceof CharacterClassSingle) {
+            CharacterClassRangeSet result = CharacterClassRangeSet.EMPTY_CONSTANT;
+            result = result.addSingle(this.character);
+            result = result.addSingle(other.min());
+            return result;
+        }
+
+        if(other instanceof CharacterClassRangeSet)
+            return ((CharacterClassRangeSet) other).addSingle(character);
+
+        throw new IllegalStateException("Union can only be done with Single and RangeSet character classes");
+    }
+
+    @Override public ICharacterClass intersection(ICharacterClass other) {
+        if(other instanceof CharacterClassOptimized)
+            throw new IllegalStateException("Intersection can only be done with Single and RangeSet character classes");
+
+        if(other.contains(character))
+            return this;
+        else
             return CharacterClassRangeSet.EMPTY_CONSTANT;
-        }        
-    }
-    
-    public final CharacterClassRangeSet rangeSetDifference(CharacterClassRangeSet rangeSet) {
-        return rangeSet.removeSingle(character);
     }
 
-    @Override
-    public int hashCode() {
+    @Override public ICharacterClass difference(ICharacterClass other) {
+        if(other instanceof CharacterClassOptimized)
+            throw new IllegalStateException("Difference can only be done with Single and RangeSet character classes");
+
+        if(other.contains(character))
+            return CharacterClassRangeSet.EMPTY_CONSTANT;
+        else
+            return this;
+    }
+
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
+        return tf.makeList(tf.makeInt(character));
+    }
+
+    @Override public int hashCode() {
         return Integer.hashCode(character);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    @Override public boolean equals(Object o) {
         if(this == o) {
             return true;
         }
@@ -60,8 +83,8 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
             } else {
                 return false;
             }
-        }        
-        
+        }
+
         if(o == null || getClass() != o.getClass()) {
             return false;
         }
@@ -71,8 +94,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         return this.character == that.character;
     }
 
-    @Override
-    public final String toString() {
+    @Override public final String toString() {
         return "[" + character + "]";
     }
 

@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.interpreter.terms.ITermFactory;
+
 /**
  * ASCII characters: integer representation [0, 255]
  *
@@ -18,10 +21,25 @@ public interface ICharacterClass {
 
     int max();
 
+    boolean isEmpty();
+
+    /**
+     * @return The union of characters in character classes this and other.
+     */
+    ICharacterClass union(ICharacterClass other);
+
+    /**
+     * @return The intersection of characters in character classes this and other.
+     */
+    ICharacterClass intersection(ICharacterClass other);
+
+    /**
+     * @return The difference of characters in character classes this and other.
+     */
+    ICharacterClass difference(ICharacterClass other);
+
     static Comparator<ICharacterClass> comparator() {
-        return (one, two) -> {
-            return Integer.compare(one.min(), two.min());
-        };
+        return Comparator.comparingInt(ICharacterClass::min);
     }
 
     static boolean disjointSortable(List<ICharacterClass> original) {
@@ -32,9 +50,9 @@ public interface ICharacterClass {
         return disjointSorted(sorted);
     }
 
-    /*
-     * Returns true if each character class only contains characters bigger than the characters in the previous
-     * character class.
+    /**
+     * @return true if each character class only contains characters bigger than the characters in the previous
+     *         character class.
      */
     static boolean disjointSorted(List<ICharacterClass> characterClasses) {
         for(int i = 0; i < characterClasses.size() - 1; i++) {
@@ -44,8 +62,15 @@ public interface ICharacterClass {
 
         return true;
     }
-    
+
+    default IStrategoTerm toAterm(ITermFactory tf) {
+        return tf.makeAppl(tf.makeConstructor("char-class", 1), toAtermList(tf));
+    }
+
+    IStrategoTerm toAtermList(ITermFactory tf);
+
     @Override boolean equals(Object obj);
+
     @Override int hashCode();
 
 }

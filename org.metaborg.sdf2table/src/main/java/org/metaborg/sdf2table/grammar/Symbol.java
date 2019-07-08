@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -15,8 +16,8 @@ public abstract class Symbol implements Serializable {
 
     private static final long serialVersionUID = -9135946758836485558L;
 
-    protected CharacterClass followRestrictionsNoLookahead;
-    protected List<CharacterClass[]> followRestrictionsLookahead;
+    protected ICharacterClass followRestrictionsNoLookahead;
+    protected List<ICharacterClass[]> followRestrictionsLookahead;
 
     private boolean nullable = false;
 
@@ -34,16 +35,16 @@ public abstract class Symbol implements Serializable {
         return name();
     }
 
-    public CharacterClass followRestriction() {
+    public ICharacterClass followRestriction() {
         return followRestrictionsNoLookahead;
     }
 
-    public List<CharacterClass[]> followRestrictionLookahead() {
+    public List<ICharacterClass[]> followRestrictionLookahead() {
         return followRestrictionsLookahead;
     }
 
-    public void addFollowRestrictionsLookahead(List<CharacterClass[]> frlList) {
-        for(CharacterClass[] frl : frlList) {
+    public void addFollowRestrictionsLookahead(List<ICharacterClass[]> frlList) {
+        for(ICharacterClass[] frl : frlList) {
             // currently only merge if first character-class is the same and size = 2
             if(frl.length != 2) {
                 followRestrictionsLookahead.add(frl);
@@ -51,15 +52,15 @@ public abstract class Symbol implements Serializable {
             }
 
             boolean merged = false;
-            for(CharacterClass[] currentFRL : followRestrictionsLookahead) {
+            for(ICharacterClass[] currentFRL : followRestrictionsLookahead) {
                 if(currentFRL.length != 2) {
                     continue;
                 }
-                
-                CharacterClass intersection = CharacterClass.intersection(currentFRL[0], frl[0]);
+
+                ICharacterClass intersection = currentFRL[0].intersection(frl[0]);
                 boolean equals = intersection.equals(currentFRL[0]);
                 if(equals) {
-                    currentFRL[1] = CharacterClass.union(currentFRL[1], frl[1]);
+                    currentFRL[1] = currentFRL[1].union(frl[1]);
                     merged = true;
                 }
             }
@@ -70,11 +71,11 @@ public abstract class Symbol implements Serializable {
         }
     }
 
-    public void addFollowRestriction(CharacterClass fr) {
+    public void addFollowRestriction(ICharacterClass fr) {
         if(followRestrictionsNoLookahead == null) {
             followRestrictionsNoLookahead = fr;
         } else {
-            followRestrictionsNoLookahead = CharacterClass.union(followRestrictionsNoLookahead, fr);
+            followRestrictionsNoLookahead = followRestrictionsNoLookahead.union(fr);
         }
     }
 
@@ -85,9 +86,9 @@ public abstract class Symbol implements Serializable {
 
         // if the character of the follow restriction already occurs without a lookahead
         // the follow restriction with lookahead is redundant
-        List<CharacterClass[]> redundantFRLookahead = Lists.newArrayList();
-        for(CharacterClass[] fr : followRestrictionsLookahead) {
-            CharacterClass intersection = CharacterClass.intersection(fr[0], followRestrictionsNoLookahead);
+        List<ICharacterClass[]> redundantFRLookahead = Lists.newArrayList();
+        for(ICharacterClass[] fr : followRestrictionsLookahead) {
+            ICharacterClass intersection = fr[0].intersection(followRestrictionsNoLookahead);
             if(intersection.equals(fr[0])) {
                 redundantFRLookahead.add(fr);
             } else {
