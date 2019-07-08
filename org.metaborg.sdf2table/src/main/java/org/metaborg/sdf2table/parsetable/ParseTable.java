@@ -263,7 +263,7 @@ public class ParseTable implements IParseTable, Serializable {
         for(ISymbol s : symbols) {
             for(IProduction p : symbolProductionsMapping.get(s)) {
                 List<ISymbol> rightHand = p.rightHand();
-                for(int i = 0, rightHandSize = rightHand.size(); i < rightHandSize; i++) {
+                i: for(int i = 0, rightHandSize = rightHand.size(); i < rightHandSize; i++) {
                     ISymbol symbolI = rightHand.get(i);
 
                     // If p is of the shape A = A0 ... Ai Ak ... Am Aj ... An
@@ -272,8 +272,9 @@ public class ParseTable implements IParseTable, Serializable {
                         ISymbol symbolJ = rightHand.get(j);
                         containsTheFirstOf.put(symbolI, symbolJ);
 
+                        // If Ak ... An are NOT all nullable, continue with next Ai
                         if(!symbolJ.isNullable())
-                            break;
+                            continue i;
                     }
 
                     // If Ak ... An are all nullable, FOLLOW(Ai) contains FOLLOW(A)
