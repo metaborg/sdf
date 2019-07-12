@@ -1,11 +1,11 @@
 package org.metaborg.sdf2table.deepconflicts;
 
-import com.google.common.collect.*;
+import java.util.*;
+
 import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.google.common.collect.*;
 
 public class DeepConflictsAnalyzer {
 
@@ -14,8 +14,8 @@ public class DeepConflictsAnalyzer {
         phase1.deepConflictAnalysis();
 
         // TODO: due to usage of factory labels might be different from one phase to another; needs checking.
-        Set<Integer> newLabels = phase1.productionLabels.inverse().keySet().stream().collect(Collectors.toSet());
-        Set<Integer> oldLabels = pt.productionLabels().inverse().keySet().stream().collect(Collectors.toSet());
+        Set<Integer> newLabels = new HashSet<>(phase1.productionLabels.inverse().keySet());
+        Set<Integer> oldLabels = new HashSet<>(pt.productionLabels().inverse().keySet());
 
         Set<Integer> diffLabels = new HashSet<>(newLabels);
         diffLabels.removeAll(oldLabels);
@@ -107,8 +107,8 @@ public class DeepConflictsAnalyzer {
         int sizeDiff_productionToAttributes = productionAttributesMapping.size() - pt.normalizedGrammar().getProductionAttributesMapping().size();
         int sizeDiff_productionToContextualProduction = prodContextualProdMapping.size() - pt.normalizedGrammar().getProdContextualProdMapping().size();
 
-        Set<Integer> newLabels = productionLabels.inverse().keySet().stream().collect(Collectors.toSet());
-        Set<Integer> oldLabels = pt.productionLabels().inverse().keySet().stream().collect(Collectors.toSet());
+        Set<Integer> newLabels = new HashSet<>(productionLabels.inverse().keySet());
+        Set<Integer> oldLabels = new HashSet<>(pt.productionLabels().inverse().keySet());
 
         Set<Integer> diffLabels = new HashSet<>(newLabels);
         diffLabels.removeAll(oldLabels);
@@ -138,8 +138,8 @@ public class DeepConflictsAnalyzer {
                     // E.In left E.Pos
                     handleInfixPostFixConflict(pt, prio, higher, lower);
                 }
-                
-             // regular priority indirect recursion conflict
+
+                // regular priority indirect recursion conflict
                 handleIndirectRecursionConflict(pt, prio, higher);
             }
 
@@ -154,7 +154,7 @@ public class DeepConflictsAnalyzer {
                     && lower.rightRecursivePosition() == -1) { // lower is postfix
                     handleMirroredDanglingElseConflict(pt, prio, higher, lower);
                 }
-            }           
+            }
 
         }
 
@@ -488,7 +488,7 @@ public class DeepConflictsAnalyzer {
                     }
 
                 }
-                
+
                 // add new contextual productions A.C = α A{C} S+
                 for(IProduction newProd : newProductions.keySet()) {
                     int pos = newProductions.get(newProd).rightHand().size() - 3; // second to last symbol
