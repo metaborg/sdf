@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.parsetable.query;
 import java.io.Serializable;
 import java.util.*;
 
-import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;

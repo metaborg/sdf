@@ -7,7 +7,6 @@ dependencies {
   api(platform("org.metaborg:parent:$version"))
 
   api(project(":tableinterfaces"))
-  api(project(":characterclasses"))
 
   api("org.metaborg:org.spoofax.terms:$version")
   api("org.metaborg:org.metaborg.util:$version")

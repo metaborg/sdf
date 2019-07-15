@@ -1,8 +1,7 @@
-package org.metaborg.characterclasses;
+package org.metaborg.parsetable.characterclasses;
 
 import java.io.Serializable;
 
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 

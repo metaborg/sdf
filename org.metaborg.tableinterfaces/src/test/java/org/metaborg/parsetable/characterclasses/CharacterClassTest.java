@@ -1,14 +1,13 @@
-package org.metaborg.characterclasses;
+package org.metaborg.parsetable.characterclasses;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.metaborg.characterclasses.CharacterClassFactory.FULL_RANGE;
+import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.FULL_RANGE;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
 
 import org.junit.Test;
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.terms.TermFactory;
 
 public class CharacterClassTest {
@@ -208,7 +207,7 @@ public class CharacterClassTest {
         // {[97,99),(99,120),(120,122]} - {[100],[120]} = {[97,99),(99,100),(100,120),(120,122]}
         // The empty range (99,100) must be removed
         assertEquals("[range(97,98),range(101,119),range(121,122)]",
-                az.difference(c.union(x)).difference(factory.fromSingle(100).union(x)).toAtermList(tf).toString());
+            az.difference(c.union(x)).difference(factory.fromSingle(100).union(x)).toAtermList(tf).toString());
     }
 
 }

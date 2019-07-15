@@ -23,11 +23,6 @@
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
-      <artifactId>characterclasses</artifactId>
-      <version>${metaborg-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.metaborg</groupId>
       <artifactId>org.strategoxt.strj</artifactId>
       <version>${metaborg-version}</version>
     </dependency>

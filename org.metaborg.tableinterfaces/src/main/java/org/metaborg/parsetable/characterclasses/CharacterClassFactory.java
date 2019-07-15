@@ -1,9 +1,8 @@
-package org.metaborg.characterclasses;
+package org.metaborg.parsetable.characterclasses;
 
 import java.io.Serializable;
 
-import org.metaborg.characterclasses.util.Cache;
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.characterclasses.util.Cache;
 
 public class CharacterClassFactory implements ICharacterClassFactory, Serializable {
 

@@ -19,5 +19,4 @@ fun includeProject(id: String, path: String = "org.metaborg.$id") {
 }
 
 includeProject("tableinterfaces")
-includeProject("characterclasses")
 includeProject("sdf2table")

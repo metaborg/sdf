@@ -1,6 +1,4 @@
-package org.metaborg.characterclasses;
-
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
+package org.metaborg.parsetable.characterclasses;
 
 public interface ICharacterClassFactory {
 

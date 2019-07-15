@@ -105,7 +105,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
                 LayoutConstraintArithmeticOperator.DIV, createLayoutConstraint(constraintTerm.getSubterm(1)));
         } else if(constraintTerm instanceof IStrategoAppl && ((IStrategoAppl) constraintTerm).getName().equals("Mul")) {
             return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                LayoutConstraintArithmeticOperator.ADD, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                LayoutConstraintArithmeticOperator.MUL, createLayoutConstraint(constraintTerm.getSubterm(1)));
         } else if(constraintTerm instanceof IStrategoAppl
             && ((IStrategoAppl) constraintTerm).getName().equals("Line")) {
             return new NumericLayoutConstraint(ConstraintElement.LINE, createToken(constraintTerm.getSubterm(0)),

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
