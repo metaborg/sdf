@@ -18,5 +18,5 @@ fun includeProject(id: String, path: String = "org.metaborg.$id") {
   project(":$id").projectDir = file(path)
 }
 
-includeProject("tableinterfaces")
+includeProject("org.metaborg.parsetable")
 includeProject("sdf2table")

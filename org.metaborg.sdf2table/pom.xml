@@ -28,7 +28,7 @@
     </dependency>
     <dependency>
       <groupId>org.metaborg</groupId>
-      <artifactId>tableinterfaces</artifactId>
+      <artifactId>org.metaborg.parsetable</artifactId>
       <version>${metaborg-version}</version>
     </dependency>
 
