@@ -25,7 +25,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private final boolean isLayout;
     private final boolean isLiteral;
     private final boolean isLexical;
-    private final boolean isLexicalRhs;
     private final boolean isSkippableInParseForest;
     private final boolean isList;
     private final boolean isOptional;
@@ -105,7 +104,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         }
         this.isLiteral = isLiteral;
 
-        this.isLexical = p.leftHand() instanceof LexicalSymbol;
+        boolean isLexicalRhs;
 
         if(p.rightHand().size() > 0) {
             boolean lexRhs = true;
@@ -115,10 +114,12 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
                     break;
                 }
             }
-            this.isLexicalRhs = lexRhs;
+            isLexicalRhs = lexRhs;
         } else {
-            this.isLexicalRhs = false;
+            isLexicalRhs = false;
         }
+
+        this.isLexical = p.leftHand() instanceof LexicalSymbol || isLexicalRhs;
 
         this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
 
@@ -317,10 +318,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     @Override public boolean isLexical() {
         return isLexical;
-    }
-
-    @Override public boolean isLexicalRhs() {
-        return isLexicalRhs;
     }
 
     @Override public boolean isList() {

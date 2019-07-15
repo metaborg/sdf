@@ -28,8 +28,6 @@ public interface IProduction {
 
     boolean isLexical();
 
-    boolean isLexicalRhs(); // Whether the right hand side only contains character classes
-
     boolean isSkippableInParseForest();
 
     boolean isList();
