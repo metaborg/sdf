@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.query;
 
 public interface IActionQuery {
 

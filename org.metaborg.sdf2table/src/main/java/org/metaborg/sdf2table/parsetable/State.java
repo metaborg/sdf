@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IActionQuery;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
@@ -15,9 +15,9 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.parsetable.query.ActionsForCharacterDisjointSorted;
-import org.metaborg.sdf2table.parsetable.query.ActionsPerCharacterClass;
-import org.metaborg.sdf2table.parsetable.query.IActionsForCharacter;
+import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
+import org.metaborg.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.parsetable.query.IActionsForCharacter;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;

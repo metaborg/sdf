@@ -1,4 +1,4 @@
-package org.metaborg.sdf2table.parsetable.query;
+package org.metaborg.parsetable.query;
 
 import java.util.HashMap;
 import java.util.Map;

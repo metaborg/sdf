@@ -1,11 +1,10 @@
-package org.metaborg.sdf2table.parsetable.query;
+package org.metaborg.parsetable.query;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 

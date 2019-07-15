@@ -1,4 +1,4 @@
-package org.metaborg.sdf2table.parsetable.query;
+package org.metaborg.parsetable.query;
 
 import java.io.Serializable;
 import java.util.Arrays;

@@ -1,6 +1,5 @@
-package org.metaborg.sdf2table.parsetable.query;
+package org.metaborg.parsetable.query;
 
-import org.metaborg.parsetable.IActionQuery;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 

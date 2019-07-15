@@ -1,6 +1,6 @@
 package org.metaborg.parsetable.actions;
 
-import org.metaborg.parsetable.IActionQuery;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.IProduction;
 import org.metaborg.parsetable.ProductionType;
 
