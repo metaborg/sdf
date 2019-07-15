@@ -1,4 +1,4 @@
-package org.metaborg.parsetable.characterclasses.util;
+package org.metaborg.parsetable;
 
 import java.util.HashMap;
 import java.util.Map;
