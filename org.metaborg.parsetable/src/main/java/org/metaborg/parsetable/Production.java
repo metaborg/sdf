@@ -36,6 +36,10 @@ public class Production implements IProduction {
         return productionId;
     }
 
+    @Override public ISymbol lhs() {
+        return lhs;
+    }
+
     public static ProductionType typeFromInt(int productionType) {
         switch(productionType) {
             /*

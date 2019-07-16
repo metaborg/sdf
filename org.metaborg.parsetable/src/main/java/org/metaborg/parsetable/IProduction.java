@@ -1,8 +1,12 @@
 package org.metaborg.parsetable;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+
 public interface IProduction {
 
     int id();
+
+    ISymbol lhs();
 
     /*
      * It would make sense to have `ProductionType productionType()` in the interface here. However, SDF parse tables
