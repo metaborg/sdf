@@ -18,13 +18,9 @@ abstract class Symbol implements ISymbol {
         if(syntaxContext() != null) {
             switch(syntaxContext()) {
                 case ContextFree:
-                    s = s + "-CF";
-                    break;
+                    return s + "-CF";
                 case Lexical:
-                    s = s + "-LEX";
-                    break;
-                default:
-                    break;
+                    return s + "-LEX";
             }
         }
 
