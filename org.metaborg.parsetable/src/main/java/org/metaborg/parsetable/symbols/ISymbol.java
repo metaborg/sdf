@@ -2,15 +2,15 @@ package org.metaborg.parsetable.symbols;
 
 public interface ISymbol {
 
-    public SyntaxContext syntaxContext();
+    SyntaxContext syntaxContext();
 
-    public ConcreteSyntaxContext concreteSyntaxContext();
+    ConcreteSyntaxContext concreteSyntaxContext();
 
-    public SortCardinality cardinality();
+    SortCardinality cardinality();
 
-    public String descriptor();
+    String descriptor();
 
-    public static String getSort(ISymbol symbol) {
+    static String getSort(ISymbol symbol) {
         return symbol instanceof ISortSymbol ? ((ISortSymbol) symbol).sort() : null;
     }
 

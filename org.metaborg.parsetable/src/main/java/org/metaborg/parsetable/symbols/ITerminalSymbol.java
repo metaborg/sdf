@@ -12,6 +12,6 @@ public interface ITerminalSymbol extends ISymbol {
         return null;
     }
 
-    public ICharacterClass characterClass();
+    ICharacterClass characterClass();
 
 }
