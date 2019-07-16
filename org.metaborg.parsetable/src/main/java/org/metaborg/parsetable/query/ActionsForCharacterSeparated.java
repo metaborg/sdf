@@ -28,8 +28,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
         actionPerCharacterClasses.toArray(actions);
     }
 
-    @Override
-    public IAction[] getActions() {
+    @Override public IAction[] getActions() {
         IAction[] res = new IAction[actions.length];
 
         for(int i = 0; i < actions.length; i++)
@@ -38,13 +37,11 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
         return res;
     }
 
-    @Override
-    public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
         return () -> new Iterator<IAction>() {
             int index = 0;
 
-            @Override
-            public boolean hasNext() {
+            @Override public boolean hasNext() {
                 while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
                     && actions[index].action.allowsLookahead(actionQuery))) {
                     index++;
@@ -52,20 +49,17 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
                 return index < actions.length;
             }
 
-            @Override
-            public IAction next() {
+            @Override public IAction next() {
                 return actions[index++].action;
             }
         };
     }
 
-    @Override
-    public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
         return () -> new Iterator<IReduce>() {
             int index = 0;
 
-            @Override
-            public boolean hasNext() {
+            @Override public boolean hasNext() {
                 while(index < actions.length && !(actions[index].appliesTo(actionQuery.actionQueryCharacter())
                     && actions[index].action.isApplicableReduce(actionQuery))) {
                     index++;
@@ -73,8 +67,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
                 return index < actions.length;
             }
 
-            @Override
-            public IReduce next() {
+            @Override public IReduce next() {
                 return (IReduce) actions[index++].action;
             }
         };

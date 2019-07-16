@@ -2,8 +2,8 @@ package org.metaborg.parsetable;
 
 import static org.spoofax.terms.Term.*;
 
-import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
