@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -16,7 +17,7 @@ public class IterStarSepSymbol extends Symbol {
     private final Symbol symbol;
     private final Sort sep;
 
-    public IterStarSepSymbol(Symbol symbol, Symbol sep) {
+    public IterStarSepSymbol(Symbol symbol, ISymbol sep) {
         this.symbol = symbol;
         this.sep = (Sort) sep;
         followRestrictionsLookahead = Lists.newArrayList();

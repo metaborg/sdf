@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -26,7 +27,7 @@ public class SequenceSymbol extends Symbol {
 
     @Override public String name() {
         String name = first.name() + " ";
-        for(Symbol s : tail) {
+        for(ISymbol s : tail) {
             name += s.name() + " ";
         }
         return name;

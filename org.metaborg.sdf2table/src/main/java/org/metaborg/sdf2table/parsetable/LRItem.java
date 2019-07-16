@@ -3,11 +3,11 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
-import org.metaborg.sdf2table.grammar.IPriority;
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.SetMultimap;
@@ -54,10 +54,9 @@ public class LRItem implements Serializable {
             Set<LRItem> derivedItems = Sets.newHashSet();
 
             if(dotPosition < prod.rightHand().size()) {
-                Symbol s_at_dot = prod.rightHand().get(dotPosition);
+                Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
 
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
-
                     if(!isPriorityConflict(this, p, pt.normalizedGrammar().priorities())) {
                         // p might be the problematic contextual production
                         if(pt.normalizedGrammar().getProdContextualProdMapping().get(p) != null) {
@@ -78,7 +77,7 @@ public class LRItem implements Serializable {
         }
 
         if(this.dotPosition < prod.rightHand().size()) {
-            Symbol atPosition = prod.rightHand().get(this.dotPosition);
+            Symbol atPosition = (Symbol) prod.rightHand().get(this.dotPosition);
             if(pt.isDataDependent()) {
                 // use original symbol when mapping it to this item and state
                 if(atPosition instanceof ContextualSymbol) {
@@ -140,19 +139,21 @@ public class LRItem implements Serializable {
         return dotPosition == other.dotPosition && prod_label == other.prod_label;
     }
 
-    public static boolean isPriorityConflict(LRItem item, IProduction p, SetMultimap<IPriority, Integer> priorities) {
+    public static boolean isPriorityConflict(LRItem item, IProduction p, SetMultimap<Priority, Integer> priorities) {
         IProduction higher = item.prod;
-        IProduction lower = p;
+        Production lower;
+
+        if(p instanceof ContextualProduction) {
+            lower = ((ContextualProduction) p).getOrigProduction();
+        } else {
+            lower = (Production) p;
+        }
 
         if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).getOrigProduction();
         }
 
-        if(lower instanceof ContextualProduction) {
-            lower = ((ContextualProduction) lower).getOrigProduction();
-        }
-
-        Priority prio = new Priority(higher, lower, false);
+        Priority prio = new Priority((Production) higher, lower, false);
         if(priorities.containsKey(prio)) {
             Set<Integer> arguments = priorities.get(prio);
             for(int i : arguments) {

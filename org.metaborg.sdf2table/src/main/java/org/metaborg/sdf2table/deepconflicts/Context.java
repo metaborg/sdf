@@ -3,16 +3,15 @@ package org.metaborg.sdf2table.deepconflicts;
 import java.io.Serializable;
 import java.util.Map;
 
-public class Context implements Serializable {
+public final class Context implements Serializable {
 
     private static final long serialVersionUID = -4581589940398341265L;
 
     // label of the production causing the conflict
     private final int context;
     private final ContextType type;
-    // propagate shallow context only to leftmost or rightmost symbols
     private final ContextPosition position;
-    private boolean isIndirect;
+    private final boolean isIndirect;
     private final long contextBitmap;
 
     public Context(int context, ContextType type, ContextPosition position, boolean isIndirect, final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
@@ -85,10 +84,6 @@ public class Context implements Serializable {
 
     public boolean isIndirect() {
         return isIndirect;
-    }
-
-    public void setIndirect(boolean isIndirect) {
-        this.isIndirect = isIndirect;
     }
 
 }

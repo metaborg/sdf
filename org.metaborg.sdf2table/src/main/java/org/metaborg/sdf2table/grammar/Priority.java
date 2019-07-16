@@ -2,29 +2,29 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
-public class Priority implements IPriority, Serializable {
+public class Priority implements Serializable {
 
     private static final long serialVersionUID = 4019550894781189141L;
 
-    IProduction higher;
-    IProduction lower;
+    Production higher;
+    Production lower;
     boolean transitive;
 
-    public Priority(IProduction higher, IProduction lower, boolean transitive) {
+    public Priority(Production higher, Production lower, boolean transitive) {
         this.higher = higher;
         this.lower = lower;
         this.transitive = transitive;
     }
 
-    @Override public IProduction higher() {
+    public Production higher() {
         return higher;
     }
 
-    @Override public IProduction lower() {
+    public Production lower() {
         return lower;
     }
 
-    @Override public boolean transitive() {
+    public boolean transitive() {
         return transitive;
     }
 

@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.io.ParseTableIO;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -17,8 +20,8 @@ public class Production implements IProduction, Serializable {
 
     private static final long serialVersionUID = 5887433349870067696L;
 
-    private final Symbol lhs;
-    private final List<Symbol> rhs;
+    final Symbol lhs;
+    final List<Symbol> rhs;
 
     private int leftRecursivePos = -1;
     private int rightRecursivePos = -1;
@@ -35,19 +38,29 @@ public class Production implements IProduction, Serializable {
         rightRecursivePos = rightRecPos;
     }
 
-    @Override public Symbol leftHand() {
+    @Override public ISymbol leftHand() {
         return lhs;
     }
 
-    @Override public List<Symbol> rightHand() {
+    @Override public List<ISymbol> rightHand() {
+        List<ISymbol> result = Lists.newArrayList();
+        result.addAll(rhs);
+        return result;
+    }
+
+    public Symbol getLhs() {
+        return lhs;
+    }
+
+    public List<Symbol> getRhs() {
         return rhs;
     }
 
-    @Override public int rightRecursivePosition() {
+    public int rightRecursivePosition() {
         return rightRecursivePos;
     }
 
-    @Override public int leftRecursivePosition() {
+    public int leftRecursivePosition() {
         return leftRecursivePos;
     }
 
@@ -58,18 +71,18 @@ public class Production implements IProduction, Serializable {
 
         prod += " -> ";
 
-        for(Symbol s : rhs)
+        for(ISymbol s : rhs)
             prod += s.name() + " ";
 
         return prod;
     }
 
-    @Override public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
+    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
         ITermFactory tf = ParseTableIO.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
-        for(Symbol s : rhs) {
-            rhs_terms.add(s.toAterm(tf));
+        for(ISymbol s : rhs) {
+            rhs_terms.add(((Symbol) s).toAterm(tf));
         }
 
         for(IAttribute a : prod_attrs.get(this)) {
@@ -77,11 +90,11 @@ public class Production implements IProduction, Serializable {
         }
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
+            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
                 tf.makeAppl(tf.makeConstructor("no-attrs", 0)));
         }
 
-        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
+        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
             tf.makeAppl(tf.makeConstructor("attrs", 1), tf.makeList(attrs_terms)));
     }
 
@@ -114,7 +127,7 @@ public class Production implements IProduction, Serializable {
         return true;
     }
 
-    @Override public void calculateRecursion(NormGrammar grammar) {
+    public void calculateRecursion(NormGrammar grammar) {
 
         // left recursion
         for(int i = 0; i < rhs.size(); i++) {
@@ -122,7 +135,7 @@ public class Production implements IProduction, Serializable {
                 leftRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).isNullable()) {
+            if(!((Symbol) rhs.get(i)).isNullable()) {
                 break;
             }
         }
@@ -133,19 +146,19 @@ public class Production implements IProduction, Serializable {
                 rightRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).isNullable()) {
+            if(!((Symbol) rhs.get(i)).isNullable()) {
                 break;
             }
         }
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
+    public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         ITermFactory tf = ParseTableIO.getTermfactory();
         List<IStrategoTerm> rhs_terms = Lists.newArrayList();
         List<IStrategoTerm> attrs_terms = Lists.newArrayList();
-        for(Symbol s : rhs) {
-            rhs_terms.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
+        for(ISymbol s : rhs) {
+            rhs_terms.add(((Symbol) s).toSDF3Aterm(tf, ctx_vals, ctx_val));
         }
 
         for(IAttribute a : prod_attrs.get(this)) {
@@ -153,14 +166,14 @@ public class Production implements IProduction, Serializable {
         }
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
                 tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
                 tf.makeAppl(tf.makeConstructor("NoAttrs", 0)));
         } else {
             // with constructor
         }
 
-        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
             tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
             tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
     }

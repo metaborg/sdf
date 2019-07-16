@@ -11,7 +11,7 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Sets;
 
-public class ContextualSymbol extends Symbol {
+public final class ContextualSymbol extends Symbol {
 
     private static final long serialVersionUID = -2886358954796970390L;
 
@@ -123,21 +123,21 @@ public class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContext(Context context) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(this.getContexts());
-        new_contexts.add(context);
+        Set<Context> newContexts = Sets.newHashSet();
+        newContexts.addAll(this.getContexts());
+        newContexts.add(context);
 
         if(context.getType() == ContextType.DEEP) {
-            return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap | context.getContextBitmap());
+            return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap | context.getContextBitmap());
         }
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap);
+        return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap);
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(this.getContexts());
-        new_contexts.addAll(contexts);
+        Set<Context> newContexts = Sets.newHashSet();
+        newContexts.addAll(this.getContexts());
+        newContexts.addAll(contexts);
 
         long updatedDeepContextBitmap = deepContextBitmap;
 
@@ -147,7 +147,7 @@ public class ContextualSymbol extends Symbol {
             }
         }
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts, updatedDeepContextBitmap);
+        return new ContextualSymbol(getOrigSymbol(), newContexts, updatedDeepContextBitmap);
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {

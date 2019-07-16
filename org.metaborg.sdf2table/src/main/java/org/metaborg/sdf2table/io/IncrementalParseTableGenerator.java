@@ -5,8 +5,9 @@ import java.util.Set;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.LRItem;
 import org.metaborg.sdf2table.parsetable.ParseTable;
@@ -27,8 +28,8 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
     private Set<Symbol> changedSymbols;
     
 
-    SetMultimap<IPriority, Integer> additionalPrios;
-    SetMultimap<IPriority, Integer> removedPrios;
+    SetMultimap<Priority, Integer> additionalPrios;
+    SetMultimap<Priority, Integer> removedPrios;
 
     // TODO: Handle changes in restrictions
 
@@ -53,8 +54,8 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         }
         
 
-        SetMultimap<IPriority, Integer> currentPriorities = current.normalizedGrammar().priorities();
-        SetMultimap<IPriority, Integer> referencePriorities = reference.normalizedGrammar().priorities();
+        SetMultimap<Priority, Integer> currentPriorities = current.normalizedGrammar().priorities();
+        SetMultimap<Priority, Integer> referencePriorities = reference.normalizedGrammar().priorities();
 
         additionalPrios = HashMultimap.create(Multimaps.filterEntries(currentPriorities,
             e -> !referencePriorities.containsEntry(e.getKey(), e.getValue())));
@@ -75,14 +76,14 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         ParseTable currentPT = (ParseTable) this.getParseTable();
         
         // update priorities
-        for(Entry<IPriority, Integer> f : additionalPrios.entries()) {
+        for(Entry<Priority, Integer> f : additionalPrios.entries()) {
             currentPT.normalizedGrammar().priorities().put(f.getKey(), f.getValue());
-            changedSymbols.add(f.getKey().lower().leftHand());
+            changedSymbols.add((Symbol) f.getKey().lower().leftHand());
         }
         
-        for(Entry<IPriority, Integer> f : removedPrios.entries()) {
+        for(Entry<Priority, Integer> f : removedPrios.entries()) {
             currentPT.normalizedGrammar().priorities().remove(f.getKey(), f.getValue());
-            changedSymbols.add(f.getKey().lower().leftHand());
+            changedSymbols.add((Symbol) f.getKey().lower().leftHand());
         }
 
         // update productions
@@ -90,13 +91,13 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
 
         for(IProduction p : removedProds) {
             currentPT.getProdLabelFactory().releaseLabel(prod_labels.remove(p));
-            changedSymbols.add(p.leftHand());
+            changedSymbols.add((Symbol) p.leftHand());
         }
         for(IProduction p : additionalProds) {
             prod_labels.put(p, currentPT.getProdLabelFactory().getNextLabel());
             currentPT.normalizedGrammar().getProductionAttributesMapping().putAll(additionalProdAttributes);
-            this.getParseTable().normalizedGrammar().getSymbolProductionsMapping().put(p.leftHand(), p);
-            changedSymbols.add(p.leftHand());
+            this.getParseTable().normalizedGrammar().getSymbolProductionsMapping().put((Symbol) p.leftHand(), p);
+            changedSymbols.add((Symbol) p.leftHand());
         }
 
         // TODO: update states
@@ -123,7 +124,7 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
     }
 
     private void invalidateCacheItemSets(State state) {
-        for(Symbol symbol : changedSymbols) {
+        for(ISymbol symbol : changedSymbols) {
             for(LRItem item : state.getItems()) {
                 if(item.getProd().rightHand().get(item.getDotPosition()).equals(symbol)) {
                     this.getParseTable().cachedItems().remove(item);

@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public abstract class Symbol implements Serializable {
+public abstract class Symbol implements Serializable, ISymbol {
 
     private static final long serialVersionUID = -9135946758836485558L;
 
@@ -21,6 +22,10 @@ public abstract class Symbol implements Serializable {
 
     private boolean nullable = false;
 
+    /* (non-Javadoc)
+     * @see org.metaborg.sdf2table.grammar.ISymbol#name()
+     */
+    @Override
     public abstract String name();
 
     public boolean isNullable() {
