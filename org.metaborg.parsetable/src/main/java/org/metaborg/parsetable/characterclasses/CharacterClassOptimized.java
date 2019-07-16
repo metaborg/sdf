@@ -108,7 +108,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
         // This is an optimized representation of character classes. If you want nice toString results, disable
         // optimizing in CharacterClassFactory.
 
-        return "{..optimized..}";
+        return "[...optimized-character-class...]";
     }
 
 }

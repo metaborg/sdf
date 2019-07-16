@@ -16,7 +16,7 @@ public class TerminalSymbol extends Symbol implements ITerminalSymbol {
     }
 
     @Override public String descriptor() {
-        return "[...]";
+        return characterClass.toString();
     }
 
 }
