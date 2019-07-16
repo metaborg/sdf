@@ -2,7 +2,7 @@ package org.metaborg.parsetable.symbols;
 
 public class LiteralSymbol extends NonTerminalSymbol implements ILiteralSymbol {
 
-    String literal;
+    private final String literal;
 
     public LiteralSymbol(SyntaxContext syntaxContext, SortCardinality cardinality, String literal) {
         super(syntaxContext, cardinality);

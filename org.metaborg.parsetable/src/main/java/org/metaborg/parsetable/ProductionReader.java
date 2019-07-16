@@ -16,7 +16,7 @@ import org.spoofax.terms.TermVisitor;
 
 public class ProductionReader {
 
-    final CharacterClassReader characterClassReader;
+    private final CharacterClassReader characterClassReader;
 
     public ProductionReader(CharacterClassReader characterClassReader) {
         this.characterClassReader = characterClassReader;

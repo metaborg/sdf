@@ -2,7 +2,7 @@ package org.metaborg.parsetable.symbols;
 
 abstract class Symbol implements ISymbol {
 
-    SortCardinality cardinality;
+    private final SortCardinality cardinality;
 
     Symbol(SortCardinality cardinality) {
         this.cardinality = cardinality;

@@ -4,7 +4,7 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public class TerminalSymbol extends Symbol implements ITerminalSymbol {
 
-    ICharacterClass characterClass;
+    private final ICharacterClass characterClass;
 
     public TerminalSymbol(ICharacterClass characterClass, SortCardinality cardinality) {
         super(cardinality);

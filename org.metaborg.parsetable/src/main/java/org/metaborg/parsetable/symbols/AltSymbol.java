@@ -2,8 +2,8 @@ package org.metaborg.parsetable.symbols;
 
 public class AltSymbol extends NonTerminalSymbol implements IAltSymbol {
 
-    ISymbol first;
-    ISymbol second;
+    private final ISymbol first;
+    private final ISymbol second;
 
     public AltSymbol(SyntaxContext syntaxContext, SortCardinality cardinality, ISymbol first, ISymbol second) {
         super(syntaxContext, cardinality);

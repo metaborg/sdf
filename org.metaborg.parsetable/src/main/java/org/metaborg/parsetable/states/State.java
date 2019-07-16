@@ -12,8 +12,8 @@ public final class State implements IState {
     private final int stateId;
     private boolean rejectable;
 
-    final IActionsForCharacter actionsForCharacter;
-    final IProductionToGoto productionToGoto;
+    private final IActionsForCharacter actionsForCharacter;
+    private final IProductionToGoto productionToGoto;
 
     public State(int stateId, IActionsForCharacter actionsForCharacter, IProductionToGoto productionToGoto) {
         this.stateId = stateId;

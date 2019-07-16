@@ -27,12 +27,11 @@ import org.spoofax.terms.io.binary.TermReader;
 
 public class ParseTableReader {
 
-    final ICharacterClassFactory characterClassFactory;
-    final IActionsFactory actionsFactory;
-    final IStateFactory stateFactory;
+    private final IActionsFactory actionsFactory;
+    private final IStateFactory stateFactory;
 
-    final CharacterClassReader characterClassReader;
-    final ProductionReader productionReader;
+    private final CharacterClassReader characterClassReader;
+    private final ProductionReader productionReader;
 
     public ParseTableReader() {
         this(new CharacterClassFactory(), new ActionsFactory(), new StateFactory());
@@ -44,7 +43,6 @@ public class ParseTableReader {
 
     public ParseTableReader(ICharacterClassFactory characterClassFactory, IActionsFactory actionsFactory,
         IStateFactory stateFactory) {
-        this.characterClassFactory = characterClassFactory;
         this.actionsFactory = actionsFactory;
         this.stateFactory = stateFactory;
         this.characterClassReader = new CharacterClassReader(characterClassFactory);
