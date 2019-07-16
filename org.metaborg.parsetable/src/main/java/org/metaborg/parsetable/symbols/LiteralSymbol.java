@@ -14,9 +14,7 @@ public class LiteralSymbol extends NonTerminalSymbol implements ILiteralSymbol {
     }
 
     @Override public boolean isOperator() {
-        for(int i = 0; i < literal.length(); i++) {
-            char c = literal.charAt(i);
-
+        for (char c : literal.toCharArray()) {
             if(Character.isLetter(c))
                 return false;
         }
