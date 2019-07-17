@@ -15,6 +15,7 @@ import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.parsetable.states.IState;
 import org.metaborg.parsetable.states.IStateFactory;
 import org.metaborg.parsetable.states.State;
 import org.metaborg.parsetable.states.StateFactory;

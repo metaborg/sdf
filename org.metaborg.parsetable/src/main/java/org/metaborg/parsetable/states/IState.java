@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.states;
 
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;

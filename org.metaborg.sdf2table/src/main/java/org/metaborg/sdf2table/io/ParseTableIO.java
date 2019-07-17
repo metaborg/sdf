@@ -13,7 +13,7 @@ import java.util.List;
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.IState;
+import org.metaborg.parsetable.states.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;

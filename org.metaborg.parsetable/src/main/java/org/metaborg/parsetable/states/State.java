@@ -1,6 +1,5 @@
 package org.metaborg.parsetable.states;
 
-import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.query.IActionQuery;

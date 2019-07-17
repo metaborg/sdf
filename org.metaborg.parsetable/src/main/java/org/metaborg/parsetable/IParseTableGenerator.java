@@ -1,7 +1,6 @@
 package org.metaborg.parsetable;
 
-import org.metaborg.parsetable.IParseTable;
-import org.metaborg.parsetable.IState;
+import org.metaborg.parsetable.states.IState;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 public interface IParseTableGenerator {
