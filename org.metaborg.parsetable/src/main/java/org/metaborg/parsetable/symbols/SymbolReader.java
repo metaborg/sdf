@@ -2,7 +2,7 @@ package org.metaborg.parsetable.symbols;
 
 import static org.spoofax.terms.Term.*;
 
-import org.metaborg.parsetable.CharacterClassReader;
+import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoAppl;

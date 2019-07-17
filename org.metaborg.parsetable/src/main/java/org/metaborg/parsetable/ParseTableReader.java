@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import org.metaborg.parsetable.actions.*;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
+import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.productions.IProduction;

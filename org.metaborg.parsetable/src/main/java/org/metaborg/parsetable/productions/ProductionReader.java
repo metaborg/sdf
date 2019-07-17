@@ -4,7 +4,7 @@ import static org.spoofax.terms.Term.*;
 
 import java.util.Iterator;
 
-import org.metaborg.parsetable.CharacterClassReader;
+import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISortSymbol;

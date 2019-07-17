@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.characterclasses;
 
 import static org.spoofax.terms.Term.*;
 
