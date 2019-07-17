@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
 import org.metaborg.parsetable.symbols.SyntaxContext;
@@ -19,9 +20,9 @@ public class IterSepSymbol extends Symbol {
     private final Symbol symbol;
     private final Sort sep;
 
-    public IterSepSymbol(Symbol symbol, Symbol iSymbol) {
+    public IterSepSymbol(Symbol symbol, Sort sep) {
         this.symbol = symbol;
-        this.sep = (Sort) iSymbol;
+        this.sep = sep;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }

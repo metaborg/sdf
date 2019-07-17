@@ -12,12 +12,14 @@ import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
 import org.metaborg.parsetable.query.IActionsForCharacter;
+
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
@@ -141,7 +143,7 @@ public class State implements IState, Comparable<State>, Serializable {
             if(item.getDotPosition() == item.getProd().rightHand().size()) {
                 int prod_label = pt.productionLabels().get(item.getProd());
 
-                Symbol leftHandSymbol = item.getProd().leftHand();
+                ISymbol leftHandSymbol = item.getProd().leftHand();
                 ICharacterClass fr = leftHandSymbol.followRestriction();
                 if((fr == null || fr.isEmpty()) && leftHandSymbol.followRestrictionLookahead() == null) {
                     addReduceAction(item.getProd(), prod_label, CharacterClassFactory.FULL_RANGE, null);

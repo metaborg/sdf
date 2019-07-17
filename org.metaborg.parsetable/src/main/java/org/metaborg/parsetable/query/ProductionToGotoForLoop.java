@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.query;
 
 import org.metaborg.parsetable.actions.IGoto;
+import org.metaborg.parsetable.query.IProductionToGoto;
 
 public class ProductionToGotoForLoop implements IProductionToGoto {
 

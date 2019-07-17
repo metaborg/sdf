@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
 import org.metaborg.parsetable.symbols.SyntaxContext;

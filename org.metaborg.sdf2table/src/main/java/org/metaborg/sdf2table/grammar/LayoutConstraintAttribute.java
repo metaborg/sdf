@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.layoutconstraints.ArithmeticLayoutConstraint;
 import org.metaborg.sdf2table.grammar.layoutconstraints.BooleanLayoutConstraint;
 import org.metaborg.sdf2table.grammar.layoutconstraints.ComparisonLayoutConstraint;

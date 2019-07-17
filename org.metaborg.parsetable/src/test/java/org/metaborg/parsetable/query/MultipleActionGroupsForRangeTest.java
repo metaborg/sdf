@@ -11,6 +11,7 @@ import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IShift;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.query.IActionsForCharacter;
 
 public class MultipleActionGroupsForRangeTest {
 

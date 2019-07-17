@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.metaborg.parsetable.actions.IGoto;
+import org.metaborg.parsetable.query.IProductionToGoto;
 
 public class ProductionToGotoJavaHashMap implements IProductionToGoto {
 

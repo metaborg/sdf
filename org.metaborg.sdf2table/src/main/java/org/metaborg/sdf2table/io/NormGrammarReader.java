@@ -3,14 +3,50 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.exceptions.ModuleNotFoundException;
 import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
-import org.metaborg.sdf2table.grammar.*;
-import org.spoofax.interpreter.terms.*;
+import org.metaborg.sdf2table.grammar.AltSymbol;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
+import org.metaborg.sdf2table.grammar.ConstructorAttribute;
+import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
+import org.metaborg.sdf2table.grammar.DeprecatedAttribute;
+import org.metaborg.sdf2table.grammar.FileStartSymbol;
+import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.IterSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSymbol;
+import org.metaborg.sdf2table.grammar.IterSymbol;
+import org.metaborg.sdf2table.grammar.Layout;
+import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
+import org.metaborg.sdf2table.grammar.LexicalSymbol;
+import org.metaborg.sdf2table.grammar.LiteralType;
+import org.metaborg.sdf2table.grammar.NormGrammar;
+import org.metaborg.sdf2table.grammar.OptionalSymbol;
+import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.ProductionReference;
+import org.metaborg.sdf2table.grammar.SequenceSymbol;
+import org.metaborg.sdf2table.grammar.Sort;
+import org.metaborg.sdf2table.grammar.StartSymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
+import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.grammar.UniqueProduction;
+import org.spoofax.interpreter.terms.IStrategoAppl;
+import org.spoofax.interpreter.terms.IStrategoList;
+import org.spoofax.interpreter.terms.IStrategoString;
+import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
@@ -182,8 +218,8 @@ public class NormGrammarReader {
         }
     }
 
-    private IProduction processProduction(IStrategoTerm term) throws Exception {
-        IProduction prod = null;
+    private Production processProduction(IStrategoTerm term) throws Exception {
+        Production prod = null;
         prod = grammar.getCacheProductionsRead().get(term.toString());
 
         if(prod != null) {
@@ -271,7 +307,8 @@ public class NormGrammarReader {
 
                 for(IAttribute a : attrs) {
                     if(a.toString().equals("nlm")) {
-                        grammar.getLongestMatchProds().put(prod.rightHand().get(prod.rightHand().size() - 1), prod);
+                        grammar.getLongestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1),
+                            prod);
                     }
                     grammar.getProductionAttributesMapping().put(prod, a);
                 }
@@ -304,6 +341,7 @@ public class NormGrammarReader {
 
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
+            Sort sep;
             switch(app.getName()) {
                 case "SortDef":
                 case "Sort":
@@ -339,10 +377,12 @@ public class NormGrammarReader {
                     symbol = new IterStarSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterSep":
-                    symbol = new IterSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
+                    sep = (Sort) processSymbol(app.getSubterm(1));
+                    symbol = new IterSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "IterStarSep":
-                    symbol = new IterStarSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
+                    sep = (Sort) processSymbol(app.getSubterm(1));
+                    symbol = new IterStarSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "Lex":
                     symbol = new LexicalSymbol(processSymbol(app.getSubterm(0)));
@@ -654,7 +694,7 @@ public class NormGrammarReader {
     private void processPriorityChain(IStrategoTerm chain) throws Exception {
         if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Chain")) {
             StrategoList groups = (StrategoList) chain.getSubterm(0);
-            IProduction higher = null, lower = null;
+            Production higher = null, lower = null;
             boolean transitive = true;
             List<Integer> arguments = Lists.newArrayList();
 
@@ -752,8 +792,8 @@ public class NormGrammarReader {
             IStrategoTerm second_group = chain.getSubterm(2);
 
 
-            IProduction higher = processGroup(first_group);
-            IProduction lower = processGroup(second_group);
+            Production higher = processGroup(first_group);
+            Production lower = processGroup(second_group);
 
             Priority p = new Priority(higher, lower, false);
 
@@ -774,12 +814,12 @@ public class NormGrammarReader {
         }
     }
 
-    private List<Integer> normalizePriorityArguments(IProduction production, List<Integer> arguments) {
-        Symbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
+    private List<Integer> normalizePriorityArguments(Production production, List<Integer> arguments) {
+        ISymbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
         List<Integer> norm_arguments = Lists.newArrayList();
         for(int arg : arguments) {
             int norm_arg = 0;
-            for(Symbol s : production.rightHand()) {
+            for(ISymbol s : production.rightHand()) {
                 if(arg == 0 && norm_arg == 0) {
                     norm_arguments.add(norm_arg);
                     break;
@@ -800,9 +840,9 @@ public class NormGrammarReader {
         return arguments;
     }
 
-    private IProduction processGroup(IStrategoTerm group) throws UnexpectedTermException, Exception {
+    private Production processGroup(IStrategoTerm group) throws UnexpectedTermException, Exception {
 
-        IProduction production = null;
+        Production production = null;
 
         if(group instanceof StrategoAppl && ((StrategoAppl) group).getName().equals("SimpleGroup")) {
             production = processProduction(group.getSubterm(0));

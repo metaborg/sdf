@@ -7,9 +7,28 @@ import java.util.Set;
 
 import org.metaborg.parsetable.ProductionType;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.symbols.ISymbol;
+
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.grammar.*;
+import org.metaborg.sdf2table.grammar.AltSymbol;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
+import org.metaborg.sdf2table.grammar.ConstructorAttribute;
+import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
+import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IterSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
+import org.metaborg.sdf2table.grammar.IterStarSymbol;
+import org.metaborg.sdf2table.grammar.IterSymbol;
+import org.metaborg.sdf2table.grammar.Layout;
+import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
+import org.metaborg.sdf2table.grammar.LexicalSymbol;
+import org.metaborg.sdf2table.grammar.OptionalSymbol;
+import org.metaborg.sdf2table.grammar.SequenceSymbol;
+import org.metaborg.sdf2table.grammar.Sort;
+import org.metaborg.sdf2table.grammar.StartSymbol;
+import org.metaborg.sdf2table.grammar.TermAttribute;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
 
@@ -111,7 +130,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
         if(p.rightHand().size() > 0) {
             boolean lexRhs = true;
-            for(Symbol s : p.rightHand()) {
+
+            for(ISymbol s : p.rightHand()) {
                 if(!(s instanceof CharacterClassSymbol)) {
                     lexRhs = false;
                     break;
@@ -134,7 +154,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
 
         boolean isList = false;
-        Symbol symb2 = p.leftHand();
+        ISymbol symb2 = p.leftHand();
         // not considering varsym
         if(symb2 instanceof OptionalSymbol) {
             symb2 = ((OptionalSymbol) symb2).getSymbol();
@@ -177,14 +197,14 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         isIgnoreLayoutConstraint = ignoreLayout;
     }
 
-    private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<Symbol> rightHand) {
+    private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<ISymbol> rightHand) {
         attr.getLayoutConstraint().normalizeConstraint(rightHand);
         return attr;
     }
 
     private boolean getIsLayout() {
         boolean isLayout = false;
-        Symbol symb = getProduction().leftHand();
+        ISymbol symb = getProduction().leftHand();
         if(symb instanceof ContextFreeSymbol) {
             symb = ((ContextFreeSymbol) symb).getSymbol();
         }
@@ -202,7 +222,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
             && !this.toString().equals("LAYOUT-CF = LAYOUT-CF LAYOUT-CF") && !this.toString().equals("LAYOUT?-CF = ");
     }
 
-    private boolean checkNotIsLetter(Symbol s) {
+    private boolean checkNotIsLetter(ISymbol s) {
         if(s instanceof Sort) {
             for(int i = 0; i < s.name().length(); i++) {
                 char c = s.name().charAt(i);
@@ -215,8 +235,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return false;
     }
 
-    private CharacterClassSymbol checkFirstRange(List<Symbol> rhs) {
-        for(Symbol s : rhs) {
+
+    private CharacterClassSymbol checkFirstRange(List<ISymbol> rhs) {
+        for(ISymbol s : rhs) {
+
             s = getFirstRange(s);
             if(s instanceof CharacterClassSymbol) {
                 CharacterClassSymbol characterClassSymbol = (CharacterClassSymbol) s;
@@ -234,7 +256,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return null;
     }
 
-    private Symbol getFirstRange(Symbol s) {
+    private ISymbol getFirstRange(ISymbol s) {
         if(s instanceof LexicalSymbol) {
             return getFirstRange(((LexicalSymbol) s).getSymbol());
         } else if(s instanceof IterStarSymbol) {
@@ -247,10 +269,11 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return null;
     }
 
-    private boolean topdownHasSpaces(List<Symbol> rightHand) {
+    private boolean topdownHasSpaces(List<ISymbol> rightHand) {
         // This function has been copied from the JSGLR1 with the following comment:
         // Return true if any character range of this contains spaces
-        for(Symbol s : rightHand) {
+
+        for(ISymbol s : rightHand) {
             if(s instanceof CharacterClassSymbol && ((CharacterClassSymbol) s).getCC().contains('0')) {
                 return true;
             }
@@ -258,7 +281,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return false;
     }
 
-    private boolean containsOptSymbol(Symbol s) {
+    private boolean containsOptSymbol(ISymbol s) {
         if(s instanceof ContextFreeSymbol) {
             return containsOptSymbol(((ContextFreeSymbol) s).getSymbol());
         } else if(s instanceof LexicalSymbol) {
@@ -270,12 +293,12 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return false;
     }
 
-    private boolean isIterSymbol(Symbol s) {
+    private boolean isIterSymbol(ISymbol s) {
         return (s instanceof IterSymbol) || (s instanceof IterStarSymbol) || (s instanceof IterStarSepSymbol)
             || (s instanceof IterSepSymbol);
     }
 
-    private String getSort(Symbol s) {
+    private String getSort(ISymbol s) {
         if(s instanceof Sort && ((Sort) s).getType() == null) {
             return s.name();
         } else if(s instanceof ContextFreeSymbol) {
@@ -385,7 +408,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     }
 
     @Override public ISymbol lhs() {
-        return lhs;
+        return p.leftHand().toParseTableSymbol();
     }
 
     @Override public int id() {
@@ -394,7 +417,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     @Override public String startSymbolSort() {
         if(getProduction().leftHand() instanceof StartSymbol) {
-            for(Symbol s : getProduction().rightHand()) {
+            for(ISymbol s : getProduction().rightHand()) {
                 if(getSort(s) != null) {
                     return getSort(s);
                 }

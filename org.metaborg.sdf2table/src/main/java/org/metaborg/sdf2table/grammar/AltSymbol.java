@@ -12,16 +12,18 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public class AltSymbol extends Symbol {
+public final class AltSymbol extends Symbol {
 
     private static final long serialVersionUID = 7308097160726417422L;
 
     private final Symbol alt1;
     private final Symbol alt2;
+    private final String name;
 
     public AltSymbol(Symbol alt1, Symbol alt2) {
         this.alt1 = alt1;
         this.alt2 = alt2;
+        this.name = alt1.name() + " | " + alt2.name();
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
@@ -35,7 +37,7 @@ public class AltSymbol extends Symbol {
     }
 
     @Override public String name() {
-        return alt1.name() + " | " + alt2.name();
+        return name;
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
