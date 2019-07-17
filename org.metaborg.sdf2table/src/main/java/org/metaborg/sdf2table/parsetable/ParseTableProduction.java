@@ -39,7 +39,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     private static final long serialVersionUID = -7825374345958769969L;
 
     private final IProduction p;
-    private final ISymbol lhs;
     private final int productionNumber;
     private final String sort;
     private final boolean isContextFree;
@@ -65,7 +64,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
     public ParseTableProduction(int productionNumber, IProduction p, Set<IAttribute> attrs,
         Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping) {
         this.p = p;
-        this.lhs = p.leftHand().toParseTableSymbol();
 
         if(leftmostContextsMapping.containsKey(productionNumber)) {
             cachedContextBitmapL = 1L << leftmostContextsMapping.get(productionNumber);
@@ -407,7 +405,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
         return cachedContextBitmapR;
     }
 
-    @Override public ISymbol lhs() {
+    @Override public org.metaborg.parsetable.symbols.ISymbol lhs() {
         return p.leftHand().toParseTableSymbol();
     }
 
