@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -60,5 +63,9 @@ public class CharacterClassSymbol extends Symbol {
         } else if(!cc.equals(other.cc))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return new org.metaborg.parsetable.symbols.TerminalSymbol(cc, cardinality);
     }
 }

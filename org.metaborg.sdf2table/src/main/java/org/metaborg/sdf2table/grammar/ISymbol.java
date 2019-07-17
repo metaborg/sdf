@@ -11,6 +11,6 @@ public interface ISymbol {
     void setNullable(boolean nullable);
     ICharacterClass followRestriction();
     List<ICharacterClass[]> followRestrictionLookahead();
-    
+    org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol();
 
 }

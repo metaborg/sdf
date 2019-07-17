@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+
 import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -111,4 +114,10 @@ public abstract class Symbol implements Serializable, ISymbol {
     public abstract IStrategoTerm toAterm(ITermFactory tf);
 
     public abstract IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val);
+
+    public org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol() {
+        return toParseTableSymbol(null, null);
+    }
+
+    public abstract org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality);
 }

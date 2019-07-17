@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -185,6 +188,10 @@ public final class ContextualSymbol extends Symbol {
         } else if(!s.equals(other.s))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return s.toParseTableSymbol(syntaxContext, cardinality);
     }
 
 }

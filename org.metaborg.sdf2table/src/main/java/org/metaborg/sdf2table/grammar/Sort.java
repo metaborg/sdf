@@ -3,6 +3,9 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -91,5 +94,14 @@ public class Sort extends Symbol {
         if(type != other.type)
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        if(type == LiteralType.CiLit)
+            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
+        else if(type == LiteralType.Lit)
+            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
+        else
+            return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name);
     }
 }

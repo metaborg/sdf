@@ -307,7 +307,8 @@ public class NormGrammarReader {
 
                 for(IAttribute a : attrs) {
                     if(a.toString().equals("nlm")) {
-                        grammar.getLongestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1), prod);
+                        grammar.getLongestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1),
+                            prod);
                     }
                     grammar.getProductionAttributesMapping().put(prod, a);
                 }
@@ -340,6 +341,7 @@ public class NormGrammarReader {
 
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
+            Sort sep;
             switch(app.getName()) {
                 case "SortDef":
                 case "Sort":
@@ -375,10 +377,12 @@ public class NormGrammarReader {
                     symbol = new IterStarSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterSep":
-                    symbol = new IterSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
+                    sep = (Sort) processSymbol(app.getSubterm(1));
+                    symbol = new IterSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "IterStarSep":
-                    symbol = new IterStarSepSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
+                    sep = (Sort) processSymbol(app.getSubterm(1));
+                    symbol = new IterStarSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "Lex":
                     symbol = new LexicalSymbol(processSymbol(app.getSubterm(0)));

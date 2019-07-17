@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.metaborg.parsetable.ProductionType;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+
 import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.ISymbol;
@@ -402,6 +403,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.IProduction
 
     public final long contextR() {
         return cachedContextBitmapR;
+    }
+
+    @Override public org.metaborg.parsetable.symbols.ISymbol lhs() {
+        return p.leftHand().toParseTableSymbol();
     }
 
     @Override public int id() {

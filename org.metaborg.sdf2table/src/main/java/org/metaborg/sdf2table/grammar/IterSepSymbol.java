@@ -3,7 +3,10 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.ISymbol;
+
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -17,9 +20,9 @@ public class IterSepSymbol extends Symbol {
     private final Symbol symbol;
     private final Sort sep;
 
-    public IterSepSymbol(Symbol symbol, ISymbol iSymbol) {
+    public IterSepSymbol(Symbol symbol, Sort sep) {
         this.symbol = symbol;
-        this.sep = (Sort) iSymbol;
+        this.sep = sep;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
@@ -72,5 +75,9 @@ public class IterSepSymbol extends Symbol {
 
     public Symbol getSymbol() {
         return symbol;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return symbol.toParseTableSymbol(syntaxContext, SortCardinality.List);
     }
 }
