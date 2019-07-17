@@ -2,7 +2,7 @@ package org.metaborg.parsetable.symbols;
 
 public class LiteralSymbol extends NonTerminalSymbol implements ILiteralSymbol {
 
-    String literal;
+    private final String literal;
 
     public LiteralSymbol(SyntaxContext syntaxContext, SortCardinality cardinality, String literal) {
         super(syntaxContext, cardinality);
@@ -14,9 +14,7 @@ public class LiteralSymbol extends NonTerminalSymbol implements ILiteralSymbol {
     }
 
     @Override public boolean isOperator() {
-        for(int i = 0; i < literal.length(); i++) {
-            char c = literal.charAt(i);
-
+        for(char c : literal.toCharArray()) {
             if(Character.isLetter(c))
                 return false;
         }

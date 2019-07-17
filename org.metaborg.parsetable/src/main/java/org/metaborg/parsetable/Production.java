@@ -10,8 +10,8 @@ import org.metaborg.parsetable.symbols.SortCardinality;
 
 public class Production implements IProduction {
 
-    public final ISymbol lhs;
-    public final ISymbol[] rhs;
+    private final ISymbol lhs;
+    private final ISymbol[] rhs;
 
     private final int productionId;
     private final boolean isStringLiteral;

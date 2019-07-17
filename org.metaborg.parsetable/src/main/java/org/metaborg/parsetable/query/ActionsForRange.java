@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 
 public class ActionsForRange implements Serializable {
 
@@ -25,16 +25,14 @@ public class ActionsForRange implements Serializable {
         return () -> new Iterator<IAction>() {
             int index = 0;
 
-            @Override
-            public boolean hasNext() {
+            @Override public boolean hasNext() {
                 while(index < actions.length && !actions[index].allowsLookahead(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;
             }
 
-            @Override
-            public IAction next() {
+            @Override public IAction next() {
                 return actions[index++];
             }
         };
@@ -44,23 +42,20 @@ public class ActionsForRange implements Serializable {
         return () -> new Iterator<IReduce>() {
             int index = 0;
 
-            @Override
-            public boolean hasNext() {
+            @Override public boolean hasNext() {
                 while(index < actions.length && !actions[index].isApplicableReduce(actionQuery)) {
                     index++;
                 }
                 return index < actions.length;
             }
 
-            @Override
-            public IReduce next() {
+            @Override public IReduce next() {
                 return (IReduce) actions[index++];
             }
         };
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "{" + CharacterClassFactory.intToString(from) + "," + CharacterClassFactory.intToString(to) + "}->"
             + Arrays.toString(actions);
     }

@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 public class Sort extends Symbol {
 
     private static final long serialVersionUID = 9143763814850136478L;
-    
+
     private final String name;
     private final LiteralType type;
 
@@ -57,8 +57,7 @@ public class Sort extends Symbol {
         return tf.makeAppl(tf.makeConstructor("sort", 1), tf.makeString(name));
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals,
-        Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         if(type == LiteralType.CiLit) {
             return tf.makeAppl(tf.makeConstructor("CiLit", 1), tf.makeString("\"" + name + "\""));
         } else if(type == LiteralType.Lit) {
@@ -97,9 +96,7 @@ public class Sort extends Symbol {
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        if(type == LiteralType.CiLit)
-            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
-        else if(type == LiteralType.Lit)
+        if(type == LiteralType.CiLit || type == LiteralType.Lit)
             return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
         else
             return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name);

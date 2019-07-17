@@ -1,8 +1,8 @@
 package org.metaborg.parsetable.actions;
 
-import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.IProduction;
 import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.query.IActionQuery;
 
 public interface IReduce extends IAction {
 

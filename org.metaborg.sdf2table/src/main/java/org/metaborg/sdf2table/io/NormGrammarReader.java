@@ -76,7 +76,7 @@ public class NormGrammarReader {
         this.fileVisitors = new LinkedList<>();
     }
 
-    public static interface FileVisitor {
+    public interface FileVisitor {
         void visit(File file);
     }
 

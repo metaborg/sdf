@@ -2,7 +2,7 @@ package org.metaborg.parsetable.symbols;
 
 public class ParameterizedSortSymbol extends SortSymbol implements IParameterizedSortSymbol {
 
-    String[] parameters;
+    private final String[] parameters;
 
     public ParameterizedSortSymbol(SyntaxContext syntaxContext, SortCardinality cardinality, String sort,
         String[] parameters) {

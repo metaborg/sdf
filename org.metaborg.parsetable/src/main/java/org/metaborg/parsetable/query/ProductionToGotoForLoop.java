@@ -11,8 +11,7 @@ public class ProductionToGotoForLoop implements IProductionToGoto {
         this.gotos = gotos;
     }
 
-    @Override
-    public boolean contains(int productionId) {
+    @Override public boolean contains(int productionId) {
         for(IGoto gotoAction : gotos) {
             for(int gotoActionProductionId : gotoAction.productionIds())
                 if(gotoActionProductionId == productionId)
@@ -22,8 +21,7 @@ public class ProductionToGotoForLoop implements IProductionToGoto {
         return false;
     }
 
-    @Override
-    public int get(int productionId) {
+    @Override public int get(int productionId) {
         for(IGoto gotoAction : gotos) {
             for(int gotoActionProductionId : gotoAction.productionIds())
                 if(gotoActionProductionId == productionId)

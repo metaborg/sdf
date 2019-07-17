@@ -1,7 +1,7 @@
 package org.metaborg.parsetable.actions;
 
-import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.query.IActionQuery;
 
 public interface IReduceLookahead extends IReduce {
 

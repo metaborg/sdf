@@ -24,8 +24,7 @@ public final class ActionForCharacterClass implements Serializable {
         return characterClass.contains(character);
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return characterClass.toString() + "->" + action.toString();
     }
 

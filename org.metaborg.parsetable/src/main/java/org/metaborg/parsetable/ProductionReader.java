@@ -4,19 +4,19 @@ import static org.spoofax.terms.Term.*;
 
 import java.util.Iterator;
 
-import org.spoofax.interpreter.terms.IStrategoAppl;
-import org.spoofax.interpreter.terms.IStrategoList;
-import org.spoofax.interpreter.terms.IStrategoNamed;
-import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISortSymbol;
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SymbolReader;
+import org.spoofax.interpreter.terms.IStrategoAppl;
+import org.spoofax.interpreter.terms.IStrategoList;
+import org.spoofax.interpreter.terms.IStrategoNamed;
+import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.TermVisitor;
 
 public class ProductionReader {
 
-    final CharacterClassReader characterClassReader;
+    private final CharacterClassReader characterClassReader;
 
     public ProductionReader(CharacterClassReader characterClassReader) {
         this.characterClassReader = characterClassReader;

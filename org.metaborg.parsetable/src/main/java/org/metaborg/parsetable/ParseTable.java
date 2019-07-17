@@ -1,8 +1,5 @@
 package org.metaborg.parsetable;
 
-import org.metaborg.parsetable.IParseTable;
-import org.metaborg.parsetable.IState;
-
 public class ParseTable implements IParseTable {
 
     final private IState[] states;

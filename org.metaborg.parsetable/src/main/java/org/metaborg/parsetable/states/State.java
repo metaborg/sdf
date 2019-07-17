@@ -1,9 +1,9 @@
 package org.metaborg.parsetable.states;
 
-import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
 import org.metaborg.parsetable.query.IProductionToGoto;
 
@@ -12,8 +12,8 @@ public final class State implements IState {
     private final int stateId;
     private boolean rejectable;
 
-    final IActionsForCharacter actionsForCharacter;
-    final IProductionToGoto productionToGoto;
+    private final IActionsForCharacter actionsForCharacter;
+    private final IProductionToGoto productionToGoto;
 
     public State(int stateId, IActionsForCharacter actionsForCharacter, IProductionToGoto productionToGoto) {
         this.stateId = stateId;

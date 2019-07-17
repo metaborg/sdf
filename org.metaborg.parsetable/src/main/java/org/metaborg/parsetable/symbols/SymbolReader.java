@@ -10,7 +10,7 @@ import org.spoofax.interpreter.terms.IStrategoList;
 
 public class SymbolReader {
 
-    final CharacterClassReader characterClassReader;
+    private final CharacterClassReader characterClassReader;
 
     public SymbolReader(CharacterClassReader characterClassReader) {
         this.characterClassReader = characterClassReader;

@@ -2,14 +2,14 @@ package org.metaborg.parsetable;
 
 import static org.spoofax.terms.Term.*;
 
-import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 public class CharacterClassReader {
 
-    final ICharacterClassFactory characterClassFactory;
+    private final ICharacterClassFactory characterClassFactory;
 
     public CharacterClassReader(ICharacterClassFactory characterClassFactory) {
         this.characterClassFactory = characterClassFactory;
