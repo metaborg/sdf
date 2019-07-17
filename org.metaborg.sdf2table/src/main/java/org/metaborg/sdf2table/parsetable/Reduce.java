@@ -2,8 +2,8 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 
-import org.metaborg.parsetable.IProduction;
-import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.productions.IProduction;
+import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;

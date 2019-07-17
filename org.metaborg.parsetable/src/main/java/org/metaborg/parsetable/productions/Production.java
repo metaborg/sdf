@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.productions;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 import org.metaborg.sdf2table.grammar.IAttribute;
@@ -34,7 +34,7 @@ import org.metaborg.sdf2table.io.ParseTableIO;
 
 import com.google.common.collect.Sets;
 
-public class ParseTableProduction implements org.metaborg.parsetable.IProduction, Serializable {
+public class ParseTableProduction implements org.metaborg.parsetable.productions.IProduction, Serializable {
 
     private static final long serialVersionUID = -7825374345958769969L;
 

@@ -2,8 +2,8 @@ package org.metaborg.parsetable.actions;
 
 import java.util.Arrays;
 
-import org.metaborg.parsetable.IProduction;
-import org.metaborg.parsetable.ProductionType;
+import org.metaborg.parsetable.productions.IProduction;
+import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
 public class ReduceLookahead extends Reduce implements IReduceLookahead {

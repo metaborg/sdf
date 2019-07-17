@@ -61,7 +61,7 @@ public class ParseTable implements IParseTable, Serializable {
     private Map<Set<LRItem>, State> kernelStatesMapping = Maps.newLinkedHashMap();
     private Map<LRItem, Set<LRItem>> itemDerivedItemsCache = Maps.newLinkedHashMap();
 
-    private List<org.metaborg.parsetable.IProduction> productions = Lists.newArrayList();
+    private List<org.metaborg.parsetable.productions.IProduction> productions = Lists.newArrayList();
     Map<IProduction, ParseTableProduction> productionsMapping = Maps.newLinkedHashMap();
 
     // fields to implement declarative disambiguation using contextual grammars
@@ -696,7 +696,7 @@ public class ParseTable implements IParseTable, Serializable {
         this.symbolStatesMapping = symbolStatesMapping;
     }
 
-    public List<org.metaborg.parsetable.IProduction> productions() {
+    public List<org.metaborg.parsetable.productions.IProduction> productions() {
         return productions;
     }
 

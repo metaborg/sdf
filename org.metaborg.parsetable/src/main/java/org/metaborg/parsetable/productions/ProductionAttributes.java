@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.productions;
 
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;

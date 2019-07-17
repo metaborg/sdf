@@ -1,4 +1,4 @@
-package org.metaborg.parsetable;
+package org.metaborg.parsetable.productions;
 
 import org.metaborg.parsetable.symbols.ISymbol;
 
