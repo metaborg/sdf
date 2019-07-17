@@ -13,6 +13,8 @@ public class Production implements IProduction {
     private final ISymbol lhs;
     private final ISymbol[] rhs;
 
+    private final ConcreteSyntaxContext concreteSyntaxContext;
+
     private final int productionId;
     private final boolean isStringLiteral;
     private final boolean isNumberLiteral;
@@ -30,6 +32,15 @@ public class Production implements IProduction {
         this.isLexicalRhs = isLexicalRhs;
         this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
+
+        if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
+            concreteSyntaxContext = ConcreteSyntaxContext.Layout;
+        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal)
+            concreteSyntaxContext = ConcreteSyntaxContext.Literal;
+        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs)
+            concreteSyntaxContext = ConcreteSyntaxContext.Lexical;
+        else
+            concreteSyntaxContext = ConcreteSyntaxContext.ContextFree;
     }
 
     @Override public int id() {
@@ -83,19 +94,19 @@ public class Production implements IProduction {
     }
 
     @Override public boolean isContextFree() {
-        return lhs.concreteSyntaxContext() == ConcreteSyntaxContext.ContextFree;
+        return concreteSyntaxContext == ConcreteSyntaxContext.ContextFree;
     }
 
     @Override public boolean isLayout() {
-        return lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout;
+        return concreteSyntaxContext == ConcreteSyntaxContext.Layout;
     }
 
     @Override public boolean isLiteral() {
-        return lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal;
+        return concreteSyntaxContext == ConcreteSyntaxContext.Literal;
     }
 
     @Override public boolean isLexical() {
-        return lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || (isLexicalRhs && !isLiteral());
+        return concreteSyntaxContext == ConcreteSyntaxContext.Lexical;
     }
 
     @Override public boolean isSkippableInParseForest() {
