@@ -18,7 +18,6 @@ public class Production implements IProduction {
     private final int productionId;
     private final boolean isStringLiteral;
     private final boolean isNumberLiteral;
-    private final boolean isLexicalRhs;
     private final boolean isSkippableInParseForest;
     private final ProductionAttributes attributes;
 
@@ -29,7 +28,6 @@ public class Production implements IProduction {
         this.rhs = rhs;
         this.isStringLiteral = isStringLiteral;
         this.isNumberLiteral = isNumberLiteral;
-        this.isLexicalRhs = isLexicalRhs;
         this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
 
