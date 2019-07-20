@@ -88,7 +88,8 @@ public class Production implements IProduction {
     }
 
     @Override public String descriptor() {
-        return lhs.toString() + " = " + Arrays.stream(rhs).map(ISymbol::toString).collect(Collectors.joining(" "));
+        return lhs.toString() + (constructor() != null ? "." + constructor() : "") + " = "
+            + Arrays.stream(rhs).map(ISymbol::toString).collect(Collectors.joining(" "));
     }
 
     @Override public boolean isContextFree() {
