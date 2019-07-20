@@ -5,8 +5,8 @@ public class ParameterizedSortSymbol extends SortSymbol implements IParameterize
     private final String[] parameters;
 
     public ParameterizedSortSymbol(SyntaxContext syntaxContext, SortCardinality cardinality, String sort,
-        String[] parameters, boolean isVarSym) {
-        super(syntaxContext, cardinality, sort, isVarSym);
+        String[] parameters) {
+        super(syntaxContext, cardinality, sort);
         this.parameters = parameters;
     }
 

@@ -20,12 +20,8 @@ public class SymbolReader {
         IStrategoAppl symbolTermUnpacked = symbolTerm;
         SyntaxContext syntaxContext;
 
-        boolean isVarSym = false;
-
-        if("varsym".equals(tryGetName(symbolTermUnpacked))) {
-            symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
-            isVarSym = true;
-        }
+        if("varsym".equals(tryGetName(symbolTermUnpacked)))
+            return readMetaVar(applAt(symbolTermUnpacked, 0));
 
         switch(tryGetName(symbolTermUnpacked)) {
             case "cf":
@@ -70,7 +66,7 @@ public class SymbolReader {
             case "lit":
             case "cilit":
             case "layout":
-                return readNonTerminal(symbolTermUnpacked, syntaxContext, cardinality, isVarSym);
+                return readNonTerminal(symbolTermUnpacked, syntaxContext, cardinality);
             case "char-class":
                 return readTerminal(symbolTermUnpacked, cardinality);
             case "alt":
@@ -84,11 +80,11 @@ public class SymbolReader {
     }
 
     private INonTerminalSymbol readNonTerminal(IStrategoAppl nonTerminalTerm, SyntaxContext syntaxContext,
-        SortCardinality cardinality, boolean isVarSym) throws ParseTableReadException {
+        SortCardinality cardinality) throws ParseTableReadException {
         switch(tryGetName(nonTerminalTerm)) {
             case "sort":
                 String sort = javaString(termAt(nonTerminalTerm, 0));
-                return new SortSymbol(syntaxContext, cardinality, sort, isVarSym);
+                return new SortSymbol(syntaxContext, cardinality, sort);
             case "parameterized-sort":
                 String sortBase = javaString(termAt(nonTerminalTerm, 0));
                 IStrategoList sortParametersTermList = termAt(nonTerminalTerm, 1);
@@ -102,7 +98,7 @@ public class SymbolReader {
                     sortParametersTermList = sortParametersTermList.tail();
                 }
 
-                return new ParameterizedSortSymbol(syntaxContext, cardinality, sortBase, sortParameters, isVarSym);
+                return new ParameterizedSortSymbol(syntaxContext, cardinality, sortBase, sortParameters);
             case "lit":
             case "cilit":
                 String literal = javaString(termAt(nonTerminalTerm, 0));
@@ -121,5 +117,31 @@ public class SymbolReader {
         return new TerminalSymbol(characterClass, cardinality);
     }
 
+    private IMetaVarSymbol readMetaVar(IStrategoAppl metaVarTerm) {
+        // See old Stratego imploder for reference:
+        // https://github.com/metaborg/strategoxt/blob/master/strategoxt/stratego-libraries/sglr/lib/stratego/asfix/implode/lexical.str
+
+        if("cf".equals(tryGetName(metaVarTerm)))
+            metaVarTerm = applAt(metaVarTerm, 0);
+
+        MetaVarCardinality metaVarCardinality;
+
+        switch(tryGetName(metaVarTerm)) {
+            case "iter":
+            case "iter-sep":
+            case "iter-star":
+            case "iter-star-sep":
+            case "iter-plus":
+            case "iter-plus-sep":
+                metaVarTerm = applAt(metaVarTerm, 0);
+                metaVarCardinality = MetaVarCardinality.ListVar;
+                break;
+            default:
+                metaVarCardinality = MetaVarCardinality.Var;
+                break;
+        }
+
+        return new MetaVarSymbol(metaVarCardinality);
+    }
 
 }

@@ -48,6 +48,6 @@ public class FileStartSymbol extends Symbol {
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name(), false);
+        return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name());
     }
 }
