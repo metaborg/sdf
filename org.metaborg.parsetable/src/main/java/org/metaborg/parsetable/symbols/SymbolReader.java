@@ -2,8 +2,8 @@ package org.metaborg.parsetable.symbols;
 
 import static org.spoofax.terms.Term.*;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.ParseTableReadException;
+import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
@@ -20,10 +20,11 @@ public class SymbolReader {
         IStrategoAppl symbolTermUnpacked = symbolTerm;
         SyntaxContext syntaxContext;
 
+        boolean isVarSym = false;
+
         if("varsym".equals(tryGetName(symbolTermUnpacked))) {
             symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
-
-            // TODO: what to do with varsym symbols/productions?
+            isVarSym = true;
         }
 
         switch(tryGetName(symbolTermUnpacked)) {
@@ -69,7 +70,7 @@ public class SymbolReader {
             case "lit":
             case "cilit":
             case "layout":
-                return readNonTerminal(symbolTermUnpacked, syntaxContext, cardinality);
+                return readNonTerminal(symbolTermUnpacked, syntaxContext, cardinality, isVarSym);
             case "char-class":
                 return readTerminal(symbolTermUnpacked, cardinality);
             case "alt":
@@ -83,11 +84,11 @@ public class SymbolReader {
     }
 
     private INonTerminalSymbol readNonTerminal(IStrategoAppl nonTerminalTerm, SyntaxContext syntaxContext,
-        SortCardinality cardinality) throws ParseTableReadException {
+        SortCardinality cardinality, boolean isVarSym) throws ParseTableReadException {
         switch(tryGetName(nonTerminalTerm)) {
             case "sort":
                 String sort = javaString(termAt(nonTerminalTerm, 0));
-                return new SortSymbol(syntaxContext, cardinality, sort);
+                return new SortSymbol(syntaxContext, cardinality, sort, isVarSym);
             case "parameterized-sort":
                 String sortBase = javaString(termAt(nonTerminalTerm, 0));
                 IStrategoList sortParametersTermList = termAt(nonTerminalTerm, 1);
@@ -101,7 +102,7 @@ public class SymbolReader {
                     sortParametersTermList = sortParametersTermList.tail();
                 }
 
-                return new ParameterizedSortSymbol(syntaxContext, cardinality, sortBase, sortParameters);
+                return new ParameterizedSortSymbol(syntaxContext, cardinality, sortBase, sortParameters, isVarSym);
             case "lit":
             case "cilit":
                 String literal = javaString(termAt(nonTerminalTerm, 0));

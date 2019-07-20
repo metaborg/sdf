@@ -99,6 +99,6 @@ public class Sort extends Symbol {
         if(type == LiteralType.CiLit || type == LiteralType.Lit)
             return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
         else
-            return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name);
+            return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name, false);
     }
 }

@@ -43,12 +43,11 @@ public class StartSymbol extends Symbol {
     }
     
     @Override public boolean equals(Object s) {
-        if(s == null)
-            return false;
+        if(s == null) return false;
         return(s instanceof StartSymbol);
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name());
+        return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name(), false);
     }
 }
