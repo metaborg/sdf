@@ -133,7 +133,6 @@ public class SymbolReader {
             case "iter-star-sep":
             case "iter-plus":
             case "iter-plus-sep":
-                metaVarTerm = applAt(metaVarTerm, 0);
                 metaVarCardinality = MetaVarCardinality.ListVar;
                 break;
             default:
