@@ -9,7 +9,7 @@ public interface ITerminalSymbol extends ISymbol {
     }
 
     default ConcreteSyntaxContext concreteSyntaxContext() {
-        return null;
+        return ConcreteSyntaxContext.Lexical;
     }
 
     ICharacterClass characterClass();
