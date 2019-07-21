@@ -113,11 +113,11 @@ public class Production implements IProduction {
     }
 
     @Override public boolean isList() {
-        return lhs.cardinality() == SortCardinality.List || attributes.isFlatten;
+        return (lhs.cardinality() != null && lhs.cardinality().isList) || attributes.isFlatten;
     }
 
     @Override public boolean isOptional() {
-        return lhs.cardinality() == SortCardinality.Optional;
+        return lhs.cardinality() != null && lhs.cardinality().isOptional;
     }
 
     @Override public boolean isStringLiteral() {

@@ -45,13 +45,28 @@ public class SymbolReader {
                 cardinality = SortCardinality.Optional;
                 break;
             case "iter":
+                symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
+                cardinality = SortCardinality.Iter;
+                break;
             case "iter-sep":
+                symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
+                cardinality = SortCardinality.IterSep;
+                break;
             case "iter-star":
+                symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
+                cardinality = SortCardinality.IterStar;
+                break;
             case "iter-star-sep":
+                symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
+                cardinality = SortCardinality.IterStarSep;
+                break;
             case "iter-plus":
+                symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
+                cardinality = SortCardinality.IterPlus;
+                break;
             case "iter-plus-sep":
                 symbolTermUnpacked = applAt(symbolTermUnpacked, 0);
-                cardinality = SortCardinality.List;
+                cardinality = SortCardinality.IterPlusSep;
                 break;
             case "seq":
                 return new SequenceSymbol(syntaxContext);

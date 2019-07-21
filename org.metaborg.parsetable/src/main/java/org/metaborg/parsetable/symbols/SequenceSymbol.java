@@ -3,7 +3,7 @@ package org.metaborg.parsetable.symbols;
 public class SequenceSymbol extends NonTerminalSymbol implements ISequenceSymbol {
 
     public SequenceSymbol(SyntaxContext syntaxContext) {
-        super(syntaxContext, SortCardinality.List);
+        super(syntaxContext, SortCardinality.Seq);
     }
 
     @Override public ConcreteSyntaxContext concreteSyntaxContext() {

@@ -69,7 +69,7 @@ public class IterStarSymbol extends Symbol {
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        return symbol.toParseTableSymbol(syntaxContext, SortCardinality.List);
+        return symbol.toParseTableSymbol(syntaxContext, SortCardinality.IterStar);
     }
 
 }
