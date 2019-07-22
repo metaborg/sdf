@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.CharacterClass;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Sets;
 
-public class ContextualSymbol extends Symbol {
+public final class ContextualSymbol extends Symbol {
 
     private static final long serialVersionUID = -2886358954796970390L;
 
@@ -24,7 +27,6 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = contexts;
         this.deepContextBitmap = deepContextBitmap;
-        
     }
 
     public ContextualSymbol(Symbol s, Context context, long deepContextBitmap) {
@@ -37,8 +39,8 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = contexts;
 
-        for (Context context : contexts) {
-            if (context.getType() == ContextType.DEEP) {
+        for(Context context : contexts) {
+            if(context.getType() == ContextType.DEEP) {
                 deepContextBitmap |= context.getContextBitmap();
             }
         }
@@ -48,7 +50,7 @@ public class ContextualSymbol extends Symbol {
         this.s = s;
         this.contexts = Sets.newHashSet(context);
 
-        if (context.getType() == ContextType.DEEP) {
+        if(context.getType() == ContextType.DEEP) {
             deepContextBitmap |= context.getContextBitmap();
         }
     }
@@ -103,11 +105,11 @@ public class ContextualSymbol extends Symbol {
         return buf;
     }
 
-    @Override public CharacterClass followRestriction() {
+    @Override public ICharacterClass followRestriction() {
         return getOrigSymbol().followRestriction();
     }
 
-    @Override public List<CharacterClass[]> followRestrictionLookahead() {
+    @Override public List<ICharacterClass[]> followRestrictionLookahead() {
         return getOrigSymbol().followRestrictionLookahead();
     }
 
@@ -124,31 +126,31 @@ public class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContext(Context context) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(this.getContexts());
-        new_contexts.add(context);
+        Set<Context> newContexts = Sets.newHashSet();
+        newContexts.addAll(this.getContexts());
+        newContexts.add(context);
 
-        if (context.getType() == ContextType.DEEP) {
-            return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap | context.getContextBitmap());
+        if(context.getType() == ContextType.DEEP) {
+            return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap | context.getContextBitmap());
         }
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts, deepContextBitmap);
+        return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap);
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
-        Set<Context> new_contexts = Sets.newHashSet();
-        new_contexts.addAll(this.getContexts());
-        new_contexts.addAll(contexts);
+        Set<Context> newContexts = Sets.newHashSet();
+        newContexts.addAll(this.getContexts());
+        newContexts.addAll(contexts);
 
         long updatedDeepContextBitmap = deepContextBitmap;
 
-        for (Context context : contexts) {
-            if (context.getType() == ContextType.DEEP) {
+        for(Context context : contexts) {
+            if(context.getType() == ContextType.DEEP) {
                 updatedDeepContextBitmap |= context.getContextBitmap();
             }
         }
 
-        return new ContextualSymbol(getOrigSymbol(), new_contexts, updatedDeepContextBitmap);
+        return new ContextualSymbol(getOrigSymbol(), newContexts, updatedDeepContextBitmap);
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
@@ -186,6 +188,10 @@ public class ContextualSymbol extends Symbol {
         } else if(!s.equals(other.s))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return s.toParseTableSymbol(syntaxContext, cardinality);
     }
 
 }

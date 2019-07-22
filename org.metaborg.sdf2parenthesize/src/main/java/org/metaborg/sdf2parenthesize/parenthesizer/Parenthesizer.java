@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.deepconflicts.ContextPosition;
 import org.metaborg.sdf2table.deepconflicts.ContextType;
@@ -14,11 +17,9 @@ import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IPriority;
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
-import org.metaborg.sdf2table.grammar.Symbol;
+import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -80,11 +81,11 @@ public class Parenthesizer {
         List<IStrategoTerm> shallowConflictRuleList = Lists.newArrayList();
 
 
-        for(IProduction prod : grammar.getHigherPriorityProductions().keySet()) {
+        for(Production prod : grammar.getHigherPriorityProductions().keySet()) {
             String constructor = getConstructor(prod, grammar);
             if(constructor != null) {
                 SetMultimap<Integer, IProduction> conflicts = HashMultimap.create();
-                for(IPriority prio : grammar.getHigherPriorityProductions().get(prod)) {
+                for(Priority prio : grammar.getHigherPriorityProductions().get(prod)) {
                     for(Integer arg : grammar.priorities().get(prio)) {
                         if(arg != -1 && arg != Integer.MAX_VALUE && arg != Integer.MIN_VALUE) {
                             if(getConstructor(prio.lower(), grammar) != null) {
@@ -128,7 +129,7 @@ public class Parenthesizer {
                 SetMultimap<Integer, IProduction> leftConflicts = HashMultimap.create();
                 SetMultimap<Integer, IProduction> rightConflicts = HashMultimap.create();
                 for(int i = 0; i < prod.rightHand().size(); i++) {
-                    Symbol s = prod.rightHand().get(i);
+                    ISymbol s = prod.rightHand().get(i);
                     if(s instanceof ContextualSymbol) {
                         for(Context ctx : ((ContextualSymbol) s).getContexts()) {
                             if(ctx.getType() == ContextType.DEEP
@@ -547,7 +548,7 @@ public class Parenthesizer {
 
     private static Integer getArity(IProduction prod) {
         int arity = 0;
-        for(Symbol s : prod.rightHand()) {
+        for(ISymbol s : prod.rightHand()) {
             if(s instanceof ContextFreeSymbol && !s.toString().equals("LAYOUT?-CF")) {
                 arity++;
             }
@@ -558,7 +559,7 @@ public class Parenthesizer {
     private static int normalizeArg(Integer arg, IProduction prod) {
         int normArg = 0;
 
-        for(Symbol s : prod.rightHand()) {
+        for(ISymbol s : prod.rightHand()) {
             if(arg == 0) {
                 return normArg;
             }

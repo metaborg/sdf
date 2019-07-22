@@ -3,6 +3,9 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -59,6 +62,10 @@ public class ContextFreeSymbol extends Symbol {
         } else if(!symbol.equals(other.symbol))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return symbol.toParseTableSymbol(SyntaxContext.ContextFree, cardinality);
     }
     
 }

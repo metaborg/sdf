@@ -3,6 +3,9 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -40,8 +43,11 @@ public class StartSymbol extends Symbol {
     }
     
     @Override public boolean equals(Object s) {
-        if(s == null)
-            return false;
+        if(s == null) return false;
         return(s instanceof StartSymbol);
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name());
     }
 }

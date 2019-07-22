@@ -2,21 +2,23 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
+import org.metaborg.sdf2table.grammar.ISymbol;
+
 public class ProductionReference implements Serializable {
     
     private static final long serialVersionUID = -7256082373948196902L;
 
-    private Symbol sort;
+    private ISymbol sort;
     private ConstructorAttribute cons;
     
-    public ProductionReference(Symbol sort, ConstructorAttribute cons) {
+    public ProductionReference(ISymbol sort, ConstructorAttribute cons) {
         this.sort = sort;
         this.cons = cons;
     }
-    public Symbol getSort() {
+    public ISymbol getSort() {
         return sort;
     }
-    public void setSort(Symbol sort) {
+    public void setSort(ISymbol sort) {
         this.sort = sort;
     }
     public ConstructorAttribute getCons() {

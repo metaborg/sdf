@@ -7,6 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.INormGrammar;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 
@@ -31,37 +35,37 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<Symbol> symbols;
 
     // to handle Sort.Cons in priorities
-    private Map<ProductionReference, IProduction> sortConsProductionMapping;
+    private Map<ProductionReference, Production> sortConsProductionMapping;
 
     // merging same productions with different attributes
     private SetMultimap<IProduction, IAttribute> productionAttributesMapping;
 
     // necessary for calculating deep priority conflicts
-    private Map<UniqueProduction, IProduction> uniqueProductionMapping;
-    private BiMap<IProduction, ContextualProduction> prodContextualProdMapping;
+    private Map<UniqueProduction, Production> uniqueProductionMapping;
+    private BiMap<Production, ContextualProduction> prodContextualProdMapping;
     private Set<ContextualProduction> derivedContextualProds;
     private Set<ContextualSymbol> contextualSymbols;
-    private SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, IProduction> longestMatchProds;
+    private SetMultimap<ISymbol, ISymbol> leftRecursiveSymbolsMapping;
+    private SetMultimap<ISymbol, ISymbol> rightRecursiveSymbolsMapping;
+    private SetMultimap<Symbol, Production> longestMatchProds;
 
     // priorities
-    private Set<IPriority> transitivePriorities;
-    private Set<IPriority> nonTransitivePriorities;
-    private SetMultimap<IPriority, Integer> priorities;
+    private Set<Priority> transitivePriorities;
+    private Set<Priority> nonTransitivePriorities;
+    private SetMultimap<Priority, Integer> priorities;
 
     // extra collections to calculate the transitive closure
-    private Set<IProduction> productionsOnPriorities;
-    private SetMultimap<IPriority, Integer> transitivePriorityArgs;
-    private SetMultimap<IPriority, Integer> nonTransitivePriorityArgs;
-    private SetMultimap<IProduction, IPriority> higherPriorityProductions;
+    private Set<Production> productionsOnPriorities;
+    private SetMultimap<Priority, Integer> transitivePriorityArgs;
+    private SetMultimap<Priority, Integer> nonTransitivePriorityArgs;
+    private SetMultimap<Production, Priority> higherPriorityProductions;
 
 
     private HashMap<String, Symbol> cacheSymbolsRead; // caching symbols read
-    private HashMap<String, IProduction> cacheProductionsRead; // caching productions read
+    private HashMap<String, Production> cacheProductionsRead; // caching productions read
 
     // get all productions for a certain symbol
-    private SetMultimap<Symbol, IProduction> symbolProductionsMapping;
+    private SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
 
     public NormGrammar() {
         this.setFilesRead(Sets.newHashSet());
@@ -88,12 +92,12 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    @Override public Map<UniqueProduction, IProduction> syntax() {
+    public Map<UniqueProduction, Production> syntax() {
         return getUniqueProductionMapping();
     }
 
 
-    @Override public SetMultimap<IPriority, Integer> priorities() {
+    public SetMultimap<Priority, Integer> priorities() {
         return priorities;
     }
 
@@ -103,12 +107,12 @@ public class NormGrammar implements INormGrammar, Serializable {
         }
 
         // Floyd Warshall Algorithm to calculate the transitive closure
-        for(IProduction intermediate_prod : getProductionsOnPriorities()) {
-            for(IProduction first_prod : getProductionsOnPriorities()) {
-                for(IProduction second_prod : getProductionsOnPriorities()) {
-                    IPriority first_sec = new Priority(first_prod, second_prod, true);
-                    IPriority first_k = new Priority(first_prod, intermediate_prod, true);
-                    IPriority k_second = new Priority(intermediate_prod, second_prod, true);
+        for(Production intermediate_prod : getProductionsOnPriorities()) {
+            for(Production first_prod : getProductionsOnPriorities()) {
+                for(Production second_prod : getProductionsOnPriorities()) {
+                    Priority first_sec = new Priority(first_prod, second_prod, true);
+                    Priority first_k = new Priority(first_prod, intermediate_prod, true);
+                    Priority k_second = new Priority(intermediate_prod, second_prod, true);
                     // if there is no priority first_prod > second_prod
                     if(!getTransitivePriorities().contains(first_sec)) {
                         // if there are priorities first_prod > intermediate_prod and
@@ -164,12 +168,12 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public Map<ProductionReference, IProduction> getSortConsProductionMapping() {
+    public Map<ProductionReference, Production> getSortConsProductionMapping() {
         return sortConsProductionMapping;
     }
 
 
-    public void setSortConsProductionMapping(Map<ProductionReference, IProduction> sortConsProductionMapping) {
+    public void setSortConsProductionMapping(Map<ProductionReference, Production> sortConsProductionMapping) {
         this.sortConsProductionMapping = sortConsProductionMapping;
     }
 
@@ -184,22 +188,22 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public Map<UniqueProduction, IProduction> getUniqueProductionMapping() {
+    public Map<UniqueProduction, Production> getUniqueProductionMapping() {
         return uniqueProductionMapping;
     }
 
 
-    public void setUniqueProductionMapping(LinkedHashMap<UniqueProduction, IProduction> uniqueProductionMapping) {
+    public void setUniqueProductionMapping(LinkedHashMap<UniqueProduction, Production> uniqueProductionMapping) {
         this.uniqueProductionMapping = uniqueProductionMapping;
     }
 
 
-    public BiMap<IProduction, ContextualProduction> getProdContextualProdMapping() {
+    public BiMap<Production, ContextualProduction> getProdContextualProdMapping() {
         return prodContextualProdMapping;
     }
 
 
-    public void setProdContextualProdMapping(BiMap<IProduction, ContextualProduction> prodContextualProdMapping) {
+    public void setProdContextualProdMapping(BiMap<Production, ContextualProduction> prodContextualProdMapping) {
         this.prodContextualProdMapping = prodContextualProdMapping;
     }
 
@@ -224,82 +228,82 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public SetMultimap<Symbol, Symbol> getLeftRecursiveSymbolsMapping() {
+    public SetMultimap<ISymbol, ISymbol> getLeftRecursiveSymbolsMapping() {
         return leftRecursiveSymbolsMapping;
     }
 
 
-    public void setLeftRecursiveSymbolsMapping(SetMultimap<Symbol, Symbol> leftRecursiveSymbolsMapping) {
+    public void setLeftRecursiveSymbolsMapping(SetMultimap<ISymbol, ISymbol> leftRecursiveSymbolsMapping) {
         this.leftRecursiveSymbolsMapping = leftRecursiveSymbolsMapping;
     }
 
 
-    public SetMultimap<Symbol, Symbol> getRightRecursiveSymbolsMapping() {
+    public SetMultimap<ISymbol, ISymbol> getRightRecursiveSymbolsMapping() {
         return rightRecursiveSymbolsMapping;
     }
 
 
-    public void setRightRecursiveSymbolsMapping(SetMultimap<Symbol, Symbol> rightRecursiveSymbolsMapping) {
+    public void setRightRecursiveSymbolsMapping(SetMultimap<ISymbol, ISymbol> rightRecursiveSymbolsMapping) {
         this.rightRecursiveSymbolsMapping = rightRecursiveSymbolsMapping;
     }
 
 
-    public SetMultimap<Symbol, IProduction> getLongestMatchProds() {
+    public SetMultimap<Symbol, Production> getLongestMatchProds() {
         return longestMatchProds;
     }
 
 
-    public void setLongestMatchProds(SetMultimap<Symbol, IProduction> longestMatchProds) {
+    public void setLongestMatchProds(SetMultimap<Symbol, Production> longestMatchProds) {
         this.longestMatchProds = longestMatchProds;
     }
 
 
-    public Set<IPriority> getTransitivePriorities() {
+    public Set<Priority> getTransitivePriorities() {
         return transitivePriorities;
     }
 
 
-    public void setTransitivePriorities(Set<IPriority> transitivePriorities) {
+    public void setTransitivePriorities(Set<Priority> transitivePriorities) {
         this.transitivePriorities = transitivePriorities;
     }
 
 
-    public Set<IPriority> getNonTransitivePriorities() {
+    public Set<Priority> getNonTransitivePriorities() {
         return nonTransitivePriorities;
     }
 
 
-    public void setNonTransitivePriorities(Set<IPriority> nonTransitivePriorities) {
+    public void setNonTransitivePriorities(Set<Priority> nonTransitivePriorities) {
         this.nonTransitivePriorities = nonTransitivePriorities;
     }
 
 
-    public Set<IProduction> getProductionsOnPriorities() {
+    public Set<Production> getProductionsOnPriorities() {
         return productionsOnPriorities;
     }
 
 
-    public void setProductionsOnPriorities(Set<IProduction> productionsOnPriorities) {
+    public void setProductionsOnPriorities(Set<Production> productionsOnPriorities) {
         this.productionsOnPriorities = productionsOnPriorities;
     }
 
 
-    public SetMultimap<IPriority, Integer> getTransitivePriorityArgs() {
+    public SetMultimap<Priority, Integer> getTransitivePriorityArgs() {
         return transitivePriorityArgs;
     }
 
 
-    public void setTransitivePriorityArgs(SetMultimap<IPriority, Integer> transitivePriorityArgs) {
+    public void setTransitivePriorityArgs(SetMultimap<Priority, Integer> transitivePriorityArgs) {
         this.transitivePriorityArgs = transitivePriorityArgs;
     }
 
 
-    public SetMultimap<IPriority, Integer> getNonTransitivePriorityArgs() {
+    public SetMultimap<Priority, Integer> getNonTransitivePriorityArgs() {
         return nonTransitivePriorityArgs;
     }
 
 
-    public void setNonTransitivePriorityArgs(SetMultimap<IPriority, Integer> nonTransitivePriorityArgs) {
+    public void setNonTransitivePriorityArgs(SetMultimap<Priority, Integer> nonTransitivePriorityArgs) {
         this.nonTransitivePriorityArgs = nonTransitivePriorityArgs;
     }
 
@@ -314,32 +318,32 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public HashMap<String, IProduction> getCacheProductionsRead() {
+    public HashMap<String, Production> getCacheProductionsRead() {
         return cacheProductionsRead;
     }
 
 
-    public void setCacheProductionsRead(HashMap<String, IProduction> cacheProductionsRead) {
+    public void setCacheProductionsRead(HashMap<String, Production> cacheProductionsRead) {
         this.cacheProductionsRead = cacheProductionsRead;
     }
 
 
-    public SetMultimap<Symbol, IProduction> getSymbolProductionsMapping() {
+    public SetMultimap<ISymbol, IProduction> getSymbolProductionsMapping() {
         return symbolProductionsMapping;
     }
 
 
-    public void setSymbolProductionsMapping(SetMultimap<Symbol, IProduction> symbolProductionsMapping) {
+    public void setSymbolProductionsMapping(SetMultimap<ISymbol, IProduction> symbolProductionsMapping) {
         this.symbolProductionsMapping = symbolProductionsMapping;
     }
 
 
-    public SetMultimap<IProduction, IPriority> getHigherPriorityProductions() {
+    public SetMultimap<Production, Priority> getHigherPriorityProductions() {
         return higherPriorityProductions;
     }
 
 
-    public void setHigherPriorityProductions(SetMultimap<IProduction, IPriority> higherPriorityProductions) {
+    public void setHigherPriorityProductions(SetMultimap<Production, Priority> higherPriorityProductions) {
         this.higherPriorityProductions = higherPriorityProductions;
     }
 

@@ -6,8 +6,7 @@ plugins {
 dependencies {
   api(platform("org.metaborg:parent:$version"))
 
-  api(project(":tableinterfaces"))
-  api(project(":characterclasses"))
+  api(project(":org.metaborg.parsetable"))
 
   api("org.metaborg:org.spoofax.terms:$version")
   api("org.metaborg:org.metaborg.util:$version")

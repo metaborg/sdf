@@ -10,9 +10,9 @@ public class UniqueProduction implements Serializable{
     private Symbol lhs;
     private List<Symbol> rhs;
 
-    public UniqueProduction(Symbol lhs, List<Symbol> rhs) {
+    public UniqueProduction(Symbol lhs, List<Symbol> rhs_symbols) {
         this.lhs = lhs;
-        this.rhs = rhs;
+        this.rhs = rhs_symbols;
     }
 
     @Override public int hashCode() {
