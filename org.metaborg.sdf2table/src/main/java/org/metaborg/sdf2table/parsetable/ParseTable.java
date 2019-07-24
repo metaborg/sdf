@@ -280,63 +280,40 @@ public class ParseTable implements IParseTable, Serializable {
 
                     // if p2 : A = w1 A w2, priority should have no effect
 
-                    // infix-prefix, infix-postfix productions
-
-                    // if p1 : A = pre E in E and p2 : A = pre E or p1 : A = pre E in E and p2 : A = E in E
-                    if(p.higher().leftRecursivePosition() == -1 && p.lower().leftRecursivePosition() == -1
-                        && (p.lower().rightRecursivePosition() != -1 || p.higher().rightRecursivePosition() != -1)) {
-
-                        // dangling else (p1 : A = pre E in E and p2 : A = pre E)
-                        boolean matchPrefix = false;
-                        for(int i = 0; i < Math.min(p.higher().rightHand().size(), p.lower().rightHand().size()); i++) {
-                            if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
-                                matchPrefix = true;
-                            } else {
-                                matchPrefix = false;
-                                break;
-                            }
+                    // dangling prefix
+                    // p1 : A = α A and p2 = α A γ or vice-versa
+                    boolean matchPrefix = false;
+                    int i, j;
+                    for(i = 0, j = 0; i < p.higher().rightHand().size() && j < p.lower().rightHand().size(); i++, j++) {
+                        if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(j))) {
+                            matchPrefix = true;
+                        } else {
+                            matchPrefix = false;
+                            break;
                         }
-                        if(matchPrefix) {
-                            new_values
-                                .add(Math.min(p.higher().rightRecursivePosition(), p.lower().rightRecursivePosition()));
-                        }
-                        // }
                     }
 
-                    // if p1 : A = E in E pos and p2 : A = E pos or p1 : A = E in E pos and p2 : A = E in E
-                    if(p.higher().rightRecursivePosition() == -1 && p.higher().leftRecursivePosition() != -1
-                        && p.lower().leftRecursivePosition() != -1
-                        && p.higher().rightHand().size() > p.lower().rightHand().size()) {
+                    if(matchPrefix && (p.higher().rightRecursivePosition() == i - 1
+                        || p.lower().rightRecursivePosition() == j - 1)) {
+                        new_values.add(i - 1);
+                    }
 
-                        // p1 : A = E in E pos and p2 : A = E in E
-                        if(p.lower().rightRecursivePosition() != -1) {
-                            boolean matchPrefix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(i))) {
-                                    matchPrefix = true;
-                                } else {
-                                    matchPrefix = false;
-                                    break;
-                                }
-                            }
-                            if(matchPrefix) {
-                                new_values.add(p.lower().rightRecursivePosition());
-                            }
-                        } else { // mirrored dangling else (p1 : A = E in E pos and p2 : A = E pos)
-                            boolean matchSuffix = false;
-                            for(int i = 0; i < p.lower().rightHand().size(); i++) {
-                                if(p.higher().rightHand().get(p.higher().rightHand().size() - 1 - i) // suffix matches
-                                    .equals(p.lower().rightHand().get(p.lower().rightHand().size() - 1 - i))) {
-                                    matchSuffix = true;
-                                } else {
-                                    matchSuffix = false;
-                                    break;
-                                }
-                            }
-                            if(matchSuffix) {
-                                new_values.add(p.higher().rightHand().size() - p.lower().rightHand().size());
-                            }
+                    // dangling suffix
+                    // p1 : A = A γ and p = α A γ or vice-versa
+                    boolean matchSuffix = false;
+                    for(i = p.higher().rightHand().size() - 1, j = p.lower().rightHand().size() - 1; i >= 0
+                        && j >= 0; i--, j--) {
+                        if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(j))) {
+                            matchSuffix = true;
+                        } else {
+                            matchSuffix = false;
+                            break;
                         }
+                    }
+
+                    if(matchSuffix && (p.higher().leftRecursivePosition() == i + 1
+                        || p.lower().leftRecursivePosition() == j + 1)) {
+                        new_values.add(i + 1);
                     }
 
                     new_values.addAll(grammar.priorities().get(p));

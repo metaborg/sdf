@@ -100,13 +100,15 @@ public class DeepConflictsAnalyzer {
 
     public void patchParseTable() {
         /*
-        int sizeDiff_uniqueProductionToProduction = uniqueProductionMapping.size() - pt.normalizedGrammar().getUniqueProductionMapping().size();
-        int sizeDiff_symbolToProductions = symbolProductionsMapping.size() - pt.normalizedGrammar().getSymbolProductionsMapping().size();
-        int sizeDiff_productionToLabel = productionLabels.size() - pt.productionLabels().size();
-
-        int sizeDiff_productionToAttributes = productionAttributesMapping.size() - pt.normalizedGrammar().getProductionAttributesMapping().size();
-        int sizeDiff_productionToContextualProduction = prodContextualProdMapping.size() - pt.normalizedGrammar().getProdContextualProdMapping().size();
-        */
+         * int sizeDiff_uniqueProductionToProduction = uniqueProductionMapping.size() -
+         * pt.normalizedGrammar().getUniqueProductionMapping().size(); int sizeDiff_symbolToProductions =
+         * symbolProductionsMapping.size() - pt.normalizedGrammar().getSymbolProductionsMapping().size(); int
+         * sizeDiff_productionToLabel = productionLabels.size() - pt.productionLabels().size();
+         * 
+         * int sizeDiff_productionToAttributes = productionAttributesMapping.size() -
+         * pt.normalizedGrammar().getProductionAttributesMapping().size(); int sizeDiff_productionToContextualProduction
+         * = prodContextualProdMapping.size() - pt.normalizedGrammar().getProdContextualProdMapping().size();
+         */
 
         pt.normalizedGrammar().getUniqueProductionMapping().putAll(uniqueProductionMapping);
         pt.normalizedGrammar().getSymbolProductionsMapping().putAll(symbolProductionsMapping);
@@ -123,19 +125,20 @@ public class DeepConflictsAnalyzer {
         deepConflictAnalysis(pt, true, true, true);
 
         /*
-        int sizeDiff_uniqueProductionToProduction = uniqueProductionMapping.size() - pt.normalizedGrammar().getUniqueProductionMapping().size();
-        int sizeDiff_symbolToProductions = symbolProductionsMapping.size() - pt.normalizedGrammar().getSymbolProductionsMapping().size();
-        int sizeDiff_productionToLabel = productionLabels.size() - pt.productionLabels().size();
-
-        int sizeDiff_productionToAttributes = productionAttributesMapping.size() - pt.normalizedGrammar().getProductionAttributesMapping().size();
-        int sizeDiff_productionToContextualProduction = prodContextualProdMapping.size() - pt.normalizedGrammar().getProdContextualProdMapping().size();
-
-        Set<Integer> newLabels = new HashSet<>(productionLabels.inverse().keySet());
-        Set<Integer> oldLabels = new HashSet<>(pt.productionLabels().inverse().keySet());
-
-        Set<Integer> diffLabels = new HashSet<>(newLabels);
-        diffLabels.removeAll(oldLabels);
-        */
+         * int sizeDiff_uniqueProductionToProduction = uniqueProductionMapping.size() -
+         * pt.normalizedGrammar().getUniqueProductionMapping().size(); int sizeDiff_symbolToProductions =
+         * symbolProductionsMapping.size() - pt.normalizedGrammar().getSymbolProductionsMapping().size(); int
+         * sizeDiff_productionToLabel = productionLabels.size() - pt.productionLabels().size();
+         * 
+         * int sizeDiff_productionToAttributes = productionAttributesMapping.size() -
+         * pt.normalizedGrammar().getProductionAttributesMapping().size(); int sizeDiff_productionToContextualProduction
+         * = prodContextualProdMapping.size() - pt.normalizedGrammar().getProdContextualProdMapping().size();
+         * 
+         * Set<Integer> newLabels = new HashSet<>(productionLabels.inverse().keySet()); Set<Integer> oldLabels = new
+         * HashSet<>(pt.productionLabels().inverse().keySet());
+         * 
+         * Set<Integer> diffLabels = new HashSet<>(newLabels); diffLabels.removeAll(oldLabels);
+         */
     }
 
     public void deepConflictAnalysis(ParseTable pt, boolean operatorStyle, boolean danglingElse, boolean longestMatch) {
@@ -323,17 +326,20 @@ public class DeepConflictsAnalyzer {
         }
     }
 
-    private void handleMirroredDanglingElseConflict(ParseTable pt, Priority prio, Production higher,
-        Production lower) {
+    private void handleMirroredDanglingElseConflict(ParseTable pt, Priority prio, Production higher, Production lower) {
         boolean matchSuffix = false;
 
         for(int conflict : pt.normalizedGrammar().priorities().get(prio)) {
+
+            if(conflict < 0)
+                continue;
+
             if(lower.rightHand().size() < (higher.rightHand().size() - conflict))
                 continue;
 
-            for(int i = 0; i < higher.rightHand().size() - conflict; i++) {
-                if(higher.rightHand().get(higher.rightHand().size() - 1 - i) // check backwards
-                    .equals(lower.rightHand().get(lower.rightHand().size() - 1 - i))) {
+            for(int i = higher.rightHand().size() - 1, j = lower.rightHand().size() - 1; i >= conflict; i--, j--) {
+                if(higher.rightHand().get(i) // check backwards
+                    .equals(lower.rightHand().get(j))) {
                     matchSuffix = true;
                 } else {
                     matchSuffix = false;
@@ -481,11 +487,16 @@ public class DeepConflictsAnalyzer {
                         if(nullableListProd != null && nonNullableListProd != null) {
                             // add priority A.C = α A S* <rhs(A.C)> > S* = S+
                             if(nonNullableListProd instanceof Production) {
-                                priorities.put(new Priority(p, (Production) nonNullableListProd, false), p.rightHand().size() - 1);
+                                priorities.put(new Priority(p, (Production) nonNullableListProd, false),
+                                    p.rightHand().size() - 1);
                             } else {
-                                priorities.put(new Priority(p, ((ContextualProduction) nonNullableListProd).getOrigProduction(), false), p.rightHand().size() - 1);
+                                priorities
+                                    .put(
+                                        new Priority(p,
+                                            ((ContextualProduction) nonNullableListProd).getOrigProduction(), false),
+                                        p.rightHand().size() - 1);
                             }
-                            
+
                             // create A.C = α A{C} S+
                             List<Symbol> new_rhs = Lists.newArrayList();
                             for(int i = 0; i < p.rightHand().size() - 1; i++) {
@@ -560,7 +571,8 @@ public class DeepConflictsAnalyzer {
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p, existing_prod.addContexts(contexts, Sets.newHashSet(0)));
+                    prodContextualProdMapping.replace((Production) p,
+                        existing_prod.addContexts(contexts, Sets.newHashSet(0)));
                 }
             }
         }

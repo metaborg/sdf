@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ILiteralSymbol;
 import org.metaborg.parsetable.symbols.ISymbol;
-import org.metaborg.parsetable.symbols.SortCardinality;
 
 public class Production implements IProduction {
 
