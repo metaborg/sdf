@@ -155,7 +155,7 @@ public class DeepConflictsAnalyzer {
 
                     handleInfixPrefixConflict(pt, prio, higher, lower);
                 } // prefix-postfix conflict
-                else if(operatorStyle && higher.rightRecursivePosition() != -1 && // higher is prefix
+                else if(higher.rightRecursivePosition() != -1 && // higher is prefix
                     lower.leftRecursivePosition() != -1 && lower.rightRecursivePosition() == -1 && // lower is postfix
                     mutuallyRecursive(pt, prio) && // the productions are mutually recursive
                     pt.normalizedGrammar().priorities().containsEntry(prio, higher.rightHand().size() - 1)) { // the
@@ -397,6 +397,9 @@ public class DeepConflictsAnalyzer {
 
                 Set<Context> contexts = Sets.newHashSet();
                 int labelLower = productionLabels.get(prio.lower());
+//                if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
+//                    rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
+//                }
                 Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, true);
                 contexts.add(new_context);
 
@@ -427,6 +430,9 @@ public class DeepConflictsAnalyzer {
 
                 Set<Context> contexts = Sets.newHashSet();
                 int labelLower = productionLabels.get(prio.lower());
+                if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
+                    leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
+                }
                 Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST, true);
                 contexts.add(new_context);
 
