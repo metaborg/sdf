@@ -221,6 +221,7 @@ public class NormGrammarReader {
     private Production processProduction(IStrategoTerm term) throws Exception {
         Production prod = null;
         prod = grammar.getCacheProductionsRead().get(term.toString());
+        
 
         if(prod != null) {
             return prod;
@@ -235,6 +236,7 @@ public class NormGrammarReader {
                 String cons = null;
                 ConstructorAttribute cons_attr = null;
                 List<Symbol> rhs_symbols = Lists.newArrayList();
+                Set<ISymbol> literals = Sets.newHashSet();
                 StrategoAppl tattrs;
 
                 if(with_cons) {
@@ -251,6 +253,9 @@ public class NormGrammarReader {
                     Symbol s = processSymbol(t);
                     if(s != null)
                         rhs_symbols.add(s);
+                    if(s instanceof Sort && ((Sort) s).getType() != null) {
+                        literals.add(s);
+                    }
                 }
 
                 // Read attributes
@@ -296,6 +301,9 @@ public class NormGrammarReader {
 
                 // processing a new production
                 prod = new Production(symbol, rhs_symbols);
+                for(ISymbol literal : literals) {
+                    grammar.getLiteralProductionsMapping().put(literal, prod);
+                }
 
                 if(cons_attr != null) {
                     grammar.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
