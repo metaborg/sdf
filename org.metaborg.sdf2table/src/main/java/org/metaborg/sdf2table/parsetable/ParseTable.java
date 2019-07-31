@@ -72,6 +72,9 @@ public class ParseTable implements IParseTable, Serializable {
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
     private Queue<State> stateQueue = Lists.newLinkedList();
     private Map<Integer, State> stateLabels = Maps.newLinkedHashMap();
+    
+    private final Set<IProduction> danglingSuffix = Sets.newHashSet();
+    private final Set<IProduction> danglingPrefix = Sets.newHashSet();
 
     // mapping from a symbol X to all items A = α . X β to all states s that have that item
     private SymbolStatesMapping symbolStatesMapping = new SymbolStatesMapping();
@@ -84,22 +87,32 @@ public class ParseTable implements IParseTable, Serializable {
 
     // fields to implement declarative disambiguation using contextual grammars
     // deep priority conflict resolution is left to parse time
-    private final boolean dataDependent;
+    private final ParseTableConfiguration config;
 
     // maps a set of contexts to a unique integer
     private Map<Set<Context>, Integer> ctxUniqueInt = Maps.newHashMap();
     private final Map<Integer, Integer> leftmostContextsMapping = Maps.newLinkedHashMap();
     private final Map<Integer, Integer> rightmostContextsMapping = Maps.newLinkedHashMap();
 
-    public ParseTable(NormGrammar grammar, boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) {
+    public ParseTable(NormGrammar grammar, ParseTableConfiguration config) {
         this.grammar = grammar;
-        this.dataDependent = dataDependent;
+        this.config = config;
+        SCCNodes<ISymbol> scc = null;
+        
+        if(config.isCheckOverlap()) {
+            // calculate strongly connected components to indentify mutually recursive symbols
+            scc = new SCCNodes<ISymbol>(createGraphFromProductions());
+            scc.calculateSCCNodes();
+        }
 
         // calculate nullable symbols
         calculateNullable();
 
         // calculate left and right recursive productions (considering nullable symbols)
         calculateRecursion();
+        
+     // extract expression grammars
+        extractExpressionGrammars(scc);
 
         // normalize priorities according to recursion
         normalizePriorities();
@@ -107,22 +120,20 @@ public class ParseTable implements IParseTable, Serializable {
         // create labels for productions
         createLabels();
 
-        // calculate strongly connected components to indentify mutually recursive symbols
-        SCCNodes<ISymbol> scc = new SCCNodes<ISymbol>(createGraphFromProductions());
-        scc.calculateSCCNodes();
-
-        // extract expression grammars
-        // extractExpressionGrammars(scc);
 
         // verify possible ambiguities due to missing priorities
-        // checkMissingPriorities();
+        if(config.isCheckPriorities()) {
+            checkMissingPriorities();
+        }
 
-        // calculate harmful overlap
-        // checkHarmfulOverlap(scc);
+        if(config.isCheckOverlap()) {
+            // calculate harmful overlap
+            checkHarmfulOverlap(scc);
+        }
 
         // calculate deep priority conflicts based on current priorities
         // and generate contextual productions
-        if(solveDeepConflicts) {
+        if(config.isSolveDeepConflicts()) {
             final DeepConflictsAnalyzer analysis = DeepConflictsAnalyzer.fromParseTable(this);
             analysis.patchParseTable();
             updateLabelsContextualProductions();
@@ -134,7 +145,7 @@ public class ParseTable implements IParseTable, Serializable {
         // create states if the table should not be generated dynamically
         initialProduction = grammar.getInitialProduction();
 
-        if(!dynamic) {
+        if(!config.isDynamic()) {
             State s0 = new State(initialProduction, this);
             stateQueue.add(s0);
             processStateQueue();
@@ -284,22 +295,6 @@ public class ParseTable implements IParseTable, Serializable {
 
     private void normalizePriorities() {
 
-        // Add priority A+ = A+ A left A+ = A+ A to solve shortest-match
-        for(Symbol s : grammar.getShortestMatchProds().keys()) {
-            Set<IProduction> prods = grammar.getSymbolProductionsMapping().get(s);
-            // A+ = A+ A
-            Production concProd = null;
-            if(prods.size() == 2) {
-                for(IProduction list_p : prods) {
-                    if(list_p.rightHand().size() != 1) {
-                        concProd = (Production) list_p;
-                    }
-                }
-            }
-
-            grammar.priorities().put(new Priority(concProd, concProd, false), Integer.MAX_VALUE);
-        }
-
         normalizeAssociativePriorities();
 
         for(Priority p : grammar.priorities().keySet()) {
@@ -333,7 +328,7 @@ public class ParseTable implements IParseTable, Serializable {
 
                     // if p2 : A = w1 A w2, priority should have no effect
 
-                    // dangling prefix
+                    // dangling suffix
                     // p1 : A = α A and p2 = α A γ or vice-versa
                     boolean matchPrefix = false;
                     int i, j;
@@ -345,14 +340,15 @@ public class ParseTable implements IParseTable, Serializable {
                             break;
                         }
                     }
-
-
+                    
                     if(matchPrefix && (p.higher().rightRecursivePosition() == i - 1
                         || p.lower().rightRecursivePosition() == j - 1)) {
                         new_values.add(i - 1);
+                        danglingSuffix.add(p.higher());
+                        danglingSuffix.add(p.lower());
                     }
 
-                    // dangling suffix
+                    // dangling prefix
                     // p1 : A = A γ and p = α A γ or vice-versa
                     boolean matchSuffix = false;
                     for(i = p.higher().rightHand().size() - 1, j = p.lower().rightHand().size() - 1; i >= 0
@@ -368,6 +364,8 @@ public class ParseTable implements IParseTable, Serializable {
                     if(matchSuffix && (p.higher().leftRecursivePosition() == i + 1
                         || p.lower().leftRecursivePosition() == j + 1)) {
                         new_values.add(i + 1);
+                        danglingPrefix.add(p.higher());
+                        danglingPrefix.add(p.lower());
                     }
 
                     new_values.addAll(grammar.priorities().get(p));
@@ -919,7 +917,7 @@ public class ParseTable implements IParseTable, Serializable {
     private void updateLabelsContextualProductions() {
         BiMap<IProduction, Integer> labels = productionLabels;
 
-        if(!dataDependent) {
+        if(!getConfig().isDataDependent()) {
             deriveContextualProductions();
 
             for(IProduction p : grammar.getUniqueProductionMapping().values()) {
@@ -1039,10 +1037,6 @@ public class ParseTable implements IParseTable, Serializable {
         state.doReduces();
         state.calculateActionsForCharacter();
         state.setStatus(StateStatus.PROCESSED);
-    }
-
-    public boolean isDataDependent() {
-        return dataDependent;
     }
 
     public void setGrammar(NormGrammar grammar) {
@@ -1185,6 +1179,18 @@ public class ParseTable implements IParseTable, Serializable {
 
     @Override public IState getStartState() {
         return startState();
+    }
+
+    public ParseTableConfiguration getConfig() {
+        return config;
+    }
+
+    public Set<IProduction> getDanglingSuffix() {
+        return danglingSuffix;
+    }
+
+    public Set<IProduction> getDanglingPrefix() {
+        return danglingPrefix;
     }
 
 

@@ -78,7 +78,7 @@ public class LRItem implements Serializable {
 
         if(this.dotPosition < prod.rightHand().size()) {
             Symbol atPosition = (Symbol) prod.rightHand().get(this.dotPosition);
-            if(pt.isDataDependent()) {
+            if(pt.getConfig().isDataDependent()) {
                 // use original symbol when mapping it to this item and state
                 if(atPosition instanceof ContextualSymbol) {
                     atPosition = ((ContextualSymbol) atPosition).getOrigSymbol();

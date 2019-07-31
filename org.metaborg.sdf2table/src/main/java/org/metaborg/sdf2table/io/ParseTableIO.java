@@ -12,20 +12,21 @@ import java.util.List;
 
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.apache.commons.vfs2.FileObject;
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.states.IState;
+import org.metaborg.parsetable.IParseTableGenerator;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.IParseTableGenerator;
-import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.parsetable.Action;
 import org.metaborg.sdf2table.parsetable.Goto;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.metaborg.sdf2table.parsetable.ParseTableConfiguration;
 import org.metaborg.sdf2table.parsetable.State;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -78,22 +79,16 @@ public class ParseTableIO implements IParseTableGenerator {
         tableCreated = true;
     }
 
-    public void createParseTable(boolean dynamic, boolean dataDependent) throws Exception {
+    public void createParseTable(ParseTableConfiguration config) throws Exception {
         NormGrammar grammar = new NormGrammarReader(paths).readGrammar(input);
-        pt = new ParseTable(grammar, dynamic, dataDependent, true);
+        pt = new ParseTable(grammar, config);
         tableCreated = true;
     }
 
-    public void createParseTable(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) throws Exception {
-        NormGrammar grammar = new NormGrammarReader(paths).readGrammar(input);
-        pt = new ParseTable(grammar, dynamic, dataDependent, solveDeepConflicts);
-        tableCreated = true;
-    }
-
-    public void outputTable(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts) throws Exception {
+    public void outputTable(ParseTableConfiguration config) throws Exception {
         if(tableCreated == false) {
             try {
-                createParseTable(dynamic, dataDependent, solveDeepConflicts);
+                createParseTable(config);
             } catch(Exception e) {
                 logger.error(e.getMessage());
                 throw e;

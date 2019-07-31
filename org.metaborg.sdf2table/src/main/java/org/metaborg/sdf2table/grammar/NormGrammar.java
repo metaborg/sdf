@@ -50,8 +50,10 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<ContextualSymbol> contextualSymbols;
     private SetMultimap<ISymbol, ISymbol> leftRecursiveSymbolsMapping;
     private SetMultimap<ISymbol, ISymbol> rightRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, Production> longestMatchProds;
-    private SetMultimap<Symbol, Production> shortestMatchProds;
+    private SetMultimap<Symbol, Production> longestMatchProdsFront;
+    private SetMultimap<Symbol, Production> shortestMatchProdsFront;
+    private SetMultimap<Symbol, Production> longestMatchProdsBack;
+    private SetMultimap<Symbol, Production> shortestMatchProdsBack;
 
     // priorities
     private Set<Priority> transitivePriorities;
@@ -97,8 +99,10 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setRightRecursiveSymbolsMapping(HashMultimap.create());
         this.setDerivedContextualProds(Sets.newHashSet());
         this.setContextualSymbols(Sets.newHashSet());
-        this.setLongestMatchProds(LinkedHashMultimap.create());
-        this.setShortestMatchProds(LinkedHashMultimap.create());
+        this.setLongestMatchProdsFront(LinkedHashMultimap.create());
+        this.setLongestMatchProdsBack(LinkedHashMultimap.create());
+        this.setShortestMatchProdsFront(LinkedHashMultimap.create());
+        this.setShortestMatchProdsBack(LinkedHashMultimap.create());
         this.setProductionAttributesMapping(HashMultimap.create());
         this.priorities = HashMultimap.create();
         this.setConstructors(Maps.newHashMap());
@@ -279,15 +283,41 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public SetMultimap<Symbol, Production> getLongestMatchProds() {
-        return longestMatchProds;
+    public SetMultimap<Symbol, Production> getLongestMatchProdsFront() {
+        return longestMatchProdsFront;
     }
 
 
-    public void setLongestMatchProds(SetMultimap<Symbol, Production> longestMatchProds) {
-        this.longestMatchProds = longestMatchProds;
+    public void setLongestMatchProdsFront(SetMultimap<Symbol, Production> longestMatchProdsFront) {
+        this.longestMatchProdsFront = longestMatchProdsFront;
+    }
+    
+    public SetMultimap<Symbol, Production> getLongestMatchProdsBack() {
+        return longestMatchProdsBack;
     }
 
+
+    public void setLongestMatchProdsBack(SetMultimap<Symbol, Production> longestMatchProdsBack) {
+        this.longestMatchProdsBack = longestMatchProdsBack;
+    }
+    
+    public SetMultimap<Symbol, Production> getShortestMatchProdsFront() {
+        return shortestMatchProdsFront;
+    }
+
+
+    public void setShortestMatchProdsFront(SetMultimap<Symbol, Production> shortestMatchProdsFront) {
+        this.shortestMatchProdsFront = shortestMatchProdsFront;
+    }
+
+    public SetMultimap<Symbol, Production> getShortestMatchProdsBack() {
+        return shortestMatchProdsBack;
+    }
+
+
+    public void setShortestMatchProdsBack(SetMultimap<Symbol, Production> shortestMatchProdsBack) {
+        this.shortestMatchProdsBack = shortestMatchProdsBack;
+    }
 
     public Set<Priority> getTransitivePriorities() {
         return transitivePriorities;
@@ -394,16 +424,6 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setConstructors(Map<IProduction, ConstructorAttribute> constructors) {
         this.constructors = constructors;
-    }
-
-
-    public SetMultimap<Symbol, Production> getShortestMatchProds() {
-        return shortestMatchProds;
-    }
-
-
-    public void setShortestMatchProds(SetMultimap<Symbol, Production> shortestMatchProds) {
-        this.shortestMatchProds = shortestMatchProds;
     }
 
     public SetMultimap<ISymbol, IProduction> getLiteralProductionsMapping() {

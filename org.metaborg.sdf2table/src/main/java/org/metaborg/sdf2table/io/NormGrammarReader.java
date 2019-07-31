@@ -306,17 +306,29 @@ public class NormGrammarReader {
                 }
 
                 for(IAttribute a : attrs) {
+                    if(a.toString().equals("longest-match")) {
+                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol firstSymbol = prod.rightHand().get(0);
 
+                        if(Symbol.isListNonTerminal(lastSymbol)) {
+                            grammar.getLongestMatchProdsBack().put((Symbol) lastSymbol, prod);
+                        }
 
-                    if(a.toString().equals("longest-match")
-                        && Symbol.isListNonTerminal(prod.rightHand().get(prod.rightHand().size() - 1))) {
-                        grammar.getLongestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1),
-                            prod);
+                        else if(Symbol.isListNonTerminal(firstSymbol)) {
+                            grammar.getLongestMatchProdsFront().put((Symbol) firstSymbol, prod);
+                        }
                     }
-                    if(a.toString().equals("shortest-match")
-                        && Symbol.isListNonTerminal(prod.rightHand().get(prod.rightHand().size() - 1))) {
-                        grammar.getShortestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1),
-                            prod);
+                    if(a.toString().equals("shortest-match")) {
+                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol firstSymbol = prod.rightHand().get(0);
+
+                        if(Symbol.isListNonTerminal(lastSymbol)) {
+                            grammar.getShortestMatchProdsBack().put((Symbol) lastSymbol, prod);
+                        }
+
+                        else if(Symbol.isListNonTerminal(firstSymbol)) {
+                            grammar.getShortestMatchProdsFront().put((Symbol) firstSymbol, prod);
+                        }
                     }
 
                     grammar.getProductionAttributesMapping().put(prod, a);
