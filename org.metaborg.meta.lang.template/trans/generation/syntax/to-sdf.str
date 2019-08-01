@@ -554,20 +554,7 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
-    
-  special-term-to-sdf:
-    NewLayoutConstraint(constr) -> term(default(appl(unquoted("lc"), [fun(quoted($["[<prettyprint-TemplateLang-NewLayoutConstraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
-    where
-      <?Constraint(_, _, _)> constr
       
-  special-term-to-sdf:
-    NewLayoutConstraint(constr) -> term(default(fun(unquoted("no-lc"))))
-    where
-      <?NoConstraint()> constr    
-      
-  special-term-to-sdf:
-    IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
-
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
@@ -581,6 +568,9 @@ rules //conversion of SDF3 terms into SDF2
     LongestMatch() -> term(default(fun(unquoted("longest-match"))))      
     
   special-term-to-sdf:
+    ShortestMatch() -> term(default(fun(unquoted("shortest-match"))))        
+    
+  special-term-to-sdf:
     Placeholder() -> term(default(fun(unquoted("placeholder"))))  
     
   special-term-to-sdf:
@@ -588,9 +578,6 @@ rules //conversion of SDF3 terms into SDF2
     
   special-term-to-sdf:
     LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
-    
-  special-term-to-sdf:
-    NewLongestMatch() -> term(default(fun(unquoted("nlm"))))      
     
   special-term-to-sdf:
     Recover() -> term(default(fun(unquoted("recover"))))

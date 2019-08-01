@@ -32,13 +32,16 @@ public class NormGrammar implements INormGrammar, Serializable {
     private IProduction initialProduction;
 
     // all symbols in this grammar
-    private Set<Symbol> symbols;
+    private Set<ISymbol> symbols;
 
     // to handle Sort.Cons in priorities
     private Map<ProductionReference, Production> sortConsProductionMapping;
 
     // merging same productions with different attributes
     private SetMultimap<IProduction, IAttribute> productionAttributesMapping;
+
+    // constructor attributes
+    private Map<IProduction, ConstructorAttribute> constructors;
 
     // necessary for calculating deep priority conflicts
     private Map<UniqueProduction, Production> uniqueProductionMapping;
@@ -47,7 +50,10 @@ public class NormGrammar implements INormGrammar, Serializable {
     private Set<ContextualSymbol> contextualSymbols;
     private SetMultimap<ISymbol, ISymbol> leftRecursiveSymbolsMapping;
     private SetMultimap<ISymbol, ISymbol> rightRecursiveSymbolsMapping;
-    private SetMultimap<Symbol, Production> longestMatchProds;
+    private SetMultimap<Symbol, Production> longestMatchProdsFront;
+    private SetMultimap<Symbol, Production> shortestMatchProdsFront;
+    private SetMultimap<Symbol, Production> longestMatchProdsBack;
+    private SetMultimap<Symbol, Production> shortestMatchProdsBack;
 
     // priorities
     private Set<Priority> transitivePriorities;
@@ -67,6 +73,23 @@ public class NormGrammar implements INormGrammar, Serializable {
     // get all productions for a certain symbol
     private SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
 
+    // get all productions that contain a particular literal
+    private SetMultimap<ISymbol, IProduction> literalProductionsMapping;
+
+    // expression grammars per non-terminal
+    private SetMultimap<ISymbol, IProduction> expressionGrammars;
+
+    // expression grammars collapsed
+    private Set<Set<IProduction>> combinedExpressionGrammars;
+
+
+    // indirectly recursive symbols
+    private SetMultimap<Symbol, Symbol> indirectlyRecursive;
+
+    // non-recursive symbols
+    private SetMultimap<Symbol, Symbol> nonRecursive;
+
+
     public NormGrammar() {
         this.setFilesRead(Sets.newHashSet());
         this.setUniqueProductionMapping(Maps.newLinkedHashMap());
@@ -76,9 +99,13 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setRightRecursiveSymbolsMapping(HashMultimap.create());
         this.setDerivedContextualProds(Sets.newHashSet());
         this.setContextualSymbols(Sets.newHashSet());
-        this.setLongestMatchProds(LinkedHashMultimap.create());
+        this.setLongestMatchProdsFront(LinkedHashMultimap.create());
+        this.setLongestMatchProdsBack(LinkedHashMultimap.create());
+        this.setShortestMatchProdsFront(LinkedHashMultimap.create());
+        this.setShortestMatchProdsBack(LinkedHashMultimap.create());
         this.setProductionAttributesMapping(HashMultimap.create());
         this.priorities = HashMultimap.create();
+        this.setConstructors(Maps.newHashMap());
         this.setTransitivePriorities(Sets.newHashSet());
         this.setNonTransitivePriorities(Sets.newHashSet());
         this.setProductionsOnPriorities(Sets.newHashSet());
@@ -86,6 +113,14 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.setNonTransitivePriorityArgs(HashMultimap.create());
         this.setHigherPriorityProductions(HashMultimap.create());
         this.setSymbolProductionsMapping(HashMultimap.create());
+        this.setCacheSymbolsRead(Maps.newHashMap());
+        this.setCacheProductionsRead(Maps.newHashMap());
+        this.setSymbols(Sets.newHashSet());
+        this.setLiteralProductionsMapping(HashMultimap.create());
+        this.setExpressionGrammars(HashMultimap.create());
+        this.setCombinedExpressionGrammars(Sets.newHashSet());
+        this.setIndirectlyRecursive(HashMultimap.create());
+        this.setNonRecursive(HashMultimap.create());
         this.setCacheSymbolsRead(Maps.newHashMap());
         this.setCacheProductionsRead(Maps.newHashMap());
         this.setSymbols(Sets.newHashSet());
@@ -158,12 +193,12 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public Set<Symbol> getSymbols() {
+    public Set<ISymbol> getSymbols() {
         return symbols;
     }
 
 
-    public void setSymbols(Set<Symbol> symbols) {
+    public void setSymbols(Set<ISymbol> symbols) {
         this.symbols = symbols;
     }
 
@@ -248,15 +283,41 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
 
-    public SetMultimap<Symbol, Production> getLongestMatchProds() {
-        return longestMatchProds;
+    public SetMultimap<Symbol, Production> getLongestMatchProdsFront() {
+        return longestMatchProdsFront;
     }
 
 
-    public void setLongestMatchProds(SetMultimap<Symbol, Production> longestMatchProds) {
-        this.longestMatchProds = longestMatchProds;
+    public void setLongestMatchProdsFront(SetMultimap<Symbol, Production> longestMatchProdsFront) {
+        this.longestMatchProdsFront = longestMatchProdsFront;
+    }
+    
+    public SetMultimap<Symbol, Production> getLongestMatchProdsBack() {
+        return longestMatchProdsBack;
     }
 
+
+    public void setLongestMatchProdsBack(SetMultimap<Symbol, Production> longestMatchProdsBack) {
+        this.longestMatchProdsBack = longestMatchProdsBack;
+    }
+    
+    public SetMultimap<Symbol, Production> getShortestMatchProdsFront() {
+        return shortestMatchProdsFront;
+    }
+
+
+    public void setShortestMatchProdsFront(SetMultimap<Symbol, Production> shortestMatchProdsFront) {
+        this.shortestMatchProdsFront = shortestMatchProdsFront;
+    }
+
+    public SetMultimap<Symbol, Production> getShortestMatchProdsBack() {
+        return shortestMatchProdsBack;
+    }
+
+
+    public void setShortestMatchProdsBack(SetMultimap<Symbol, Production> shortestMatchProdsBack) {
+        this.shortestMatchProdsBack = shortestMatchProdsBack;
+    }
 
     public Set<Priority> getTransitivePriorities() {
         return transitivePriorities;
@@ -349,10 +410,67 @@ public class NormGrammar implements INormGrammar, Serializable {
 
 
     public void normalizeFollowRestrictionLookahead() {
-        for(Symbol s : symbols) {
+        for(ISymbol s : symbols) {
             s.normalizeFollowRestrictionLookahead();
         }
 
+    }
+
+
+    public Map<IProduction, ConstructorAttribute> getConstructors() {
+        return constructors;
+    }
+
+
+    public void setConstructors(Map<IProduction, ConstructorAttribute> constructors) {
+        this.constructors = constructors;
+    }
+
+    public SetMultimap<ISymbol, IProduction> getLiteralProductionsMapping() {
+        return literalProductionsMapping;
+    }
+
+    public void setLiteralProductionsMapping(SetMultimap<ISymbol, IProduction> literalProductionsMapping) {
+        this.literalProductionsMapping = literalProductionsMapping;
+    }
+
+    public SetMultimap<ISymbol, IProduction> getExpressionGrammars() {
+        return expressionGrammars;
+    }
+
+
+    public void setExpressionGrammars(SetMultimap<ISymbol, IProduction> expressionGrammars) {
+        this.expressionGrammars = expressionGrammars;
+    }
+
+
+    public SetMultimap<Symbol, Symbol> getIndirectlyRecursive() {
+        return indirectlyRecursive;
+    }
+
+
+    public void setIndirectlyRecursive(SetMultimap<Symbol, Symbol> indirectlyRecursive) {
+        this.indirectlyRecursive = indirectlyRecursive;
+    }
+
+
+    public SetMultimap<Symbol, Symbol> getNonRecursive() {
+        return nonRecursive;
+    }
+
+
+    public void setNonRecursive(SetMultimap<Symbol, Symbol> nonRecursive) {
+        this.nonRecursive = nonRecursive;
+    }
+
+
+    public Set<Set<IProduction>> getCombinedExpressionGrammars() {
+        return combinedExpressionGrammars;
+    }
+
+
+    public void setCombinedExpressionGrammars(Set<Set<IProduction>> combinedExpressionGrammars) {
+        this.combinedExpressionGrammars = combinedExpressionGrammars;
     }
 
 }

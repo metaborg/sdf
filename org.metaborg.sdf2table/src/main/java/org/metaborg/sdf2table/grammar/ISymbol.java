@@ -12,5 +12,6 @@ public interface ISymbol {
     ICharacterClass followRestriction();
     List<ICharacterClass[]> followRestrictionLookahead();
     org.metaborg.parsetable.symbols.ISymbol toParseTableSymbol();
+    void normalizeFollowRestrictionLookahead();
 
 }

@@ -61,12 +61,14 @@ public class NormGrammarReader {
     private final NormGrammar grammar;
     private final List<String> paths;
     private final Collection<FileVisitor> fileVisitors;
+    private final List<StrategoAppl> prioritySections;
 
     public NormGrammarReader() {
         this.modules = Maps.newHashMap();
         this.grammar = new NormGrammar();
         this.paths = Collections.emptyList();
         this.fileVisitors = new LinkedList<>();
+        this.prioritySections = Lists.newArrayList();
     }
 
     public NormGrammarReader(List<String> paths) {
@@ -74,6 +76,7 @@ public class NormGrammarReader {
         this.grammar = new NormGrammar();
         this.paths = paths;
         this.fileVisitors = new LinkedList<>();
+        this.prioritySections = Lists.newArrayList();
     }
 
     public interface FileVisitor {
@@ -93,8 +96,14 @@ public class NormGrammarReader {
     public NormGrammar readGrammar(IStrategoTerm mainModule) throws Exception {
         readModule(mainModule);
 
+        // only read priority sections after reading all productions to get constructor references
+        for(StrategoAppl section : prioritySections) {
+            addPriorities(section);
+        }
+
         grammar.priorityTransitiveClosure();
         grammar.normalizeFollowRestrictionLookahead();
+
 
         return grammar;
     }
@@ -180,7 +189,7 @@ public class NormGrammarReader {
                             addRestrictions(tsection);
                             break;
                         case "Priorities":
-                            addPriorities(tsection);
+                            prioritySections.add(tsection);
                             break;
                         default:
                             System.err.println("Unknown module section `" + tsection.getName() + "'");
@@ -222,6 +231,7 @@ public class NormGrammarReader {
         Production prod = null;
         prod = grammar.getCacheProductionsRead().get(term.toString());
 
+
         if(prod != null) {
             return prod;
         }
@@ -235,12 +245,16 @@ public class NormGrammarReader {
                 String cons = null;
                 ConstructorAttribute cons_attr = null;
                 List<Symbol> rhs_symbols = Lists.newArrayList();
+                Set<ISymbol> literals = Sets.newHashSet();
                 StrategoAppl tattrs;
 
                 if(with_cons) {
                     // SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
                     symbol = processSymbol(app.getSubterm(0).getSubterm(0));
                     cons = ((StrategoString) app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
+                    if(cons.equals("And") || cons.equals("Ior")) {
+                        System.out.println(cons);
+                    }
                 } else {
                     symbol = processSymbol(app.getSubterm(0));
                 }
@@ -251,6 +265,9 @@ public class NormGrammarReader {
                     Symbol s = processSymbol(t);
                     if(s != null)
                         rhs_symbols.add(s);
+                    if(s instanceof Sort && ((Sort) s).getType() != null) {
+                        literals.add(s);
+                    }
                 }
 
                 // Read attributes
@@ -296,6 +313,9 @@ public class NormGrammarReader {
 
                 // processing a new production
                 prod = new Production(symbol, rhs_symbols);
+                for(ISymbol literal : literals) {
+                    grammar.getLiteralProductionsMapping().put(literal, prod);
+                }
 
                 if(cons_attr != null) {
                     grammar.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
@@ -306,11 +326,33 @@ public class NormGrammarReader {
                 }
 
                 for(IAttribute a : attrs) {
-                    if(a.toString().equals("nlm")) {
-                        grammar.getLongestMatchProds().put((Symbol) prod.rightHand().get(prod.rightHand().size() - 1),
-                            prod);
+                    if(a.toString().equals("longest-match")) {
+                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol firstSymbol = prod.rightHand().get(0);
+
+                        if(Symbol.isListNonTerminal(lastSymbol)) {
+                            grammar.getLongestMatchProdsBack().put((Symbol) lastSymbol, prod);
+                        }
+
+                        else if(Symbol.isListNonTerminal(firstSymbol)) {
+                            grammar.getLongestMatchProdsFront().put((Symbol) firstSymbol, prod);
+                        }
                     }
+                    if(a.toString().equals("shortest-match")) {
+                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol firstSymbol = prod.rightHand().get(0);
+
+                        if(Symbol.isListNonTerminal(lastSymbol)) {
+                            grammar.getShortestMatchProdsBack().put((Symbol) lastSymbol, prod);
+                        }
+
+                        else if(Symbol.isListNonTerminal(firstSymbol)) {
+                            grammar.getShortestMatchProdsFront().put((Symbol) firstSymbol, prod);
+                        }
+                    }
+
                     grammar.getProductionAttributesMapping().put(prod, a);
+
                 }
 
                 if(grammar != null && symbol != null) {
@@ -319,6 +361,10 @@ public class NormGrammarReader {
 
                 grammar.getSymbolProductionsMapping().put(symbol, prod);
                 grammar.getUniqueProductionMapping().put(unique_prod, prod);
+
+                if(cons != null) {
+                    grammar.getConstructors().put(prod, cons_attr);
+                }
 
                 return prod;
             } else {
@@ -505,6 +551,8 @@ public class NormGrammarReader {
                     return new GeneralAttribute("enforce-newline");
                 case "LongestMatch":
                     return new GeneralAttribute("longest-match");
+                case "ShortestMatch":
+                    return new GeneralAttribute("shortest-match");
                 case "CaseInsensitive":
                     return new GeneralAttribute("case-insensitive");
                 case "Deprecated":
@@ -519,8 +567,6 @@ public class NormGrammarReader {
                     return new GeneralAttribute("placeholder-insertion");
                 case "LiteralCompletion":
                     return new GeneralAttribute("literal-completion");
-                case "NewLongestMatch":
-                    return new GeneralAttribute("nlm");
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);

@@ -22,6 +22,7 @@ imports
   generation/pp/-
   generation/signatures/-
   generation/syntax/-
+  editor/build-sdf-completions
   editor/build-all
   editor/build-completions
   editor/build-format

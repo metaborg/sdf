@@ -41,6 +41,10 @@ public class Sort extends Symbol {
         else
             return "\"" + name + "\"";
     }
+    
+    public String getSortName() {
+        return name;
+    }
 
     public LiteralType getType() {
         return type;
