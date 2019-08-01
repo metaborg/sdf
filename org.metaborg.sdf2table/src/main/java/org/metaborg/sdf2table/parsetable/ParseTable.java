@@ -72,7 +72,7 @@ public class ParseTable implements IParseTable, Serializable {
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
     private Queue<State> stateQueue = Lists.newLinkedList();
     private Map<Integer, State> stateLabels = Maps.newLinkedHashMap();
-    
+
     private final Set<IProduction> danglingSuffix = Sets.newHashSet();
     private final Set<IProduction> danglingPrefix = Sets.newHashSet();
 
@@ -98,11 +98,13 @@ public class ParseTable implements IParseTable, Serializable {
         this.grammar = grammar;
         this.config = config;
         SCCNodes<ISymbol> scc = null;
-        
+
         if(config.isCheckOverlap()) {
             // calculate strongly connected components to indentify mutually recursive symbols
             scc = new SCCNodes<ISymbol>(createGraphFromProductions());
             scc.calculateSCCNodes();
+            // extract expression grammars
+            extractExpressionGrammars(scc);
         }
 
         // calculate nullable symbols
@@ -110,16 +112,12 @@ public class ParseTable implements IParseTable, Serializable {
 
         // calculate left and right recursive productions (considering nullable symbols)
         calculateRecursion();
-        
-     // extract expression grammars
-        extractExpressionGrammars(scc);
 
         // normalize priorities according to recursion
         normalizePriorities();
 
         // create labels for productions
         createLabels();
-
 
         // verify possible ambiguities due to missing priorities
         if(config.isCheckPriorities()) {
@@ -340,7 +338,7 @@ public class ParseTable implements IParseTable, Serializable {
                             break;
                         }
                     }
-                    
+
                     if(matchPrefix && (p.higher().rightRecursivePosition() == i - 1
                         || p.lower().rightRecursivePosition() == j - 1)) {
                         new_values.add(i - 1);

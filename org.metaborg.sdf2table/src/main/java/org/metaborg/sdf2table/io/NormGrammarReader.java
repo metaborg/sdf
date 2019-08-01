@@ -61,12 +61,14 @@ public class NormGrammarReader {
     private final NormGrammar grammar;
     private final List<String> paths;
     private final Collection<FileVisitor> fileVisitors;
+    private final List<StrategoAppl> prioritySections;
 
     public NormGrammarReader() {
         this.modules = Maps.newHashMap();
         this.grammar = new NormGrammar();
         this.paths = Collections.emptyList();
         this.fileVisitors = new LinkedList<>();
+        this.prioritySections = Lists.newArrayList();
     }
 
     public NormGrammarReader(List<String> paths) {
@@ -74,6 +76,7 @@ public class NormGrammarReader {
         this.grammar = new NormGrammar();
         this.paths = paths;
         this.fileVisitors = new LinkedList<>();
+        this.prioritySections = Lists.newArrayList();
     }
 
     public interface FileVisitor {
@@ -93,8 +96,14 @@ public class NormGrammarReader {
     public NormGrammar readGrammar(IStrategoTerm mainModule) throws Exception {
         readModule(mainModule);
 
+        // only read priority sections after reading all productions to get constructor references
+        for(StrategoAppl section : prioritySections) {
+            addPriorities(section);
+        }
+
         grammar.priorityTransitiveClosure();
         grammar.normalizeFollowRestrictionLookahead();
+
 
         return grammar;
     }
@@ -180,7 +189,7 @@ public class NormGrammarReader {
                             addRestrictions(tsection);
                             break;
                         case "Priorities":
-                            addPriorities(tsection);
+                            prioritySections.add(tsection);
                             break;
                         default:
                             System.err.println("Unknown module section `" + tsection.getName() + "'");
@@ -221,7 +230,7 @@ public class NormGrammarReader {
     private Production processProduction(IStrategoTerm term) throws Exception {
         Production prod = null;
         prod = grammar.getCacheProductionsRead().get(term.toString());
-        
+
 
         if(prod != null) {
             return prod;
@@ -243,6 +252,9 @@ public class NormGrammarReader {
                     // SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
                     symbol = processSymbol(app.getSubterm(0).getSubterm(0));
                     cons = ((StrategoString) app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
+                    if(cons.equals("And") || cons.equals("Ior")) {
+                        System.out.println(cons);
+                    }
                 } else {
                     symbol = processSymbol(app.getSubterm(0));
                 }
