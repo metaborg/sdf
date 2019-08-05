@@ -349,8 +349,6 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermOpWld(String constructor, IProduction prod) {
-        if(constructor == null)
-            System.out.println();
         return tf.makeAppl(tf.makeConstructor("Op", 2), tf.makeString(constructor), createStrategoTermVarsWld(prod));
     }
 

@@ -164,4 +164,8 @@ public class Production implements IProduction {
         return attributes.isLongestMatch;
     }
 
+    @Override public boolean isBracket() {
+        return attributes.isBracket;
+    }
+
 }

@@ -4,12 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.AltSymbol;
-import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.Sort;
+import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -94,31 +92,18 @@ public class CheckOverlap {
                         List<ISymbol> sccNode = Lists.newArrayList(scc.nodeSCCNodesMapping.get(leafSymb));
 
                         for(int i = 0; i < sccNode.size() - 1; i++) {
-                            result += getSort(sccNode.get(i)) + ", ";
+                            result += Symbol.getSort(sccNode.get(i)) + ", ";
                         }
-                        result += getSort(sccNode.get(sccNode.size() - 1)) + "]";
+                        result += Symbol.getSort(sccNode.get(sccNode.size() - 1)) + "]";
 
                         scc.nodeSCCNodesMapping.get(leafSymb).toString();
                     } else {
-                        result += getSort(leafSymb).toString();
+                        result += Symbol.getSort(leafSymb).toString();
                     }
                 }
             }
-
+            
             return result;
-        }
-
-        private String getSort(ISymbol s) {
-            if(s instanceof Sort && ((Sort) s).getType() == null) {
-                return s.name();
-            } else if(s instanceof ContextFreeSymbol) {
-                return getSort(((ContextFreeSymbol) s).getSymbol());
-            } else if(s instanceof LexicalSymbol) {
-                return getSort(((LexicalSymbol) s).getSymbol());
-            } else if(s instanceof AltSymbol) {
-                return getSort(((AltSymbol) s).left()) + "_" + getSort(((AltSymbol) s).right());
-            }
-            return s.toString();
         }
 
         @Override public int hashCode() {

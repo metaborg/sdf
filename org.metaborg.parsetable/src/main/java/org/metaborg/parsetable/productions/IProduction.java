@@ -50,5 +50,7 @@ public interface IProduction {
     boolean isIgnoreLayoutConstraint();
 
     boolean isLongestMatch();
+    
+    boolean isBracket();
 
 }

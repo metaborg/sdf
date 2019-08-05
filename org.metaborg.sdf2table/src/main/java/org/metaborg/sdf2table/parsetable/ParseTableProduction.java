@@ -5,18 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.grammar.AltSymbol;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
 import org.metaborg.sdf2table.grammar.GeneralAttribute;
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.IterSepSymbol;
 import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
 import org.metaborg.sdf2table.grammar.IterStarSymbol;
@@ -28,6 +27,7 @@ import org.metaborg.sdf2table.grammar.OptionalSymbol;
 import org.metaborg.sdf2table.grammar.SequenceSymbol;
 import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.StartSymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.TermAttribute;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
@@ -50,6 +50,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final boolean isOptional;
     private final boolean isStringLiteral;
     private final boolean isNumberLiteral;
+    private final boolean isBracket;
     private final boolean isOperator;
     private final boolean isCompletionOrRecovery;
     private final ConstructorAttribute constructor;
@@ -83,11 +84,12 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         }
 
         this.productionNumber = productionNumber;
-        this.sort = getSort(p.leftHand());
+        this.sort = Symbol.getSort(p.leftHand());
 
         boolean completionOrRecovery = false;
         ConstructorAttribute c = null;
         ProductionType t = ProductionType.NO_TYPE;
+        boolean isBracket = false;
         for(IAttribute attr : attrs) {
             if(attr instanceof ConstructorAttribute) {
                 c = (ConstructorAttribute) attr;
@@ -100,15 +102,19 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             }
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
+                if(ga.getName().equals("bracket")) {
+                    isBracket = true;
+                } 
                 if(ga.getName().equals("reject")) {
                     t = ProductionType.REJECT;
                 } else if(ga.getName().equals("prefer")) {
                     t = ProductionType.PREFER;
                 } else if(ga.getName().equals("avoid")) {
                     t = ProductionType.AVOID;
-                }
+                } 
             }
         }
+        this.isBracket = isBracket;
         constructor = c;
         isCompletionOrRecovery = completionOrRecovery;
         type = t;
@@ -296,19 +302,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             || (s instanceof IterSepSymbol);
     }
 
-    private String getSort(ISymbol s) {
-        if(s instanceof Sort && ((Sort) s).getType() == null) {
-            return s.name();
-        } else if(s instanceof ContextFreeSymbol) {
-            return getSort(((ContextFreeSymbol) s).getSymbol());
-        } else if(s instanceof LexicalSymbol) {
-            return getSort(((LexicalSymbol) s).getSymbol());
-        } else if(s instanceof AltSymbol) {
-            return getSort(((AltSymbol) s).left()) + "_" + getSort(((AltSymbol) s).right());
-        }
-        return null;
-    }
-
     public IProduction getProduction() {
         return p;
     }
@@ -416,8 +409,11 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     @Override public String startSymbolSort() {
         if(getProduction().leftHand() instanceof StartSymbol) {
             for(ISymbol s : getProduction().rightHand()) {
-                if(getSort(s) != null) {
-                    return getSort(s);
+                if (s instanceof ContextualSymbol) {
+                    s = ((ContextualSymbol) s).getOrigSymbol();
+                }
+                if(Symbol.getSort(s) != null) {
+                    return Symbol.getSort(s);
                 }
             }
         }
@@ -430,6 +426,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
     @Override public boolean isLongestMatch() {
         return isLongestMatch;
+    }
+
+    @Override public boolean isBracket() {
+        return isBracket;
     }
 
 }

@@ -170,11 +170,7 @@ public class NormGrammarReader {
                     StrategoAppl tsection = null;
                     if(!(t.getSubterm(0) instanceof StrategoAppl))
                         continue;
-                    try {
                         tsection = (StrategoAppl) t.getSubterm(0);
-                    } catch(Exception e) {
-                        System.out.println("here");
-                    }
                     switch(tsection.getName()) {
                         case "ContextFreeSyntax":
                             addProds(tsection);
@@ -252,9 +248,6 @@ public class NormGrammarReader {
                     // SdfProductionWithCons(SortCons(<type>), Constructor("<cons>"), ...)
                     symbol = processSymbol(app.getSubterm(0).getSubterm(0));
                     cons = ((StrategoString) app.getSubterm(0).getSubterm(1).getSubterm(0)).stringValue();
-                    if(cons.equals("And") || cons.equals("Ior")) {
-                        System.out.println(cons);
-                    }
                 } else {
                     symbol = processSymbol(app.getSubterm(0));
                 }
@@ -851,8 +844,18 @@ public class NormGrammarReader {
             } else if(assoc.toString().contains("Right")) {
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
             } else {
-                grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
+                // consider non-assoc as left and add warning
+                // grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
+
+                String higherSort = Symbol.getSort(p.higher().leftHand());
+                String higherConstructor = grammar.getConstructors().get(p.higher()).getConstructor();
+
+                String lowerSort = Symbol.getSort(p.lower().leftHand());
+                String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
+
+                grammar.getNonAssocPriorities().put(higherSort + "." + higherConstructor,
+                    lowerSort + "." + lowerConstructor);
             }
 
         } else {

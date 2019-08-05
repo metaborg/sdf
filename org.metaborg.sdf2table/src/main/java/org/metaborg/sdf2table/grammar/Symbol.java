@@ -107,6 +107,19 @@ public abstract class Symbol implements Serializable, ISymbol {
         followRestrictionsLookahead.removeAll(redundantFRLookahead);
     }
     
+    public static String getSort(ISymbol s) {
+        if(s instanceof Sort && ((Sort) s).getType() == null) {
+            return s.name();
+        } else if(s instanceof ContextFreeSymbol) {
+            return getSort(((ContextFreeSymbol) s).getSymbol());
+        } else if(s instanceof LexicalSymbol) {
+            return getSort(((LexicalSymbol) s).getSymbol());
+        } else if(s instanceof AltSymbol) {
+            return getSort(((AltSymbol) s).left()) + "_" + getSort(((AltSymbol) s).right());
+        }
+        return null;
+    }
+    
     public static boolean isListNonTerminal(ISymbol s) {
         if(s instanceof ContextFreeSymbol) {
             s = ((ContextFreeSymbol) s).getSymbol();
