@@ -568,9 +568,6 @@ rules //conversion of SDF3 terms into SDF2
     LongestMatch() -> term(default(fun(unquoted("longest-match"))))      
     
   special-term-to-sdf:
-    ShortestMatch() -> term(default(fun(unquoted("shortest-match"))))        
-    
-  special-term-to-sdf:
     Placeholder() -> term(default(fun(unquoted("placeholder"))))  
     
   special-term-to-sdf:

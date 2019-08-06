@@ -609,8 +609,9 @@ public class ParseTable implements IParseTable, Serializable {
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration between productions "
-                                + printWithConstructor(p1) + " and " + printWithConstructor(p2));
+                            logger.warn(
+                                "GRAMMAR MAY CONTAIN AMBIGUITIES: No priority or associativity declaration between productions "
+                                    + printWithConstructor(p1) + " and " + printWithConstructor(p2));
                         }
                     }
                 }
@@ -620,20 +621,35 @@ public class ParseTable implements IParseTable, Serializable {
 
         for(ISymbol s : recursiveSymbols) {
             for(Production p1 : leftRecursive.get(s)) {
+                if(isNonAnnotatedLongestMatchList(p1, p1.leftRecursivePosition())) {
+                    logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No longest match annotation on production "
+                        + printWithConstructor(p1));
+                }
+
                 for(Production p2 : leftRecursive.get(s)) {
                     if(p1 != p2 && matchSuffix(p1, p2)) {
                         // if p1 != p2, p1 and p2 have matching prefixes, and
                         // there is no priority declaration between p1 and p2
 
-                        if(grammar.priorities().containsKey(new Priority(p1, p2, false))
-                            || grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(p1.rightHand().size() > p2.rightHand().size()
+                            && grammar.priorities().containsKey(new Priority(p1, p2, false))) {
+                            continue;
+                        }
+
+                        if(p2.rightHand().size() > p1.rightHand().size()
+                            && grammar.priorities().containsKey(new Priority(p2, p1, false))) {
                             continue;
                         }
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration between productions "
-                                + printWithConstructor(p1) + " and " + printWithConstructor(p2));
+                            if(p1.rightHand().size() > p2.rightHand().size() && !Symbol.isListNonTerminal(p1.leftHand())) {
+                                logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
+                                    + printWithConstructor(p1) + " > " + printWithConstructor(p2));
+                            } else if (!Symbol.isListNonTerminal(p2.leftHand())){
+                                logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
+                                    + printWithConstructor(p2) + " > " + printWithConstructor(p1));
+                            }
                         }
                     }
                 }
@@ -641,28 +657,35 @@ public class ParseTable implements IParseTable, Serializable {
             }
 
             for(Production p1 : rightRecursive.get(s)) {
-                if(isNonAnnotatedLongestMatchList(p1)) {
-                    logger.warn(
-                        "GRAMMAR MAY CONTAIN AMBIGUITIES: No longest match or shortest match annotation on production "
-                            + printWithConstructor(p1));
+                if(isNonAnnotatedLongestMatchList(p1, p1.rightRecursivePosition())) {
+                    logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No longest match annotation on production "
+                        + printWithConstructor(p1));
                 }
-
-
 
                 for(Production p2 : rightRecursive.get(s)) {
                     if(p1 != p2 && matchPrefix(p1, p2)) {
                         // if p1 != p2, p1 and p2 have matching suffixes, and
                         // there is no priority declaration between p1 and p2
 
-                        if(grammar.priorities().containsKey(new Priority(p1, p2, false))
-                            || grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(p1.rightHand().size() > p2.rightHand().size()
+                            && grammar.priorities().containsKey(new Priority(p1, p2, false))) {
+                            continue;
+                        }
+
+                        if(p2.rightHand().size() > p1.rightHand().size()
+                            && grammar.priorities().containsKey(new Priority(p2, p1, false))) {
                             continue;
                         }
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration between productions "
-                                + printWithConstructor(p1) + " and " + printWithConstructor(p2));
+                            if(p1.rightHand().size() > p2.rightHand().size() && !Symbol.isListNonTerminal(p1.leftHand())) {
+                                logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
+                                    + printWithConstructor(p1) + " > " + printWithConstructor(p2));
+                            } else if (!Symbol.isListNonTerminal(p2.leftHand())){
+                                logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
+                                    + printWithConstructor(p2) + " > " + printWithConstructor(p1));
+                            }
                         }
                     }
                 }
@@ -858,14 +881,18 @@ public class ParseTable implements IParseTable, Serializable {
     }
 
 
-    private boolean isNonAnnotatedLongestMatchList(IProduction p) {
+    private boolean isNonAnnotatedLongestMatchList(IProduction p, int pos) {
+        if(pos == -1) {
+            return false;
+        }
+        
         if(!Symbol.isListNonTerminal(p.leftHand())) {
-            ISymbol lastSymbol = p.rightHand().get(p.rightHand().size() - 1);
-            if(Symbol.isListNonTerminal(lastSymbol)) {
+            ISymbol recSymbol = p.rightHand().get(pos);
+            if(Symbol.isListNonTerminal(recSymbol)) {
                 Set<IAttribute> attrs = grammar.getProductionAttributesMapping().get(p);
                 for(IAttribute attr : attrs) {
-                    if(attr instanceof GeneralAttribute && (((GeneralAttribute) attr).getName().equals("longest-match")
-                        || ((GeneralAttribute) attr).getName().equals("shortest-match"))) {
+                    if(attr instanceof GeneralAttribute
+                        && (((GeneralAttribute) attr).getName().equals("longest-match"))) {
                         return false;
                     }
                 }

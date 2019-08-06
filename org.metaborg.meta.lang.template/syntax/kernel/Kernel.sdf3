@@ -37,7 +37,6 @@ Attribute.LayoutConstraint = <layout(<ShortConstraint>)>
 Attribute.IgnoreLayout = <ignore-layout>
 Attribute.EnforceNewLine = <enforce-newline>
 Attribute.LongestMatch = <longest-match>
-Attribute.ShortestMatch = <shortest-match>
 Attribute.Recover      = <recover>
 
 Attribute.CaseInsensitive = <case-insensitive>
