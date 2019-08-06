@@ -122,7 +122,7 @@ public class State implements IState, Comparable<State>, Serializable {
                     Set<Shift> new_shifts = Sets.newLinkedHashSet();
                     for(LRItem item : symbol_items.get(s_at_dot)) {
                         // if item.prod does not conflict with p
-                        if(!LRItem.isPriorityConflict(item, p, pt.normalizedGrammar().priorities())) {
+                        if(!item.isPriorityConflict(p)) {
                             new_kernel.add(item.shiftDot());
                             new_gotos.add(new Goto(pt.productionLabels().get(p), pt));
                         }

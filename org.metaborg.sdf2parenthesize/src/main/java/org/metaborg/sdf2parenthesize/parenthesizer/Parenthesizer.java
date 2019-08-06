@@ -93,6 +93,12 @@ public class Parenthesizer {
                             }
                         }
                     }
+                    for(Integer arg : grammar.getIndexedPriorities().get(prio)) {
+                        if(getConstructor(prio.lower(), grammar) != null) {
+                            conflicts.put(arg, prio.lower());
+                        }
+                    }
+                    
                 }
                 for(Integer arg : conflicts.keySet()) {
                     // create stratego rule

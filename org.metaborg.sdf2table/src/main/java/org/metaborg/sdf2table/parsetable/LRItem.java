@@ -57,7 +57,7 @@ public class LRItem implements Serializable {
                 Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
 
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
-                    if(!isPriorityConflict(this, p, pt.normalizedGrammar().priorities())) {
+                    if(!isPriorityConflict(p)) {
                         // p might be the problematic contextual production
                         if(pt.normalizedGrammar().getProdContextualProdMapping().get(p) != null) {
                             p = pt.normalizedGrammar().getProdContextualProdMapping().get(p);
@@ -139,8 +139,9 @@ public class LRItem implements Serializable {
         return dotPosition == other.dotPosition && prod_label == other.prod_label;
     }
 
-    public static boolean isPriorityConflict(LRItem item, IProduction p, SetMultimap<Priority, Integer> priorities) {
-        IProduction higher = item.prod;
+    public boolean isPriorityConflict(IProduction p) {
+
+        IProduction higher = this.prod;
         Production lower;
 
         if(p instanceof ContextualProduction) {
@@ -154,14 +155,20 @@ public class LRItem implements Serializable {
         }
 
         Priority prio = new Priority((Production) higher, lower, false);
-        if(priorities.containsKey(prio)) {
-            Set<Integer> arguments = priorities.get(prio);
-            for(int i : arguments) {
-                if(i == item.dotPosition) {
-                    return true;
-                }
+
+        Set<Integer> arguments = Sets.newHashSet();
+        if(pt.normalizedGrammar().priorities().containsKey(prio)) {
+            arguments.addAll(pt.normalizedGrammar().priorities().get(prio));
+        }
+        if(pt.normalizedGrammar().getIndexedPriorities().containsKey(prio)) {
+            arguments.addAll(pt.normalizedGrammar().getIndexedPriorities().get(prio));
+        }
+        for(int i : arguments) {
+            if(i == this.dotPosition) {
+                return true;
             }
         }
+
         return false;
     }
 

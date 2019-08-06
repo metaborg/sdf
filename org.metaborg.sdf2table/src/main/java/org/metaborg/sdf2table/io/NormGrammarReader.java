@@ -53,6 +53,7 @@ import org.spoofax.terms.StrategoString;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class NormGrammarReader {
@@ -104,8 +105,26 @@ public class NormGrammarReader {
         grammar.priorityTransitiveClosure();
         grammar.normalizeFollowRestrictionLookahead();
 
+        // treat indexed priorities separately
+        normalizeIndexedPriorities();
 
         return grammar;
+    }
+
+    private void normalizeIndexedPriorities() {
+        for(Priority p : grammar.priorities().keys()) {
+            for(Integer arg : grammar.priorities().get(p)) {
+                if(arg != -1 && arg != Integer.MIN_VALUE && arg != Integer.MAX_VALUE) {
+                    grammar.getIndexedPriorities().put(p, arg);
+                } 
+            }
+        }
+
+        for(Priority p : grammar.getIndexedPriorities().keys()) {
+            for(Integer arg : grammar.getIndexedPriorities().get(p)) {
+                grammar.priorities().get(p).remove(arg);
+            }
+        }
     }
 
     private void readModule(IStrategoTerm module) throws Exception {
@@ -170,7 +189,7 @@ public class NormGrammarReader {
                     StrategoAppl tsection = null;
                     if(!(t.getSubterm(0) instanceof StrategoAppl))
                         continue;
-                        tsection = (StrategoAppl) t.getSubterm(0);
+                    tsection = (StrategoAppl) t.getSubterm(0);
                     switch(tsection.getName()) {
                         case "ContextFreeSyntax":
                             addProds(tsection);

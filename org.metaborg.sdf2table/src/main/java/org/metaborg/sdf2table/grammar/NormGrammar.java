@@ -54,6 +54,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final Set<Priority> transitivePriorities;
     private final Set<Priority> nonTransitivePriorities;
     private final SetMultimap<Priority, Integer> priorities;
+    private final SetMultimap<Priority, Integer> indexedPriorities;
 
     // extra collections to calculate the transitive closure
     private final Set<Production> productionsOnPriorities;
@@ -100,6 +101,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.shortestMatchProdsBack = LinkedHashMultimap.create();
         this.productionAttributesMapping = HashMultimap.create();
         this.priorities = HashMultimap.create();
+        this.indexedPriorities = HashMultimap.create();
         this.constructors = Maps.newHashMap();
         this.transitivePriorities = Sets.newHashSet();
         this.nonTransitivePriorities = Sets.newHashSet();
@@ -293,6 +295,10 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public void setInitialProduction(Production prod) {
         this.initialProduction = prod;
+    }
+
+    public SetMultimap<Priority, Integer> getIndexedPriorities() {
+        return indexedPriorities;
     }
 
 }

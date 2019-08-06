@@ -34,7 +34,9 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.TermFactory;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 
 public class ParseTableIO implements IParseTableGenerator {
 
@@ -178,7 +180,12 @@ public class ParseTableIO implements IParseTableGenerator {
 
     private static IStrategoTerm generatePrioritiesAterm(ParseTable pt) throws Exception {
         List<IStrategoTerm> terms = Lists.newArrayList();
-        for(java.util.Map.Entry<Priority, Integer> e : pt.normalizedGrammar().priorities().entries()) {
+        SetMultimap<Priority, Integer> allPriorities = HashMultimap.create();
+
+        allPriorities.putAll(pt.normalizedGrammar().priorities());
+        allPriorities.putAll(pt.normalizedGrammar().getIndexedPriorities());
+        
+        for(java.util.Map.Entry<Priority, Integer> e : allPriorities.entries()) {
             IProduction prod_higher = e.getKey().higher();
             IProduction prod_lower = e.getKey().lower();
             // because non-contextual production got replaced
@@ -301,6 +308,13 @@ public class ParseTableIO implements IParseTableGenerator {
 
     public static CharacterClassFactory getCharacterClassFactory() {
         return ccFactory;
+    }
+
+    @Override public SetMultimap<String, String> getNonAssocPriorities() {
+        if(tableCreated) {
+            return pt.normalizedGrammar().getNonAssocPriorities();
+        } 
+        return HashMultimap.create();
     }
 
 }

@@ -37,7 +37,7 @@ public class SymbolStatesMapping implements Serializable {
         Set<State> result = Sets.newHashSet();
 
         for(LRItem item : symbolItems.get(prod.leftHand())) {
-            if(!LRItem.isPriorityConflict(item, prod, priorities)) {
+            if(!item.isPriorityConflict(prod)) {
                 result.addAll(itemStates.get(item));
             }
         }
