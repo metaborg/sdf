@@ -8,6 +8,7 @@ Associativity.Left = <left>
 Associativity.Right = <right>
 Associativity.NonAssoc = <non-assoc>
 Associativity.Assoc = <assoc>
+Associativity.NonNested = <non-nested>
 
 
 

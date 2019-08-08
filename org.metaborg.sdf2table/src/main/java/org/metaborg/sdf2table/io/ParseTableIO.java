@@ -317,4 +317,11 @@ public class ParseTableIO implements IParseTableGenerator {
         return HashMultimap.create();
     }
 
+    @Override public SetMultimap<String, String> getNonNestedPriorities() {
+        if(tableCreated) {
+            return pt.normalizedGrammar().getNonNestedPriorities();
+        } 
+        return HashMultimap.create();
+    }
+    
 }

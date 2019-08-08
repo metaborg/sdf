@@ -143,6 +143,9 @@ public class DeepConflictsAnalyzer {
 
     public void deepConflictAnalysis(ParseTable pt, boolean operatorStyle, boolean danglingPrefixOrSuffix,
         boolean longestMatch) {
+
+        fixNullableRecursive();
+
         for(Priority prio : pt.normalizedGrammar().priorities().keySet()) {
             Production higher = prio.higher();
             Production lower = prio.lower();
@@ -195,15 +198,29 @@ public class DeepConflictsAnalyzer {
             for(Symbol s : pt.normalizedGrammar().getLongestMatchProdsBack().keySet()) {
                 handleLongestMatchConflictBack(pt, s);
             }
-
-            for(Symbol s : pt.normalizedGrammar().getShortestMatchProdsFront().keySet()) {
-                handleShortestMatchConflictFront(pt, s);
-            }
-
-            for(Symbol s : pt.normalizedGrammar().getShortestMatchProdsBack().keySet()) {
-                handleShortestMatchConflictBack(pt, s);
-            }
         }
+    }
+
+    private void fixNullableRecursive() {
+
+        // FIXME: only works for a single nullable symbol
+
+        // TODO:
+        // check if production has hidden recursion
+        // make recursion explicit using deep priority conflicts
+        // deal with overlap between new productions
+
+
+
+        // adding new production
+        // UniqueProduction uniqueProd = new UniqueProduction(p.getLhs(), new_rhs);
+        // uniqueProductionMapping.put(uniqueProd, newProd);
+        // productionAttributesMapping.putAll(newProd, productionAttributesMapping.get(p));
+        // symbolProductionsMapping.put(p.leftHand(), newProd);
+        // productionLabels.put(newProd, pt.getProdLabelFactory().getNextLabel());
+        //
+
+
     }
 
     private boolean mutuallyRecursive(ParseTable pt, Priority p) {
@@ -333,8 +350,7 @@ public class DeepConflictsAnalyzer {
 
     private void handleDanglingPrefixConflict(ParseTable pt, Priority prio, Production higher, Production lower) {
 
-        
-        Set<Integer> conflicts = pt.normalizedGrammar().priorities().get(prio);
+
         for(int conflict : pt.normalizedGrammar().priorities().get(prio)) {
 
             if(conflict < 0 || lower.rightHand().size() < (higher.rightHand().size() - conflict))
@@ -623,153 +639,6 @@ public class DeepConflictsAnalyzer {
             }
         }
 
-
-    }
-
-    private void handleShortestMatchConflictFront(ParseTable pt2, Symbol s) {
-        Set<Context> contexts = Sets.newHashSet();
-
-        if(s instanceof IterStarSymbol) {
-            s = ((IterStarSymbol) s).getSymbol();
-        }
-
-        // get A+ = A
-        IProduction concListProd = null;
-        // FIXME only works with current normalization method
-        for(IProduction list_p : symbolProductionsMapping.get(s)) {
-            if(list_p.rightHand().size() > 1) {
-                concListProd = list_p;
-            }
-        }
-
-        assert (concListProd != null);
-
-        int labelP = productionLabels.get(concListProd);
-        if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelP)) {
-            rightmostContextsMapping.put(labelP, rightmostContextsMapping.size());
-        }
-        Context new_context = deepContextFrom(labelP, ContextPosition.LEFTMOST, false);
-        contexts.add(new_context);
-
-
-        Symbol iterList = s;
-
-        if(s instanceof LexicalSymbol) {
-            // check whether s is a * list
-            ISymbol list = ((LexicalSymbol) s).getSymbol();
-            if(list instanceof IterStarSymbol) {
-                iterList = new LexicalSymbol(new IterSymbol(((IterStarSymbol) list).getSymbol()));
-            } else if(list instanceof IterStarSepSymbol) {
-                iterList = new LexicalSymbol(new IterSepSymbol(((IterStarSepSymbol) list).getSymbol(),
-                    ((IterStarSepSymbol) list).getSeparator()));
-            }
-        }
-
-
-
-        // change production A+ -> A to A+ -> A<A+ -> A+ A>
-        // and A+ -> A+ A to A+ -> A+ A<A+ -> A+ A>
-        for(IProduction p : symbolProductionsMapping.get(iterList)) {
-            if(p.rightHand().size() == 1) {
-                ContextualProduction ctx_p =
-                    new ContextualProduction((Production) p, contexts, Sets.newHashSet(0), productionLabels.get(p));
-                // if contextual production does not exist add it
-                if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
-                } else {
-                    // add new context to correct arguments of existing contextual production
-                    ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(0)));
-                }
-            } else if(p.rightHand().size() > 1) {
-                ContextualProduction ctx_p =
-                    new ContextualProduction((Production) p, contexts, Sets.newHashSet(2), productionLabels.get(p));
-                // if contextual production does not exist add it
-                if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
-                } else {
-                    // add new context to correct arguments of existing contextual production
-                    ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(2)));
-                }
-            }
-        }
-
-
-    }
-
-    private void handleShortestMatchConflictBack(ParseTable pt2, Symbol s) {
-        Set<Context> contexts = Sets.newHashSet();
-
-        if(s instanceof IterStarSymbol) {
-            s = ((IterStarSymbol) s).getSymbol();
-        }
-
-        // get A+ = A
-        IProduction concListProd = null;
-        // FIXME only works with current normalization method
-        for(IProduction list_p : symbolProductionsMapping.get(s)) {
-            if(list_p.rightHand().size() > 1) {
-                concListProd = list_p;
-            }
-        }
-
-        assert (concListProd != null);
-
-        int labelP = productionLabels.get(concListProd);
-        if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelP)) {
-            rightmostContextsMapping.put(labelP, rightmostContextsMapping.size());
-        }
-        Context new_context = deepContextFrom(labelP, ContextPosition.RIGHTMOST, false);
-        contexts.add(new_context);
-
-
-        Symbol iterList = s;
-
-        if(s instanceof LexicalSymbol) {
-            // check whether s is a * list
-            ISymbol list = ((LexicalSymbol) s).getSymbol();
-            if(list instanceof IterStarSymbol) {
-                iterList = new LexicalSymbol(new IterSymbol(((IterStarSymbol) list).getSymbol()));
-            } else if(list instanceof IterStarSepSymbol) {
-                iterList = new LexicalSymbol(new IterSepSymbol(((IterStarSepSymbol) list).getSymbol(),
-                    ((IterStarSepSymbol) list).getSeparator()));
-            }
-        }
-
-
-
-        // change production A+ -> A to A+ -> A<A+ -> A+ A>
-        // and A+ -> A+ A to A+ -> A+ A<A+ -> A+ A>
-        for(IProduction p : symbolProductionsMapping.get(iterList)) {
-            if(p.rightHand().size() == 1) {
-                ContextualProduction ctx_p =
-                    new ContextualProduction((Production) p, contexts, Sets.newHashSet(0), productionLabels.get(p));
-                // if contextual production does not exist add it
-                if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
-                } else {
-                    // add new context to correct arguments of existing contextual production
-                    ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(0)));
-                }
-            } else if(p.rightHand().size() > 1) {
-                ContextualProduction ctx_p =
-                    new ContextualProduction((Production) p, contexts, Sets.newHashSet(2), productionLabels.get(p));
-                // if contextual production does not exist add it
-                if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
-                } else {
-                    // add new context to correct arguments of existing contextual production
-                    ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(2)));
-                }
-            }
-        }
 
     }
 

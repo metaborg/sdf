@@ -485,6 +485,11 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     Right() -> right()
+  
+  // non-nested has no special behaviour in SDF2
+  // semantics is similar to right
+  special-term-to-sdf:
+    NonNested() -> right()  
 
   special-term-to-sdf:
     IterStar(sort) -> iter-star(sort)

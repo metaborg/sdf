@@ -62,8 +62,9 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<Priority, Integer> nonTransitivePriorityArgs;
     private final SetMultimap<Production, Priority> higherPriorityProductions;
     
-    // non-assoc priorities that should shown as warnings to the user
+    // non-assoc and non-nested priorities that should shown as warnings to the user
     private final SetMultimap<String, String> nonAssocPriorities;
+    private final SetMultimap<String, String> nonNestedPriorities;
 
     private final HashMap<String, Symbol> cacheSymbolsRead; // caching symbols read
     private final HashMap<String, Production> cacheProductionsRead; // caching productions read
@@ -110,6 +111,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.nonTransitivePriorityArgs = HashMultimap.create();
         this.higherPriorityProductions = HashMultimap.create();
         this.nonAssocPriorities = HashMultimap.create();
+        this.nonNestedPriorities = HashMultimap.create();
         this.symbolProductionsMapping = HashMultimap.create();
         this.cacheSymbolsRead = Maps.newHashMap();
         this.cacheProductionsRead = Maps.newHashMap();
@@ -299,6 +301,10 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public SetMultimap<Priority, Integer> getIndexedPriorities() {
         return indexedPriorities;
+    }
+
+    public SetMultimap<String, String> getNonNestedPriorities() {
+        return nonNestedPriorities;
     }
 
 }

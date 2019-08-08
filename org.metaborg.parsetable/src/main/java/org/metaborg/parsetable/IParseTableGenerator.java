@@ -12,4 +12,6 @@ public interface IParseTableGenerator {
     IStrategoTerm getStateAterm(IState s);
     
     SetMultimap<String, String> getNonAssocPriorities();
+
+    SetMultimap<String, String> getNonNestedPriorities();
 }

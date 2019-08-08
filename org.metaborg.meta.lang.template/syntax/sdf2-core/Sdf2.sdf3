@@ -32,6 +32,7 @@ context-free syntax
     ModuleName = <right> {reject}
     ModuleName = <assoc> {reject}
     ModuleName = <non-assoc> {reject}
+    ModuleName = <non-nested> {reject}
     ModuleName = <bracket> {reject}
     ModuleName = <sorts> {reject}
     ModuleName = <restrictions> {reject}
@@ -94,6 +95,7 @@ context-free syntax
     "right"
     "assoc"
     "non-assoc"
+    "non-nested"
     "bracket"
     "sorts"             -/- [A-Za-z0-9]
     NatCon-CF        -/- [0-9]

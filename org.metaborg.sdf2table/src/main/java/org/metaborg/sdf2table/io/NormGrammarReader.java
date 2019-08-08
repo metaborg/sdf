@@ -53,7 +53,6 @@ import org.spoofax.terms.StrategoString;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 public class NormGrammarReader {
@@ -862,7 +861,7 @@ public class NormGrammarReader {
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
             } else if(assoc.toString().contains("Right")) {
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
-            } else {
+            } else if(assoc.toString().contains("NonAssoc")) {
                 // consider non-assoc as left and add warning
                 // grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
@@ -874,6 +873,16 @@ public class NormGrammarReader {
                 String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
 
                 grammar.getNonAssocPriorities().put(higherSort + "." + higherConstructor,
+                    lowerSort + "." + lowerConstructor);
+            } else if(assoc.toString().contains("NonNested")) {
+                // add warning for non-nested
+                String higherSort = Symbol.getSort(p.higher().leftHand());
+                String higherConstructor = grammar.getConstructors().get(p.higher()).getConstructor();
+
+                String lowerSort = Symbol.getSort(p.lower().leftHand());
+                String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
+
+                grammar.getNonNestedPriorities().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
             }
 
