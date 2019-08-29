@@ -162,16 +162,16 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Not")) {
             return tf.makeAppl(tf.makeConstructor("not", 1), toSDF2constraint(c.getSubterm(0), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Lt")) {
-            return tf.makeAppl(tf.makeConstructor("lt", 1), toSDF2constraint(c.getSubterm(0), tf),
+            return tf.makeAppl(tf.makeConstructor("lt", 2), toSDF2constraint(c.getSubterm(0), tf),
                 toSDF2constraint(c.getSubterm(1), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Gt")) {
-            return tf.makeAppl(tf.makeConstructor("gt", 1), toSDF2constraint(c.getSubterm(0), tf),
+            return tf.makeAppl(tf.makeConstructor("gt", 2), toSDF2constraint(c.getSubterm(0), tf),
                 toSDF2constraint(c.getSubterm(1), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Le")) {
-            return tf.makeAppl(tf.makeConstructor("le", 1), toSDF2constraint(c.getSubterm(0), tf),
+            return tf.makeAppl(tf.makeConstructor("le", 2), toSDF2constraint(c.getSubterm(0), tf),
                 toSDF2constraint(c.getSubterm(1), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Ge")) {
-            return tf.makeAppl(tf.makeConstructor("ge", 1), toSDF2constraint(c.getSubterm(0), tf),
+            return tf.makeAppl(tf.makeConstructor("ge", 2), toSDF2constraint(c.getSubterm(0), tf),
                 toSDF2constraint(c.getSubterm(1), tf));
         } else if(c instanceof IStrategoAppl && ((IStrategoAppl) c).getName().equals("Eq")) {
             return tf.makeAppl(tf.makeConstructor("eq", 2), toSDF2constraint(c.getSubterm(0), tf),
