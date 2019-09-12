@@ -2,7 +2,6 @@ package org.metaborg.parsetable.symbols;
 
 public enum SortCardinality {
     Optional("opt", true, false),
-    Seq("seq", true, false),
     Iter("iter", false, true),
     IterSep("iter-sep", false, true),
     IterStar("iter-star", false, true),
