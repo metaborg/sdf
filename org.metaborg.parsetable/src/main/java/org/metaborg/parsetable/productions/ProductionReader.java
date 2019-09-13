@@ -169,6 +169,7 @@ public class ProductionReader {
                         type = ProductionType.AVOID;
                         break;
                     case "bracket":
+                    case "deprecated":
                         // Irrelevant during parsing/imploding thus we ignore it here.
                         break;
                     case "assoc":

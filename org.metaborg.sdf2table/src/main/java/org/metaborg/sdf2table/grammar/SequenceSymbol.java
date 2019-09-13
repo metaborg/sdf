@@ -1,9 +1,9 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
@@ -21,7 +21,7 @@ public class SequenceSymbol extends Symbol {
     private final Symbol first;
     private final List<Symbol> tail;
 
-    public SequenceSymbol(Symbol first, List<Symbol> tail) {        
+    public SequenceSymbol(Symbol first, List<Symbol> tail) {
         this.first = first;
         this.tail = tail;
         followRestrictionsLookahead = Lists.newArrayList();
@@ -42,23 +42,23 @@ public class SequenceSymbol extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         List<IStrategoTerm> tail_aterm = Lists.newArrayList();
-    
+
         for(Symbol s : tail) {
             tail_aterm.add(s.toAterm(tf));
         }
-    
+
         return tf.makeAppl(tf.makeConstructor("seq", 2), first.toAterm(tf), tf.makeList(tail_aterm));
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
-        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         List<IStrategoTerm> tail_aterm = Lists.newArrayList();
-        
+
         for(Symbol s : tail) {
             tail_aterm.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
         }
-    
-        return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val), tf.makeList(tail_aterm));
+
+        return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            tf.makeList(tail_aterm));
     }
 
     @Override public int hashCode() {
@@ -91,6 +91,13 @@ public class SequenceSymbol extends Symbol {
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        return new org.metaborg.parsetable.symbols.SequenceSymbol(syntaxContext);
+        List<ISymbol> symbols = new ArrayList<>();
+
+        symbols.add(first.toParseTableSymbol(syntaxContext, cardinality));
+        for(Symbol tailSymbol : tail) {
+            symbols.add(tailSymbol.toParseTableSymbol(syntaxContext, cardinality));
+        }
+
+        return new org.metaborg.parsetable.symbols.SequenceSymbol(syntaxContext, cardinality, symbols);
     }
 }
