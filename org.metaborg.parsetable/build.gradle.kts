@@ -4,5 +4,11 @@ plugins {
 }
 
 dependencies {
+  api(platform("org.metaborg:parent:$version"))
+
   api("org.metaborg:org.spoofax.terms:$version")
+  compileOnly("com.google.code.findbugs:jsr305")
+  api("com.google.guava:guava")
+  testCompileOnly("junit:junit")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.1.0")
 }

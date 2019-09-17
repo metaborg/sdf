@@ -6,16 +6,10 @@ plugins {
 dependencies {
   api(platform("org.metaborg:parent:$version"))
 
-  api(project(":org.metaborg.parsetable"))
-
-  api("org.metaborg:org.spoofax.terms:$version")
   api("org.metaborg:org.metaborg.util:$version")
-  api("org.metaborg:strategoxt-min-jar:$version")
-
+  api(project(":org.metaborg.parsetable"))
   api("com.google.inject:guice")
-
   compileOnly("com.google.code.findbugs:jsr305")
-
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.1.0")
 }
