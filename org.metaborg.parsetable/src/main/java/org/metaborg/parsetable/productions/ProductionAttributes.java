@@ -8,7 +8,7 @@ public class ProductionAttributes {
     public final ProductionType type;
     public final IStrategoTerm constructorTerm;
     public final String constructor;
-    public final boolean isRecover;
+    public final boolean isRecovery;
     public final boolean isBracket;
     public final boolean isCompletion;
     public final boolean isPlaceholderInsertion;
@@ -20,14 +20,14 @@ public class ProductionAttributes {
     public final boolean isIndentPaddingLexical;
     public final boolean isFlatten;
 
-    ProductionAttributes(ProductionType type, IStrategoTerm constructorTerm, boolean isRecover, boolean isBracket,
+    ProductionAttributes(ProductionType type, IStrategoTerm constructorTerm, boolean isRecovery, boolean isBracket,
         boolean isCompletion, boolean isPlaceholderInsertion, boolean isLiteralCompletion, boolean isIgnoreIndent,
         boolean isNewlineEnforced, boolean isLongestMatch, boolean isCaseInsensitive, boolean isIndentPaddingLexical,
         boolean isFlatten) {
         this.type = type;
         this.constructorTerm = constructorTerm;
         this.constructor = constructorTerm == null ? null : ((IStrategoNamed) constructorTerm).getName();
-        this.isRecover = isRecover;
+        this.isRecovery = isRecovery;
         this.isBracket = isBracket;
         this.isCompletion = isCompletion;
         this.isPlaceholderInsertion = isPlaceholderInsertion;
@@ -40,8 +40,8 @@ public class ProductionAttributes {
         this.isFlatten = isFlatten;
     }
 
-    public boolean isCompletionOrRecovery() {
-        return isCompletion || isLiteralCompletion || isPlaceholderInsertion || isRecover;
+    public boolean isCompletion() {
+        return isCompletion || isLiteralCompletion || isPlaceholderInsertion;
     }
 
 }

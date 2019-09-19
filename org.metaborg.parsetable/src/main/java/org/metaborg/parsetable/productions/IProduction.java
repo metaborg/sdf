@@ -38,7 +38,9 @@ public interface IProduction {
 
     boolean isOptional();
 
-    boolean isCompletionOrRecovery();
+    boolean isRecovery();
+
+    boolean isCompletion();
 
     // The methods below are for tokenization / syntax highlighting
     boolean isStringLiteral();

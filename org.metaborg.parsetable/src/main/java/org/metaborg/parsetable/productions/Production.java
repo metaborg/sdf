@@ -131,8 +131,12 @@ public class Production implements IProduction {
         return isLiteral() && ((ILiteralSymbol) lhs).isOperator();
     }
 
-    @Override public boolean isCompletionOrRecovery() {
-        return attributes.isCompletionOrRecovery();
+    @Override public boolean isRecovery() {
+        return attributes.isRecovery;
+    }
+
+    @Override public boolean isCompletion() {
+        return attributes.isCompletion();
     }
 
     @Override public String toString() {

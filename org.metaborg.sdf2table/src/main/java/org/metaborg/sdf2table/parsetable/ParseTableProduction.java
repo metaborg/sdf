@@ -52,7 +52,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final boolean isNumberLiteral;
     private final boolean isBracket;
     private final boolean isOperator;
-    private final boolean isCompletionOrRecovery;
+    private final boolean isRecovery;
+    private final boolean isCompletion;
     private final ConstructorAttribute constructor;
     private final ProductionType type;
     private final Set<LayoutConstraintAttribute> layoutConstraints;
@@ -86,7 +87,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         this.productionNumber = productionNumber;
         this.sort = Symbol.getSort(p.leftHand());
 
-        boolean completionOrRecovery = false;
+        boolean isRecovery = false;
+        boolean isCompletion = false;
         ConstructorAttribute c = null;
         ProductionType t = ProductionType.NO_TYPE;
         boolean isBracket = false;
@@ -95,28 +97,31 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
                 c = (ConstructorAttribute) attr;
             }
             if(attr instanceof TermAttribute || attr instanceof GeneralAttribute) {
-                if(attr.toString().equals("completion") || attr.toString().equals("recover")
-                    || attr.toString().equals("literal-completion")) {
-                    completionOrRecovery = true;
+                if(attr.toString().equals("completion") || attr.toString().equals("literal-completion")) {
+                    isCompletion = true;
                 }
+
+                if(attr.toString().equals("recover"))
+                    isRecovery = true;
             }
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
                 if(ga.getName().equals("bracket")) {
                     isBracket = true;
-                } 
+                }
                 if(ga.getName().equals("reject")) {
                     t = ProductionType.REJECT;
                 } else if(ga.getName().equals("prefer")) {
                     t = ProductionType.PREFER;
                 } else if(ga.getName().equals("avoid")) {
                     t = ProductionType.AVOID;
-                } 
+                }
             }
         }
+        this.isRecovery = isRecovery;
+        this.isCompletion = isCompletion;
         this.isBracket = isBracket;
         constructor = c;
-        isCompletionOrRecovery = completionOrRecovery;
         type = t;
 
         boolean isLayout = getIsLayout();
@@ -345,8 +350,12 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return isOptional;
     }
 
-    @Override public boolean isCompletionOrRecovery() {
-        return isCompletionOrRecovery;
+    @Override public boolean isRecovery() {
+        return isRecovery;
+    }
+
+    @Override public boolean isCompletion() {
+        return isCompletion;
     }
 
     @Override public boolean isStringLiteral() {
