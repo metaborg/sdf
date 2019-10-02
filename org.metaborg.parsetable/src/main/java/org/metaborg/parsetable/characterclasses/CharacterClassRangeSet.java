@@ -79,7 +79,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     }
 
     @Override public boolean isEmpty() {
-        return rangeSet.isEmpty() && !containsEOF;
+        return Arrays.equals(words, EMPTY_WORDS_ARRAY) && !containsEOF;
     }
 
     @Override public ICharacterClass union(ICharacterClass other) {
