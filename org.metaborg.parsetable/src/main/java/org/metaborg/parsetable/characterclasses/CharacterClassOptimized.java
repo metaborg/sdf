@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.characterclasses;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -9,52 +10,34 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
 
     private static final long serialVersionUID = -7493425262859611574L;
 
-    private long word0; // [0, 63]
-    private long word1; // [64, 127]
-    private long word2; // [128, 191]
-    private long word3; // [192, 255]
-    private boolean containsEOF; // [256]
+    // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
+    private final long[] words; // [0-63], [64-127], [128-191], [192-255]
+    private final boolean containsEOF; // [256]
 
-    private int min, max;
+    private final int min, max;
 
-    public CharacterClassOptimized(long word0, long word1, long word2, long word3, boolean containsEOF, int min,
-        int max) {
+    public CharacterClassOptimized(long[] words, boolean containsEOF, int min, int max) {
+        if(words.length != 4)
+            throw new IllegalStateException("The words array should have length 4");
 
-        if(word0 == 0 && word1 == 0 && word2 == 0 && word3 == 0 && !containsEOF)
+        if(words[0] == 0 && words[1] == 0 && words[2] == 0 && words[3] == 0 && !containsEOF)
             throw new IllegalStateException("Empty character classes are not allowed");
 
-        this.word0 = word0;
-        this.word1 = word1;
-        this.word2 = word2;
-        this.word3 = word3;
+        this.words = words;
         this.containsEOF = containsEOF;
         this.min = min;
         this.max = max;
     }
 
     @Override public final boolean contains(int character) {
+        if(character == CharacterClassFactory.EOF_INT)
+            return containsEOF;
+
         final int wordIndex = character >> CharacterClassRangeSet.BITMAP_SEGMENT_SIZE;
-        final long word;
+        if(wordIndex < 0 || wordIndex > 3)
+            return false;
 
-        switch(wordIndex) {
-            case 0:
-                word = word0;
-                break;
-            case 1:
-                word = word1;
-                break;
-            case 2:
-                word = word2;
-                break;
-            case 3:
-                word = word3;
-                break;
-            case 4:
-                return containsEOF;
-            default:
-                word = 0L;
-        }
-
+        final long word = words[wordIndex];
         return (word & (1L << character)) != 0;
     }
 
@@ -87,7 +70,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     }
 
     @Override public int hashCode() {
-        return (int) (word0 ^ word1 ^ word2 ^ word3 ^ Boolean.hashCode(containsEOF));
+        return (int) (words[0] ^ words[1] ^ words[2] ^ words[3] ^ Boolean.hashCode(containsEOF));
     }
 
     @Override public boolean equals(Object o) {
@@ -100,8 +83,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
 
         CharacterClassOptimized that = (CharacterClassOptimized) o;
 
-        return word0 == that.word0 && word1 == that.word1 && word2 == that.word2 && word3 == that.word3
-            && containsEOF == that.containsEOF;
+        return Arrays.equals(this.words, that.words) && containsEOF == that.containsEOF;
     }
 
     @Override public final String toString() {
