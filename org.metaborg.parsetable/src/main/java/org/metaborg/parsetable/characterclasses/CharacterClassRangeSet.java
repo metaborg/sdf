@@ -18,8 +18,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
     private static final long serialVersionUID = 8553734625129300348L;
 
-    protected static final int BITMAP_SEGMENT_SIZE = 6; // 2^6 = 64 = 1/4 * 256
-
+    static final int BITMAP_SEGMENT_SIZE = 6; // 2^6 = 64 = 1/4 * 256
     static final long[] EMPTY_WORDS_ARRAY = new long[4];
     static final CharacterClassRangeSet EMPTY_CONSTANT = new CharacterClassRangeSet();
 
@@ -52,7 +51,6 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
             this.words = EMPTY_WORDS_ARRAY;
         else
             this.words = Arrays.copyOf(convertToBitSet().toLongArray(), 4);
-        assert this.words != null;
     }
 
     @Override public final boolean contains(int character) {
