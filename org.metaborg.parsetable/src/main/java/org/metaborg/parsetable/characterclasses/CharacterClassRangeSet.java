@@ -5,6 +5,7 @@ import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.EOF
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -19,17 +20,15 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
     protected static final int BITMAP_SEGMENT_SIZE = 6; // 2^6 = 64 = 1/4 * 256
 
-    private ImmutableRangeSet<Integer> rangeSet; // Contains ranges in range [0, 255]
-    private int min, max;
-
-    private final boolean useCachedBitSet;
-    private long word0; // [0, 63]
-    private long word1; // [64, 127]
-    private long word2; // [128, 191]
-    private long word3; // [192, 255]
-    private boolean containsEOF; // [256]
-
+    static final long[] EMPTY_WORDS_ARRAY = new long[4];
     static final CharacterClassRangeSet EMPTY_CONSTANT = new CharacterClassRangeSet();
+
+    private final ImmutableRangeSet<Integer> rangeSet; // Contains ranges in range [0, 255]
+    private final int min, max;
+
+    // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
+    private final long[] words; // [0-63], [64-127], [128-191], [192-255]
+    private final boolean containsEOF; // [256]
 
     private CharacterClassRangeSet() {
         this(ImmutableRangeSet.copyOf(TreeRangeSet.create()), false);
@@ -49,35 +48,26 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         this.rangeSet = rangeSet;
         this.containsEOF = containsEOF;
 
-        this.useCachedBitSet = tryOptimize();
-    }
-
-    private final long wordAt(int wordIndex) {
-        switch(wordIndex) {
-            case 0:
-                return word0;
-            case 1:
-                return word1;
-            case 2:
-                return word2;
-            case 3:
-                return word3;
-            default:
-                return 0L;
-        }
+        if(this.rangeSet.isEmpty())
+            this.words = EMPTY_WORDS_ARRAY;
+        else
+            this.words = Arrays.copyOf(convertToBitSet().toLongArray(), 4);
+        assert this.words != null;
     }
 
     @Override public final boolean contains(int character) {
         if(character == EOF_INT)
             return containsEOF;
 
-        if(useCachedBitSet) {
-            final int wordIndex = character >> BITMAP_SEGMENT_SIZE;
-            final long word = wordAt(wordIndex);
+        if(rangeSet.isEmpty()) // In this case, all cached words are empty as well, so no need to check them
+            return false;
 
-            return (word & (1L << character)) != 0;
-        } else
-            return rangeSet.contains(character);
+        final int wordIndex = character >> BITMAP_SEGMENT_SIZE;
+        if(wordIndex < 0 || wordIndex > 3)
+            return false;
+
+        final long word = words[wordIndex];
+        return (word & (1L << character)) != 0;
     }
 
     @Override public int min() {
@@ -181,27 +171,6 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
             containsEOF && character != EOF_INT);
     }
 
-    private boolean tryOptimize() {
-        if(rangeSet.isEmpty()) {
-            return false;
-        }
-
-        final BitSet bitSet = convertToBitSet();
-
-        final long[] words = bitSet.toLongArray();
-        switch(words.length) {
-            case 4:
-                word3 = words[3];
-            case 3:
-                word2 = words[2];
-            case 2:
-                word1 = words[1];
-            case 1:
-                word0 = words[0];
-        }
-        return true;
-    }
-
     private final BitSet convertToBitSet() {
         if(rangeSet.isEmpty()) {
             return new BitSet();
@@ -233,7 +202,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
                 return new CharacterClassSingle(span.lowerEndpoint());
         }
 
-        return new CharacterClassOptimized(word0, word1, word2, word3, containsEOF, min, max);
+        return new CharacterClassOptimized(words, containsEOF, min, max);
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
