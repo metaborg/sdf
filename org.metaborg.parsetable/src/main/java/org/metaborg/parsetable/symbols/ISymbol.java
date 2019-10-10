@@ -11,7 +11,14 @@ public interface ISymbol {
     String descriptor();
 
     static String getSort(ISymbol symbol) {
-        return symbol instanceof ISortSymbol ? ((ISortSymbol) symbol).sort() : null;
+        if(!(symbol instanceof ISortSymbol)) {
+            return null;
+        }
+        ISortSymbol sortSymbol = (ISortSymbol) symbol;
+        if(sortSymbol.cardinality() == null) {
+            return sortSymbol.sort();
+        }
+        return null;
     }
 
 }
