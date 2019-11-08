@@ -20,7 +20,7 @@ public class IterStarSepSymbol extends Symbol {
     private final Symbol symbol;
     private final Sort sep;
 
-    public IterStarSepSymbol(Symbol symbol, Sort sep) {
+    protected IterStarSepSymbol(Symbol symbol, Sort sep) {
         this.symbol = symbol;
         this.sep = sep;
         followRestrictionsLookahead = Lists.newArrayList();

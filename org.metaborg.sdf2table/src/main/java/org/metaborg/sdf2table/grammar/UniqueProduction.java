@@ -7,10 +7,10 @@ public class UniqueProduction implements Serializable{
 
     private static final long serialVersionUID = 3033929538492911319L;
 
-    private Symbol lhs;
-    private List<Symbol> rhs;
+    private final Symbol lhs;
+    private final List<Symbol> rhs;
 
-    public UniqueProduction(Symbol lhs, List<Symbol> rhs_symbols) {
+    protected UniqueProduction(Symbol lhs, List<Symbol> rhs_symbols) {
         this.lhs = lhs;
         this.rhs = rhs_symbols;
     }

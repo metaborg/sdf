@@ -25,13 +25,13 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
     private final ILayoutConstraint lc;
 
-    IStrategoTerm constraint;
+    private final IStrategoTerm constraint;
 
-    public LayoutConstraintAttribute(IStrategoTerm constraint) throws Exception {
+    protected LayoutConstraintAttribute(IStrategoTerm constraint) throws Exception {
         this.constraint = constraint;
         lc = createLayoutConstraint(constraint);
     }
-
+    
     @Override public String toString() {
         if(constraint instanceof IStrategoAppl && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
             return "ignore-layout";

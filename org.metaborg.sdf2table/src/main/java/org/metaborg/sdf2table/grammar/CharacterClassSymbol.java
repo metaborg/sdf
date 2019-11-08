@@ -16,7 +16,7 @@ public class CharacterClassSymbol extends Symbol {
     private static final long serialVersionUID = 1619024888383357090L;
     private final ICharacterClass cc;
 
-    public CharacterClassSymbol(ICharacterClass cc) {
+    protected CharacterClassSymbol(ICharacterClass cc) {
         this.cc = cc;
     }
 

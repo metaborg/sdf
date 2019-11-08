@@ -16,7 +16,7 @@ public class Layout extends Symbol {
 
     private static final long serialVersionUID = -2539873583275536984L;
 
-    public Layout() {
+    protected Layout() {
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }

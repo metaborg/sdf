@@ -132,7 +132,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
         boolean isLexicalRhs;
 
-        if(p.rightHand().size() > 0) {
+        if(p.arity() > 0) {
             boolean lexRhs = true;
 
             for(ISymbol s : p.rightHand()) {
@@ -372,7 +372,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         }
 
         s += " = ";
-        for(int i = 0; i < p.rightHand().size(); i++) {
+        for(int i = 0; i < p.arity(); i++) {
             if(i != 0) {
                 s += " ";
             }

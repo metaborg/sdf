@@ -20,7 +20,7 @@ public final class AltSymbol extends Symbol {
     private final Symbol alt2;
     private final String name;
 
-    public AltSymbol(Symbol alt1, Symbol alt2) {
+    protected AltSymbol(Symbol alt1, Symbol alt2) {
         this.alt1 = alt1;
         this.alt2 = alt2;
         this.name = alt1.name() + " | " + alt2.name();

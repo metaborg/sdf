@@ -18,7 +18,7 @@ public class OptionalSymbol extends Symbol {
 
     private final Symbol symbol;
     
-    public OptionalSymbol(Symbol symbol) {
+    protected OptionalSymbol(Symbol symbol) {
         this.symbol = symbol;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
@@ -44,6 +44,8 @@ public class OptionalSymbol extends Symbol {
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         return tf.makeAppl(tf.makeConstructor("Opt", 1), symbol.toSDF3Aterm(tf, ctx_vals, ctx_val));
     }
+
+
 
     @Override public int hashCode() {
         final int prime = 31;

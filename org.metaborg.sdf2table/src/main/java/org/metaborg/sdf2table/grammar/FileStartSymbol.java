@@ -16,7 +16,7 @@ public class FileStartSymbol extends Symbol {
 
     private static final long serialVersionUID = 3822777948371151629L;
 
-    public FileStartSymbol() {
+    protected FileStartSymbol() {
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }

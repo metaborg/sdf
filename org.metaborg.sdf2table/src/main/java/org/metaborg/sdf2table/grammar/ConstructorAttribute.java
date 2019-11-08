@@ -12,7 +12,7 @@ public class ConstructorAttribute implements IAttribute, Serializable {
 
     private final String constructor;
 
-    public ConstructorAttribute(String constructor) {
+    protected ConstructorAttribute(String constructor) {
         this.constructor = constructor;
     }
 
@@ -57,4 +57,6 @@ public class ConstructorAttribute implements IAttribute, Serializable {
             return false;
         return true;
     }
+
+    
 }

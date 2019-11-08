@@ -20,24 +20,21 @@ public final class ContextualSymbol extends Symbol {
 
     private final Symbol s;
     private final Set<Context> contexts;
+    private final ContextualFactory cf;
 
     private long deepContextBitmap = 0L;
 
-    public ContextualSymbol(Symbol s, Set<Context> contexts, long deepContextBitmap) {
+    public ContextualSymbol(Symbol s, Set<Context> contexts, long deepContextBitmap, ContextualFactory cf) {
         this.s = s;
         this.contexts = contexts;
         this.deepContextBitmap = deepContextBitmap;
+        this.cf = cf;
     }
 
-    public ContextualSymbol(Symbol s, Context context, long deepContextBitmap) {
-        this.s = s;
-        this.contexts = Sets.newHashSet(context);
-        this.deepContextBitmap = deepContextBitmap;
-    }
-
-    public ContextualSymbol(Symbol s, Set<Context> contexts) {
+    public ContextualSymbol(Symbol s, Set<Context> contexts, ContextualFactory cf) {
         this.s = s;
         this.contexts = contexts;
+        this.cf = cf;
 
         for(Context context : contexts) {
             if(context.getType() == ContextType.DEEP) {
@@ -46,9 +43,10 @@ public final class ContextualSymbol extends Symbol {
         }
     }
 
-    public ContextualSymbol(Symbol s, Context context) {
+    public ContextualSymbol(Symbol s, Context context, ContextualFactory cf) {
         this.s = s;
         this.contexts = Sets.newHashSet(context);
+        this.cf = cf;
 
         if(context.getType() == ContextType.DEEP) {
             deepContextBitmap |= context.getContextBitmap();
@@ -113,6 +111,10 @@ public final class ContextualSymbol extends Symbol {
         return getOrigSymbol().followRestrictionLookahead();
     }
 
+    public void setDeepContextBitmap(long deepContextBitmap) {
+        this.deepContextBitmap = deepContextBitmap;
+    }
+
     public Set<Context> getContexts() {
         return contexts;
     }
@@ -131,10 +133,11 @@ public final class ContextualSymbol extends Symbol {
         newContexts.add(context);
 
         if(context.getType() == ContextType.DEEP) {
-            return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap | context.getContextBitmap());
+            return cf.createContextualSymbol(getOrigSymbol(), newContexts,
+                deepContextBitmap | context.getContextBitmap(), cf);
         }
 
-        return new ContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap);
+        return cf.createContextualSymbol(getOrigSymbol(), newContexts, deepContextBitmap, cf);
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
@@ -150,7 +153,7 @@ public final class ContextualSymbol extends Symbol {
             }
         }
 
-        return new ContextualSymbol(getOrigSymbol(), newContexts, updatedDeepContextBitmap);
+        return cf.createContextualSymbol(getOrigSymbol(), newContexts, updatedDeepContextBitmap, cf);
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {

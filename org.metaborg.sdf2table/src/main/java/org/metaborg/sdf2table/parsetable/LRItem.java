@@ -53,7 +53,7 @@ public class LRItem implements Serializable {
 
             Set<LRItem> derivedItems = Sets.newHashSet();
 
-            if(dotPosition < prod.rightHand().size()) {
+            if(dotPosition < prod.arity()) {
                 Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
 
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
@@ -76,7 +76,7 @@ public class LRItem implements Serializable {
             pt.cachedItems().put(this, derivedItems);
         }
 
-        if(this.dotPosition < prod.rightHand().size()) {
+        if(this.dotPosition < prod.arity()) {
             Symbol atPosition = (Symbol) prod.rightHand().get(this.dotPosition);
             if(pt.getConfig().isDataDependent()) {
                 // use original symbol when mapping it to this item and state
@@ -105,7 +105,7 @@ public class LRItem implements Serializable {
         String buf = "";
         buf += prod.leftHand();
         buf += " -> ";
-        for(int i = 0; i < prod.rightHand().size(); i++) {
+        for(int i = 0; i < prod.arity(); i++) {
             if(i != 0)
                 buf += " ";
             if(i == dotPosition) {
@@ -113,7 +113,7 @@ public class LRItem implements Serializable {
             }
             buf += prod.rightHand().get(i);
         }
-        if(dotPosition >= prod.rightHand().size()) {
+        if(dotPosition >= prod.arity()) {
             buf += " .";
         }
 
@@ -154,22 +154,10 @@ public class LRItem implements Serializable {
             higher = ((ContextualProduction) higher).getOrigProduction();
         }
 
-        Priority prio = new Priority((Production) higher, lower, false);
+        Priority prio = pt.normalizedGrammar().getGrammarFactory().createPriority((Production) higher, lower, false);
 
-        Set<Integer> arguments = Sets.newHashSet();
-        if(pt.normalizedGrammar().priorities().containsKey(prio)) {
-            arguments.addAll(pt.normalizedGrammar().priorities().get(prio));
-        }
-        if(pt.normalizedGrammar().getIndexedPriorities().containsKey(prio)) {
-            arguments.addAll(pt.normalizedGrammar().getIndexedPriorities().get(prio));
-        }
-        for(int i : arguments) {
-            if(i == this.dotPosition) {
-                return true;
-            }
-        }
-
-        return false;
+        return pt.normalizedGrammar().priorities().get(prio).contains(this.dotPosition)
+            || pt.normalizedGrammar().getIndexedPriorities().get(prio).contains(this.dotPosition);
     }
 
 

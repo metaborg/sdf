@@ -21,7 +21,8 @@ public class SequenceSymbol extends Symbol {
     private final Symbol first;
     private final List<Symbol> tail;
 
-    public SequenceSymbol(Symbol first, List<Symbol> tail) {
+
+    protected SequenceSymbol(Symbol first, List<Symbol> tail) {        
         this.first = first;
         this.tail = tail;
         followRestrictionsLookahead = Lists.newArrayList();
@@ -60,6 +61,8 @@ public class SequenceSymbol extends Symbol {
         return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val),
             tf.makeList(tail_aterm));
     }
+
+  
 
     @Override public int hashCode() {
         final int prime = 31;

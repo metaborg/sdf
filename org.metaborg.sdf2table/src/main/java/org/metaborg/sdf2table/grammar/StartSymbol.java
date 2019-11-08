@@ -16,7 +16,7 @@ public class StartSymbol extends Symbol {
 
     private static final long serialVersionUID = -1033671297813111213L;
 
-    public StartSymbol() {
+    protected StartSymbol() {
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
