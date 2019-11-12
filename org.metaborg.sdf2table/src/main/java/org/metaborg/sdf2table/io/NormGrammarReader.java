@@ -432,6 +432,7 @@ public class NormGrammarReader {
         return symbol;
     }
 
+    // TODO this should be done in Stratego instead, which is a lot cleaner than this ad-hoc pattern-matching
     private IStrategoTerm removeLabelFromSymbolTerm(IStrategoTerm term) {
         if(!(term instanceof StrategoAppl))
             return term;
