@@ -178,7 +178,8 @@ public class ParseTableReader {
             ICharacterClass characterClass = characterClassReader.read(characterClassTermList);
             IAction[] actions = readActionsForCharacterClass(actionsTermList, productions);
 
-            actionsPerCharacterClasses.add(new ActionsPerCharacterClass(characterClass, actions));
+            if (characterClass != null) // TODO: there should not be null character classes in the parse table
+                actionsPerCharacterClasses.add(new ActionsPerCharacterClass(characterClass, actions));
         }
 
         return actionsPerCharacterClasses.toArray(new ActionsPerCharacterClass[actionsPerCharacterClasses.size()]);
