@@ -15,10 +15,10 @@ import org.apache.commons.vfs2.FileObject;
 import org.metaborg.parsetable.IParseTableGenerator;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Priority;
@@ -184,7 +184,7 @@ public class ParseTableIO implements IParseTableGenerator {
 
         allPriorities.putAll(pt.normalizedGrammar().priorities());
         allPriorities.putAll(pt.normalizedGrammar().getIndexedPriorities());
-        
+
         for(java.util.Map.Entry<Priority, Integer> e : allPriorities.entries()) {
             IProduction prod_higher = e.getKey().higher();
             IProduction prod_lower = e.getKey().lower();
@@ -311,17 +311,28 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     @Override public SetMultimap<String, String> getNonAssocPriorities() {
+        SetMultimap<String, String> result = null;
         if(tableCreated) {
-            return pt.normalizedGrammar().getNonAssocPriorities();
-        } 
+            result = pt.normalizedGrammar().getNonAssocPriorities();
+        }
+
+        if(result != null)
+            return result;
+        
         return HashMultimap.create();
     }
 
     @Override public SetMultimap<String, String> getNonNestedPriorities() {
+        SetMultimap<String, String> result = null;
+        
         if(tableCreated) {
-            return pt.normalizedGrammar().getNonNestedPriorities();
-        } 
+            result = pt.normalizedGrammar().getNonNestedPriorities();
+        }
+        
+        if(result != null)
+            return result;
+        
         return HashMultimap.create();
     }
-    
+
 }

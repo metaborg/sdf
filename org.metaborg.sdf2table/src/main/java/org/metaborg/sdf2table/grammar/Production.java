@@ -4,10 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.io.ParseTableIO;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -20,20 +18,23 @@ public class Production implements IProduction, Serializable {
 
     private static final long serialVersionUID = 5887433349870067696L;
 
-    final Symbol lhs;
-    final List<Symbol> rhs;
+    private final Symbol lhs;
+    private final List<Symbol> rhs;
+    private final int arity;
 
     private int leftRecursivePos = -1;
     private int rightRecursivePos = -1;
 
-    public Production(Symbol lhs, List<Symbol> rhs) {
+    protected Production(Symbol lhs, List<Symbol> rhs) {
         this.lhs = lhs;
-        this.rhs = rhs;
+        this.rhs = Lists.newArrayList(rhs);
+        arity = rhs.size();
     }
 
-    public Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
+    protected Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
-        this.rhs = rhs;
+        this.rhs = Lists.newArrayList(rhs);
+        arity = rhs.size();
         leftRecursivePos = leftRecPos;
         rightRecursivePos = rightRecPos;
     }
@@ -43,9 +44,7 @@ public class Production implements IProduction, Serializable {
     }
 
     @Override public List<ISymbol> rightHand() {
-        List<ISymbol> result = Lists.newArrayList();
-        result.addAll(rhs);
-        return result;
+        return rhs.stream().collect(Collectors.toList());
     }
 
     public Symbol getLhs() {
@@ -62,6 +61,14 @@ public class Production implements IProduction, Serializable {
 
     public int leftRecursivePosition() {
         return leftRecursivePos;
+    }
+    
+    protected void setRightRecursivePosition(int pos) {
+        rightRecursivePos = pos;
+    }
+    
+    protected void setLeftRecursivePosition(int pos) {
+        leftRecursivePos = pos;
     }
 
     @Override public String toString() {
@@ -166,7 +173,8 @@ public class Production implements IProduction, Serializable {
         }
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
+            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3),
+                ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
                 tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
                 tf.makeAppl(tf.makeConstructor("NoAttrs", 0)));
         } else {
@@ -176,5 +184,9 @@ public class Production implements IProduction, Serializable {
         return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
             tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
             tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
+    }
+
+    public int arity() {
+        return arity;
     }
 }

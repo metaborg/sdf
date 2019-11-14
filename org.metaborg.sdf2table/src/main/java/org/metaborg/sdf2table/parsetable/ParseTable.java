@@ -12,6 +12,7 @@ import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.deepconflicts.ContextPosition;
 import org.metaborg.sdf2table.deepconflicts.ContextType;
+import org.metaborg.sdf2table.deepconflicts.ContextualFactory;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.deepconflicts.DeepConflictsAnalyzer;
@@ -61,7 +62,8 @@ public class ParseTable implements IParseTable, Serializable {
     public static final int INITIAL_STATE_NUMBER = 0;
     public static final int VERSION_NUMBER = 6;
 
-    private NormGrammar grammar;
+    private final NormGrammar grammar;
+    private final ContextualFactory cf;
 
     private final int initialStateNumber = 0;
     private int processedStates = 0;
@@ -96,6 +98,7 @@ public class ParseTable implements IParseTable, Serializable {
 
     public ParseTable(NormGrammar grammar, ParseTableConfiguration config) {
         this.grammar = grammar;
+        this.cf = new ContextualFactory();
         this.config = config;
         SCCNodes<ISymbol> scc = null;
 
@@ -157,20 +160,21 @@ public class ParseTable implements IParseTable, Serializable {
             markedNullable = false;
 
             for(Production p : grammar.getUniqueProductionMapping().values()) {
-                if(grammar.getProductionAttributesMapping().get(p).contains(new GeneralAttribute("recover"))
+                if(grammar.getProductionAttributesMapping().get(p)
+                    .contains(normalizedGrammar().getGrammarFactory().createGeneralAttribute("recover"))
+                    || grammar.getProductionAttributesMapping().get(p).contains(
+                        normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder-insertion"))
                     || grammar.getProductionAttributesMapping().get(p)
-                        .contains(new GeneralAttribute("placeholder-insertion"))
-                    || grammar.getProductionAttributesMapping().get(p)
-                        .contains(new GeneralAttribute("literal-completion")))
+                        .contains(normalizedGrammar().getGrammarFactory().createGeneralAttribute("literal-completion")))
                     continue;
                 {
                 }
-                if(p.rightHand().isEmpty() && !p.leftHand().isNullable()) {
+                if(p.getRhs().isEmpty() && !p.leftHand().isNullable()) {
                     p.leftHand().setNullable(true);
                     markedNullable = true;
                 } else {
                     boolean nullable = true;
-                    for(ISymbol s : p.rightHand()) {
+                    for(ISymbol s : p.getRhs()) {
                         if(((Symbol) s).isNullable() == false) {
                             nullable = false;
                             break;
@@ -265,7 +269,7 @@ public class ParseTable implements IParseTable, Serializable {
 
         // call right recursive with all productions of
         // the rightmost symbols of rhs (considering nullables)
-        for(int i = prod.rightHand().size() - 1; i >= 0; i--) {
+        for(int i = prod.arity() - 1; i >= 0; i--) {
             ISymbol s = prod.rightHand().get(i);
             if(just_seen.contains(s)) {
                 // found a cycle
@@ -319,7 +323,7 @@ public class ParseTable implements IParseTable, Serializable {
                     }
 
                     // if p2 : A = B or p2 : A =
-                    if(p.lower().rightHand().size() == 1 || p.lower().rightHand().size() == 0) {
+                    if(p.lower().arity() == 1 || p.lower().arity() == 0) {
                         new_values.add(p.higher().rightRecursivePosition());
                         new_values.add(p.higher().leftRecursivePosition());
                     }
@@ -330,7 +334,7 @@ public class ParseTable implements IParseTable, Serializable {
                     // p1 : A = α A and p2 = α A γ or vice-versa
                     boolean matchPrefix = false;
                     int i, j;
-                    for(i = 0, j = 0; i < p.higher().rightHand().size() && j < p.lower().rightHand().size(); i++, j++) {
+                    for(i = 0, j = 0; i < p.higher().arity() && j < p.lower().arity(); i++, j++) {
                         if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(j))) {
                             matchPrefix = true;
                         } else {
@@ -349,7 +353,7 @@ public class ParseTable implements IParseTable, Serializable {
                     // dangling prefix
                     // p1 : A = A γ and p = α A γ or vice-versa
                     boolean matchSuffix = false;
-                    for(i = p.higher().rightHand().size() - 1, j = p.lower().rightHand().size() - 1; i >= 0
+                    for(i = p.higher().arity() - 1, j = p.lower().arity() - 1; i >= 0
                         && j >= 0; i--, j--) {
                         if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(j))) {
                             matchSuffix = true;
@@ -397,8 +401,8 @@ public class ParseTable implements IParseTable, Serializable {
                         // if prod : A = w A, add new priority because it consists of a deep conflict
                         if(((Production) prod).leftRecursivePosition() == -1
                             && ((Production) prod).rightRecursivePosition() != -1) {
-                            new_priorities.put(new Priority(p.higher(), (Production) prod, false),
-                                p.higher().leftRecursivePosition());
+                            new_priorities.put(normalizedGrammar().getGrammarFactory().createPriority(p.higher(),
+                                (Production) prod, false), p.higher().leftRecursivePosition());
                         }
                     }
                 }
@@ -420,8 +424,8 @@ public class ParseTable implements IParseTable, Serializable {
                         // if prod : A = A w, add new priority because it consists of a deep conflict
                         if(((Production) prod).leftRecursivePosition() != -1
                             && ((Production) prod).rightRecursivePosition() == -1) {
-                            new_priorities.put(new Priority(p.higher(), (Production) prod, false),
-                                p.higher().rightRecursivePosition());
+                            new_priorities.put(normalizedGrammar().getGrammarFactory().createPriority(p.higher(),
+                                (Production) prod, false), p.higher().rightRecursivePosition());
                         }
                     }
                 }
@@ -584,8 +588,10 @@ public class ParseTable implements IParseTable, Serializable {
                         }
 
                         // if p1 == p2 and there is no associativity declaration
-                        if(grammar.priorities().containsKey(new Priority(p1, p2, false))
-                            || grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))
+                            || grammar.priorities()
+                                .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
                             continue;
                         }
 
@@ -597,13 +603,15 @@ public class ParseTable implements IParseTable, Serializable {
                     } else {
                         // if p1: A+ -> A+ A and p2: A+ -> A, ambiguity might be longest-match
                         if(Symbol.isListNonTerminal(p1.leftHand()) || Symbol.isListNonTerminal(p2.leftHand())
-                            || p2.rightHand().size() == 1 || p1.rightHand().size() == 1) {
+                            || p2.arity() == 1 || p1.arity() == 1) {
                             continue;
                         }
 
                         // if p1 != p2 and there is no priority declaration between p1 and p2
-                        if(grammar.priorities().containsKey(new Priority(p1, p2, false))
-                            || grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))
+                            || grammar.priorities()
+                                .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
                             continue;
                         }
 
@@ -631,22 +639,23 @@ public class ParseTable implements IParseTable, Serializable {
                         // if p1 != p2, p1 and p2 have matching prefixes, and
                         // there is no priority declaration between p1 and p2
 
-                        if(p1.rightHand().size() > p2.rightHand().size()
-                            && grammar.priorities().containsKey(new Priority(p1, p2, false))) {
+                        if(p1.getRhs().size() > p2.getRhs().size() && grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))) {
                             continue;
                         }
 
-                        if(p2.rightHand().size() > p1.rightHand().size()
-                            && grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(p2.getRhs().size() > p1.getRhs().size() && grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
                             continue;
                         }
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            if(p1.rightHand().size() > p2.rightHand().size() && !Symbol.isListNonTerminal(p1.leftHand())) {
+                            if(p1.getRhs().size() > p2.getRhs().size()
+                                && !Symbol.isListNonTerminal(p1.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p1) + " > " + printWithConstructor(p2));
-                            } else if (!Symbol.isListNonTerminal(p2.leftHand())){
+                            } else if(!Symbol.isListNonTerminal(p2.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p2) + " > " + printWithConstructor(p1));
                             }
@@ -667,22 +676,23 @@ public class ParseTable implements IParseTable, Serializable {
                         // if p1 != p2, p1 and p2 have matching suffixes, and
                         // there is no priority declaration between p1 and p2
 
-                        if(p1.rightHand().size() > p2.rightHand().size()
-                            && grammar.priorities().containsKey(new Priority(p1, p2, false))) {
+                        if(p1.getRhs().size() > p2.getRhs().size() && grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))) {
                             continue;
                         }
 
-                        if(p2.rightHand().size() > p1.rightHand().size()
-                            && grammar.priorities().containsKey(new Priority(p2, p1, false))) {
+                        if(p2.getRhs().size() > p1.getRhs().size() && grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
                             continue;
                         }
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            if(p1.rightHand().size() > p2.rightHand().size() && !Symbol.isListNonTerminal(p1.leftHand())) {
+                            if(p1.arity() > p2.arity()
+                                && !Symbol.isListNonTerminal(p1.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p1) + " > " + printWithConstructor(p2));
-                            } else if (!Symbol.isListNonTerminal(p2.leftHand())){
+                            } else if(!Symbol.isListNonTerminal(p2.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p2) + " > " + printWithConstructor(p1));
                             }
@@ -885,7 +895,7 @@ public class ParseTable implements IParseTable, Serializable {
         if(pos == -1) {
             return false;
         }
-        
+
         if(!Symbol.isListNonTerminal(p.leftHand())) {
             ISymbol recSymbol = p.rightHand().get(pos);
             if(Symbol.isListNonTerminal(recSymbol)) {
@@ -905,12 +915,12 @@ public class ParseTable implements IParseTable, Serializable {
     private boolean matchSuffix(IProduction p1, IProduction p2) {
         int index = -1;
 
-        if(p1.rightHand().size() > p2.rightHand().size()) {
+        if(p1.arity() > p2.arity()) {
             index = Collections.indexOfSubList(p1.rightHand(), p2.rightHand());
-            return index > 0 && index == p1.rightHand().size() - p2.rightHand().size();
+            return index > 0 && index == p1.arity() - p2.arity();
         } else {
             index = Collections.indexOfSubList(p2.rightHand(), p1.rightHand());
-            return index > 0 && index == p2.rightHand().size() - p1.rightHand().size();
+            return index > 0 && index == p2.arity() - p1.arity();
         }
 
     }
@@ -1018,9 +1028,9 @@ public class ParseTable implements IParseTable, Serializable {
                 int labelP = productionLabels.get(p);
 
                 // generate new productions for deep contexts
-                Context deepLeft_ctx = new Context(labelP, ContextType.DEEP, ContextPosition.LEFTMOST, false,
+                Context deepLeft_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.LEFTMOST, false,
                     leftmostContextsMapping, rightmostContextsMapping);
-                Context deepRight_ctx = new Context(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, false,
+                Context deepRight_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, false,
                     leftmostContextsMapping, rightmostContextsMapping);
                 if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)) {
                     continue;
@@ -1038,7 +1048,7 @@ public class ParseTable implements IParseTable, Serializable {
                     grammar.getSymbolProductionsMapping().put(ctx_s, new_prod);
                 } else if(!(ctx_s.getContexts().contains(deepLeft_ctx)
                     || ctx_s.getContexts().contains(deepRight_ctx))) {
-                    ContextualProduction new_prod = new ContextualProduction((Production) p, ctx_s.getContexts(),
+                    ContextualProduction new_prod = cf.createContextualProduction((Production) p, ctx_s.getContexts(),
                         contextual_symbols, processed_symbols, productionLabels.get(p), this);
                     grammar.getDerivedContextualProds().add(new_prod);
                     grammar.getSymbolProductionsMapping().put(ctx_s, new_prod);
@@ -1062,10 +1072,6 @@ public class ParseTable implements IParseTable, Serializable {
         state.doReduces();
         state.calculateActionsForCharacter();
         state.setStatus(StateStatus.PROCESSED);
-    }
-
-    public void setGrammar(NormGrammar grammar) {
-        this.grammar = grammar;
     }
 
     public IState startState() {
@@ -1216,6 +1222,10 @@ public class ParseTable implements IParseTable, Serializable {
 
     public Set<IProduction> getDanglingPrefix() {
         return danglingPrefix;
+    }
+
+    public ContextualFactory getContextualFactory() {
+        return cf;
     }
 
 

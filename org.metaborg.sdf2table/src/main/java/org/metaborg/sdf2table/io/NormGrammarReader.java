@@ -26,6 +26,7 @@ public class NormGrammarReader {
     private final List<String> paths;
     private final Collection<FileVisitor> fileVisitors;
     private final List<StrategoAppl> prioritySections;
+    private final GrammarFactory gf;
 
     public NormGrammarReader() {
         this.modules = Maps.newHashMap();
@@ -33,6 +34,7 @@ public class NormGrammarReader {
         this.paths = Collections.emptyList();
         this.fileVisitors = new LinkedList<>();
         this.prioritySections = Lists.newArrayList();
+        this.gf = grammar.getGrammarFactory();
     }
 
     public NormGrammarReader(List<String> paths) {
@@ -41,6 +43,7 @@ public class NormGrammarReader {
         this.paths = paths;
         this.fileVisitors = new LinkedList<>();
         this.prioritySections = Lists.newArrayList();
+        this.gf = grammar.getGrammarFactory();
     }
 
     public interface FileVisitor {
@@ -265,11 +268,11 @@ public class NormGrammarReader {
                 }
 
                 if(cons != null) {
-                    cons_attr = new ConstructorAttribute(cons);
+                    cons_attr = gf.createConstructorAttribute(cons);// new ConstructorAttribute(cons);
                     attrs.add(cons_attr);
                 }
 
-                UniqueProduction unique_prod = new UniqueProduction(symbol, rhs_symbols);
+                UniqueProduction unique_prod = gf.createUniqueProduction(symbol, rhs_symbols);
 
                 prod = grammar.getUniqueProductionMapping().get(unique_prod);
 
@@ -287,13 +290,13 @@ public class NormGrammarReader {
                 }
 
                 // processing a new production
-                prod = new Production(symbol, rhs_symbols);
+                prod = gf.createProduction(symbol, rhs_symbols);
                 for(ISymbol literal : literals) {
                     grammar.getLiteralProductionsMapping().put(literal, prod);
                 }
 
                 if(cons_attr != null) {
-                    grammar.getSortConsProductionMapping().put(new ProductionReference(symbol, cons_attr), prod);
+                    grammar.getSortConsProductionMapping().put(gf.createProductionReference(symbol, cons_attr), prod);
                 }
 
                 if(symbol instanceof FileStartSymbol && grammar.getInitialProduction() == null) {
@@ -302,7 +305,7 @@ public class NormGrammarReader {
 
                 for(IAttribute a : attrs) {
                     if(a.toString().equals("longest-match")) {
-                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol lastSymbol = prod.rightHand().get(prod.arity() - 1);
                         ISymbol firstSymbol = prod.rightHand().get(0);
 
                         if(Symbol.isListNonTerminal(lastSymbol)) {
@@ -314,7 +317,7 @@ public class NormGrammarReader {
                         }
                     }
                     if(a.toString().equals("shortest-match")) {
-                        ISymbol lastSymbol = prod.rightHand().get(prod.rightHand().size() - 1);
+                        ISymbol lastSymbol = prod.rightHand().get(prod.arity() - 1);
                         ISymbol firstSymbol = prod.rightHand().get(0);
 
                         if(Symbol.isListNonTerminal(lastSymbol)) {
@@ -367,56 +370,59 @@ public class NormGrammarReader {
             switch(app.getName()) {
                 case "SortDef":
                 case "Sort":
-                    symbol = new Sort(((StrategoString) app.getSubterm(0)).stringValue());
+                    symbol = gf.createSort(((StrategoString) app.getSubterm(0)).stringValue());
                     break;
                 case "Layout":
-                    symbol = new Layout();
+                    symbol = gf.createLayoutSymbol();
                     break;
                 case "CharClass":
-                    symbol = new CharacterClassSymbol(processCharClass(term.getSubterm(0)));
+                    symbol = gf.createCharClassSymbol(processCharClass(term.getSubterm(0)));// new
+                                                                                            // CharacterClassSymbol(processCharClass(term.getSubterm(0)));
                     break;
                 case "Lit":
                     enquoted = ((StrategoString) app.getSubterm(0)).stringValue();
-                    symbol = new Sort(enquoted.substring(1, enquoted.length() - 1), LiteralType.Lit);
+                    symbol = gf.createSort(enquoted.substring(1, enquoted.length() - 1), LiteralType.Lit);
                     break;
                 case "CiLit":
                     enquoted = ((StrategoString) app.getSubterm(0)).stringValue();
-                    symbol = new Sort(enquoted.substring(1, enquoted.length() - 1), LiteralType.CiLit);
+                    symbol = gf.createSort(enquoted.substring(1, enquoted.length() - 1), LiteralType.CiLit);
                     break;
                 case "Opt":
-                    symbol = new OptionalSymbol(processSymbol(app.getSubterm(0)));
+                    symbol = gf.createOptionalSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Alt":
-                    symbol = new AltSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));
+                    symbol = gf.createAltSymbol(processSymbol(app.getSubterm(0)), processSymbol(app.getSubterm(1)));// new
+                                                                                                                    // AltSymbol
                     break;
                 case "Sequence":
-                    symbol = new SequenceSymbol(processSymbol(app.getSubterm(0)), processSymbolList(app.getSubterm(1)));
+                    symbol =
+                        gf.createSequenceSymbol(processSymbol(app.getSubterm(0)), processSymbolList(app.getSubterm(1)));
                     break;
                 case "Iter":
-                    symbol = new IterSymbol(processSymbol(app.getSubterm(0)));
+                    symbol = gf.createIterSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterStar":
-                    symbol = new IterStarSymbol(processSymbol(app.getSubterm(0)));
+                    symbol = gf.createIterStarSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "IterSep":
                     sep = (Sort) processSymbol(app.getSubterm(1));
-                    symbol = new IterSepSymbol(processSymbol(app.getSubterm(0)), sep);
+                    symbol = gf.createIterSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "IterStarSep":
                     sep = (Sort) processSymbol(app.getSubterm(1));
-                    symbol = new IterStarSepSymbol(processSymbol(app.getSubterm(0)), sep);
+                    symbol = gf.createIterStarSepSymbol(processSymbol(app.getSubterm(0)), sep);
                     break;
                 case "Lex":
-                    symbol = new LexicalSymbol(processSymbol(app.getSubterm(0)));
+                    symbol = gf.createLexicalSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Cf":
-                    symbol = new ContextFreeSymbol(processSymbol(app.getSubterm(0)));
+                    symbol = gf.createContextFreeSymbol(processSymbol(app.getSubterm(0)));
                     break;
                 case "Start":
-                    symbol = new StartSymbol();
+                    symbol = gf.createStartSymbol();
                     break;
                 case "FileStart":
-                    symbol = new FileStartSymbol();
+                    symbol = gf.createFileStartSymbol();
                     break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
@@ -519,61 +525,61 @@ public class NormGrammarReader {
                     StrategoAppl assoc = (StrategoAppl) a.getSubterm(0);
                     switch(assoc.getName()) {
                         case "Left":
-                            return new GeneralAttribute("left");
+                            return gf.createGeneralAttribute("left");
                         case "Right":
-                            return new GeneralAttribute("right");
+                            return gf.createGeneralAttribute("right");
                         case "Assoc":
-                            return new GeneralAttribute("assoc");
+                            return gf.createGeneralAttribute("assoc");
                         case "NonAssoc":
-                            return new GeneralAttribute("non-assoc");
+                            return gf.createGeneralAttribute("non-assoc");
                         default:
                             System.err.println("Unknown associativity: `" + assoc.getName() + "'.");
                             break;
                     }
                     break;
                 case "Recover":
-                    return new GeneralAttribute("recover");
+                    return gf.createGeneralAttribute("recover");
                 case "Reject":
-                    return new GeneralAttribute("reject");
+                    return gf.createGeneralAttribute("reject");
                 case "Prefer":
-                    return new GeneralAttribute("prefer");
+                    return gf.createGeneralAttribute("prefer");
                 case "Avoid":
-                    return new GeneralAttribute("avoid");
+                    return gf.createGeneralAttribute("avoid");
                 case "Bracket":
-                    return new GeneralAttribute("bracket");
+                    return gf.createGeneralAttribute("bracket");
                 case "LayoutConstraint":
-                    return new LayoutConstraintAttribute(a.getSubterm(0));
+                    return gf.createLayoutConstraintAttribute(a.getSubterm(0));
                 case "IgnoreLayout":
-                    return new LayoutConstraintAttribute(a);
+                    return gf.createLayoutConstraintAttribute(a);
                 case "EnforceNewLine":
-                    return new GeneralAttribute("enforce-newline");
+                    return gf.createGeneralAttribute("enforce-newline");
                 case "LongestMatch":
-                    return new GeneralAttribute("longest-match");
+                    return gf.createGeneralAttribute("longest-match");
                 case "ShortestMatch":
-                    return new GeneralAttribute("shortest-match");
+                    return gf.createGeneralAttribute("shortest-match");
                 case "CaseInsensitive":
-                    return new GeneralAttribute("case-insensitive");
+                    return gf.createGeneralAttribute("case-insensitive");
                 case "Deprecated":
                     String message = "";
                     if(a.getSubtermCount() > 0) {
                         message = ((StrategoString) a.getSubterm(0)).stringValue();
                     }
-                    return new DeprecatedAttribute(message);
+                    return gf.createDeprecatedAttribute(message);
                 case "Placeholder":
-                    return new GeneralAttribute("placeholder");
+                    return gf.createGeneralAttribute("placeholder");
                 case "PlaceholderInsertion":
-                    return new GeneralAttribute("placeholder-insertion");
+                    return gf.createGeneralAttribute("placeholder-insertion");
                 case "LiteralCompletion":
-                    return new GeneralAttribute("literal-completion");
+                    return gf.createGeneralAttribute("literal-completion");
                 case "Term":
                     IStrategoTerm def = a.getSubterm(0);
                     IStrategoAppl term = (IStrategoAppl) def.getSubterm(0);
                     try {
                         if(term.toString().equals("Fun(Unquoted(\"recover\"))")) {
-                            return new GeneralAttribute("recover");
+                            return gf.createGeneralAttribute("recover");
                         }
                         IStrategoTerm termAttribute = createStrategoTermAttribute(term);
-                        return new TermAttribute(termAttribute, termAttribute.toString());
+                        return gf.createTermAttribute(termAttribute, termAttribute.toString());
                     } catch(Exception e) {
                         System.err
                             .println("sdf2table : importAttribute: unknown term attribute `" + a.getName() + "'.");
@@ -805,7 +811,7 @@ public class NormGrammarReader {
 
             lower = processGroup(second_group);
 
-            Priority p = new Priority(higher, lower, transitive);
+            Priority p = gf.createPriority(higher, lower, transitive);// new Priority(higher, lower, transitive);
 
             if(transitive) {
                 grammar.getTransitivePriorities().add(p);
@@ -839,7 +845,7 @@ public class NormGrammarReader {
             Production higher = processGroup(first_group);
             Production lower = processGroup(second_group);
 
-            Priority p = new Priority(higher, lower, false);
+            Priority p = gf.createPriority(higher, lower, false);
 
             grammar.getNonTransitivePriorities().add(p);
 
@@ -879,7 +885,7 @@ public class NormGrammarReader {
     }
 
     private List<Integer> normalizePriorityArguments(Production production, List<Integer> arguments) {
-        ISymbol optLayout = new ContextFreeSymbol(new OptionalSymbol(new Layout()));
+        ISymbol optLayout = gf.createContextFreeSymbol(gf.createOptionalSymbol(gf.createLayoutSymbol()));
         List<Integer> norm_arguments = Lists.newArrayList();
         for(int arg : arguments) {
             int norm_arg = 0;
@@ -916,7 +922,7 @@ public class NormGrammarReader {
             String cons_name = ((IStrategoString) constructor.getSubterm(0)).stringValue();
 
             ProductionReference prod_ref =
-                new ProductionReference(processSymbol(sort), new ConstructorAttribute(cons_name));
+                gf.createProductionReference(processSymbol(sort), gf.createConstructorAttribute(cons_name));
 
             production = grammar.getSortConsProductionMapping().get(prod_ref);
             if(production == null) {

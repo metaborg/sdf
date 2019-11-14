@@ -6,11 +6,11 @@ public class Priority implements Serializable {
 
     private static final long serialVersionUID = 4019550894781189141L;
 
-    Production higher;
-    Production lower;
-    boolean transitive;
+    private final Production higher;
+    private final Production lower;
+    private boolean transitive;
 
-    public Priority(Production higher, Production lower, boolean transitive) {
+    protected Priority(Production higher, Production lower, boolean transitive) {
         this.higher = higher;
         this.lower = lower;
         this.transitive = transitive;
@@ -18,6 +18,10 @@ public class Priority implements Serializable {
 
     public Production higher() {
         return higher;
+    }
+
+    public void setTransitive(boolean b) {
+        this.transitive = false;
     }
 
     public Production lower() {
@@ -65,6 +69,8 @@ public class Priority implements Serializable {
             return false;
         return true;
     }
+
+  
 
 
 }

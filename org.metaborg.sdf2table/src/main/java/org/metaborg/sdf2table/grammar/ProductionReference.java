@@ -6,28 +6,6 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 
 public class ProductionReference implements Serializable {
     
-    private static final long serialVersionUID = -7256082373948196902L;
-
-    private ISymbol sort;
-    private ConstructorAttribute cons;
-    
-    public ProductionReference(ISymbol sort, ConstructorAttribute cons) {
-        this.sort = sort;
-        this.cons = cons;
-    }
-    public ISymbol getSort() {
-        return sort;
-    }
-    public void setSort(ISymbol sort) {
-        this.sort = sort;
-    }
-    public ConstructorAttribute getCons() {
-        return cons;
-    }
-    public void setCons(ConstructorAttribute cons) {
-        this.cons = cons;
-    }
-    
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -35,7 +13,6 @@ public class ProductionReference implements Serializable {
         result = prime * result + ((sort == null) ? 0 : sort.hashCode());
         return result;
     }
-    
     @Override public boolean equals(Object obj) {
         if(this == obj)
             return true;
@@ -56,6 +33,24 @@ public class ProductionReference implements Serializable {
             return false;
         return true;
     }
+
+
+    private static final long serialVersionUID = -7256082373948196902L;
+
+    private final ISymbol sort;
+    private final ConstructorAttribute cons;
+    
+    protected ProductionReference(ISymbol sort, ConstructorAttribute cons) {
+        this.sort = sort;
+        this.cons = cons;
+    }
+    public ISymbol getSort() {
+        return sort;
+    }
+    public ConstructorAttribute getCons() {
+        return cons;
+    }
+    
     
     @Override public String toString() {
         return sort.toString() + "." + cons.toString();

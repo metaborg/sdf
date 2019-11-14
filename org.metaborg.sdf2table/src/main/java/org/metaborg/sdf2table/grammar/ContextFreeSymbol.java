@@ -18,7 +18,7 @@ public class ContextFreeSymbol extends Symbol {
 
     private final Symbol symbol;
 
-    public ContextFreeSymbol(Symbol symbol) {
+    protected ContextFreeSymbol(Symbol symbol) {
         this.symbol = symbol;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;

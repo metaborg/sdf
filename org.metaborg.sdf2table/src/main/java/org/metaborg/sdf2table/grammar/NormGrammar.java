@@ -23,6 +23,9 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     // all files used in this grammar
     private final Set<File> filesRead;
+    
+    // factory to create all symbols in the grammar
+    private final GrammarFactory gf;
 
     private IProduction initialProduction;
 
@@ -89,6 +92,7 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public NormGrammar() {
         this.filesRead = Sets.newHashSet();
+        this.gf = new GrammarFactory();
         this.uniqueProductionMapping = Maps.newLinkedHashMap();
         this.sortConsProductionMapping = Maps.newHashMap();
         this.prodContextualProdMapping = HashBiMap.create();
@@ -133,9 +137,9 @@ public class NormGrammar implements INormGrammar, Serializable {
         for(Production intermediate_prod : getProductionsOnPriorities()) {
             for(Production first_prod : getProductionsOnPriorities()) {
                 for(Production second_prod : getProductionsOnPriorities()) {
-                    Priority first_sec = new Priority(first_prod, second_prod, true);
-                    Priority first_k = new Priority(first_prod, intermediate_prod, true);
-                    Priority k_second = new Priority(intermediate_prod, second_prod, true);
+                    Priority first_sec = gf.createPriority(first_prod, second_prod, true);
+                    Priority first_k = gf.createPriority(first_prod, intermediate_prod, true);
+                    Priority k_second = gf.createPriority(intermediate_prod, second_prod, true);
                     // if there is no priority first_prod > second_prod
                     if(!getTransitivePriorities().contains(first_sec)) {
                         // if there are priorities first_prod > intermediate_prod and
@@ -305,6 +309,10 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     public SetMultimap<String, String> getNonNestedPriorities() {
         return nonNestedPriorities;
+    }
+
+    public GrammarFactory getGrammarFactory() {
+        return gf;
     }
 
 }

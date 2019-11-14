@@ -25,7 +25,7 @@ public class Reduce extends Action implements IReduce, Serializable {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf, ParseTable pt) {
-        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().rightHand().size()),
+        return tf.makeAppl(tf.makeConstructor("reduce", 3), tf.makeInt(prod.getProduction().arity()),
             tf.makeInt(prod_label), tf.makeInt(getStatusFromParseTableProduction(pt)));
     }
 
@@ -50,7 +50,7 @@ public class Reduce extends Action implements IReduce, Serializable {
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.getProduction().rightHand().size() + "," + prod_label + "," + productionType() + ")";
+        return "reduce(" + prod.getProduction().arity() + "," + prod_label + "," + productionType() + ")";
     }
 
     @Override public int hashCode() {
@@ -82,7 +82,7 @@ public class Reduce extends Action implements IReduce, Serializable {
     }
 
     @Override public int arity() {
-        return prod.getProduction().rightHand().size();
+        return prod.getProduction().arity();
     }
 
 }

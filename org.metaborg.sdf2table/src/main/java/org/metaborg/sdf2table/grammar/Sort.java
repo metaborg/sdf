@@ -19,14 +19,14 @@ public class Sort extends Symbol {
     private final String name;
     private final LiteralType type;
 
-    public Sort(String name) {
+    protected Sort(String name) {
         this.name = name;
         this.type = null;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
 
-    public Sort(String name, LiteralType type) {
+    protected Sort(String name, LiteralType type) {
         this.name = name;
         this.type = type;
         followRestrictionsLookahead = Lists.newArrayList();
@@ -72,6 +72,8 @@ public class Sort extends Symbol {
         }
         return tf.makeAppl(tf.makeConstructor("Sort", 1), tf.makeString(name));
     }
+
+
 
     @Override public int hashCode() {
         final int prime = 31;

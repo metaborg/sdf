@@ -222,7 +222,7 @@ public class CheckOverlap {
                             newTree.productions.add(prod);
                             Node leafNewTree = newTree.leaves.get(i); // get leaf from new tree
                             newTree.leaves.remove(i); //
-                            for(int j = 0; j < prod.rightHand().size(); j++) {
+                            for(int j = 0; j < prod.arity(); j++) {
                                 Node newLeaf = new Node(prod.rightHand().get(j));
                                 newTree.leaves.add(i + j, newLeaf);
                                 leafNewTree.children.add(newLeaf);
@@ -257,7 +257,7 @@ public class CheckOverlap {
                             newTree.productions.add(prod);
                             Node leafNewTree = newTree.leaves.get(i); // get leaf from new tree
                             newTree.leaves.remove(i); //
-                            for(int j = 0; j < prod.rightHand().size(); j++) {
+                            for(int j = 0; j < prod.arity(); j++) {
                                 Node newLeaf = new Node(prod.rightHand().get(j));
                                 newTree.leaves.add(i + j, newLeaf);
                                 leafNewTree.children.add(newLeaf);

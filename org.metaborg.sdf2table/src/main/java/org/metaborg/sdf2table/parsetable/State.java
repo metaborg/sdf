@@ -85,7 +85,7 @@ public class State implements IState, Comparable<State>, Serializable {
 
     public void closure() {
         for(LRItem item : kernel) {
-            // if(item.getDotPosition() < item.getProd().rightHand().size()) {
+            // if(item.getDotPosition() < item.getProd().arity()) {
             // pt.symbolStatesMapping().put(item.getProd().rightHand().get(item.getDotPosition()), this);
             // }
             item.process(items, symbol_items, this);
@@ -140,7 +140,7 @@ public class State implements IState, Comparable<State>, Serializable {
         // add a reduce action reduce([0-256] / follow(A), p_i)
         for(LRItem item : items) {
 
-            if(item.getDotPosition() == item.getProd().rightHand().size()) {
+            if(item.getDotPosition() == item.getProd().arity()) {
                 int prod_label = pt.productionLabels().get(item.getProd());
 
                 ISymbol leftHandSymbol = item.getProd().leftHand();

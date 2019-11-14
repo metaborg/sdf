@@ -10,6 +10,7 @@ public interface IProduction {
 
     @Override int hashCode();
     @Override boolean equals(Object obj);
+    int arity();
 
 
 }
