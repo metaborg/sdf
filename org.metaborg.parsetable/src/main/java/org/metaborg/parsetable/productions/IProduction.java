@@ -1,5 +1,6 @@
 package org.metaborg.parsetable.productions;
 
+import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISymbol;
 
 public interface IProduction {
@@ -23,6 +24,8 @@ public interface IProduction {
     String constructor();
 
     String descriptor();
+
+    ConcreteSyntaxContext concreteSyntaxContext();
 
     boolean isContextFree();
 
@@ -52,7 +55,7 @@ public interface IProduction {
     boolean isIgnoreLayoutConstraint();
 
     boolean isLongestMatch();
-    
+
     boolean isBracket();
 
 }

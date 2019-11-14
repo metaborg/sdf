@@ -30,11 +30,11 @@ public class Production implements IProduction {
         this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
 
-        if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
+        if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
             concreteSyntaxContext = ConcreteSyntaxContext.Layout;
-        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal)
+        else if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal)
             concreteSyntaxContext = ConcreteSyntaxContext.Literal;
-        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs)
+        else if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs)
             concreteSyntaxContext = ConcreteSyntaxContext.Lexical;
         else
             concreteSyntaxContext = ConcreteSyntaxContext.ContextFree;
@@ -89,6 +89,10 @@ public class Production implements IProduction {
     @Override public String descriptor() {
         return lhs.toString() + (constructor() != null ? "." + constructor() : "") + " = "
             + Arrays.stream(rhs).map(ISymbol::toString).collect(Collectors.joining(" "));
+    }
+
+    @Override public ConcreteSyntaxContext concreteSyntaxContext() {
+        return concreteSyntaxContext;
     }
 
     @Override public boolean isContextFree() {
