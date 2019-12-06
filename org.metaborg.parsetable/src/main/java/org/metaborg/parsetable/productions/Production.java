@@ -19,6 +19,7 @@ public class Production implements IProduction {
     private final boolean isNumberLiteral;
     private final boolean isSkippableInParseForest;
     private final ProductionAttributes attributes;
+    private final boolean isListConstructor;
 
     public Production(int productionId, ISymbol lhs, ISymbol[] rhs, Boolean isStringLiteral, Boolean isNumberLiteral,
         Boolean isLexicalRhs, Boolean isSkippableInParseForest, ProductionAttributes attributes) {
@@ -29,6 +30,7 @@ public class Production implements IProduction {
         this.isNumberLiteral = isNumberLiteral;
         this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
+        this.isListConstructor = IProduction.isListConstructor(attributes.constructor);
 
         if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
             concreteSyntaxContext = ConcreteSyntaxContext.Layout;
@@ -83,7 +85,10 @@ public class Production implements IProduction {
     }
 
     @Override public String constructor() {
-        return attributes.constructor;
+        if(!isListConstructor)
+            return attributes.constructor;
+        else
+            return null;
     }
 
     @Override public String descriptor() {
@@ -112,7 +117,7 @@ public class Production implements IProduction {
     }
 
     @Override public boolean isList() {
-        return (lhs.cardinality() != null && lhs.cardinality().isList) || attributes.isFlatten;
+        return (lhs.cardinality() != null && lhs.cardinality().isList) || isListConstructor || attributes.isFlatten;
     }
 
     @Override public boolean isOptional() {

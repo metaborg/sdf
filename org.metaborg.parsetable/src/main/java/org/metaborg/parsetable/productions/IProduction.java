@@ -22,6 +22,10 @@ public interface IProduction {
 
     String constructor();
 
+    static boolean isListConstructor(String constructor) {
+        return "Snoc".equals(constructor) || "Ins".equals(constructor) || "Nil".equals(constructor);
+    }
+
     String descriptor();
 
     boolean isContextFree();
