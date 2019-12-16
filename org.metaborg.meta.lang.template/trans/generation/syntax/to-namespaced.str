@@ -1,0 +1,65 @@
+module generation/syntax/to-namespaced
+
+imports 
+  libstratego-sglr
+  libspoofax/core/parse
+  signatures/TemplateLang-sig
+  analysis/desugar
+  analysis/attributes
+  analysis/lifting
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
+  language-spec-name = prim("pp_language_spec_name") <+ "unknown"      
+  
+rules
+  
+  module-to-namespaced:
+    Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized(mn'), i'*, sections'*)
+    where
+      mn'        :=  <concat-strings> [mn, "-namespaced"];
+      sections'* := <topdown(try(namespace-sort))> sections*;
+      i'*        := <topdown(try(namespace-module-name))> i*
+      
+  namespace-module-name:
+    Module(Unparameterized(mn)) -> Module(Unparameterized(mn'))
+    where
+      mn'        :=  <concat-strings> [mn, "-namespaced"]
+      
+  namespace-sort:
+    DeclSort(x) -> DeclSort(x')
+    where
+      x' := <concat-strings> [<language-spec-name>, "-", x]
+    
+  namespace-sort:
+    Sort(x) -> Sort(x')
+    where
+      x' := <concat-strings> [<language-spec-name>, "-", x]
+      
+  namespace-sort:
+    SortDef(x) -> SortDef(x')
+    where
+      x' := <concat-strings> [<language-spec-name>, "-", x]
+    
