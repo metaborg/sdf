@@ -51,15 +51,22 @@ rules
   namespace-sort:
     DeclSort(x) -> DeclSort(x')
     where
-      x' := <concat-strings> [<language-spec-name>, "-", x]
+      capital-lang-name := <string-as-chars(to-upper-first-char)> <language-spec-name>;
+      x'                := <concat-strings> [capital-lang-name, "-", x]
     
   namespace-sort:
     Sort(x) -> Sort(x')
     where
-      x' := <concat-strings> [<language-spec-name>, "-", x]
+      capital-lang-name := <string-as-chars(to-upper-first-char)> <language-spec-name>;
+      x'                := <concat-strings> [capital-lang-name, "-", x]
       
   namespace-sort:
     SortDef(x) -> SortDef(x')
     where
-      x' := <concat-strings> [<language-spec-name>, "-", x]
+      capital-lang-name := <string-as-chars(to-upper-first-char)> <language-spec-name>;
+      x'                := <concat-strings> [capital-lang-name, "-", x]
     
+   to-upper-first-char:
+     [first, rest*] -> [first', rest*]
+     where
+       first' := <to-upper> first 
