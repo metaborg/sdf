@@ -31,10 +31,11 @@ menus
     action: "Generate all files" = generate-all
    
   	submenu: "SDF"
-      action: "Generate SDF (abstract)"   = generate-sdf-abstract (meta)
-      action: "Generate SDF (concrete)"   = generate-sdf-concrete
-      action: "to Normal Form"            = sdf3-to-normal-form 
-      action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract (meta)
+      action: "Generate SDF (abstract)"    = generate-sdf-abstract (meta)
+      action: "Generate SDF (concrete)"    = generate-sdf-concrete
+      action: "Generate Namespaced Syntax" = sdf3-to-namespaced 
+      action: "to Normal Form"             = sdf3-to-normal-form 
+      action: "to Normal Form (abstract)"  = sdf3-to-normal-form-abstract (meta)
       action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract (meta)
       action: "Generate Permissive Grammar (abstract)" = generate-permissive-abstract (meta)
       action: "Generate Permissive Grammar" = generate-permissive-concrete
