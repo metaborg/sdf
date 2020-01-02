@@ -103,6 +103,14 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         this.isRecovery = isRecovery;
         this.isCompletion = isCompletion;
         this.isBracket = isBracket;
+
+        boolean isList = false;
+
+        if(org.metaborg.parsetable.productions.IProduction.isListConstructor(c != null ? c.getConstructor() : null)) {
+            isList = true;
+            c = null;
+        }
+
         constructor = c;
         type = t;
 
@@ -144,7 +152,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         isSkippableInParseForest = skippableLayout || skippableLexical;
 
 
-        boolean isList = false;
         ISymbol symb2 = p.leftHand();
         // not considering varsym
         if(symb2 instanceof OptionalSymbol) {

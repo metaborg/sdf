@@ -615,9 +615,9 @@ rules
             new-regular-prods-lex-s*           := <regular-norm-symbol <+ ![]> lex-s      
             
      regular-norm-symbol:
-        symb@Cf(Iter(s)) -> [SdfProduction(symb, Rhs([cf-s]), NoAttrs()),
-                         SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-s]), NoAttrs()),
-                         SdfProduction(cf-iter-star, Rhs([]), NoAttrs()),
+        symb@Cf(Iter(s)) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                         SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-s]), NoAttrs()),
+                         SdfProductionWithCons(SortCons(cf-iter-star, Constructor("Nil")), Rhs([]), NoAttrs()),
                          SdfProduction(cf-iter-star, Rhs([symb]), NoAttrs()),  new-regular-prods-cf-s*]
         with
             cf-iter-star            := <try(cf-norm-symb)> IterStar(s);
@@ -625,9 +625,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
      
      regular-norm-symbol:
-        symb@Cf(IterStar(s)) -> [SdfProduction(cf-iter, Rhs([cf-s]), NoAttrs()),
-                           SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-s]), NoAttrs()),
-                           SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@Cf(IterStar(s)) -> [SdfProductionWithCons(SortCons(cf-iter, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                           SdfProductionWithCons(SortCons(cf-iter, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-s]), NoAttrs()),
+                           SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                            SdfProduction(symb, Rhs([cf-iter]), NoAttrs()), new-regular-prods-cf-s*]
         with
             cf-iter                 := <try(cf-norm-symb)> Iter(s);
@@ -635,18 +635,18 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s         
             
      regular-norm-symbol:
-        symb@Iter(s) -> [SdfProduction(symb, Rhs([s]), NoAttrs()),
-                              SdfProduction(symb, Rhs([symb, s]), NoAttrs()),
-                              SdfProduction(iter-star, Rhs([]), NoAttrs()),
+        symb@Iter(s) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                              SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs([symb, s]), NoAttrs()),
+                              SdfProductionWithCons(SortCons(iter-star, Constructor("Nil")), Rhs([]), NoAttrs()),
                               SdfProduction(iter-star, Rhs([symb]), NoAttrs()), new-regular-prods-s*]
         with
             iter-star             := IterStar(s);
             new-regular-prods-s*  := <regular-norm-symbol <+ ![]> s
          
     regular-norm-symbol:
-        symb@IterStar(s) -> [SdfProduction(lex-iter, Rhs([s]), NoAttrs()),
-                                  SdfProduction(lex-iter, Rhs([lex-iter, s]), NoAttrs()),
-                                  SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@IterStar(s) -> [SdfProductionWithCons(SortCons(lex-iter, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                  SdfProductionWithCons(SortCons(lex-iter, Constructor("Snoc")), Rhs([lex-iter, s]), NoAttrs()),
+                                  SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                   SdfProduction(symb, Rhs([lex-iter]), NoAttrs()), new-regular-prods-s*]
         with
             lex-iter                :=  Iter(s);
@@ -677,9 +677,9 @@ rules
             new-regular-prods-lex-s*           := <regular-norm-symbol <+ ![]> lex-s       
             
       regular-norm-symbol:
-        symb@Cf(IterSep(s, sep)) -> [ SdfProduction(symb, Rhs([cf-s]), NoAttrs()),
-                                      SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-sep, cf-s]), NoAttrs()),
-                                      SdfProduction(cf-iter-star-sep, Rhs([]), NoAttrs()),
+        symb@Cf(IterSep(s, sep)) -> [ SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-sep, cf-s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(cf-iter-star-sep, Constructor("Nil")), Rhs([]), NoAttrs()),
                                       SdfProduction(cf-iter-star-sep, Rhs([symb]), NoAttrs()) 
                                       , new-regular-prods-cf-s*]
         with
@@ -689,9 +689,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
      
      regular-norm-symbol:
-        symb@Cf(IterStarSep(s, sep)) -> [ SdfProduction(cf-iter-sep, Rhs([cf-s]), NoAttrs()),
-                                          SdfProduction(cf-iter-sep, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter-sep, cf-sep, cf-s]), NoAttrs()),
-                                          SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@Cf(IterStarSep(s, sep)) -> [ SdfProductionWithCons(SortCons(cf-iter-sep, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(cf-iter-sep, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter-sep, cf-sep, cf-s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                           SdfProduction(symb, Rhs([cf-iter-sep]), NoAttrs()),
                                           new-regular-prods-cf-s*]
         with
@@ -701,9 +701,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
             
      regular-norm-symbol:
-        symb@IterSep(s, sep) -> [SdfProduction(symb, Rhs([s]), NoAttrs()),
-                                      SdfProduction(symb, Rhs([symb, sep, s]), NoAttrs()),
-                                      SdfProduction(iter-star-sep, Rhs([]), NoAttrs()),
+        symb@IterSep(s, sep) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs([symb, sep, s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(iter-star-sep, Constructor("Nil")), Rhs([]), NoAttrs()),
                                       SdfProduction(iter-star-sep, Rhs([symb]), NoAttrs()), 
                                       new-regular-prods-s*]
         with
@@ -711,9 +711,9 @@ rules
             new-regular-prods-s*   := <regular-norm-symbol <+ ![]> s
             
      regular-norm-symbol:
-        symb@IterStarSep(s, sep) -> [SdfProduction(iter-sep, Rhs([s]), NoAttrs()),
-                                          SdfProduction(iter-sep, Rhs([iter-sep, sep, s]), NoAttrs()),
-                                          SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@IterStarSep(s, sep) -> [SdfProductionWithCons(SortCons(iter-sep, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(iter-sep, Constructor("Snoc")), Rhs([iter-sep, sep, s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                           SdfProduction(symb, Rhs([iter-sep]), NoAttrs()),
                                           new-regular-prods-s*]
         with
