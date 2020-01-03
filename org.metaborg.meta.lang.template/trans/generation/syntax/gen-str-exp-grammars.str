@@ -1,0 +1,68 @@
+module generation/syntax/gen-str-exp-grammars
+
+imports 
+  libstratego-sglr
+  libstratego-lib
+  libspoofax/resource/cache
+  libspoofax/stratego/debug
+  generation/gen-utils/remove-template
+  libstratego-lib
+  libstrc
+  generation/syntax/gen-exp-grammars
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+  
+rules
+  
+   module-to-str-expr-grammar:
+     m@Module(Unparameterized(mn), _, sections*) -> 
+        Module 
+     |[ module ~mn 
+        
+        signature
+          constructors
+            L : String -> Exp
+    
+        rules
+          number-of-productions = !~number-of-prods
+          
+          // TODO create signatures for constructors
+          constructor-list = !~constructor-list*
+          
+          // TODO create list of constructors
+          operators = !~operators*
+          
+          recursive = !~operators*
+          
+       rules
+         // TODO add disambiguation rules
+    ]|
+      where
+        number-exp-prods  := <mapconcat(get-productions <+ ![]); flatten-list; length> [m];
+        number-of-prods   := NoAnnoList(Int(number-exp-prods));
+        constructor-list* := NoAnnoList(List([]));
+        operators* := NoAnnoList(List([]))
+        
+        
+       

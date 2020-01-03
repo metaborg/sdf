@@ -11,6 +11,8 @@ imports
   trans/pp 
   generation/syntax/to-namespaced 
   generation/syntax/gen-exp-grammars
+  generation/syntax/gen-str-exp-grammars
+  libspoofax/stratego/debug
   
 rules 
   get-contextual-grammar = prim("SSL_EXT_get_contextual_grammar", <id>) <+ "file not found"
@@ -80,13 +82,21 @@ rules
     (selected, position, ast, path, project-path) -> None()
     where 
       exp-grammars := <module-to-exp-grammars(|project-path, path)> ast;
-      <map(generate-exp-grammar-file(|project-path))> exp-grammars
+      <map(generate-exp-grammar-file(|project-path))> exp-grammars;
+      <map(generate-exp-grammar-str-file(|project-path))> exp-grammars
   
   generate-exp-grammar-file(|project-path):
     (mn, ast) -> None()
     where
       exp-grammar-filename := <create-src-gen(|project-path, "syntax/exp-grammars",  ".sdf3_")> mn;
       <write-string-to-file> (exp-grammar-filename, <pp-SDF3-string> ast)
+      
+  generate-exp-grammar-str-file(|project-path):
+    (mn, ast) -> None()
+    where
+      exp-grammar-filename := <create-src-gen(|project-path, "syntax/exp-grammars",  ".str")> mn;
+      stratego-ast         := <module-to-str-expr-grammar> ast;
+      <write-string-to-file> (exp-grammar-filename, <pp-stratego-string> stratego-ast)    
          
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
