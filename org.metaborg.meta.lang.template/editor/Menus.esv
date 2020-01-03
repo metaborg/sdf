@@ -34,6 +34,7 @@ menus
       action: "Generate SDF (abstract)"    = generate-sdf-abstract (meta)
       action: "Generate SDF (concrete)"    = generate-sdf-concrete
       action: "Generate Namespaced Syntax" = sdf3-to-namespaced 
+      action: "Generate Expression Grammars" = sdf3-to-exp-grammars
       action: "to Normal Form"             = sdf3-to-normal-form 
       action: "to Normal Form (abstract)"  = sdf3-to-normal-form-abstract (meta)
       action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract (meta)

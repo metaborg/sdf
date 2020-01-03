@@ -1,6 +1,6 @@
 module editor/build-syntax
 
-imports
+imports 
   signatures/TemplateLang-sig
   signatures/modules/Modules-sig
   analysis/desugar
@@ -8,8 +8,9 @@ imports
   generation/syntax/to-sdf
   generation/syntax/make-permissive
   normalization/to-normal-form
-  trans/pp
-  generation/syntax/to-namespaced
+  trans/pp 
+  generation/syntax/to-namespaced 
+  generation/syntax/gen-exp-grammars
   
 rules 
   get-contextual-grammar = prim("SSL_EXT_get_contextual_grammar", <id>) <+ "file not found"
@@ -74,6 +75,18 @@ rules
 	      norm-namespaced-ast            := <module-to-namespaced> ast;
 	      <write-string-to-file> (norm-namespaced-filename, <pp-SDF3-string> norm-namespaced-ast)
       end 
+      
+  sdf3-to-exp-grammars:
+    (selected, position, ast, path, project-path) -> None()
+    where 
+      exp-grammars := <module-to-exp-grammars(|project-path, path)> ast;
+      <map(generate-exp-grammar-file(|project-path))> exp-grammars
+  
+  generate-exp-grammar-file(|project-path):
+    (mn, ast) -> None()
+    where
+      exp-grammar-filename := <create-src-gen(|project-path, "syntax/exp-grammars",  ".sdf3_")> mn;
+      <write-string-to-file> (exp-grammar-filename, <pp-SDF3-string> ast)
          
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -88,7 +101,6 @@ rules
     <?Module(Unparameterized(mn), i*, sections)> ast ;
     filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
     result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected      
-       
          
   read-contextual-grammar-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)

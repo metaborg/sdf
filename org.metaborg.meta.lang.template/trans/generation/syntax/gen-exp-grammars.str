@@ -1,0 +1,152 @@
+module generation/syntax/gen-exp-grammars
+
+imports 
+  libstratego-sglr
+  libstratego-lib
+  libspoofax/resource/cache
+  libspoofax/stratego/debug
+  generation/gen-utils/remove-template
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+  
+rules
+  
+   module-to-exp-grammars(|project-path, path):
+     m@Module(Unparameterized(mn), i*, sections*) -> result*
+     where
+       name' := <strip-annos> mn;  
+       rules(
+            expanded-module:
+                name' -> <id>
+       )
+     where
+       dir            := <dirname> path;
+       tokenize-chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
+       i'*            := <mapconcat(?Imports(<id>))> i*;
+       imp-asts*      := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, dir)); flatten-list> i'*;
+       cf-prods*      := <mapconcat(get-productions <+ ![]); flatten-list> [m, imp-asts*];
+       prio-chains*   := <mapconcat(get-priorities <+ ![]); flatten-list> [m, imp-asts*];
+       exp-grammars*  := <filter(collect-exp-grammars(|tokenize-chars))> cf-prods*;
+       exp-sorts*     := <map(?(<id>, _)); make-set > exp-grammars*;
+       exp-prio*      := <map(get-exp-prio(|prio-chains*))> exp-sorts*;
+       result*        := <filter(create-mod-for-exp-grammars(|exp-grammars*, exp-prio*))> exp-sorts*
+       
+  get-exp-prio(|prio-chains*):
+    sort -> (sort, result)
+    where
+      result := <filter(is-exp-prio(|sort))> prio-chains*
+      
+  is-exp-prio(|sort):
+    chain -> <id>
+    where
+      <oncetd(?sort)> chain    
+
+// TODO: indirect recursion
+  
+  create-mod-for-exp-grammars(|exp-grammars*, priorities*):
+    sort -> (mn, Module(Unparameterized(mn), [], sections))
+    where 
+      mn      := <concat-strings> [sort, "-grammar"];
+      prods*  := <filter(?(sort, <id>)); flatten-list> exp-grammars*;
+      prios*  := <filter(?(sort, <id>)); flatten-list> priorities*;
+      size    := <length> prods*;
+      <not(eq)> (size, 1);
+      sections := [SDFSection(ContextFreeSyntax(prods*)), SDFSection(ContextFreePriorities(prios*))]
+      
+  get-productions:
+    m@Module(Unparameterized(mn), i*, sections*) -> prods
+    where
+       prods := <filter(?SDFSection(ContextFreeSyntax(<id>))); topdown(try(strip-annos))> sections*
+       
+  get-priorities:
+    m@Module(Unparameterized(mn), i*, sections*) -> prods
+    where
+       prods := <filter(?SDFSection(ContextFreePriorities(<id>))); topdown(try(strip-annos))> sections*     
+
+  collect-exp-grammars(|chars):
+    SdfProductionWithCons(SortCons(SortDef(s), _), Rhs(rhs*), _) -> (s, <id>)
+    where
+       <elem> (Sort(s), rhs*)
+       
+  collect-exp-grammars(|chars):
+    SdfProduction(SortDef(s), Rhs(rhs*), _) -> (s, <id>)
+    where
+       <elem> (Sort(s), rhs*)
+  
+  collect-exp-grammars(|chars):
+    t@TemplateProductionWithCons(SortCons(SortDef(s), _), _, _) -> (s, <id>)
+    where
+       prod := <topdown(try(desugar-template)); template-to-sdf3-prod(|chars)> t;
+       <collect-exp-grammars(|chars)> prod
+       
+  collect-exp-grammars(|chars):
+    t@TemplateProduction(SortDef(s), _, _) -> (s, <id>)
+    where
+       prod := <topdown(try(desugar-template)); template-to-sdf3-prod(|chars)> t;
+       <collect-exp-grammars(|chars)> prod
+
+  expand-import(|project-path, path):
+    name -> [ast, imp-asts*]
+    where
+      name' := <strip-annos> name;  
+        <not(expanded-module)> name';
+        rules(
+            expanded-module:
+                name' -> <id>
+        );
+      ast   := <open-import-custom(resolve-path(|project-path, path), parse-file, id)> name;
+      <?Module(Unparameterized(mn), i*, sections*)> ast;
+      i'*       := <mapconcat(?Imports(<id>))> i*;
+      imp-asts* := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, path); flatten-list)> i'*
+
+  open-import-custom(resolve-path, parse-file, record-declarations):
+    import -> result
+    where
+      path       := <resolve-path> import;
+      cache-path := <import-cache-path> path;
+      if not(<IsImported> path) then
+        rules(
+          IsImported: path
+        );
+        ( <file-is-newer> (cache-path, path);
+          file := <ReadFromFile> cache-path
+        <+
+          file := <parse-file> path;
+          if <file-exists> path then
+            // Only cache if on filesystem (e.g., ignore libstratego-lib)
+            <WriteToBinaryFile> (cache-path, file)
+          end        
+        );
+        {| CurrentFile:
+          rules(CurrentFile := path);
+          result := <record-declarations> file
+        |}
+      end
+     
+  resolve-path(|project-path, path):
+    name -> resolved-name
+    where
+      resolved-name := $[[project-path]/[path]/[name].sdf3]    
+   
+     
