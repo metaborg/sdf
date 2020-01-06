@@ -42,7 +42,9 @@ rules
        dir            := <dirname> path;
        i'*            := <mapconcat(?Imports(<id>))> i*;
        imp-asts*      := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, dir)); flatten-list> i'*;
-       result := (<get-keywords> imp-asts*, <get-operators> imp-asts*)
+       keywords       := <get-keywords> imp-asts*;
+       operators      := <get-operators> imp-asts*;
+       result         := <to-textmate-string(|"Spoofax Language", "spoofaxlang")> (operators, keywords)
     
     get-keywords = collect-all(get-keyword)
     get-keyword: String(x) -> <is-keyword> x
@@ -51,12 +53,104 @@ rules
     get-operator: String(x) -> <not(is-keyword)> x
     
     is-keyword = where(explode-string; [is-alpha + ?'_' | map(is-alphanum + ?'_' + ?'-') ])
-       
-	// extract:
-	// - single line comments
-	// - multi line comments
-	// - string literals (and escapes)
-	// - number literal
-	// - identifiers
-	// - keywords
-	// - operators
+    
+    escape-for-regex = string-as-chars(escape-chars(
+    	  \['-'|cs] -> ['\', '-'|cs]\
+    	+ \['['|cs] -> ['\', '['|cs]\
+    	+ \[']'|cs] -> ['\', ']'|cs]\
+    	+ \['{'|cs] -> ['\', '{'|cs]\
+    	+ \['}'|cs] -> ['\', '}'|cs]\
+    	+ \['('|cs] -> ['\', '('|cs]\
+    	+ \[')'|cs] -> ['\', ')'|cs]\
+    	+ \['*'|cs] -> ['\', '*'|cs]\
+    	+ \['+'|cs] -> ['\', '+'|cs]\
+    	+ \['?'|cs] -> ['\', '?'|cs]\
+    	+ \['.'|cs] -> ['\', '.'|cs]\
+    	+ \[','|cs] -> ['\', ','|cs]\
+    	+ \['\'|cs] -> ['\', '\'|cs]\
+    	+ \['^'|cs] -> ['\', '^'|cs]\
+    	+ \['$'|cs] -> ['\', '$'|cs]\
+    	+ \['|'|cs] -> ['\', '|'|cs]\
+    	+ \['#'|cs] -> ['\', '#'|cs]\
+    	+ \[' '|cs] -> ['\', ' '|cs]\
+    ))
+    
+    escape-for-json = string-as-chars(escape-chars(
+    	  \['\'|cs] -> ['\', '\'|cs]\
+    	+ \['"'|cs] -> ['\', '"'|cs]\
+    	+ \['\t'|cs] -> ['\', 't'|cs]\
+    	+ \['\n'|cs] -> ['\', 'n'|cs]\
+    	+ \['\r'|cs] -> ['\', 'r'|cs]\
+    ))
+      
+	// TODO: extract:
+	// - single line comment start sequence
+	// - multi line comment start and end sequence
+	// - string start and end sequence (and escape sequences)
+	// - number literal sequences
+	// - identifier sequences
+	
+	to-textmate-string(|langname, langid): (operators, keywords) -> $<{
+		"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+		"name": "<langname>",
+		"patterns": [
+			{ "include": "#comments" },
+			{ "include": "#keywords" },
+			{ "include": "#identifiers" },
+			{ "include": "#constructors" },
+			{ "include": "#strings" }
+		],
+		"repository": {
+			"comments": {
+				"patterns": [{
+					"name": "comment.line.<langid>",
+					"match": "//.*$"
+				},{
+					"name": "comment.block.<langid>",
+					"begin": "/\\*",
+					"end": "\\*/\\n?",
+					"captures": {
+						"0": {
+							"name": "punctuation.definition.comment.<langid>"
+						}
+					}
+				}]
+			},
+			"keywords": {
+				"patterns": [{
+					"name": "keyword.<langid>",
+					"match": "\\b(<<map(escape-for-regex); separate-by(|"|"); concat-strings; escape-for-json> keywords>)\\b"
+				},{
+					"name": "keyword.operator.<langid>",
+					"match": "(<<map(escape-for-regex); separate-by(|"|"); concat-strings; escape-for-json> operators>)"
+				},{
+					"name": "punctuation.separator.delimiter.<langid>",
+					"match": "()"
+				}]
+			},
+			"identifiers": {
+				"patterns": [{
+					"name": "entity.name.<langid>",
+					"match": "\\b[a-z][a-zA-Z0-9_\\-']*\\b"
+				}]
+			},
+			"constructors": {
+				"patterns": [{
+					"name": "entity.name.type.<langid>",
+					"match": "\\b[A-Z][a-zA-Z0-9_\\-']*\\b"
+				}]
+			},
+			"strings": {
+				"name": "string.quoted.double.<langid>",
+				"begin": "\"",
+				"end": "\"",
+				"patterns": [
+					{
+						"name": "constant.character.escape.<langid>",
+						"match": "\\\\."
+					}
+				]
+			}
+		},
+		"scopeName": "source.<langid>"
+	}>

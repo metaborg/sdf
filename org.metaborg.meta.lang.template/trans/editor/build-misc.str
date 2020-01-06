@@ -11,6 +11,6 @@ imports
 rules
 
   generate-textmate-grammar:
-    (selected, position, ast, path, project-path) -> ("test.tm", result)
+    (selected, position, ast, path, project-path) -> ("spoofaxlang.tmLanguage.json", result)
     where 
       result := <to-textmate(|project-path, path)> ast
