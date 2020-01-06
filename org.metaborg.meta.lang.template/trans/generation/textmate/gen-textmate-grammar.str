@@ -34,13 +34,29 @@ imports
 rules
 
    to-textmate(|project-path, path):
-     m@Module(Unparameterized(mn), i*, sections*) -> imp-asts*
+     m@Module(Unparameterized(mn), i*, sections*) -> result
      where
        name' := <strip-annos> mn;  
        rules(expanded-module: name' -> <id>)
      where
        dir            := <dirname> path;
        i'*            := <mapconcat(?Imports(<id>))> i*;
-       imp-asts*      := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, dir)); flatten-list> i'*
+       imp-asts*      := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, dir)); flatten-list> i'*;
+       result := (<get-keywords> imp-asts*, <get-operators> imp-asts*)
+    
+    get-keywords = collect-all(get-keyword)
+    get-keyword: String(x) -> <is-keyword> x
+    
+    get-operators = collect-all(get-operator)
+    get-operator: String(x) -> <not(is-keyword)> x
+    
+    is-keyword = where(explode-string; [is-alpha + ?'_' | map(is-alphanum + ?'_' + ?'-') ])
        
-       
+	// extract:
+	// - single line comments
+	// - multi line comments
+	// - string literals (and escapes)
+	// - number literal
+	// - identifiers
+	// - keywords
+	// - operators
