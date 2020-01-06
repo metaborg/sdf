@@ -1,0 +1,16 @@
+module editor/build-misc
+
+imports
+  libstrc
+  signatures/TemplateLang-sig
+  signatures/modules/Modules-sig
+  analysis/desugar
+  editor/build-utils
+  generation/textmate/-
+
+rules
+
+  generate-textmate-grammar:
+    (selected, position, ast, path, project-path) -> ("test.tm", result)
+    where 
+      result := <to-textmate(|project-path, path)> ast
