@@ -42,8 +42,9 @@ rules
        dir            := <dirname> path;
        i'*            := <mapconcat(?Imports(<id>))> i*;
        imp-asts*      := <filter(?Module(Unparameterized(<id>)); expand-import(|project-path, dir)); flatten-list> i'*;
-       keywords       := <get-keywords> imp-asts*;
-       operators      := <get-operators> imp-asts*;
+       asts           := <![m | imp-asts*]>;
+       keywords       := <get-keywords> asts;
+       operators      := <get-operators> asts;
        result         := <to-textmate-string(|"Spoofax Language", "spoofaxlang")> (operators, keywords)
     
     get-keywords = collect-all(get-keyword)
