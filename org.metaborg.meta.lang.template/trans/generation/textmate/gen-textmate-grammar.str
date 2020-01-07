@@ -123,9 +123,6 @@ rules
 				},{
 					"name": "keyword.operator.<langid>",
 					"match": "(<<map(escape-for-regex); separate-by(|"|"); concat-strings; escape-for-json> operators>)"
-				},{
-					"name": "punctuation.separator.delimiter.<langid>",
-					"match": "()"
 				}]
 			},
 			"identifiers": {
