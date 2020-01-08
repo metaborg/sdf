@@ -99,9 +99,9 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
  
 // placeholders
 TemplatePart1.Angled       = [<[Placeholder]>]
-TemplatePart1.BreakAngled  = [<>] {avoid}
+TemplatePart1.BreakAngled  = [<>]
 TemplatePart2.Squared      = <[<Placeholder>]>
-TemplatePart2.BreakSquared = <[]> {avoid}
+TemplatePart2.BreakSquared = <[]>
 
 Placeholder.Placeholder = <<Symbol><PlaceholderOptions>>
 
