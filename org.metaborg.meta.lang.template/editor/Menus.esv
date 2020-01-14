@@ -57,7 +57,10 @@ menus
     
     action: "Generate PP (abstract)" = generate-pp-abstract (meta)
     action: "Generate PP"            = generate-pp-concrete
-          	
+        
+    submenu: "Misc"
+      action: "Generate TextMate grammar"          = generate-textmate-grammar
+    end
 //    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
 //    action: "Generate AST checker"            = generate-ast-checker-concrete
          
