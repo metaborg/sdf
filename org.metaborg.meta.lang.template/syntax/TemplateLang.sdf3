@@ -98,8 +98,10 @@ SortCons.SortCons = <<SymbolDef>.<Constructor>>
 
  
 // placeholders
-TemplatePart1.Angled = <\<<Placeholder>\>>
-TemplatePart2.Squared = <[<Placeholder>]>
+TemplatePart1.Angled       = [<[Placeholder]>]
+TemplatePart1.BreakAngled  = [<>]
+TemplatePart2.Squared      = <[<Placeholder>]>
+TemplatePart2.BreakSquared = <[]>
 
 Placeholder.Placeholder = <<Symbol><PlaceholderOptions>>
 
