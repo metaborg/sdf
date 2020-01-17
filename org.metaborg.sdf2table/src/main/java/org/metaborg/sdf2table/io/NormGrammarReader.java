@@ -460,7 +460,7 @@ public class NormGrammarReader {
 
         // Only create a new Stratego term if the children have changed.
         if(changed) {
-            return new StrategoAppl(app.getConstructor(), children, app.getAnnotations(), app.getStorageType());
+            return new StrategoAppl(app.getConstructor(), children, app.getAnnotations());
         }
         // If there is no `Label` subterm, the full term is reused.
         return term;
