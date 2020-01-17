@@ -5,21 +5,21 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.query.IActionQuery;
-import org.metaborg.parsetable.states.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
-import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
-
+import org.metaborg.parsetable.states.IState;
+import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
@@ -137,7 +137,7 @@ public class State implements IState, Comparable<State>, Serializable {
 
     public void doReduces() {
         // for each item p_i : A = A0 ... AN .
-        // add a reduce action reduce([0-256] / follow(A), p_i)
+        // add a reduce action reduce(FOLLOW(A) / follow-restriction(A), p_i) -- SLR(1) parsing
         for(LRItem item : items) {
 
             if(item.getDotPosition() == item.getProd().arity()) {
@@ -145,11 +145,16 @@ public class State implements IState, Comparable<State>, Serializable {
 
                 ISymbol leftHandSymbol = item.getProd().leftHand();
                 ICharacterClass fr = leftHandSymbol.followRestriction();
+
+                ICharacterClass final_range = leftHandSymbol instanceof ContextualSymbol
+                    ? ((ContextualSymbol) leftHandSymbol).getOrigSymbol().getFollow() : leftHandSymbol.getFollow();
+                // Previous line used to be the following in LR(0). TODO add option to switch between LR(0) and SLR(1)
+                // ICharacterClass final_range = CharacterClassFactory.FULL_RANGE;
+
                 if((fr == null || fr.isEmpty()) && leftHandSymbol.followRestrictionLookahead() == null) {
-                    addReduceAction(item.getProd(), prod_label, CharacterClassFactory.FULL_RANGE, null);
+                    addReduceAction(item.getProd(), prod_label, final_range, null);
                 } else {
-                    ICharacterClass final_range = CharacterClassFactory.FULL_RANGE;
-                    // Not based on first and follow sets thus, only considering the follow restrictions
+                    // Considering the follow restrictions
                     if(fr != null && !fr.isEmpty()) {
                         final_range = final_range.difference(leftHandSymbol.followRestriction());
                     }
