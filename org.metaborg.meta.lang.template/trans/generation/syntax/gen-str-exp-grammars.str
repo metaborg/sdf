@@ -9,6 +9,7 @@ imports
   libstratego-lib
   libstrc
   generation/syntax/gen-exp-grammars
+  analysis/desugar
   
 imports
   signatures/aliases/-
@@ -33,6 +34,9 @@ imports
   signatures/symbols/-
   signatures/TemplateLang-sig
   
+signature constructors
+  GreaterThan : SortCons1 * SortCons2 -> PrioRelation
+  
 rules
   
    module-to-str-expr-grammar:
@@ -47,22 +51,89 @@ rules
         rules
           number-of-productions = !~number-of-prods
           
-          // TODO create signatures for constructors
           constructor-list = !~constructor-list*
           
-          // TODO create list of constructors
           operators = !~operators*
           
           recursive = !~operators*
           
        rules
-         // TODO add disambiguation rules
+          // TODO does not work with indexed or non-transitive priorities 
+          ~prec-and-assoc*
     ]|
       where
+        tokenize-chars    := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
         number-exp-prods  := <mapconcat(get-productions <+ ![]); flatten-list; length> [m];
         number-of-prods   := NoAnnoList(Int(number-exp-prods));
-        constructor-list* := NoAnnoList(List([]));
-        operators* := NoAnnoList(List([]))
+        productions       := <get-productions; flatten-list> m;
+        priorities        := <get-priorities; flatten-list> m;
+        constructor-list* := NoAnnoList(List(<filter(get-constructor-list(|tokenize-chars))> productions));
+        operators*        := NoAnnoList(List(<filter(get-operators)> productions));
+        prec-and-assoc*   := <filter(collect-prio-relations); flatten-list; map(create-str-prio-rule)> priorities 
         
-        
-       
+  get-constructor-list(|chars):
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), _) -> result
+    where      
+      result := Tuple([ NoAnnoList(Str(c)),
+                        NoAnnoList(List(
+                          <map(rhs-symbol-to-str)> rhs*))])
+  
+  get-constructor-list(|chars):
+    t@TemplateProductionWithCons(SortCons(SortDef(s), _), _, _) -> result
+    where
+       prod := <topdown(try(desugar-template)); template-to-sdf3-prod(|chars)> t;
+       result := <get-constructor-list(|chars)> prod
+                          
+  rhs-symbol-to-str:
+    Sort(s) -> Str(s)
+    
+  rhs-symbol-to-str:
+    Lit(l) -> Op("L", [NoAnnoList(Str(l))])                
+    
+  get-operators:   
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), _) -> Str(c)
+      
+  get-operators:   
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, _) -> Str(c)  
+    
+  collect-prio-relations :
+    Chain(prio-chain*) -> relations*
+    where
+      relations* := <create-relations-from-chain
+//      ; ppdebug(|"priorities chain ")
+      > prio-chain*
+//      ; relations* := [GreaterThan(SortConsRef(SortDef("Exp"), Constructor("Mul")), SortConsRef(SortDef("Exp"), Constructor("Add")))]
+  
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> <flatten-list> [GreaterThan(sc1, sc2), <create-relations-from-chain> hs1]
+    where
+      <not(?[])> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?SimpleRefGroup(sc2)> h2
+      
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> [GreaterThan(sc1, sc2)]
+    where
+      <?[]> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?SimpleRefGroup(sc2)> h2    
+      
+  create-relations-from-chain:
+    [h | hs] -> []
+    where
+      <?[]> hs
+      
+  create-relations-from-chain:
+    [] -> []
+    
+  create-str-prio-rule:   
+    GreaterThan(SortConsRef(_, Constructor(c1)), SortConsRef(_, Constructor(c2))) -> SDefNoArgs(
+          "greater-than"
+        , Match(
+            NoAnnoList(
+              Tuple([NoAnnoList(Str(c1)), NoAnnoList(Str(c2))])
+            )
+          )
+        )  

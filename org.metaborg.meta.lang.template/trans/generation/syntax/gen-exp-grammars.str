@@ -6,6 +6,7 @@ imports
   libspoofax/resource/cache
   libspoofax/stratego/debug
   generation/gen-utils/remove-template
+  analysis/desugar
   
 imports
   signatures/aliases/-
