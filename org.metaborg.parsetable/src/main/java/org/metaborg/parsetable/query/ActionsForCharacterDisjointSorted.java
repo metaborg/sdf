@@ -1,11 +1,12 @@
 package org.metaborg.parsetable.query;
 
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
+
 import java.io.Serializable;
 import java.util.*;
 
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 
 public final class ActionsForCharacterDisjointSorted implements IActionsForCharacter, Serializable {
 
@@ -23,7 +24,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         int newRangeFromCharacter = -1; // Contains the start character for the next range that will be added
         Set<IAction> newRangeActions = null; // Contains the actions for the next range that will be added
 
-        for(int character = 0; character <= CharacterClassFactory.EOF_INT; character++) {
+        for(int character = 0; character <= EOF_INT; character++) {
             Set<IAction> actionsForCharacter = null;
 
             for(ActionsPerCharacterClass actionsPerCharacterClass : actionsPerCharacterClasses) {
@@ -65,7 +66,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
                     newRangeActions = actionsForCharacter;
                 }
 
-                if(character == CharacterClassFactory.EOF_INT && newRangeFromCharacter != -1) {
+                if(character == EOF_INT && newRangeFromCharacter != -1) {
                     actionsForRanges
                         .add(new ActionsForRange(newRangeActions.toArray(new IAction[newRangeActions.size()]),
                             newRangeFromCharacter, character));

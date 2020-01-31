@@ -30,7 +30,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     }
 
     @Override public final boolean contains(int character) {
-        if(character == CharacterClassFactory.EOF_INT)
+        if(character == ICharacterClass.EOF_INT)
             return containsEOF;
 
         final int wordIndex = character >> CharacterClassRangeSet.BITMAP_SEGMENT_SIZE;

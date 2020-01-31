@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.metaborg.parsetable.Cache;
 
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
+
 public class CharacterClassFactory implements ICharacterClassFactory, Serializable {
 
     private static final long serialVersionUID = 2540422015817167132L;
@@ -12,8 +14,6 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     final private boolean cache;
 
     private Cache<ICharacterClass> characterClassCache;
-
-    public static int EOF_INT = 256;
 
     public static final ICharacterClass EOF_SINGLETON = new CharacterClassSingle(EOF_INT);
     public static final ICharacterClass FULL_RANGE = CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, 256);

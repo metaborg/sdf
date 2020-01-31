@@ -3,6 +3,7 @@ package org.metaborg.parsetable.characterclasses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.FULL_RANGE;
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -19,10 +20,10 @@ public class CharacterClassTest {
 
     ICharacterClass c = factory.fromSingle(99);
     ICharacterClass x = factory.fromSingle(120);
-    ICharacterClass eof = factory.fromSingle(CharacterClassFactory.EOF_INT);
+    ICharacterClass eof = factory.fromSingle(EOF_INT);
 
     private void testCharacterClass(ICharacterClass characters, Predicate<Integer> contains) {
-        for(int i = 0; i <= CharacterClassFactory.EOF_INT; i++) {
+        for(int i = 0; i <= EOF_INT; i++) {
             boolean expected = characters.contains(i);
 
             assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for characters "
@@ -31,7 +32,7 @@ public class CharacterClassTest {
     }
 
     private void testCharacterClass(ICharacterClass one, ICharacterClass two) {
-        for(int i = 0; i <= CharacterClassFactory.EOF_INT; i++) {
+        for(int i = 0; i <= EOF_INT; i++) {
             boolean expected = one.contains(i);
             boolean actual = two.contains(i);
 
@@ -85,16 +86,15 @@ public class CharacterClassTest {
     }
 
     @Test public void testEOF() {
-        ICharacterClass characters = factory.fromSingle(CharacterClassFactory.EOF_INT);
+        ICharacterClass characters = factory.fromSingle(EOF_INT);
 
-        testCharacterClass(characters, character -> character == CharacterClassFactory.EOF_INT);
+        testCharacterClass(characters, character -> character == EOF_INT);
     }
 
     @Test public void testRangeEOFunion() {
-        ICharacterClass characters = az.union(factory.fromSingle(CharacterClassFactory.EOF_INT));
+        ICharacterClass characters = az.union(factory.fromSingle(EOF_INT));
 
-        testCharacterClass(characters,
-            character -> 97 <= character && character <= 122 || character == CharacterClassFactory.EOF_INT);
+        testCharacterClass(characters, character -> 97 <= character && character <= 122 || character == EOF_INT);
     }
 
     @Test public void testRangeEOFintersect() {

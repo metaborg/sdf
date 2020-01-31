@@ -1,8 +1,5 @@
 package org.metaborg.parsetable.characterclasses;
 
-
-import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.EOF_INT;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

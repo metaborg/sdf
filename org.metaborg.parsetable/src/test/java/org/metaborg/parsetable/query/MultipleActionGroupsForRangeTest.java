@@ -11,7 +11,6 @@ import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IShift;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.query.IActionsForCharacter;
 
 public class MultipleActionGroupsForRangeTest {
 
@@ -67,7 +66,7 @@ public class MultipleActionGroupsForRangeTest {
         IActionsForCharacter separated = new ActionsForCharacterSeparated(actionsPerCharacterClasses);
         IActionsForCharacter disjointSorted = new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses);
 
-        for(int character = 0; character <= CharacterClassFactory.EOF_INT; character++) {
+        for(int character = 0; character <= ICharacterClass.EOF_INT; character++) {
             IActionQuery actionQuery = new MockActionQuery(character);
 
             Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));

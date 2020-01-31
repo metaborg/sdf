@@ -15,6 +15,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
  */
 public interface ICharacterClass {
 
+    int EOF_INT = 256;
+
     boolean contains(int character);
 
     int min();

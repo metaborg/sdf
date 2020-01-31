@@ -3,7 +3,7 @@ package org.metaborg.parsetable.actions;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.query.IActionQuery;
 
-import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.EOF_INT;
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 public interface IReduceLookahead extends IReduce {
 
