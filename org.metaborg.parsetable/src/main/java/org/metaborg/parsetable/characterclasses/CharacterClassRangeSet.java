@@ -141,7 +141,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     protected final CharacterClassRangeSet addRange(int from, int to) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        mutableRangeSet.add(Range.closed(from, Math.min(255, to)));
+        mutableRangeSet.add(Range.closed(Math.max(0, from), Math.min(255, to)));
 
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF || to == EOF_INT);
     }
