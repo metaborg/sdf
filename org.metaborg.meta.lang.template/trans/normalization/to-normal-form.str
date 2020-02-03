@@ -120,7 +120,7 @@ rules
             lexical-start-prods*       := <map(lex-start-prod)> lex-start-symbols*;
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
-            new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())];
+            new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), EOF()]), NoAttrs())];
             after-normalizing-top-sorts := <cputime>;
             
 //            where(!(after-normalizing-top-sorts, before-normalizing-top-sorts); subt; cputime-to-seconds; ?total-time-top-sorts; <debug(!"time spent top sorts ")> (<strip-annos> mn, total-time-top-sorts))
@@ -498,7 +498,7 @@ rules
     
                 
     top-sorts:
-        Module(Unparameterized(mn), i*, [SDFSection(Kernel(prods*)) | sections*]) -> Module(Unparameterized(mn), i*, [SDFSection(Kernel([new-prods*, prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())])) | sections'*])
+        Module(Unparameterized(mn), i*, [SDFSection(Kernel(prods*)) | sections*]) -> Module(Unparameterized(mn), i*, [SDFSection(Kernel([new-prods*, prods*, SdfProduction(FileStart(), Rhs([Start(), EOF()]), NoAttrs())])) | sections'*])
         with
             lex-start-symbols*     := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> sections*;
             cf-start-symbols*      := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> sections*;

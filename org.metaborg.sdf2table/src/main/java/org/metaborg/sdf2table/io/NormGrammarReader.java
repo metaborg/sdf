@@ -418,6 +418,9 @@ public class NormGrammarReader {
                 case "FileStart":
                     symbol = gf.createFileStartSymbol();
                     break;
+                case "EOF":
+                    symbol = gf.createEOFSymbol();
+                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;

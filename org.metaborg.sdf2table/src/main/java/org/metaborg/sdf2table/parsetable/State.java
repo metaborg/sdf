@@ -5,21 +5,20 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.query.IActionQuery;
-import org.metaborg.parsetable.states.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
-import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
-
+import org.metaborg.parsetable.states.IState;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
@@ -163,7 +162,7 @@ public class State implements IState, Comparable<State>, Serializable {
                     addReduceAction(item.getProd(), prod_label, final_range, null);
                 }
             }
-            // <Start> = <START> . EOF
+            // <Start> = <START> . <EOF>
             if(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1) {
                 lr_actions.put(CharacterClassFactory.EOF_SINGLETON, new Accept(CharacterClassFactory.EOF_SINGLETON));
             }

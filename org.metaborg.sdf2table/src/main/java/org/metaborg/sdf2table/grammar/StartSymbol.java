@@ -33,18 +33,16 @@ public class StartSymbol extends Symbol {
         return tf.makeAppl(tf.makeConstructor("sort", 1), tf.makeString(name()));
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
-        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         return tf.makeAppl(tf.makeConstructor("Sort", 1), tf.makeString(name()));
     }
 
     @Override public int hashCode() {
         return "<START>".hashCode();
     }
-    
+
     @Override public boolean equals(Object s) {
-        if(s == null) return false;
-        return(s instanceof StartSymbol);
+        return s != null && s instanceof StartSymbol;
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
