@@ -3,8 +3,7 @@ package org.metaborg.parsetable.characterclasses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.FULL_RANGE;
-import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
-import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.*;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -141,14 +140,14 @@ public class CharacterClassTest {
         testCharacterClass(eof, factory.finalize(eof));
         testCharacterClass(x.union(eof), factory.finalize(x.union(eof)));
         testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
-        testCharacterClass(factory.fromRange(0, 256), factory.finalize(factory.fromRange(0, 256)));
+        testCharacterClass(factory.fromRange(0, MAX_CHAR), factory.finalize(factory.fromRange(0, MAX_CHAR)));
 
         assertTrue(factory.finalize(x) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(AZ) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(eof) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(x.union(eof)) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
-        assertTrue(factory.finalize(factory.fromRange(0, 256)) instanceof CharacterClassOptimized);
+        assertTrue(factory.finalize(factory.fromRange(0, MAX_CHAR)) instanceof CharacterClassOptimized);
     }
 
     @Test(expected = IllegalStateException.class) public void testOptimizedEmpty() {

@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.characterclasses;
 
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.MAX_CHAR;
 
 import java.io.Serializable;
 
@@ -17,7 +18,7 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
 
     public static final ICharacterClass EOF_SINGLETON = new CharacterClassSingle(EOF_INT);
     public static final ICharacterClass FULL_RANGE =
-        CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, 255).setEOF(true);
+        CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, MAX_CHAR).setEOF(true);
     public static final ICharacterClass EMPTY_CHARACTER_CLASS = CharacterClassRangeSet.EMPTY_CONSTANT;
 
     public static String intToString(int character) {

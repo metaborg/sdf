@@ -35,7 +35,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
     }
 
     @Override public int max() {
-        return chars.previousSetBit(CHARACTERS - 1);
+        return chars.previousSetBit(MAX_CHAR);
     }
 
     @Override public boolean isEmpty() {
@@ -52,7 +52,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
             result.or(((CharacterClass) other).chars);
             return new CharacterClass(result, this.containsEOF || ((CharacterClass) other).containsEOF);
         } else {
-           throw new IllegalStateException("Cannot perform operation on different character class.");
+            throw new IllegalStateException("Cannot perform operation on different character class.");
         }
     }
 

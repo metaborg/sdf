@@ -16,7 +16,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
 public interface ICharacterClass {
 
     int EOF_INT = 256; // TODO change to -1
-    int CHARACTERS = 256; // TODO increase to 0x10ffff to support Unicode
+    int CHARACTERS = 256; // TODO increase to 0x110000 to support Unicode
+    int MAX_CHAR = CHARACTERS - 1;
 
     boolean contains(int character);
 

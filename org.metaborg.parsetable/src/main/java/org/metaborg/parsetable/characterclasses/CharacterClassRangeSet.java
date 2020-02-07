@@ -31,14 +31,21 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     }
 
     private CharacterClassRangeSet(final ImmutableRangeSet<Integer> rangeSet, boolean containsEOF) {
-        assert rangeSet.isEmpty() || rangeSet.span().lowerEndpoint() >= 0;
-        assert rangeSet.isEmpty() || rangeSet.span().upperEndpoint() < EOF_INT;
+        assert rangeSet.isEmpty()
+            || rangeSet.span().lowerEndpoint() >= 0 && rangeSet.span().upperEndpoint() < CHARACTERS;
 
         if(rangeSet.isEmpty()) {
-            this.min = this.max = containsEOF ? EOF_INT : -1; // TODO no EOF (requires change to DisjointSorted)
+            this.min = this.max = containsEOF ? EOF_INT : Integer.MIN_VALUE;
         } else {
-            this.min = rangeSet.span().lowerEndpoint();
-            this.max = Math.max(rangeSet.span().upperEndpoint(), containsEOF ? EOF_INT : -1); // TODO no EOF
+            int min = rangeSet.span().lowerEndpoint();
+            int max = rangeSet.span().upperEndpoint();
+            if(containsEOF) {
+                this.min = Math.min(min, EOF_INT);
+                this.max = Math.max(max, EOF_INT);
+            } else {
+                this.min = min;
+                this.max = max;
+            }
         }
 
         this.rangeSet = rangeSet;
@@ -145,8 +152,9 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     protected final CharacterClassRangeSet addRange(int from, int to) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        mutableRangeSet.add(Range.closed(Math.max(0, from), Math.min(255, to)));
+        mutableRangeSet.add(Range.closed(Math.max(0, from), Math.min(MAX_CHAR, to)));
 
+        // TODO after changing parse table format: remove `|| to == EOF_INT`
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF || to == EOF_INT);
     }
 
