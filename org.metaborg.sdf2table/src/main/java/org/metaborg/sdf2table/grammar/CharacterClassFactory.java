@@ -25,14 +25,14 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     @Override public ICharacterClass fromSingle(int character) {
         if(character == EOF_INT)
             return EOF_SINGLETON;
-        BitSet chars = new BitSet();
+        BitSet chars = new BitSet(CHARACTERS);
         chars.set(character);
         return new CharacterClass(chars, false);
     }
 
     @Override public ICharacterClass fromRange(int from, int to) {
-        BitSet chars = new BitSet();
-        chars.set(from, to);
+        BitSet chars = new BitSet(CHARACTERS);
+        chars.set(from, to + 1);
         return new CharacterClass(chars, false);
     }
 
@@ -41,7 +41,7 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     }
 
     private static ICharacterClass fullRangeCC() {
-        BitSet chars = new BitSet();
+        BitSet chars = new BitSet(CHARACTERS);
         chars.set(0, CHARACTERS);
         return new CharacterClass(chars, true);
     }

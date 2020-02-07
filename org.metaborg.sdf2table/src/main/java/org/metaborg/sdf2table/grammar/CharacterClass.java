@@ -31,10 +31,14 @@ public class CharacterClass implements ICharacterClass, Serializable {
     }
 
     @Override public int min() {
+        if(containsEOF)
+            return chars.isEmpty() ? EOF_INT : Math.min(chars.nextSetBit(0), EOF_INT);
         return chars.nextSetBit(0);
     }
 
     @Override public int max() {
+        if(containsEOF)
+            return chars.isEmpty() ? EOF_INT : Math.max(chars.previousSetBit(MAX_CHAR), EOF_INT);
         return chars.previousSetBit(MAX_CHAR);
     }
 
@@ -81,17 +85,25 @@ public class CharacterClass implements ICharacterClass, Serializable {
     @Override public IStrategoTerm toAtermList(ITermFactory tf) { // TODO include EOF
         List<IStrategoTerm> terms = new ArrayList<>();
         int lowerBound = chars.nextSetBit(0);
-        while(lowerBound != -1 && lowerBound <= 256) {
+        boolean shouldOutputEOF = containsEOF;
+        while(lowerBound != -1 && lowerBound < CHARACTERS) {
             int upperBound = chars.nextClearBit(lowerBound);
 
-            if(lowerBound == upperBound + 1) {
+            if(lowerBound == upperBound - 1) {
                 terms.add(tf.makeInt(lowerBound));
             } else {
-                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(lowerBound), tf.makeInt(upperBound)));
+                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(lowerBound),
+                    // TODO proper EOF
+                    tf.makeInt(upperBound == 256 && shouldOutputEOF ? 256 : upperBound - 1)));
+                if(upperBound == 256 && shouldOutputEOF)
+                    shouldOutputEOF = false;
             }
 
             lowerBound = chars.nextSetBit(upperBound);
         }
+
+        if(shouldOutputEOF)
+            terms.add(tf.makeInt(EOF_INT));
 
         return tf.makeList(terms);
     }

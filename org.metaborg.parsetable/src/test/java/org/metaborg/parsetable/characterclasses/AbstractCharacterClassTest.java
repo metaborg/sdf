@@ -1,8 +1,6 @@
 package org.metaborg.parsetable.characterclasses;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.FULL_RANGE;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.*;
 
 import java.util.Arrays;
@@ -11,18 +9,21 @@ import java.util.function.Predicate;
 import org.junit.Test;
 import org.spoofax.terms.TermFactory;
 
-public class CharacterClassTest {
+public abstract class AbstractCharacterClassTest {
 
-    ICharacterClassFactory factory = new CharacterClassFactory(); // TODO also test sdf2table CharacterClassFactory
+    ICharacterClassFactory factory = getCharacterClassFactory();
 
     ICharacterClass AZ = factory.fromRange(65, 90);
     ICharacterClass az = factory.fromRange(97, 122);
+    ICharacterClass fullRange = factory.fromRange(0, MAX_CHAR);
 
     ICharacterClass c = factory.fromSingle(99);
     ICharacterClass x = factory.fromSingle(120);
     ICharacterClass eof = factory.fromSingle(EOF_INT);
 
-    private void testCharacterClass(ICharacterClass characters, Predicate<Integer> contains) {
+    protected abstract ICharacterClassFactory getCharacterClassFactory();
+
+    protected void testCharacterClass(ICharacterClass characters, Predicate<Integer> contains) {
         for(int i = 0; i < CHARACTERS; i++) {
             assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character class "
                 + characters.toString() + ":", contains.test(i), characters.contains(i));
@@ -31,7 +32,7 @@ public class CharacterClassTest {
             characters.contains(EOF_INT));
     }
 
-    private void testCharacterClass(ICharacterClass one, ICharacterClass two) {
+    protected void testCharacterClass(ICharacterClass one, ICharacterClass two) {
         for(int i = 0; i < CHARACTERS; i++) {
             assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character classes "
                 + one.toString() + " vs. " + two.toString() + ":", two.contains(i), one.contains(i));
@@ -134,26 +135,6 @@ public class CharacterClassTest {
         testCharacterClass(factory.fromRange(75, 85).difference(factory.fromRange(70, 80)), factory.fromRange(81, 85));
     }
 
-    @Test public void testOptimized() {
-        testCharacterClass(x, factory.finalize(x));
-        testCharacterClass(AZ, factory.finalize(AZ));
-        testCharacterClass(eof, factory.finalize(eof));
-        testCharacterClass(x.union(eof), factory.finalize(x.union(eof)));
-        testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
-        testCharacterClass(factory.fromRange(0, MAX_CHAR), factory.finalize(factory.fromRange(0, MAX_CHAR)));
-
-        assertTrue(factory.finalize(x) instanceof CharacterClassSingle);
-        assertTrue(factory.finalize(AZ) instanceof CharacterClassOptimized);
-        assertTrue(factory.finalize(eof) instanceof CharacterClassSingle);
-        assertTrue(factory.finalize(x.union(eof)) instanceof CharacterClassOptimized);
-        assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
-        assertTrue(factory.finalize(factory.fromRange(0, MAX_CHAR)) instanceof CharacterClassOptimized);
-    }
-
-    @Test(expected = IllegalStateException.class) public void testOptimizedEmpty() {
-        factory.finalize(factory.fromEmpty());
-    }
-
     @Test public void testNewLineDetection() {
         char newLineChar = '\n';
         int newLineInt = (int) newLineChar;
@@ -192,8 +173,8 @@ public class CharacterClassTest {
         TermFactory tf = new TermFactory();
         assertEquals("[120]", x.toAtermList(tf).toString());
         assertEquals("[range(65,90)]", AZ.toAtermList(tf).toString());
-        assertEquals("[256]", eof.toAtermList(tf).toString());
-        assertEquals("[range(0,256)]", FULL_RANGE.union(eof).toAtermList(tf).toString());
+        assertEquals("[256]", eof.toAtermList(tf).toString()); // TODO proper EOF
+        assertEquals("[range(0,256)]", fullRange.union(eof).toAtermList(tf).toString());
         assertEquals("[range(65,90),256]", AZ.union(eof).toAtermList(tf).toString());
         assertEquals("[range(65,90),range(97,122)]", AZ.union(az).toAtermList(tf).toString());
         assertEquals("[range(65,90),range(97,122),256]", AZ.union(az).union(eof).toAtermList(tf).toString());

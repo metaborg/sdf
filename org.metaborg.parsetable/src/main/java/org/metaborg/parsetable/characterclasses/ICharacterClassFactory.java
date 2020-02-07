@@ -6,6 +6,13 @@ public interface ICharacterClassFactory {
 
     ICharacterClass fromSingle(int character);
 
+    /**
+     * @param from
+     *            The start of the range, inclusive.
+     * @param to
+     *            The end of the range, exclusive.
+     * @return A character class representing the range [from-to].
+     */
     ICharacterClass fromRange(int from, int to);
 
     /*

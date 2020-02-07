@@ -229,7 +229,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             if(s instanceof CharacterClassSymbol) {
                 CharacterClassSymbol characterClassSymbol = (CharacterClassSymbol) s;
                 ICharacterClass cc = characterClassSymbol.getCC();
-                ICharacterClass intCC = ParseTableIO.getCharacterClassFactory().fromRange(48, 57);
+                ICharacterClass intCC = ParseTableIO.getCharacterClassFactory().fromRange('0', '9');
                 if(!cc.isEmpty()) {
                     if(cc.equals(intCC.intersection(cc))) {
                         return characterClassSymbol;
