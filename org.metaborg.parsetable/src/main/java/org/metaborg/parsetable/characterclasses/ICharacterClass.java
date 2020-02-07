@@ -15,7 +15,8 @@ import org.spoofax.interpreter.terms.ITermFactory;
  */
 public interface ICharacterClass {
 
-    int EOF_INT = 256;
+    int EOF_INT = 256; // TODO change to -1
+    int CHARACTERS = 256; // TODO increase to 0x10ffff to support Unicode
 
     boolean contains(int character);
 
@@ -24,6 +25,12 @@ public interface ICharacterClass {
     int max();
 
     boolean isEmpty();
+
+    /**
+     * @return A character class that is equal to this character class, except that `eof` is set as given.<br>
+     *         May return `this` if there are no changes.
+     */
+    ICharacterClass setEOF(boolean eof);
 
     /**
      * @return The union of characters in character classes this and other.

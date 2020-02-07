@@ -2,8 +2,6 @@ package org.metaborg.parsetable.characterclasses;
 
 import static org.spoofax.terms.Term.*;
 
-import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.util.TermUtils;
@@ -16,7 +14,7 @@ public class CharacterClassReader {
         this.characterClassFactory = characterClassFactory;
     }
 
-    public ICharacterClass read(IStrategoList characterClassTermList) {
+    public ICharacterClass read(IStrategoList characterClassTermList) { // TODO read EOF
         ICharacterClass characterClass = null;
 
         for(IStrategoTerm characterClassTerm : characterClassTermList) {

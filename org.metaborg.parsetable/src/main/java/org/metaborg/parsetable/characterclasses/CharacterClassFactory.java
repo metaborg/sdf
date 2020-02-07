@@ -17,7 +17,7 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
 
     public static final ICharacterClass EOF_SINGLETON = new CharacterClassSingle(EOF_INT);
     public static final ICharacterClass FULL_RANGE =
-        CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, 255).addSingle(EOF_INT);
+        CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, 255).setEOF(true);
     public static final ICharacterClass EMPTY_CHARACTER_CLASS = CharacterClassRangeSet.EMPTY_CONSTANT;
 
     public static String intToString(int character) {
@@ -28,11 +28,11 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     }
 
     public static boolean isNewLine(int character) {
-        return character != EOF_INT && ((char) character) == '\n';
+        return character == (int) '\n';
     }
 
     public static boolean isTab(int character) {
-        return character != EOF_INT && ((char) character) == '\t';
+        return character == (int) '\t';
     }
 
     public CharacterClassFactory() {

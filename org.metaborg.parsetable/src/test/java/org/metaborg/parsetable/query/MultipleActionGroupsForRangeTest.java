@@ -66,7 +66,7 @@ public class MultipleActionGroupsForRangeTest {
         IActionsForCharacter separated = new ActionsForCharacterSeparated(actionsPerCharacterClasses);
         IActionsForCharacter disjointSorted = new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses);
 
-        for(int character = 0; character <= ICharacterClass.EOF_INT; character++) {
+        for(int character = 0; character <= ICharacterClass.EOF_INT; character++) { // TODO separate EOF
             IActionQuery actionQuery = new MockActionQuery(character);
 
             Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));

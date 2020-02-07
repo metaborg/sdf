@@ -3,6 +3,7 @@ package org.metaborg.parsetable.characterclasses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.FULL_RANGE;
+import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import org.spoofax.terms.TermFactory;
 
 public class CharacterClassTest {
 
-    ICharacterClassFactory factory = new CharacterClassFactory();
+    ICharacterClassFactory factory = new CharacterClassFactory(); // TODO also test sdf2table CharacterClassFactory
 
     ICharacterClass AZ = factory.fromRange(65, 90);
     ICharacterClass az = factory.fromRange(97, 122);
@@ -23,22 +24,21 @@ public class CharacterClassTest {
     ICharacterClass eof = factory.fromSingle(EOF_INT);
 
     private void testCharacterClass(ICharacterClass characters, Predicate<Integer> contains) {
-        for(int i = 0; i <= EOF_INT; i++) {
-            boolean expected = characters.contains(i);
-
-            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for characters "
-                + characters.toString() + ":", contains.test(i), expected);
+        for(int i = 0; i < CHARACTERS; i++) {
+            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character class "
+                + characters.toString() + ":", contains.test(i), characters.contains(i));
         }
+        assertEquals("Character EOF for character class " + characters.toString() + ":", contains.test(EOF_INT),
+            characters.contains(EOF_INT));
     }
 
     private void testCharacterClass(ICharacterClass one, ICharacterClass two) {
-        for(int i = 0; i <= EOF_INT; i++) {
-            boolean expected = one.contains(i);
-            boolean actual = two.contains(i);
-
-            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for characters "
-                + one.toString() + " vs. " + two.toString() + ":", actual, expected);
+        for(int i = 0; i < CHARACTERS; i++) {
+            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character classes "
+                + one.toString() + " vs. " + two.toString() + ":", two.contains(i), one.contains(i));
         }
+        assertEquals("Character EOF for character classes " + one.toString() + " vs. " + two.toString() + ":",
+            two.contains(EOF_INT), one.contains(EOF_INT));
     }
 
     @Test public void testLowerCaseLettersRange() {

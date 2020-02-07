@@ -35,10 +35,10 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         assert rangeSet.isEmpty() || rangeSet.span().upperEndpoint() < EOF_INT;
 
         if(rangeSet.isEmpty()) {
-            this.min = this.max = containsEOF ? EOF_INT : -1;
+            this.min = this.max = containsEOF ? EOF_INT : -1; // TODO no EOF (requires change to DisjointSorted)
         } else {
             this.min = rangeSet.span().lowerEndpoint();
-            this.max = Math.max(rangeSet.span().upperEndpoint(), containsEOF ? EOF_INT : -1);
+            this.max = Math.max(rangeSet.span().upperEndpoint(), containsEOF ? EOF_INT : -1); // TODO no EOF
         }
 
         this.rangeSet = rangeSet;
@@ -75,6 +75,10 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
     @Override public boolean isEmpty() {
         return Arrays.equals(words, EMPTY_WORDS_ARRAY) && !containsEOF;
+    }
+
+    @Override public ICharacterClass setEOF(boolean eof) {
+        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(rangeSet), eof);
     }
 
     @Override public ICharacterClass union(ICharacterClass other) {
@@ -149,7 +153,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     protected final CharacterClassRangeSet addSingle(int character) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        if(character < EOF_INT)
+        if(character != EOF_INT)
             mutableRangeSet.add(Range.singleton(character));
 
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet),
@@ -159,7 +163,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     protected final CharacterClassRangeSet removeSingle(int character) {
         final RangeSet<Integer> mutableRangeSet = TreeRangeSet.create(rangeSet);
 
-        if(character < EOF_INT)
+        if(character != EOF_INT)
             mutableRangeSet.remove(Range.open(character - 1, character + 1));
 
         return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet),
@@ -200,7 +204,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         return new CharacterClassOptimized(words, containsEOF, min, max);
     }
 
-    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) { // TODO proper EOF
         List<IStrategoTerm> terms = new ArrayList<>();
         boolean hasEOF = false;
         for(Range<Integer> range : rangeSet.asRanges()) {
@@ -241,11 +245,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
             return true;
         }
         if(o instanceof CharacterClassSingle) {
-            if(this.min == this.max && this.min == ((CharacterClassSingle) o).min()) {
-                return true;
-            } else {
-                return false;
-            }
+            return this.min == this.max && this.min == ((CharacterClassSingle) o).min();
         }
 
         if(o == null || getClass() != o.getClass()) {

@@ -30,8 +30,18 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         return false;
     }
 
+    @Override public ICharacterClass setEOF(boolean eof) {
+        if(character == EOF_INT) {
+            return eof ? this : CharacterClassRangeSet.EMPTY_CONSTANT;
+        }
+        return eof ? union(new CharacterClassSingle(EOF_INT)) : this;
+    }
+
     @Override public ICharacterClass union(ICharacterClass other) {
         if(other instanceof CharacterClassSingle) {
+            if(other.contains(character))
+                return this;
+
             CharacterClassRangeSet result = CharacterClassRangeSet.EMPTY_CONSTANT;
             result = result.addSingle(this.character);
             result = result.addSingle(other.min());
@@ -64,7 +74,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
             return this;
     }
 
-    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) { // TODO check EOF
         return tf.makeList(tf.makeInt(character));
     }
 

@@ -24,7 +24,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         int newRangeFromCharacter = -1; // Contains the start character for the next range that will be added
         Set<IAction> newRangeActions = null; // Contains the actions for the next range that will be added
 
-        for(int character = 0; character <= EOF_INT; character++) {
+        for(int character = 0; character <= EOF_INT; character++) { // TODO make EOF separate thing
             Set<IAction> actionsForCharacter = null;
 
             for(ActionsPerCharacterClass actionsPerCharacterClass : actionsPerCharacterClasses) {

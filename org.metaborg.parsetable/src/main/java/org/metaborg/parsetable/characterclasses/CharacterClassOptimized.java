@@ -53,6 +53,10 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
         return false;
     }
 
+    @Override public ICharacterClass setEOF(boolean eof) {
+        throw new IllegalStateException("CharacterClassOptimized is not mutable");
+    }
+
     @Override public ICharacterClass union(ICharacterClass other) {
         throw new IllegalStateException("Union can only be done with Single and RangeSet character classes");
     }
