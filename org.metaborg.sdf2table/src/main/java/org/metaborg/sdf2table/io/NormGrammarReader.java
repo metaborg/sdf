@@ -3,35 +3,14 @@ package org.metaborg.sdf2table.io;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.exceptions.ModuleNotFoundException;
 import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
-import org.metaborg.sdf2table.grammar.ConstructorAttribute;
-import org.metaborg.sdf2table.grammar.FileStartSymbol;
-import org.metaborg.sdf2table.grammar.GrammarFactory;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.LiteralType;
-import org.metaborg.sdf2table.grammar.NormGrammar;
-import org.metaborg.sdf2table.grammar.Priority;
-import org.metaborg.sdf2table.grammar.Production;
-import org.metaborg.sdf2table.grammar.ProductionReference;
-import org.metaborg.sdf2table.grammar.Sort;
-import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.grammar.UniqueProduction;
-import org.spoofax.interpreter.terms.IStrategoAppl;
-import org.spoofax.interpreter.terms.IStrategoList;
-import org.spoofax.interpreter.terms.IStrategoString;
-import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.interpreter.terms.ITermFactory;
+import org.metaborg.sdf2table.grammar.*;
+import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
@@ -377,6 +356,7 @@ public class NormGrammarReader {
         Symbol symbol = null;
         String enquoted;
 
+        term = removeLabelFromSymbolTerm(term);
         symbol = grammar.getCacheSymbolsRead().get(term.toString());
 
         if(symbol != null) {
@@ -444,9 +424,6 @@ public class NormGrammarReader {
                 case "FileStart":
                     symbol = gf.createFileStartSymbol();
                     break;
-                case "Label":
-                    symbol = processSymbol(app.getSubterm(1));
-                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;
@@ -456,12 +433,37 @@ public class NormGrammarReader {
             return null;
         }
 
-        if(grammar != null && symbol != null) {
-            grammar.getCacheSymbolsRead().put(term.toString(), symbol);
-        }
-
+        grammar.getCacheSymbolsRead().put(term.toString(), symbol);
         grammar.getSymbols().add(symbol);
         return symbol;
+    }
+
+    // TODO this should be done in Stratego instead, which is a lot cleaner than this ad-hoc pattern-matching
+    private IStrategoTerm removeLabelFromSymbolTerm(IStrategoTerm term) {
+        if(!(term instanceof StrategoAppl))
+            return term;
+        StrategoAppl app = (StrategoAppl) term;
+
+        if(app.getName().equals("Label")) {
+            return removeLabelFromSymbolTerm(app.getSubterm(1));
+        }
+
+        IStrategoTerm[] children = app.getAllSubterms();
+        boolean changed = false;
+        for(int i = 0; i < children.length; i++) {
+            IStrategoTerm newChild = removeLabelFromSymbolTerm(children[i]);
+            if(newChild != children[i]) {
+                changed = true;
+                children[i] = newChild;
+            }
+        }
+
+        // Only create a new Stratego term if the children have changed.
+        if(changed) {
+            return new StrategoAppl(app.getConstructor(), children, app.getAnnotations());
+        }
+        // If there is no `Label` subterm, the full term is reused.
+        return term;
     }
 
     public List<Symbol> processSymbolList(IStrategoTerm term) {

@@ -7,28 +7,10 @@ import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.productions.ProductionType;
+import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
-import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
-import org.metaborg.sdf2table.grammar.ConstructorAttribute;
-import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
-import org.metaborg.sdf2table.grammar.GeneralAttribute;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.IterSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSymbol;
-import org.metaborg.sdf2table.grammar.IterSymbol;
-import org.metaborg.sdf2table.grammar.Layout;
-import org.metaborg.sdf2table.grammar.LayoutConstraintAttribute;
-import org.metaborg.sdf2table.grammar.LexicalSymbol;
-import org.metaborg.sdf2table.grammar.OptionalSymbol;
-import org.metaborg.sdf2table.grammar.SequenceSymbol;
-import org.metaborg.sdf2table.grammar.Sort;
-import org.metaborg.sdf2table.grammar.StartSymbol;
-import org.metaborg.sdf2table.grammar.Symbol;
-import org.metaborg.sdf2table.grammar.TermAttribute;
+import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
 
@@ -52,7 +34,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final boolean isNumberLiteral;
     private final boolean isBracket;
     private final boolean isOperator;
-    private final boolean isCompletionOrRecovery;
+    private final boolean isRecovery;
+    private final boolean isCompletion;
     private final ConstructorAttribute constructor;
     private final ProductionType type;
     private final Set<LayoutConstraintAttribute> layoutConstraints;
@@ -86,7 +69,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         this.productionNumber = productionNumber;
         this.sort = Symbol.getSort(p.leftHand());
 
-        boolean completionOrRecovery = false;
+        boolean isRecovery = false;
+        boolean isCompletion = false;
         ConstructorAttribute c = null;
         ProductionType t = ProductionType.NO_TYPE;
         boolean isBracket = false;
@@ -95,28 +79,39 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
                 c = (ConstructorAttribute) attr;
             }
             if(attr instanceof TermAttribute || attr instanceof GeneralAttribute) {
-                if(attr.toString().equals("completion") || attr.toString().equals("recover")
-                    || attr.toString().equals("literal-completion")) {
-                    completionOrRecovery = true;
+                if(attr.toString().equals("completion") || attr.toString().equals("literal-completion")) {
+                    isCompletion = true;
                 }
+
+                if(attr.toString().equals("recover"))
+                    isRecovery = true;
             }
             if(attr instanceof GeneralAttribute) {
                 GeneralAttribute ga = (GeneralAttribute) attr;
                 if(ga.getName().equals("bracket")) {
                     isBracket = true;
-                } 
+                }
                 if(ga.getName().equals("reject")) {
                     t = ProductionType.REJECT;
                 } else if(ga.getName().equals("prefer")) {
                     t = ProductionType.PREFER;
                 } else if(ga.getName().equals("avoid")) {
                     t = ProductionType.AVOID;
-                } 
+                }
             }
         }
+        this.isRecovery = isRecovery;
+        this.isCompletion = isCompletion;
         this.isBracket = isBracket;
+
+        boolean isList = false;
+
+        if(org.metaborg.parsetable.productions.IProduction.isListConstructor(c != null ? c.getConstructor() : null)) {
+            isList = true;
+            c = null;
+        }
+
         constructor = c;
-        isCompletionOrRecovery = completionOrRecovery;
         type = t;
 
         boolean isLayout = getIsLayout();
@@ -157,7 +152,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         isSkippableInParseForest = skippableLayout || skippableLexical;
 
 
-        boolean isList = false;
         ISymbol symb2 = p.leftHand();
         // not considering varsym
         if(symb2 instanceof OptionalSymbol) {
@@ -321,6 +315,17 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return "";
     }
 
+    @Override public ConcreteSyntaxContext concreteSyntaxContext() {
+        if(isLayout)
+            return ConcreteSyntaxContext.Layout;
+        else if(isLiteral)
+            return ConcreteSyntaxContext.Literal;
+        else if(isLexical)
+            return ConcreteSyntaxContext.Lexical;
+        else
+            return ConcreteSyntaxContext.ContextFree;
+    }
+
     @Override public boolean isContextFree() {
         return isContextFree;
     }
@@ -345,8 +350,12 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return isOptional;
     }
 
-    @Override public boolean isCompletionOrRecovery() {
-        return isCompletionOrRecovery;
+    @Override public boolean isRecovery() {
+        return isRecovery;
+    }
+
+    @Override public boolean isCompletion() {
+        return isCompletion;
     }
 
     @Override public boolean isStringLiteral() {
@@ -409,7 +418,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     @Override public String startSymbolSort() {
         if(getProduction().leftHand() instanceof StartSymbol) {
             for(ISymbol s : getProduction().rightHand()) {
-                if (s instanceof ContextualSymbol) {
+                if(s instanceof ContextualSymbol) {
                     s = ((ContextualSymbol) s).getOrigSymbol();
                 }
                 if(Symbol.getSort(s) != null) {

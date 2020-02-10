@@ -19,6 +19,7 @@ public class Production implements IProduction {
     private final boolean isNumberLiteral;
     private final boolean isSkippableInParseForest;
     private final ProductionAttributes attributes;
+    private final boolean isListConstructor;
 
     public Production(int productionId, ISymbol lhs, ISymbol[] rhs, Boolean isStringLiteral, Boolean isNumberLiteral,
         Boolean isLexicalRhs, Boolean isSkippableInParseForest, ProductionAttributes attributes) {
@@ -29,12 +30,13 @@ public class Production implements IProduction {
         this.isNumberLiteral = isNumberLiteral;
         this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
+        this.isListConstructor = IProduction.isListConstructor(attributes.constructor);
 
-        if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
+        if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout)
             concreteSyntaxContext = ConcreteSyntaxContext.Layout;
-        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal)
+        else if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal)
             concreteSyntaxContext = ConcreteSyntaxContext.Literal;
-        else if (lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs)
+        else if(lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs)
             concreteSyntaxContext = ConcreteSyntaxContext.Lexical;
         else
             concreteSyntaxContext = ConcreteSyntaxContext.ContextFree;
@@ -83,12 +85,19 @@ public class Production implements IProduction {
     }
 
     @Override public String constructor() {
-        return attributes.constructor;
+        if(!isListConstructor)
+            return attributes.constructor;
+        else
+            return null;
     }
 
     @Override public String descriptor() {
         return lhs.toString() + (constructor() != null ? "." + constructor() : "") + " = "
             + Arrays.stream(rhs).map(ISymbol::toString).collect(Collectors.joining(" "));
+    }
+
+    @Override public ConcreteSyntaxContext concreteSyntaxContext() {
+        return concreteSyntaxContext;
     }
 
     @Override public boolean isContextFree() {
@@ -112,7 +121,7 @@ public class Production implements IProduction {
     }
 
     @Override public boolean isList() {
-        return (lhs.cardinality() != null && lhs.cardinality().isList) || attributes.isFlatten;
+        return (lhs.cardinality() != null && lhs.cardinality().isList) || isListConstructor || attributes.isFlatten;
     }
 
     @Override public boolean isOptional() {
@@ -131,8 +140,12 @@ public class Production implements IProduction {
         return isLiteral() && ((ILiteralSymbol) lhs).isOperator();
     }
 
-    @Override public boolean isCompletionOrRecovery() {
-        return attributes.isCompletionOrRecovery();
+    @Override public boolean isRecovery() {
+        return attributes.isRecovery;
+    }
+
+    @Override public boolean isCompletion() {
+        return attributes.isCompletion();
     }
 
     @Override public String toString() {

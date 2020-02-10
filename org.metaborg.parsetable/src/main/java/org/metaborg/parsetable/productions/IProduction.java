@@ -1,5 +1,6 @@
 package org.metaborg.parsetable.productions;
 
+import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISymbol;
 
 public interface IProduction {
@@ -22,7 +23,13 @@ public interface IProduction {
 
     String constructor();
 
+    static boolean isListConstructor(String constructor) {
+        return "Snoc".equals(constructor) || "Ins".equals(constructor) || "Nil".equals(constructor);
+    }
+
     String descriptor();
+
+    ConcreteSyntaxContext concreteSyntaxContext();
 
     boolean isContextFree();
 
@@ -38,7 +45,9 @@ public interface IProduction {
 
     boolean isOptional();
 
-    boolean isCompletionOrRecovery();
+    boolean isRecovery();
+
+    boolean isCompletion();
 
     // The methods below are for tokenization / syntax highlighting
     boolean isStringLiteral();
@@ -50,7 +59,7 @@ public interface IProduction {
     boolean isIgnoreLayoutConstraint();
 
     boolean isLongestMatch();
-    
+
     boolean isBracket();
 
 }
