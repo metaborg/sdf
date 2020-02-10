@@ -173,11 +173,11 @@ public abstract class AbstractCharacterClassTest {
         TermFactory tf = new TermFactory();
         assertEquals("[120]", x.toAtermList(tf).toString());
         assertEquals("[range(65,90)]", AZ.toAtermList(tf).toString());
-        assertEquals("[256]", eof.toAtermList(tf).toString()); // TODO proper EOF
-        assertEquals("[range(0,256)]", fullRange.union(eof).toAtermList(tf).toString());
-        assertEquals("[range(65,90),256]", AZ.union(eof).toAtermList(tf).toString());
+        assertEquals("[eof]", eof.toAtermList(tf).toString());
+        assertEquals("[range(0,255),eof]", fullRange.union(eof).toAtermList(tf).toString());
+        assertEquals("[range(65,90),eof]", AZ.union(eof).toAtermList(tf).toString());
         assertEquals("[range(65,90),range(97,122)]", AZ.union(az).toAtermList(tf).toString());
-        assertEquals("[range(65,90),range(97,122),256]", AZ.union(az).union(eof).toAtermList(tf).toString());
+        assertEquals("[range(65,90),range(97,122),eof]", AZ.union(az).union(eof).toAtermList(tf).toString());
         assertEquals("[range(97,119),range(121,122)]", az.difference(x).toAtermList(tf).toString());
 
         // In Guava's Rangeset, {[97,122]} - {[99],[120]} = {[97,99),(99,120),(120,122]}

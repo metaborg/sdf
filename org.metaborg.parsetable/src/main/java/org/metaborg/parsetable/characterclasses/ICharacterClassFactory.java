@@ -10,7 +10,7 @@ public interface ICharacterClassFactory {
      * @param from
      *            The start of the range, inclusive.
      * @param to
-     *            The end of the range, exclusive.
+     *            The end of the range, inclusive.
      * @return A character class representing the range [from-to].
      */
     ICharacterClass fromRange(int from, int to);

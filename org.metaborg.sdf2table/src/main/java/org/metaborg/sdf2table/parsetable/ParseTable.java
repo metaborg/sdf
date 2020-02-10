@@ -1,52 +1,19 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.parsetable.IParseTable;
 import org.metaborg.parsetable.states.IState;
-import org.metaborg.sdf2table.deepconflicts.Context;
-import org.metaborg.sdf2table.deepconflicts.ContextPosition;
-import org.metaborg.sdf2table.deepconflicts.ContextType;
-import org.metaborg.sdf2table.deepconflicts.ContextualFactory;
-import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
-import org.metaborg.sdf2table.deepconflicts.DeepConflictsAnalyzer;
-import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
-import org.metaborg.sdf2table.grammar.GeneralAttribute;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.IterSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSepSymbol;
-import org.metaborg.sdf2table.grammar.IterStarSymbol;
-import org.metaborg.sdf2table.grammar.IterSymbol;
-import org.metaborg.sdf2table.grammar.Layout;
-import org.metaborg.sdf2table.grammar.LexicalSymbol;
-import org.metaborg.sdf2table.grammar.NormGrammar;
-import org.metaborg.sdf2table.grammar.OptionalSymbol;
-import org.metaborg.sdf2table.grammar.Priority;
-import org.metaborg.sdf2table.grammar.Production;
-import org.metaborg.sdf2table.grammar.Sort;
-import org.metaborg.sdf2table.grammar.Symbol;
+import org.metaborg.sdf2table.deepconflicts.*;
+import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.util.CheckOverlap;
 import org.metaborg.sdf2table.util.Graph;
 import org.metaborg.sdf2table.util.SCCNodes;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 public class ParseTable implements IParseTable, Serializable {
 
@@ -60,7 +27,7 @@ public class ParseTable implements IParseTable, Serializable {
 
     public static final int FIRST_PRODUCTION_LABEL = 257;
     public static final int INITIAL_STATE_NUMBER = 0;
-    public static final int VERSION_NUMBER = 6;
+    public static final int VERSION_NUMBER = 7;
 
     private final NormGrammar grammar;
     private final ContextualFactory cf;

@@ -6,17 +6,12 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.parsetable.ParseTable;
-import org.metaborg.util.log.ILogger;
-import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 public class CharacterClass implements ICharacterClass, Serializable {
 
     private static final long serialVersionUID = 418963364528944597L;
-
-    private static final ILogger logger = LoggerUtils.logger(ParseTable.class);
 
     private final BitSet chars;
     private final boolean containsEOF;
@@ -82,28 +77,24 @@ public class CharacterClass implements ICharacterClass, Serializable {
         }
     }
 
-    @Override public IStrategoTerm toAtermList(ITermFactory tf) { // TODO include EOF
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
         List<IStrategoTerm> terms = new ArrayList<>();
-        int lowerBound = chars.nextSetBit(0);
-        boolean shouldOutputEOF = containsEOF;
-        while(lowerBound != -1 && lowerBound < CHARACTERS) {
-            int upperBound = chars.nextClearBit(lowerBound);
 
-            if(lowerBound == upperBound - 1) {
+        int lowerBound = chars.nextSetBit(0);
+        while(lowerBound != -1 && lowerBound < MAX_CHAR) {
+            int upperBound = chars.nextClearBit(lowerBound) - 1;
+
+            if(lowerBound == upperBound) {
                 terms.add(tf.makeInt(lowerBound));
             } else {
-                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(lowerBound),
-                    // TODO proper EOF
-                    tf.makeInt(upperBound == 256 && shouldOutputEOF ? 256 : upperBound - 1)));
-                if(upperBound == 256 && shouldOutputEOF)
-                    shouldOutputEOF = false;
+                terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(lowerBound), tf.makeInt(upperBound)));
             }
 
-            lowerBound = chars.nextSetBit(upperBound);
+            lowerBound = chars.nextSetBit(upperBound + 1);
         }
 
-        if(shouldOutputEOF)
-            terms.add(tf.makeInt(EOF_INT));
+        if(containsEOF)
+            terms.add(tf.makeAppl(tf.makeConstructor("eof", 0)));
 
         return tf.makeList(terms);
     }

@@ -12,7 +12,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
 
     // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
     private final long[] words; // [0-63], [64-127], [128-191], [192-255]
-    private final boolean containsEOF; // [256]
+    private final boolean containsEOF;
 
     private final int min, max;
 

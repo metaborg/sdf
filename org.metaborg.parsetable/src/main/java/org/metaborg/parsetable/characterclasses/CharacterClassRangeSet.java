@@ -154,8 +154,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
         mutableRangeSet.add(Range.closed(Math.max(0, from), Math.min(MAX_CHAR, to)));
 
-        // TODO after changing parse table format: remove `|| to == EOF_INT`
-        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF || to == EOF_INT);
+        return new CharacterClassRangeSet(ImmutableRangeSet.copyOf(mutableRangeSet), containsEOF);
     }
 
     protected final CharacterClassRangeSet addSingle(int character) {
@@ -212,9 +211,8 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
         return new CharacterClassOptimized(words, containsEOF, min, max);
     }
 
-    @Override public IStrategoTerm toAtermList(ITermFactory tf) { // TODO proper EOF
+    @Override public IStrategoTerm toAtermList(ITermFactory tf) {
         List<IStrategoTerm> terms = new ArrayList<>();
-        boolean hasEOF = false;
         for(Range<Integer> range : rangeSet.asRanges()) {
             // In a RangeSet, ranges are represented using mixed open and closed boundaries.
             // Converting to canonical will always return a range of the form [x,y).
@@ -226,20 +224,14 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
             int from = canonical.lowerEndpoint();
             int to = canonical.upperEndpoint() - 1;
 
-            if(containsEOF && to == EOF_INT - 1) {
-                // Make EOF (256) be included in the range if it ends with 255
-                to++;
-                hasEOF = true;
-            }
-
             if(from == to)
                 terms.add(tf.makeInt(from));
             else
                 terms.add(tf.makeAppl(tf.makeConstructor("range", 2), tf.makeInt(from), tf.makeInt(to)));
         }
 
-        if(containsEOF && !hasEOF)
-            terms.add(tf.makeInt(EOF_INT));
+        if(containsEOF)
+            terms.add(tf.makeAppl(tf.makeConstructor("eof", 0)));
 
         return tf.makeList(terms);
     }
