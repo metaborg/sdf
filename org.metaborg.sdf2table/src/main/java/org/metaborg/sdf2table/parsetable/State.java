@@ -136,7 +136,7 @@ public class State implements IState, Comparable<State>, Serializable {
 
     public void doReduces() {
         // for each item p_i : A = A0 ... AN .
-        // add a reduce action reduce([0-256] / follow(A), p_i)
+        // add a reduce action reduce([0-MAX_CHAR,eof] / follow(A), p_i)
         for(LRItem item : items) {
 
             if(item.getDotPosition() == item.getProd().arity()) {

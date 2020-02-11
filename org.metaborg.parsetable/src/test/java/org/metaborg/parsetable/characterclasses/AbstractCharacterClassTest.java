@@ -152,8 +152,8 @@ public abstract class AbstractCharacterClassTest {
         assertEquals(ICharacterClass.comparator().compare(x, AZ), 1);
         assertEquals(ICharacterClass.comparator().compare(x, az), 1);
         assertEquals(ICharacterClass.comparator().compare(az, x), -1);
-        assertEquals(ICharacterClass.comparator().compare(az, eof), -1);
-        assertEquals(ICharacterClass.comparator().compare(eof, az), 1);
+        assertEquals(ICharacterClass.comparator().compare(az, eof), 1);
+        assertEquals(ICharacterClass.comparator().compare(eof, az), -1);
     }
 
     @Test public void testDisjointSortable() {

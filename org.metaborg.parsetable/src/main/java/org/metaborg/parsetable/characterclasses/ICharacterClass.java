@@ -11,11 +11,11 @@ import org.spoofax.interpreter.terms.ITermFactory;
 /**
  * ASCII characters: integer representation [0, 255]
  *
- * End-of-file marker (EOF): integer representation 256
+ * End-of-file marker (EOF): integer representation -1
  */
 public interface ICharacterClass {
 
-    int EOF_INT = 256; // TODO change to -1
+    int EOF_INT = -1;
     int CHARACTERS = 256; // TODO increase to 0x110000 to support Unicode
     int MAX_CHAR = CHARACTERS - 1;
 

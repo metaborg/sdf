@@ -24,7 +24,8 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
 
     // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
     private final long[] words; // [0-63], [64-127], [128-191], [192-255]
-    private final boolean containsEOF; // [256]
+    /** @see ICharacterClass#EOF_INT */
+    private final boolean containsEOF;
 
     private CharacterClassRangeSet() {
         this(ImmutableRangeSet.copyOf(TreeRangeSet.create()), false);
