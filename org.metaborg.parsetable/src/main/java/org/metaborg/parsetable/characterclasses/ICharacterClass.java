@@ -9,15 +9,15 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 /**
- * ASCII characters: integer representation [0, 255]
+ * Unicode characters: integer representation [0, 0x10ffff]
  *
  * End-of-file marker (EOF): integer representation -1
  */
 public interface ICharacterClass {
 
     int EOF_INT = -1;
-    int CHARACTERS = 256; // TODO increase to 0x110000 to support Unicode
-    int MAX_CHAR = CHARACTERS - 1;
+    int MAX_CHAR = 0x10ffff;
+    int CHARACTERS = MAX_CHAR + 1;
 
     boolean contains(int character);
 

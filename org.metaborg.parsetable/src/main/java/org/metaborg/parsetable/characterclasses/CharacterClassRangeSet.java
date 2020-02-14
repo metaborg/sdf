@@ -19,7 +19,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     static final long[] EMPTY_WORDS_ARRAY = new long[4];
     static final CharacterClassRangeSet EMPTY_CONSTANT = new CharacterClassRangeSet();
 
-    private final ImmutableRangeSet<Integer> rangeSet; // Contains ranges in range [0, 255]
+    private final ImmutableRangeSet<Integer> rangeSet; // Contains ranges in range [0, MAX_CHAR]
     private final int min, max;
 
     // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
@@ -61,16 +61,16 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
     @Override public final boolean contains(int character) {
         if(character == EOF_INT)
             return containsEOF;
+        return rangeSet.contains(character);
 
-        if(rangeSet.isEmpty()) // In this case, all cached words are empty as well, so no need to check them
-            return false;
-
+        /* TODO if(rangeSet.isEmpty()) // In this case, all cached words are empty as well, so no need to check them
         final int wordIndex = character >> BITMAP_SEGMENT_SIZE;
         if(wordIndex < 0 || wordIndex > 3)
             return false;
 
         final long word = words[wordIndex];
         return (word & (1L << character)) != 0;
+         */
     }
 
     @Override public int min() {
@@ -209,7 +209,7 @@ public final class CharacterClassRangeSet implements ICharacterClass, Serializab
                 return new CharacterClassSingle(span.lowerEndpoint());
         }
 
-        return new CharacterClassOptimized(words, containsEOF, min, max);
+        return this; // TODO new CharacterClassOptimized(words, containsEOF, min, max);
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {

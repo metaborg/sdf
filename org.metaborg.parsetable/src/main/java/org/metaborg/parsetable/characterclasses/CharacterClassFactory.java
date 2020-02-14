@@ -24,6 +24,8 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     public static String intToString(int character) {
         if(character == EOF_INT)
             return "EOF";
+        else if(Character.isSupplementaryCodePoint(character))
+            return new String(Character.toChars(character));
         else
             return "" + (char) character;
     }

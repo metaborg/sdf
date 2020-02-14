@@ -1634,7 +1634,7 @@ rules
             c' := <unquote; unescape; explode-string; last> c
      
      character-norm-fun:
-        Top() -> Numeric($[\255])
+        Top() -> Numeric($[\1114111])
 
      character-norm-fun:
         Bot() -> Numeric($[\0])
@@ -1992,12 +1992,12 @@ rules
             result := <bottomup(try(cc-set-operations))> Diff(Union(Diff(Simple(Present(cr1-head)), Simple(Present(cr2-head))), tail-cr1), Union(Diff(Simple(Present(cr2-head)), Simple(Present(cr1-head))), tail-cr2))   
       
       cc-set-operations:
-        Comp(cc) -> Simple(Present(Range(Numeric("\\0"), Numeric("\\255"))))
+        Comp(cc) -> Simple(Present(Range(Numeric("\\0"), Numeric("\\1114111"))))
         where
             <?Simple(Absent())> cc
             
       cc-set-operations:
-        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric("\\0"), Numeric("\\255")))), cc)
+        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric("\\0"), Numeric("\\1114111")))), cc)
         where
             <not(?Simple(Absent()))> cc   
             
@@ -2183,4 +2183,4 @@ rules
      create-assoc(|g1, g2, associativity) = !Assoc(g1, associativity, g2)
      
      replace-sort-def :
-       SortDef(s) -> Sort(s)                
+       SortDef(s) -> Sort(s)

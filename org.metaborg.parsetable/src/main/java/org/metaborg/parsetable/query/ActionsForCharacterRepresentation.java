@@ -4,6 +4,6 @@ public enum ActionsForCharacterRepresentation {
     Separated, DisjointSorted;
 
     public static ActionsForCharacterRepresentation standard() {
-        return DisjointSorted;
+        return Separated; // TODO figure out a way to make DisjointSorted efficient with Unicode
     }
 }

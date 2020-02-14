@@ -174,7 +174,7 @@ public abstract class AbstractCharacterClassTest {
         assertEquals("[120]", x.toAtermList(tf).toString());
         assertEquals("[range(65,90)]", AZ.toAtermList(tf).toString());
         assertEquals("[eof]", eof.toAtermList(tf).toString());
-        assertEquals("[range(0,255),eof]", fullRange.union(eof).toAtermList(tf).toString());
+        assertEquals("[range(0,1114111),eof]", fullRange.union(eof).toAtermList(tf).toString());
         assertEquals("[range(65,90),eof]", AZ.union(eof).toAtermList(tf).toString());
         assertEquals("[range(65,90),range(97,122)]", AZ.union(az).toAtermList(tf).toString());
         assertEquals("[range(65,90),range(97,122),eof]", AZ.union(az).union(eof).toAtermList(tf).toString());

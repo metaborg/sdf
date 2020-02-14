@@ -210,13 +210,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
     private boolean checkNotIsLetter(ISymbol s) {
         if(s instanceof Sort) {
-            for(int i = 0; i < s.name().length(); i++) {
-                char c = s.name().charAt(i);
-                if(Character.isLetter(c)) {
-                    return false;
-                }
-            }
-            return true;
+            return s.name().codePoints().noneMatch(Character::isLetter);
         }
         return false;
     }

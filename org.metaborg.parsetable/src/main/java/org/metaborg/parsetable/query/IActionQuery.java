@@ -12,9 +12,8 @@ public interface IActionQuery {
      * shifted, that character is the actual first character of lookahead (as returned by actionQueryCharacter). The
      * lookahead returned by this function starts after that character.
      *
-     * If the remaining input is shorter than the requested length, the returned string will be shorter than this
-     * length.
+     * If the remaining input is shorter than the requested length, the returned array will be shorter than this length.
      */
-    String actionQueryLookahead(int length);
+    int[] actionQueryLookahead(int length);
 
 }

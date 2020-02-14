@@ -119,8 +119,8 @@ public class MultipleActionGroupsForRangeTest {
             return character;
         }
 
-        @Override public String actionQueryLookahead(int length) {
-            return "";
+        @Override public int[] actionQueryLookahead(int length) {
+            return new int[0];
         }
     }
 }
