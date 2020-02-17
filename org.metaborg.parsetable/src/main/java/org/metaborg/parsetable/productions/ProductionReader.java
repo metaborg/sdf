@@ -4,8 +4,8 @@ import static org.spoofax.terms.Term.*;
 
 import java.util.Iterator;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.ParseTableReadException;
+import org.metaborg.parsetable.characterclasses.CharacterClassReader;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISortSymbol;
 import org.metaborg.parsetable.symbols.ISymbol;
@@ -45,7 +45,7 @@ public class ProductionReader {
         boolean isLexicalRhs = getIsLexicalRhs(rhsTerm);
         boolean isLayout = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout;
         boolean isLiteral = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal;
-        boolean isLexical = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical;
+        boolean isLexical = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs;
 
         boolean skippableLayout = isLayout && !getIsLayoutParent(lhsTerm, rhsTerm);
         boolean skippableLexical = !(lhs instanceof ISortSymbol) && (isLexical || (isLexicalRhs && !isLiteral));
@@ -68,15 +68,12 @@ public class ProductionReader {
 
     private boolean getIsLexicalRhs(IStrategoList rhs) {
         if(rhs.getSubtermCount() > 0) {
-            boolean lexRhs = true;
-
             for(IStrategoTerm rhsPart : rhs.getAllSubterms()) {
-                String rhsPartConstructor = ((IStrategoAppl) rhsPart).getConstructor().getName();
-
-                lexRhs &= "char-class".equals(rhsPartConstructor);
+                if(!"char-class".equals(((IStrategoAppl) rhsPart).getConstructor().getName())) {
+                    return false;
+                }
             }
-
-            return lexRhs;
+            return true;
         } else
             return false;
     }

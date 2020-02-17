@@ -21,8 +21,8 @@ public class Production implements IProduction {
     private final ProductionAttributes attributes;
     private final boolean isListConstructor;
 
-    public Production(int productionId, ISymbol lhs, ISymbol[] rhs, Boolean isStringLiteral, Boolean isNumberLiteral,
-        Boolean isLexicalRhs, Boolean isSkippableInParseForest, ProductionAttributes attributes) {
+    public Production(int productionId, ISymbol lhs, ISymbol[] rhs, boolean isStringLiteral, boolean isNumberLiteral,
+        boolean isLexicalRhs, boolean isSkippableInParseForest, ProductionAttributes attributes) {
         this.productionId = productionId;
         this.lhs = lhs;
         this.rhs = rhs;
