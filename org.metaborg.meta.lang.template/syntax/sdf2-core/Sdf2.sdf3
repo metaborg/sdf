@@ -100,5 +100,4 @@ context-free syntax
     "sorts"             -/- [A-Za-z0-9]
     NatCon-CF        -/- [0-9]
     LAYOUT?-CF        -/- [\ \t\n\%]
-    NumChar-CF       -/- [0-9]
     ModuleName-CF    -/- [A-Za-z0-9\_\-]

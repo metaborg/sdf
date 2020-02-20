@@ -1,5 +1,7 @@
 package org.metaborg.sdf2table.io;
 
+import static java.lang.Integer.parseInt;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -489,18 +491,24 @@ public class NormGrammarReader {
                 case "Absent":
                     return ccFactory.fromEmpty();
                 case "Simple":
-                    return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    String strStart = ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
-                    String strEnd = ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
-                    int start = Integer.parseInt(strStart.substring(1));
-                    int end = Integer.parseInt(strEnd.substring(1));
-                    return ccFactory.fromRange(start, end);
+                    if(app.getSubterm(0).getSubterm(0) instanceof IStrategoInt) {
+                        int start = ((IStrategoInt) app.getSubterm(0).getSubterm(0)).intValue();
+                        int end = ((IStrategoInt) app.getSubterm(1).getSubterm(0)).intValue();
+                        return ccFactory.fromRange(start, end);
+                    } else { // TODO this branch is probably not needed anymore?
+                        String start = ((IStrategoString) app.getSubterm(0).getSubterm(0)).stringValue().substring(1);
+                        String end = ((IStrategoString) app.getSubterm(1).getSubterm(0)).stringValue().substring(1);
+                        return ccFactory.fromRange(parseInt(start), parseInt(end));
+                    }
                 case "Numeric":
-                    String str = ((StrategoString) app.getSubterm(0)).stringValue();
-                    return ccFactory.fromSingle(Integer.parseInt(str.substring(1)));
+                    if(app.getSubterm(0) instanceof IStrategoInt)
+                        return ccFactory.fromSingle(((IStrategoInt) app.getSubterm(0)).intValue());
+                    else
+                        return ccFactory
+                            .fromSingle(parseInt(((IStrategoString) app.getSubterm(0)).stringValue().substring(1)));
                 case "Conc":
                     ICharacterClass head = processCharClass(app.getSubterm(0));
                     return head.union(processCharClass(app.getSubterm(1)));
@@ -612,7 +620,7 @@ public class NormGrammarReader {
             return termFactory.makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
-            int ivalue = Integer.parseInt(svalue);
+            int ivalue = parseInt(svalue);
             return termFactory.makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
@@ -759,7 +767,7 @@ public class NormGrammarReader {
                 IStrategoList positions = (IStrategoList) priority_args.getSubterm(0);
                 for(IStrategoTerm pos : positions.getAllSubterms()) {
                     if(pos instanceof StrategoString) {
-                        arguments.add(Integer.parseInt(((StrategoString) pos).stringValue()));
+                        arguments.add(parseInt(((StrategoString) pos).stringValue()));
                     } else {
                         throw new UnexpectedTermException(pos.toString(), "Argument Position");
                     }

@@ -37,7 +37,11 @@ imports
   signatures/sorts/-
   signatures/symbols/-
   signatures/TemplateLang-sig
-  
+
+signature
+  constructors
+    Numeric : Int -> Character // Used as normalized form of character classes, uses Int instead of String
+
 rules
 
     cputime = prim("SSL_cputime")
@@ -225,8 +229,8 @@ rules
               (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
               plhd-restr* := [SDFSection(LexicalRestrictions([Follow(<map(!Lit(<concat-strings; double-quote> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, 
                                                                         Single(CharClass(Simple(Present(
-                                                                                       Conc(Range(Short("a"), Short("z"))
-                                                                                          , Range(Short("A"), Short("Z"))))))))]))]
+                                                                                       Conc(Range(Regular("a"), Regular("z"))
+                                                                                          , Range(Regular("A"), Regular("Z"))))))))]))]
           end;                                                                                     
       // lexical restrictions
         x    := <filter(case-sensitive-template-prods); nub> prods*;
@@ -1610,7 +1614,7 @@ rules
      
      //create char-classes with numbers already instead of strings avoiding ![<id>]; implode-string;      
      charclass-from-char:
-        c -> CharClass(Simple(Present(Numeric($[\[c]]))))   
+        c -> CharClass(Simple(Present(Numeric(c))))
      
      charclass-from-case-insensitive:
         c -> result
@@ -1618,60 +1622,71 @@ rules
             c1 := <try(to-upper)> c;
             c2 := <try(to-lower)> c; 
             if <?c1> c2 then
-                result := CharClass(Simple(Present(Numeric($[\[c1]]))))
+                result := CharClass(Simple(Present(Numeric(c1))))
             else               
-                result := CharClass(Simple(Present(Conc(Numeric($[\[c1]]), Numeric($[\[c2]])))))
+                result := CharClass(Simple(Present(Conc(Numeric(c1), Numeric(c2)))))
             end
             
      //char-class-norm:
      //   m@Module(Unparameterized(mn), i*, sections*) -> m'
      //   with
      //       m' := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations)) > m
-        
-     character-norm-fun:
-        Short(c) -> Numeric($[\[c']])
-        where
-            c' := <unquote; unescape; explode-string; last> c
-     
-     character-norm-fun:
-        Top() -> Numeric($[\1114111])
 
      character-norm-fun:
-        Bot() -> Numeric($[\0])
-        
+        Regular(c) -> Numeric(<unquote; explode-string; Hd> c)
+
      character-norm-fun:
-        LabelStart() -> Numeric($[\257])
-        
+        Escaped(c) -> Numeric(<unquote; explode-string; Hd> c)
+
+     character-norm-fun:
+        Escaped("t") -> Numeric(9)
+
+     character-norm-fun:
+        Escaped("n") -> Numeric(10)
+
+     character-norm-fun:
+        Escaped("v") -> Numeric(11)
+
+     character-norm-fun:
+        Escaped("f") -> Numeric(12)
+
+     character-norm-fun:
+        Escaped("r") -> Numeric(13)
+
+     character-norm-fun:
+        Decimal(c) -> Numeric(<string-to-int> c)
+
+     character-norm-fun:
+        Hexadecimal(c) -> Numeric(<hex-string-to-int> c)
+
+     character-norm-fun:
+        Bot() -> Numeric(0)
+
+     character-norm-fun:
+        Top() -> Numeric(1114111)
+
+     character-norm-fun:
+        LabelStart() -> Numeric(257)
+
      pre-char-class-norm:
-        Range(Numeric(c1), Numeric(c2)) -> Numeric(c1)
-        where
-            <?c1> c2
-            
+        Range(Numeric(c), Numeric(c)) -> Numeric(c)
+
      pre-char-class-norm:
         Range(Numeric(c1), Numeric(c2)) -> Absent()
         where
-            <not(?c1)> c2
-        where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <gt> (c1-int, c2-int)
-            
+            <gt> (c1, c2)
+
      pre-char-class-norm:
         Present(Absent()) -> Absent()       
         
      is-member:
-        (Numeric(c), Numeric(c2)) -> <id>
-        where
-            <?c> c2
-     
+        (Numeric(c), Numeric(c)) -> <id>
+
      is-member:
         (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c-int  := <ltrim-chars(?'\'); string-to-int> c;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <geq> (c-int, c1-int);
-            <geq> (c2-int, c-int)
+            <geq> (c, c1);
+            <geq> (c2, c)
             
      is-member:
         (c1@Numeric(c), Conc(cr1, cr2)) -> <id>
@@ -1682,7 +1697,7 @@ rules
         (Range(cr1@Numeric(c1), cr2@Numeric(c2)), cr) -> <id>
         where
             <is-member> (cr1, cr);
-            <is-member> (Range(Numeric(<cc-succ> c1), Numeric(c2)), cr)
+            <is-member> (Range(Numeric(<inc> c1), Numeric(c2)), cr)
             
      is-member:
         (Range(cr1@Numeric(c1), Numeric(c1)), cr) -> <id>
@@ -1699,88 +1714,64 @@ rules
         (Absent(), cr) -> <id>         
      
      left-smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c2, c1)
             
      left-smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c1, c)
             
      left-smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c, c1)
             
      left-smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int) 
+            <gt> (c3, c1)
             
      smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c2, c1)
             
      smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c1, c)
             
      smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c2-int)
+            <gt> (c, c2)
             
      smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c2-int)       
+            <gt> (c3, c2)
             
      strictly-smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c1-int)
+            <gt> (c2, <inc> c1)
             
      strictly-smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c1-int)
+            <gt> (c1, <inc> c)
             
      strictly-smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c2-int)
+            <gt> (c, <inc> c2)
             
      strictly-smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c2-int)                                     
+            <gt> (c3, <inc> c2)
       
      char-class-norm-fun = bottomup(try(order-ranges)); bottomup(try(merge-overlapping-cc))
       
@@ -1828,43 +1819,30 @@ rules
      merge-cc:
         (Numeric(c1), Numeric(c2)) -> Range(Numeric(c1), Numeric(c2))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <eq> (c2-int, <inc> c1-int)
+            <eq> (c2, <inc> c1)
             
      merge-cc:
         (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> Range(Numeric(c1), Numeric(<max-character> (c2, c3)))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <geq> (c3-int, c1-int);
-            <geq> (<inc> c2-int, c3-int)   
+            <geq> (c3, c1);
+            <geq> (<inc> c2, c3)
             
      merge-cc:
         (Numeric(c1), Range(Numeric(c2), Numeric(c3))) -> Range(Numeric(c1), Numeric(c3))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <eq <+ <eq> (<inc> c1-int, c2-int) > (c1-int, c2-int) 
+            <eq <+ <eq> (<inc> c1, c2) > (c1, c2)
      
      merge-cc:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> Range(Numeric(c1), Numeric(<max-character> (c2, c4)))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <geq> (c3-int, c1-int);
-            <geq> (<inc> c2-int, c3-int)
+            <geq> (c3, c1);
+            <geq> (<inc> c2, c3)
            
      
      max-character:
         (c1, c2) -> result
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            if <gt> (c1-int, c2-int) then
+            if <gt> (c1, c2) then
                 result := c1
             else
                 result := c2
@@ -1916,10 +1894,7 @@ rules
         where
             <?Simple(Present(Numeric(c1)))> cc1;
             <?Simple(Present(Range(Numeric(c3), Numeric(c4))))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            c4-int := <ltrim-chars(?'\'); string-to-int> c4;            
-            if <geq> (c1-int, c3-int); <geq> (c4-int, c1-int)  then
+            if <geq> (c1, c3); <geq> (c4, c1)  then
                 result := Simple(Absent())
             else
                 result := cc1
@@ -1930,12 +1905,9 @@ rules
         where
             <?Simple(Present(Range(Numeric(c1), Numeric(c2))))> cc1;
             <?Simple(Present(Numeric(c3)))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;            
-            if <geq> (c3-int, c1-int); <geq> (c2-int, c3-int)  then
-                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
-                                            , <try(pre-char-class-norm)> Range(Numeric(<cc-succ> c3), Numeric(c2))))
+            if <geq> (c3, c1); <geq> (c2, c3)  then
+                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<dec> c3))
+                                            , <try(pre-char-class-norm)> Range(Numeric(<inc> c3), Numeric(c2))))
             else
                 result := cc1
             end       
@@ -1945,14 +1917,9 @@ rules
         where
             <?Simple(Present(Range(Numeric(c1), Numeric(c2))))> cc1;
             <?Simple(Present(Range(Numeric(c3), Numeric(c4))))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            c4-int := <ltrim-chars(?'\'); string-to-int> c4;
-            c4'    := <cc-succ> c4;
-            c4-int':= <ltrim-chars(?'\'); string-to-int> c4';
-            if <geq> (c2-int, c3-int); <geq> (c4-int', c1-int)  then
-                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
+            c4'    := <inc> c4;
+            if <geq> (c2, c3); <geq> (c4', c1)  then
+                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<dec> c3))
                                             , <try(pre-char-class-norm)> Range(Numeric(c4'), Numeric(c2))))
             else
                 result := cc1
@@ -1992,12 +1959,12 @@ rules
             result := <bottomup(try(cc-set-operations))> Diff(Union(Diff(Simple(Present(cr1-head)), Simple(Present(cr2-head))), tail-cr1), Union(Diff(Simple(Present(cr2-head)), Simple(Present(cr1-head))), tail-cr2))   
       
       cc-set-operations:
-        Comp(cc) -> Simple(Present(Range(Numeric("\\0"), Numeric("\\1114111"))))
+        Comp(cc) -> Simple(Present(Range(Numeric(0), Numeric(1114111))))
         where
             <?Simple(Absent())> cc
             
       cc-set-operations:
-        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric("\\0"), Numeric("\\1114111")))), cc)
+        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric(0), Numeric(1114111)))), cc)
         where
             <not(?Simple(Absent()))> cc   
             
@@ -2049,20 +2016,8 @@ rules
         not(?Conc(c1, _))
         
       cc-tail:
-        Conc(c1, cr)-> cr  
-        
-      cc-succ:
-        char -> char'
-        where
-            int-succ-char :=  <ltrim-chars(?'\'); string-to-int; inc> char;
-            char'         :=  $[\[int-succ-char]]
-     
-     cc-pred:
-        char -> char'
-        where
-            int-pred-char :=  <ltrim-chars(?'\'); string-to-int; dec> char;
-            char'         :=  $[\[int-pred-char]]       
-     
+        Conc(c1, cr)-> cr
+
      restrictions-norm:
         Module(Unparameterized(mn), i*, [kernel | sections*]) -> Module(Unparameterized(mn), i*, [kernel, new-restrictions, priorities])
         where

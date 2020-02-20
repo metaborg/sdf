@@ -144,9 +144,9 @@ rules
  
  */
  
-  get-boilerplate-water = ![ SDFSection(LexicalSyntax([ SdfProduction(SortDef("WATERTOKENSTART"), Rhs([CharClass(Simple(Present(Conc(Range(Short("A"), Short("Z")), Conc(Range(Short("a"), Short("z")), Conc(Range(Short("0"), Short("9")), Short("\\_")))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
-        , SdfProduction(SortDef("WATERTOKEN"), Rhs([Sort("WATERTOKENSTART"), IterStar(CharClass(Simple(Present(Conc(Range(Short("A"), Short("Z")), Conc(Range(Short("a"), Short("z")), Conc(Range(Short("0"), Short("9")), Short("\\_"))))))))]), NoAttrs())
-        , SdfProduction(SortDef("WATERTOKENSEPARATOR"), Rhs([CharClass(Comp(Simple(Present(Conc(Range(Short("A"), Short("Z")), Conc(Range(Short("a"), Short("z")), Conc(Range(Short("0"), Short("9")), Conc(Short("\\_"), Conc(Short("\\ "), Conc(Short("\\t"), Conc(Numeric("\\12"), Conc(Short("\\r"), Conc(Short("\\n"), Short("\\*"))))))))))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
+  get-boilerplate-water = ![ SDFSection(LexicalSyntax([ SdfProduction(SortDef("WATERTOKENSTART"), Rhs([CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Regular("\\_")))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
+        , SdfProduction(SortDef("WATERTOKEN"), Rhs([Sort("WATERTOKENSTART"), IterStar(CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Escaped("_"))))))))]), NoAttrs())
+        , SdfProduction(SortDef("WATERTOKENSEPARATOR"), Rhs([CharClass(Comp(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Conc(Escaped("_"), Conc(Escaped(" "), Conc(Range(Escaped("t"), Escaped("r")), Escaped("*")))))))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
         , SdfProduction(SortDef("WATERTOKENSTAR"), Rhs([Lit("\"*\"")]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
         , SdfProduction(SortDef("WATER"), Rhs([Sort("WATERTOKEN")]), NoAttrs())
         , SdfProduction(SortDef("WATER"), Rhs([Sort("WATERTOKENSEPARATOR")]), NoAttrs())
@@ -156,8 +156,8 @@ rules
       )
     )
   , SDFSection(LexicalRestrictions(
-        [ Follow([Sort("WATERTOKEN")], Single(CharClass(Simple(Present(Conc(Range(Short("A"), Short("Z")), Conc(Range(Short("a"), Short("z")), Conc(Range(Short("0"), Short("9")), Short("\\_")))))))))
-        , Follow([Sort("WATERTOKENSTAR")], Single(CharClass(Simple(Present(Short("\\/"))))))
+        [ Follow([Sort("WATERTOKEN")], Single(CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Escaped("_")))))))))
+        , Follow([Sort("WATERTOKENSTAR")], Single(CharClass(Simple(Present(Escaped("/"))))))
         ]
       )
     )
@@ -165,4 +165,3 @@ rules
   , SDFSection(LexicalRestrictions([Follow([Sort("WATEREOF")], Single(CharClass(Comp(Simple(Absent())))))]))
   ]
               
-            
