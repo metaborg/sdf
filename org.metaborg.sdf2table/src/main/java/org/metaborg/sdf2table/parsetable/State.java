@@ -103,7 +103,6 @@ public class State implements IState, Comparable<State>, Serializable {
                     if(!(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1)) {
                         new_shifts.add(shift);
                     }
-                    new_gotos.add(new Goto(((CharacterClassSymbol) s_at_dot).getCC(), pt));
                 }
                 if(!new_kernel.isEmpty()) {
                     checkKernel(new_kernel, new_gotos, new_shifts);
