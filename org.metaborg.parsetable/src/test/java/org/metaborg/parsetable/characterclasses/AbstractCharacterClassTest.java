@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.characterclasses;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.*;
 
 import java.util.Arrays;
@@ -25,8 +26,10 @@ public abstract class AbstractCharacterClassTest {
 
     protected void testCharacterClass(ICharacterClass characters, Predicate<Integer> contains) {
         for(int i = 0; i < CHARACTERS; i++) {
-            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character class "
-                + characters.toString() + ":", contains.test(i), characters.contains(i));
+            if(contains.test(i) != characters.contains(i))
+                fail("Character class " + characters.toString() + " failed: expected it to"
+                    + (contains.test(i) ? "" : " NOT") + " contain character " + i + " ('"
+                    + CharacterClassFactory.intToString(i) + "')");
         }
         assertEquals("Character EOF for character class " + characters.toString() + ":", contains.test(EOF_INT),
             characters.contains(EOF_INT));
@@ -34,21 +37,24 @@ public abstract class AbstractCharacterClassTest {
 
     protected void testCharacterClass(ICharacterClass one, ICharacterClass two) {
         for(int i = 0; i < CHARACTERS; i++) {
-            assertEquals("Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') for character classes "
-                + one.toString() + " vs. " + two.toString() + ":", two.contains(i), one.contains(i));
+            if(one.contains(i) != two.contains(i))
+                fail("Character classes " + one.toString() + " and " + two.toString() //
+                    + " are not equal: Character " + i + " ('" + CharacterClassFactory.intToString(i) + "') is" //
+                    + (one.contains(i) ? "" : " NOT") + " in the first but is" //
+                    + (two.contains(i) ? "" : " NOT") + " in the second");
         }
         assertEquals("Character EOF for character classes " + one.toString() + " vs. " + two.toString() + ":",
             two.contains(EOF_INT), one.contains(EOF_INT));
     }
 
-    @Test public void testLowerCaseLettersRange() {
+    @Test public void testLowerCaseLettersRangeContains() {
         testCharacterClass(az, character -> 97 <= character && character <= 122);
 
         assertEquals(az.contains('a'), true);
         assertEquals(az.contains('A'), false);
     }
 
-    @Test public void testUppercaseCaseLettersRange() {
+    @Test public void testUppercaseCaseLettersRangeContains() {
         testCharacterClass(AZ, character -> 65 <= character && character <= 90);
     }
 

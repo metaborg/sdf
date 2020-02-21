@@ -1,6 +1,7 @@
 package org.metaborg.parsetable.query;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
@@ -86,8 +87,8 @@ public class MultipleActionGroupsForRangeTest {
             Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
             Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
 
-            assertEquals("Action sets not equal for character " + character, actionForSeparated,
-                actionForDisjointSorted);
+            if(!actionForSeparated.equals(actionForDisjointSorted))
+                fail("Action sets not equal for character " + character);
         }
 
         IActionQuery actionQuery = new MockActionQuery(EOF_INT);
