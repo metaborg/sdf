@@ -113,11 +113,25 @@ public abstract class AbstractCharacterClassTest {
         testCharacterClass(eof.difference(az.union(eof)), factory.fromEmpty());
     }
 
+    @Test public void testOperationsWithEmpty() {
+        testCharacterClass(factory.fromRange(10, 20).union(factory.fromEmpty()), factory.fromRange(10, 20));
+        testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromEmpty()), factory.fromEmpty());
+        testCharacterClass(factory.fromRange(10, 20).difference(factory.fromEmpty()), factory.fromRange(10, 20));
+
+        testCharacterClass(factory.fromEmpty().union(factory.fromRange(10, 20)), factory.fromRange(10, 20));
+        testCharacterClass(factory.fromEmpty().intersection(factory.fromRange(10, 20)), factory.fromEmpty());
+        testCharacterClass(factory.fromEmpty().difference(factory.fromRange(10, 20)), factory.fromEmpty());
+    }
+
     @Test public void testRangeIntersect() {
         testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromSingle(15)), factory.fromSingle(15));
         testCharacterClass(factory.fromSingle(15).intersection(factory.fromRange(10, 20)), factory.fromSingle(15));
 
         testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromRange(15, 25)),
+            factory.fromRange(15, 20));
+        testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromRange(15, 20)),
+            factory.fromRange(15, 20));
+        testCharacterClass(factory.fromRange(15, 20).intersection(factory.fromRange(15, 25)),
             factory.fromRange(15, 20));
 
         testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromRange(20, 30)), factory.fromSingle(20));
@@ -132,6 +146,9 @@ public abstract class AbstractCharacterClassTest {
         testCharacterClass(factory.fromSingle(15).difference(factory.fromRange(10, 20)), factory.fromEmpty());
 
         testCharacterClass(factory.fromRange(65, 70).difference(factory.fromSingle(70)), factory.fromRange(65, 69));
+
+        testCharacterClass(az.difference(c.union(x)).difference(factory.fromSingle('d').union(x)),
+            c -> c == 'a' || c == 'b' || 'e' <= c && c <= 'w' || c == 'y' || c == 'z');
 
         testCharacterClass(factory.fromRange(65, 75).difference(factory.fromRange(68, 73)),
             factory.fromRange(65, 67).union(factory.fromRange(74, 75)));
@@ -193,7 +210,7 @@ public abstract class AbstractCharacterClassTest {
         // {[97,99),(99,120),(120,122]} - {[100],[120]} = {[97,99),(99,100),(100,120),(120,122]}
         // The empty range (99,100) must be removed
         assertEquals("[range(97,98),range(101,119),range(121,122)]",
-            az.difference(c.union(x)).difference(factory.fromSingle(100).union(x)).toAtermList(tf).toString());
+            az.difference(c.union(x)).difference(factory.fromSingle('d').union(x)).toAtermList(tf).toString());
     }
 
 }

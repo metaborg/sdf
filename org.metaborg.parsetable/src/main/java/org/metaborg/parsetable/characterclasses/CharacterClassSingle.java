@@ -32,7 +32,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
 
     @Override public ICharacterClass setEOF(boolean eof) {
         if(character == EOF_INT) {
-            return eof ? this : CharacterClassRangeSet.EMPTY_CONSTANT;
+            return eof ? this : CharacterClassRangeList.EMPTY_CONSTANT;
         }
         return eof ? union(new CharacterClassSingle(EOF_INT)) : this;
     }
@@ -42,7 +42,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
             if(other.contains(character))
                 return this;
 
-            CharacterClassRangeSet result = CharacterClassRangeSet.EMPTY_CONSTANT;
+            CharacterClassRangeList result = CharacterClassRangeList.EMPTY_CONSTANT;
             result = result.addSingle(this.character);
             result = result.addSingle(other.min());
             return result;
@@ -50,6 +50,8 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
 
         if(other instanceof CharacterClassRangeSet)
             return ((CharacterClassRangeSet) other).addSingle(character);
+        if(other instanceof CharacterClassRangeList)
+            return ((CharacterClassRangeList) other).addSingle(character);
 
         throw new IllegalStateException("Union can only be done with Single and RangeSet character classes");
     }
@@ -61,7 +63,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         if(other.contains(character))
             return this;
         else
-            return CharacterClassRangeSet.EMPTY_CONSTANT;
+            return CharacterClassRangeList.EMPTY_CONSTANT;
     }
 
     @Override public ICharacterClass difference(ICharacterClass other) {
@@ -69,7 +71,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
             throw new IllegalStateException("Difference can only be done with Single and RangeSet character classes");
 
         if(other.contains(character))
-            return CharacterClassRangeSet.EMPTY_CONSTANT;
+            return CharacterClassRangeList.EMPTY_CONSTANT;
         else
             return this;
     }
@@ -86,21 +88,13 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         if(this == o) {
             return true;
         }
-        if(o instanceof CharacterClassRangeSet) {
-            if(((CharacterClassRangeSet) o).min() == min() && ((CharacterClassRangeSet) o).max() == min()) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        if(o == null || getClass() != o.getClass()) {
+        if(o == null) {
             return false;
         }
-
-        CharacterClassSingle that = (CharacterClassSingle) o;
-
-        return this.character == that.character;
+        if(!(o instanceof ICharacterClass)) {
+            return false;
+        }
+        return ((ICharacterClass) o).min() == min() && ((ICharacterClass) o).max() == min();
     }
 
     @Override public final String toString() {

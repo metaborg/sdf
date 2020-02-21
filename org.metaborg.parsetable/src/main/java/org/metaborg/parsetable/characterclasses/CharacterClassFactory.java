@@ -1,7 +1,6 @@
 package org.metaborg.parsetable.characterclasses;
 
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
-import static org.metaborg.parsetable.characterclasses.ICharacterClass.MAX_CHAR;
 
 import java.io.Serializable;
 
@@ -18,8 +17,10 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
 
     public static final ICharacterClass EOF_SINGLETON = new CharacterClassSingle(EOF_INT);
     public static final ICharacterClass FULL_RANGE =
-        CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, MAX_CHAR).setEOF(true);
-    public static final ICharacterClass EMPTY_CHARACTER_CLASS = CharacterClassRangeSet.EMPTY_CONSTANT;
+        // CharacterClassRangeSet.EMPTY_CONSTANT.addRange(0, MAX_CHAR).setEOF(true);
+        CharacterClassRangeList.EMPTY_CONSTANT.complement();
+    public static final ICharacterClass EMPTY_CHARACTER_CLASS = CharacterClassRangeList.EMPTY_CONSTANT;
+    // CharacterClassRangeSet.EMPTY_CONSTANT;
 
     public static String intToString(int character) {
         if(character == EOF_INT)
@@ -50,8 +51,8 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
             this.characterClassCache = new Cache<>();
     }
 
-    @Override public CharacterClassRangeSet fromEmpty() {
-        return CharacterClassRangeSet.EMPTY_CONSTANT;
+    @Override public CharacterClassRangeList fromEmpty() {
+        return CharacterClassRangeList.EMPTY_CONSTANT;
     }
 
     @Override public final ICharacterClass fromSingle(int character) {
@@ -59,14 +60,15 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     }
 
     @Override public final ICharacterClass fromRange(int from, int to) {
-        return fromEmpty().addRange(from, to);
+        // return fromEmpty().addRange(from, to);
+        return new CharacterClassRangeList(new int[] { from, to }, false);
     }
 
     @Override public ICharacterClass finalize(ICharacterClass characterClass) {
         ICharacterClass optimized;
 
-        if(characterClass instanceof CharacterClassRangeSet && optimize)
-            optimized = ((CharacterClassRangeSet) characterClass).optimized();
+        if(characterClass instanceof CharacterClassRangeList && optimize)
+            optimized = ((CharacterClassRangeList) characterClass).optimized();
         else
             optimized = characterClass;
 
