@@ -10,7 +10,7 @@ import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
+import org.metaborg.parsetable.query.ActionsForCharacterSeparated;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
 import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
@@ -376,7 +376,8 @@ public class State implements IState, Comparable<State>, Serializable {
     }
 
     public void calculateActionsForCharacter() {
-        actionsForCharacter = new ActionsForCharacterDisjointSorted(readActions());
+        actionsForCharacter = new ActionsForCharacterSeparated(readActions());
+        // TODO new ActionsForCharacterDisjointSorted(readActions());
     }
 
     private ActionsPerCharacterClass[] readActions() {
