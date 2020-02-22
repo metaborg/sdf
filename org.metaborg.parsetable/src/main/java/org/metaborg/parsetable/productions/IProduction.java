@@ -39,7 +39,9 @@ public interface IProduction {
 
     boolean isLexical();
 
-    boolean isSkippableInParseForest();
+    default boolean isSkippableInParseForest() {
+        return !isContextFree();
+    }
 
     boolean isList();
 

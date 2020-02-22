@@ -17,18 +17,16 @@ public class Production implements IProduction {
     private final int productionId;
     private final boolean isStringLiteral;
     private final boolean isNumberLiteral;
-    private final boolean isSkippableInParseForest;
     private final ProductionAttributes attributes;
     private final boolean isListConstructor;
 
     public Production(int productionId, ISymbol lhs, ISymbol[] rhs, boolean isStringLiteral, boolean isNumberLiteral,
-        boolean isLexicalRhs, boolean isSkippableInParseForest, ProductionAttributes attributes) {
+        boolean isLexicalRhs, ProductionAttributes attributes) {
         this.productionId = productionId;
         this.lhs = lhs;
         this.rhs = rhs;
         this.isStringLiteral = isStringLiteral;
         this.isNumberLiteral = isNumberLiteral;
-        this.isSkippableInParseForest = isSkippableInParseForest;
         this.attributes = attributes;
         this.isListConstructor = IProduction.isListConstructor(attributes.constructor);
 
@@ -114,10 +112,6 @@ public class Production implements IProduction {
 
     @Override public boolean isLexical() {
         return concreteSyntaxContext == ConcreteSyntaxContext.Lexical;
-    }
-
-    @Override public boolean isSkippableInParseForest() {
-        return isSkippableInParseForest;
     }
 
     @Override public boolean isList() {

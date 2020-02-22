@@ -6,8 +6,6 @@ import java.util.Iterator;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
-import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
-import org.metaborg.parsetable.symbols.ISortSymbol;
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SymbolReader;
 import org.spoofax.interpreter.terms.IStrategoAppl;
@@ -41,29 +39,11 @@ public class ProductionReader {
 
         boolean isStringLiteral = getIsStringLiteral(rhsTerm);
         boolean isNumberLiteral = getIsNumberLiteral(rhsTerm);
-
         boolean isLexicalRhs = getIsLexicalRhs(rhsTerm);
-        boolean isLayout = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Layout;
-        boolean isLiteral = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Literal;
-        boolean isLexical = lhs.concreteSyntaxContext() == ConcreteSyntaxContext.Lexical || isLexicalRhs;
-
-        boolean skippableLayout = isLayout && !getIsLayoutParent(lhsTerm, rhsTerm);
-        boolean skippableLexical = !(lhs instanceof ISortSymbol) && (isLexical || (isLexicalRhs && !isLiteral));
-
-        boolean isSkippableInParseForest = skippableLayout || skippableLexical;
 
         ProductionAttributes attributes = readProductionAttributes(attributesTerm);
 
-        return new Production(productionId, lhs, rhs, isStringLiteral, isNumberLiteral, isLexicalRhs,
-            isSkippableInParseForest, attributes);
-    }
-
-    private boolean getIsLayoutParent(IStrategoTerm lhs, IStrategoTerm rhs) {
-        String descriptor = lhs.toString() + " -> " + rhs.toString();
-
-        return "cf".equals(((IStrategoAppl) lhs).getConstructor().getName())
-            && !"cf(layout) -> [cf(layout),cf(layout)]".equals(descriptor)
-            && !"cf(opt(layout)) -> []".equals(descriptor);
+        return new Production(productionId, lhs, rhs, isStringLiteral, isNumberLiteral, isLexicalRhs, attributes);
     }
 
     private boolean getIsLexicalRhs(IStrategoList rhs) {
