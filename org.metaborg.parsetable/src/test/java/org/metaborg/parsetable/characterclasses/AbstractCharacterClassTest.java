@@ -12,15 +12,18 @@ import org.spoofax.terms.TermFactory;
 
 public abstract class AbstractCharacterClassTest {
 
-    ICharacterClassFactory factory = getCharacterClassFactory();
+    final ICharacterClassFactory factory = getCharacterClassFactory();
 
-    ICharacterClass AZ = factory.fromRange(65, 90);
-    ICharacterClass az = factory.fromRange(97, 122);
-    ICharacterClass fullRange = factory.fromRange(0, MAX_CHAR);
+    final ICharacterClass empty = factory.fromEmpty();
 
-    ICharacterClass c = factory.fromSingle(99);
-    ICharacterClass x = factory.fromSingle(120);
-    ICharacterClass eof = factory.fromSingle(EOF_INT);
+    final ICharacterClass AZ = factory.fromRange('A', 'Z');
+    final ICharacterClass az = factory.fromRange('a', 'z');
+    final ICharacterClass fullRange = factory.fromRange(0, MAX_CHAR);
+
+    final ICharacterClass c = factory.fromSingle('c');
+    final ICharacterClass d = factory.fromSingle('d');
+    final ICharacterClass x = factory.fromSingle('x');
+    final ICharacterClass eof = factory.fromSingle(EOF_INT);
 
     protected abstract ICharacterClassFactory getCharacterClassFactory();
 
@@ -68,13 +71,13 @@ public abstract class AbstractCharacterClassTest {
     @Test public void testLettersIntersectionRange() {
         ICharacterClass letters = az.intersection(AZ);
 
-        testCharacterClass(letters, factory.fromEmpty());
+        testCharacterClass(letters, empty);
     }
 
     @Test public void testLettersDifferenceRange() {
         ICharacterClass letters = az.intersection(AZ);
 
-        testCharacterClass(letters, factory.fromEmpty());
+        testCharacterClass(letters, empty);
     }
 
     @Test public void testSingletonRange() {
@@ -92,9 +95,11 @@ public abstract class AbstractCharacterClassTest {
     }
 
     @Test public void testEOF() {
-        ICharacterClass characters = factory.fromSingle(EOF_INT);
-
-        testCharacterClass(characters, character -> character == EOF_INT);
+        testCharacterClass(factory.fromSingle(EOF_INT), character -> character == EOF_INT);
+        testCharacterClass(factory.fromSingle(EOF_INT).setEOF(true), character -> character == EOF_INT);
+        testCharacterClass(factory.fromSingle(EOF_INT).setEOF(false), character -> false);
+        testCharacterClass(c.setEOF(true), character -> character == 'c' || character == EOF_INT);
+        testCharacterClass(c.setEOF(false), character -> character == 'c');
     }
 
     @Test public void testRangeEOFunion() {
@@ -110,17 +115,27 @@ public abstract class AbstractCharacterClassTest {
 
     @Test public void testRangeEOFdifference() {
         testCharacterClass(az.union(eof).difference(eof), az);
-        testCharacterClass(eof.difference(az.union(eof)), factory.fromEmpty());
+        testCharacterClass(eof.difference(az.union(eof)), empty);
     }
 
     @Test public void testOperationsWithEmpty() {
-        testCharacterClass(factory.fromRange(10, 20).union(factory.fromEmpty()), factory.fromRange(10, 20));
-        testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromEmpty()), factory.fromEmpty());
-        testCharacterClass(factory.fromRange(10, 20).difference(factory.fromEmpty()), factory.fromRange(10, 20));
+        testCharacterClass(factory.fromRange(10, 20).union(empty), factory.fromRange(10, 20));
+        testCharacterClass(factory.fromRange(10, 20).intersection(empty), empty);
+        testCharacterClass(factory.fromRange(10, 20).difference(empty), factory.fromRange(10, 20));
 
-        testCharacterClass(factory.fromEmpty().union(factory.fromRange(10, 20)), factory.fromRange(10, 20));
-        testCharacterClass(factory.fromEmpty().intersection(factory.fromRange(10, 20)), factory.fromEmpty());
-        testCharacterClass(factory.fromEmpty().difference(factory.fromRange(10, 20)), factory.fromEmpty());
+        testCharacterClass(empty.union(factory.fromRange(10, 20)), factory.fromRange(10, 20));
+        testCharacterClass(empty.intersection(factory.fromRange(10, 20)), empty);
+        testCharacterClass(empty.difference(factory.fromRange(10, 20)), empty);
+    }
+
+    @Test public void testRangeUnion() {
+        testCharacterClass(c.union(c), c);
+        testCharacterClass(factory.fromRange('a', 'g').union(c), c -> 'a' <= c && c <= 'g');
+        testCharacterClass(factory.fromRange('c', 'e').union(factory.fromRange('f', 'g')), c -> 'c' <= c && c <= 'g');
+        testCharacterClass(factory.fromRange('c', 'g').union(factory.fromRange('c', 'e')), c -> 'c' <= c && c <= 'g');
+        testCharacterClass(factory.fromRange('d', 'g').union(c), c -> 'c' <= c && c <= 'g');
+        testCharacterClass(factory.fromRange('q', 'w').union(x), c -> 'q' <= c && c <= 'x');
+        testCharacterClass(factory.fromRange('a', 'b').union(factory.fromRange('d', 'z')).union(c), az);
     }
 
     @Test public void testRangeIntersect() {
@@ -137,17 +152,30 @@ public abstract class AbstractCharacterClassTest {
         testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromRange(20, 30)), factory.fromSingle(20));
         testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromSingle(20)), factory.fromSingle(20));
         testCharacterClass(factory.fromSingle(20).intersection(factory.fromRange(10, 20)), factory.fromSingle(20));
+        testCharacterClass(factory.fromRange(10, 20).intersection(factory.fromSingle(30)), empty);
+        testCharacterClass(factory.fromSingle(30).intersection(factory.fromRange(10, 20)), empty);
     }
 
     @Test public void testRangeDifference() {
+        testCharacterClass(c.difference(x), c);
+        testCharacterClass(c.union(x).difference(c), x);
+        testCharacterClass(c.union(x).difference(x), c);
+
         testCharacterClass(factory.fromRange(65, 75).difference(factory.fromSingle(70)),
             factory.fromRange(65, 69).union(factory.fromRange(71, 75)));
 
-        testCharacterClass(factory.fromSingle(15).difference(factory.fromRange(10, 20)), factory.fromEmpty());
+        testCharacterClass(factory.fromRange(65, 75).difference(factory.fromSingle(80)), factory.fromRange(65, 75));
+
+        testCharacterClass(factory.fromSingle(15).difference(factory.fromRange(10, 20)), empty);
 
         testCharacterClass(factory.fromRange(65, 70).difference(factory.fromSingle(70)), factory.fromRange(65, 69));
 
-        testCharacterClass(az.difference(c.union(x)).difference(factory.fromSingle('d').union(x)),
+        testCharacterClass(factory.fromRange(65, 70).difference(factory.fromSingle(65)), factory.fromRange(66, 70));
+
+        testCharacterClass(az.difference(c.union(x)).difference(d.union(x)),
+            c -> c == 'a' || c == 'b' || 'e' <= c && c <= 'w' || c == 'y' || c == 'z');
+
+        testCharacterClass(az.difference(d.union(x)).difference(c.union(x)),
             c -> c == 'a' || c == 'b' || 'e' <= c && c <= 'w' || c == 'y' || c == 'z');
 
         testCharacterClass(factory.fromRange(65, 75).difference(factory.fromRange(68, 73)),
@@ -203,14 +231,12 @@ public abstract class AbstractCharacterClassTest {
         assertEquals("[range(65,90),range(97,122),eof]", AZ.union(az).union(eof).toAtermList(tf).toString());
         assertEquals("[range(97,119),range(121,122)]", az.difference(x).toAtermList(tf).toString());
 
-        // In Guava's Rangeset, {[97,122]} - {[99],[120]} = {[97,99),(99,120),(120,122]}
-        // This test checks whether the open ranges are correctly normalized to closed ranges when converting to ATerm.
         assertEquals("[range(97,98),range(100,119),range(121,122)]",
             az.difference(c.union(x)).toAtermList(tf).toString());
-        // {[97,99),(99,120),(120,122]} - {[100],[120]} = {[97,99),(99,100),(100,120),(120,122]}
-        // The empty range (99,100) must be removed
         assertEquals("[range(97,98),range(101,119),range(121,122)]",
-            az.difference(c.union(x)).difference(factory.fromSingle('d').union(x)).toAtermList(tf).toString());
+            az.difference(c.union(x)).difference(d.union(x)).toAtermList(tf).toString());
+        assertEquals("[range(97,98),100,range(102,122)]",
+            az.difference(factory.fromSingle('e').union(c)).toAtermList(tf).toString());
     }
 
 }

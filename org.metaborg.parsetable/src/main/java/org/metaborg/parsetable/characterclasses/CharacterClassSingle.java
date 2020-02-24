@@ -55,12 +55,13 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         if(other instanceof CharacterClassRangeList)
             return ((CharacterClassRangeList) other).addSingle(character);
 
-        throw new IllegalStateException("Union can only be done with Single and RangeSet character classes");
+        throw new IllegalStateException("Union can only be done with Single and RangeList character classes");
     }
 
     @Override public ICharacterClass intersection(ICharacterClass other) {
         if(other instanceof CharacterClassOptimized)
-            throw new IllegalStateException("Intersection can only be done with Single and RangeSet character classes");
+            throw new IllegalStateException(
+                "Intersection can only be done with Single and RangeList character classes");
 
         if(other.contains(character))
             return this;
@@ -70,7 +71,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
 
     @Override public ICharacterClass difference(ICharacterClass other) {
         if(other instanceof CharacterClassOptimized)
-            throw new IllegalStateException("Difference can only be done with Single and RangeSet character classes");
+            throw new IllegalStateException("Difference can only be done with Single and RangeList character classes");
 
         if(other.contains(character))
             return CharacterClassRangeList.EMPTY_CONSTANT;

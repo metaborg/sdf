@@ -3,7 +3,6 @@ package org.metaborg.parsetable.characterclasses;
 import static org.junit.Assert.assertTrue;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.MAX_CHAR;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ParseTableCharacterClassTest extends AbstractCharacterClassTest {
@@ -35,20 +34,28 @@ public class ParseTableCharacterClassTest extends AbstractCharacterClassTest {
         testCharacterClass(a, be.complement());
     }
 
-    // TODO fix optimized for Unicode
-    @Ignore @Test public void testOptimized() {
+    @Test public void testOptimized() {
+        ICharacterClass rangeListEOF = factory.fromEmpty().setEOF(true);
+
         testCharacterClass(x, factory.finalize(x));
         testCharacterClass(AZ, factory.finalize(AZ));
         testCharacterClass(eof, factory.finalize(eof));
+        testCharacterClass(rangeListEOF, factory.finalize(rangeListEOF));
         testCharacterClass(x.union(eof), factory.finalize(x.union(eof)));
         testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
+        testCharacterClass(factory.fromRange(250, 260), factory.finalize(factory.fromRange(250, 260)));
+        testCharacterClass(factory.fromRange(0xffff, 0x1000f), factory.finalize(factory.fromRange(0xffff, 0x1000f)));
+        ICharacterClass bigRange = factory.fromRange(0xffff, 0x1000f).union(factory.fromRange(0xfffff, 0x10000f));
+        testCharacterClass(bigRange, factory.finalize(bigRange));
         testCharacterClass(fullRange, factory.finalize(fullRange));
 
         assertTrue(factory.finalize(x) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(AZ) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(eof) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(rangeListEOF) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(x.union(eof)) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(bigRange) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(fullRange) instanceof CharacterClassOptimized);
     }
 

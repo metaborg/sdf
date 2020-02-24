@@ -3,7 +3,6 @@ package org.metaborg.parsetable.characterclasses;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -13,16 +12,12 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
 
     private static final long serialVersionUID = 8553734625129300348L;
 
-    static final int BITMAP_SEGMENT_SIZE = 6; // 2^6 = 64 = 1/4 * 256
-    static final long[] EMPTY_WORDS_ARRAY = new long[4];
     static final CharacterClassRangeList EMPTY_CONSTANT = new CharacterClassRangeList();
 
     /** An ordered array of low-high pairs in range [0, MAX_CHAR]. Both ends of each range are inclusive. */
     private final int[] rangeList; // Should not be mutated after creation
     private final int min, max;
 
-    // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
-    private final long[] words; // [0-63], [64-127], [128-191], [192-255]
     /** @see ICharacterClass#EOF_INT */
     private final boolean containsEOF;
 
@@ -36,8 +31,6 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
 
         this.rangeList = rangeList;
         this.containsEOF = containsEOF;
-
-        this.words = hasRanges() ? Arrays.copyOf(convertToBitSet().toLongArray(), 4) : EMPTY_WORDS_ARRAY;
 
         if(hasRanges()) {
             int min = rangeList[0];
@@ -273,9 +266,6 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
         if(character == EOF_INT)
             return new CharacterClassRangeList(rangeList, true);
 
-        if(contains(character))
-            return this;
-
         if(!hasRanges())
             return new CharacterClassRangeList(new int[] { character, character }, containsEOF);
 
@@ -293,7 +283,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
             return new CharacterClassRangeList(newList, containsEOF);
         } else if(charFitsInPrevRange) {
             int[] newList = rangeList.clone();
-            newList[rangeIndex - 1]++;
+            newList[rangeIndex + 1]++;
             return new CharacterClassRangeList(newList, containsEOF);
         } else {
             int[] newList = insertRange(rangeIndex + 2);
@@ -351,19 +341,6 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
         return newList;
     }
 
-    private BitSet convertToBitSet() {
-        if(rangeList.length == 0) {
-            return new BitSet();
-        }
-
-        BitSet bitSet = new BitSet();
-        for(int i = 0; i < rangeList.length; i += 2) {
-            bitSet.set(rangeList[i], rangeList[i + 1] + 1);
-        }
-
-        return bitSet;
-    }
-
     public final ICharacterClass optimized() {
         if(rangeList.length == 0)
             if(containsEOF)
@@ -371,12 +348,12 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
             else
                 throw new IllegalStateException("Empty character classes are not allowed");
 
-        // Reduce to single character, this is possible when it does not contain EOF and the canonical span is [x,x+1)
+        // Reduce to single character, this is possible when it does not contain EOF and the range is a singleton
         if(!containsEOF && min == max) {
             return new CharacterClassSingle(min);
         }
 
-        return this; // TODO new CharacterClassOptimized(words, containsEOF, min, max);
+        return new CharacterClassOptimized(this);
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
