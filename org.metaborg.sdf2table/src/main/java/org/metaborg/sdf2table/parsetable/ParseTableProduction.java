@@ -27,7 +27,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final boolean isLayout;
     private final boolean isLiteral;
     private final boolean isLexical;
-    private final boolean isSkippableInParseForest;
     private final boolean isList;
     private final boolean isOptional;
     private final boolean isStringLiteral;
@@ -145,12 +144,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
         this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
 
-        boolean isLayoutParent = getIsLayoutParent();
-        boolean skippableLayout = isLayout && !isLayoutParent;
-        boolean skippableLexical = sort == null && (isLexical || (isLexicalRhs && !isLiteral));
-
-        isSkippableInParseForest = skippableLayout || skippableLexical;
-
 
         ISymbol symb2 = p.leftHand();
         // not considering varsym
@@ -213,11 +206,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             isLayout = true;
         }
         return isLayout;
-    }
-
-    private boolean getIsLayoutParent() {
-        return getIsLayout() && (getProduction().leftHand() instanceof ContextFreeSymbol)
-            && !this.toString().equals("LAYOUT-CF = LAYOUT-CF LAYOUT-CF") && !this.toString().equals("LAYOUT?-CF = ");
     }
 
     private boolean checkNotIsLetter(ISymbol s) {
@@ -284,11 +272,9 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             return containsOptSymbol(((ContextFreeSymbol) s).getSymbol());
         } else if(s instanceof LexicalSymbol) {
             return containsOptSymbol(((LexicalSymbol) s).getSymbol());
+        } else {
+            return s instanceof OptionalSymbol;
         }
-        if(s instanceof OptionalSymbol) {
-            return true;
-        }
-        return false;
     }
 
     private boolean isIterSymbol(ISymbol s) {
@@ -427,10 +413,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             }
         }
         return null;
-    }
-
-    @Override public boolean isSkippableInParseForest() {
-        return isSkippableInParseForest;
     }
 
     @Override public boolean isLongestMatch() {
