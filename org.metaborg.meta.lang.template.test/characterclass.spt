@@ -10,19 +10,31 @@ fixture [[
     ID = [ [[...]] ]
 ]]
 
-test regular  [[ A ]]       parse to Present(Regular("A"))
-test escape   [[ \@ ]]      parse to Present(Escaped("@"))
-test quote1   [[ \' ]]      parse to Present(Escaped("'"))
-test quote2   [[ \" ]]      parse to Present(Escaped("\""))
-test unicode  [[ \Σ ]]      parse to Present(Escaped("Σ"))
-test emoji    [[ \😀 ]]     parse to Present(Escaped("😀"))
-test tab      [[ \t ]]      parse to Present(Escaped("t"))
-test newline  [[ \n ]]      parse to Present(Escaped("n"))
-test vtab     [[ \v ]]      parse to Present(Escaped("v"))
-test formfeed [[ \f ]]      parse to Present(Escaped("f"))
-test car-ret  [[ \r ]]      parse to Present(Escaped("r"))
-test decimal  [[ \65 ]]     parse to Present(Decimal("65"))
-test hex      [[ \u41 ]]    parse to Present(Hexadecimal("41"))
-test hex2     [[ \u1f600 ]] parse to Present(Hexadecimal("1f600"))
-test bot      [[ \BOT ]]    parse to Present(Bot())
-test top      [[ \TOP ]]    parse to Present(Top())
+test regular  [[ A ]]        parse to Present(Regular("A"))
+
+test escape   [[ \@ ]]       parse to Present(Escaped("@"))
+test quote1   [[ \' ]]       parse to Present(Escaped("'"))
+test quote2   [[ \" ]]       parse to Present(Escaped("\""))
+test unicode  [[ \Σ ]]       parse to Present(Escaped("Σ"))
+test emoji    [[ \😀 ]]      parse to Present(Escaped("😀"))
+
+test tab      [[ \t ]]       parse to Present(Escaped("t"))
+test newline  [[ \n ]]       parse to Present(Escaped("n"))
+test vtab     [[ \v ]]       parse to Present(Escaped("v"))
+test formfeed [[ \f ]]       parse to Present(Escaped("f"))
+test car-ret  [[ \r ]]       parse to Present(Escaped("r"))
+
+test binary   [[ \0b0110 ]]  parse to Present(Binary("0110"))
+test octal    [[ \015 ]]     parse to Present(Octal("15"))
+test decimal  [[ \65 ]]      parse to Present(Decimal("65"))
+test hex      [[ \0x41 ]]    parse to Present(Hexadecimal("41"))
+test hex2     [[ \0x1f600 ]] parse to Present(Hexadecimal("1f600"))
+
+test zero     [[ \0 ]]       parse to Present(Decimal("0"))
+test 2 zeroes [[ \00 ]]      parse to Present(Octal("0"))
+test 3 zeroes [[ \000 ]]     parse to Present(Octal("00"))
+test bin zero [[ \0b000 ]]   parse to Present(Binary("000"))
+test hex zero [[ \0x000 ]]   parse to Present(Hexadecimal("000"))
+
+test bot      [[ \BOT ]]     parse to Present(Bot())
+test top      [[ \TOP ]]     parse to Present(Top())

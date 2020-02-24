@@ -2,21 +2,31 @@ module characterclass/Character
 
 lexical syntax
     RegularChar = character:[a-zA-Z0-9]
-    EscapedChar = escape:~[\0-\31A-Za-z0-9] \/ [fnrtv]
-    NumChar = number:[0-9]+
+    EscapedChar = escape:(~[\0-\31A-Za-z0-9] \/ [fnrtv])
+    BinChar = number:[01]+
+    OctChar = number:[0-7]+
+    NumChar = number:Zero
+    NumChar = number:([1-9] [0-9]+)
     HexChar = number:[0-9A-Fa-f]+
+    Zero = "0"
 
 lexical restrictions
+    BinChar -/- [0-1]
+    OctChar -/- [0-7]
     NumChar -/- [0-9]
     HexChar -/- [0-9A-Fa-f]
 
+    Zero -/- [0bx] // To avoid clashes with Binary, Octal, and Hexadecimal
+
 syntax
-	Character-CF.Regular = RegularChar-LEX
-	Character-CF.Escaped = "\\" EscapedChar-LEX
-	Character-CF.Decimal = "\\" NumChar-LEX
-    Character-CF.Hexadecimal = "\\u" HexChar-LEX
+    Character-CF.Regular = RegularChar-LEX
+    Character-CF.Escaped = "\\" EscapedChar-LEX
+    Character-CF.Binary = "\\0b" BinChar-LEX
+    Character-CF.Octal = "\\0" OctChar-LEX
+    Character-CF.Decimal = "\\" NumChar-LEX
+    Character-CF.Hexadecimal = "\\0x" HexChar-LEX
 
 context-free syntax
-	Character.Bot = "\\BOT"
-	Character.Top = "\\TOP"
-	Character.LabelStart = "\\LABEL_START"
+    Character.Bot = "\\BOT"
+    Character.Top = "\\TOP"
+    Character.LabelStart = "\\LABEL_START"

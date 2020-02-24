@@ -1654,6 +1654,12 @@ rules
         Escaped(c) -> Numeric(<unquote; explode-string; Hd> c)
 
      character-norm-fun:
+        Binary(c) -> Numeric(<bin-string-to-int> c)
+
+     character-norm-fun:
+        Octal(c) -> Numeric(<oct-string-to-int> c)
+
+     character-norm-fun:
         Decimal(c) -> Numeric(<string-to-int> c)
 
      character-norm-fun:

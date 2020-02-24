@@ -507,6 +507,12 @@ rules //conversion of SDF3 terms into SDF2
     Escaped(char) -> short(<conc-strings> ("\\", char))
 
   special-term-to-sdf:
+    Binary(num) -> numeric(<conc-strings> ("\\", <bin-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
+    Octal(num) -> numeric(<conc-strings> ("\\", <oct-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
     Decimal(num) -> numeric(<conc-strings> ("\\", num))
 
   special-term-to-sdf:
