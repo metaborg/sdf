@@ -103,15 +103,16 @@ class ParseTableReaderDelegate {
 
         IGoto[] gotos = new IGoto[gotoCount];
 
-        for(int i = 0; i < gotoCount; i++) {
-            IStrategoNamed gotoTermNamed = (IStrategoNamed) gotosTermList.getSubterm(i);
+        int i = 0;
+        for(IStrategoTerm subterm : gotosTermList) {
+            IStrategoNamed gotoTermNamed = (IStrategoNamed) subterm;
 
             IStrategoList productionsTermList = toListAt(gotoTermNamed, 0);
             int[] productionIds = readGotoProductions(productionsTermList);
 
             int gotoStateId = toJavaIntAt(gotoTermNamed, 1);
 
-            gotos[i] = new Goto(productionIds, gotoStateId);
+            gotos[i++] = new Goto(productionIds, gotoStateId);
         }
 
         return gotos;
@@ -122,13 +123,13 @@ class ParseTableReaderDelegate {
 
         int[] productionIds = new int[productionCount];
 
-        for(int i = 0; i < productionCount; i++) {
-            IStrategoTerm productionIdsTerm = productionsTermList.getSubterm(i);
+        int i = 0;
+        for(IStrategoTerm productionIdsTerm : productionsTermList) {
 
             if(isInt(productionIdsTerm)) {
                 int productionId = toJavaInt(productionIdsTerm);
 
-                productionIds[i] = productionId;
+                productionIds[i++] = productionId;
             }
 
             // productionIdsTerm can also be a range representing character classes. That is a remainder of parse
@@ -168,8 +169,9 @@ class ParseTableReaderDelegate {
 
         IAction[] actions = new IAction[actionCount];
 
-        for(int i = 0; i < actionCount; i++) {
-            IStrategoAppl actionTermAppl = (IStrategoAppl) actionsTermList.getSubterm(i);
+        int i = 0;
+        for(IStrategoTerm subterm : actionsTermList) {
+            IStrategoAppl actionTermAppl = (IStrategoAppl) subterm;
             IAction action = null;
 
             if(actionTermAppl.getName().equals("reduce")) { // Reduce
@@ -197,7 +199,7 @@ class ParseTableReaderDelegate {
                 throw new IllegalStateException("invalid action type");
             }
 
-            actions[i] = action;
+            actions[i++] = action;
         }
 
         return actions;
@@ -213,10 +215,9 @@ class ParseTableReaderDelegate {
             // The length of this list equals the length of the lookahead
             ICharacterClass[] followRestrictionCharacterClasses = new ICharacterClass[lookaheadLength];
 
-            for(int i = 0; i < lookaheadLength; i++) {
-                IStrategoTerm characterClassTerm = followRestrictionCharacterClassList.getSubterm(i);
-
-                followRestrictionCharacterClasses[i] =
+            int i = 0;
+            for(IStrategoTerm characterClassTerm : followRestrictionCharacterClassList) {
+                followRestrictionCharacterClasses[i++] =
                     characterClassReader.read((IStrategoList) characterClassTerm.getSubterm(0));
             }
 
