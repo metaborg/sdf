@@ -513,7 +513,7 @@ public class NormGrammarReader {
                     ICharacterClass head = processCharClass(app.getSubterm(0));
                     return head.union(processCharClass(app.getSubterm(1)));
                 default:
-                    System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
+                    System.err.println("Unknown character class `" + app + "'. Is that normalized SDF3?");
                     return ccFactory.fromEmpty();
             }
         }

@@ -1636,9 +1636,6 @@ rules
         Regular(c) -> Numeric(<unquote; explode-string; Hd> c)
 
      character-norm-fun:
-        Escaped(c) -> Numeric(<unquote; explode-string; Hd> c)
-
-     character-norm-fun:
         Escaped("t") -> Numeric(9)
 
      character-norm-fun:
@@ -1652,6 +1649,9 @@ rules
 
      character-norm-fun:
         Escaped("r") -> Numeric(13)
+
+     character-norm-fun:
+        Escaped(c) -> Numeric(<unquote; explode-string; Hd> c)
 
      character-norm-fun:
         Decimal(c) -> Numeric(<string-to-int> c)
