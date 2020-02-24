@@ -53,6 +53,10 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
         return false;
     }
 
+    @Override public int[] getRanges() {
+        throw new IllegalStateException("Cannot get ranges from CharacterClassOptimized");
+    }
+
     @Override public ICharacterClass setEOF(boolean eof) {
         throw new IllegalStateException("CharacterClassOptimized is not mutable");
     }

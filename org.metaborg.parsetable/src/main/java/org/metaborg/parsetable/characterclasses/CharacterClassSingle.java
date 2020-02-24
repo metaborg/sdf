@@ -30,6 +30,10 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
         return false;
     }
 
+    @Override public int[] getRanges() {
+        return character == EOF_INT ? new int[0] : new int[] { character, character };
+    }
+
     @Override public ICharacterClass setEOF(boolean eof) {
         if(character == EOF_INT) {
             return eof ? this : CharacterClassRangeList.EMPTY_CONSTANT;
@@ -98,7 +102,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
     }
 
     @Override public final String toString() {
-        return "[" + character + "]";
+        return "[" + (character == EOF_INT ? "EOF" : character) + "]";
     }
 
 }

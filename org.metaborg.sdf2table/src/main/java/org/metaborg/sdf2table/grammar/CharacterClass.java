@@ -41,6 +41,10 @@ public class CharacterClass implements ICharacterClass, Serializable {
         return chars.isEmpty();
     }
 
+    @Override public int[] getRanges() {
+        throw new IllegalStateException("Cannot get ranges from SDF2Table Character Class");
+    }
+
     @Override public ICharacterClass setEOF(boolean eof) {
         return eof == this.containsEOF ? this : new CharacterClass((BitSet) chars.clone(), eof);
     }

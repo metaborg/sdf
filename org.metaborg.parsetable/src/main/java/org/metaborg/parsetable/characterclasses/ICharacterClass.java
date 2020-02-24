@@ -27,6 +27,9 @@ public interface ICharacterClass {
 
     boolean isEmpty();
 
+    /** Does not include EOF */
+    int[] getRanges();
+
     /**
      * @return A character class that is equal to this character class, except that `eof` is set as given.<br>
      *         May return `this` if there are no changes.

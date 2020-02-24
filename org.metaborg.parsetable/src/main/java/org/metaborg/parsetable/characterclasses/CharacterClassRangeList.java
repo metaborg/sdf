@@ -56,7 +56,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
 
     private static boolean isDisjointSorted(int[] a) {
         int length = a.length;
-        if(length % 2 != 0)
+        if((length & 1) != 0) // If length is odd
             return false;
         for(int i = 0; i < length - 1; i += 2)
             // Single ranges can have equal boundaries, but prev.high and next.low must be distinct and offset by one
@@ -104,6 +104,10 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
 
     @Override public boolean isEmpty() {
         return !hasRanges() && !containsEOF;
+    }
+
+    @Override public int[] getRanges() {
+        return rangeList;
     }
 
     public boolean hasRanges() {

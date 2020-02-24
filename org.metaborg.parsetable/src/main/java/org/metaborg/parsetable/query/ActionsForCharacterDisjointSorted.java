@@ -1,6 +1,5 @@
 package org.metaborg.parsetable.query;
 
-import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 import java.io.Serializable;
@@ -8,6 +7,10 @@ import java.util.*;
 
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 
 public final class ActionsForCharacterDisjointSorted implements IActionsForCharacter, Serializable {
 
@@ -18,64 +21,67 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
     public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
         this.actionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
-        this.actionsForEOF = new ActionsForRange(
-            getActionsForCharacter(actionsPerCharacterClasses, EOF_INT).toArray(new IAction[0]), EOF_INT, EOF_INT);
+        this.actionsForEOF =
+            new ActionsForRange(getActionsForEOF(actionsPerCharacterClasses).toArray(new IAction[0]), EOF_INT, EOF_INT);
     }
 
     public static ActionsForRange[] toDisjointSortedRanges(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
         List<ActionsForRange> actionsForRanges = new ArrayList<>();
 
-        int newRangeFromCharacter = -1; // Contains the start character for the next range that will be added
-        Set<IAction> newRangeActions = null; // Contains the actions for the next range that will be added
+        int[][] ranges = new int[actionsPerCharacterClasses.length][];
+        for(int i = 0; i < ranges.length; i++) {
+            ranges[i] = actionsPerCharacterClasses[i].characterClass.getRanges();
+        }
+        int[] indices = new int[ranges.length];
+        Multiset<IAction> newRangeActions = HashMultiset.create();
 
-        for(int character = 0; character < CHARACTERS; character++) {
-            Set<IAction> actionsForCharacter = getActionsForCharacter(actionsPerCharacterClasses, character);
-
-            /*
-             * Based on the applicable actions for the current character and if a new range already started before: do
-             * nothing, create the range that was already started, start a new range or both of the latter.
-             */
-            if(actionsForCharacter.isEmpty()) {
-                if(newRangeFromCharacter != -1) { // A range ended on the previous character
-                    actionsForRanges.add(new ActionsForRange(newRangeActions.toArray(new IAction[0]),
-                        newRangeFromCharacter, character - 1));
-
-                    newRangeFromCharacter = -1;
-                    newRangeActions = null;
-                } // else { /* no current range is maintained, so nothing changes */ }
-            } else {
-                if(newRangeFromCharacter != -1) {
-                    if(!actionsForCharacter.equals(newRangeActions)) { // Different actions, thus a range ended on the
-                                                                       // previous character and a new one starts at the
-                                                                       // current character
-                        actionsForRanges.add(new ActionsForRange(newRangeActions.toArray(new IAction[0]),
-                            newRangeFromCharacter, character - 1));
-
-                        newRangeFromCharacter = character;
-                        newRangeActions = actionsForCharacter;
-                    } // else { /* same actions, so maintain current range */ }
-                } else { // A new range starts at the current character
-                    newRangeFromCharacter = character;
-                    newRangeActions = actionsForCharacter;
+        int previous = 0;
+        int minIndex;
+        while((minIndex = getMinIndex(ranges, indices)) != -1) {
+            int j = indices[minIndex]++;
+            int currChar = ranges[minIndex][j] + (j & 1); // If j is odd, add one
+            assert currChar >= previous;
+            if(currChar > previous) {
+                // Finish current range
+                if(!newRangeActions.isEmpty()) {
+                    actionsForRanges.add(new ActionsForRange(newRangeActions.elementSet().toArray(new IAction[0]),
+                        previous, currChar - 1));
                 }
+                // Start a new range
+                previous = currChar;
             }
+            if((j & 1) == 0) // We're currently at the start of the range; add actions
+                newRangeActions.addAll(actionsPerCharacterClasses[minIndex].actions);
+            else // We're currently after the end of the range; remove actions
+                Multisets.removeOccurrences(newRangeActions, actionsPerCharacterClasses[minIndex].actions);
         }
 
-        // If we still have a range after processing all characters, add it
-        if(newRangeFromCharacter != -1) {
-            actionsForRanges
-                .add(new ActionsForRange(newRangeActions.toArray(new IAction[0]), newRangeFromCharacter, CHARACTERS));
-        }
+        assert newRangeActions.isEmpty();
 
         return actionsForRanges.toArray(new ActionsForRange[0]);
     }
 
-    private static Set<IAction> getActionsForCharacter(ActionsPerCharacterClass[] actionsPerCharacterClasses,
-        int character) {
+    private static int getMinIndex(int[][] ranges, int[] indices) {
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+        for(int i = 0; i < ranges.length; i++) {
+            int j = indices[i];
+            if(j < ranges[i].length) {
+                int curr = ranges[i][j] + (j & 1); // If j is odd, add one
+                if(curr < min) {
+                    min = curr;
+                    minIndex = i;
+                }
+            }
+        }
+        return minIndex;
+    }
+
+    private static Set<IAction> getActionsForEOF(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
         Set<IAction> actionsForCharacter = new HashSet<>();
 
         for(ActionsPerCharacterClass actionsPerCharacterClass : actionsPerCharacterClasses) {
-            if(actionsPerCharacterClass.appliesTo(character)) {
+            if(actionsPerCharacterClass.appliesTo(EOF_INT)) {
                 actionsForCharacter.addAll(actionsPerCharacterClass.actions);
             }
         }
