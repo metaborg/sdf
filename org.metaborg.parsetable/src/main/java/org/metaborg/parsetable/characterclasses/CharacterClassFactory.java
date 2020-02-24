@@ -60,8 +60,12 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     }
 
     @Override public final ICharacterClass fromRange(int from, int to) {
-        // return fromEmpty().addRange(from, to);
         return new CharacterClassRangeList(new int[] { from, to }, false);
+    }
+
+    @Override public final ICharacterClass fromRanges(int[] ranges, boolean hasEOF) {
+        assert ranges.length % 2 == 0;
+        return new CharacterClassRangeList(ranges, hasEOF);
     }
 
     @Override public ICharacterClass finalize(ICharacterClass characterClass) {

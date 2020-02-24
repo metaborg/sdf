@@ -1,7 +1,8 @@
 package org.metaborg.parsetable.characterclasses;
 
-import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 import static org.spoofax.terms.util.TermUtils.*;
+
+import java.util.Arrays;
 
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
@@ -51,29 +52,29 @@ public class CharacterClassReader {
             super(characterClassFactory);
         }
 
+        // This method exploits the fact that the ranges are already sorted.
         @Override public ICharacterClass read(IStrategoList characterClassTermList) {
-            ICharacterClass characterClass = null;
+            int[] ranges = new int[characterClassTermList.getSubtermCount() * 2];
 
+            int i = 0;
             for(IStrategoTerm characterClassTerm : characterClassTermList) {
-                ICharacterClass characterClassForTerm;
-
                 if(isInt(characterClassTerm)) {
-                    characterClassForTerm = characterClassFactory.fromSingle(toJavaInt(characterClassTerm));
+                    int character = toJavaInt(characterClassTerm);
+                    ranges[i++] = character;
+                    ranges[i++] = character;
                 } else if("eof".equals(((IStrategoAppl) characterClassTerm).getName())) {
-                    characterClassForTerm = characterClassFactory.fromSingle(EOF_INT);
+                    // In the parse table, EOF is always the last entry in the character class
+                    return characterClassFactory
+                        .finalize(characterClassFactory.fromRanges(Arrays.copyOf(ranges, ranges.length - 2), true));
                 } else { // range(from,to)
                     int from = toJavaIntAt(characterClassTerm, 0);
                     int to = toJavaIntAt(characterClassTerm, 1);
-                    characterClassForTerm = characterClassFactory.fromRange(from, to);
+                    ranges[i++] = from;
+                    ranges[i++] = to;
                 }
-
-                if(characterClass == null)
-                    characterClass = characterClassForTerm;
-                else if(characterClassForTerm != null)
-                    characterClass = characterClass.union(characterClassForTerm);
             }
 
-            return characterClassFactory.finalize(characterClass);
+            return characterClassFactory.finalize(characterClassFactory.fromRanges(ranges, false));
         }
     }
 

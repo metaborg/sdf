@@ -36,6 +36,14 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
         return new CharacterClass(chars, false);
     }
 
+    @Override public ICharacterClass fromRanges(int[] ranges, boolean hasEOF) {
+        BitSet chars = new BitSet(CHARACTERS);
+        for(int i = 0; i < ranges.length; i += 1) {
+            chars.set(ranges[i], ranges[i + 1] + 1);
+        }
+        return new CharacterClass(chars, hasEOF);
+    }
+
     @Override public ICharacterClass finalize(ICharacterClass characterClass) {
         return characterClass;
     }
