@@ -33,7 +33,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
         if(character == ICharacterClass.EOF_INT)
             return containsEOF;
 
-        final int wordIndex = character >> CharacterClassRangeSet.BITMAP_SEGMENT_SIZE;
+        final int wordIndex = character >> CharacterClassRangeList.BITMAP_SEGMENT_SIZE;
         if(wordIndex < 0 || wordIndex > 3)
             return false;
 

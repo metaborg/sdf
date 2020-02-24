@@ -52,8 +52,6 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
             return result;
         }
 
-        if(other instanceof CharacterClassRangeSet)
-            return ((CharacterClassRangeSet) other).addSingle(character);
         if(other instanceof CharacterClassRangeList)
             return ((CharacterClassRangeList) other).addSingle(character);
 
