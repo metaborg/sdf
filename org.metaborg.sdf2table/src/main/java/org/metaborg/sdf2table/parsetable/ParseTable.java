@@ -16,6 +16,8 @@ import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.*;
 
+import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.EOF_SINGLETON;
+
 public class ParseTable implements IParseTable, Serializable {
 
     // FIXME Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
@@ -196,6 +198,11 @@ public class ParseTable implements IParseTable, Serializable {
             // The FIRST set of a CharacterClass symbol is equal to the character class it represents.
             if(s instanceof CharacterClassSymbol) {
                 s.setFirst(((CharacterClassSymbol) s).getCC());
+                continue;
+            }
+            // The FIRST set of an EOFSymbol is equal to the EOF singleton character class.
+            if(s instanceof EOFSymbol) {
+                s.setFirst(EOF_SINGLETON);
                 continue;
             }
 
