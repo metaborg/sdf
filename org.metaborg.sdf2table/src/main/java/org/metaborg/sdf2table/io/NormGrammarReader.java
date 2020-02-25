@@ -494,21 +494,10 @@ public class NormGrammarReader {
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    if(app.getSubterm(0).getSubterm(0) instanceof IStrategoInt) {
-                        int start = ((IStrategoInt) app.getSubterm(0).getSubterm(0)).intValue();
-                        int end = ((IStrategoInt) app.getSubterm(1).getSubterm(0)).intValue();
-                        return ccFactory.fromRange(start, end);
-                    } else { // TODO this branch is probably not needed anymore?
-                        String start = ((IStrategoString) app.getSubterm(0).getSubterm(0)).stringValue().substring(1);
-                        String end = ((IStrategoString) app.getSubterm(1).getSubterm(0)).stringValue().substring(1);
-                        return ccFactory.fromRange(parseInt(start), parseInt(end));
-                    }
+                    // Range(Numeric(...),Numeric(...))
+                    return ccFactory.fromRange(processNumeric(app.getSubterm(0)), processNumeric(app.getSubterm(1)));
                 case "Numeric":
-                    if(app.getSubterm(0) instanceof IStrategoInt)
-                        return ccFactory.fromSingle(((IStrategoInt) app.getSubterm(0)).intValue());
-                    else
-                        return ccFactory
-                            .fromSingle(parseInt(((IStrategoString) app.getSubterm(0)).stringValue().substring(1)));
+                    return ccFactory.fromSingle(processNumeric(app));
                 case "Conc":
                     ICharacterClass head = processCharClass(app.getSubterm(0));
                     return head.union(processCharClass(app.getSubterm(1)));
@@ -520,6 +509,15 @@ public class NormGrammarReader {
 
         System.err.println("Malformed term. Application expected.");
         return null;
+    }
+
+    private int processNumeric(IStrategoTerm numeric) {
+        if(numeric.getSubterm(0) instanceof IStrategoInt)
+            // SDF3 version 2.6.0+ (after Unicode support, February 2020) normalizes to 'Numeric(...)' with integers
+            return ((IStrategoInt) numeric.getSubterm(0)).intValue();
+        else
+            // SDF3 version 2.3.0 normalized to 'Numeric("\...")', backwards compatibility for bootstrapping
+            return parseInt(((IStrategoString) numeric.getSubterm(0)).stringValue().substring(1));
     }
 
     private IAttribute processAttribute(IStrategoTerm ta) throws Exception {
