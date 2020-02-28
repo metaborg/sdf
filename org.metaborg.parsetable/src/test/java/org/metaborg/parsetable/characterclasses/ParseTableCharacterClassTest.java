@@ -36,6 +36,8 @@ public class ParseTableCharacterClassTest extends AbstractCharacterClassTest {
 
     @Test public void testOptimized() {
         ICharacterClass rangeListEOF = factory.fromEmpty().setEOF(true);
+        ICharacterClass separateRange = factory.fromRange(100, 120).union(factory.fromRange(0x400, 0x420));
+        ICharacterClass bigRange = factory.fromRange(0xffff, 0x1000f).union(factory.fromRange(0xfffff, 0x10000f));
 
         testCharacterClass(x, factory.finalize(x));
         testCharacterClass(AZ, factory.finalize(AZ));
@@ -45,7 +47,7 @@ public class ParseTableCharacterClassTest extends AbstractCharacterClassTest {
         testCharacterClass(factory.fromRange(97, 97), factory.finalize(factory.fromRange(97, 97)));
         testCharacterClass(factory.fromRange(250, 260), factory.finalize(factory.fromRange(250, 260)));
         testCharacterClass(factory.fromRange(0xffff, 0x1000f), factory.finalize(factory.fromRange(0xffff, 0x1000f)));
-        ICharacterClass bigRange = factory.fromRange(0xffff, 0x1000f).union(factory.fromRange(0xfffff, 0x10000f));
+        testCharacterClass(separateRange, factory.finalize(separateRange));
         testCharacterClass(bigRange, factory.finalize(bigRange));
         testCharacterClass(fullRange, factory.finalize(fullRange));
 
@@ -55,6 +57,7 @@ public class ParseTableCharacterClassTest extends AbstractCharacterClassTest {
         assertTrue(factory.finalize(rangeListEOF) instanceof CharacterClassSingle);
         assertTrue(factory.finalize(x.union(eof)) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(factory.fromRange(97, 97)) instanceof CharacterClassSingle);
+        assertTrue(factory.finalize(separateRange) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(bigRange) instanceof CharacterClassOptimized);
         assertTrue(factory.finalize(fullRange) instanceof CharacterClassOptimized);
     }
