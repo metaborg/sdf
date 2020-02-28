@@ -29,6 +29,10 @@ test octal    [[ \015 ]]     parse to Present(Octal("15"))
 test decimal  [[ \65 ]]      parse to Present(Decimal("65"))
 test hex      [[ \0x41 ]]    parse to Present(Hexadecimal("41"))
 test hex2     [[ \0x1f600 ]] parse to Present(Hexadecimal("1f600"))
+test bin fail [[ \0b 0 ]]    parse fails
+test hex fail [[ \0x 1 ]]    parse fails
+test bin char [[ \0b11 0 ]]  parse to Present(Conc(Binary("11"),Regular("0")))
+test hex char [[ \0x41 c ]]  parse to Present(Conc(Hexadecimal("41"),Regular("c")))
 
 test zero     [[ \0 ]]       parse to Present(Decimal("0"))
 test 2 zeroes [[ \00 ]]      parse to Present(Octal("0"))
