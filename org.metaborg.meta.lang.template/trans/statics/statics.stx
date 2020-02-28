@@ -1,0 +1,85 @@
+module statics/statics
+
+signature
+  
+  // Top-level module declaration
+  sorts Module constructors
+    Module : ModuleName * list(ImpSection) * () -> Module
+
+  // Module names
+  sorts ModuleName constructors
+    Unparameterized : ModuleId      -> ModuleName
+    Parameterized   : ModuleId * () -> ModuleName
+
+  sorts ModuleId constructors
+    Leaf : string            -> ModuleId
+    Root : string            -> ModuleId
+    Path : string * ModuleId -> ModuleId
+ 
+  // Imports
+  sorts ImpSection constructors
+    Imports : list(Import) -> ImpSection
+  
+  sorts Import constructors
+    Module : ModuleName -> Import
+
+  // Sort type
+  sorts SORT constructors
+    DEF : occurrence -> SORT
+
+  relations
+    sortOfDecl : occurrence -> SORT
+
+
+  // Namespaces
+  namespaces
+    Module      : ModuleId
+    Sort        : string
+    Constructor : string
+    Label       : string
+
+  // Resolution
+  name-resolution
+    labels P
+    resolve Module      filter P* min $ < P
+    resolve Sort        filter P* min $ < P
+    resolve Constructor filter P* min $ < P
+    resolve Label       filter P* min $ < P
+
+rules // Project
+
+  projectOK : scope
+
+  projectOK(s).
+
+rules // File
+
+  fileOK : scope * Module
+  fileOK(s, Module(name, importSections, _)) :- 
+    moduleNameDecl(s, name),
+    importSectionsOK(s, importSections).
+
+  importSectionOK : scope * ImpSection
+  importSectionOK(s, Imports(imports)) :- importsOK(s, imports).
+  importSectionsOK maps importSectionOK(*, list(*))
+  
+  importOK : scope * Import
+  importOK(s, Module(name)) :- moduleNameImport(s, name).
+  importsOK maps importOK(*, list(*))
+
+rules // Module names
+
+  idOfModuleName : ModuleName -> ModuleId
+  idOfModuleName(Unparameterized(id))  = id.
+  idOfModuleName(Parameterized(id, _)) = id.
+
+  moduleNameDecl : scope * ModuleName  
+  moduleNameDecl(s, name) :- {id}
+    idOfModuleName(name) == id, 
+    s -> Module{id}.
+
+  moduleNameImport : scope * ModuleName  
+  moduleNameImport(s, name)  :- {id id'}
+    idOfModuleName(name) == id, 
+    Module{id} in s |-> [(_, (Module{id'}))],
+    @id.ref := id'.

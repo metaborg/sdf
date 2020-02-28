@@ -17,6 +17,7 @@ imports
   runtime/properties/-
   runtime/types/-
   analysis/-
+  statics/-
   generation/completion/-
   generation/gen-utils/-
   generation/pp/-
@@ -47,17 +48,21 @@ rules // Analysis
   
   
 
-  editor-analyze = analyze-all(lifting, id, id|<language>)
+  //editor-analyze = analyze-all(lifting, id, id|<language>)
+  editor-analyze = statix-editor-analyze
 
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
       
 rules // Editor services
 
-  editor-resolve:
-    (node, position, ast, path, project-path) -> definition
-    where
-      definition := <analysis-resolve(|<language>, project-path)> node
+//  editor-resolve:
+//    (node, position, ast, path, project-path) -> definition
+//    where
+//      definition := <analysis-resolve(|<language>, project-path)> node
+
+  editor-resolve = statix-editor-resolve
+  editor-hover = statix-editor-hover
 
   editor-complete:
     (node, position, ast, path, project-path) -> proposals

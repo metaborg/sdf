@@ -1,0 +1,27 @@
+module statics/main
+
+imports
+
+  statixruntime
+  statix/api
+
+imports
+
+  analysis/lifting
+
+rules // Analysis
+
+  statix-editor-analyze = stx-editor-analyze(lift-all|"statics/statics", "projectOK", "fileOK")
+
+rules // Editor Services
+
+  statix-editor-resolve = stx-editor-resolve
+
+  statix-editor-hover = stx-editor-hover
+
+rules // Debugging
+
+  // Prints the analyzed annotated abstract syntax ATerm of a selection.
+  statix-debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)
+    with filename := <guarantee-extension(|"analyzed.aterm")> path
+       ; result   := selected

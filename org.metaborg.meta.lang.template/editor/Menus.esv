@@ -25,6 +25,8 @@ menus
       action: "Partition"           = debug-task-partition
       action: "Selection"           = debug-task-selection
     end
+    
+    action: "Show scope graph" = stx--show-scopegraph
   
    menu: "Generate" (openeditor) (realtime)
    
