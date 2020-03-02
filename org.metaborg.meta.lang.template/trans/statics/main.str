@@ -11,7 +11,7 @@ imports
 
 rules // Analysis
 
-  statix-editor-analyze = stx-editor-analyze(lift-all|"statics/statics", "projectOK", "fileOK")
+  statix-editor-analyze = stx-editor-analyze(lift-all; explicate-all-injections|"statics/statics", "projectOK", "fileOK")
 
 rules // Editor Services
 
@@ -25,3 +25,30 @@ rules // Debugging
   statix-debug-show-analyzed: (selected, _, _, path, project-path) -> (filename, result)
     with filename := <guarantee-extension(|"analyzed.aterm")> path
        ; result   := selected
+
+  statix-debug-show-lifted:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"lifted.aterm")> path;
+      result   := <lift-all; explicate-all-injections> selected
+
+signature constructors
+
+  GeneralProduction_SdfProduction      : SdfProduction -> GeneralProduction
+  GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+  
+rules
+
+  explicate-all-injections = topdown(try(explicate-injections))
+
+  explicate-injections: 
+    ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(explicate-general-production)> productions)
+            
+  explicate-general-production: 
+    prod@SdfProduction(_, _, _) -> GeneralProduction_SdfProduction(prod)
+  explicate-general-production: 
+    prod@SdfProductionWithCons(_, _, _) -> GeneralProduction_SdfProduction(prod)
+  explicate-general-production: 
+    prod@TemplateProduction(_, _, _) -> GeneralProduction_TemplateProduction(prod)
+  explicate-general-production: 
+    prod@TemplateProductionWithCons(_, _, _) -> GeneralProduction_TemplateProduction(prod)

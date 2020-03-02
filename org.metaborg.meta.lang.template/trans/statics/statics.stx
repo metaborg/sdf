@@ -4,7 +4,7 @@ signature
   
   // Top-level module declaration
   sorts Module constructors
-    Module : ModuleName * list(ImpSection) * () -> Module
+    Module : ModuleName * list(ImpSection) * list(Section) -> Module
 
   // Module names
   sorts ModuleName constructors
@@ -23,6 +23,84 @@ signature
   sorts Import constructors
     Module : ModuleName -> Import
 
+  // Sections
+  sorts Section constructors
+    SDFSection      : Grammar                  -> Section
+    TemplateSection : list(TemplateProduction) -> Section
+    TemplateOptions : list(TemplateOption)     -> Section
+
+
+  // Section: Grammar productions
+  sorts Grammar constructors
+    Kernel            : list(SdfProduction)     -> Grammar
+    LexicalSyntax     : list(SdfProduction)     -> Grammar
+    ContextFreeSyntax : list(GeneralProduction) -> Grammar
+
+  sorts GeneralProduction constructors // Explicated injection
+    GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
+    GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+  
+  
+  // SDF2-style productions
+  sorts SdfProduction constructors
+    SdfProduction         : SymbolDef * RHS * Attributes -> SdfProduction
+    SdfProductionWithCons : SortCons  * RHS * Attributes -> SdfProduction
+  
+  sorts RHS constructors
+    Rhs : list(Symbol) -> RHS // HACK: use list(Symbol) instead of Symbols, as Symbols is an injection.
+  
+  sorts Symbol constructors
+    //Cf     : Symbol -> Symbol
+    //Lex    : Symbol -> Symbol
+    Varsym      : Symbol -> Symbol
+    Label       : Label * Symbol -> Symbol
+    Sequence    : Symbol * Symbol -> Symbol
+    Opt         : Symbol -> Symbol
+    Iter        : Symbol -> Symbol
+    IterStar    : Symbol -> Symbol
+    IterSep     : Symbol * Separator -> Symbol
+    IterStarSep : Symbol * Separator -> Symbol
+    Alt         : Symbol * Symbol -> Symbol
+    
+    Sort              : string -> Symbol
+    ParameterizedSort : string * list(Symbol) -> Symbol
+  
+  sorts Label constructors
+  
+  sorts Separator constructors // Ignore: separators do not contain names.
+  
+  sorts Attributes constructors // Ignore: constructor attribute is lifted, so no need to check attributes.  
+  
+  // SDF3-style productions
+  sorts TemplateProduction constructors
+    TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
+    TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
+
+  sorts Template constructors
+
+
+  // Section: Template options
+  sorts TemplateOption constructors
+    KeywordAttributes        : SymbolDef * Attributes -> TemplateOption
+    KeywordFollowRestriction : Lookaheads             -> TemplateOption
+    
+  sorts Lookaheads constructors
+  
+  
+  // Sort and constructor definitions
+  sorts SortCons constructors
+    SortCons : SymbolDef * Constructor -> SortCons
+    
+  sorts Constructor constructors
+    Constructor : string -> Constructor
+    
+  sorts SymbolDef constructors
+    SortDef : string    -> SymbolDef
+    Cf      : SymbolDef -> SymbolDef
+    Lex     : SymbolDef -> SymbolDef
+    Var     : SymbolDef -> SymbolDef
+  
+  
   // Sort type
   sorts SORT constructors
     DEF : occurrence -> SORT
@@ -55,31 +133,128 @@ rules // Project
 rules // File
 
   fileOK : scope * Module
-  fileOK(s, Module(name, importSections, _)) :- 
-    moduleNameDecl(s, name),
-    importSectionsOK(s, importSections).
+  fileOK(s, Module(name, importSections, sections)) :- 
+    declareModule(s, name),
+    importSectionsOK(s, importSections),
+    sectionsOK(s, sections).
 
   importSectionOK : scope * ImpSection
   importSectionOK(s, Imports(imports)) :- importsOK(s, imports).
   importSectionsOK maps importSectionOK(*, list(*))
   
   importOK : scope * Import
-  importOK(s, Module(name)) :- moduleNameImport(s, name).
+  importOK(s, Module(name)) :- resolveModule(s, name). // TODO: add import
   importsOK maps importOK(*, list(*))
 
-rules // Module names
+  sectionOK: scope * Section
+  sectionOK(s, SDFSection(grammar)) :- grammarOK(s, grammar).
+  sectionOK(s, TemplateSection(templateProductions)) :- templateProductionsOK(s, templateProductions).
+  sectionOK(s, TemplateOptions(templateOptions)).
+  sectionsOK maps sectionOK(*, list(*))
+  
+  grammarOK: scope * Grammar
+  grammarOK(s, Kernel(productions)) :- sdfProductionsOK(s, productions).
+  grammarOK(s, LexicalSyntax(productions)) :- sdfProductionsOK(s, productions).
+  grammarOK(s, ContextFreeSyntax(generalProductions)) :- generalProductionsOK(s, generalProductions).
+  
+  generalProductionOK: scope * GeneralProduction
+  generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction)) :- sdfProductionOK(s, sdfProduction).
+  generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :- templateProductionOK(s, templateProduction).
+  generalProductionsOK maps generalProductionOK(*, list(*))
+  
+  sdfProductionOK: scope * SdfProduction
+  sdfProductionOK(s, SdfProduction(symbolDef, rhs, attributes)) :-
+    symbolDefOK(s, symbolDef),
+    rhsOK(s, rhs).
+  sdfProductionOK(s, SdfProductionWithCons(sortCons, rhs, attributes)) :-
+    sortConsOK(s, sortCons),
+    rhsOK(s, rhs).
+  sdfProductionsOK maps sdfProductionOK(*, list(*))
+  
+  templateProductionOK: scope * TemplateProduction
+  templateProductionOK(s, TemplateProduction(symbolDef, template, attributes)) :-
+    symbolDefOK(s, symbolDef).
+  templateProductionOK(s, TemplateProductionWithCons(sortCons, template, attributes)) :-
+    sortConsOK(s, sortCons).
+  templateProductionsOK maps templateProductionOK(*, list(*))
+
+  sortConsOK: scope * SortCons
+  sortConsOK(s, SortCons(symbolDef, constructor)) :-
+    symbolDefOK(s, symbolDef),
+    constructorOK(s, constructor).
+  
+  constructorOK: scope * Constructor
+  constructorOK(s, Constructor(name)) :-
+    declareConstructor(s, name).
+  
+  rhsOK: scope * RHS
+  rhsOK(s, Rhs(symbols)) :- symbolsOK(s, symbols).
+
+rules // Symbol
+
+  symbolOK: scope * Symbol
+//  symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
+//  symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, Varsym(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, Label(label, symbol)) :- symbolOK(s, symbol). // TODO: label
+  symbolOK(s, Sequence(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
+  symbolOK(s, Opt(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, Iter(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, IterStar(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, IterSep(symbol, _)) :- symbolOK(s, symbol).
+  symbolOK(s, IterStarSep(symbol, _)) :- symbolOK(s, symbol).
+  symbolOK(s, Alt(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
+  symbolOK(s, Sort(name)) :- resolveSort(s, name).
+  symbolOK(s, ParameterizedSort(name, symbols)) :- resolveSort(s, name), symbolsOK(s, symbols).
+  symbolsOK maps symbolOK(*, list(*))
+
+rules // SymbolDef
+
+  symbolDefOK: scope * SymbolDef
+  symbolDefOK(s, SortDef(name))  :- declareSort(s, name).
+  symbolDefOK(s, Cf(symbolDef))  :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, Lex(symbolDef)) :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, Var(symbolDef)) :- symbolDefOK(s, symbolDef).
+
+rules // Constructors
+
+  // TODO: constructors should be scoped to sorts.
+
+  declareConstructor : scope * string  
+  declareConstructor(s, name) :-
+    s -> Constructor{name},
+    Constructor{name} in s |-> [(_, (_))] | error $[Duplicate definition of constructor [name]].
+    
+  resolveConstructor : scope * string
+  resolveConstructor(s, name)  :- {name'}
+    Constructor{name} in s |-> [(_, (Constructor{name'}))|_]| error $[Constructor [name] not defined],
+    @name.ref := name'.
+
+rules // Sorts
+
+  declareSort : scope * string  
+  declareSort(s, name) :-
+    s -> Sort{name}.
+    
+  resolveSort : scope * string
+  resolveSort(s, name)  :- {name'}
+    Sort{name} in s |-> [(_, (Sort{name'}))|_]| error $[Sort [name] not defined],
+    @name.ref := name'.
+
+rules // Modules
+
+  declareModule : scope * ModuleName  
+  declareModule(s, name) :- {id}
+    idOfModuleName(name) == id, 
+    s -> Module{id},
+    Module{id} in s |-> [(_, (_))] | error $[Duplicate definition of module [id]].
+
+  resolveModule : scope * ModuleName
+  resolveModule(s, name)  :- {id id'}
+    idOfModuleName(name) == id, 
+    Module{id} in s |-> [(_, (Module{id'}))|_]| error $[Module [id] not defined],
+    @id.ref := id'.
 
   idOfModuleName : ModuleName -> ModuleId
   idOfModuleName(Unparameterized(id))  = id.
   idOfModuleName(Parameterized(id, _)) = id.
-
-  moduleNameDecl : scope * ModuleName  
-  moduleNameDecl(s, name) :- {id}
-    idOfModuleName(name) == id, 
-    s -> Module{id}.
-
-  moduleNameImport : scope * ModuleName  
-  moduleNameImport(s, name)  :- {id id'}
-    idOfModuleName(name) == id, 
-    Module{id} in s |-> [(_, (Module{id'}))],
-    @id.ref := id'.

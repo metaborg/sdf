@@ -8,24 +8,26 @@ menus
     action: "Show desugared syntax" = debug-show-desugared (realtime) (source)
     action: "Show analyzed syntax"  = debug-show-analyzed
     
-  menu: "Analysis"                    (meta)
+  menu: "Analysis"                    (meta) (openeditor)
     
-    submenu: "Show analysis"          (openeditor)
-      action: "Project"             = debug-project
-      action: "Partition"           = debug-partition
-    end
+//    submenu: "Show analysis"          (openeditor)
+//      action: "Project"             = debug-project
+//      action: "Partition"           = debug-partition
+//    end
+//    
+//    submenu: "Show index"             (openeditor)
+//      action: "Project"             = debug-index-project
+//      action: "Partition"           = debug-index-partition
+//    end
+//    
+//    submenu: "Show tasks"             (openeditor)
+//      action: "Project"             = debug-task-project
+//      action: "Partition"           = debug-task-partition
+//      action: "Selection"           = debug-task-selection
+//    end
     
-    submenu: "Show index"             (openeditor)
-      action: "Project"             = debug-index-project
-      action: "Partition"           = debug-index-partition
-    end
-    
-    submenu: "Show tasks"             (openeditor)
-      action: "Project"             = debug-task-project
-      action: "Partition"           = debug-task-partition
-      action: "Selection"           = debug-task-selection
-    end
-    
+    action: "Show lifted"      = statix-debug-show-lifted (source)
+    action: "Show analyzed"    = statix-debug-show-analyzed
     action: "Show scope graph" = stx--show-scopegraph
   
    menu: "Generate" (openeditor) (realtime)
