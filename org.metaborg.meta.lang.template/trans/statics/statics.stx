@@ -35,6 +35,10 @@ signature
     Kernel            : list(SdfProduction)     -> Grammar
     LexicalSyntax     : list(SdfProduction)     -> Grammar
     ContextFreeSyntax : list(GeneralProduction) -> Grammar
+    // TODO: ContextFreeStartSymbols
+    // TODO: LexicalRestrictions
+    // TODO: Restrictions?
+    // TODO: ContextFreePriorities
 
   sorts GeneralProduction constructors // Explicated injection
     GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
@@ -50,8 +54,8 @@ signature
     Rhs : list(Symbol) -> RHS // HACK: use list(Symbol) instead of Symbols, as Symbols is an injection.
   
   sorts Symbol constructors
-    //Cf     : Symbol -> Symbol
-    //Lex    : Symbol -> Symbol
+    //Cf     : Symbol -> Symbol // TODO: make ambiguous constructor unambiguous
+    //Lex    : Symbol -> Symbol // TODO: make ambiguous constructor unambiguous
     Varsym      : Symbol -> Symbol
     Label       : Label * Symbol -> Symbol
     Sequence    : Symbol * Symbol -> Symbol
@@ -61,15 +65,15 @@ signature
     IterSep     : Symbol * Separator -> Symbol
     IterStarSep : Symbol * Separator -> Symbol
     Alt         : Symbol * Symbol -> Symbol
-    
     Sort              : string -> Symbol
     ParameterizedSort : string * list(Symbol) -> Symbol
+    // Ignore other symbols, as they do not contain names nor types.
   
-  sorts Label constructors
+  sorts Label constructors // TODO
   
-  sorts Separator constructors // Ignore: separators do not contain names.
+  sorts Separator // Ignore: does not contain names nor types.
   
-  sorts Attributes constructors // Ignore: constructor attribute is lifted, so no need to check attributes.  
+  sorts Attributes // Ignore: constructor attribute is lifted, so attributes contain no names nor types.
   
   // SDF3-style productions
   sorts TemplateProduction constructors
@@ -77,15 +81,26 @@ signature
     TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
 
   sorts Template constructors
-
+    Template       : list(TemplateLine) -> Template
+    TemplateSquare : list(TemplateLine) -> Template
+    
+  sorts TemplateLine constructors
+    Line : list(TemplatePart) -> TemplateLine
+    
+  sorts TemplatePart constructors
+    Angled  : Placeholder -> TemplatePart
+    Squared : Placeholder -> TemplatePart
+    
+  sorts Placeholder constructors
+    Placeholder : Symbol * PlaceholderOptions -> Placeholder
+    
+  sorts PlaceholderOptions // Ignore: does not contain names nor types.
 
   // Section: Template options
   sorts TemplateOption constructors
-    KeywordAttributes        : SymbolDef * Attributes -> TemplateOption
-    KeywordFollowRestriction : Lookaheads             -> TemplateOption
-    
-  sorts Lookaheads constructors
-  
+    KeywordAttributes : SymbolDef * Attributes -> TemplateOption // TODO: add constraint
+    // Ignore other template options, as they do not contain names nor types.
+
   
   // Sort and constructor definitions
   sorts SortCons constructors
@@ -163,20 +178,44 @@ rules // File
   generalProductionsOK maps generalProductionOK(*, list(*))
   
   sdfProductionOK: scope * SdfProduction
-  sdfProductionOK(s, SdfProduction(symbolDef, rhs, attributes)) :-
+  sdfProductionOK(s, SdfProduction(symbolDef, rhs, _)) :-
     symbolDefOK(s, symbolDef),
     rhsOK(s, rhs).
-  sdfProductionOK(s, SdfProductionWithCons(sortCons, rhs, attributes)) :-
+  sdfProductionOK(s, SdfProductionWithCons(sortCons, rhs, _)) :-
     sortConsOK(s, sortCons),
     rhsOK(s, rhs).
   sdfProductionsOK maps sdfProductionOK(*, list(*))
   
+  rhsOK: scope * RHS
+  rhsOK(s, Rhs(symbols)) :- symbolsOK(s, symbols).
+  
   templateProductionOK: scope * TemplateProduction
-  templateProductionOK(s, TemplateProduction(symbolDef, template, attributes)) :-
-    symbolDefOK(s, symbolDef).
-  templateProductionOK(s, TemplateProductionWithCons(sortCons, template, attributes)) :-
-    sortConsOK(s, sortCons).
+  templateProductionOK(s, TemplateProduction(symbolDef, template, _)) :-
+    symbolDefOK(s, symbolDef),
+    templateOK(s, template).
+  templateProductionOK(s, TemplateProductionWithCons(sortCons, template, _)) :-
+    sortConsOK(s, sortCons),
+    templateOK(s, template).
   templateProductionsOK maps templateProductionOK(*, list(*))
+
+  templateOK: scope * Template
+  templateOK(s, Template(lines)) :- templateLinesOK(s, lines).
+  templateOK(s, TemplateSquare(lines)) :- templateLinesOK(s, lines).
+  
+  templateLineOK: scope * TemplateLine
+  templateLineOK(s, Line(parts)) :- templatePartsOK(s, parts).
+  templateLinesOK maps templateLineOK(*, list(*))
+  
+  templatePartOK: scope * TemplatePart
+  templatePartOK(s, Angled(placeholder)) :- placeholderOK(s, placeholder).
+  templatePartOK(s, Squared(placeholder)) :- placeholderOK(s, placeholder).
+  templatePartOK(s, _). // Other template parts do not contain names nor types.
+  templatePartsOK maps templatePartOK(*, list(*))
+  
+  placeholderOK: scope * Placeholder
+  placeholderOK(s, Placeholder(symbol, _)) :- symbolOK(s, symbol).
+
+rules // SortCons and Constructor
 
   sortConsOK: scope * SortCons
   sortConsOK(s, SortCons(symbolDef, constructor)) :-
@@ -187,14 +226,11 @@ rules // File
   constructorOK(s, Constructor(name)) :-
     declareConstructor(s, name).
   
-  rhsOK: scope * RHS
-  rhsOK(s, Rhs(symbols)) :- symbolsOK(s, symbols).
-
 rules // Symbol
 
   symbolOK: scope * Symbol
-//  symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
-//  symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
+//symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
+//symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
   symbolOK(s, Varsym(symbol)) :- symbolOK(s, symbol).
   symbolOK(s, Label(label, symbol)) :- symbolOK(s, symbol). // TODO: label
   symbolOK(s, Sequence(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
@@ -206,6 +242,7 @@ rules // Symbol
   symbolOK(s, Alt(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
   symbolOK(s, Sort(name)) :- resolveSort(s, name).
   symbolOK(s, ParameterizedSort(name, symbols)) :- resolveSort(s, name), symbolsOK(s, symbols).
+  symbolOK(s, _). // Other symbols do not contain names nor types.
   symbolsOK maps symbolOK(*, list(*))
 
 rules // SymbolDef
@@ -215,10 +252,11 @@ rules // SymbolDef
   symbolDefOK(s, Cf(symbolDef))  :- symbolDefOK(s, symbolDef).
   symbolDefOK(s, Lex(symbolDef)) :- symbolDefOK(s, symbolDef).
   symbolDefOK(s, Var(symbolDef)) :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, _). // Other symbol definitions do not contain names nor types.
 
 rules // Constructors
 
-  // TODO: constructors should be scoped to sorts.
+  // TODO: constructors should be typed as sort -> sort*, and they must be unique within that name+type.
 
   declareConstructor : scope * string  
   declareConstructor(s, name) :-
