@@ -323,8 +323,10 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
             }
-            Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
-            contexts.add(new_context);
+            Context new_context_right = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
+            Context new_context_left = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            contexts.add(new_context_right);
+            contexts.add(new_context_left);
 
             Set<Integer> conflicting_args = Sets.newHashSet();
             conflicting_args.add(conflict);
@@ -339,8 +341,9 @@ public class DeepConflictsAnalyzer {
             } else {
                 // add new context to correct arguments of existing contextual production
                 ContextualProduction existing_prod = prodContextualProdMapping.get(prio.higher());
+                existing_prod = existing_prod.addContext(new_context_right, conflicting_args);
                 prodContextualProdMapping.replace(prio.higher(),
-                    existing_prod.addContext(new_context, conflicting_args));
+                   existing_prod.addContext(new_context_left, conflicting_args) );
                 // existing_prod.addContext(new_context, conflicting_args);
             }
 
@@ -358,8 +361,10 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                 leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
             }
-            Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
-            contexts.add(new_context);
+            Context new_context_right = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
+            Context new_context_left = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            contexts.add(new_context_right);
+            contexts.add(new_context_left);
 
             Set<Integer> conflicting_args = Sets.newHashSet();
             conflicting_args.add(conflict);
@@ -374,8 +379,9 @@ public class DeepConflictsAnalyzer {
             } else {
                 // add new context to correct arguments of existing contextual production
                 ContextualProduction existing_prod = prodContextualProdMapping.get(prio.higher());
+                existing_prod = existing_prod.addContext(new_context_right, conflicting_args);
                 prodContextualProdMapping.replace(prio.higher(),
-                    existing_prod.addContext(new_context, conflicting_args));
+                   existing_prod.addContext(new_context_left, conflicting_args) );
             }
 
         }
