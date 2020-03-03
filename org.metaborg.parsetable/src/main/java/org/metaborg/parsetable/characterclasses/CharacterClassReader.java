@@ -6,6 +6,7 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.characterclasses.ICharacterClassFactory;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
+import org.spoofax.terms.util.TermUtils;
 
 public class CharacterClassReader {
 
@@ -18,14 +19,14 @@ public class CharacterClassReader {
     public ICharacterClass read(IStrategoList characterClassTermList) {
         ICharacterClass characterClass = null;
 
-        for(IStrategoTerm characterClassTerm : characterClassTermList) {
+        for(IStrategoTerm characterClassTerm : characterClassTermList.getSubterms()) {
             ICharacterClass characterClassForTerm;
 
-            if(isTermInt(characterClassTerm)) {
+            if(TermUtils.isInt(characterClassTerm)) {
                 characterClassForTerm = characterClassFactory.fromSingle(javaInt(characterClassTerm));
             } else {
-                int from = intAt(characterClassTerm, 0);
-                int to = intAt(characterClassTerm, 1);
+                int from = TermUtils.toJavaIntAt(characterClassTerm, 0);
+                int to = TermUtils.toJavaIntAt(characterClassTerm, 1);
 
                 characterClassForTerm = characterClassFactory.fromRange(from, to);
             }

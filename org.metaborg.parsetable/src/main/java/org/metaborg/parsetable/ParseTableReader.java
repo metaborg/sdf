@@ -1,7 +1,5 @@
 package org.metaborg.parsetable;
 
-import static org.spoofax.terms.Term.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,6 +28,8 @@ import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.TermFactory;
 import org.spoofax.terms.io.binary.TermReader;
+
+import static org.spoofax.terms.util.TermUtils.*;
 
 public class ParseTableReader {
 
@@ -62,9 +62,9 @@ public class ParseTableReader {
      * separately during parsing).
      */
     public IParseTable read(IStrategoTerm pt) throws ParseTableReadException {
-        int startStateId = intAt(pt, 1);
-        IStrategoList productionsTermList = termAt(pt, 2);
-        IStrategoList statesTermList = termAt(termAt(pt, 3), 0);
+        int startStateId = toJavaIntAt(pt, 1);
+        IStrategoList productionsTermList = toListAt(pt, 2);
+        IStrategoList statesTermList = toListAt(pt.getSubterm(3), 0);
 
         IProduction[] productions = readProductions(productionsTermList);
         IState[] states = readStates(statesTermList, productions);
@@ -87,7 +87,7 @@ public class ParseTableReader {
 
         IProduction[] productions = new Production[257 + productionCount];
 
-        for(IStrategoTerm productionWithIdTerm : productionsTermList) {
+        for(IStrategoTerm productionWithIdTerm : productionsTermList.getSubterms()) {
             IProduction production = productionReader.read(productionWithIdTerm);
 
             productions[production.id()] = production;
@@ -102,13 +102,13 @@ public class ParseTableReader {
 
         IState[] states = new IState[stateCount];
 
-        for(IStrategoTerm stateTerm : statesTermList) {
+        for(IStrategoTerm stateTerm : statesTermList.getSubterms()) {
             IStrategoNamed stateTermNamed = (IStrategoNamed) stateTerm;
 
-            int stateId = intAt(stateTermNamed, 0);
+            int stateId = toJavaIntAt(stateTermNamed, 0);
 
-            IStrategoList gotosTermList = termAt(stateTermNamed, 1);
-            IStrategoList actionsTermList = termAt(stateTermNamed, 2);
+            IStrategoList gotosTermList = toListAt(stateTermNamed, 1);
+            IStrategoList actionsTermList = toListAt(stateTermNamed, 2);
 
             IGoto[] gotos = readGotos(gotosTermList);
             ActionsPerCharacterClass[] actions = readActions(actionsTermList, productions);
@@ -129,10 +129,10 @@ public class ParseTableReader {
         for(int i = 0; i < gotoCount; i++) {
             IStrategoNamed gotoTermNamed = (IStrategoNamed) gotosTermList.getSubterm(i);
 
-            IStrategoList productionsTermList = termAt(gotoTermNamed, 0);
+            IStrategoList productionsTermList = toListAt(gotoTermNamed, 0);
             int[] productionIds = readGotoProductions(productionsTermList);
 
-            int gotoStateId = intAt(gotoTermNamed, 1);
+            int gotoStateId = toJavaIntAt(gotoTermNamed, 1);
 
             gotos[i] = new Goto(productionIds, gotoStateId);
         }
@@ -148,8 +148,8 @@ public class ParseTableReader {
         for(int i = 0; i < productionCount; i++) {
             IStrategoTerm productionIdsTerm = productionsTermList.getSubterm(i);
 
-            if(isTermInt(productionIdsTerm)) {
-                int productionId = javaInt(productionIdsTerm);
+            if(isInt(productionIdsTerm)) {
+                int productionId = toJavaInt(productionIdsTerm);
 
                 productionIds[i] = productionId;
             }
@@ -169,11 +169,11 @@ public class ParseTableReader {
 
         List<ActionsPerCharacterClass> actionsPerCharacterClasses = new ArrayList<>(characterClassesWithActionsCount);
 
-        for(IStrategoTerm characterClassActionsTerm : characterClassActionsTermList) {
+        for(IStrategoTerm characterClassActionsTerm : characterClassActionsTermList.getSubterms()) {
             IStrategoNamed characterClassActionsTermNamed = (IStrategoNamed) characterClassActionsTerm;
 
-            IStrategoList characterClassTermList = termAt(characterClassActionsTermNamed, 0);
-            IStrategoList actionsTermList = termAt(characterClassActionsTermNamed, 1);
+            IStrategoList characterClassTermList = toListAt(characterClassActionsTermNamed, 0);
+            IStrategoList actionsTermList = toListAt(characterClassActionsTermNamed, 1);
 
             ICharacterClass characterClass = characterClassReader.read(characterClassTermList);
             IAction[] actions = readActionsForCharacterClass(actionsTermList, productions);
@@ -182,7 +182,7 @@ public class ParseTableReader {
                 actionsPerCharacterClasses.add(new ActionsPerCharacterClass(characterClass, actions));
         }
 
-        return actionsPerCharacterClasses.toArray(new ActionsPerCharacterClass[actionsPerCharacterClasses.size()]);
+        return actionsPerCharacterClasses.toArray(new ActionsPerCharacterClass[0]);
     }
 
     private IAction[] readActionsForCharacterClass(IStrategoList actionsTermList, IProduction[] productions)
@@ -196,9 +196,9 @@ public class ParseTableReader {
             IAction action = null;
 
             if(actionTermAppl.getName().equals("reduce")) { // Reduce
-                int arity = intAt(actionTermAppl, 0);
-                int productionId = intAt(actionTermAppl, 1);
-                ProductionType productionType = Production.typeFromInt(intAt(actionTermAppl, 2));
+                int arity = toJavaIntAt(actionTermAppl, 0);
+                int productionId = toJavaIntAt(actionTermAppl, 1);
+                ProductionType productionType = Production.typeFromInt(toJavaIntAt(actionTermAppl, 2));
 
                 IProduction production = productions[productionId];
 
@@ -206,14 +206,14 @@ public class ParseTableReader {
                     action = actionsFactory.getReduce(production, productionType, arity);
                 } else if(actionTermAppl.getConstructor().getArity() == 4) { // Reduce with lookahead
                     ICharacterClass[] followRestriction =
-                        readReduceLookaheadFollowRestriction(termAt(termAt(actionTermAppl, 3), 0));
+                        readReduceLookaheadFollowRestriction(actionTermAppl.getSubterm(3).getSubterm(0));
 
                     action = actionsFactory.getReduceLookahead(production, productionType, arity, followRestriction);
                 }
             } else if(actionTermAppl.getName().equals("accept")) { // Accept
                 action = actionsFactory.getAccept();
             } else if(actionTermAppl.getName().equals("shift")) { // Shift
-                int shiftStateId = intAt(actionTermAppl, 0);
+                int shiftStateId = toJavaIntAt(actionTermAppl, 0);
 
                 action = actionsFactory.getShift(shiftStateId);
             } else {
@@ -229,7 +229,7 @@ public class ParseTableReader {
     private ICharacterClass[] readReduceLookaheadFollowRestriction(IStrategoTerm followRestrictionTerm)
         throws ParseTableReadException {
         if("follow-restriction".equals(((IStrategoNamed) followRestrictionTerm).getName())) {
-            IStrategoList followRestrictionCharacterClassList = termAt(followRestrictionTerm, 0);
+            IStrategoList followRestrictionCharacterClassList = toListAt(followRestrictionTerm, 0);
 
             int lookaheadLength = followRestrictionCharacterClassList.size();
 
