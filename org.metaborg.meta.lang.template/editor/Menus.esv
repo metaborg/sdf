@@ -26,9 +26,10 @@ menus
 //      action: "Selection"           = debug-task-selection
 //    end
     
-    action: "Show lifted"      = statix-debug-show-lifted (source)
-    action: "Show analyzed"    = statix-debug-show-analyzed
-    action: "Show scope graph" = stx--show-scopegraph
+    action: "Show pre-transformed"      = statix-debug-show-pre-transformed (source)
+    action: "Show pre+post-transformed" = statix-debug-show-pre-post-transformed (source)
+    action: "Show analyzed"             = statix-debug-show-analyzed
+    action: "Show scope graph"          = stx--show-scopegraph
   
    menu: "Generate" (openeditor) (realtime)
    

@@ -11,7 +11,7 @@ imports
 
 rules // Analysis
 
-  statix-editor-analyze = stx-editor-analyze(lift-all; explicate-all-injections|"statics/statics", "projectOK", "fileOK")
+  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statics/statics", "projectOK", "fileOK")
 
 rules // Editor Services
 
@@ -26,29 +26,74 @@ rules // Debugging
     with filename := <guarantee-extension(|"analyzed.aterm")> path
        ; result   := selected
 
-  statix-debug-show-lifted:
+  statix-debug-show-pre-transformed:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
-      filename := <guarantee-extension(|"lifted.aterm")> path;
-      result   := <lift-all; explicate-all-injections> selected
+      filename := <guarantee-extension(|"statix-pre-transformed.aterm")> path;
+      result   := <statix-pre> selected
 
-signature constructors
+  statix-debug-show-pre-post-transformed:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"statix-pre-post-transformed.aterm")> path;
+      result   := <statix-pre; statix-post> selected
 
-  GeneralProduction_SdfProduction      : SdfProduction -> GeneralProduction
-  GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+rules // Statix pre and post-transformation
+
+  statix-pre  = lift-all; explicate-all-injections; disambiguate-all-constructors
+  statix-post = ambiguate-all-constructors; unexplicate-all-injections
+
+  explicate-all-injections   = topdown(try(  explicate-injection))
+  unexplicate-all-injections = topdown(try(unexplicate-injection))
+
+  disambiguate-all-constructors = topdown(try(disambiguate-constructor))
+  ambiguate-all-constructors    = topdown(try(   ambiguate-constructor))
   
+  explicate-injection      = fail
+  unexplicate-injection    = fail
+  disambiguate-constructor = fail
+  ambiguate-constructor    = fail
+
+signature constructors // GeneralProduction injections
+
+  GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
+  GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+
 rules
 
-  explicate-all-injections = topdown(try(explicate-injections))
-
-  explicate-injections: 
-    ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(explicate-general-production)> productions)
+  explicate-injection:   ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(  explicate-general-production)> productions)
+  unexplicate-injection: ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(unexplicate-general-production)> productions)
             
-  explicate-general-production: 
-    prod@SdfProduction(_, _, _) -> GeneralProduction_SdfProduction(prod)
-  explicate-general-production: 
-    prod@SdfProductionWithCons(_, _, _) -> GeneralProduction_SdfProduction(prod)
-  explicate-general-production: 
-    prod@TemplateProduction(_, _, _) -> GeneralProduction_TemplateProduction(prod)
-  explicate-general-production: 
-    prod@TemplateProductionWithCons(_, _, _) -> GeneralProduction_TemplateProduction(prod)
+  explicate-general-production: prod@SdfProduction(_, _, _)              -> GeneralProduction_SdfProduction(prod)
+  explicate-general-production: prod@SdfProductionWithCons(_, _, _)      -> GeneralProduction_SdfProduction(prod)
+  explicate-general-production: prod@TemplateProduction(_, _, _)         -> GeneralProduction_TemplateProduction(prod)
+  explicate-general-production: prod@TemplateProductionWithCons(_, _, _) -> GeneralProduction_TemplateProduction(prod)
+  unexplicate-general-production: GeneralProduction_SdfProduction(prod)      -> prod
+  unexplicate-general-production: GeneralProduction_TemplateProduction(prod) -> prod
+
+signature constructors // SymbolDef ambiguous constructors
+
+  SymbolDefCf  : SymbolDef -> SymbolDef
+  SymbolDefLex : SymbolDef -> SymbolDef
+
+rules 
+
+  disambiguate-constructor = SdfProduction             (disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = SdfProductionWithCons     (disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = TemplateProduction        (disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = TemplateProductionWithCons(disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = KeywordAttributes         (disambiguate-symboldef-constructor, id)
+  ambiguate-constructor = SdfProduction             (ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = SdfProductionWithCons     (ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = TemplateProduction        (ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = TemplateProductionWithCons(ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = KeywordAttributes         (ambiguate-symboldef-constructor, id)
+  
+  disambiguate-constructor = SortCons(disambiguate-symboldef-constructor, id)
+  ambiguate-constructor = SortCons(ambiguate-symboldef-constructor, id)
+  
+  disambiguate-symboldef-constructor:  Cf(symbolDef) -> SymbolDefCf (symbolDef)
+  disambiguate-symboldef-constructor: Lex(symbolDef) -> SymbolDefLex(symbolDef)
+  ambiguate-symboldef-constructor: SymbolDefCf (symbolDef) -> Cf (symbolDef)
+  ambiguate-symboldef-constructor: SymbolDefLex(symbolDef) -> Lex(symbolDef)
+

@@ -2,11 +2,10 @@ module statics/statics
 
 signature
   
-  // Top-level module declaration
+  // Modules
   sorts Module constructors
     Module : ModuleName * list(ImpSection) * list(Section) -> Module
 
-  // Module names
   sorts ModuleName constructors
     Unparameterized : ModuleId      -> ModuleName
     Parameterized   : ModuleId * () -> ModuleName
@@ -16,12 +15,14 @@ signature
     Root : string            -> ModuleId
     Path : string * ModuleId -> ModuleId
  
+ 
   // Imports
   sorts ImpSection constructors
     Imports : list(Import) -> ImpSection
   
   sorts Import constructors
     Module : ModuleName -> Import
+
 
   // Sections
   sorts Section constructors
@@ -30,56 +31,34 @@ signature
     TemplateOptions : list(TemplateOption)     -> Section
 
 
-  // Section: Grammar productions
-  sorts Grammar constructors
+  // Grammar
+  sorts Grammar
+
+
+  // Syntax productions
+  constructors
+    Syntax            : list(Production)        -> Grammar // TODO: add constraint
     Kernel            : list(SdfProduction)     -> Grammar
     LexicalSyntax     : list(SdfProduction)     -> Grammar
     ContextFreeSyntax : list(GeneralProduction) -> Grammar
-    // TODO: ContextFreeStartSymbols
-    // TODO: LexicalRestrictions
-    // TODO: Restrictions?
-    // TODO: ContextFreePriorities
+    
+  sorts Production constructors // Kernel-style productions // TODO: add constraints
+    Prod : list(Symbol) * Symbol * Attributes -> Production
 
-  sorts GeneralProduction constructors // Explicated injection
+  sorts GeneralProduction constructors // General productions (explicated injection)
     GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
     GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
-  
-  
-  // SDF2-style productions
-  sorts SdfProduction constructors
+
+  sorts SdfProduction constructors // SDF2-style productions
     SdfProduction         : SymbolDef * RHS * Attributes -> SdfProduction
-    SdfProductionWithCons : SortCons  * RHS * Attributes -> SdfProduction
-  
-  sorts RHS constructors
-    Rhs : list(Symbol) -> RHS // HACK: use list(Symbol) instead of Symbols, as Symbols is an injection.
-  
-  sorts Symbol constructors
-    //Cf     : Symbol -> Symbol // TODO: make ambiguous constructor unambiguous
-    //Lex    : Symbol -> Symbol // TODO: make ambiguous constructor unambiguous
-    Varsym      : Symbol -> Symbol
-    Label       : Label * Symbol -> Symbol
-    Sequence    : Symbol * Symbol -> Symbol
-    Opt         : Symbol -> Symbol
-    Iter        : Symbol -> Symbol
-    IterStar    : Symbol -> Symbol
-    IterSep     : Symbol * Separator -> Symbol
-    IterStarSep : Symbol * Separator -> Symbol
-    Alt         : Symbol * Symbol -> Symbol
-    Sort              : string -> Symbol
-    ParameterizedSort : string * list(Symbol) -> Symbol
-    // Ignore other symbols, as they do not contain names nor types.
-  
-  sorts Label constructors // TODO
-  
-  sorts Separator // Ignore: does not contain names nor types.
-  
-  sorts Attributes // Ignore: constructor attribute is lifted, so attributes contain no names nor types.
-  
-  // SDF3-style productions
-  sorts TemplateProduction constructors
+    SdfProductionWithCons : SortCons  * RHS * Attributes -> SdfProduction    
+
+  sorts TemplateProduction constructors // SDF3-style productions
     TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
     TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
 
+
+  // Template production
   sorts Template constructors
     Template       : list(TemplateLine) -> Template
     TemplateSquare : list(TemplateLine) -> Template
@@ -94,15 +73,53 @@ signature
   sorts Placeholder constructors
     Placeholder : Symbol * PlaceholderOptions -> Placeholder
     
-  sorts PlaceholderOptions // Ignore: does not contain names nor types.
-
-  // Section: Template options
+    
+  // Template options
   sorts TemplateOption constructors
     KeywordAttributes : SymbolDef * Attributes -> TemplateOption // TODO: add constraint
     // Ignore other template options, as they do not contain names nor types.
 
+
+  // Start symbols grammar sections
+  constructors
+    KernelStartSymbols      : list(Symbol) -> Grammar
+    LexicalStartSymbols     : list(Symbol) -> Grammar
+    ContextFreeStartSymbols : list(Symbol) -> Grammar
+
+
+  // Priorities grammar sections
+  constructors
+    Priorities             : list(Priority) -> Grammar // TODO: add constraint
+    LexicalPriorities      : list(Priority) -> Grammar // TODO: add constraint
+    ContextFreePriorities  : list(Priority) -> Grammar // TODO: add constraint
   
-  // Sort and constructor definitions
+  sorts Priority constructors // TODO: add constraints
+    Chain : list(Group)                   -> Priority
+    Assoc : Group * Associativity * Group -> Priority
+    
+  sorts Group constructors // TODO: add constraints
+    WithArguments : Group * ArgumentIndicator                -> Group
+    NonTransitive : Group                                    -> Group
+    SimpleGroup   : PriorityProduction                       -> Group
+    ProdsGroup    : list(PriorityProduction)                 -> Group
+    AssocGroup    : Associativity * list(PriorityProduction) -> Group
+    
+  sorts PriorityProduction constructors // TODO: explicate injection and add constraints
+    PriorityProduction_SdfProduction : SdfProduction -> PriorityProduction
+    PriorityProduction_Production : Production -> PriorityProduction
+  
+  
+  // Restrictions grammar sections
+  constructors
+    Restrictions            : list(Restriction) -> Grammar // TODO: add constraint
+    LexicalRestrictions     : list(Restriction) -> Grammar // TODO: add constraint
+    ContextFreeRestrictions : list(Restriction) -> Grammar // TODO: add constraint
+    
+  sorts Restriction constructors
+    Follow : list(Symbol) * Lookaheads -> Restriction // TODO: add constraint
+
+
+  // Sorts and Constructors
   sorts SortCons constructors
     SortCons : SymbolDef * Constructor -> SortCons
     
@@ -110,10 +127,45 @@ signature
     Constructor : string -> Constructor
     
   sorts SymbolDef constructors
-    SortDef : string    -> SymbolDef
-    Cf      : SymbolDef -> SymbolDef
-    Lex     : SymbolDef -> SymbolDef
-    Var     : SymbolDef -> SymbolDef
+    SortDef      : string    -> SymbolDef
+    SymbolDefCf  : SymbolDef -> SymbolDef
+    SymbolDefLex : SymbolDef -> SymbolDef
+    Var          : SymbolDef -> SymbolDef
+
+
+  // Symbols  
+  sorts Symbol constructors
+    Cf     : Symbol -> Symbol
+    Lex    : Symbol -> Symbol
+    Varsym      : Symbol -> Symbol
+    Label       : Label * Symbol -> Symbol
+    Sequence    : Symbol * Symbol -> Symbol
+    Opt         : Symbol -> Symbol
+    Iter        : Symbol -> Symbol
+    IterStar    : Symbol -> Symbol
+    IterSep     : Symbol * Separator -> Symbol
+    IterStarSep : Symbol * Separator -> Symbol
+    Alt         : Symbol * Symbol -> Symbol
+    Sort              : string -> Symbol
+    ParameterizedSort : string * list(Symbol) -> Symbol
+    // Ignore other symbols, as they do not contain names nor types.
+  
+  sorts RHS constructors
+    Rhs : list(Symbol) -> RHS
+
+
+
+  // Labels
+  sorts Label constructors // TODO
+  
+  
+  // Ignore following sorts, as they do not contain names nor types.
+  sorts Associativity
+  sorts ArgumentIndicator
+  sorts PlaceholderOptions
+  sorts Separator
+  sorts Attributes
+  sorts Lookaheads
   
   
   // Sort type
@@ -171,6 +223,9 @@ rules // File
   grammarOK(s, Kernel(productions)) :- sdfProductionsOK(s, productions).
   grammarOK(s, LexicalSyntax(productions)) :- sdfProductionsOK(s, productions).
   grammarOK(s, ContextFreeSyntax(generalProductions)) :- generalProductionsOK(s, generalProductions).
+  grammarOK(s, KernelStartSymbols(symbols)) :- symbolsOK(s, symbols).
+  grammarOK(s, LexicalStartSymbols(symbols)) :- symbolsOK(s, symbols).
+  grammarOK(s, ContextFreeStartSymbols(symbols)) :- symbolsOK(s, symbols).
   
   generalProductionOK: scope * GeneralProduction
   generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction)) :- sdfProductionOK(s, sdfProduction).
@@ -229,8 +284,8 @@ rules // SortCons and Constructor
 rules // Symbol
 
   symbolOK: scope * Symbol
-//symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
-//symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
+  symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
   symbolOK(s, Varsym(symbol)) :- symbolOK(s, symbol).
   symbolOK(s, Label(label, symbol)) :- symbolOK(s, symbol). // TODO: label
   symbolOK(s, Sequence(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
@@ -249,8 +304,8 @@ rules // SymbolDef
 
   symbolDefOK: scope * SymbolDef
   symbolDefOK(s, SortDef(name))  :- declareSort(s, name).
-  symbolDefOK(s, Cf(symbolDef))  :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, Lex(symbolDef)) :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, SymbolDefCf(symbolDef))  :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, SymbolDefLex(symbolDef)) :- symbolDefOK(s, symbolDef).
   symbolDefOK(s, Var(symbolDef)) :- symbolDefOK(s, symbolDef).
   symbolDefOK(s, _). // Other symbol definitions do not contain names nor types.
 
