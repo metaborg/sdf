@@ -61,9 +61,9 @@ signature constructors // GeneralProduction injections
 
 rules
 
-  explicate-injection:   ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(  explicate-general-production)> productions)
-  unexplicate-injection: ContextFreeSyntax(productions) -> ContextFreeSyntax(<map(unexplicate-general-production)> productions)
-            
+  explicate-injection   = ContextFreeSyntax(map(  explicate-general-production))
+  unexplicate-injection = ContextFreeSyntax(map(unexplicate-general-production))
+
   explicate-general-production: prod@SdfProduction(_, _, _)              -> GeneralProduction_SdfProduction(prod)
   explicate-general-production: prod@SdfProductionWithCons(_, _, _)      -> GeneralProduction_SdfProduction(prod)
   explicate-general-production: prod@TemplateProduction(_, _, _)         -> GeneralProduction_TemplateProduction(prod)
@@ -71,10 +71,31 @@ rules
   unexplicate-general-production: GeneralProduction_SdfProduction(prod)      -> prod
   unexplicate-general-production: GeneralProduction_TemplateProduction(prod) -> prod
 
+signature constructors // PriorityProduction injections
+
+  PriorityProduction_SdfProduction : SdfProduction -> PriorityProduction
+  PriorityProduction_Production    : Production    -> PriorityProduction
+
+rules
+
+  explicate-injection = SimpleGroup(        explicate-priority-production )
+  explicate-injection = ProdsGroup (    map(explicate-priority-production))
+  explicate-injection = AssocGroup (id, map(explicate-priority-production))
+  unexplicate-injection = SimpleGroup(        unexplicate-priority-production )
+  unexplicate-injection = ProdsGroup (    map(unexplicate-priority-production))
+  unexplicate-injection = AssocGroup (id, map(unexplicate-priority-production))
+
+  explicate-priority-production: prod@SdfProduction(_, _, _)         -> PriorityProduction_SdfProduction(prod)
+  explicate-priority-production: prod@SdfProductionWithCons(_, _, _) -> PriorityProduction_SdfProduction(prod)
+  explicate-priority-production: prod@Prod(_, _, _)                  -> PriorityProduction_Production(prod)
+  unexplicate-priority-production: PriorityProduction_SdfProduction(prod) -> prod
+  unexplicate-priority-production: PriorityProduction_Production(prod)    -> prod
+
 signature constructors // SymbolDef ambiguous constructors
 
   SymbolDefCf  : SymbolDef -> SymbolDef
   SymbolDefLex : SymbolDef -> SymbolDef
+  SymbolDefVar : SymbolDef -> SymbolDef
 
 rules 
 
@@ -94,6 +115,25 @@ rules
   
   disambiguate-symboldef-constructor:  Cf(symbolDef) -> SymbolDefCf (symbolDef)
   disambiguate-symboldef-constructor: Lex(symbolDef) -> SymbolDefLex(symbolDef)
+  disambiguate-symboldef-constructor: Var(symbolDef) -> SymbolDefVar(symbolDef)
   ambiguate-symboldef-constructor: SymbolDefCf (symbolDef) -> Cf (symbolDef)
   ambiguate-symboldef-constructor: SymbolDefLex(symbolDef) -> Lex(symbolDef)
+  ambiguate-symboldef-constructor: SymbolDefVar(symbolDef) -> Var(symbolDef)
 
+signature constructors // SymbolDef ambiguous constructors
+
+  DeclSymbolCf  : DeclSymbol -> DeclSymbol
+  DeclSymbolLex : DeclSymbol -> DeclSymbol
+  DeclSymbolVar : DeclSymbol -> DeclSymbol
+
+rules 
+
+  disambiguate-constructor = Sorts(map(disambiguate-declsymbol-constructor))
+  ambiguate-constructor = Sorts(map(ambiguate-declsymbol-constructor))
+  
+  disambiguate-declsymbol-constructor:  Cf(symbolDef) -> DeclSymbolCf (symbolDef)
+  disambiguate-declsymbol-constructor: Lex(symbolDef) -> DeclSymbolLex(symbolDef)
+  disambiguate-declsymbol-constructor: Var(symbolDef) -> DeclSymbolVar(symbolDef)
+  ambiguate-declsymbol-constructor: DeclSymbolCf (symbolDef) -> Cf (symbolDef)
+  ambiguate-declsymbol-constructor: DeclSymbolLex(symbolDef) -> Lex(symbolDef)
+  ambiguate-declsymbol-constructor: DeclSymbolVar(symbolDef) -> Var(symbolDef)

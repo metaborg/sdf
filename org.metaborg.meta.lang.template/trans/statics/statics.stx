@@ -107,7 +107,6 @@ signature
 rules
 
   sectionOK: scope * Section
-  
   sectionsOK maps sectionOK(*, list(*))
 
 //
@@ -135,24 +134,27 @@ signature
 
   constructors
     TemplateSection : list(TemplateProduction) -> Section
-    
+
   sorts TemplateProduction constructors
     TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
     TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
-    
+
   sorts Template constructors
     Template       : list(TemplateLine) -> Template
     TemplateSquare : list(TemplateLine) -> Template
-    
+
   sorts TemplateLine constructors
     Line : list(TemplatePart) -> TemplateLine
-    
+
   sorts TemplatePart constructors
     Angled  : Placeholder -> TemplatePart
     Squared : Placeholder -> TemplatePart
-    
+
   sorts Placeholder constructors
     Placeholder : Symbol * PlaceholderOptions -> Placeholder
+
+  sorts Attributes
+  sorts PlaceholderOptions
 
 rules
 
@@ -203,6 +205,7 @@ rules
   
   templateOptionOK: scope * TemplateOption
   templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- symbolDefOK(s, symbolDef).
+  templateOptionOK(s, _).
   templateOptionsOK maps templateOptionOK(*, list(*))
 
 //
@@ -212,10 +215,16 @@ rules
 signature
 
   constructors
-    Syntax            : list(Production)        -> Grammar
-    Kernel            : list(SdfProduction)     -> Grammar
-    LexicalSyntax     : list(SdfProduction)     -> Grammar
-    ContextFreeSyntax : list(GeneralProduction) -> Grammar
+    Syntax                 : list(Production)        -> Grammar
+    Lexical                : list(Production)        -> Grammar // TODO
+    Contextfree            : list(Production)        -> Grammar // TODO
+    Variables              : list(Production)        -> Grammar // TODO
+    VariablesProductive    : list(SdfProduction)     -> Grammar // TODO
+    LexVariables           : list(Production)        -> Grammar // TODO
+    LexVariablesProductive : list(SdfProduction)     -> Grammar // TODO
+    Kernel                 : list(SdfProduction)     -> Grammar
+    LexicalSyntax          : list(SdfProduction)     -> Grammar
+    ContextFreeSyntax      : list(GeneralProduction) -> Grammar
     
   sorts Production constructors // Kernel-style productions
     Prod : list(Symbol) * Symbol * Attributes -> Production
@@ -285,28 +294,61 @@ rules
 signature
 
   constructors
-    Priorities             : list(Priority) -> Grammar // TODO: add constraint
-    LexicalPriorities      : list(Priority) -> Grammar // TODO: add constraint
-    ContextFreePriorities  : list(Priority) -> Grammar // TODO: add constraint
+    Priorities             : list(Priority) -> Grammar
+    LexicalPriorities      : list(Priority) -> Grammar
+    ContextFreePriorities  : list(Priority) -> Grammar
   
-  sorts Priority constructors // TODO: add constraints
+  sorts Priority constructors
     Chain : list(Group)                   -> Priority
     Assoc : Group * Associativity * Group -> Priority
     
-  sorts Group constructors // TODO: add constraints
-    WithArguments : Group * ArgumentIndicator                -> Group
-    NonTransitive : Group                                    -> Group
-    SimpleGroup   : PriorityProduction                       -> Group
-    ProdsGroup    : list(PriorityProduction)                 -> Group
-    AssocGroup    : Associativity * list(PriorityProduction) -> Group
+  sorts Group constructors
+    WithArguments  : Group * ArgumentIndicator                -> Group
+    NonTransitive  : Group                                    -> Group
+    SimpleGroup    : PriorityProduction                       -> Group
+    ProdsGroup     : list(PriorityProduction)                 -> Group
+    AssocGroup     : Associativity * list(PriorityProduction) -> Group
+    SimpleRefGroup : SortConsRef                              -> Group
+    ProdsRefGroup  : list(SortConsRef)                        -> Group
+    AssocRefGroup  : Associativity * list(SortConsRef)        -> Group
     
-  sorts PriorityProduction constructors // TODO: explicate injection and add constraints
+  sorts PriorityProduction constructors
     PriorityProduction_SdfProduction : SdfProduction -> PriorityProduction
     PriorityProduction_Production    : Production    -> PriorityProduction
 
+  sorts ArgumentIndicator
+  sorts Associativity
+
 rules
 
-// TODO
+  grammarOK(s, Priorities(priorities))            :- prioritiesOK(s, priorities).
+  grammarOK(s, LexicalPriorities(priorities))     :- prioritiesOK(s, priorities).
+  grammarOK(s, ContextFreePriorities(priorities)) :- prioritiesOK(s, priorities).
+
+  priorityOK: scope * Priority
+  priorityOK(s, Chain(groups)) :- 
+    groupsOK(s, groups).
+  priorityOK(s, Assoc(group1, _, group2)) :- 
+    groupOK(s, group1),
+    groupOK(s, group2). 
+  prioritiesOK maps priorityOK(*, list(*))
+  
+  groupOK: scope * Group
+  groupOK(s, WithArguments(group, _))            :- groupOK(s, group).
+  groupOK(s, NonTransitive(group))               :- groupOK(s, group).
+  groupOK(s, SimpleGroup(priorityProduction))    :- priorityProductionOK(s, priorityProduction).
+  groupOK(s, ProdsGroup(priorityProductions))    :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, AssocGroup(_, priorityProductions)) :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, SimpleRefGroup(sortConsRef))        :- sortConsRefOK(s, sortConsRef).
+  groupOK(s, ProdsRefGroup(sortConsRefs))        :- sortConsRefsOK(s, sortConsRefs).
+  groupOK(s, AssocRefGroup(_, sortConsRefs))     :- sortConsRefsOK(s, sortConsRefs).
+  groupsOK maps groupOK(*, list(*))
+
+  priorityProductionOK: scope * PriorityProduction
+  // TODO: these should not declare new productions, but instead should be checked against existing ones?
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- sdfProductionOK(s, sdfProduction).
+  priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
+  priorityProductionsOK maps priorityProductionOK(*, list(*))
 
 //
 // Restrictions section
@@ -315,16 +357,74 @@ rules
 signature
 
   constructors
-    Restrictions            : list(Restriction) -> Grammar // TODO: add constraint
-    LexicalRestrictions     : list(Restriction) -> Grammar // TODO: add constraint
-    ContextFreeRestrictions : list(Restriction) -> Grammar // TODO: add constraint
+    Restrictions            : list(Restriction) -> Grammar
+    LexicalRestrictions     : list(Restriction) -> Grammar
+    ContextFreeRestrictions : list(Restriction) -> Grammar
     
   sorts Restriction constructors
-    Follow : list(Symbol) * Lookaheads -> Restriction // TODO: add constraint
+    Follow : list(Symbol) * Lookaheads -> Restriction
+    
+  sorts Lookaheads
 
 rules
 
-  // TODO
+  grammarOK(s, Restrictions(restrictions))            :- restrictionsOK(s, restrictions).
+  grammarOK(s, LexicalRestrictions(restrictions))     :- restrictionsOK(s, restrictions).
+  grammarOK(s, ContextFreeRestrictions(restrictions)) :- restrictionsOK(s, restrictions).
+  
+  restrictionOK: scope * Restriction
+  restrictionOK(s, Follow(symbols, _)) :- symbolsOK(s, symbols).
+  restrictionsOK maps restrictionOK(*, list(*))
+
+//
+// Sorts section
+//
+
+signature
+
+  constructors
+    Sorts : list(DeclSymbol) -> Grammar
+
+  sorts DeclSymbol constructors
+    DeclSort    : string     -> DeclSymbol
+    DeclSortCf  : DeclSymbol -> DeclSymbol
+    DeclSortLex : DeclSymbol -> DeclSymbol
+    DeclSortVar : DeclSymbol -> DeclSymbol
+
+rules
+
+  grammarOK(s, Sorts(declSymbols)) :- declSymbolsOK(s, declSymbols).
+
+  declSymbolOK: scope * DeclSymbol
+  declSymbolOK(s, DeclSort(name))         :- resolveSort(s, name).
+  declSymbolOK(s, DeclSortCf(symbolDef))  :- declSymbolOK(s, symbolDef).
+  declSymbolOK(s, DeclSortLex(symbolDef)) :- declSymbolOK(s, symbolDef).
+  declSymbolOK(s, DeclSortVar(symbolDef)) :- declSymbolOK(s, symbolDef).
+  declSymbolsOK maps declSymbolOK(*, list(*))
+
+//
+// Aliases section
+//
+
+
+signature
+
+  constructors
+    Aliases : list(Alias) -> Grammar
+    
+  sorts Alias constructors
+    Alias : Symbol * Symbol -> Alias
+    
+rules
+
+  grammarOK(s, Aliases(aliases)) :- aliasesOK(s, aliases).
+  
+  // TODO: what are the static semantics of an alias? Does it declare the symbol on the right-hand side?
+  aliasOK: scope * Alias
+  aliasOK(s, Alias(symbol1, symbol2)) :-
+    symbolOK(s, symbol1),
+    symbolOK(s, symbol2).
+  aliasesOK maps aliasOK(*, list(*))
 
 //
 // Sorts and Constructors
@@ -342,29 +442,39 @@ signature
     SortDef      : string    -> SymbolDef
     SymbolDefCf  : SymbolDef -> SymbolDef
     SymbolDefLex : SymbolDef -> SymbolDef
-    Var          : SymbolDef -> SymbolDef
+    SymbolDefVar : SymbolDef -> SymbolDef
+
+  sorts SortConsRef constructors
+    SortConsRef : Symbol * Constructor -> SortConsRef
 
 rules
 
   sortConsOK: scope * SortCons
   sortConsOK(s, SortCons(symbolDef, constructor)) :-
     symbolDefOK(s, symbolDef),
-    constructorOK(s, constructor).
+    constructorDefOK(s, constructor).
   
-  constructorOK: scope * Constructor
-  constructorOK(s, Constructor(name)) :-
+  constructorDefOK: scope * Constructor
+  constructorDefOK(s, Constructor(name)) :-
     declareConstructor(s, name).
 
-rules
+  constructorRefOK: scope * Constructor
+  constructorRefOK(s, Constructor(name)) :-
+    resolveConstructor(s, name).
 
   symbolDefOK: scope * SymbolDef
-  symbolDefOK(s, SortDef(name))           :- declareSort(s, name).
-  symbolDefOK(s, SymbolDefCf(symbolDef))  :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, SymbolDefLex(symbolDef)) :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, Var(symbolDef))          :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, _). // Other symbol definitions do not contain names nor types.
+  symbolDefOK(s, SortDef(name))            :- declareSort(s, name).
+  symbolDefOK(s, SymbolDefCf(symbolDef))   :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, SymbolDefLex(symbolDef))  :- symbolDefOK(s, symbolDef).
+  symbolDefOK(s, SymbolDefVar(symbolDef)) :- symbolDefOK(s, symbolDef).
 
-rules // Sorts
+  sortConsRefOK: scope * SortConsRef
+  sortConsRefOK(s, SortConsRef(symbol, constructor)) :-
+    symbolOK(s, symbol),
+    constructorRefOK(s, constructor).
+  sortConsRefsOK maps sortConsRefOK(*, list(*))
+
+rules // Sort reusable predicates
 
   declareSort : scope * string  
   declareSort(s, name) :-
@@ -375,7 +485,7 @@ rules // Sorts
     Sort{name} in s |-> [(_, (Sort{name'}))|_]| error $[Sort [name] not defined],
     @name.ref := name'.
 
-rules // Constructors
+rules // Constructor reusable predicates
 
   // TODO: constructors should be typed as sort -> sort*, and they must be unique within that name+type.
 
@@ -399,7 +509,7 @@ signature
     Cf                : Symbol                -> Symbol
     Lex               : Symbol                -> Symbol
     Varsym            : Symbol                -> Symbol
-    Label             : Label * Symbol        -> Symbol
+    Label             : Label  * Symbol       -> Symbol
     Sequence          : Symbol * Symbol       -> Symbol
     Opt               : Symbol                -> Symbol
     Iter              : Symbol                -> Symbol
@@ -409,25 +519,34 @@ signature
     Alt               : Symbol * Symbol       -> Symbol
     Sort              : string                -> Symbol
     ParameterizedSort : string * list(Symbol) -> Symbol
-    // Ignore other symbols, as they do not contain names nor types.
+
+  sorts Separator
 
 rules
 
   symbolOK: scope * Symbol
-  symbolOK(s, Cf(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, Lex(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, Varsym(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, Label(label, symbol)) :- symbolOK(s, symbol). // TODO: label
-  symbolOK(s, Sequence(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
-  symbolOK(s, Opt(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, Iter(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, IterStar(symbol)) :- symbolOK(s, symbol).
-  symbolOK(s, IterSep(symbol, _)) :- symbolOK(s, symbol).
-  symbolOK(s, IterStarSep(symbol, _)) :- symbolOK(s, symbol).
-  symbolOK(s, Alt(symbol1, symbol2)) :- symbolOK(s, symbol1), symbolOK(s, symbol2).
-  symbolOK(s, Sort(name)) :- resolveSort(s, name).
-  symbolOK(s, ParameterizedSort(name, symbols)) :- resolveSort(s, name), symbolsOK(s, symbols).
-  symbolOK(s, _). // Other symbols do not contain names nor types.
+  symbolOK(s, Cf(symbol))                       :- symbolOK(s, symbol).
+  symbolOK(s, Lex(symbol))                      :- symbolOK(s, symbol).
+  symbolOK(s, Varsym(symbol))                   :- symbolOK(s, symbol).
+  symbolOK(s, Label(label, symbol))             :-
+    labelOK(s, label), 
+    symbolOK(s, symbol).
+  symbolOK(s, Sequence(symbol1, symbol2))       :- 
+    symbolOK(s, symbol1), 
+    symbolOK(s, symbol2).
+  symbolOK(s, Opt(symbol))                      :- symbolOK(s, symbol).
+  symbolOK(s, Iter(symbol))                     :- symbolOK(s, symbol).
+  symbolOK(s, IterStar(symbol))                 :- symbolOK(s, symbol).
+  symbolOK(s, IterSep(symbol, _))               :- symbolOK(s, symbol).
+  symbolOK(s, IterStarSep(symbol, _))           :- symbolOK(s, symbol).
+  symbolOK(s, Alt(symbol1, symbol2))            :- 
+    symbolOK(s, symbol1), 
+    symbolOK(s, symbol2).
+  symbolOK(s, Sort(name))                       :- resolveSort(s, name).
+  symbolOK(s, ParameterizedSort(name, symbols)) :- 
+    resolveSort(s, name), 
+    symbolsOK(s, symbols).
+  symbolOK(s, _).
   symbolsOK maps symbolOK(*, list(*))
 
 
@@ -438,21 +557,23 @@ rules
 signature
 
   sorts Label constructors
+    Quoted   : string -> Label
+    Unquoted : string -> Label
 
 rules
 
-  // TODO
+  labelOK: scope * Label
+  labelOK(s, Quoted(name))   :- declareLabel(s, name).
+  labelOK(s, Unquoted(name)) :- declareLabel(s, name).
 
-//
-// Ignored sorts
-//
+rules // Label reusable predicates
 
-signature // Ignore following sorts, as they do not contain names nor types.
-
-  sorts Associativity
-  sorts ArgumentIndicator
-  sorts PlaceholderOptions
-  sorts Separator
-  sorts Attributes
-  sorts Lookaheads
+  declareLabel : scope * string  
+  declareLabel(s, name) :-
+    s -> Label{name}.
+    
+  resolveLabel : scope * string
+  resolveLabel(s, name)  :- {name'}
+    Label{name} in s |-> [(_, (Sort{name'}))|_]| error $[Label [name] not defined],
+    @name.ref := name'.
 
