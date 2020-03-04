@@ -177,33 +177,34 @@ signature
 
 rules
 
-  sectionOK(s, TemplateSection(templateProductions)) :- templateProductionsOK(s, templateProductions).
+  sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
   
-  templateProductionOK: scope * TemplateProduction
-  templateProductionOK(s, TemplateProduction(symbolDef, template, _)) :-
-    symbolDefOK(s, symbolDef),
-    templateOK(s, template).
-  templateProductionOK(s, TemplateProductionWithCons(sortCons, template, _)) :-
-    sortConsOK(s, sortCons),
-    templateOK(s, template).
-  templateProductionsOK maps templateProductionOK(*, list(*))
+  typeOfTemplateProduction: scope * TemplateProduction -> TYPE
+  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, _)) = Tprod :- {Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    typeOfTemplate(s, template) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort).
+  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    typeOfTemplate(s, template) == Tsymbols.
+  typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
 
-  templateOK: scope * Template
-  templateOK(s, Template(lines))       :- templateLinesOK(s, lines).
-  templateOK(s, TemplateSquare(lines)) :- templateLinesOK(s, lines).
+  typeOfTemplate: scope * Template -> list(TYPE)
+  typeOfTemplate(s, Template(lines))       = T :- typeOfTemplateLines(s, lines) == T.
+  typeOfTemplate(s, TemplateSquare(lines)) = T :- typeOfTemplateLines(s, lines) == T.
   
-  templateLineOK: scope * TemplateLine
-  templateLineOK(s, Line(parts)) :- templatePartsOK(s, parts).
-  templateLinesOK maps templateLineOK(*, list(*))
+  typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
+  typeOfTemplateLine(s, Line(parts)) = T :- typeOfTemplateParts(s, parts) == T.
+  typeOfTemplateLines maps typeOfTemplateLine(*, list(*)) = *
   
-  templatePartOK: scope * TemplatePart
-  templatePartOK(s, Angled(placeholder))  :- placeholderOK(s, placeholder).
-  templatePartOK(s, Squared(placeholder)) :- placeholderOK(s, placeholder).
-  templatePartOK(s, _).
-  templatePartsOK maps templatePartOK(*, list(*))
+  typeOfTemplatePart: scope * TemplatePart -> TYPE
+  typeOfTemplatePart(s, Angled(placeholder))  = T :- typeOfPlaceholder(s, placeholder) == T.
+  typeOfTemplatePart(s, Squared(placeholder)) = T :- typeOfPlaceholder(s, placeholder) == T.
+  typeOfTemplatePart(s, _) = STRING(). // TODO: are all other template parts typed as strings?
+  typeOfTemplateParts maps typeOfTemplatePart(*, list(*)) = list(*)
   
-  placeholderOK: scope * Placeholder
-  placeholderOK(s, Placeholder(symbol, _)) :- typeOfSymbol(s, symbol) == _.
+  typeOfPlaceholder: scope * Placeholder -> TYPE
+  typeOfPlaceholder(s, Placeholder(symbol, _)) = T :- typeOfSymbol(s, symbol) == T.
 
 //
 // Template options section
@@ -222,7 +223,7 @@ rules
   sectionOK(s, TemplateOptions(templateOptions)) :- templateOptionsOK(s, templateOptions).
   
   templateOptionOK: scope * TemplateOption
-  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- symbolDefOK(s, symbolDef).
+  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- declareSymbolDef(s, symbolDef) == _.
   templateOptionOK(s, _).
   templateOptionsOK maps templateOptionOK(*, list(*))
 
@@ -265,37 +266,35 @@ rules
   grammarOK(s, Contextfree(productions))               :- productionsOK(s, productions).
   grammarOK(s, Variables(productions))                 :- productionsOK(s, productions).
   grammarOK(s, LexVariables(productions))              :- productionsOK(s, productions).
-  grammarOK(s, VariablesProductive(sdfProductions))    :- sdfProductionsOK(s, sdfProductions).
-  grammarOK(s, LexVariablesProductive(sdfProductions)) :- sdfProductionsOK(s, sdfProductions).
-  grammarOK(s, Kernel(sdfProductions))                 :- sdfProductionsOK(s, sdfProductions).
-  grammarOK(s, LexicalSyntax(sdfProductions))          :- sdfProductionsOK(s, sdfProductions).
+  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, sdfProductions) == _.
   grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
 
   productionOK: scope * Production
   productionOK(s, Prod(symbols, symbol, _)) :-
-    typesOfSymbols(s, symbols),
-    typeOfSymbol(s, symbol).
+    typesOfSymbols(s, symbols) == _,
+    typeOfSymbol(s, symbol) == _.
   productionsOK maps productionOK(*, list(*))
 
   generalProductionOK: scope * GeneralProduction
   generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
-    sdfProductionOK(s, sdfProduction).
+    typeOfSdfProduction(s, sdfProduction) == _.
   generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
-    templateProductionOK(s, templateProduction).
+    typeOfTemplateProduction(s, templateProduction) == _.
   generalProductionsOK maps generalProductionOK(*, list(*))
 
-  sdfProductionOK: scope * SdfProduction
-  sdfProductionOK(s, SdfProduction(symbolDef, rhs, _)) :-
-    symbolDefOK(s, symbolDef),
-    rhsOK(s, rhs).
-  sdfProductionOK(s, SdfProductionWithCons(sortCons, rhs, _)) :-
-    sortConsOK(s, sortCons),
-    rhsOK(s, rhs).
-  sdfProductionsOK maps sdfProductionOK(*, list(*))
+  typeOfSdfProduction: scope * SdfProduction -> TYPE
+  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), _)) = Tprod :- {Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    typesOfSymbols(s, symbols) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort).
+  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    typesOfSymbols(s, symbols) == Tsymbols.
+  typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
   
-  rhsOK: scope * RHS
-  rhsOK(s, Rhs(symbols)) :- typesOfSymbols(s, symbols).
-
 //
 // Start symbols section
 //
@@ -364,14 +363,14 @@ rules
   groupOK(s, SimpleGroup(priorityProduction))    :- priorityProductionOK(s, priorityProduction).
   groupOK(s, ProdsGroup(priorityProductions))    :- priorityProductionsOK(s, priorityProductions).
   groupOK(s, AssocGroup(_, priorityProductions)) :- priorityProductionsOK(s, priorityProductions).
-  groupOK(s, SimpleRefGroup(sortConsRef))        :- sortConsRefOK(s, sortConsRef).
-  groupOK(s, ProdsRefGroup(sortConsRefs))        :- sortConsRefsOK(s, sortConsRefs).
-  groupOK(s, AssocRefGroup(_, sortConsRefs))     :- sortConsRefsOK(s, sortConsRefs).
+  groupOK(s, SimpleRefGroup(sortConsRef))        :- typeOfSortConsRef(s, sortConsRef) == _.
+  groupOK(s, ProdsRefGroup(sortConsRefs))        :- typeOfSortConsRefs(s, sortConsRefs) == _.
+  groupOK(s, AssocRefGroup(_, sortConsRefs))     :- typeOfSortConsRefs(s, sortConsRefs) == _.
   groupsOK maps groupOK(*, list(*))
 
   priorityProductionOK: scope * PriorityProduction
   // TODO: these should not declare new productions, but instead should be checked against existing ones?
-  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- sdfProductionOK(s, sdfProduction).
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, sdfProduction) == _.
   priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
   priorityProductionsOK maps priorityProductionOK(*, list(*))
 
@@ -450,52 +449,50 @@ signature
 
 rules
 
-  sortConsOK: scope * SortCons
-  sortConsOK(s, SortCons(symbolDef, constructor)) :-
-    symbolDefOK(s, symbolDef),
-    constructorDefOK(s, constructor).
-  
-  constructorDefOK: scope * Constructor
-  constructorDefOK(s, Constructor(name)) :- declareConstructor(s, name).
+  declareSortCons: scope * list(TYPE) * SortCons -> TYPE
+  declareSortCons(s, Tsymbols, SortCons(symbolDef, Constructor(constructorName))) = Tprod :- {Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
 
-  constructorRefOK: scope * Constructor
-  constructorRefOK(s, Constructor(name)) :- typeOfConstructor(s, name) == _.
+  declareSymbolDef: scope * SymbolDef -> TYPE
+  declareSymbolDef(s, SortDef(name))           = Tsort :- declareSort(s, name) == Tsort.
+  declareSymbolDef(s, SymbolDefCf(symbolDef))  = T :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefLex(symbolDef)) = T :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefVar(symbolDef)) = T :- declareSymbolDef(s, symbolDef) == T.
 
-  symbolDefOK: scope * SymbolDef
-  symbolDefOK(s, SortDef(name))           :- declareSort(s, name).
-  symbolDefOK(s, SymbolDefCf(symbolDef))  :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, SymbolDefLex(symbolDef)) :- symbolDefOK(s, symbolDef).
-  symbolDefOK(s, SymbolDefVar(symbolDef)) :- symbolDefOK(s, symbolDef).
-
-  sortConsRefOK: scope * SortConsRef
-  sortConsRefOK(s, SortConsRef(symbol, constructor)) :-
-    typeOfSymbol(s, symbol),
-    constructorRefOK(s, constructor).
-  sortConsRefsOK maps sortConsRefOK(*, list(*))
+  typeOfSortConsRef: scope * SortConsRef -> TYPE
+  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort TsortExpected}
+    typeOfSymbol(s, symbol) == Tsort,
+    typeOfConstructor(s, constructorName) == Tprod@PROD(_, TsortExpected),
+    Tsort == TsortExpected | error $[Constructor [constructorName] is not declared for [symbol]].
+  typeOfSortConsRefs maps typeOfSortConsRef(*, list(*)) = list(*)
 
 rules // Sort reusable predicates
 
-  declareSort : scope * string  
-  declareSort(s, name) :-
-    s -> Sort{name} with typeOfDecl SORT(Sort{name}).
+  declareSort : scope * string -> TYPE
+  declareSort(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}),
+    s -> Sort{name} with typeOfDecl Tsort.
     
   typeOfSort : scope * string -> TYPE
-  typeOfSort(s, name) = T :- {name'}
-    typeOfDecl of Sort{name} in s |-> [(_, (Sort{name'}, T))|_]| error $[Sort [name] not defined],
-    @name.ref := name'.
+  typeOfSort(s, name) = Tsort :- {name'}
+    typeOfDecl of Sort{name} in s |-> [(_, (Sort{name'}, Tsort))|_]| error $[Sort [name] not defined],
+    @name.ref := name',
+    @name.type := Tsort.
 
 rules // Constructor reusable predicates
 
-  declareConstructor : scope * string * list(TYPE) * TYPE  
-  declareConstructor(s, name, inTypes, outType) :- {T}
-    T == PROD(inTypes, outType),
-    s -> Constructor{name} with typeOfDecl T,
-    typeOfDecl of Constructor{name} in s |-> [(_, (_, T))] | error $[Duplicate definition of constructor [name]].
+  declareConstructor : scope * list(TYPE) * TYPE * string -> TYPE
+  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :-
+    Tprod == PROD(Tsymbols, Tsort),
+    s -> Constructor{name} with typeOfDecl Tprod,
+    typeOfDecl of Constructor{name} in s |-> [(_, (_, Tprod))] | error $[Duplicate definition of constructor [name]].
     
   typeOfConstructor : scope * string -> TYPE
-  typeOfConstructor(s, name) = T :- {name'}
-    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, T))|_]| error $[Constructor [name] not defined],
-    @name.ref := name'.
+  typeOfConstructor(s, name) = Tprod :- {name'}
+    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod))|_]| error $[Constructor [name] not defined],
+    @name.ref  := name',
+    @name.type := Tprod.
 
 //
 // Symbols
@@ -530,11 +527,13 @@ rules
 
   typeOfSymbol: scope * Symbol -> TYPE
   
-  typeOfSymbol(s, Sort(name))                       = T :-
-    typeOfSort(s, name) == T.
-  typeOfSymbol(s, ParameterizedSort(name, symbols)) = T :- 
+  typeOfSymbol(s, sy@Sort(name)) = T :-
+    typeOfSort(s, name) == T,
+    @sy.type := T.
+  typeOfSymbol(s, sy@ParameterizedSort(name, symbols)) = T :- 
     typeOfSort(s, name) == T, 
-    typesOfSymbols(s, symbols) == _.
+    typesOfSymbols(s, symbols) == _,
+    @sy.type := T.
     
   typeOfSymbol(s, Cf(symbol)) = T :-
     typeOfSymbol(s, symbol) == T.
