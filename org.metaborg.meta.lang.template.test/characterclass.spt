@@ -10,13 +10,17 @@ fixture [[
     ID = [ [[...]] ]
 ]]
 
-test regular  [[ A ]]        parse to Present(Regular("A"))
+test regularA [[ A ]]        parse to Present(Regular("A"))
+test regulara [[ a ]]        parse to Present(Regular("a"))
+test regular0 [[ 0 ]]        parse to Present(Regular("0"))
 
 test escape   [[ \@ ]]       parse to Present(Escaped("@"))
 test quote1   [[ \' ]]       parse to Present(Escaped("'"))
 test quote2   [[ \" ]]       parse to Present(Escaped("\""))
-test unicode  [[ \Σ ]]       parse to Present(Escaped("Σ"))
-test emoji    [[ \😀 ]]      parse to Present(Escaped("😀"))
+
+// Enable these tests once SDF3 is bootstrapped with Unicode support
+//test unicode  [[ \Σ ]]       parse to Present(Escaped("Σ"))
+//test emoji    [[ \😀 ]]      parse to Present(Escaped("😀"))
 
 test tab      [[ \t ]]       parse to Present(Escaped("t"))
 test newline  [[ \n ]]       parse to Present(Escaped("n"))
