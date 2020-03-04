@@ -26,7 +26,8 @@ test car-ret  [[ \r ]]       parse to Present(Escaped("r"))
 
 test binary   [[ \0b0110 ]]  parse to Present(Binary("0110"))
 test octal    [[ \015 ]]     parse to Present(Octal("15"))
-test decimal  [[ \65 ]]      parse to Present(Decimal("65"))
+test decimal1 [[ \7 ]]       parse to Present(Decimal("7"))
+test decimal2 [[ \65 ]]      parse to Present(Decimal("65"))
 test hex      [[ \0x41 ]]    parse to Present(Hexadecimal("41"))
 test hex2     [[ \0x1f600 ]] parse to Present(Hexadecimal("1f600"))
 test bin fail [[ \0b 0 ]]    parse fails
