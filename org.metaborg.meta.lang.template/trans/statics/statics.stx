@@ -66,11 +66,12 @@ signature
 rules
 
   moduleOK : scope * Module
-  moduleOK(s, Module(name, importSections, sections)) :-
-    moduleNameOK(s, name),
-    declareModule(s, name),
-    importSectionsOK(s, importSections),
-    sectionsOK(s, sections).
+  moduleOK(sGlobal, Module(name, importSections, sections)) :- {sMod}
+    new sMod, sMod -P-> sGlobal,
+    declareModule(sGlobal, sMod, name),
+    moduleNameOK(sMod, name),
+    importSectionsOK(sMod, importSections),
+    sectionsOK(sMod, sections).
     
   moduleNameOK : scope * ModuleName
   moduleNameOK(s, Parameterized(_, symbols)) :- typesOfSymbols(s, symbols) == _.    
@@ -78,16 +79,16 @@ rules
 
 rules
 
-  declareModule : scope * ModuleName  
-  declareModule(s, name) :- {id}
+  declareModule : scope * scope * ModuleName  
+  declareModule(sGlobal, sMod, name) :- {id}
     idOfModuleName(name) == id, 
-    s -> Module{id},
-    Module{id} in s |-> [(_, (_))] | error $[Duplicate definition of module [id]].
+    sGlobal -> Module{id} with typeOfDecl MOD(sMod),
+    Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]].
 
-  resolveModule : scope * ModuleName
-  resolveModule(s, name)  :- {id id'}
+  typeOfModule : scope * ModuleName -> TYPE
+  typeOfModule(s, name) = Tmod :- {id id'}
     idOfModuleName(name) == id, 
-    Module{id} in s |-> [(_, (Module{id'}))|_]| error $[Module [id] not defined],
+    typeOfDecl of Module{id} in s |-> [(_, (Module{id'}, Tmod))|_]| error $[Module [id] not defined],
     @id.ref := id'.
 
   idOfModuleName : ModuleName -> ModuleId
@@ -113,7 +114,9 @@ rules
   importSectionsOK maps importSectionOK(*, list(*))
   
   importOK : scope * Import
-  importOK(s, Module(name)) :- resolveModule(s, name). // TODO: add import
+  importOK(s, Module(name)) :- {sMod}
+    typeOfModule(s, name) == MOD(sMod),
+    s -I-> sMod.
   importsOK maps importOK(*, list(*))
 
 //
