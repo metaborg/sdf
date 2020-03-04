@@ -10,7 +10,8 @@ imports
   generation/gen-utils/remove-template
   names/analysis/names
   runtime/analysis/core
-  editor/build-utils  
+  editor/build-utils
+  pp/characterclass/Character-pp
   pp/layout-constraints/Layout-Constraints-pp
   libstratego-gpp
   utils/tokenize
@@ -41,6 +42,10 @@ imports
 signature
   constructors
     Numeric : Int -> Character // Used as normalized form of character classes, uses Int instead of String
+rules
+    prettyprint-TemplateLang-Character :
+        Numeric(c) -> <prettyprint-TemplateLang-Character> Decimal(<int-to-string> c)
+    is-TemplateLang-Character = ?Numeric(_)
 
 rules
 
