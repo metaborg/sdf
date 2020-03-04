@@ -71,7 +71,7 @@ public class SymbolReader {
                 // Apparently there is also an other representation of seq where there is just a list, no separate head
                 // Used in e.g. the parse table of GreenMarl in the integration tests of JSGLR2
                 else if(symbolTermUnpacked.getSubtermCount() == 1) {
-                    for(IStrategoTerm tailTerm : symbolTermUnpacked.getSubterm(0).getSubterms()) {
+                    for(IStrategoTerm tailTerm : symbolTermUnpacked.getSubterm(0)) {
                         symbols.add(read(toAppl(tailTerm)));
                     }
                 } else

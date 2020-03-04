@@ -87,7 +87,7 @@ public class ParseTableReader {
 
         IProduction[] productions = new Production[257 + productionCount];
 
-        for(IStrategoTerm productionWithIdTerm : productionsTermList.getSubterms()) {
+        for(IStrategoTerm productionWithIdTerm : productionsTermList) {
             IProduction production = productionReader.read(productionWithIdTerm);
 
             productions[production.id()] = production;
@@ -102,7 +102,7 @@ public class ParseTableReader {
 
         IState[] states = new IState[stateCount];
 
-        for(IStrategoTerm stateTerm : statesTermList.getSubterms()) {
+        for(IStrategoTerm stateTerm : statesTermList) {
             IStrategoNamed stateTermNamed = (IStrategoNamed) stateTerm;
 
             int stateId = toJavaIntAt(stateTermNamed, 0);
@@ -169,7 +169,7 @@ public class ParseTableReader {
 
         List<ActionsPerCharacterClass> actionsPerCharacterClasses = new ArrayList<>(characterClassesWithActionsCount);
 
-        for(IStrategoTerm characterClassActionsTerm : characterClassActionsTermList.getSubterms()) {
+        for(IStrategoTerm characterClassActionsTerm : characterClassActionsTermList) {
             IStrategoNamed characterClassActionsTermNamed = (IStrategoNamed) characterClassActionsTerm;
 
             IStrategoList characterClassTermList = toListAt(characterClassActionsTermNamed, 0);

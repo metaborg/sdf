@@ -113,9 +113,9 @@ public class NormGrammarReader {
                 modules.put(modName, true);
 
                 // Processing Dependencies
-                for(IStrategoTerm t : TermUtils.toListAt(app, 1).getSubterms()) {
+                for(IStrategoTerm t : TermUtils.toListAt(app, 1)) {
                     if(t instanceof StrategoAppl && ((StrategoAppl) t).getName().equals("Imports")) {
-                        for(IStrategoTerm timport : TermUtils.toListAt(t, 0).getSubterms()) {
+                        for(IStrategoTerm timport : TermUtils.toListAt(t, 0)) {
                             if(TermUtils.isAppl(timport, "Module")) {
                                 String iname = null;
 
@@ -152,7 +152,7 @@ public class NormGrammarReader {
 
                 // Processing sections
                 IStrategoList sdf_sections = TermUtils.toListAt(app, 2);
-                for(IStrategoTerm t : sdf_sections.getSubterms()) {
+                for(IStrategoTerm t : sdf_sections) {
                     StrategoAppl tsection = null;
                     if(!(t.getSubterm(0) instanceof StrategoAppl))
                         continue;
@@ -186,17 +186,17 @@ public class NormGrammarReader {
     private void addProds(IStrategoAppl section) throws Exception {
         if(TermUtils.isAppl(section, "ContextFreeSyntax")) {
             IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
-            for(IStrategoTerm t : sdf_productions.getSubterms()) {
+            for(IStrategoTerm t : sdf_productions) {
                 processProduction(t);
             }
         } else if(TermUtils.isAppl(section, "LexicalSyntax")) {
             IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
-            for(IStrategoTerm t : sdf_productions.getSubterms()) {
+            for(IStrategoTerm t : sdf_productions) {
                 processProduction(t);
             }
         } else if(TermUtils.isAppl(section, "Kernel")) {
             IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
-            for(IStrategoTerm t : sdf_productions.getSubterms()) {
+            for(IStrategoTerm t : sdf_productions) {
                 processProduction(t);
             }
         }
@@ -234,7 +234,7 @@ public class NormGrammarReader {
 
                 // Read right hand side of the equation: Rhs([<symbols>])
                 IStrategoList rhs = TermUtils.toListAt(app.getSubterm(1), 0);
-                for(IStrategoTerm t : rhs.getSubterms()) {
+                for(IStrategoTerm t : rhs) {
                     Symbol s = processSymbol(t);
                     if(s != null)
                         rhs_symbols.add(s);
@@ -251,7 +251,7 @@ public class NormGrammarReader {
                         break;
                     case "Attrs":
                         IStrategoList talist = TermUtils.toListAt(tattrs, 0);
-                        for(IStrategoTerm ta : talist.getSubterms()) {
+                        for(IStrategoTerm ta : talist) {
                             IAttribute attr = processAttribute(ta);
                             if(attr != null) {
                                 attrs.add(attr);
@@ -467,7 +467,7 @@ public class NormGrammarReader {
         if(TermUtils.isList(term)) {
             IStrategoList slist = TermUtils.toList(term);
 
-            for(IStrategoTerm t : slist.getSubterms()) {
+            for(IStrategoTerm t : slist) {
                 Symbol s = processSymbol(t);
                 if(s != null)
                     list.add(s);
@@ -615,7 +615,7 @@ public class NormGrammarReader {
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
             List<IStrategoTerm> terms = Lists.newArrayList();
-            for(IStrategoTerm t : term_list.getSubterms()) {
+            for(IStrategoTerm t : term_list) {
                 terms.add(createStrategoTermAttribute((IStrategoAppl) t));
             }
             return termFactory.makeList(terms);
@@ -627,7 +627,7 @@ public class NormGrammarReader {
     private void addRestrictions(IStrategoAppl tsection) throws UnexpectedTermException {
         if(tsection.getName().equals("Restrictions")) {
             IStrategoList restrictions = TermUtils.toListAt(tsection, 0);
-            for(IStrategoTerm restriction : restrictions.getSubterms()) {
+            for(IStrategoTerm restriction : restrictions) {
                 processRestriction(restriction);
             }
         }
@@ -642,7 +642,7 @@ public class NormGrammarReader {
                     ICharacterClass restrictionNoLookahead =
                         importFollowRestriction(res.getSubterm(1), restrictionLookahead);
                     IStrategoList subjects = TermUtils.toListAt(res, 0);
-                    for(IStrategoTerm subject : subjects.getSubterms()) {
+                    for(IStrategoTerm subject : subjects) {
                         Symbol s = processSymbol(subject);
                         s.addFollowRestriction(restrictionNoLookahead);
                         s.addFollowRestrictionsLookahead(restrictionLookahead);
@@ -667,7 +667,7 @@ public class NormGrammarReader {
             switch(app.getName()) {
                 case "List":
                     slist = TermUtils.toListAt(app, 0);
-                    for(IStrategoTerm t : slist.getSubterms()) {
+                    for(IStrategoTerm t : slist) {
                         restriction = importFollowRestriction(t, restrictionsLookahead).union(restriction);
                     }
                     break;
@@ -698,7 +698,7 @@ public class NormGrammarReader {
             switch(app.getName()) {
                 case "List":
                     slist = TermUtils.toListAt(app, 0);
-                    for(IStrategoTerm t : slist.getSubterms()) {
+                    for(IStrategoTerm t : slist) {
                         List<ICharacterClass> firstChars = Lists.newArrayList(lookahead);
                         createNewLookahead(t, firstChars, restrictionsLookahead);
                     }
@@ -724,7 +724,7 @@ public class NormGrammarReader {
     private void addPriorities(IStrategoAppl tsection) throws Exception {
         if(tsection.getName().equals("Priorities")) {
             IStrategoList chains = TermUtils.toListAt(tsection, 0);
-            for(IStrategoTerm chain : chains.getSubterms()) {
+            for(IStrategoTerm chain : chains) {
                 processPriorityChain(chain);
             }
         }

@@ -54,7 +54,7 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
         if(lookahead == null) {
             if(other.lookahead != null)
                 return false;
-        } else if(!lookahead.equals(other.lookahead))
+        } else if(!Arrays.equals(lookahead, other.lookahead))
             return false;
         if(prod_label != other.prod_label)
             return false;

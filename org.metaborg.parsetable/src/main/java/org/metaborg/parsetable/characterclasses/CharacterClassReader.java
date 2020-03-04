@@ -19,7 +19,7 @@ public class CharacterClassReader {
     public ICharacterClass read(IStrategoList characterClassTermList) {
         ICharacterClass characterClass = null;
 
-        for(IStrategoTerm characterClassTerm : characterClassTermList.getSubterms()) {
+        for(IStrategoTerm characterClassTerm : characterClassTermList) {
             ICharacterClass characterClassForTerm;
 
             if(TermUtils.isInt(characterClassTerm)) {

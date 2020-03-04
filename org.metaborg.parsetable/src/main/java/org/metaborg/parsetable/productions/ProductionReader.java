@@ -130,7 +130,7 @@ public class ProductionReader {
 
             IStrategoList attributesTermsList = (IStrategoList) attributesTerm.getSubterm(0);
 
-            for(IStrategoTerm attributeTerm : attributesTermsList.getSubterms()) {
+            for(IStrategoTerm attributeTerm : attributesTermsList) {
                 IStrategoNamed attributeTermNamed = (IStrategoNamed) attributeTerm;
 
                 String attributeName = attributeTermNamed.getName();
