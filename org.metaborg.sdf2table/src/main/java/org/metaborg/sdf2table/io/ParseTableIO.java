@@ -9,17 +9,20 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.parsetable.IParseTableGenerator;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.LexicalSymbol;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
@@ -37,6 +40,7 @@ import org.spoofax.terms.TermFactory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 
 public class ParseTableIO implements IParseTableGenerator {
 
@@ -129,13 +133,56 @@ public class ParseTableIO implements IParseTableGenerator {
             states, priorities);
     }
 
-    private IStrategoTerm generateATermContextualGrammar(ParseTable pt) {
+    public static IStrategoTerm generateATermContextualGrammar(ParseTable pt) {
 
         List<IStrategoTerm> productions = Lists.newArrayList();
         List<IStrategoTerm> priorities = Lists.newArrayList();
+        Set<org.metaborg.sdf2table.grammar.ISymbol> recursiveSymbols = Sets.newHashSet();
+        IAttribute placeholder = pt.normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder");
+        IAttribute placeholder_insertion =
+            pt.normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder-insertion");
+
+        for(IProduction p : pt.productionLabels().keySet()) {  
+            if(pt.isLayoutSymbol(p.leftHand())) {
+                continue;
+            }
+            if(p instanceof Production) {
+                if(((Production) p).leftRecursivePosition() == -1 && ((Production) p).rightRecursivePosition() == -1
+                    || p.leftHand() instanceof LexicalSymbol) {
+                    continue;
+                }
+            } else if(p instanceof ContextualProduction) {
+                if(((ContextualProduction) p).getOrigProduction().leftRecursivePosition() == -1
+                    && ((ContextualProduction) p).getOrigProduction().rightRecursivePosition() == -1
+                    || p.leftHand() instanceof LexicalSymbol) {
+                    continue;
+                }
+            }
+            recursiveSymbols.add(p.leftHand());
+        }
+
         for(IProduction p : pt.productionLabels().keySet()) {
-            productions.add(((Production) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
-                ((ParseTable) pt).getCtxUniqueInt(), null));
+            
+            if(!recursiveSymbols.contains(p.leftHand())) {
+                continue;
+            }
+            if(p instanceof Production) {
+                Set<IAttribute> attrs = pt.normalizedGrammar().getProductionAttributesMapping().get(p);
+                if(attrs.contains(placeholder)) {
+                    continue;
+                }
+                productions.add(((Production) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
+                    ((ParseTable) pt).getCtxUniqueInt(), null));
+            } else if(p instanceof ContextualProduction) {
+                Set<IAttribute> attrs = pt.normalizedGrammar().getProductionAttributesMapping().get(((ContextualProduction) p).getOrigProduction());
+                if(attrs.contains(placeholder)) {
+                    continue;
+                }
+                productions
+                    .add(((ContextualProduction) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
+                        ((ParseTable) pt).getCtxUniqueInt(), null));
+            }
+
         }
 
         IStrategoTerm syntaxSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
@@ -318,20 +365,20 @@ public class ParseTableIO implements IParseTableGenerator {
 
         if(result != null)
             return result;
-        
+
         return HashMultimap.create();
     }
 
     @Override public SetMultimap<String, String> getNonNestedPriorities() {
         SetMultimap<String, String> result = null;
-        
+
         if(tableCreated) {
             result = pt.normalizedGrammar().getNonNestedPriorities();
         }
-        
+
         if(result != null)
             return result;
-        
+
         return HashMultimap.create();
     }
 

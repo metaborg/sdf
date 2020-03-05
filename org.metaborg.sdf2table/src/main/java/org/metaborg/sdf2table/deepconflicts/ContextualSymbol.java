@@ -37,7 +37,7 @@ public final class ContextualSymbol extends Symbol {
         this.cf = cf;
 
         for(Context context : contexts) {
-            if(context.getType() == ContextType.DEEP) {
+            if(context.getType() == ContextType.DEEP|| context.getType() == ContextType.DANGLING) {
                 deepContextBitmap |= context.getContextBitmap();
             }
         }
@@ -48,7 +48,7 @@ public final class ContextualSymbol extends Symbol {
         this.contexts = Sets.newHashSet(context);
         this.cf = cf;
 
-        if(context.getType() == ContextType.DEEP) {
+        if(context.getType() == ContextType.DEEP || context.getType() == ContextType.DANGLING) {
             deepContextBitmap |= context.getContextBitmap();
         }
     }
@@ -132,7 +132,7 @@ public final class ContextualSymbol extends Symbol {
         newContexts.addAll(this.getContexts());
         newContexts.add(context);
 
-        if(context.getType() == ContextType.DEEP) {
+        if(context.getType() == ContextType.DEEP || context.getType() == ContextType.DANGLING) {
             return cf.createContextualSymbol(getOrigSymbol(), newContexts,
                 deepContextBitmap | context.getContextBitmap(), cf);
         }
@@ -148,7 +148,7 @@ public final class ContextualSymbol extends Symbol {
         long updatedDeepContextBitmap = deepContextBitmap;
 
         for(Context context : contexts) {
-            if(context.getType() == ContextType.DEEP) {
+            if(context.getType() == ContextType.DEEP || context.getType() == ContextType.DANGLING) {
                 updatedDeepContextBitmap |= context.getContextBitmap();
             }
         }

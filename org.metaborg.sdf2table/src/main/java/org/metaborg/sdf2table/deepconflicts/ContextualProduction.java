@@ -167,7 +167,8 @@ public final class ContextualProduction implements IProduction, Serializable {
                                 if(lefthandSymbolFromContext.equals(newRhs.get(i))) {
                                     new_symbol = cf.createContextualSymbol((Symbol) newRhs.get(i),
                                         cf.createContext(c.getContext(), c.getType(), c.getPosition(), false,
-                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()), cf);
+                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
+                                        cf);
                                 } else {
                                     new_symbol = cf.createContextualSymbol((Symbol) newRhs.get(i), c, cf);
                                 }
@@ -182,6 +183,51 @@ public final class ContextualProduction implements IProduction, Serializable {
                             || (i == getOrigProduction().getRhs().size() - 1
                                 && i == getOrigProduction().rightRecursivePosition()
                                 && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
+                            ContextualSymbol new_symbol;
+                            if(newRhs.get(i) instanceof ContextualSymbol) {
+                                new_symbol = ((ContextualSymbol) newRhs.get(i)).addContext(c);
+                            } else {
+                                new_symbol = cf.createContextualSymbol((Symbol) newRhs.get(i), c, cf);
+                            }
+                            newRhs.set(i, new_symbol);
+                        }
+                    }
+                }
+            } else if(c.getType().equals(ContextType.DANGLING)) {
+                if(c.isIndirect()) {
+                    ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+                    for(int i = 0; i < getOrigProduction().getRhs().size(); i++) {
+                        if((i == 0 && i == getOrigProduction().leftRecursivePosition())
+                            || (i == getOrigProduction().getRhs().size() - 1
+                                && i == getOrigProduction().rightRecursivePosition())) {
+                            ContextualSymbol new_symbol;
+                            if(newRhs.get(i) instanceof ContextualSymbol) {
+                                ISymbol nonContextualSymbol = ((ContextualSymbol) newRhs.get(i)).getOrigSymbol();
+                                if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
+                                    new_symbol = ((ContextualSymbol) newRhs.get(i))
+                                        .addContext(cf.createContext(c.getContext(), c.getType(), c.getPosition(),
+                                            false, pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
+                                } else {
+                                    new_symbol = ((ContextualSymbol) newRhs.get(i)).addContext(c);
+                                }
+                            } else {
+                                if(lefthandSymbolFromContext.equals(newRhs.get(i))) {
+                                    new_symbol = cf.createContextualSymbol((Symbol) newRhs.get(i),
+                                        cf.createContext(c.getContext(), c.getType(), c.getPosition(), false,
+                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
+                                        cf);
+                                } else {
+                                    new_symbol = cf.createContextualSymbol((Symbol) newRhs.get(i), c, cf);
+                                }
+                            }
+                            newRhs.set(i, new_symbol);
+                        }
+                    }
+                } else {
+                    for(int i = 0; i < getOrigProduction().getRhs().size(); i++) {
+                        if((i == 0 && i == getOrigProduction().leftRecursivePosition())
+                            || (i == getOrigProduction().getRhs().size() - 1
+                                && i == getOrigProduction().rightRecursivePosition())) {
                             ContextualSymbol new_symbol;
                             if(newRhs.get(i) instanceof ContextualSymbol) {
                                 new_symbol = ((ContextualSymbol) newRhs.get(i)).addContext(c);

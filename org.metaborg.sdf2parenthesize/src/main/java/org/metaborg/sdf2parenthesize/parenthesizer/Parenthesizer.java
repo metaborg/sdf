@@ -138,12 +138,12 @@ public class Parenthesizer {
                     ISymbol s = prod.rightHand().get(i);
                     if(s instanceof ContextualSymbol) {
                         for(Context ctx : ((ContextualSymbol) s).getContexts()) {
-                            if(ctx.getType() == ContextType.DEEP
+                            if((ctx.getType() == ContextType.DEEP || ctx.getType() == ContextType.DANGLING)
                                 && ctx.getPosition() == ContextPosition.LEFTMOST
                                 && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
                                 leftConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));
                             }
-                            if(ctx.getType() == ContextType.DEEP
+                            if((ctx.getType() == ContextType.DEEP || ctx.getType() == ContextType.DANGLING)
                                 && ctx.getPosition() == ContextPosition.RIGHTMOST
                                 && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
                                 rightConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));

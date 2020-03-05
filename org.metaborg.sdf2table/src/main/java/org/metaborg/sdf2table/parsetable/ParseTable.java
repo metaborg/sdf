@@ -137,8 +137,13 @@ public class ParseTable implements IParseTable, Serializable {
         if(config.isSolveDeepConflicts()) {
             final DeepConflictsAnalyzer analysis = DeepConflictsAnalyzer.fromParseTable(this);
             analysis.patchParseTable();
+            
+            //TODO simplify contextual grammar
+            
+            
             updateLabelsContextualProductions();
         }
+        
 
         // create JSGLR parse table productions
         createJSGLRParseTableProductions(productionLabels);
@@ -353,8 +358,7 @@ public class ParseTable implements IParseTable, Serializable {
                     // dangling prefix
                     // p1 : A = A γ and p = α A γ or vice-versa
                     boolean matchSuffix = false;
-                    for(i = p.higher().arity() - 1, j = p.lower().arity() - 1; i >= 0
-                        && j >= 0; i--, j--) {
+                    for(i = p.higher().arity() - 1, j = p.lower().arity() - 1; i >= 0 && j >= 0; i--, j--) {
                         if(p.higher().rightHand().get(i).equals(p.lower().rightHand().get(j))) {
                             matchSuffix = true;
                         } else {
@@ -517,7 +521,7 @@ public class ParseTable implements IParseTable, Serializable {
         return result;
     }
 
-    private boolean isLayoutSymbol(ISymbol s) {
+    public boolean isLayoutSymbol(ISymbol s) {
         boolean isLayout = false;
         if(s instanceof ContextFreeSymbol) {
             s = ((ContextFreeSymbol) s).getSymbol();
@@ -651,8 +655,7 @@ public class ParseTable implements IParseTable, Serializable {
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            if(p1.getRhs().size() > p2.getRhs().size()
-                                && !Symbol.isListNonTerminal(p1.leftHand())) {
+                            if(p1.getRhs().size() > p2.getRhs().size() && !Symbol.isListNonTerminal(p1.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p1) + " > " + printWithConstructor(p2));
                             } else if(!Symbol.isListNonTerminal(p2.leftHand())) {
@@ -676,20 +679,16 @@ public class ParseTable implements IParseTable, Serializable {
                         // if p1 != p2, p1 and p2 have matching suffixes, and
                         // there is no priority declaration between p1 and p2
 
-                        if(p1.getRhs().size() > p2.getRhs().size() && grammar.priorities()
-                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))) {
-                            continue;
-                        }
-
-                        if(p2.getRhs().size() > p1.getRhs().size() && grammar.priorities()
-                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
+                        if(grammar.priorities()
+                            .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p1, p2, false))
+                            || grammar.priorities()
+                                .containsKey(normalizedGrammar().getGrammarFactory().createPriority(p2, p1, false))) {
                             continue;
                         }
 
                         if(!conflicts.get(p2).contains(p1)) {
                             conflicts.put(p1, p2);
-                            if(p1.arity() > p2.arity()
-                                && !Symbol.isListNonTerminal(p1.leftHand())) {
+                            if(p1.arity() > p2.arity() && !Symbol.isListNonTerminal(p1.leftHand())) {
                                 logger.warn("GRAMMAR MAY CONTAIN AMBIGUITIES: No priority declaration "
                                     + printWithConstructor(p1) + " > " + printWithConstructor(p2));
                             } else if(!Symbol.isListNonTerminal(p2.leftHand())) {
@@ -1032,7 +1031,13 @@ public class ParseTable implements IParseTable, Serializable {
                     leftmostContextsMapping, rightmostContextsMapping);
                 Context deepRight_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, false,
                     leftmostContextsMapping, rightmostContextsMapping);
-                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)) {
+                Context danglingLeft_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.LEFTMOST,
+                    false, leftmostContextsMapping, rightmostContextsMapping);
+                Context danglingRight_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.RIGHTMOST,
+                    false, leftmostContextsMapping, rightmostContextsMapping);
+                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
+                    || ctx_s.getContexts().contains(danglingLeft_ctx)
+                    || ctx_s.getContexts().contains(danglingRight_ctx)) {
                     continue;
                 }
 
@@ -1046,8 +1051,9 @@ public class ParseTable implements IParseTable, Serializable {
                         ctx_p.mergeContext(ctx_s.getContexts(), contextual_symbols, processed_symbols, this);
                     grammar.getDerivedContextualProds().add(new_prod);
                     grammar.getSymbolProductionsMapping().put(ctx_s, new_prod);
-                } else if(!(ctx_s.getContexts().contains(deepLeft_ctx)
-                    || ctx_s.getContexts().contains(deepRight_ctx))) {
+                } else if(!(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
+                    || ctx_s.getContexts().contains(danglingRight_ctx)
+                    || ctx_s.getContexts().contains(danglingLeft_ctx))) {
                     ContextualProduction new_prod = cf.createContextualProduction((Production) p, ctx_s.getContexts(),
                         contextual_symbols, processed_symbols, productionLabels.get(p), this);
                     grammar.getDerivedContextualProds().add(new_prod);

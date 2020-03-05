@@ -16,7 +16,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class ContextualFactory implements Serializable {
-    
+
     private static final long serialVersionUID = -5796688665070378982L;
 
     private final Map<List<Object>, Context> contexts;
@@ -97,51 +97,100 @@ public class ContextualFactory implements Serializable {
             // contextual tokens for indirect recursion need to be propagated
             // in the opposite direction (i.e., if conflict occurs at the rightmost symbol, they need to be
             // propagated to the leftmost symbol) until they reach the recursive symbol
-            if(c.isIndirect()) {
-                ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
-                for(int i = 0; i < origProduction.arity(); i++) {
-                    if((i == 0 && i == origProduction.leftRecursivePosition()
-                        && (c.getPosition().equals(ContextPosition.RIGHTMOST)))
-                        || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.LEFTMOST)))) {
-                        ContextualSymbol newSymbol;
-                        if(rhs.get(i) instanceof ContextualSymbol) {
-                            ISymbol nonContextualSymbol = ((ContextualSymbol) rhs.get(i)).getOrigSymbol();
-                            if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
-                                newSymbol = ((ContextualSymbol) rhs.get(i))
-                                    .addContext(createContext(c.getContext(), c.getType(), c.getPosition(), false,
-                                        pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
+            if(c.getType() == ContextType.DEEP) {
+                if(c.isIndirect()) {
+                    ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+                    for(int i = 0; i < origProduction.arity(); i++) {
+                        if((i == 0 && i == origProduction.leftRecursivePosition()
+                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)))
+                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
+                                && (c.getPosition().equals(ContextPosition.LEFTMOST)))) {
+                            ContextualSymbol newSymbol;
+                            if(rhs.get(i) instanceof ContextualSymbol) {
+                                ISymbol nonContextualSymbol = ((ContextualSymbol) rhs.get(i)).getOrigSymbol();
+                                if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
+                                    newSymbol = ((ContextualSymbol) rhs.get(i))
+                                        .addContext(createContext(c.getContext(), c.getType(), c.getPosition(), false,
+                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
+                                } else {
+                                    newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                                }
                             } else {
-                                newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                                if(lefthandSymbolFromContext.equals(rhs.get(i))) {
+                                    newSymbol = createContextualSymbol(
+                                        (Symbol) rhs.get(i), createContext(c.getContext(), c.getType(), c.getPosition(),
+                                            false, pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
+                                        this);
+                                } else {
+                                    newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
+                                }
                             }
-                        } else {
-                            if(lefthandSymbolFromContext.equals(rhs.get(i))) {
-                                newSymbol = createContextualSymbol((Symbol) rhs.get(i),
-                                    createContext(c.getContext(), c.getType(), c.getPosition(), false,
-                                        pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()), this);
+                            rhs.set(i, newSymbol);
+                        }
+                    }
+                    // propagate contextual tokens considering direct recursion
+                } else {
+                    // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
+                    // that are not 0 or |rhs|
+                    for(int i = 0; i < origProduction.arity(); i++) {
+                        if((i == 0 && i == origProduction.leftRecursivePosition()
+                            && (c.getPosition().equals(ContextPosition.LEFTMOST)))
+                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
+                                && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
+                            ContextualSymbol newSymbol;
+                            if(rhs.get(i) instanceof ContextualSymbol) {
+                                newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
                             } else {
                                 newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
                             }
+                            rhs.set(i, newSymbol);
                         }
-                        rhs.set(i, newSymbol);
                     }
                 }
-                // propagate contextual tokens considering direct recursion
-            } else {
-                // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
-                // that are not 0 or |rhs|
-                for(int i = 0; i < origProduction.arity(); i++) {
-                    if((i == 0 && i == origProduction.leftRecursivePosition()
-                        && (c.getPosition().equals(ContextPosition.LEFTMOST)))
-                        || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
-                        ContextualSymbol newSymbol;
-                        if(rhs.get(i) instanceof ContextualSymbol) {
-                            newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
-                        } else {
-                            newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
+            } else if(c.getType() == ContextType.DANGLING) {
+                if(c.isIndirect()) {
+                    ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+                    for(int i = 0; i < origProduction.arity(); i++) {
+                        if((i == 0 && i == origProduction.leftRecursivePosition())
+                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition())) {
+                            ContextualSymbol newSymbol;
+                            if(rhs.get(i) instanceof ContextualSymbol) {
+                                ISymbol nonContextualSymbol = ((ContextualSymbol) rhs.get(i)).getOrigSymbol();
+                                if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
+                                    newSymbol = ((ContextualSymbol) rhs.get(i))
+                                        .addContext(createContext(c.getContext(), c.getType(), c.getPosition(), false,
+                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
+                                } else {
+                                    newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                                }
+                            } else {
+                                if(lefthandSymbolFromContext.equals(rhs.get(i))) {
+                                    newSymbol = createContextualSymbol(
+                                        (Symbol) rhs.get(i), createContext(c.getContext(), c.getType(), c.getPosition(),
+                                            false, pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
+                                        this);
+                                } else {
+                                    newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
+                                }
+                            }
+                            rhs.set(i, newSymbol);
                         }
-                        rhs.set(i, newSymbol);
+                    }
+                    // propagate contextual tokens considering direct recursion
+                } else {
+                    // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
+                    // that are not 0 or |rhs|
+                    for(int i = 0; i < origProduction.arity(); i++) {
+                        if((i == 0 && i == origProduction.leftRecursivePosition())
+                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition())) {
+                            ContextualSymbol newSymbol;
+                            if(rhs.get(i) instanceof ContextualSymbol) {
+                                newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                            } else {
+                                newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
+                            }
+                            rhs.set(i, newSymbol);
+                        }
                     }
                 }
             }
@@ -159,8 +208,7 @@ public class ContextualFactory implements Serializable {
             }
         }
 
-        List<Object> contextualProductionFields =
-            Lists.newArrayList(origProduction, lhs, origProductionLabel, this);
+        List<Object> contextualProductionFields = Lists.newArrayList(origProduction, lhs, origProductionLabel, this);
         contextualProductionFields.addAll(rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
@@ -174,41 +222,41 @@ public class ContextualFactory implements Serializable {
     }
 
     public ContextualSymbol createContextualSymbol(Symbol s, Set<Context> contexts, ContextualFactory cf) {
-        // use Set instead of List to account for the Set<Contexts> 
+        // use Set instead of List to account for the Set<Contexts>
         Set<Object> contextualSymbolFields = Sets.newHashSet(s);
         contextualSymbolFields.addAll(contexts);
-        
+
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
-            
+
             for(Context context : contexts) {
-                if(context.getType() == ContextType.DEEP) {
+                if(context.getType() == ContextType.DEEP || context.getType() == ContextType.DANGLING) {
                     cs.setDeepContextBitmap(cs.deepContexts() | context.getContextBitmap());
                 }
             }
             return cs;
         }
-        
+
         ContextualSymbol cs = new ContextualSymbol(s, contexts, this);
         contextualSymbols.put(contextualSymbolFields, cs);
-        
+
         return cs;
     }
 
     public ContextualSymbol createContextualSymbol(Symbol s, Context context, ContextualFactory cf) {
-     // use Set instead of List to account for the Set<Contexts> 
+        // use Set instead of List to account for the Set<Contexts>
         Set<Object> contextualSymbolFields = Sets.newHashSet(s);
         contextualSymbolFields.add(context);
-        
+
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
             cs.setDeepContextBitmap(cs.deepContexts() | context.getContextBitmap());
             return contextualSymbols.get(contextualSymbolFields);
         }
-        
+
         ContextualSymbol cs = new ContextualSymbol(s, context, this);
         contextualSymbols.put(contextualSymbolFields, cs);
-        
+
         return cs;
     }
 
@@ -216,20 +264,18 @@ public class ContextualFactory implements Serializable {
         ContextualFactory cf) {
         Set<Object> contextualSymbolFields = Sets.newHashSet(s);
         contextualSymbolFields.addAll(contexts);
-        
+
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
             cs.setDeepContextBitmap(deepContextBitmap);
             return contextualSymbols.get(contextualSymbolFields);
         }
-        
+
         ContextualSymbol cs = new ContextualSymbol(s, contexts, deepContextBitmap, this);
         contextualSymbols.put(contextualSymbolFields, cs);
-        
+
         return cs;
     }
-    
-    
 
 
 

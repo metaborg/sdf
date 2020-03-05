@@ -240,6 +240,17 @@ public class DeepConflictsAnalyzer {
         }
     }
 
+    private Context danglingContextFrom(int productionId, ContextPosition position, boolean isIndirect) {
+        if(isContextMappingStable) {
+            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position, isIndirect,
+                leftmostContextsMapping, rightmostContextsMapping);
+        } else {
+            // use dummy values
+            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position, isIndirect,
+                Collections.emptyMap(), Collections.emptyMap());
+        }
+    }
+
     private void handleInfixPrefixConflict(ParseTable pt, Priority prio, Production higher, Production lower) {
         // check whether the priorities that remove the conflict exist
         Priority inverse = pt.normalizedGrammar().getGrammarFactory().createPriority(lower, higher, false);
@@ -315,7 +326,7 @@ public class DeepConflictsAnalyzer {
     private void handleDanglingSuffixConflict(ParseTable pt, Priority prio, Production higher, Production lower) {
 
         for(int conflict : pt.normalizedGrammar().priorities().get(prio)) {
-            if(conflict < 0 || lower.getRhs().size() < (higher.getRhs().size() - conflict))
+            if(conflict < 0)
                 continue;
 
             Set<Context> contexts = Sets.newHashSet();
@@ -323,8 +334,8 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
             }
-            Context new_context_right = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
-            Context new_context_left = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
+            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST, false);
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
@@ -343,7 +354,7 @@ public class DeepConflictsAnalyzer {
                 ContextualProduction existing_prod = prodContextualProdMapping.get(prio.higher());
                 existing_prod = existing_prod.addContext(new_context_right, conflicting_args);
                 prodContextualProdMapping.replace(prio.higher(),
-                   existing_prod.addContext(new_context_left, conflicting_args) );
+                    existing_prod.addContext(new_context_left, conflicting_args));
                 // existing_prod.addContext(new_context, conflicting_args);
             }
 
@@ -361,8 +372,8 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                 leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
             }
-            Context new_context_right = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
-            Context new_context_left = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
+            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST, false);
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
@@ -381,7 +392,7 @@ public class DeepConflictsAnalyzer {
                 ContextualProduction existing_prod = prodContextualProdMapping.get(prio.higher());
                 existing_prod = existing_prod.addContext(new_context_right, conflicting_args);
                 prodContextualProdMapping.replace(prio.higher(),
-                   existing_prod.addContext(new_context_left, conflicting_args) );
+                    existing_prod.addContext(new_context_left, conflicting_args));
             }
 
         }
