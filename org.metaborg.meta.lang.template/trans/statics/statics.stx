@@ -183,13 +183,15 @@ rules
   sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
   
   typeOfTemplateProduction: scope * TemplateProduction -> TYPE
-  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, _)) = Tprod :- {Tsymbols Tsort}
+  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSymbolDef(s, symbolDef) == Tsort,
-    typeOfTemplate(s, template) == Tsymbols,
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort).
-  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {Tsymbols Tsort}
+  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
-    typeOfTemplate(s, template) == Tsymbols.
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols.
   typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
@@ -276,9 +278,10 @@ rules
   grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
 
   productionOK: scope * Production
-  productionOK(s, Prod(symbols, symbol, _)) :-
-    typesOfSymbols(s, symbols) == _,
-    typeOfSymbol(s, symbol) == _.
+  productionOK(s, Prod(symbols, symbol, _)) :- {sProd}
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == _,
+    typeOfSymbol(sProd, symbol) == _.
   productionsOK maps productionOK(*, list(*))
 
   generalProductionOK: scope * GeneralProduction
@@ -289,13 +292,15 @@ rules
   generalProductionsOK maps generalProductionOK(*, list(*))
 
   typeOfSdfProduction: scope * SdfProduction -> TYPE
-  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), _)) = Tprod :- {Tsymbols Tsort}
+  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSymbolDef(s, symbolDef) == Tsort,
-    typesOfSymbols(s, symbols) == Tsymbols,
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort).
-  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {Tsymbols Tsort}
+  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
-    typesOfSymbols(s, symbols) == Tsymbols.
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols.
   typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
   
 //
@@ -490,7 +495,7 @@ rules // Constructor reusable predicates
     Tprod == PROD(Tsymbols, Tsort),
     s -> Constructor{name} with typeOfDecl Tprod,
     typeOfDecl of Constructor{name} in s |-> [(_, (_, Tprod))] | error $[Duplicate definition of constructor [name]].
-    
+
   typeOfConstructor : scope * string -> TYPE
   typeOfConstructor(s, name) = Tprod :- {name'}
     typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod))|_]| error $[Constructor [name] not defined],
@@ -591,10 +596,11 @@ rules // Label reusable predicates
 
   declareLabel : scope * string  
   declareLabel(s, name) :-
-    s -> Label{name}.
+    s -> Label{name},
+    Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]].
     
   resolveLabel : scope * string
   resolveLabel(s, name)  :- {name'}
-    Label{name} in s |-> [(_, (Sort{name'}))|_]| error $[Label [name] not defined],
+    Label{name} in s |-> [(_, (Label{name'}))|_]| error $[Label [name] not defined],
     @name.ref := name'.
 
