@@ -39,6 +39,16 @@ signature
   relations
     typeOfDecl : occurrence -> TYPE
 
+rules
+
+  appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
+  appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
+  appendTypes([    ], types) = types.
+  
+  flattenTypes : list(list(TYPE)) -> list(TYPE)
+  flattenTypes([ts|tts]) = appendTypes(ts, flattenTypes(tts)).
+  flattenTypes([      ]) = [].
+
 //
 // Projects
 //
@@ -200,28 +210,30 @@ rules
   typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
-  typeOfTemplate(s, Template(lines))       = T :- typeOfTemplateLines(s, lines) == T.
-  typeOfTemplate(s, TemplateSquare(lines)) = T :- typeOfTemplateLines(s, lines) == T.
+  typeOfTemplate(s, Template(lines))       = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
+  typeOfTemplate(s, TemplateSquare(lines)) = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
+  
+  // Returns nested lists of types, as a template has multiple lines, with multiple parts.
+  typeOfTemplateLines : scope * list(TemplateLine) -> list(list(TYPE))
+  typeOfTemplateLines(s, [l|ls]) = [Tline|Tlines] :-
+    typeOfTemplateLine(s, l) == Tline,
+    typeOfTemplateLines(s, ls) == Tlines.
+  typeOfTemplateLines(s, [    ]) = [].
   
   typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
-  typeOfTemplateLine(s, Line([p|ps])) = Ts :- {TmaybePart Trest} 
+  typeOfTemplateLine(s, Line([p|ps])) = appendTypes(TmaybePart, Trest) /* Append maybe-list */ :-
     maybeTypeOfTemplatePart(s, p) == TmaybePart,
-    typeOfTemplateLine(s, Line(ps)) == Trest,
-    appendToTypes(TmaybePart, Trest) == Ts.
+    typeOfTemplateLine(s, Line(ps)) == Trest.
   typeOfTemplateLine(s, Line([    ])) = [].
-  typeOfTemplateLines maps typeOfTemplateLine(*, list(*)) = *
   
+  // Emulate option type: returns list of one type for sorts, and empty list for others.
   maybeTypeOfTemplatePart: scope * TemplatePart -> list(TYPE)
-  maybeTypeOfTemplatePart(s, Angled(placeholder))  = [T] :- typeOfPlaceholder(s, placeholder) == T.
-  maybeTypeOfTemplatePart(s, Squared(placeholder)) = [T] :- typeOfPlaceholder(s, placeholder) == T.
+  maybeTypeOfTemplatePart(s, Angled(placeholder))  = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, Squared(placeholder)) = [typeOfPlaceholder(s, placeholder)].
   maybeTypeOfTemplatePart(s, _)                    = [].
   
   typeOfPlaceholder: scope * Placeholder -> TYPE
-  typeOfPlaceholder(s, Placeholder(symbol, _)) = T :- typeOfSymbol(s, symbol) == T.
-
-  appendToTypes : list(TYPE) * list(TYPE) -> list(TYPE)
-  appendToTypes([    ], types) = types.
-  appendToTypes([t|ts], types) = [t|appendToTypes(ts, types)].
+  typeOfPlaceholder(s, Placeholder(symbol, _)) = typeOfSymbol(s, symbol).
 
 //
 // Template options section
