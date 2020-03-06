@@ -204,17 +204,24 @@ rules
   typeOfTemplate(s, TemplateSquare(lines)) = T :- typeOfTemplateLines(s, lines) == T.
   
   typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
-  typeOfTemplateLine(s, Line(parts)) = Ts :- typeOfTemplateParts(s, parts) == Ts.
+  typeOfTemplateLine(s, Line([p|ps])) = Ts :- {TmaybePart Trest} 
+    maybeTypeOfTemplatePart(s, p) == TmaybePart,
+    typeOfTemplateLine(s, Line(ps)) == Trest,
+    appendToTypes(TmaybePart, Trest) == Ts.
+  typeOfTemplateLine(s, Line([    ])) = [].
   typeOfTemplateLines maps typeOfTemplateLine(*, list(*)) = *
   
-  typeOfTemplatePart: scope * TemplatePart -> list(TYPE)
-  typeOfTemplatePart(s, Angled(placeholder))  = [T] :- typeOfPlaceholder(s, placeholder) == T.
-  typeOfTemplatePart(s, Squared(placeholder)) = [T] :- typeOfPlaceholder(s, placeholder) == T.
-  typeOfTemplatePart(s, _)                    = [].
-  typeOfTemplateParts maps typeOfTemplatePart(*, list(*)) = *
+  maybeTypeOfTemplatePart: scope * TemplatePart -> list(TYPE)
+  maybeTypeOfTemplatePart(s, Angled(placeholder))  = [T] :- typeOfPlaceholder(s, placeholder) == T.
+  maybeTypeOfTemplatePart(s, Squared(placeholder)) = [T] :- typeOfPlaceholder(s, placeholder) == T.
+  maybeTypeOfTemplatePart(s, _)                    = [].
   
   typeOfPlaceholder: scope * Placeholder -> TYPE
   typeOfPlaceholder(s, Placeholder(symbol, _)) = T :- typeOfSymbol(s, symbol) == T.
+
+  appendToTypes : list(TYPE) * list(TYPE) -> list(TYPE)
+  appendToTypes([    ], types) = types.
+  appendToTypes([t|ts], types) = [t|appendToTypes(ts, types)].
 
 //
 // Template options section
