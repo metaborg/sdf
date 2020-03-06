@@ -495,10 +495,9 @@ rules
   declareSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)        == T.
 
   typeOfSortConsRef: scope * SortConsRef -> TYPE
-  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort TsortExpected}
+  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}
     typeOfSymbol(s, symbol) == Tsort,
-    typeOfConstructor(s, constructorName) == Tprod@PROD(_, TsortExpected),
-    Tsort == TsortExpected | error $[Constructor [constructorName] is not declared for [symbol]].
+    typeOfConstructorInSort(s, constructorName, Tsort) == Tprod.
   typeOfSortConsRefs maps typeOfSortConsRef(*, list(*)) = list(*)
 
 rules // Sort reusable predicates
@@ -510,7 +509,7 @@ rules // Sort reusable predicates
     
   typeOfSort : scope * string -> TYPE
   typeOfSort(s, name) = Tsort :- {name'}
-    typeOfDecl of Sort{name} in s |-> [(_, (Sort{name'}, Tsort))|_]| error $[Sort [name] not defined],
+    typeOfDecl of Sort{name} in s |-> [(_, (Sort{name'}, Tsort))|_] | error $[Sort [name] not defined],
     @name.ref := name',
     @name.type := Tsort.
 
@@ -525,7 +524,15 @@ rules // Constructor reusable predicates
 
   typeOfConstructor : scope * string -> TYPE
   typeOfConstructor(s, name) = Tprod :- {name'}
-    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod))|_]| error $[Constructor [name] not defined],
+    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod))|_] | error $[Constructor [name] not defined],
+    @name.ref  := name',
+    @name.type := Tprod.
+
+  typeOfConstructorInSort : scope * string * TYPE -> TYPE
+  typeOfConstructorInSort(s, name, type) = Tprod :- {name' Tsort}
+    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|_] | error $[Constructor [name] not defined],
+    // TODO: checking the sort of the constructor causes non-deterministic behavior, disabled for now.
+    //type == Tsort | error $[Constructor [name] is not defined for sort [type]],
     @name.ref  := name',
     @name.type := Tprod.
 
