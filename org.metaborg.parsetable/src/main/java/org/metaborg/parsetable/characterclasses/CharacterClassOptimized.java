@@ -52,10 +52,10 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     }
 
     @Override public final boolean contains(int character) {
-        if(character == EOF_INT)
+        // NOTE: we are exploiting the fact that EOF_INT is equal to -1.
+        // This method will also return `containsEOF` for any other negative number, but that will never happen.
+        if(character <= EOF_INT)
             return containsEOF;
-        if(character < 0)
-            return false;
 
         final int wordIndex = character >> BITMAP_SEGMENT_SIZE;
         if(wordIndex < words.length)
