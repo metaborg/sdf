@@ -104,7 +104,7 @@ public class ParseTableIO implements IParseTableGenerator {
         boolean generateContextualGrammar = false;
         if(ctxGrammarFile != null && generateContextualGrammar) {
             IStrategoTerm ctxGrammar = generateATermContextualGrammar(pt);
-            outputToFile(ctxGrammar.toString(), ctxGrammarFile);
+            outputToFile(ctxGrammar, ctxGrammarFile);
         }
 
         // output binary normalized grammar
@@ -115,7 +115,7 @@ public class ParseTableIO implements IParseTableGenerator {
         if(outputFile != null) {
             IStrategoTerm ptAterm = generateATerm(pt);
             // output aterm corresponding to the parse table
-            outputToFile(ptAterm.toString(), outputFile);
+            outputToFile(ptAterm, outputFile);
         }
 
     }
@@ -317,14 +317,13 @@ public class ParseTableIO implements IParseTableGenerator {
             termFactory.makeList(goto_terms), termFactory.makeList(action_terms));
     }
 
-    public static void outputToFile(String outputString, File output) {
+    public static void outputToFile(IStrategoTerm parseTable, File output) {
         if(output != null) {
             output.getParentFile().mkdirs();
             try {
                 output.createNewFile();
-                FileWriter out = null;
-                out = new FileWriter(output);
-                out.write(outputString);
+                FileWriter out = new FileWriter(output);
+                parseTable.writeAsString(out);
                 out.close();
             } catch(IOException e) {
                 logger.error("Could not write parse table", e);
