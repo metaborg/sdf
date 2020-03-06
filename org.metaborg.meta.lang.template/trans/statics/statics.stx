@@ -170,8 +170,13 @@ signature
     Line : list(TemplatePart) -> TemplateLine
 
   sorts TemplatePart constructors
-    Angled  : Placeholder -> TemplatePart
-    Squared : Placeholder -> TemplatePart
+    Angled       : Placeholder -> TemplatePart
+    Squared      : Placeholder -> TemplatePart
+    BreakAngled  :                TemplatePart
+    BreakSquared :                TemplatePart
+    String       : string      -> TemplatePart
+    Escape       : string      -> TemplatePart
+    Layout       : string      -> TemplatePart
 
   sorts Placeholder constructors
     Placeholder : Symbol * PlaceholderOptions -> Placeholder
@@ -199,14 +204,14 @@ rules
   typeOfTemplate(s, TemplateSquare(lines)) = T :- typeOfTemplateLines(s, lines) == T.
   
   typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
-  typeOfTemplateLine(s, Line(parts)) = T :- typeOfTemplateParts(s, parts) == T.
+  typeOfTemplateLine(s, Line(parts)) = Ts :- typeOfTemplateParts(s, parts) == Ts.
   typeOfTemplateLines maps typeOfTemplateLine(*, list(*)) = *
   
-  typeOfTemplatePart: scope * TemplatePart -> TYPE
-  typeOfTemplatePart(s, Angled(placeholder))  = T :- typeOfPlaceholder(s, placeholder) == T.
-  typeOfTemplatePart(s, Squared(placeholder)) = T :- typeOfPlaceholder(s, placeholder) == T.
-  typeOfTemplatePart(s, _) = STRING(). // TODO: are all other template parts typed as strings?
-  typeOfTemplateParts maps typeOfTemplatePart(*, list(*)) = list(*)
+  typeOfTemplatePart: scope * TemplatePart -> list(TYPE)
+  typeOfTemplatePart(s, Angled(placeholder))  = [T] :- typeOfPlaceholder(s, placeholder) == T.
+  typeOfTemplatePart(s, Squared(placeholder)) = [T] :- typeOfPlaceholder(s, placeholder) == T.
+  typeOfTemplatePart(s, _)                    = [].
+  typeOfTemplateParts maps typeOfTemplatePart(*, list(*)) = *
   
   typeOfPlaceholder: scope * Placeholder -> TYPE
   typeOfPlaceholder(s, Placeholder(symbol, _)) = T :- typeOfSymbol(s, symbol) == T.
@@ -447,10 +452,11 @@ signature
     Constructor : string -> Constructor
     
   sorts SymbolDef constructors
-    SortDef      : string    -> SymbolDef
-    SymbolDefCf  : SymbolDef -> SymbolDef
-    SymbolDefLex : SymbolDef -> SymbolDef
-    SymbolDefVar : SymbolDef -> SymbolDef
+    SortDef          : string    -> SymbolDef
+    SymbolDefCf      : SymbolDef -> SymbolDef
+    SymbolDefLex     : SymbolDef -> SymbolDef
+    SymbolDefVar     : SymbolDef -> SymbolDef
+    SymbolDef_Symbol : Symbol    -> SymbolDef
 
   sorts SortConsRef constructors
     SortConsRef : Symbol * Constructor -> SortConsRef
@@ -463,10 +469,11 @@ rules
     declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
 
   declareSymbolDef: scope * SymbolDef -> TYPE
-  declareSymbolDef(s, SortDef(name))           = Tsort :- declareSort(s, name) == Tsort.
-  declareSymbolDef(s, SymbolDefCf(symbolDef))  = T :- declareSymbolDef(s, symbolDef) == T.
-  declareSymbolDef(s, SymbolDefLex(symbolDef)) = T :- declareSymbolDef(s, symbolDef) == T.
-  declareSymbolDef(s, SymbolDefVar(symbolDef)) = T :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SortDef(name))            = Tsort :- declareSort(s, name)           == Tsort.
+  declareSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)        == T.
 
   typeOfSortConsRef: scope * SortConsRef -> TYPE
   typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort TsortExpected}
@@ -491,10 +498,11 @@ rules // Sort reusable predicates
 rules // Constructor reusable predicates
 
   declareConstructor : scope * list(TYPE) * TYPE * string -> TYPE
-  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :-
+  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :- {results}
     Tprod == PROD(Tsymbols, Tsort),
     s -> Constructor{name} with typeOfDecl Tprod,
-    typeOfDecl of Constructor{name} in s |-> [(_, (_, Tprod))] | error $[Duplicate definition of constructor [name]].
+    typeOfDecl of Constructor{name} in s |-> results,
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]].
 
   typeOfConstructor : scope * string -> TYPE
   typeOfConstructor(s, name) = Tprod :- {name'}
@@ -604,3 +612,18 @@ rules // Label reusable predicates
     Label{name} in s |-> [(_, (Label{name'}))|_]| error $[Label [name] not defined],
     @name.ref := name'.
 
+//
+// Utility
+//
+
+rules
+
+  onlyOneOf : TYPE * list((path * (occurrence * TYPE)))
+  onlyOneOf(ty, [(_, (_, ty ))|ps]) :- noneOf(ty, ps).
+  onlyOneOf(ty, [(_, (_, ty'))|ps]) :- onlyOneOf(ty, ps).
+  onlyOneOf(ty, [])                 :- false.
+  
+  noneOf : TYPE * list((path * (occurrence * TYPE)))
+  noneOf(ty, [(_, (_, ty ))|ps]) :- false.
+  noneOf(ty, [(_, (_, ty'))|ps]) :- noneOf(ty, ps).
+  noneOf(ty, [])                 :- true.

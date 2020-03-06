@@ -91,7 +91,28 @@ rules
   unexplicate-priority-production: PriorityProduction_SdfProduction(prod) -> prod
   unexplicate-priority-production: PriorityProduction_Production(prod)    -> prod
 
-signature constructors // SymbolDef ambiguous constructors
+signature constructors // SymbolDef injections
+
+  SymbolDef_Symbol : Symbol -> SymbolDef
+
+rules
+
+  explicate-injection = SdfProduction             (explicate-symboldef, id, id)
+  explicate-injection = SdfProductionWithCons     (explicate-injection, id, id)
+  explicate-injection = TemplateProduction        (explicate-symboldef, id, id)
+  explicate-injection = TemplateProductionWithCons(explicate-injection, id, id)
+  explicate-injection = KeywordAttributes         (explicate-symboldef, id)
+  unexplicate-injection = SdfProduction             (unexplicate-symboldef, id, id)
+  unexplicate-injection = SdfProductionWithCons     (unexplicate-injection, id, id)
+  unexplicate-injection = TemplateProduction        (unexplicate-symboldef, id, id)
+  unexplicate-injection = TemplateProductionWithCons(unexplicate-injection, id, id)
+  unexplicate-injection = KeywordAttributes         (unexplicate-symboldef, id)
+
+  explicate-symboldef: symbol -> SymbolDef_Symbol(symbol) 
+  where <not(?SortDef(_) <+ ?Cf(_) <+ ?Lex(_) <+ ?Var(_))> symbol
+  unexplicate-symboldef: SymbolDef_Symbol(symbol) -> symbol
+
+signature constructors // SymbolDef and ambiguous constructors
 
   SymbolDefCf  : SymbolDef -> SymbolDef
   SymbolDefLex : SymbolDef -> SymbolDef
@@ -100,14 +121,14 @@ signature constructors // SymbolDef ambiguous constructors
 rules 
 
   disambiguate-constructor = SdfProduction             (disambiguate-symboldef-constructor, id, id)
-  disambiguate-constructor = SdfProductionWithCons     (disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = SdfProductionWithCons     (disambiguate-constructor, id, id)
   disambiguate-constructor = TemplateProduction        (disambiguate-symboldef-constructor, id, id)
-  disambiguate-constructor = TemplateProductionWithCons(disambiguate-symboldef-constructor, id, id)
+  disambiguate-constructor = TemplateProductionWithCons(disambiguate-constructor, id, id)
   disambiguate-constructor = KeywordAttributes         (disambiguate-symboldef-constructor, id)
   ambiguate-constructor = SdfProduction             (ambiguate-symboldef-constructor, id, id)
-  ambiguate-constructor = SdfProductionWithCons     (ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = SdfProductionWithCons     (ambiguate-constructor, id, id)
   ambiguate-constructor = TemplateProduction        (ambiguate-symboldef-constructor, id, id)
-  ambiguate-constructor = TemplateProductionWithCons(ambiguate-symboldef-constructor, id, id)
+  ambiguate-constructor = TemplateProductionWithCons(ambiguate-constructor, id, id)
   ambiguate-constructor = KeywordAttributes         (ambiguate-symboldef-constructor, id)
   
   disambiguate-constructor = SortCons(disambiguate-symboldef-constructor, id)
