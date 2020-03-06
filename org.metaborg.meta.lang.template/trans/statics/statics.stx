@@ -41,6 +41,16 @@ signature
 
 rules
 
+  onlyOneOf : TYPE * list((path * (occurrence * TYPE)))
+  onlyOneOf(ty, [(_, (_, ty ))|ps]) :- noneOf(ty, ps).
+  onlyOneOf(ty, [(_, (_, ty'))|ps]) :- onlyOneOf(ty, ps).
+  onlyOneOf(ty, [])                 :- false.
+  
+  noneOf : TYPE * list((path * (occurrence * TYPE)))
+  noneOf(ty, [(_, (_, ty ))|ps]) :- false.
+  noneOf(ty, [(_, (_, ty'))|ps]) :- noneOf(ty, ps).
+  noneOf(ty, [])                 :- true.
+
   appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
   appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
   appendTypes([    ], types) = types.
@@ -191,18 +201,19 @@ signature
   sorts Placeholder constructors
     Placeholder : Symbol * PlaceholderOptions -> Placeholder
 
-  sorts Attributes PlaceholderOptions
+  sorts PlaceholderOptions
 
 rules
 
   sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
   
   typeOfTemplateProduction: scope * TemplateProduction -> TYPE
-  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, _)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
     declareSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
-    Tprod == PROD(Tsymbols, Tsort).
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef).
   typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
@@ -316,17 +327,34 @@ rules
   generalProductionsOK maps generalProductionOK(*, list(*))
 
   typeOfSdfProduction: scope * SdfProduction -> TYPE
-  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
     declareSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
-    Tprod == PROD(Tsymbols, Tsort).
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef).
   typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols.
   typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
-  
+
+//
+// Reusable grammar productions constraints
+//
+
+rules
+
+  injectionProductionOK: TYPE * Attributes * SymbolDef
+  injectionProductionOK(PROD([Tsymbol], Tsort), attrs, loc) :-
+    // TODO: do not generate warning when there is a reject or bracket attribute.
+    try { Tsymbol == SORT(_) } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+  injectionProductionOK(_, attrs, loc).
+
+  //constructorProductionOK:
+  // TODO: resolve all constructors with the same name
+  // TODO: constructors in the same sort, with the same arity of their type lists, produce a warning
+
 //
 // Start symbols section
 //
@@ -531,8 +559,8 @@ rules // Constructor reusable predicates
   typeOfConstructorInSort : scope * string * TYPE -> TYPE
   typeOfConstructorInSort(s, name, type) = Tprod :- {name' Tsort}
     typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|_] | error $[Constructor [name] not defined],
-    // TODO: checking the sort of the constructor causes non-deterministic behavior, disabled for now.
-    //type == Tsort | error $[Constructor [name] is not defined for sort [type]],
+    // TODO: this finds only one constructor, and then checks if it is defined in the sort. Instead it should go over all constructors and check if one of them is defined in the sort.
+    try { type == Tsort } | error $[Constructor [name] is not defined for sort [type]],
     @name.ref  := name',
     @name.type := Tprod.
 
@@ -639,17 +667,37 @@ rules // Label reusable predicates
     @name.ref := name'.
 
 //
-// Utility
+// Attributes
 //
 
-rules
+signature
 
-  onlyOneOf : TYPE * list((path * (occurrence * TYPE)))
-  onlyOneOf(ty, [(_, (_, ty ))|ps]) :- noneOf(ty, ps).
-  onlyOneOf(ty, [(_, (_, ty'))|ps]) :- onlyOneOf(ty, ps).
-  onlyOneOf(ty, [])                 :- false.
+  sorts Attributes constructors
+    Attrs   : list(Attribute) -> Attributes
+    NoAttrs :                    Attributes
   
-  noneOf : TYPE * list((path * (occurrence * TYPE)))
-  noneOf(ty, [(_, (_, ty ))|ps]) :- false.
-  noneOf(ty, [(_, (_, ty'))|ps]) :- noneOf(ty, ps).
-  noneOf(ty, [])                 :- true.
+  sorts Attribute constructors
+    Reject  : Attribute
+    Bracket : Attribute
+  
+rules
+  
+  hasAttribute: Attribute * Attributes
+  hasAttribute(attr, attrs) :- hasAttributeInList(attr, attributes(attrs)).
+
+  hasntAttribute: Attribute * Attributes
+  hasntAttribute(attr, attrs) :- hasntAttributeInList(attr, attributes(attrs)).
+
+  attributes: Attributes -> list(Attribute)
+  attributes(Attrs(attributes)) = attributes.
+  attributes(NoAttrs())         = [].
+  
+  hasAttributeInList: Attribute * list(Attribute)
+  hasAttributeInList(attr, [attr|as]) :- true.
+  hasAttributeInList(attr, [_   |as]) :- hasAttributeInList(attr, as).
+  hasAttributeInList(attr, [       ]) :- false.
+
+  hasntAttributeInList: Attribute * list(Attribute)
+  hasntAttributeInList(attr, [attr|as]) :- false.
+  hasntAttributeInList(attr, [_   |as]) :- hasntAttributeInList(attr, as).
+  hasntAttributeInList(attr, [       ]) :- true.
