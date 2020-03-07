@@ -378,12 +378,15 @@ rules
     kernel-basic-norm-symb:
         s -> <id>
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-kernel-sorts:+ "kernel-symbols" -> s') 
-    
-        
+
+    is-terminal = is-base-terminal + is-labeled-terminal
+    is-labeled-terminal = ?Label(_, s) ; !s ; is-base-terminal
+    is-base-terminal = ?Lit(_) + ?CharClass(_) + ?CiLit(_)
+
     cf-basic-norm-prod(|tokenize-chars):
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProductionWithCons(SortCons(symbol', Constructor(cons)), Rhs(symbols'*), attrs')
         with
@@ -412,7 +415,7 @@ rules
     cf-basic-norm-symb:
         s -> Cf(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-cf-sorts:+ "cf-symbols" -> Cf(s')) 
@@ -447,7 +450,7 @@ rules
     lex-basic-norm-symb:
         s -> Lex(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-lexical-sorts:+ "lexical-symbols" -> Lex(s')) 
@@ -1102,7 +1105,7 @@ rules
      lex-norm-symb:
         s -> (Lex(s), new-prod)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where  
             s'             := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             lex-sorts*     := <bagof-get-lexical-sorts> "lexical-symbols";
@@ -1113,7 +1116,7 @@ rules
      cf-norm-symb:
         s -> Cf(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
      
      //QUESTION: do we add the productions from the priority list to the syntax section?
      //or do they need to be defined in the grammar?       
