@@ -560,7 +560,7 @@ rules // Constructor reusable predicates
   typeOfConstructorInSort(s, name, type) = Tprod :- {name' Tsort}
     typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|_] | error $[Constructor [name] not defined],
     // TODO: this finds only one constructor, and then checks if it is defined in the sort. Instead it should go over all constructors and check if one of them is defined in the sort.
-    try { type == Tsort } | error $[Constructor [name] is not defined for sort [type]],
+    //try { type == Tsort } | error $[Constructor [name] is not defined for sort [type]],
     @name.ref  := name',
     @name.type := Tprod.
 
