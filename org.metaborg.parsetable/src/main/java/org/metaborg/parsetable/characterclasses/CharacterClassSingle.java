@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
+import org.spoofax.terms.util.B;
 
 public final class CharacterClassSingle implements ICharacterClass, Serializable {
 
@@ -80,7 +81,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        return tf.makeList(character == EOF_INT ? tf.makeAppl(tf.makeConstructor("eof", 0)) : tf.makeInt(character));
+        return B.list(character == EOF_INT ? tf.makeAppl(tf.makeConstructor("eof", 0)) : tf.makeInt(character));
     }
 
     @Override public int hashCode() {

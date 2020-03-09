@@ -7,6 +7,7 @@ import org.metaborg.parsetable.actions.IReduceLookahead;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
+import org.spoofax.terms.util.B;
 
 public class ReduceLookahead extends Reduce implements IReduceLookahead, Serializable {
 
@@ -27,7 +28,7 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
 
         return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.getProduction().arity()),
             tf.makeInt(prod_label), tf.makeInt(getStatusFromParseTableProduction(pt)),
-            tf.makeList(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookaheadTerm))));
+            B.list(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), B.list(lookaheadTerm))));
     }
 
     @Override public String toString() {

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
+import org.spoofax.terms.util.B;
 
 public final class CharacterClassRangeList implements ICharacterClass, Serializable {
 
@@ -357,7 +358,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        List<IStrategoTerm> terms = new ArrayList<>();
+        List<IStrategoTerm> terms = new ArrayList<>(rangeList.length / 2 + 1);
         for(int i = 0; i < rangeList.length; i += 2) {
             final int from = rangeList[i];
             final int to = rangeList[i + 1];
@@ -371,7 +372,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
         if(containsEOF)
             terms.add(tf.makeAppl(tf.makeConstructor("eof", 0)));
 
-        return tf.makeList(terms);
+        return B.list(terms);
     }
 
     @Override public int hashCode() {

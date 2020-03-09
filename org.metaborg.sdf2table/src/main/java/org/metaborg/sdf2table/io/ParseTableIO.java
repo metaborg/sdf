@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.parsetable.IParseTableGenerator;
-import org.metaborg.parsetable.actions.IAction;
-import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.states.IState;
@@ -36,11 +36,10 @@ import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.TermFactory;
+import org.spoofax.terms.util.B;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public class ParseTableIO implements IParseTableGenerator {
 
@@ -91,7 +90,7 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public void outputTable(ParseTableConfiguration config) throws Exception {
-        if(tableCreated == false) {
+        if(!tableCreated) {
             try {
                 createParseTable(config);
             } catch(Exception e) {
@@ -135,9 +134,9 @@ public class ParseTableIO implements IParseTableGenerator {
 
     public static IStrategoTerm generateATermContextualGrammar(ParseTable pt) {
 
-        List<IStrategoTerm> productions = Lists.newArrayList();
-        List<IStrategoTerm> priorities = Lists.newArrayList();
-        Set<org.metaborg.sdf2table.grammar.ISymbol> recursiveSymbols = Sets.newHashSet();
+        List<IStrategoTerm> productions = new ArrayList<>(pt.productionLabels().size());
+        B.FixedSizeListBuilder priorities = B.fixedSizeListBuilder(0);
+        Set<org.metaborg.sdf2table.grammar.ISymbol> recursiveSymbols = new HashSet<>();
         IAttribute placeholder = pt.normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder");
         IAttribute placeholder_insertion =
             pt.normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder-insertion");
@@ -172,7 +171,7 @@ public class ParseTableIO implements IParseTableGenerator {
                     continue;
                 }
                 productions.add(((Production) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
-                    ((ParseTable) pt).getCtxUniqueInt(), null));
+                    pt.getCtxUniqueInt(), null));
             } else if(p instanceof ContextualProduction) {
                 Set<IAttribute> attrs = pt.normalizedGrammar().getProductionAttributesMapping().get(((ContextualProduction) p).getOrigProduction());
                 if(attrs.contains(placeholder)) {
@@ -180,58 +179,58 @@ public class ParseTableIO implements IParseTableGenerator {
                 }
                 productions
                     .add(((ContextualProduction) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
-                        ((ParseTable) pt).getCtxUniqueInt(), null));
+                        pt.getCtxUniqueInt(), null));
             }
 
         }
 
         IStrategoTerm syntaxSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
-            termFactory.makeAppl(termFactory.makeConstructor("Kernel", 1), termFactory.makeList(productions)));
+            termFactory.makeAppl(termFactory.makeConstructor("Kernel", 1), B.list(productions)));
 
         IStrategoTerm prioritiesSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
-            termFactory.makeAppl(termFactory.makeConstructor("Priorities", 1), termFactory.makeList(priorities)));
+            termFactory.makeAppl(termFactory.makeConstructor("Priorities", 1), priorities.build()));
 
         IStrategoTerm restrictionsSection = termFactory.makeAppl(termFactory.makeConstructor("SDFSection", 1),
-            termFactory.makeAppl(termFactory.makeConstructor("Restrictions", 1), termFactory.makeList(priorities)));
+            termFactory.makeAppl(termFactory.makeConstructor("Restrictions", 1), priorities.build()));
 
         return termFactory.makeAppl(termFactory.makeConstructor("Module", 3),
             termFactory.makeAppl(termFactory.makeConstructor("Unparameterized", 1),
                 termFactory.makeString("contextual-grammar")),
-            termFactory.makeList(), termFactory.makeList(syntaxSection, prioritiesSection, restrictionsSection));
+            B.list(), B.list(syntaxSection, prioritiesSection, restrictionsSection));
     }
 
     private static IStrategoTerm generateStatesAterm(ParseTable pt) {
-        List<IStrategoTerm> terms = Lists.newArrayList();
+        B.FixedSizeListBuilder terms = B.fixedSizeListBuilder(pt.totalStates());
         for(int i = 0; i < pt.totalStates(); i++) {
             State s = pt.stateLabels().get(i);
-            List<IStrategoTerm> goto_terms = Lists.newArrayList();
-            List<IStrategoTerm> action_terms = Lists.newArrayList();
-            for(IGoto goto_action : s.gotos()) {
-                goto_terms.add(((Goto) goto_action).toAterm(termFactory));
+            B.FixedSizeListBuilder goto_terms = B.fixedSizeListBuilder(s.gotos().size());
+            for(Goto goto_action : s.gotos()) {
+                goto_terms.add(goto_action.toAterm(termFactory));
             }
+            B.FixedSizeListBuilder action_terms = B.fixedSizeListBuilder(s.actionsMapping().size());
             for(ICharacterClass cc : s.actionsMapping().keySet()) {
-                List<IStrategoTerm> actions = Lists.newArrayList();
-                for(IAction a : s.actionsMapping().get(cc)) {
-                    actions.add(((Action) a).toAterm(termFactory, pt));
+                final Set<Action> actionSet = s.actionsMapping().get(cc);
+                B.FixedSizeListBuilder actions = B.fixedSizeListBuilder(actionSet.size());
+                for(Action a : actionSet) {
+                    actions.add(a.toAterm(termFactory, pt));
                 }
                 action_terms.add(termFactory.makeAppl(termFactory.makeConstructor("action", 2),
-                    cc.toAtermList(termFactory), termFactory.makeList(actions)));
-                // action_terms.add(action.toAterm(termFactory, this));
+                    cc.toAtermList(termFactory), actions.build()));
             }
             terms.add(termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.id()),
-                termFactory.makeList(goto_terms), termFactory.makeList(action_terms)));
+                goto_terms.build(), action_terms.build()));
         }
 
-        return termFactory.makeAppl(termFactory.makeConstructor("states", 1), termFactory.makeList(terms));
+        return termFactory.makeAppl(termFactory.makeConstructor("states", 1), terms.build());
     }
 
     private static IStrategoTerm generatePrioritiesAterm(ParseTable pt) throws Exception {
-        List<IStrategoTerm> terms = Lists.newArrayList();
         SetMultimap<Priority, Integer> allPriorities = HashMultimap.create();
 
         allPriorities.putAll(pt.normalizedGrammar().priorities());
         allPriorities.putAll(pt.normalizedGrammar().getIndexedPriorities());
 
+        List<IStrategoTerm> terms = new ArrayList<>(allPriorities.size());
         for(java.util.Map.Entry<Priority, Integer> e : allPriorities.entries()) {
             IProduction prod_higher = e.getKey().higher();
             IProduction prod_lower = e.getKey().lower();
@@ -262,14 +261,14 @@ public class ParseTableIO implements IParseTableGenerator {
             }
         }
 
-        return termFactory.makeAppl(termFactory.makeConstructor("priorities", 1), termFactory.makeList(terms));
+        return termFactory.makeAppl(termFactory.makeConstructor("priorities", 1), B.list(terms));
 
     }
 
     private static IStrategoTerm generateLabelsAterm(ParseTable pt) {
-        List<IStrategoTerm> terms = Lists.newArrayList();
+        B.FixedSizeListBuilder terms = B.fixedSizeListBuilder(pt.productionLabels().size());
 
-        for(int i = 257 + pt.productionLabels().size() - 1; i >= 257; i--) {
+        for(int i = 257 + pt.productionLabels().size() - 1, j = 0; i >= 257; i--, j++) {
             IProduction p = pt.productionLabels().inverse().get(i);
             IStrategoTerm p_term;
 
@@ -286,7 +285,7 @@ public class ParseTableIO implements IParseTableGenerator {
             terms.add(p_term);
         }
 
-        return termFactory.makeList(terms);
+        return terms.build();
     }
 
     public ParseTable getParseTable() {
@@ -298,28 +297,30 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     // For JSGLR1 dynamic parse table generation
-    @Override public IStrategoTerm getStateAterm(IState s) {
-        List<IStrategoTerm> goto_terms = Lists.newArrayList();
-        List<IStrategoTerm> action_terms = Lists.newArrayList();
-        for(IGoto goto_action : ((State) s).gotos()) {
-            goto_terms.add(((Goto) goto_action).toAterm(termFactory));
+    @Override public IStrategoTerm getStateAterm(IState is) {
+        State s = (State) is;
+        B.FixedSizeListBuilder goto_terms = B.fixedSizeListBuilder(s.gotos().size());
+        for(Goto goto_action : s.gotos()) {
+            goto_terms.add(goto_action.toAterm(termFactory));
         }
-        for(ICharacterClass cc : ((State) s).actionsMapping().keySet()) {
-            List<IStrategoTerm> actions = Lists.newArrayList();
-            for(IAction a : ((State) s).actionsMapping().get(cc)) {
-                actions.add(((Action) a).toAterm(termFactory, pt));
+        B.FixedSizeListBuilder action_terms = B.fixedSizeListBuilder(s.actionsMapping().size());
+        for(ICharacterClass cc : s.actionsMapping().keySet()) {
+            final Set<Action> actionSet = s.actionsMapping().get(cc);
+            B.FixedSizeListBuilder actions = B.fixedSizeListBuilder(actionSet.size());
+            for(Action a : actionSet) {
+                actions.add(a.toAterm(termFactory, pt));
             }
             action_terms.add(termFactory.makeAppl(termFactory.makeConstructor("action", 2), cc.toAtermList(termFactory),
-                termFactory.makeList(actions)));
-            // action_terms.add(action.toAterm(termFactory, this));
+                actions.build()));
         }
         return termFactory.makeAppl(termFactory.makeConstructor("state-rec", 3), termFactory.makeInt(s.id()),
-            termFactory.makeList(goto_terms), termFactory.makeList(action_terms));
+            goto_terms.build(), action_terms.build());
     }
 
     public static void outputToFile(IStrategoTerm parseTable, File output) {
         logger.info("Outputting parsetable without creating a string for it first. ");
         if(output != null) {
+            //noinspection ResultOfMethodCallIgnored
             output.getParentFile().mkdirs();
             try(final FileWriter out = new FileWriter(output)) {
                 parseTable.writeAsString(out);
