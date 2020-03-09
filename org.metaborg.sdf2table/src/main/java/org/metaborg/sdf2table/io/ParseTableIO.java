@@ -76,11 +76,10 @@ public class ParseTableIO implements IParseTableGenerator {
         // Use ClassLoaderObjectInputStream instead of regular ObjectInputStream to ensure that objects get deserialized
         // with the classloader of this class, instead of some other arbitrary classloader chosen by the JVM which is
         // wrong in environments with custom classloaders such as Maven and Gradle plugins.
-        ObjectInputStream ois = new ClassLoaderObjectInputStream(getClass().getClassLoader(), is);
-        // read persisted normalized grammar
-        pt = (ParseTable) ois.readObject();
-        ois.close();
-        is.close();
+        try(final ObjectInputStream ois = new ClassLoaderObjectInputStream(getClass().getClassLoader(), is)) {
+            // read persisted normalized grammar
+            pt = (ParseTable) ois.readObject();
+        }
 
         tableCreated = true;
     }
@@ -318,13 +317,11 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public static void outputToFile(IStrategoTerm parseTable, File output) {
+        logger.info("Outputting parsetable without creating a string for it first. ");
         if(output != null) {
             output.getParentFile().mkdirs();
-            try {
-                output.createNewFile();
-                FileWriter out = new FileWriter(output);
+            try(final FileWriter out = new FileWriter(output)) {
                 parseTable.writeAsString(out);
-                out.close();
             } catch(IOException e) {
                 logger.error("Could not write parse table", e);
             }
@@ -333,15 +330,9 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public static void persistObjectToFile(ParseTable pt, File output) {
-        FileOutputStream out = null;
-        ObjectOutputStream outObj = null;
-        try {
-            String name = output.getAbsolutePath();
-            out = new FileOutputStream(name);
-            outObj = new ObjectOutputStream(out);
+        String name = output.getAbsolutePath();
+        try(final ObjectOutputStream outObj = new ObjectOutputStream(new FileOutputStream(name))) {
             outObj.writeObject(pt);
-            outObj.close();
-            out.close();
         } catch(IOException e) {
             logger.error("Could not persist normalized grammar", e);
         }
