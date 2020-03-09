@@ -120,6 +120,7 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public static IStrategoTerm generateATerm(ParseTable pt) throws Exception {
+        logger.info("Starting generation of parsetable ATerm. ");
 
         IStrategoTerm version = termFactory.makeInt(ParseTable.VERSION_NUMBER);
         IStrategoTerm initialState = termFactory.makeInt(ParseTable.INITIAL_STATE_NUMBER);
