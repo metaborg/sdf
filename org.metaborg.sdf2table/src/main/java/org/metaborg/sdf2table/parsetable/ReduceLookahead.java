@@ -28,7 +28,7 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
 
         return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.getProduction().arity()),
             tf.makeInt(prod_label), tf.makeInt(getStatusFromParseTableProduction(pt)),
-            B.list(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), B.list(lookaheadTerm))));
+            tf.makeList(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookaheadTerm))));
     }
 
     @Override public String toString() {

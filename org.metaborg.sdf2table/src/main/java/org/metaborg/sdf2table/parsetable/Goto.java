@@ -85,7 +85,7 @@ public class Goto implements Serializable, IGoto {
 
     public IStrategoTerm toAterm(ITermFactory tf) {
         if(label != -1) {
-            return tf.makeAppl(tf.makeConstructor("goto", 2), B.list(tf.makeInt(label)), tf.makeInt(state));
+            return tf.makeAppl(tf.makeConstructor("goto", 2), tf.makeList(tf.makeInt(label)), tf.makeInt(state));
         }
         return tf.makeAppl(tf.makeConstructor("goto", 2), cc.toAtermList(tf), tf.makeInt(state));
     }

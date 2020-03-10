@@ -81,7 +81,7 @@ public final class CharacterClassSingle implements ICharacterClass, Serializable
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        return B.list(character == EOF_INT ? tf.makeAppl(tf.makeConstructor("eof", 0)) : tf.makeInt(character));
+        return tf.makeList(character == EOF_INT ? tf.makeAppl(tf.makeConstructor("eof", 0)) : tf.makeInt(character));
     }
 
     @Override public int hashCode() {

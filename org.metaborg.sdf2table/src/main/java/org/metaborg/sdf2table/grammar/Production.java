@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.io.ParseTableIO;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -86,13 +87,14 @@ public class Production implements IProduction, Serializable {
 
     public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
         ITermFactory tf = ParseTableIO.getTermfactory();
-        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
-        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
+        IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
         for(ISymbol s : rhs) {
             rhs_terms.add(((Symbol) s).toAterm(tf));
         }
 
-        for(IAttribute a : prod_attrs.get(this)) {
+        final Set<IAttribute> attributes = prod_attrs.get(this);
+        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        for(IAttribute a : attributes) {
             attrs_terms.add(a.toAterm(tf));
         }
 
@@ -162,13 +164,14 @@ public class Production implements IProduction, Serializable {
     public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         ITermFactory tf = ParseTableIO.getTermfactory();
-        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
-        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
+        IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
         for(ISymbol s : rhs) {
             rhs_terms.add(((Symbol) s).toSDF3Aterm(tf, ctx_vals, ctx_val));
         }
 
-        for(IAttribute a : prod_attrs.get(this)) {
+        final Set<IAttribute> attributes = prod_attrs.get(this);
+        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        for(IAttribute a : attributes) {
             attrs_terms.add(a.toSDF3Aterm(tf));
         }
 

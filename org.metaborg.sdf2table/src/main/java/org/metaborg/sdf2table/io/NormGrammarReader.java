@@ -623,7 +623,7 @@ public class NormGrammarReader {
             return termFactory.makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
-            List<IStrategoTerm> terms = Lists.newArrayList();
+            IStrategoList.Builder terms = termFactory.arrayListBuilder(term_list.size());
             for(IStrategoTerm t : term_list) {
                 terms.add(createStrategoTermAttribute((IStrategoAppl) t));
             }

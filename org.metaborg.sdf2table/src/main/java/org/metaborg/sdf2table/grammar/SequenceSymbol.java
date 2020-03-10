@@ -9,6 +9,7 @@ import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
 import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -42,7 +43,7 @@ public class SequenceSymbol extends Symbol {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        List<IStrategoTerm> tail_aterm = Lists.newArrayList();
+        IStrategoList.Builder tail_aterm = tf.arrayListBuilder(tail.size());
 
         for(Symbol s : tail) {
             tail_aterm.add(s.toAterm(tf));
@@ -52,7 +53,7 @@ public class SequenceSymbol extends Symbol {
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
-        List<IStrategoTerm> tail_aterm = Lists.newArrayList();
+        IStrategoList.Builder tail_aterm = tf.arrayListBuilder(tail.size());
 
         for(Symbol s : tail) {
             tail_aterm.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));

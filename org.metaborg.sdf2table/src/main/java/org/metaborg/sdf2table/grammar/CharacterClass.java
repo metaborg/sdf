@@ -6,6 +6,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.util.B;
@@ -83,7 +84,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        List<IStrategoTerm> terms = new ArrayList<>(chars.size());
+        IStrategoList.Builder terms = tf.arrayListBuilder(chars.size());
         int lowerBound = chars.nextSetBit(0);
         while(lowerBound != -1 && lowerBound < MAX_CHAR) {
             int upperBound = chars.nextClearBit(lowerBound) - 1;
@@ -100,7 +101,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
         if(containsEOF)
             terms.add(tf.makeAppl(tf.makeConstructor("eof", 0)));
 
-        return B.list(terms);
+        return tf.makeList(terms);
     }
 
 }
