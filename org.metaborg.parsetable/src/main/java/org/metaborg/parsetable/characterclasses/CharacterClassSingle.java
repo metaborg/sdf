@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-import org.spoofax.terms.util.B;
 
 public final class CharacterClassSingle implements ICharacterClass, Serializable {
 

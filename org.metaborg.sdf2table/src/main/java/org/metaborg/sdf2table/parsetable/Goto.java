@@ -6,7 +6,6 @@ import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-import org.spoofax.terms.util.B;
 
 public class Goto implements Serializable, IGoto {
 

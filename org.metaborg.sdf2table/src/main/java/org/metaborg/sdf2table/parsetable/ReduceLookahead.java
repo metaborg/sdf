@@ -7,7 +7,6 @@ import org.metaborg.parsetable.actions.IReduceLookahead;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-import org.spoofax.terms.util.B;
 
 public class ReduceLookahead extends Reduce implements IReduceLookahead, Serializable {
 
