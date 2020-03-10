@@ -206,8 +206,8 @@ public class ParseTableIO implements IParseTableGenerator {
             for(Goto goto_action : s.gotos()) {
                 goto_terms.add(goto_action.toAterm(termFactory));
             }
-            IStrategoList.Builder
-                action_terms = termFactory.arrayListBuilder(s.actionsMapping().size());
+
+                action_terms = termFactory.arrayListBuilder(s.actionsMapping().keySet().size());
             for(ICharacterClass cc : s.actionsMapping().keySet()) {
                 final Set<Action> actionSet = s.actionsMapping().get(cc);
                 IStrategoList.Builder actions = termFactory.arrayListBuilder(actionSet.size());
