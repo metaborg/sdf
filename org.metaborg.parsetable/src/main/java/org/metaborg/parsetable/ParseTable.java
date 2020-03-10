@@ -19,5 +19,9 @@ public class ParseTable implements IParseTable {
     @Override public IState getState(int stateId) {
         return states[stateId];
     }
+    
+    @Override public int totalStates() {
+        return states.length;
+    }
 
 }

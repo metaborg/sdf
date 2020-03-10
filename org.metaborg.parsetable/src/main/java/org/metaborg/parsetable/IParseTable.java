@@ -8,4 +8,7 @@ public interface IParseTable {
 
     IState getState(int stateId);
 
+    int totalStates();
+    
+
 }

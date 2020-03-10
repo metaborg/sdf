@@ -137,7 +137,6 @@ public class ParseTable implements IParseTable, Serializable {
         this.itemDerivedItemsCache.clear();
         this.kernelStatesMapping.clear();
         this.leftmostContextsMapping.clear();
-        this.numberOfExistingSymbols.clear();
         this.cachedItems().clear();
         this.productionsMapping.clear();
         this.rightmostContextsMapping.clear();
@@ -1112,7 +1111,7 @@ public class ParseTable implements IParseTable, Serializable {
         return s;
     }
 
-    public int totalStates() {
+    @Override public int totalStates() {
         return totalStates;
     }
 
