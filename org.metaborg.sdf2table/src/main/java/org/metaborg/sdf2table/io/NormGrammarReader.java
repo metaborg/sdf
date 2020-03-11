@@ -12,7 +12,6 @@ import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
 import org.metaborg.sdf2table.grammar.*;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
 
 import com.google.common.collect.Lists;
@@ -732,7 +731,7 @@ public class NormGrammarReader {
 
     private void processPriorityChain(IStrategoTerm chain) throws Exception {
         if(TermUtils.isAppl(chain) && ((StrategoAppl) chain).getName().equals("Chain")) {
-            StrategoList groups = (StrategoList) chain.getSubterm(0);
+            IStrategoList groups = (IStrategoList) chain.getSubterm(0);
             Production higher = null, lower = null;
             boolean transitive = true;
             List<Integer> arguments = Lists.newArrayList();
@@ -754,7 +753,7 @@ public class NormGrammarReader {
                 if(!priority_args.getName().equals("Default")) {
                     throw new UnexpectedTermException(priority_args.toString(), "Default");
                 }
-                StrategoList positions = (StrategoList) priority_args.getSubterm(0);
+                IStrategoList positions = (IStrategoList) priority_args.getSubterm(0);
                 for(IStrategoTerm pos : positions.getAllSubterms()) {
                     if(pos instanceof StrategoString) {
                         arguments.add(Integer.parseInt(((StrategoString) pos).stringValue()));
