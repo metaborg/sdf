@@ -11,9 +11,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class GrammarFactory implements Serializable {
-    
+
     private static final long serialVersionUID = -3963847554036972197L;
-    
+
     private final Map<List<Object>, AltSymbol> altSymbols;
     private final Map<ICharacterClass, CharacterClassSymbol> characterClassSymbols;
     private final Map<String, ConstructorAttribute> constructorAttributes;
@@ -37,6 +37,7 @@ public class GrammarFactory implements Serializable {
     private Layout layoutSymbol;
     private FileStartSymbol fileStartSymbol;
     private StartSymbol startSymbol;
+    private EOFSymbol eofSymbol;
 
     public GrammarFactory() {
         altSymbols = Maps.newHashMap();
@@ -59,9 +60,6 @@ public class GrammarFactory implements Serializable {
         productionReferences = Maps.newHashMap();
         sorts = Maps.newHashMap();
         termAttributes = Maps.newHashMap();
-        layoutSymbol = null;
-        fileStartSymbol = null;
-        startSymbol = null;
     }
 
 
@@ -354,15 +352,23 @@ public class GrammarFactory implements Serializable {
     }
 
 
+    public Symbol createEOFSymbol() {
+        if(eofSymbol == null) {
+            eofSymbol = new EOFSymbol();
+        }
+        return eofSymbol;
+    }
+
+
     public TermAttribute createTermAttribute(IStrategoTerm t, String s) {
         List<Object> termAttributeFields = Lists.newArrayList(t, s);
         if(termAttributes.containsKey(termAttributeFields)) {
             return termAttributes.get(termAttributeFields);
         }
-        
+
         TermAttribute ta = new TermAttribute(t, s);
         termAttributes.put(termAttributeFields, ta);
-        
+
         return ta;
     }
 
@@ -374,10 +380,10 @@ public class GrammarFactory implements Serializable {
         if(uniqueProductions.containsKey(uniqueProductionFields)) {
             return uniqueProductions.get(uniqueProductionFields);
         }
-        
+
         UniqueProduction up = new UniqueProduction(lhs, rhs);
         uniqueProductions.put(uniqueProductionFields, up);
-        
+
         return up;
     }
 

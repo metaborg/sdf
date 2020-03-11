@@ -13,6 +13,7 @@ public class ActionsForRange implements Serializable {
     private static final long serialVersionUID = -1143306908480814413L;
 
     public final IAction[] actions;
+    /** Both `from` and `to` are inclusive. */
     public final int from, to;
 
     public ActionsForRange(IAction[] actions, int from, int to) {

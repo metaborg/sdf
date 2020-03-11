@@ -8,8 +8,9 @@ import org.strategoxt.lang.Strategy;
 
 public class unquote_0_0 extends Strategy {
     public static String unquote(String s) {
-        return (s != null && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))) ? s =
-            s.substring(1, s.length() - 1) : s;
+        return s != null && s.length() >= 2
+            && (s.startsWith("\"") && s.endsWith("\"") || s.startsWith("'") && s.endsWith("'"))
+                ? s.substring(1, s.length() - 1) : s;
     }
 
     public static unquote_0_0 instance = new unquote_0_0();

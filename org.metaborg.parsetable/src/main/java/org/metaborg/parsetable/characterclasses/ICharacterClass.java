@@ -9,11 +9,15 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 /**
- * ASCII characters: integer representation [0, 255]
+ * Unicode characters: integer representation [0, 0x10ffff]
  *
- * End-of-file marker (EOF): integer representation 256
+ * End-of-file marker (EOF): integer representation -1
  */
 public interface ICharacterClass {
+
+    int EOF_INT = -1;
+    int MAX_CHAR = 0x10ffff;
+    int CHARACTERS = MAX_CHAR + 1;
 
     boolean contains(int character);
 
@@ -22,6 +26,15 @@ public interface ICharacterClass {
     int max();
 
     boolean isEmpty();
+
+    /** Does not include EOF */
+    int[] getRanges();
+
+    /**
+     * @return A character class that is equal to this character class, except that `eof` is set as given.<br>
+     *         May return `this` if there are no changes.
+     */
+    ICharacterClass setEOF(boolean eof);
 
     /**
      * @return The union of characters in character classes this and other.

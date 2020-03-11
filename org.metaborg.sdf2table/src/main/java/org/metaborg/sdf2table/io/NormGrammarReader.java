@@ -1,5 +1,7 @@
 package org.metaborg.sdf2table.io;
 
+import static java.lang.Integer.parseInt;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -418,6 +420,9 @@ public class NormGrammarReader {
                 case "FileStart":
                     symbol = gf.createFileStartSymbol();
                     break;
+                case "EOF":
+                    symbol = gf.createEOFSymbol();
+                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;
@@ -486,29 +491,33 @@ public class NormGrammarReader {
                 case "Absent":
                     return ccFactory.fromEmpty();
                 case "Simple":
-                    return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    String strStart = ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
-                    String strEnd = ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
-                    int start = Integer.parseInt(strStart.substring(1));
-                    int end = Integer.parseInt(strEnd.substring(1));
-                    return ccFactory.fromRange(start, end);
+                    // Range(Numeric(...),Numeric(...))
+                    return ccFactory.fromRange(processNumeric(app.getSubterm(0)), processNumeric(app.getSubterm(1)));
                 case "Numeric":
-                    String str = ((StrategoString) app.getSubterm(0)).stringValue();
-                    return ccFactory.fromSingle(Integer.parseInt(str.substring(1)));
+                    return ccFactory.fromSingle(processNumeric(app));
                 case "Conc":
                     ICharacterClass head = processCharClass(app.getSubterm(0));
                     return head.union(processCharClass(app.getSubterm(1)));
                 default:
-                    System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
+                    System.err.println("Unknown character class `" + app + "'. Is that normalized SDF3?");
                     return ccFactory.fromEmpty();
             }
         }
 
         System.err.println("Malformed term. Application expected.");
         return null;
+    }
+
+    private int processNumeric(IStrategoTerm numeric) {
+        if(numeric.getSubterm(0) instanceof IStrategoInt)
+            // SDF3 version 2.6.0+ (after Unicode support, February 2020) normalizes to 'Numeric(...)' with integers
+            return ((IStrategoInt) numeric.getSubterm(0)).intValue();
+        else
+            // SDF3 version 2.3.0 normalized to 'Numeric("\...")', backwards compatibility for bootstrapping
+            return parseInt(((IStrategoString) numeric.getSubterm(0)).stringValue().substring(1));
     }
 
     private IAttribute processAttribute(IStrategoTerm ta) throws Exception {
@@ -609,7 +618,7 @@ public class NormGrammarReader {
             return termFactory.makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
-            int ivalue = Integer.parseInt(svalue);
+            int ivalue = parseInt(svalue);
             return termFactory.makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
@@ -756,7 +765,7 @@ public class NormGrammarReader {
                 IStrategoList positions = (IStrategoList) priority_args.getSubterm(0);
                 for(IStrategoTerm pos : positions.getAllSubterms()) {
                     if(pos instanceof StrategoString) {
-                        arguments.add(Integer.parseInt(((StrategoString) pos).stringValue()));
+                        arguments.add(parseInt(((StrategoString) pos).stringValue()));
                     } else {
                         throw new UnexpectedTermException(pos.toString(), "Argument Position");
                     }

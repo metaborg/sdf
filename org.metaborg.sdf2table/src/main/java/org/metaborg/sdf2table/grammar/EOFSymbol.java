@@ -12,17 +12,17 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public class FileStartSymbol extends Symbol {
+public class EOFSymbol extends Symbol {
 
-    private static final long serialVersionUID = 3822777948371151629L;
+    private static final long serialVersionUID = -6397863074361783451L;
 
-    protected FileStartSymbol() {
+    protected EOFSymbol() {
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
 
     @Override public String name() {
-        return "<Start>";
+        return "<EOF>";
     }
 
     @Override public String toString() {
@@ -38,11 +38,11 @@ public class FileStartSymbol extends Symbol {
     }
 
     @Override public int hashCode() {
-        return "<Start>".hashCode();
+        return "<EOF>".hashCode();
     }
 
     @Override public boolean equals(Object s) {
-        return s != null && s instanceof FileStartSymbol;
+        return s != null && s instanceof EOFSymbol;
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
