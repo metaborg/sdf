@@ -268,7 +268,7 @@ public class ParseTableIO implements IParseTableGenerator {
     private static IStrategoTerm generateLabelsAterm(ParseTable pt) {
         IStrategoList.Builder terms = termFactory.arrayListBuilder(pt.productionLabels().size());
 
-        for(int i = 257 + pt.productionLabels().size() - 1, j = 0; i >= 257; i--, j++) {
+        for(int i = 257 + pt.productionLabels().size() - 1; i >= 257; i--) {
             IProduction p = pt.productionLabels().inverse().get(i);
             IStrategoTerm p_term;
 

@@ -81,7 +81,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        IStrategoList.Builder terms = tf.arrayListBuilder(chars.size());
+        IStrategoList.Builder terms = tf.arrayListBuilder();
         int lowerBound = chars.nextSetBit(0);
         while(lowerBound != -1 && lowerBound < MAX_CHAR) {
             int upperBound = chars.nextClearBit(lowerBound) - 1;
