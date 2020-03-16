@@ -1,7 +1,5 @@
 package org.metaborg.parsetable.productions;
 
-import static org.spoofax.terms.Term.*;
-
 import java.util.Iterator;
 
 import org.metaborg.parsetable.ParseTableReadException;
@@ -14,6 +12,8 @@ import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.TermVisitor;
 
+import static org.spoofax.terms.util.TermUtils.*;
+
 public class ProductionReader {
 
     private final CharacterClassReader characterClassReader;
@@ -23,12 +23,12 @@ public class ProductionReader {
     }
 
     public IProduction read(IStrategoTerm productionWithIdTerm) throws ParseTableReadException {
-        int productionId = intAt(productionWithIdTerm, 1);
+        int productionId = toJavaIntAt(productionWithIdTerm, 1);
 
-        IStrategoAppl productionTerm = termAt(productionWithIdTerm, 0);
-        IStrategoAppl lhsTerm = termAt(productionTerm, 1);
-        IStrategoList rhsTerm = termAt(productionTerm, 0);
-        IStrategoAppl attributesTerm = termAt(productionTerm, 2);
+        IStrategoAppl productionTerm = toApplAt(productionWithIdTerm, 0);
+        IStrategoAppl lhsTerm = toApplAt(productionTerm, 1);
+        IStrategoList rhsTerm = toListAt(productionTerm, 0);
+        IStrategoAppl attributesTerm = toApplAt(productionTerm, 2);
 
         SymbolReader symbolReader = new SymbolReader(characterClassReader);
 
@@ -65,7 +65,7 @@ public class ProductionReader {
     private boolean getIsNumberLiteral(IStrategoTerm rhs) {
         IStrategoTerm range = getFirstRange(rhs);
 
-        return range != null && intAt(range, 0) == '0' && intAt(range, 1) == '9';
+        return range != null && toJavaIntAt(range, 0) == '0' && toJavaIntAt(range, 1) == '9';
     }
 
     private boolean topdownHasSpaces(IStrategoTerm term) {
@@ -75,8 +75,8 @@ public class ProductionReader {
             IStrategoTerm child = iterator == null ? term.getSubterm(i) : iterator.next();
 
             if(isRangeAppl(child)) {
-                int start = intAt(child, 0);
-                int end = intAt(child, 1);
+                int start = toJavaIntAt(child, 0);
+                int end = toJavaIntAt(child, 1);
 
                 if(start <= ' ' && ' ' <= end)
                     return true;
@@ -90,12 +90,12 @@ public class ProductionReader {
     }
 
     private boolean isRangeAppl(IStrategoTerm child) {
-        return isTermAppl(child) && ((IStrategoAppl) child).getName().equals("range");
+        return isAppl(child) && ((IStrategoAppl) child).getName().equals("range");
     }
 
     private IStrategoTerm getFirstRange(IStrategoTerm term) {
         for(int i = 0; i < term.getSubtermCount(); i++) {
-            IStrategoTerm child = termAt(term, i);
+            IStrategoTerm child = term.getSubterm(i);
 
             if(isRangeAppl(child))
                 return child;

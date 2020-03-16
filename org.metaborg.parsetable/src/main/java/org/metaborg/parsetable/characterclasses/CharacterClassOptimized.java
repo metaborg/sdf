@@ -2,6 +2,7 @@ package org.metaborg.parsetable.characterclasses;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -10,35 +11,74 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
 
     private static final long serialVersionUID = -7493425262859611574L;
 
+    static final int BITMAP_SIZE = 256;
+    static final int BITMAP_SEGMENT_SIZE = 6; // 2^6 = 64 = 1/4 * 256
+
+    static final CharacterClassRangeList OPTIMIZED_RANGE =
+        new CharacterClassRangeList(new int[] { 0, BITMAP_SIZE - 1 }, false);
+
     // Note that the entries in the `words` array should be immutable as well, but Java doesn't allow that
     private final long[] words; // [0-63], [64-127], [128-191], [192-255]
-    private final boolean containsEOF; // [256]
+    private final int[] originalRanges;
+    private final int[] optimizedRanges;
+    private final boolean containsEOF;
 
     private final int min, max;
 
-    public CharacterClassOptimized(long[] words, boolean containsEOF, int min, int max) {
-        if(words.length != 4)
-            throw new IllegalStateException("The words array should have length 4");
-
-        if(words[0] == 0 && words[1] == 0 && words[2] == 0 && words[3] == 0 && !containsEOF)
+    public CharacterClassOptimized(CharacterClassRangeList cc) {
+        if(cc.isEmpty())
             throw new IllegalStateException("Empty character classes are not allowed");
 
-        this.words = words;
-        this.containsEOF = containsEOF;
-        this.min = min;
-        this.max = max;
+        this.originalRanges = cc.getRanges();
+        if(originalRanges.length == 0) {
+            this.words = new long[0];
+        } else {
+            BitSet bitSet = new BitSet(BITMAP_SIZE);
+            for(int i = 0; i < originalRanges.length && originalRanges[i] < BITMAP_SIZE; i += 2) {
+                bitSet.set(originalRanges[i], Integer.min(BITMAP_SIZE, originalRanges[i + 1] + 1));
+            }
+            this.words = bitSet.toLongArray();
+            assert this.words.length <= (BITMAP_SIZE >> BITMAP_SEGMENT_SIZE);
+        }
+
+        if(this.words.length == 0)
+            this.optimizedRanges = originalRanges;
+        else
+            this.optimizedRanges = cc.difference(OPTIMIZED_RANGE).getRanges();
+
+        this.containsEOF = cc.contains(EOF_INT);
+        this.min = cc.min();
+        this.max = cc.max();
     }
 
     @Override public final boolean contains(int character) {
-        if(character == CharacterClassFactory.EOF_INT)
+        // NOTE: we are exploiting the fact that EOF_INT is equal to -1.
+        // This method will also return `containsEOF` for any other negative number, but that will never happen.
+        if(character <= EOF_INT)
             return containsEOF;
 
-        final int wordIndex = character >> CharacterClassRangeSet.BITMAP_SEGMENT_SIZE;
-        if(wordIndex < 0 || wordIndex > 3)
-            return false;
+        final int wordIndex = character >> BITMAP_SEGMENT_SIZE;
+        if(wordIndex < words.length)
+            return (words[wordIndex] & (1L << (character & 0x3f))) != 0;
 
-        final long word = words[wordIndex];
-        return (word & (1L << character)) != 0;
+        if(optimizedRanges.length == 0 || character < optimizedRanges[0]
+            || character > optimizedRanges[optimizedRanges.length - 1])
+            return false;
+        if(optimizedRanges.length == 2)
+            return optimizedRanges[0] <= character && character <= optimizedRanges[1];
+
+        int low = 0, high = optimizedRanges.length - 1, mid = -1;
+        while(low < high) {
+            mid = (low + high) / 2;
+            if(character < optimizedRanges[mid])
+                high = mid;
+            else if(character >= optimizedRanges[mid + 1])
+                low = mid + 1;
+            else
+                break;
+        }
+        return (mid & 1) == 0 // Return true if the current index is even
+            || character == optimizedRanges[mid]; // or if the character is the end of a range (odd index)
     }
 
     @Override public int min() {
@@ -51,6 +91,14 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
 
     @Override public boolean isEmpty() {
         return false;
+    }
+
+    @Override public int[] getRanges() {
+        return originalRanges;
+    }
+
+    @Override public ICharacterClass setEOF(boolean eof) {
+        throw new IllegalStateException("CharacterClassOptimized is not mutable");
     }
 
     @Override public ICharacterClass union(ICharacterClass other) {
@@ -70,7 +118,7 @@ public final class CharacterClassOptimized implements ICharacterClass, Serializa
     }
 
     @Override public int hashCode() {
-        return (int) (words[0] ^ words[1] ^ words[2] ^ words[3] ^ Boolean.hashCode(containsEOF));
+        return Arrays.hashCode(originalRanges) ^ Boolean.hashCode(containsEOF);
     }
 
     @Override public boolean equals(Object o) {

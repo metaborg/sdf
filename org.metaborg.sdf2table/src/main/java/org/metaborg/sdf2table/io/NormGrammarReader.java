@@ -1,5 +1,7 @@
 package org.metaborg.sdf2table.io;
 
+import static java.lang.Integer.parseInt;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,12 +14,12 @@ import org.metaborg.sdf2table.exceptions.UnexpectedTermException;
 import org.metaborg.sdf2table.grammar.*;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.StrategoAppl;
-import org.spoofax.terms.StrategoList;
 import org.spoofax.terms.StrategoString;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.spoofax.terms.util.TermUtils;
 
 public class NormGrammarReader {
 
@@ -112,10 +114,10 @@ public class NormGrammarReader {
                 modules.put(modName, true);
 
                 // Processing Dependencies
-                for(IStrategoTerm t : (StrategoList) app.getSubterm(1)) {
+                for(IStrategoTerm t : TermUtils.toListAt(app, 1)) {
                     if(t instanceof StrategoAppl && ((StrategoAppl) t).getName().equals("Imports")) {
-                        for(IStrategoTerm timport : (StrategoList) t.getSubterm(0)) {
-                            if(timport instanceof StrategoAppl && ((StrategoAppl) timport).getName().equals("Module")) {
+                        for(IStrategoTerm timport : TermUtils.toListAt(t, 0)) {
+                            if(TermUtils.isAppl(timport, "Module")) {
                                 String iname = null;
 
                                 switch(((StrategoAppl) timport.getSubterm(0)).getName()) {
@@ -150,7 +152,7 @@ public class NormGrammarReader {
                 }
 
                 // Processing sections
-                StrategoList sdf_sections = (StrategoList) app.getSubterm(2);
+                IStrategoList sdf_sections = TermUtils.toListAt(app, 2);
                 for(IStrategoTerm t : sdf_sections) {
                     StrategoAppl tsection = null;
                     if(!(t.getSubterm(0) instanceof StrategoAppl))
@@ -182,28 +184,21 @@ public class NormGrammarReader {
         }
     }
 
-    private void addProds(StrategoAppl section) throws Exception {
-        if(section instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) section;
-
-            if(app.getName().equals("ContextFreeSyntax")) {
-                StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
-                for(IStrategoTerm t : sdf_productions) {
-                    processProduction(t);
-                }
+    private void addProds(IStrategoAppl section) throws Exception {
+        if(TermUtils.isAppl(section, "ContextFreeSyntax")) {
+            IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
+            for(IStrategoTerm t : sdf_productions) {
+                processProduction(t);
             }
-            if(app.getName().equals("LexicalSyntax")) {
-                StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
-                for(IStrategoTerm t : sdf_productions) {
-                    processProduction(t);
-                }
+        } else if(TermUtils.isAppl(section, "LexicalSyntax")) {
+            IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
+            for(IStrategoTerm t : sdf_productions) {
+                processProduction(t);
             }
-
-            else if(app.getName().equals("Kernel")) {
-                StrategoList sdf_productions = (StrategoList) app.getSubterm(0);
-                for(IStrategoTerm t : sdf_productions) {
-                    processProduction(t);
-                }
+        } else if(TermUtils.isAppl(section, "Kernel")) {
+            IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
+            for(IStrategoTerm t : sdf_productions) {
+                processProduction(t);
             }
         }
     }
@@ -217,10 +212,11 @@ public class NormGrammarReader {
             return prod;
         }
 
-        if(term instanceof IStrategoAppl) {
+        if(TermUtils.isAppl(term)) {
             StrategoAppl app = (StrategoAppl) term;
             boolean with_cons = false;
             if(app.getName().equals("SdfProduction")
+                    // This is suspicious:
                 || (with_cons = true && app.getName().equals("SdfProductionWithCons"))) {
                 Symbol symbol;
                 String cons = null;
@@ -238,7 +234,7 @@ public class NormGrammarReader {
                 }
 
                 // Read right hand side of the equation: Rhs([<symbols>])
-                StrategoList rhs = (StrategoList) app.getSubterm(1).getSubterm(0);
+                IStrategoList rhs = TermUtils.toListAt(app.getSubterm(1), 0);
                 for(IStrategoTerm t : rhs) {
                     Symbol s = processSymbol(t);
                     if(s != null)
@@ -255,7 +251,7 @@ public class NormGrammarReader {
                     case "NoAttrs":
                         break;
                     case "Attrs":
-                        StrategoList talist = (StrategoList) tattrs.getSubterm(0);
+                        IStrategoList talist = TermUtils.toListAt(tattrs, 0);
                         for(IStrategoTerm ta : talist) {
                             IAttribute attr = processAttribute(ta);
                             if(attr != null) {
@@ -365,7 +361,7 @@ public class NormGrammarReader {
         }
 
         if(term instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) term;
+            IStrategoAppl app = TermUtils.toAppl(term);
             Sort sep;
             switch(app.getName()) {
                 case "SortDef":
@@ -424,6 +420,9 @@ public class NormGrammarReader {
                 case "FileStart":
                     symbol = gf.createFileStartSymbol();
                     break;
+                case "EOF":
+                    symbol = gf.createEOFSymbol();
+                    break;
                 default:
                     System.err.println("Unknown symbol type `" + app.getName() + "'. Is that normalized SDF3?");
                     return null;
@@ -440,9 +439,9 @@ public class NormGrammarReader {
 
     // TODO this should be done in Stratego instead, which is a lot cleaner than this ad-hoc pattern-matching
     private IStrategoTerm removeLabelFromSymbolTerm(IStrategoTerm term) {
-        if(!(term instanceof StrategoAppl))
+        if(!TermUtils.isAppl(term))
             return term;
-        StrategoAppl app = (StrategoAppl) term;
+        IStrategoAppl app = TermUtils.toAppl(term);
 
         if(app.getName().equals("Label")) {
             return removeLabelFromSymbolTerm(app.getSubterm(1));
@@ -469,8 +468,8 @@ public class NormGrammarReader {
     public List<Symbol> processSymbolList(IStrategoTerm term) {
         List<Symbol> list = Lists.newLinkedList();
 
-        if(term instanceof StrategoList) {
-            StrategoList slist = (StrategoList) term;
+        if(TermUtils.isList(term)) {
+            IStrategoList slist = TermUtils.toList(term);
 
             for(IStrategoTerm t : slist) {
                 Symbol s = processSymbol(t);
@@ -485,30 +484,25 @@ public class NormGrammarReader {
     }
 
     public ICharacterClass processCharClass(IStrategoTerm term) {
-        if(term instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) term;
+        if(TermUtils.isAppl(term)) {
+            IStrategoAppl app = TermUtils.toAppl(term);
             CharacterClassFactory ccFactory = ParseTableIO.getCharacterClassFactory();
             switch(app.getName()) {
                 case "Absent":
                     return ccFactory.fromEmpty();
                 case "Simple":
-                    return processCharClass(app.getSubterm(0));
                 case "Present":
                     return processCharClass(app.getSubterm(0));
                 case "Range":
-                    String strStart = ((StrategoString) app.getSubterm(0).getSubterm(0)).stringValue();
-                    String strEnd = ((StrategoString) app.getSubterm(1).getSubterm(0)).stringValue();
-                    int start = Integer.parseInt(strStart.substring(1));
-                    int end = Integer.parseInt(strEnd.substring(1));
-                    return ccFactory.fromRange(start, end);
+                    // Range(Numeric(...),Numeric(...))
+                    return ccFactory.fromRange(processNumeric(app.getSubterm(0)), processNumeric(app.getSubterm(1)));
                 case "Numeric":
-                    String str = ((StrategoString) app.getSubterm(0)).stringValue();
-                    return ccFactory.fromSingle(Integer.parseInt(str.substring(1)));
+                    return ccFactory.fromSingle(processNumeric(app));
                 case "Conc":
                     ICharacterClass head = processCharClass(app.getSubterm(0));
                     return head.union(processCharClass(app.getSubterm(1)));
                 default:
-                    System.err.println("Unknown character class `" + app.getName() + "'. Is that normalized SDF3?");
+                    System.err.println("Unknown character class `" + app + "'. Is that normalized SDF3?");
                     return ccFactory.fromEmpty();
             }
         }
@@ -517,9 +511,18 @@ public class NormGrammarReader {
         return null;
     }
 
+    private int processNumeric(IStrategoTerm numeric) {
+        if(numeric.getSubterm(0) instanceof IStrategoInt)
+            // SDF3 version 2.6.0+ (after Unicode support, February 2020) normalizes to 'Numeric(...)' with integers
+            return ((IStrategoInt) numeric.getSubterm(0)).intValue();
+        else
+            // SDF3 version 2.3.0 normalized to 'Numeric("\...")', backwards compatibility for bootstrapping
+            return parseInt(((IStrategoString) numeric.getSubterm(0)).stringValue().substring(1));
+    }
+
     private IAttribute processAttribute(IStrategoTerm ta) throws Exception {
-        if(ta instanceof StrategoAppl) {
-            StrategoAppl a = (StrategoAppl) ta;
+        if(TermUtils.isAppl(ta)) {
+            IStrategoAppl a = TermUtils.toAppl(ta);
             switch(a.getName()) { // This is just to get a proper name for the attribute.
                 case "Assoc":
                     StrategoAppl assoc = (StrategoAppl) a.getSubterm(0);
@@ -615,7 +618,7 @@ public class NormGrammarReader {
             return termFactory.makeString(termName);
         } else if(term.getConstructor().getName().equals("Int")) {
             String svalue = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
-            int ivalue = Integer.parseInt(svalue);
+            int ivalue = parseInt(svalue);
             return termFactory.makeInt(ivalue);
         } else if(term.getConstructor().getName().equals("List")) {
             IStrategoList term_list = (IStrategoList) term.getSubterm(0);
@@ -629,27 +632,24 @@ public class NormGrammarReader {
         throw new UnexpectedTermException(term.toString());
     }
 
-    private void addRestrictions(StrategoAppl tsection) throws UnexpectedTermException {
-        if(tsection instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) tsection;
-            if(app.getName().equals("Restrictions")) {
-                StrategoList restrictions = (StrategoList) app.getSubterm(0);
-                for(IStrategoTerm restriction : restrictions) {
-                    processRestriction(restriction);
-                }
+    private void addRestrictions(IStrategoAppl tsection) throws UnexpectedTermException {
+        if(tsection.getName().equals("Restrictions")) {
+            IStrategoList restrictions = TermUtils.toListAt(tsection, 0);
+            for(IStrategoTerm restriction : restrictions) {
+                processRestriction(restriction);
             }
         }
     }
 
     private void processRestriction(IStrategoTerm restriction) throws UnexpectedTermException {
-        if(restriction instanceof StrategoAppl) {
-            StrategoAppl res = (StrategoAppl) restriction;
+        if(TermUtils.isAppl(restriction)) {
+            IStrategoAppl res = TermUtils.toAppl(restriction);
             switch(res.getName()) {
                 case "Follow":
                     List<ICharacterClass[]> restrictionLookahead = Lists.newArrayList();
                     ICharacterClass restrictionNoLookahead =
                         importFollowRestriction(res.getSubterm(1), restrictionLookahead);
-                    StrategoList subjects = (StrategoList) res.getSubterm(0);
+                    IStrategoList subjects = TermUtils.toListAt(res, 0);
                     for(IStrategoTerm subject : subjects) {
                         Symbol s = processSymbol(subject);
                         s.addFollowRestriction(restrictionNoLookahead);
@@ -666,15 +666,15 @@ public class NormGrammarReader {
 
     public ICharacterClass importFollowRestriction(IStrategoTerm term, List<ICharacterClass[]> restrictionsLookahead)
         throws UnexpectedTermException {
-        StrategoList slist;
+        IStrategoList slist;
 
         ICharacterClass restriction = CharacterClassFactory.EMPTY_CHARACTER_CLASS;
 
-        if(term instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) term;
+        if(TermUtils.isAppl(term)) {
+            IStrategoAppl app = TermUtils.toAppl(term);
             switch(app.getName()) {
                 case "List":
-                    slist = (StrategoList) app.getSubterm(0);
+                    slist = TermUtils.toListAt(app, 0);
                     for(IStrategoTerm t : slist) {
                         restriction = importFollowRestriction(t, restrictionsLookahead).union(restriction);
                     }
@@ -699,13 +699,13 @@ public class NormGrammarReader {
     private void createNewLookahead(IStrategoTerm term, List<ICharacterClass> lookahead,
         List<ICharacterClass[]> restrictionsLookahead) throws UnexpectedTermException {
 
-        StrategoList slist;
+        IStrategoList slist;
 
         if(term instanceof StrategoAppl) {
             StrategoAppl app = (StrategoAppl) term;
             switch(app.getName()) {
                 case "List":
-                    slist = (StrategoList) app.getSubterm(0);
+                    slist = TermUtils.toListAt(app, 0);
                     for(IStrategoTerm t : slist) {
                         List<ICharacterClass> firstChars = Lists.newArrayList(lookahead);
                         createNewLookahead(t, firstChars, restrictionsLookahead);
@@ -729,21 +729,18 @@ public class NormGrammarReader {
 
     }
 
-    private void addPriorities(StrategoAppl tsection) throws Exception {
-        if(tsection instanceof StrategoAppl) {
-            StrategoAppl app = (StrategoAppl) tsection;
-            if(app.getName().equals("Priorities")) {
-                StrategoList chains = (StrategoList) app.getSubterm(0);
-                for(IStrategoTerm chain : chains) {
-                    processPriorityChain(chain);
-                }
+    private void addPriorities(IStrategoAppl tsection) throws Exception {
+        if(tsection.getName().equals("Priorities")) {
+            IStrategoList chains = TermUtils.toListAt(tsection, 0);
+            for(IStrategoTerm chain : chains) {
+                processPriorityChain(chain);
             }
         }
     }
 
     private void processPriorityChain(IStrategoTerm chain) throws Exception {
-        if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Chain")) {
-            StrategoList groups = (StrategoList) chain.getSubterm(0);
+        if(TermUtils.isAppl(chain) && ((StrategoAppl) chain).getName().equals("Chain")) {
+            IStrategoList groups = (IStrategoList) chain.getSubterm(0);
             Production higher = null, lower = null;
             boolean transitive = true;
             List<Integer> arguments = Lists.newArrayList();
@@ -765,10 +762,10 @@ public class NormGrammarReader {
                 if(!priority_args.getName().equals("Default")) {
                     throw new UnexpectedTermException(priority_args.toString(), "Default");
                 }
-                StrategoList positions = (StrategoList) priority_args.getSubterm(0);
+                IStrategoList positions = (IStrategoList) priority_args.getSubterm(0);
                 for(IStrategoTerm pos : positions.getAllSubterms()) {
                     if(pos instanceof StrategoString) {
-                        arguments.add(Integer.parseInt(((StrategoString) pos).stringValue()));
+                        arguments.add(parseInt(((StrategoString) pos).stringValue()));
                     } else {
                         throw new UnexpectedTermException(pos.toString(), "Argument Position");
                     }
@@ -836,7 +833,7 @@ public class NormGrammarReader {
                 }
             }
 
-        } else if(chain instanceof IStrategoAppl && ((StrategoAppl) chain).getName().equals("Assoc")) {
+        } else if(TermUtils.isAppl(chain) && ((StrategoAppl) chain).getName().equals("Assoc")) {
             IStrategoTerm first_group = chain.getSubterm(0);
             IStrategoTerm assoc = chain.getSubterm(1);
             IStrategoTerm second_group = chain.getSubterm(2);

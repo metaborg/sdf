@@ -5,21 +5,20 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
-import org.metaborg.parsetable.query.IActionQuery;
-import org.metaborg.parsetable.states.IState;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
-import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
-import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
+import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
-
+import org.metaborg.parsetable.states.IState;
+import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
@@ -104,7 +103,6 @@ public class State implements IState, Comparable<State>, Serializable {
                     if(!(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1)) {
                         new_shifts.add(shift);
                     }
-                    new_gotos.add(new Goto(((CharacterClassSymbol) s_at_dot).getCC(), pt));
                 }
                 if(!new_kernel.isEmpty()) {
                     checkKernel(new_kernel, new_gotos, new_shifts);
@@ -137,7 +135,7 @@ public class State implements IState, Comparable<State>, Serializable {
 
     public void doReduces() {
         // for each item p_i : A = A0 ... AN .
-        // add a reduce action reduce([0-256] / follow(A), p_i)
+        // add a reduce action reduce([0-MAX_CHAR,eof] / follow(A), p_i)
         for(LRItem item : items) {
 
             if(item.getDotPosition() == item.getProd().arity()) {
@@ -163,7 +161,7 @@ public class State implements IState, Comparable<State>, Serializable {
                     addReduceAction(item.getProd(), prod_label, final_range, null);
                 }
             }
-            // <Start> = <START> . EOF
+            // <Start> = <START> . <EOF>
             if(item.getProd().equals(pt.initialProduction()) && item.getDotPosition() == 1) {
                 lr_actions.put(CharacterClassFactory.EOF_SINGLETON, new Accept(CharacterClassFactory.EOF_SINGLETON));
             }

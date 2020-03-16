@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 public enum ContextType {
-    DEEP
+    DEEP, 
+    DANGLING // needs to be propagated to LM and RM internal subtrees
 }

@@ -501,6 +501,24 @@ rules //conversion of SDF3 terms into SDF2
     CharClass(sort) -> char-class(sort)
 
   special-term-to-sdf:
+    Regular(char) -> short(char)
+
+  special-term-to-sdf:
+    Escaped(char) -> short(<conc-strings> ("\\", char))
+
+  special-term-to-sdf:
+    Binary(num) -> numeric(<conc-strings> ("\\", <bin-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
+    Octal(num) -> numeric(<conc-strings> ("\\", <oct-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
+    Decimal(num) -> numeric(<conc-strings> ("\\", num))
+
+  special-term-to-sdf:
+    Hexadecimal(num) -> numeric(<conc-strings> ("\\", <hex-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
     LabelStart() -> label_start()
 
   special-term-to-sdf:
