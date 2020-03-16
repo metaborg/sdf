@@ -1,9 +1,11 @@
-module statics/main
+module statix/main
 
 imports
 
   statixruntime
   statix/api
+  signatures/-
+  signatures/sorts/Sorts-sig
 
 imports
 
@@ -11,7 +13,7 @@ imports
 
 rules // Analysis
 
-  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statics/statics", "projectOK", "moduleOK")
+  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/statics", "projectOK", "moduleOK")
 
 rules // Editor Services
 

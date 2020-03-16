@@ -16,10 +16,9 @@ language
 
   provider : target/metaborg/stratego.ctree
   provider : target/metaborg/stratego-javastrat.jar
-  observer : editor-analyze (constraint) (multifile)
+  observer : editor-analyze (multifile)
   on save  : editor-save
 
 references
 
   reference _ : editor-resolve
-  hover     _ : editor-hover
