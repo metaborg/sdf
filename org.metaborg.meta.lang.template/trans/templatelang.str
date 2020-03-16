@@ -17,6 +17,7 @@ imports
   runtime/properties/-
   runtime/types/-
   analysis/-
+  statix/-
   generation/completion/-
   generation/gen-utils/-
   generation/pp/-

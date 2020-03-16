@@ -9,9 +9,11 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}
   - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
   - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
+  - org.metaborg:statix.lang:${metaborgVersion}
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
+  - org.metaborg:statix.runtime:${metaborgVersion}
 generates:
 - language: EditorService
   directory: src-gen
@@ -24,6 +26,8 @@ generates:
 exports:
 - language: Stratego-Sugar
   directory: src-gen  
+- language: ATerm
+  directory: src-gen/statix
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
