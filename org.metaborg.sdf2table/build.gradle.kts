@@ -1,6 +1,7 @@
 plugins {
   id("org.metaborg.gradle.config.java-library")
   id("org.metaborg.gradle.config.junit-testing")
+  `java-test-fixtures`
 }
 
 dependencies {
@@ -10,6 +11,7 @@ dependencies {
   api(project(":org.metaborg.parsetable"))
   api("com.google.inject:guice:4.2.0")
   compileOnly("com.google.code.findbugs:jsr305:3.0.2")
+  testImplementation(testFixtures(project(":org.metaborg.parsetable")))
   testCompileOnly("junit:junit:4.12")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.1.0")
 }
