@@ -13,6 +13,7 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.io.ParseTableIO;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -284,8 +285,7 @@ public final class ContextualProduction implements IProduction, Serializable {
     public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         ITermFactory tf = ParseTableIO.getTermfactory();
-        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
-        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
+        final IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
         for(ISymbol s : rhs) {
             if(s instanceof Symbol) {
                 rhs_terms.add(((Symbol) s).toSDF3Aterm(tf, ctx_vals, ctx_val));
@@ -295,7 +295,9 @@ public final class ContextualProduction implements IProduction, Serializable {
             }
         }
 
-        for(IAttribute a : prod_attrs.get(getOrigProduction())) {
+        final Set<IAttribute> attributes = prod_attrs.get(getOrigProduction());
+        final IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        for(IAttribute a : attributes) {
             attrs_terms.add(a.toSDF3Aterm(tf));
         }
 

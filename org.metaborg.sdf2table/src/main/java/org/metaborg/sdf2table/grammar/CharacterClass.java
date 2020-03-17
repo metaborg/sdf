@@ -1,11 +1,10 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.List;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -82,8 +81,7 @@ public class CharacterClass implements ICharacterClass, Serializable {
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        List<IStrategoTerm> terms = new ArrayList<>();
-
+        IStrategoList.Builder terms = tf.arrayListBuilder();
         int lowerBound = chars.nextSetBit(0);
         while(lowerBound != -1 && lowerBound < MAX_CHAR) {
             int upperBound = chars.nextClearBit(lowerBound) - 1;

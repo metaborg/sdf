@@ -315,4 +315,28 @@ public class NormGrammar implements INormGrammar, Serializable {
         return gf;
     }
 
+    public void cleanupGrammar() {
+        this.cacheProductionsRead.clear();
+        this.cacheSymbolsRead.clear();
+        this.combinedExpressionGrammars.clear();
+        this.contextualSymbols.clear();
+        this.derivedContextualProds.clear();
+        this.expressionGrammars.clear();
+        this.indirectlyRecursive.clear();
+        this.leftRecursiveSymbolsMapping.clear();
+        this.rightRecursiveSymbolsMapping.clear();
+        this.literalProductionsMapping.clear();
+        this.longestMatchProdsBack.clear();
+        this.longestMatchProdsFront.clear();
+        this.nonAssocPriorities.clear();
+        this.nonNestedPriorities.clear();
+        this.nonRecursive.clear();
+        this.nonTransitivePriorities.clear();
+        this.nonTransitivePriorityArgs.clear();
+        this.productionsOnPriorities.clear();
+        this.symbolProductionsMapping.clear();
+        this.transitivePriorities.clear();
+        this.transitivePriorityArgs.clear();      
+    }
+
 }

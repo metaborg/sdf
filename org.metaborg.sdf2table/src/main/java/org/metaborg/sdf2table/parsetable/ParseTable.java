@@ -122,8 +122,26 @@ public class ParseTable implements IParseTable, Serializable {
             State s0 = new State(initialProduction, this);
             stateQueue.add(s0);
             processStateQueue();
+            cleanupTable();
         }
+        
+        
 
+    }
+
+    private void cleanupTable() {
+        this.danglingPrefix.clear();
+        this.danglingSuffix.clear();
+        this.symbolStatesMapping.itemStates.clear();
+        this.symbolStatesMapping.symbolItems.clear();
+        this.itemDerivedItemsCache.clear();
+        this.kernelStatesMapping.clear();
+        this.leftmostContextsMapping.clear();
+        this.cachedItems().clear();
+        this.productionsMapping.clear();
+        this.rightmostContextsMapping.clear();
+        this.grammar.cleanupGrammar();
+        
     }
 
     private void calculateNullable() {
@@ -1093,7 +1111,7 @@ public class ParseTable implements IParseTable, Serializable {
         return s;
     }
 
-    public int totalStates() {
+    @Override public int totalStates() {
         return totalStates;
     }
 

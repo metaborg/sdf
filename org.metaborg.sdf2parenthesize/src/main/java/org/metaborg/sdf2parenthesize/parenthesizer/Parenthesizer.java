@@ -23,9 +23,9 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
+import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-import org.spoofax.terms.StrategoString;
 import org.spoofax.terms.TermFactory;
 import org.strategoxt.strc.pp_stratego_string_0_0;
 
@@ -602,7 +602,7 @@ public class Parenthesizer {
         if(termPP == null || termPP.getTermType() != IStrategoTerm.STRING)
             return "";
 
-        return ((StrategoString) termPP).stringValue();
+        return ((IStrategoString) termPP).stringValue();
     }
 
 

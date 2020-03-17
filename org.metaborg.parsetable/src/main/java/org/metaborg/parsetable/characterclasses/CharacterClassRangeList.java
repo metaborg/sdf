@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -357,7 +358,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
     }
 
     @Override public IStrategoTerm toAtermList(ITermFactory tf) {
-        List<IStrategoTerm> terms = new ArrayList<>();
+        IStrategoList.Builder terms = tf.arrayListBuilder(rangeList.length / 2 + (containsEOF ? 1 : 0));
         for(int i = 0; i < rangeList.length; i += 2) {
             final int from = rangeList[i];
             final int to = rangeList[i + 1];
@@ -396,7 +397,7 @@ public final class CharacterClassRangeList implements ICharacterClass, Serializa
     }
 
     @Override public String toString() {
-        final List<String> ranges = new ArrayList<>();
+        final List<String> ranges = new ArrayList<>(rangeList.length / 2 + (containsEOF ? 1 : 0));
 
         for(int i = 0; i < rangeList.length; i += 2) {
             final int from = rangeList[i];
