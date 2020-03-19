@@ -106,10 +106,17 @@ rules
     Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]].
 
   typeOfModule : scope * ModuleName -> TYPE
-  typeOfModule(s, name) = Tmod :- {id id'}
+  typeOfModule(s, name) = Tmod :- {id paths}
     idOfModuleName(name) == id, 
-    typeOfDecl of Module{id} in s |-> [(_, (Module{id'}, Tmod))|_]| error $[Module [id] not defined],
-    @id.ref := id'.
+    typeOfDecl of Module{id} in s |-> paths,
+    resolveModules(id, paths, NON_EMPTY()) == Tmod.
+
+  resolveModules : ModuleId * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveModules(id, [(_, (Module{id'}, Tmod))|paths], _) = Tmod :-
+    @id.ref += id',
+    resolveModules(id, paths, MAYBE_EMPTY()) == Tmod.
+  resolveModules(id, [], NON_EMPTY())   = _ :- false | error $[Module [id] not defined].
+  resolveModules(id, [], MAYBE_EMPTY()) = _.
 
   idOfModuleName : ModuleName -> ModuleId
   idOfModuleName(Unparameterized(id))  = id.
@@ -536,10 +543,17 @@ rules // Sort reusable predicates
     s -> Sort{name} with typeOfDecl Tsort.
     
   typeOfSort : scope * string -> TYPE
-  typeOfSort(s, name) = Tsort :- {name'}
-    typeOfDecl of Sort{name} in s |-> [(_, (Sort{name'}, Tsort))|_] | error $[Sort [name] not defined],
-    @name.ref := name',
+  typeOfSort(s, name) = Tsort :- {paths}
+    typeOfDecl of Sort{name} in s |-> paths,
+    resolveSorts(name, paths, NON_EMPTY()) == Tsort,
     @name.type := Tsort.
+
+  resolveSorts : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+    @name.ref += name',
+    resolveSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+  resolveSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] not defined].
+  resolveSorts(name, [], MAYBE_EMPTY()) = _.
 
 rules // Constructor reusable predicates
 
@@ -551,18 +565,32 @@ rules // Constructor reusable predicates
     onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]].
 
   typeOfConstructor : scope * string -> TYPE
-  typeOfConstructor(s, name) = Tprod :- {name'}
-    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod))|_] | error $[Constructor [name] not defined],
-    @name.ref  := name',
+  typeOfConstructor(s, name) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructors(name, paths, NON_EMPTY()) == Tprod,
     @name.type := Tprod.
 
+  resolveConstructors : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructors(name, [(_, (Constructor{name'}, Tprod))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructors(name, paths, MAYBE_EMPTY()) == Tprod.
+  resolveConstructors(name, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined].
+  resolveConstructors(name, [], MAYBE_EMPTY()) = _.
+
   typeOfConstructorInSort : scope * string * TYPE -> TYPE
-  typeOfConstructorInSort(s, name, type) = Tprod :- {name' Tsort}
-    typeOfDecl of Constructor{name} in s |-> [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|_] | error $[Constructor [name] not defined],
-    // TODO: this finds only one constructor, and then checks if it is defined in the sort. Instead it should go over all constructors and check if one of them is defined in the sort.
-    //try { type == Tsort } | error $[Constructor [name] is not defined for sort [type]],
-    @name.ref  := name',
+  typeOfConstructorInSort(s, name, type) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructorsInSort(name, type, paths, NON_EMPTY()) == Tprod,
     @name.type := Tprod.
+
+  resolveConstructorsInSort : string * TYPE * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructorsInSort(name, Tsort, paths, MAYBE_EMPTY()) == Tprod.
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, _))|paths], emptiness) = Tprod :-
+    resolveConstructorsInSort(name, Tsort, paths, emptiness) == Tprod.
+  resolveConstructorsInSort(name, Tsort, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined].
+  resolveConstructorsInSort(name, Tsort, [], MAYBE_EMPTY()) = _.
 
 //
 // Symbols
@@ -662,9 +690,16 @@ rules // Label reusable predicates
     Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]].
     
   resolveLabel : scope * string
-  resolveLabel(s, name)  :- {name'}
-    Label{name} in s |-> [(_, (Label{name'}))|_]| error $[Label [name] not defined],
-    @name.ref := name'.
+  resolveLabel(s, name)  :- {paths}
+    Label{name} in s |-> paths,
+    resolveLabels(name, paths, NON_EMPTY()).
+
+  resolveLabels : string * list((path * occurrence)) * EMPTINESS
+  resolveLabels(name, [(_, (Label{name'}))|labels], _) :-
+    @name.ref += name',
+    resolveLabels(name, labels, MAYBE_EMPTY()).
+  resolveLabels(name, [], NON_EMPTY()) :- false | error $[Label [name] not defined].
+  resolveLabels(name, [], MAYBE_EMPTY()).
 
 //
 // Attributes
@@ -701,3 +736,13 @@ rules
   hasntAttributeInList(attr, [attr|as]) :- false.
   hasntAttributeInList(attr, [_   |as]) :- hasntAttributeInList(attr, as).
   hasntAttributeInList(attr, [       ]) :- true.
+
+//
+// Utilities
+//
+
+signature
+
+  sorts EMPTINESS constructors
+    NON_EMPTY   : EMPTINESS
+    MAYBE_EMPTY : EMPTINESS
