@@ -59,7 +59,7 @@ imports
   signatures/TemplateLang-sig
 
 rules 
-  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
+  placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ !("[[", "]]")
 
 rules
  

@@ -32,7 +32,7 @@ imports
   signatures/TemplateLang-sig
 
 rules
-  language-spec-name = prim("pp_language_spec_name") <+ "unknown"      
+  language-spec-name = prim("pp_language_spec_name") <+ !"unknown"      
   
 rules
   
