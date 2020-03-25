@@ -21,9 +21,11 @@ import com.google.common.collect.Sets;
 import org.spoofax.terms.io.binary.TermReader;
 import org.spoofax.terms.util.TermUtils;
 
+import javax.annotation.Nullable;
+
 public class NormGrammarReader {
 
-    private final Map<String, Boolean> modules;
+    private final Map<String, IStrategoTerm> modules;
     private final NormGrammar grammar;
     private final List<String> paths;
     private final Collection<FileVisitor> fileVisitors;
@@ -54,6 +56,16 @@ public class NormGrammarReader {
 
     public void accept(FileVisitor fileVisitor) {
         this.fileVisitors.add(fileVisitor);
+    }
+
+    public void addModule(IStrategoTerm module) {
+        if(module instanceof IStrategoAppl) {
+            IStrategoAppl app = (IStrategoAppl)module;
+            if(app.getName().equals("Module")) {
+                String modName = moduleName(app);
+                modules.put(modName, module);
+            }
+        }
     }
 
     public NormGrammar readGrammar(File input) throws Exception {
@@ -100,45 +112,34 @@ public class NormGrammarReader {
             IStrategoAppl app = (IStrategoAppl) module;
             if(app.getName().equals("Module")) {
                 // Module attributes
-                String modName = "";
-                // Get module name from: Unparameterized("<name>")
-                IStrategoString tname = (IStrategoString) app.getSubterm(0).getSubterm(0);
-                modName = tname.stringValue();
+                String modName = moduleName(app);
 
                 // Module has already been processed
-                if(modules.get(modName) != null) {
+                if(modules.containsKey(modName)) {
                     return;
                 }
 
                 // Processing module
-                modules.put(modName, true);
+                modules.put(modName, module);
 
                 // Processing Dependencies
                 for(IStrategoTerm t : TermUtils.toListAt(app, 1)) {
                     if(t instanceof IStrategoAppl && ((IStrategoAppl) t).getName().equals("Imports")) {
                         for(IStrategoTerm timport : TermUtils.toListAt(t, 0)) {
                             if(TermUtils.isAppl(timport, "Module")) {
-                                String iname = null;
-
-                                switch(((IStrategoAppl) timport.getSubterm(0)).getName()) {
-                                    case "Unparameterized":
-                                        iname = ((IStrategoString) timport.getSubterm(0).getSubterm(0)).stringValue();
-                                        break;
-                                    case "Parameterized":
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                @Nullable String iname = importName(timport);
                                 // processing import in case it has not been processed yet
-                                if(iname != null && modules.get(iname) == null) {
-                                    IStrategoTerm iModule = null;
-                                    for(String path : paths) {
-                                        String filename = path + "/" + iname + ".aterm";
-                                        File file = new File(filename);
-                                        if(file.exists() && !file.isDirectory()) {
-                                            iModule = termFromFile(file);
-                                            readModule(iModule);
-                                            break;
+                                if(iname != null) {
+                                    IStrategoTerm iModule = modules.get(iname);
+                                    if(iModule == null) {
+                                        for(String path : paths) {
+                                            String filename = path + "/" + iname + ".aterm";
+                                            File file = new File(filename);
+                                            if(file.exists() && !file.isDirectory()) {
+                                                iModule = termFromFile(file);
+                                                readModule(iModule);
+                                                break;
+                                            }
                                         }
                                     }
                                     if(iModule == null) {
@@ -953,4 +954,19 @@ public class NormGrammarReader {
         return term;
     }
 
+    private static String moduleName(IStrategoTerm term) {
+        // Get module name from: Unparameterized("<name>")
+        IStrategoString tname = (IStrategoString) term.getSubterm(0).getSubterm(0);
+        return tname.stringValue();
+    }
+
+    private static @Nullable String importName(IStrategoTerm term) {
+        switch(((IStrategoAppl) term.getSubterm(0)).getName()) {
+            case "Unparameterized":
+                return ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
+            case "Parameterized":
+            default:
+                return null;
+        }
+    }
 }
