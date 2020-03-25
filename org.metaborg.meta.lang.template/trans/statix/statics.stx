@@ -15,8 +15,8 @@ signature
   name-resolution
     labels P I
     resolve Module      filter P* min $ < P
-    resolve Sort        filter P* | (P* I) min $ < P, $ < I, I < P
-    resolve Constructor filter P* | (P* I) min $ < P, $ < I, I < P
+    resolve Sort        filter P* | (P* I)
+    resolve Constructor filter P* | (P* I)
     resolve Label       filter e min
 
 //
