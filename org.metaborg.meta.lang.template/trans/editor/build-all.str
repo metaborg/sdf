@@ -36,7 +36,7 @@ imports
   libstratego-aterm
   
 rules 
-  check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ "unknown"
+  check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ !"unknown"
   
 
 rules 
