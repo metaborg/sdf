@@ -351,16 +351,28 @@ rules
 //
 
 rules
-
+  
   injectionProductionOK: TYPE * Attributes * SymbolDef
-  injectionProductionOK(PROD([Tsymbol], Tsort), attrs, loc) :-
-    // TODO: do not generate warning when there is a reject or bracket attribute.
-    try { Tsymbol == SORT(_) } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
-  injectionProductionOK(_, attrs, loc).
+  injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
+    hasAttribute(Reject(), attrs) == TRUE() | error $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+  injectionProductionOK(_, _, _).
+  
+  // TODO: error: Missing bracket attribute or constructor name
+  // - LHS must be a single sort (injection)
+  // - RHS must be in the form of '(' Sort ')'
+  // - attributes must NOT contain Bracket() nor Reject()
+  
+  // TODO: warning: Illegal use of the {bracket} attribute
+  // - HS must be a single sort (injection)
+  // - RHS must NOT be in the form of '(' Sort ')'
+  // - attributes must contain Bracket()
+  // - attributes must NOT contain Reject()
+  
+  // TODO: warning: Illegal use of the {bracket} attribute
+  // - LHS must be a sort + constructor (not an injection)
+  // - attributes must contain Bracket()
+  // - attributes must NOT contain Reject()
 
-  //constructorProductionOK:
-  // TODO: resolve all constructors with the same name
-  // TODO: constructors in the same sort, with the same arity of their type lists, produce a warning
 
 //
 // Start symbols section
@@ -562,7 +574,7 @@ rules // Constructor reusable predicates
     Tprod == PROD(Tsymbols, Tsort),
     s -> Constructor{name} with typeOfDecl Tprod,
     typeOfDecl of Constructor{name} in s |-> results,
-    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]].
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]]. // TODO: should be a warning: the generated pretty-printer might not work properly
 
   typeOfConstructor : scope * string -> TYPE
   typeOfConstructor(s, name) = Tprod :- {paths}
@@ -717,25 +729,17 @@ signature
 
 rules
 
-  hasAttribute: Attribute * Attributes
-  hasAttribute(attr, attrs) :- hasAttributeInList(attr, attributes(attrs)).
-
-  hasntAttribute: Attribute * Attributes
-  hasntAttribute(attr, attrs) :- hasntAttributeInList(attr, attributes(attrs)).
+  hasAttribute: Attribute * Attributes -> BOOL
+  hasAttribute(attr, attrs) = hasAttributeInList(attr, attributes(attrs)).
 
   attributes: Attributes -> list(Attribute)
   attributes(Attrs(attributes)) = attributes.
   attributes(NoAttrs())         = [].
 
-  hasAttributeInList: Attribute * list(Attribute)
-  hasAttributeInList(attr, [attr|as]) :- true.
-  hasAttributeInList(attr, [_   |as]) :- hasAttributeInList(attr, as).
-  hasAttributeInList(attr, [       ]) :- false.
-
-  hasntAttributeInList: Attribute * list(Attribute)
-  hasntAttributeInList(attr, [attr|as]) :- false.
-  hasntAttributeInList(attr, [_   |as]) :- hasntAttributeInList(attr, as).
-  hasntAttributeInList(attr, [       ]) :- true.
+  hasAttributeInList: Attribute * list(Attribute) -> BOOL
+  hasAttributeInList(attr, [attr|_]) = TRUE().
+  hasAttributeInList(attr, [_   |s]) = hasAttributeInList(attr, s).
+  hasAttributeInList(attr, [      ]) = FALSE().
 
 //
 // Utilities
@@ -746,3 +750,19 @@ signature
   sorts EMPTINESS constructors
     NON_EMPTY   : EMPTINESS
     MAYBE_EMPTY : EMPTINESS
+
+signature
+
+  sorts BOOL constructors
+    TRUE  : BOOL
+    FALSE : BOOL
+
+rules
+
+  bAnd: BOOL * BOOL    -> BOOL
+  bAnd(TRUE(), TRUE() ) = TRUE().
+  bAnd(_     , _      ) = FALSE().
+
+  bOr: BOOL  * BOOL    -> BOOL
+  bOr(FALSE(), FALSE()) = FALSE().
+  bOr(_      , _      ) = TRUE().
