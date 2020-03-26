@@ -25,7 +25,8 @@ import javax.annotation.Nullable;
 
 public class NormGrammarReader {
 
-    private final Map<String, IStrategoTerm> modules;
+    private final Map<String, IStrategoTerm> moduleAsts;
+    private final Set<String> processedModules;
     private final NormGrammar grammar;
     private final List<String> paths;
     private final Collection<FileVisitor> fileVisitors;
@@ -33,7 +34,8 @@ public class NormGrammarReader {
     private final GrammarFactory gf;
 
     public NormGrammarReader() {
-        this.modules = Maps.newHashMap();
+        this.moduleAsts = Maps.newHashMap();
+        this.processedModules = new HashSet<>();
         this.grammar = new NormGrammar();
         this.paths = Collections.emptyList();
         this.fileVisitors = new LinkedList<>();
@@ -42,7 +44,8 @@ public class NormGrammarReader {
     }
 
     public NormGrammarReader(List<String> paths) {
-        this.modules = Maps.newHashMap();
+        this.moduleAsts = Maps.newHashMap();
+        this.processedModules = new HashSet<>();
         this.grammar = new NormGrammar();
         this.paths = paths;
         this.fileVisitors = new LinkedList<>();
@@ -58,12 +61,12 @@ public class NormGrammarReader {
         this.fileVisitors.add(fileVisitor);
     }
 
-    public void addModule(IStrategoTerm module) {
+    public void addModuleAst(IStrategoTerm module) {
         if(module instanceof IStrategoAppl) {
             IStrategoAppl app = (IStrategoAppl)module;
             if(app.getName().equals("Module")) {
                 String modName = moduleName(app);
-                modules.put(modName, module);
+                moduleAsts.put(modName, module);
             }
         }
     }
@@ -115,12 +118,12 @@ public class NormGrammarReader {
                 String modName = moduleName(app);
 
                 // Module has already been processed
-                if(modules.containsKey(modName)) {
+                if(processedModules.contains(modName)) {
                     return;
                 }
 
                 // Processing module
-                modules.put(modName, module);
+                processedModules.add(modName);
 
                 // Processing Dependencies
                 for(IStrategoTerm t : TermUtils.toListAt(app, 1)) {
@@ -130,14 +133,13 @@ public class NormGrammarReader {
                                 @Nullable String iname = importName(timport);
                                 // processing import in case it has not been processed yet
                                 if(iname != null) {
-                                    IStrategoTerm iModule = modules.get(iname);
+                                    IStrategoTerm iModule = moduleAsts.get(iname);
                                     if(iModule == null) {
                                         for(String path : paths) {
                                             String filename = path + "/" + iname + ".aterm";
                                             File file = new File(filename);
                                             if(file.exists() && !file.isDirectory()) {
                                                 iModule = termFromFile(file);
-                                                readModule(iModule);
                                                 break;
                                             }
                                         }
@@ -145,8 +147,8 @@ public class NormGrammarReader {
                                     if(iModule == null) {
                                         throw new ModuleNotFoundException(iname, modName);
                                     }
+                                    readModule(iModule);
                                 }
-
                             }
                         }
                     }
