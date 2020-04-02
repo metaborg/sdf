@@ -118,7 +118,7 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public static IStrategoTerm generateATerm(ParseTable pt) throws Exception {
-        logger.info("Starting generation of parsetable ATerm. ");
+        logger.trace("Starting generation of parsetable ATerm. ");
 
         IStrategoTerm version = termFactory.makeInt(ParseTable.VERSION_NUMBER);
         IStrategoTerm initialState = termFactory.makeInt(ParseTable.INITIAL_STATE_NUMBER);
@@ -318,7 +318,7 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public static void outputToFile(IStrategoTerm parseTable, File output) {
-        logger.info("Outputting parsetable without creating a string for it first. ");
+        logger.trace("Outputting parsetable without creating a string for it first. ");
         if(output != null) {
             //noinspection ResultOfMethodCallIgnored
             output.getParentFile().mkdirs();
