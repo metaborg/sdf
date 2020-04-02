@@ -4,22 +4,44 @@ imports
 
   statixruntime
   statix/api
+  analysis/types
   signatures/-
   signatures/sorts/Sorts-sig
+  signatures/priority/Priority-sig
 
 imports
 
   analysis/lifting
 
-rules // Analysis
+rules // Editor
 
   statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/statics", "projectOK", "moduleOK")
-
-rules // Editor Services
 
   statix-editor-resolve = stx-editor-resolve
 
   statix-editor-hover = stx-editor-hover
+
+signature constructors // Types
+
+  SORT : Occurrence        -> TYPE
+  PROD : list(TYPE) * TYPE -> TYPE
+  
+rules // Types
+
+  statix-get-type:
+    node -> type'
+    where 
+      a     := <stx--get-ast-analysis <+ fail-msg(|$[no analysis on node [<write-to-string> node]])> node
+    ; type  := <stx--get-ast-property(|a, Prop("type")) <+ fail-msg(|$[no type on node [<write-to-string> node]])> node
+    ; type' := <try(to-compatible-type)> type
+
+  fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
+  
+  to-compatible-type:
+    SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
+  
+  to-compatible-type:
+    PROD(ts, t) -> FunType(<map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
 
 rules // Debugging
 

@@ -220,11 +220,13 @@ rules
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort),
-    injectionProductionOK(Tprod, attrs, symbolDef).
+    injectionProductionOK(Tprod, attrs, symbolDef),
+    @template.type := Tprod.
   typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
-    typeOfTemplate(sProd, template) == Tsymbols.
+    typeOfTemplate(sProd, template) == Tsymbols,
+    @template.type := Tprod.
   typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
@@ -334,16 +336,18 @@ rules
   generalProductionsOK maps generalProductionOK(*, list(*))
 
   typeOfSdfProduction: scope * SdfProduction -> TYPE
-  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfSdfProduction(s, SdfProduction(symbolDef, rhs@Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
     declareSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort),
-    injectionProductionOK(Tprod, attrs, symbolDef).
-  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
+    injectionProductionOK(Tprod, attrs, symbolDef),
+    @rhs.type := Tprod.
+  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
-    typesOfSymbols(sProd, symbols) == Tsymbols.
+    typesOfSymbols(sProd, symbols) == Tsymbols,
+    @rhs.type := Tprod.
   typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
 
 //
@@ -354,7 +358,7 @@ rules
   
   injectionProductionOK: TYPE * Attributes * SymbolDef
   injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
-    hasAttribute(Reject(), attrs) == TRUE() | error $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+    try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
   injectionProductionOK(_, _, _).
   
   // TODO: error: Missing bracket attribute or constructor name
@@ -552,7 +556,8 @@ rules // Sort reusable predicates
   declareSort : scope * string -> TYPE
   declareSort(s, name) = Tsort :-
     Tsort == SORT(Sort{name}),
-    s -> Sort{name} with typeOfDecl Tsort.
+    s -> Sort{name} with typeOfDecl Tsort,
+    @name.type := Tsort.
 
   typeOfSort : scope * string -> TYPE
   typeOfSort(s, name) = Tsort :- {paths}
@@ -574,7 +579,8 @@ rules // Constructor reusable predicates
     Tprod == PROD(Tsymbols, Tsort),
     s -> Constructor{name} with typeOfDecl Tprod,
     typeOfDecl of Constructor{name} in s |-> results,
-    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]]. // TODO: should be a warning: the generated pretty-printer might not work properly
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]], // TODO: should be a warning: the generated pretty-printer might not work properly
+    @name.type := Tprod.
 
   typeOfConstructor : scope * string -> TYPE
   typeOfConstructor(s, name) = Tprod :- {paths}

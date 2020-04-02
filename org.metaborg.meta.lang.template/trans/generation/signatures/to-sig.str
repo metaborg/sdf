@@ -110,7 +110,7 @@ rules
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
     with  
-      rhs-type := <get-type> rhs;
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
     
   // kernel productions
@@ -119,7 +119,7 @@ rules
      where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
      with 
-      rhs-type := <get-type> rhs;
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
       
   cfg-to-sig:
@@ -127,7 +127,7 @@ rules
      where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
      with 
-      rhs-type := <get-type> rhs;
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
       
   cfg-to-sig:
@@ -155,13 +155,13 @@ rules
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
     with  
-      temp-type := <get-type> t;
+      temp-type := <get-sdf3-type> t;
       t'        := <try(check-fun-type)> FunType(temp-type, SortType(<strip-annos> s))
       
   cons-to-decl:
     Constructor(c) -> OpDecl(c, t)
     with
-      t := <get-type; try(check-fun-type)> c
+      t := <get-sdf3-type; try(check-fun-type)> c
      
   check-fun-type: FunType([], t) -> t
   
