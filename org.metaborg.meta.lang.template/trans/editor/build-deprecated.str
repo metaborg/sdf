@@ -22,7 +22,7 @@ rules
       selected'     := <desugar-templates> selected;
       result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       //; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "check", "-chk.str")> mn
+      ; filename := <get-src-gen(|project-path, "check", "-chk.str")> mn
 
    generate-ast-checker-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -35,7 +35,7 @@ rules
       selected'     := <desugar-templates> selected;
       result   := <module-to-chk> selected'
       //; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "check", "-chk.aterm")> mn
+      ; filename := <get-src-gen(|project-path, "check", "-chk.aterm")> mn
 
 
   generate-esv-abstract:
@@ -44,7 +44,7 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   :=  <module-to-esv; topdown(try(pp-fix-string-quotes))> selected'
-      ; filename := <create-src-gen(|project-path, "completions", ".esv.aterm")> mn
+      ; filename := <get-src-gen(|project-path, "completions", ".esv.aterm")> mn
 
    generate-esv-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -56,4 +56,4 @@ rules
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-esv; pp-esv-to-string <+ !""; debug(!"The esv file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n")> selected'
-      ; filename := <create-src-gen(|project-path, "completions" ,"-esv.esv")> mn
+      ; filename := <get-src-gen(|project-path, "completions" ,"-esv.esv")> mn
