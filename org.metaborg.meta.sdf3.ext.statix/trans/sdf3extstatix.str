@@ -1,0 +1,7 @@
+module sdf3extstatix
+
+imports
+  
+  libstratego-lib
+  generate-injections
+  generate-signatures

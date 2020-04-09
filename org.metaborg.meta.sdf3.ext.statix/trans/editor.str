@@ -1,0 +1,117 @@
+module editor
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig  
+  
+imports
+  analysis/desugar
+  generate-signatures
+  generate-injections
+  libstratego-gpp
+  libstrc
+  libstratego-aterm
+  pp/statix/-
+  editor/build-utils
+
+
+rules 
+
+  generate-statix-all:
+    (selected, position, ast, path, project-path) -> result
+    where
+      filename := <base-filename> path;
+      ast'     := <desugar-templates> ast;
+      <?Module(Unparameterized(mn), i*, sections)> ast
+    where
+      statix-sig-string    := <stx-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The Statix signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-sig-filename  := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn;
+      statix-sig-result    := (statix-sig-filename, statix-sig-string)
+    where
+      statix-inj-string    := <str-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-inj-filename  := <get-src-gen(|project-path, "injections", "-injections.str")> mn;
+      statix-inj-result    := (statix-inj-filename, statix-inj-string)
+    where
+      result := <unzip> [
+        statix-sig-result,
+        statix-inj-result
+      ]
+     
+     
+
+  generate-statix-signatures:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The Statix signature file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result        := <stx-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected';
+      filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn
+   
+  generate-statix-signatures-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The Statix signature file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result        := <stx-generate-signatures> selected';
+      filename      := <get-src-gen(|project-path, "statix-signatures/ds", "-sig.stx.aterm")> mn
+   
+     
+     
+     
+  generate-statix-injections:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The injection strategy file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result        := <str-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      ; filename    := <get-src-gen(|project-path, "injections", "-injections.str")> mn
+   
+  generate-statix-injections-abstract:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    where
+      <?Module(Unparameterized(m), i*, sections)> ast ;
+      m' := <strip-annos; string-tokenize(|['/']); last> m;
+        <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The injection strategy file could not be generated.\n"); fail> path
+    where
+      <?Module(Unparameterized(mn), i*, _)> ast ;
+      selected'     := <desugar-templates> selected;
+      result        := <str-generate-injections> selected';
+      filename      := <get-src-gen(|project-path, "injections", "-injections.str.aterm")> mn
+   
+   
+
+  pp-statix-to-string =
+    prettyprint-Statix-start-symbols
+    ; !V([], <id>)
+    ; box2text-string(|120)

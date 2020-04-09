@@ -1,0 +1,18 @@
+module Main
+
+language
+
+  context  : none
+  provider : target/metaborg/stratego.ctree
+  on save  : generate-statix-signatures
+  on save  : generate-statix-injections
+  
+menus
+
+  menu: "Statix Integration" (openeditor) (meta) (realtime)
+
+    action: "Generate All"                                      = generate-statix-all
+    action: "Generate Statix Signatures"                        = generate-statix-signatures
+    action: "Generate Statix Signatures (abstract)"             = generate-statix-signatures-abstract (meta)
+    action: "Generate Stratego Injection Strategies"            = generate-statix-injections
+    action: "Generate Stratego Injection Strategies (abstract)" = generate-statix-injections-abstract (meta)
