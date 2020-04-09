@@ -25,9 +25,17 @@ generates:
   directory: src-gen
 exports:
 - language: Stratego-Sugar
-  directory: src-gen  
+  directory: trans
+  includes:
+  - "**/*.str"
+- language: Stratego-Sugar
+  directory: src-gen
+  includes:
+  - "**/*.str"
 - language: ATerm
   directory: src-gen/statix
+  includes:
+  - "**/*.stx"
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
