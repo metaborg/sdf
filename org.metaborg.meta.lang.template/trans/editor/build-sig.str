@@ -17,7 +17,7 @@ rules
       selected'     := <desugar-templates> selected;
 
       result   := <module-to-sig> selected'
-      ; filename := <create-src-gen(|project-path, "signatures", ".sig.aterm")> mn
+      ; filename := <get-src-gen(|project-path, "signatures", ".sig.aterm")> mn
 
   generate-sig-concrete:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -29,7 +29,7 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
-      ; filename := <create-src-gen(|project-path, "signatures", "-sig.str")> mn
+      ; filename := <get-src-gen(|project-path, "signatures", "-sig.str")> mn
 
   generate-dynsem:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -41,7 +41,7 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
-      ; filename := <create-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
+      ; filename := <get-src-gen(|project-path, "ds-signatures", "-sig.ds")> mn
 
   generate-dynsem-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -53,5 +53,5 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-ds-sig> selected';
-      filename := <create-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn
+      filename := <get-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn
    

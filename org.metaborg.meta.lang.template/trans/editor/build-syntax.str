@@ -32,7 +32,7 @@ rules
       kattrs:= <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
       selected'     := <desugar-templates> selected;
       //selected' := selected ;
-      filename := <create-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
+      filename := <get-src-gen(|project-path, "syntax",  ".sdf.aterm")> mn;
       result := <to-sdf(|chars, newline, kfr, kattrs)> selected'
 
   generate-sdf-concrete:
@@ -48,14 +48,14 @@ rules
       kfr := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
       kattrs:= <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
       selected'     := <desugar-templates> selected;
-      filename := <create-src-gen(|project-path, "syntax", ".sdf")> mn;
+      filename := <get-src-gen(|project-path, "syntax", ".sdf")> mn;
       result   := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"The sdf file could not be generated.\n"); fail> selected'
   
    generate-permissive-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
-        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-permissive.aterm")> mn;
+        filename := <get-src-gen(|project-path, "syntax/permissive" ,"-permissive.aterm")> mn;
         ast'     := <desugar-templates> selected;
         result := <module-to-permissive-productions> ast'
   
@@ -63,53 +63,59 @@ rules
     (selected, position, ast, path, project-path) -> (filename, result)
     where
         <?Module(Unparameterized(mn), i*, sections)> ast ;
-        filename := <create-src-gen(|project-path, "syntax/permissive" ,"-permissive.sdf3")> mn;
+        filename := <get-src-gen(|project-path, "syntax/permissive" ,"-permissive.sdf3")> mn;
         ast'     := <desugar-templates> selected;
         result   := <module-to-permissive-productions; pp-SDF3-string> ast'    
         
   sdf3-to-namespaced:
-    (selected, position, ast, path, project-path) -> None()
+    (selected, position, ast, path, project-path) -> norm-namespaced-result
     where 
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       dirname := <dirname> path;
       if <not(is-substring(!"namespaced"))> dirname then
 	      norm-namespaced-filename       := <concat-strings> [project-path, "/syntax/namespaced/", mn, "-namespaced.sdf3"];
 	      norm-namespaced-ast            := <module-to-namespaced> ast;
-	      <write-string-to-file> (norm-namespaced-filename, <pp-SDF3-string> norm-namespaced-ast)
+	      norm-namespaced-result         := (norm-namespaced-filename, <pp-SDF3-string> norm-namespaced-ast)
+	    else
+	      result := None()
       end 
       
   sdf3-to-exp-grammars:
-    (selected, position, ast, path, project-path) -> None()
+    (selected, position, ast, path, project-path) -> result
     where 
-      exp-grammars := <module-to-exp-grammars(|project-path, path)> ast;
-      <map(generate-exp-grammar-file(|project-path))> exp-grammars;
-      <map(generate-exp-grammar-str-file(|project-path))> exp-grammars
+      exp-grammars            := <module-to-exp-grammars(|project-path, path)> ast;
+      exp-grammar-result*     := <map(generate-exp-grammar-file(|project-path))> exp-grammars;
+      exp-grammar-str-result* := <map(generate-exp-grammar-str-file(|project-path))> exp-grammars;
+      result := <unzip> [
+        exp-grammar-result*,
+        exp-grammar-str-result*
+      ]
   
   generate-exp-grammar-file(|project-path):
-    (mn, ast) -> None()
+    (mn, ast) -> exp-grammar-result
     where
-      exp-grammar-filename := <create-src-gen(|project-path, "syntax/exp-grammars",  ".sdf3_")> mn;
-      <write-string-to-file> (exp-grammar-filename, <pp-SDF3-string> ast)
+      exp-grammar-filename := <get-src-gen(|project-path, "syntax/exp-grammars",  ".sdf3_")> mn;
+      exp-grammar-result   := (exp-grammar-filename, <pp-SDF3-string> ast)
       
   generate-exp-grammar-str-file(|project-path):
-    (mn, ast) -> None()
+    (mn, ast) -> stratego-result
     where
-      exp-grammar-filename := <create-src-gen(|project-path, "syntax/exp-grammars",  ".str")> mn;
+      exp-grammar-filename := <get-src-gen(|project-path, "syntax/exp-grammars",  ".str")> mn;
       stratego-ast         := <module-to-str-expr-grammar> ast;
-      <write-string-to-file> (exp-grammar-filename, <pp-stratego-string> stratego-ast)    
+      stratego-result      := (exp-grammar-filename, <pp-stratego-string> stratego-ast)    
          
   sdf3-to-normal-form:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
     <?Module(Unparameterized(mn), i*, sections)> ast ;
-    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3_")> mn;
+    filename := <get-src-gen(|project-path, "syntax/normalized",  "-norm.sdf3_")> mn;
     result   := <to-normal-form(|$[[project-path]/[<dirname> path]]); pp-SDF3-string> selected  
     
   sdf3-to-normal-form-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
     <?Module(Unparameterized(mn), i*, sections)> ast ;
-    filename := <create-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
+    filename := <get-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
     result   := <to-normal-form(|$[[project-path]/[<dirname> path]])> selected      
          
   read-contextual-grammar-abstract:
@@ -117,6 +123,6 @@ rules
    where
    <debug(!"project-path ")> project-path;
    ctx-ast      := <get-contextual-grammar> project-path; 
-   filename     := <create-src-gen(|project-path, "syntax", ".sdf3_")> "contextualGrammar";
+   filename     := <get-src-gen(|project-path, "syntax", ".sdf3_")> "contextualGrammar";
    result       := <pp-SDF3-string> ctx-ast     
        
