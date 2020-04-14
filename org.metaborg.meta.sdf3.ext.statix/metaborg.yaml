@@ -15,6 +15,9 @@ pardonedLanguages:
 - EditorService
 - Stratego-Sugar
 - SDF
+contributions:
+- name: TemplateLang
+  id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 generates:
 - language: Stratego-Sugar
   directory: src-gen
