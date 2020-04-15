@@ -115,3 +115,34 @@ rules
     prettyprint-Statix-start-symbols
     ; !V([], <id>)
     ; box2text-string(|120)
+    
+    
+  
+  get-src-gen(|project-path, folder, ext):
+    filename -> filename'
+    with
+      fn := <get-filename> filename; 
+      src-gen-path := <concat-strings> [project-path, "/src-gen"];
+      src-gen-folder := <concat-strings> [src-gen-path, "/" ,folder];
+      file-folder := <get-dir(|src-gen-folder)> filename ;
+      filename' := <concat-strings> [file-folder, "/" , fn, ext]
+      
+
+  get-dir(|path) :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      names' := <at-last(![])> names;
+      if [h | tl] := names'
+      then
+        s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
+      else
+        s' := path
+      end
+
+
+  get-filename :
+    s -> s'
+    with
+      names := <strip-annos; string-tokenize(|['/'])> s;
+      s' := <last> names

@@ -3,5 +3,6 @@ module sdf3extstatix
 imports
   
   libstratego-lib
+  editor
   generate-injections
   generate-signatures
