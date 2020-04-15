@@ -27,12 +27,7 @@ imports
   analysis/desugar
   generate-signatures
   generate-injections
-  libstratego-gpp
-  libstrc
-  libstratego-aterm
   pp/statix/-
-  editor/build-utils
-
 
 rules 
 
