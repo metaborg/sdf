@@ -3,7 +3,6 @@ module analysis/types
 imports 
   signatures/TemplateLang-sig
   libstrc
-  runtime/types/collect
 
 imports
   
