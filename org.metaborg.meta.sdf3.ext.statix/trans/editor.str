@@ -75,7 +75,7 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result        := <stx-generate-signatures> selected';
-      filename      := <get-src-gen(|project-path, "statix-signatures/ds", "-sig.stx.aterm")> mn
+      filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx.aterm")> mn
    
      
      
