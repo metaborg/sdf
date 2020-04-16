@@ -27,7 +27,10 @@ imports
   analysis/desugar
   generate-signatures
   generate-injections
-  pp/statix/-
+  pp/StatixLang-pp
+  pp/StatixLang-parenthesize
+  pp/statix/lang/-
+  statix/runtime/pp
   libstrc
   libstratego-aterm
   libstratego-gpp
@@ -109,12 +112,7 @@ rules
    
    
 
-  pp-statix-to-string =
-    prettyprint-Statix-start-symbols
-    ; !V([], <id>)
-    ; box2text-string(|120)
-    
-    
+  pp-statix-to-string = pp-Statix-string(prettyprint-Statix-start-symbols)
   
   get-src-gen(|project-path, folder, ext):
     filename -> filename'
