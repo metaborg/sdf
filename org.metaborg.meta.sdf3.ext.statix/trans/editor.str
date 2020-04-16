@@ -28,6 +28,9 @@ imports
   generate-signatures
   generate-injections
   pp/statix/-
+  libstrc
+  libstratego-aterm
+  libstratego-gpp
 
 rules 
 
