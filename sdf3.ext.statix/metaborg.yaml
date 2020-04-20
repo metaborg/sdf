@@ -1,5 +1,5 @@
 ---
-id: org.metaborg:org.metaborg.meta.sdf3.ext.statix:${metaborgVersion}
+id: org.metaborg:sdf3.ext.statix:${metaborgVersion}
 name: Sdf3ExtStatix
 metaborgVersion: 2.6.0-SNAPSHOT
 

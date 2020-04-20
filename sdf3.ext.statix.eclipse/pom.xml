@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>org.metaborg.meta.sdf3.ext.statix.eclipse</artifactId>
+  <artifactId>sdf3.ext.statix.eclipse</artifactId>
   <name>sdf3.ext.statix.eclipse</name>
   <packaging>eclipse-plugin</packaging>
 
@@ -16,13 +16,13 @@
   </parent>
 
   <properties>
-    <lang.unpack.artifactId>org.metaborg.meta.sdf3.ext.statix</lang.unpack.artifactId>
+    <lang.unpack.artifactId>sdf3.ext.statix</lang.unpack.artifactId>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>org.metaborg.meta.sdf3.ext.statix</artifactId>
+      <artifactId>sdf3.ext.statix</artifactId>
       <version>${project.version}</version>
       <type>spoofax-language</type>
     </dependency>
