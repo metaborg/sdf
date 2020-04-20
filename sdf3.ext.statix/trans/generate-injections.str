@@ -209,8 +209,9 @@ rules
       App(CallNoArgs(SVar($[implicate-injections-[lang]-[tosortname]])), Var("t"))
     ))
   ]
-  with args@[(Sort(tosortname), _)] := <str-extract-sort-args> body 
-     ; consname := <str-generate-inj-name> (sortname, args)
+  where args@[(tosort, _)] := <str-extract-sort-args> body
+  with  tosortname := <str-sort-get-name> tosort
+      ; consname := <str-generate-inj-name> (sortname, args)
 
 
   // str-cons-to-explication-rule :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Stratego.?
@@ -251,13 +252,14 @@ rules
   -> [
     RDefNoArgs($[explicate-injections-[lang]-[cfsort]], Rule(
       Var("t"), NoAnnoList(Op(consname, [Var("t")]))
-    , BA(CallNoArgs(SVar($[is-[lang]-[lexsort]-or-inj])), Var("t"))
+    , BA(CallNoArgs(SVar($[is-[lang]-[lextsortname]-or-inj])), Var("t"))
     )),
     RDefNoArgs($[implicate-injections-[lang]-[cfsort]], RuleNoCond(
       NoAnnoList(Op(consname, [Var("t")])), Var("t")
     ))
   ]
-  with args := [(Sort(lexsort), lexsort)] 
+  with args := [(lexsort, lexsort)]
+     ; lextsortname := <str-sort-get-name> lexsort
      ; consname := <str-generate-inj-name> (cfsort, args)
      
   str-cflexsortpair-to-lex-injection-sig(|lang): (cfsort, lexsort)
@@ -338,8 +340,9 @@ rules
   // str-cf-inj-to-is-rule :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
   str-cf-inj-to-is-rule(|lang): (sortname, body)
   -> SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-[lang]-[tosortname]-or-inj])))
-  with args@[(Sort(tosortname), _)] := <str-extract-sort-args> body 
-     ; consname := <str-generate-inj-name> (sortname, args)
+  where args@[(tosort, _)] := <str-extract-sort-args> body
+  with  tosortname := <str-sort-get-name> tosort
+      ; consname := <str-generate-inj-name> (sortname, args)
      
   // str-lex-inj-to-is-rule :: SDF3.Sort -> Stratego.?
   str-lex-inj-to-is-rule(|lang): sortname
