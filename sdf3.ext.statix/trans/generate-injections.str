@@ -252,14 +252,13 @@ rules
   -> [
     RDefNoArgs($[explicate-injections-[lang]-[cfsort]], Rule(
       Var("t"), NoAnnoList(Op(consname, [Var("t")]))
-    , BA(CallNoArgs(SVar($[is-[lang]-[lextsortname]-or-inj])), Var("t"))
+    , BA(CallNoArgs(SVar($[is-[lang]-[lexsort]-or-inj])), Var("t"))
     )),
     RDefNoArgs($[implicate-injections-[lang]-[cfsort]], RuleNoCond(
       NoAnnoList(Op(consname, [Var("t")])), Var("t")
     ))
   ]
-  with args := [(lexsort, lexsort)]
-     ; lextsortname := <str-sort-get-name> lexsort
+  with args := [(Sort(lexsort), lexsort)]
      ; consname := <str-generate-inj-name> (cfsort, args)
      
   str-cflexsortpair-to-lex-injection-sig(|lang): (cfsort, lexsort)
