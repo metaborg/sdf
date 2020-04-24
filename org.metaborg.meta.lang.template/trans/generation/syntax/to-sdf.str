@@ -485,6 +485,11 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     Right() -> right()
+  
+  // non-nested has no special behaviour in SDF2
+  // semantics is similar to right
+  special-term-to-sdf:
+    NonNested() -> right()  
 
   special-term-to-sdf:
     IterStar(sort) -> iter-star(sort)
@@ -494,6 +499,24 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     CharClass(sort) -> char-class(sort)
+
+  special-term-to-sdf:
+    Regular(char) -> short(char)
+
+  special-term-to-sdf:
+    Escaped(char) -> short(<conc-strings> ("\\", char))
+
+  special-term-to-sdf:
+    Binary(num) -> numeric(<conc-strings> ("\\", <bin-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
+    Octal(num) -> numeric(<conc-strings> ("\\", <oct-string-to-int; int-to-string> num))
+
+  special-term-to-sdf:
+    Decimal(num) -> numeric(<conc-strings> ("\\", num))
+
+  special-term-to-sdf:
+    Hexadecimal(num) -> numeric(<conc-strings> ("\\", <hex-string-to-int; int-to-string> num))
 
   special-term-to-sdf:
     LabelStart() -> label_start()
@@ -554,20 +577,7 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
-    
-  special-term-to-sdf:
-    NewLayoutConstraint(constr) -> term(default(appl(unquoted("lc"), [fun(quoted($["[<prettyprint-TemplateLang-NewLayoutConstraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
-    where
-      <?Constraint(_, _, _)> constr
       
-  special-term-to-sdf:
-    NewLayoutConstraint(constr) -> term(default(fun(unquoted("no-lc"))))
-    where
-      <?NoConstraint()> constr    
-      
-  special-term-to-sdf:
-    IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
-
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
@@ -588,9 +598,6 @@ rules //conversion of SDF3 terms into SDF2
     
   special-term-to-sdf:
     LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
-    
-  special-term-to-sdf:
-    NewLongestMatch() -> term(default(fun(unquoted("nlm"))))      
     
   special-term-to-sdf:
     Recover() -> term(default(fun(unquoted("recover"))))

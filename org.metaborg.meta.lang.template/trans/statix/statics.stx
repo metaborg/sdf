@@ -1,0 +1,748 @@
+module statix/statics
+
+//
+// Names
+//
+
+signature
+
+  namespaces
+    Module      : ModuleId
+    Sort        : string
+    Constructor : string
+    Label       : string
+
+  name-resolution
+    labels P I
+    resolve Module      filter P* min $ < P
+    resolve Sort        filter P* | (P* I) min $ < P, $ < I, I < P
+    resolve Constructor filter P* | (P* I) min $ < P, $ < I, I < P
+    resolve Label       filter e min
+
+//
+// Types
+//
+
+signature
+
+  sorts TYPE constructors
+    SORT   : occurrence        -> TYPE
+    SEQ    : TYPE * list(TYPE) -> TYPE
+    OPT    : TYPE              -> TYPE
+    ITER   : TYPE              -> TYPE
+    ALT    : TYPE * TYPE       -> TYPE
+    LAYOUT :                      TYPE
+    STRING :                      TYPE
+    PROD   : list(TYPE) * TYPE -> TYPE
+    MOD    : scope             -> TYPE
+
+  relations
+    typeOfDecl : occurrence -> TYPE
+
+rules
+
+  onlyOneOf : TYPE * list((path * (occurrence * TYPE)))
+  onlyOneOf(ty, [(_, (_, ty ))|ps]) :- noneOf(ty, ps).
+  onlyOneOf(ty, [(_, (_, ty'))|ps]) :- onlyOneOf(ty, ps).
+  onlyOneOf(ty, [])                 :- false.
+
+  noneOf : TYPE * list((path * (occurrence * TYPE)))
+  noneOf(ty, [(_, (_, ty ))|ps]) :- false.
+  noneOf(ty, [(_, (_, ty'))|ps]) :- noneOf(ty, ps).
+  noneOf(ty, [])                 :- true.
+
+  appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
+  appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
+  appendTypes([    ], types) = types.
+
+  flattenTypes : list(list(TYPE)) -> list(TYPE)
+  flattenTypes([ts|tts]) = appendTypes(ts, flattenTypes(tts)).
+  flattenTypes([      ]) = [].
+
+//
+// Projects
+//
+
+rules
+
+  projectOK : scope
+  projectOK(s).
+
+//
+// Modules
+//
+
+signature
+
+  sorts Module constructors
+    Module : ModuleName * list(ImpSection) * list(Section) -> Module
+
+  sorts ModuleName constructors
+    Unparameterized : ModuleId                -> ModuleName
+    Parameterized   : ModuleId * list(Symbol) -> ModuleName
+
+  sorts ModuleId // Use module identifiers as-is.
+
+rules
+
+  moduleOK : scope * Module
+  moduleOK(sGlobal, Module(name, importSections, sections)) :- {sMod}
+    new sMod, sMod -P-> sGlobal,
+    declareModule(sGlobal, sMod, name),
+    moduleNameOK(sMod, name),
+    importSectionsOK(sMod, importSections),
+    sectionsOK(sMod, sections).
+
+  moduleNameOK : scope * ModuleName
+  moduleNameOK(s, Parameterized(_, symbols)) :- typesOfSymbols(s, symbols) == _.
+  moduleNameOK(s, _).
+
+rules
+
+  declareModule : scope * scope * ModuleName
+  declareModule(sGlobal, sMod, name) :- {id}
+    idOfModuleName(name) == id,
+    sGlobal -> Module{id} with typeOfDecl MOD(sMod),
+    Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]].
+
+  typeOfModule : scope * ModuleName -> TYPE
+  typeOfModule(s, name) = Tmod :- {id paths}
+    idOfModuleName(name) == id,
+    typeOfDecl of Module{id} in s |-> paths,
+    resolveModules(id, paths, NON_EMPTY()) == Tmod.
+
+  resolveModules : ModuleId * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveModules(id, [(_, (Module{id'}, Tmod))|paths], _) = Tmod :-
+    @id.ref += id',
+    resolveModules(id, paths, MAYBE_EMPTY()) == Tmod.
+  resolveModules(id, [], NON_EMPTY())   = _ :- false | error $[Module [id] not defined].
+  resolveModules(id, [], MAYBE_EMPTY()) = _.
+
+  idOfModuleName : ModuleName -> ModuleId
+  idOfModuleName(Unparameterized(id))  = id.
+  idOfModuleName(Parameterized(id, _)) = id.
+
+//
+// Module imports
+//
+
+signature
+
+  sorts ImpSection constructors
+    Imports : list(Import) -> ImpSection
+
+  sorts Import constructors
+    Module : ModuleName -> Import
+
+rules
+
+  importSectionOK : scope * ImpSection
+  importSectionOK(s, Imports(imports)) :- importsOK(s, imports).
+  importSectionsOK maps importSectionOK(*, list(*))
+
+  importOK : scope * Import
+  importOK(s, Module(name)) :- {sMod}
+    typeOfModule(s, name) == MOD(sMod),
+    s -I-> sMod.
+  importsOK maps importOK(*, list(*))
+
+//
+// Sections
+//
+
+signature
+
+  sorts Section
+
+rules
+
+  sectionOK: scope * Section
+  sectionsOK maps sectionOK(*, list(*))
+
+//
+// SDF (grammar) section
+//
+
+signature
+
+  sorts Grammar
+
+  constructors
+    SDFSection : Grammar -> Section
+
+rules
+
+  grammarOK: scope * Grammar
+
+  sectionOK(s, SDFSection(grammar)) :- grammarOK(s, grammar).
+
+//
+// Template productions section
+//
+
+signature
+
+  constructors
+    TemplateSection : list(TemplateProduction) -> Section
+
+  sorts TemplateProduction constructors
+    TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
+    TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
+
+  sorts Template constructors
+    Template       : list(TemplateLine) -> Template
+    TemplateSquare : list(TemplateLine) -> Template
+
+  sorts TemplateLine constructors
+    Line : list(TemplatePart) -> TemplateLine
+
+  sorts TemplatePart constructors
+    Angled       : Placeholder -> TemplatePart
+    Squared      : Placeholder -> TemplatePart
+    BreakAngled  :                TemplatePart
+    BreakSquared :                TemplatePart
+    String       : string      -> TemplatePart
+    Escape       : string      -> TemplatePart
+    Layout       : string      -> TemplatePart
+
+  sorts Placeholder constructors
+    Placeholder : Symbol * PlaceholderOptions -> Placeholder
+
+  sorts PlaceholderOptions
+
+rules
+
+  sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
+
+  typeOfTemplateProduction: scope * TemplateProduction -> TYPE
+  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef).
+  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols.
+  typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
+
+  typeOfTemplate: scope * Template -> list(TYPE)
+  typeOfTemplate(s, Template(lines))       = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
+  typeOfTemplate(s, TemplateSquare(lines)) = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
+
+  // Returns nested lists of types, as a template has multiple lines, with multiple parts.
+  typeOfTemplateLines : scope * list(TemplateLine) -> list(list(TYPE))
+  typeOfTemplateLines(s, [l|ls]) = [Tline|Tlines] :-
+    typeOfTemplateLine(s, l) == Tline,
+    typeOfTemplateLines(s, ls) == Tlines.
+  typeOfTemplateLines(s, [    ]) = [].
+
+  typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
+  typeOfTemplateLine(s, Line([p|ps])) = appendTypes(TmaybePart, Trest) /* Append maybe-list */ :-
+    maybeTypeOfTemplatePart(s, p) == TmaybePart,
+    typeOfTemplateLine(s, Line(ps)) == Trest.
+  typeOfTemplateLine(s, Line([    ])) = [].
+
+  // Emulate option type: returns list of one type for sorts, and empty list for others.
+  maybeTypeOfTemplatePart: scope * TemplatePart -> list(TYPE)
+  maybeTypeOfTemplatePart(s, Angled(placeholder))  = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, Squared(placeholder)) = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, _)                    = [].
+
+  typeOfPlaceholder: scope * Placeholder -> TYPE
+  typeOfPlaceholder(s, Placeholder(symbol, _)) = typeOfSymbol(s, symbol).
+
+//
+// Template options section
+//
+
+signature
+
+  constructors
+    TemplateOptions : list(TemplateOption) -> Section
+
+  sorts TemplateOption constructors
+    KeywordAttributes : SymbolDef * Attributes -> TemplateOption
+
+rules
+
+  sectionOK(s, TemplateOptions(templateOptions)) :- templateOptionsOK(s, templateOptions).
+
+  templateOptionOK: scope * TemplateOption
+  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- declareSymbolDef(s, symbolDef) == _.
+  templateOptionOK(s, _).
+  templateOptionsOK maps templateOptionOK(*, list(*))
+
+//
+// Syntax (SDF2-style) productions sections
+//
+
+signature
+
+  constructors
+    Syntax                 : list(Production)        -> Grammar
+    Lexical                : list(Production)        -> Grammar
+    Contextfree            : list(Production)        -> Grammar
+    Variables              : list(Production)        -> Grammar
+    LexVariables           : list(Production)        -> Grammar
+    VariablesProductive    : list(SdfProduction)     -> Grammar
+    LexVariablesProductive : list(SdfProduction)     -> Grammar
+    Kernel                 : list(SdfProduction)     -> Grammar
+    LexicalSyntax          : list(SdfProduction)     -> Grammar
+    ContextFreeSyntax      : list(GeneralProduction) -> Grammar
+
+  sorts Production constructors // Kernel-style productions
+    Prod : list(Symbol) * Symbol * Attributes -> Production
+
+  sorts GeneralProduction constructors // General productions (explicated injection)
+    GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
+    GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+
+  sorts SdfProduction constructors // SDF2-style productions
+    SdfProduction         : SymbolDef * RHS * Attributes -> SdfProduction
+    SdfProductionWithCons : SortCons  * RHS * Attributes -> SdfProduction
+
+  sorts RHS constructors
+    Rhs : list(Symbol) -> RHS
+
+rules
+
+  grammarOK(s, Syntax(productions))                    :- productionsOK(s, productions).
+  grammarOK(s, Lexical(productions))                   :- productionsOK(s, productions).
+  grammarOK(s, Contextfree(productions))               :- productionsOK(s, productions).
+  grammarOK(s, Variables(productions))                 :- productionsOK(s, productions).
+  grammarOK(s, LexVariables(productions))              :- productionsOK(s, productions).
+  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
+
+  productionOK: scope * Production
+  productionOK(s, Prod(symbols, symbol, _)) :- {sProd}
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == _,
+    typeOfSymbol(sProd, symbol) == _.
+  productionsOK maps productionOK(*, list(*))
+
+  generalProductionOK: scope * GeneralProduction
+  generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
+    typeOfSdfProduction(s, sdfProduction) == _.
+  generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
+    typeOfTemplateProduction(s, templateProduction) == _.
+  generalProductionsOK maps generalProductionOK(*, list(*))
+
+  typeOfSdfProduction: scope * SdfProduction -> TYPE
+  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef).
+  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols.
+  typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
+
+//
+// Reusable grammar productions constraints
+//
+
+rules
+
+  injectionProductionOK: TYPE * Attributes * SymbolDef
+  injectionProductionOK(PROD([Tsymbol], Tsort), attrs, loc) :-
+    // TODO: do not generate warning when there is a reject or bracket attribute.
+    try { Tsymbol == SORT(_) } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+  injectionProductionOK(_, attrs, loc).
+
+  //constructorProductionOK:
+  // TODO: resolve all constructors with the same name
+  // TODO: constructors in the same sort, with the same arity of their type lists, produce a warning
+
+//
+// Start symbols section
+//
+
+signature
+
+  constructors
+    KernelStartSymbols      : list(Symbol) -> Grammar
+    LexicalStartSymbols     : list(Symbol) -> Grammar
+    ContextFreeStartSymbols : list(Symbol) -> Grammar
+
+rules
+
+  grammarOK(s, KernelStartSymbols(symbols))      :- typesOfSymbols(s, symbols) == _.
+  grammarOK(s, LexicalStartSymbols(symbols))     :- typesOfSymbols(s, symbols) == _.
+  grammarOK(s, ContextFreeStartSymbols(symbols)) :- typesOfSymbols(s, symbols) == _.
+
+//
+// Priorities section
+//
+
+signature
+
+  constructors
+    Priorities             : list(Priority) -> Grammar
+    LexicalPriorities      : list(Priority) -> Grammar
+    ContextFreePriorities  : list(Priority) -> Grammar
+
+  sorts Priority constructors
+    Chain : list(Group)                   -> Priority
+    Assoc : Group * Associativity * Group -> Priority
+
+  sorts Group constructors
+    WithArguments  : Group * ArgumentIndicator                -> Group
+    NonTransitive  : Group                                    -> Group
+    SimpleGroup    : PriorityProduction                       -> Group
+    ProdsGroup     : list(PriorityProduction)                 -> Group
+    AssocGroup     : Associativity * list(PriorityProduction) -> Group
+    SimpleRefGroup : SortConsRef                              -> Group
+    ProdsRefGroup  : list(SortConsRef)                        -> Group
+    AssocRefGroup  : Associativity * list(SortConsRef)        -> Group
+
+  sorts PriorityProduction constructors
+    PriorityProduction_SdfProduction : SdfProduction -> PriorityProduction
+    PriorityProduction_Production    : Production    -> PriorityProduction
+
+  sorts ArgumentIndicator Associativity
+
+rules
+
+  grammarOK(s, Priorities(priorities))            :- prioritiesOK(s, priorities).
+  grammarOK(s, LexicalPriorities(priorities))     :- prioritiesOK(s, priorities).
+  grammarOK(s, ContextFreePriorities(priorities)) :- prioritiesOK(s, priorities).
+
+  priorityOK: scope * Priority
+  priorityOK(s, Chain(groups)) :-
+    groupsOK(s, groups).
+  priorityOK(s, Assoc(group1, _, group2)) :-
+    groupOK(s, group1),
+    groupOK(s, group2).
+  prioritiesOK maps priorityOK(*, list(*))
+
+  groupOK: scope * Group
+  groupOK(s, WithArguments(group, _))            :- groupOK(s, group).
+  groupOK(s, NonTransitive(group))               :- groupOK(s, group).
+  groupOK(s, SimpleGroup(priorityProduction))    :- priorityProductionOK(s, priorityProduction).
+  groupOK(s, ProdsGroup(priorityProductions))    :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, AssocGroup(_, priorityProductions)) :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, SimpleRefGroup(sortConsRef))        :- typeOfSortConsRef(s, sortConsRef) == _.
+  groupOK(s, ProdsRefGroup(sortConsRefs))        :- typeOfSortConsRefs(s, sortConsRefs) == _.
+  groupOK(s, AssocRefGroup(_, sortConsRefs))     :- typeOfSortConsRefs(s, sortConsRefs) == _.
+  groupsOK maps groupOK(*, list(*))
+
+  priorityProductionOK: scope * PriorityProduction
+  // TODO: these should not declare new productions, but instead should be checked against existing ones?
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, sdfProduction) == _.
+  priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
+  priorityProductionsOK maps priorityProductionOK(*, list(*))
+
+//
+// Restrictions section
+//
+
+signature
+
+  constructors
+    Restrictions            : list(Restriction) -> Grammar
+    LexicalRestrictions     : list(Restriction) -> Grammar
+    ContextFreeRestrictions : list(Restriction) -> Grammar
+
+  sorts Restriction constructors
+    Follow : list(Symbol) * Lookaheads -> Restriction
+
+  sorts Lookaheads
+
+rules
+
+  grammarOK(s, Restrictions(restrictions))            :- restrictionsOK(s, restrictions).
+  grammarOK(s, LexicalRestrictions(restrictions))     :- restrictionsOK(s, restrictions).
+  grammarOK(s, ContextFreeRestrictions(restrictions)) :- restrictionsOK(s, restrictions).
+
+  restrictionOK: scope * Restriction
+  restrictionOK(s, Follow(symbols, _)) :- typesOfSymbols(s, symbols) == _.
+  restrictionsOK maps restrictionOK(*, list(*))
+
+//
+// Sorts section
+//
+
+signature
+
+  constructors
+    Sorts : list(DeclSymbol) -> Grammar
+
+  sorts DeclSymbol constructors
+    DeclSort    : string     -> DeclSymbol
+    DeclSortCf  : DeclSymbol -> DeclSymbol
+    DeclSortLex : DeclSymbol -> DeclSymbol
+    DeclSortVar : DeclSymbol -> DeclSymbol
+
+rules
+
+  grammarOK(s, Sorts(declSymbols)) :- declSymbolsOK(s, declSymbols).
+
+  declSymbolOK: scope * DeclSymbol
+  declSymbolOK(s, DeclSort(name))         :- typeOfSort(s, name) == _.
+  declSymbolOK(s, DeclSortCf(symbolDef))  :- declSymbolOK(s, symbolDef).
+  declSymbolOK(s, DeclSortLex(symbolDef)) :- declSymbolOK(s, symbolDef).
+  declSymbolOK(s, DeclSortVar(symbolDef)) :- declSymbolOK(s, symbolDef).
+  declSymbolsOK maps declSymbolOK(*, list(*))
+
+//
+// Sorts and Constructors
+//
+
+signature
+
+  sorts SortCons constructors
+    SortCons : SymbolDef * Constructor -> SortCons
+
+  sorts Constructor constructors
+    Constructor : string -> Constructor
+
+  sorts SymbolDef constructors
+    SortDef          : string    -> SymbolDef
+    SymbolDefCf      : SymbolDef -> SymbolDef
+    SymbolDefLex     : SymbolDef -> SymbolDef
+    SymbolDefVar     : SymbolDef -> SymbolDef
+    SymbolDef_Symbol : Symbol    -> SymbolDef
+
+  sorts SortConsRef constructors
+    SortConsRef : Symbol * Constructor -> SortConsRef
+
+rules
+
+  declareSortCons: scope * list(TYPE) * SortCons -> TYPE
+  declareSortCons(s, Tsymbols, SortCons(symbolDef, Constructor(constructorName))) = Tprod :- {Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
+
+  declareSymbolDef: scope * SymbolDef -> TYPE
+  declareSymbolDef(s, SortDef(name))            = Tsort :- declareSort(s, name)           == Tsort.
+  declareSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)        == T.
+
+  typeOfSortConsRef: scope * SortConsRef -> TYPE
+  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}
+    typeOfSymbol(s, symbol) == Tsort,
+    typeOfConstructorInSort(s, constructorName, Tsort) == Tprod.
+  typeOfSortConsRefs maps typeOfSortConsRef(*, list(*)) = list(*)
+
+rules // Sort reusable predicates
+
+  declareSort : scope * string -> TYPE
+  declareSort(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}),
+    s -> Sort{name} with typeOfDecl Tsort.
+
+  typeOfSort : scope * string -> TYPE
+  typeOfSort(s, name) = Tsort :- {paths}
+    typeOfDecl of Sort{name} in s |-> paths,
+    resolveSorts(name, paths, NON_EMPTY()) == Tsort,
+    @name.type := Tsort.
+
+  resolveSorts : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+    @name.ref += name',
+    resolveSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+  resolveSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] not defined].
+  resolveSorts(name, [], MAYBE_EMPTY()) = _.
+
+rules // Constructor reusable predicates
+
+  declareConstructor : scope * list(TYPE) * TYPE * string -> TYPE
+  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :- {results}
+    Tprod == PROD(Tsymbols, Tsort),
+    s -> Constructor{name} with typeOfDecl Tprod,
+    typeOfDecl of Constructor{name} in s |-> results,
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]].
+
+  typeOfConstructor : scope * string -> TYPE
+  typeOfConstructor(s, name) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructors(name, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructors : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructors(name, [(_, (Constructor{name'}, Tprod))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructors(name, paths, MAYBE_EMPTY()) == Tprod.
+  resolveConstructors(name, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined].
+  resolveConstructors(name, [], MAYBE_EMPTY()) = _.
+
+  typeOfConstructorInSort : scope * string * TYPE -> TYPE
+  typeOfConstructorInSort(s, name, Tsort) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructorsInSort(name, Tsort, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructorsInSort : string * TYPE * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructorsInSort(name, Tsort, paths, MAYBE_EMPTY()) == _.
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, _))|paths], emptiness) = Tprod :-
+    resolveConstructorsInSort(name, Tsort, paths, emptiness) == Tprod.
+  resolveConstructorsInSort(name, Tsort, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined in [Tsort]].
+  resolveConstructorsInSort(name, Tsort, [], MAYBE_EMPTY()) = _.
+
+//
+// Symbols
+//
+
+signature
+
+  sorts Symbol constructors
+    Sort              : string                -> Symbol
+    ParameterizedSort : string * list(Symbol) -> Symbol
+
+    Cf          : Symbol                -> Symbol
+    Lex         : Symbol                -> Symbol
+    Varsym      : Symbol                -> Symbol
+    Label       : Label  * Symbol       -> Symbol
+    Sequence    : Symbol * list(Symbol) -> Symbol
+    Opt         : Symbol                -> Symbol
+    Iter        : Symbol                -> Symbol
+    IterStar    : Symbol                -> Symbol
+    IterSep     : Symbol * Separator    -> Symbol
+    IterStarSep : Symbol * Separator    -> Symbol
+    Alt         : Symbol * Symbol       -> Symbol
+
+    Layout    :              Symbol
+    CharClass : CharClass -> Symbol
+    Lit       : string    -> Symbol
+    CiLit     : string    -> Symbol
+
+  sorts Separator CharClass
+
+rules
+
+  typeOfSymbol: scope * Symbol -> TYPE
+
+  typeOfSymbol(s, sy@Sort(name)) = T :-
+    typeOfSort(s, name) == T,
+    @sy.type := T.
+  typeOfSymbol(s, sy@ParameterizedSort(name, symbols)) = T :-
+    typeOfSort(s, name) == T,
+    typesOfSymbols(s, symbols) == _,
+    @sy.type := T.
+
+  typeOfSymbol(s, Cf(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Lex(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Varsym(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Label(label, symbol)) = T :-
+    labelOK(s, label),
+    typeOfSymbol(s, symbol)  == T.
+  typeOfSymbol(s, Sequence(symbol, symbols)) = SEQ(T, TS) :-
+    typeOfSymbol(s, symbol) == T,
+    typesOfSymbols(s, symbols) == TS.
+  typeOfSymbol(s, Opt(symbol)) = OPT(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Iter(symbol)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterStar(symbol)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterSep(symbol, _)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterStarSep(symbol, _)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Alt(symbol1, symbol2)) = ALT(T1, T2) :-
+    typeOfSymbol(s, symbol1) == T1,
+    typeOfSymbol(s, symbol2) == T2.
+
+  typeOfSymbol(s, Layout())     = LAYOUT.
+  typeOfSymbol(s, CharClass(_)) = STRING.
+  typeOfSymbol(s, Lit(_))       = STRING.
+  typeOfSymbol(s, CiLit(_))     = STRING.
+
+  typesOfSymbols maps typeOfSymbol(*, list(*)) = list(*)
+
+//
+// Labels
+//
+
+signature
+
+  sorts Label constructors
+    Quoted   : string -> Label
+    Unquoted : string -> Label
+
+rules
+
+  labelOK: scope * Label
+  labelOK(s, Quoted(name))   :- declareLabel(s, name).
+  labelOK(s, Unquoted(name)) :- declareLabel(s, name).
+
+rules // Label reusable predicates
+
+  declareLabel : scope * string
+  declareLabel(s, name) :-
+    s -> Label{name},
+    Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]].
+
+  resolveLabel : scope * string
+  resolveLabel(s, name)  :- {paths}
+    Label{name} in s |-> paths,
+    resolveLabels(name, paths, NON_EMPTY()).
+
+  resolveLabels : string * list((path * occurrence)) * EMPTINESS
+  resolveLabels(name, [(_, (Label{name'}))|labels], _) :-
+    @name.ref += name',
+    resolveLabels(name, labels, MAYBE_EMPTY()).
+  resolveLabels(name, [], NON_EMPTY()) :- false | error $[Label [name] not defined].
+  resolveLabels(name, [], MAYBE_EMPTY()).
+
+//
+// Attributes
+//
+
+signature
+
+  sorts Attributes constructors
+    Attrs   : list(Attribute) -> Attributes
+    NoAttrs :                    Attributes
+
+  sorts Attribute constructors
+    Reject  : Attribute
+    Bracket : Attribute
+
+rules
+
+  hasAttribute: Attribute * Attributes
+  hasAttribute(attr, attrs) :- hasAttributeInList(attr, attributes(attrs)).
+
+  hasntAttribute: Attribute * Attributes
+  hasntAttribute(attr, attrs) :- hasntAttributeInList(attr, attributes(attrs)).
+
+  attributes: Attributes -> list(Attribute)
+  attributes(Attrs(attributes)) = attributes.
+  attributes(NoAttrs())         = [].
+
+  hasAttributeInList: Attribute * list(Attribute)
+  hasAttributeInList(attr, [attr|as]) :- true.
+  hasAttributeInList(attr, [_   |as]) :- hasAttributeInList(attr, as).
+  hasAttributeInList(attr, [       ]) :- false.
+
+  hasntAttributeInList: Attribute * list(Attribute)
+  hasntAttributeInList(attr, [attr|as]) :- false.
+  hasntAttributeInList(attr, [_   |as]) :- hasntAttributeInList(attr, as).
+  hasntAttributeInList(attr, [       ]) :- true.
+
+//
+// Utilities
+//
+
+signature
+
+  sorts EMPTINESS constructors
+    NON_EMPTY   : EMPTINESS
+    MAYBE_EMPTY : EMPTINESS

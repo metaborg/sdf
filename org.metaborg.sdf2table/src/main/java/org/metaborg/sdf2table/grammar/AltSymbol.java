@@ -3,22 +3,27 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 
-public class AltSymbol extends Symbol {
+public final class AltSymbol extends Symbol {
 
     private static final long serialVersionUID = 7308097160726417422L;
 
     private final Symbol alt1;
     private final Symbol alt2;
+    private final String name;
 
-    public AltSymbol(Symbol alt1, Symbol alt2) {
+    protected AltSymbol(Symbol alt1, Symbol alt2) {
         this.alt1 = alt1;
         this.alt2 = alt2;
+        this.name = alt1.name() + " | " + alt2.name();
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
@@ -32,7 +37,7 @@ public class AltSymbol extends Symbol {
     }
 
     @Override public String name() {
-        return alt1.name() + " | " + alt2.name();
+        return name;
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
@@ -71,6 +76,10 @@ public class AltSymbol extends Symbol {
         } else if(!alt2.equals(other.alt2))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return new org.metaborg.parsetable.symbols.AltSymbol(syntaxContext, cardinality, alt1.toParseTableSymbol(), alt2.toParseTableSymbol());
     }
 
 

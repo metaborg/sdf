@@ -1,23 +1,18 @@
 plugins {
   id("org.metaborg.gradle.config.java-library")
   id("org.metaborg.gradle.config.junit-testing")
+  `java-test-fixtures`
 }
 
 dependencies {
-  api(platform("org.metaborg:parent:$version"))
+  // api(platform("org.metaborg:parent:$version")) // Can't use: causes dependency cycle because parent mentions pie.
 
-  api(project(":tableinterfaces"))
-  api(project(":characterclasses"))
-
-  api("org.metaborg:org.spoofax.terms:$version")
   api("org.metaborg:org.metaborg.util:$version")
-  api("org.metaborg:strategoxt-min-jar:$version")
-
-  api("com.google.inject:guice")
-
-  compileOnly("com.google.code.findbugs:jsr305")
-
-  testCompileOnly("junit:junit")
+  api(project(":org.metaborg.parsetable"))
+  api("com.google.inject:guice:4.2.0")
+  compileOnly("com.google.code.findbugs:jsr305:3.0.2")
+  testImplementation(testFixtures(project(":org.metaborg.parsetable")))
+  testCompileOnly("junit:junit:4.12")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.1.0")
 }
 

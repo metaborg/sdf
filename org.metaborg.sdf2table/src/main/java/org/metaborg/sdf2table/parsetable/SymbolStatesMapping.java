@@ -3,8 +3,9 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IPriority;
 import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.HashMultimap;
@@ -13,9 +14,9 @@ import com.google.common.collect.Sets;
 
 public class SymbolStatesMapping implements Serializable {
 
-	private static final long serialVersionUID = 1109889933255986338L;
+    private static final long serialVersionUID = 1109889933255986338L;
 
-	public SetMultimap<Symbol, LRItem> symbolItems;
+    public SetMultimap<ISymbol, LRItem> symbolItems;
     public SetMultimap<LRItem, State> itemStates;
 
     public SymbolStatesMapping() {
@@ -32,11 +33,11 @@ public class SymbolStatesMapping implements Serializable {
         return result;
     }
 
-    public Set<State> getStatesfromProduction(IProduction prod, SetMultimap<IPriority, Integer> priorities) {
+    public Set<State> getStatesfromProduction(IProduction prod, SetMultimap<Priority, Integer> priorities) {
         Set<State> result = Sets.newHashSet();
 
         for(LRItem item : symbolItems.get(prod.leftHand())) {
-            if(!LRItem.isPriorityConflict(item, prod, priorities)) {
+            if(!item.isPriorityConflict(prod)) {
                 result.addAll(itemStates.get(item));
             }
         }

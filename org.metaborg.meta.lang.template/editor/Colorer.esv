@@ -1,6 +1,6 @@
 module Colorer
 
-// Baseline ESV errors on color references for some reason, disable import and use explicit colors. 
+// Baseline ESV errors on color references for some reason, disable import and use explicit colors.
 // imports editor/Colorer.generated
 
 colorer // Default, token-based highlighting
@@ -19,7 +19,15 @@ colorer
 	_.Constructor: 0 0 128
 	_.Lit: 0 0 255
 	_.CiLit: 0 0 255
-	Label._ : 128 128 128
-	_.PosRef : 0 128 0
+	Label._: 128 128 128
+
+	_.PosRef: 0 128 0
 	_.LabelRef: 128 128 128
 	_.LiteralRef: 0 0 255
+
+	Character._: 0 0 255
+	Character.Regular: 0 128 0
+	Character.Binary: 127 0 85
+	Character.Octal: 127 0 85
+	Character.Decimal: 127 0 85
+	Character.Hexadecimal: 127 0 85

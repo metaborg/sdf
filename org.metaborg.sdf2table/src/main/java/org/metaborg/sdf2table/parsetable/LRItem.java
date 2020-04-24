@@ -3,11 +3,11 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
-import org.metaborg.sdf2table.grammar.IPriority;
-import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.Priority;
+import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.SetMultimap;
@@ -53,12 +53,11 @@ public class LRItem implements Serializable {
 
             Set<LRItem> derivedItems = Sets.newHashSet();
 
-            if(dotPosition < prod.rightHand().size()) {
-                Symbol s_at_dot = prod.rightHand().get(dotPosition);
+            if(dotPosition < prod.arity()) {
+                Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
 
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
-
-                    if(!isPriorityConflict(this, p, pt.normalizedGrammar().priorities())) {
+                    if(!isPriorityConflict(p)) {
                         // p might be the problematic contextual production
                         if(pt.normalizedGrammar().getProdContextualProdMapping().get(p) != null) {
                             p = pt.normalizedGrammar().getProdContextualProdMapping().get(p);
@@ -77,9 +76,9 @@ public class LRItem implements Serializable {
             pt.cachedItems().put(this, derivedItems);
         }
 
-        if(this.dotPosition < prod.rightHand().size()) {
-            Symbol atPosition = prod.rightHand().get(this.dotPosition);
-            if(pt.isDataDependent()) {
+        if(this.dotPosition < prod.arity()) {
+            Symbol atPosition = (Symbol) prod.rightHand().get(this.dotPosition);
+            if(pt.getConfig().isDataDependent()) {
                 // use original symbol when mapping it to this item and state
                 if(atPosition instanceof ContextualSymbol) {
                     atPosition = ((ContextualSymbol) atPosition).getOrigSymbol();
@@ -106,7 +105,7 @@ public class LRItem implements Serializable {
         String buf = "";
         buf += prod.leftHand();
         buf += " -> ";
-        for(int i = 0; i < prod.rightHand().size(); i++) {
+        for(int i = 0; i < prod.arity(); i++) {
             if(i != 0)
                 buf += " ";
             if(i == dotPosition) {
@@ -114,7 +113,7 @@ public class LRItem implements Serializable {
             }
             buf += prod.rightHand().get(i);
         }
-        if(dotPosition >= prod.rightHand().size()) {
+        if(dotPosition >= prod.arity()) {
             buf += " .";
         }
 
@@ -140,28 +139,25 @@ public class LRItem implements Serializable {
         return dotPosition == other.dotPosition && prod_label == other.prod_label;
     }
 
-    public static boolean isPriorityConflict(LRItem item, IProduction p, SetMultimap<IPriority, Integer> priorities) {
-        IProduction higher = item.prod;
-        IProduction lower = p;
+    public boolean isPriorityConflict(IProduction p) {
+
+        IProduction higher = this.prod;
+        Production lower;
+
+        if(p instanceof ContextualProduction) {
+            lower = ((ContextualProduction) p).getOrigProduction();
+        } else {
+            lower = (Production) p;
+        }
 
         if(higher instanceof ContextualProduction) {
             higher = ((ContextualProduction) higher).getOrigProduction();
         }
 
-        if(lower instanceof ContextualProduction) {
-            lower = ((ContextualProduction) lower).getOrigProduction();
-        }
+        Priority prio = pt.normalizedGrammar().getGrammarFactory().createPriority((Production) higher, lower, false);
 
-        Priority prio = new Priority(higher, lower, false);
-        if(priorities.containsKey(prio)) {
-            Set<Integer> arguments = priorities.get(prio);
-            for(int i : arguments) {
-                if(i == item.dotPosition) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return pt.normalizedGrammar().priorities().get(prio).contains(this.dotPosition)
+            || pt.normalizedGrammar().getIndexedPriorities().get(prio).contains(this.dotPosition);
     }
 
 

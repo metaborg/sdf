@@ -3,6 +3,9 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -12,18 +15,18 @@ import com.google.common.collect.Lists;
 public class Sort extends Symbol {
 
     private static final long serialVersionUID = 9143763814850136478L;
-    
+
     private final String name;
     private final LiteralType type;
 
-    public Sort(String name) {
+    protected Sort(String name) {
         this.name = name;
         this.type = null;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
     }
 
-    public Sort(String name, LiteralType type) {
+    protected Sort(String name, LiteralType type) {
         this.name = name;
         this.type = type;
         followRestrictionsLookahead = Lists.newArrayList();
@@ -37,6 +40,10 @@ public class Sort extends Symbol {
             return "'" + name + "'";
         else
             return "\"" + name + "\"";
+    }
+    
+    public String getSortName() {
+        return name;
     }
 
     public LiteralType getType() {
@@ -54,8 +61,7 @@ public class Sort extends Symbol {
         return tf.makeAppl(tf.makeConstructor("sort", 1), tf.makeString(name));
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals,
-        Integer ctx_val) {
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         if(type == LiteralType.CiLit) {
             return tf.makeAppl(tf.makeConstructor("CiLit", 1), tf.makeString("\"" + name + "\""));
         } else if(type == LiteralType.Lit) {
@@ -66,6 +72,8 @@ public class Sort extends Symbol {
         }
         return tf.makeAppl(tf.makeConstructor("Sort", 1), tf.makeString(name));
     }
+
+
 
     @Override public int hashCode() {
         final int prime = 31;
@@ -91,5 +99,12 @@ public class Sort extends Symbol {
         if(type != other.type)
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        if(type == LiteralType.CiLit || type == LiteralType.Lit)
+            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
+        else
+            return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name);
     }
 }

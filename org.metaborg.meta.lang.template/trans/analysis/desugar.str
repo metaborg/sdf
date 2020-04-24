@@ -46,13 +46,13 @@ rules
   desugar-template:
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     with
-      elem'* := <desugar-elements> elem* 
+      elem'* := <desugar-elements; filter-breaks> elem* 
 
   //desugar templates with one line into a single line template
   desugar-template:
     <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])> -> SingleLineTemplate(elem'*)
     with
-      elem'* := <desugar-elements; concatenate-consecutive-strings> elem* 
+      elem'* := <desugar-elements; concatenate-consecutive-strings; filter-breaks> elem* 
 
   desugar-template:
   	TemplateSquare(lines*) -> result
@@ -75,9 +75,13 @@ rules
     where
       not(!line* => [_])
    with
-      let line-is-empty =
-            ?Line([]) + ?Line([Layout(_)])
-
+      let   
+          element-is-empty =
+            ?Layout(_) + ?BreakAngled() + ?BreakSquared()
+          
+          line-is-empty =
+            ?Line([]) + Line(all(element-is-empty))
+          
           remove-head-if-empty =
             try(\[<line-is-empty> | t] -> t\)
 
@@ -85,7 +89,7 @@ rules
             try(at-last(\[<line-is-empty>] -> []\))
 
           line-remove-trailing-layout =
-            try(Line(at-last(\[Layout(_)] -> []\)))
+            try(Line(at-last(\[<element-is-empty>] -> []\)))
 
           line-ensure-leading-layout =
             ?Line([Layout(_) | _]) <+ Line(![Layout("") | <id>])
@@ -115,7 +119,7 @@ rules
         desugar-elements;
         map(line-remove-trailing-layout; line-ensure-leading-layout);
         unindent;
-        map(Line(concatenate-consecutive-strings));
+        map(Line(concatenate-consecutive-strings; filter-breaks));
         ?line'*
       end 
 
@@ -187,6 +191,9 @@ rules
   
   desugar-brackets:
   	Angled(p) ->  p
+  	
+  filter-breaks =
+  	filter(not(?BreakAngled() + ?BreakSquared()))
   	
 rules
 

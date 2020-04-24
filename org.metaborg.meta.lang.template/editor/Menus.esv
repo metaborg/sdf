@@ -25,16 +25,25 @@ menus
       action: "Partition"           = debug-task-partition
       action: "Selection"           = debug-task-selection
     end
+    
+    submenu: "Statix"                 (openeditor)
+      action: "Show pre-transformed"      = statix-debug-show-pre-transformed (source)
+      action: "Show pre+post-transformed" = statix-debug-show-pre-post-transformed (source)
+      action: "Show analyzed"             = statix-debug-show-analyzed
+      action: "Show scope graph"          = stx--show-scopegraph
+    end
   
    menu: "Generate" (openeditor) (realtime)
    
     action: "Generate all files" = generate-all
    
   	submenu: "SDF"
-      action: "Generate SDF (abstract)"   = generate-sdf-abstract (meta)
-      action: "Generate SDF (concrete)"   = generate-sdf-concrete
-      action: "to Normal Form"            = sdf3-to-normal-form 
-      action: "to Normal Form (abstract)" = sdf3-to-normal-form-abstract (meta)
+      action: "Generate SDF (abstract)"    = generate-sdf-abstract (meta)
+      action: "Generate SDF (concrete)"    = generate-sdf-concrete
+      action: "Generate Namespaced Syntax" = sdf3-to-namespaced 
+      action: "Generate Expression Grammars" = sdf3-to-exp-grammars
+      action: "to Normal Form"             = sdf3-to-normal-form 
+      action: "to Normal Form (abstract)"  = sdf3-to-normal-form-abstract (meta)
       action: "Contextual Grammar (abstract)" = read-contextual-grammar-abstract (meta)
       action: "Generate Permissive Grammar (abstract)" = generate-permissive-abstract (meta)
       action: "Generate Permissive Grammar" = generate-permissive-concrete
@@ -55,7 +64,10 @@ menus
     
     action: "Generate PP (abstract)" = generate-pp-abstract (meta)
     action: "Generate PP"            = generate-pp-concrete
-          	
+        
+    submenu: "Misc"
+      action: "Generate TextMate grammar"          = generate-textmate-grammar
+    end
 //    action: "Generate AST checker (abstract)" = generate-ast-checker-abstract (meta)
 //    action: "Generate AST checker"            = generate-ast-checker-concrete
          

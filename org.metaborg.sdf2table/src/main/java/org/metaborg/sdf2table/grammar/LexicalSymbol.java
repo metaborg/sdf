@@ -3,6 +3,9 @@ package org.metaborg.sdf2table.grammar;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -15,7 +18,7 @@ public class LexicalSymbol extends Symbol {
 
     private final Symbol symbol;
 
-    public LexicalSymbol(Symbol symbol) {
+    protected LexicalSymbol(Symbol symbol) {
         this.symbol = symbol;
         followRestrictionsLookahead = Lists.newArrayList();
         followRestrictionsNoLookahead = null;
@@ -42,6 +45,8 @@ public class LexicalSymbol extends Symbol {
         return tf.makeAppl(tf.makeConstructor("Lex", 1), getSymbol().toSDF3Aterm(tf, ctx_vals, ctx_val));
     }
 
+   
+
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -63,5 +68,9 @@ public class LexicalSymbol extends Symbol {
         } else if(!symbol.equals(other.symbol))
             return false;
         return true;
-    }    
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        return symbol.toParseTableSymbol(SyntaxContext.Lexical, cardinality);
+    }
 }

@@ -17,11 +17,13 @@ imports
   runtime/properties/-
   runtime/types/-
   analysis/-
+  statix/-
   generation/completion/-
   generation/gen-utils/-
   generation/pp/-
   generation/signatures/-
   generation/syntax/-
+  editor/build-sdf-completions
   editor/build-all
   editor/build-completions
   editor/build-format
@@ -29,12 +31,14 @@ imports
   editor/build-sig
   editor/build-syntax
   editor/build-utils
+  editor/build-misc
   names/analysis/names
   types/analysis/types-ts
   generation/completion/-
   generation/pp/-
   generation/signatures/-
   generation/syntax/-
+  generation/textmate/-
 
 
 
@@ -103,16 +107,3 @@ rules // Debugging
 
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
-
-rules
-
-  // When given a tuple (path, string) this writes string into path.
-  write-string-to-file =
-    ?(filename, string);
-    if <dirname; readdir> filename then
-      with(
-        handle := <fopen> (filename, "w");
-        <fputs> (string, handle);
-        <fclose> handle
-      )
-    end

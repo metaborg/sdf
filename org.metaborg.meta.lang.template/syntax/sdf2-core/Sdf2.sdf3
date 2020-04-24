@@ -32,6 +32,7 @@ context-free syntax
     ModuleName = <right> {reject}
     ModuleName = <assoc> {reject}
     ModuleName = <non-assoc> {reject}
+    ModuleName = <non-nested> {reject}
     ModuleName = <bracket> {reject}
     ModuleName = <sorts> {reject}
     ModuleName = <restrictions> {reject}
@@ -72,12 +73,9 @@ context-free syntax
     ATermAttribute = <literal-completion> {reject}
     ATermAttribute = <layout(<Constraint>)> {reject}
     ATermAttribute = <layout(<ShortConstraint>)> {reject}
-    ATermAttribute = <lc(<NewLayoutConstraint>)> {reject}
-    ATermAttribute = <no-lc> {reject}
     ATermAttribute = <deprecated(<StrCon>)> {reject}
     ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
     ATermAttribute = <id(<ModuleName>)> {reject}
-    ATermAttribute = <nlm> {reject}
     ATermAttribute = <recover> {reject}
 
   restrictions
@@ -97,9 +95,9 @@ context-free syntax
     "right"
     "assoc"
     "non-assoc"
+    "non-nested"
     "bracket"
     "sorts"             -/- [A-Za-z0-9]
     NatCon-CF        -/- [0-9]
     LAYOUT?-CF        -/- [\ \t\n\%]
-    NumChar-CF       -/- [0-9]
     ModuleName-CF    -/- [A-Za-z0-9\_\-]

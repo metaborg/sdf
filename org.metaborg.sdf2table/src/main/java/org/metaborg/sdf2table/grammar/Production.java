@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.io.ParseTableIO;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -19,36 +21,55 @@ public class Production implements IProduction, Serializable {
 
     private final Symbol lhs;
     private final List<Symbol> rhs;
+    private final int arity;
 
     private int leftRecursivePos = -1;
     private int rightRecursivePos = -1;
 
-    public Production(Symbol lhs, List<Symbol> rhs) {
+    protected Production(Symbol lhs, List<Symbol> rhs) {
         this.lhs = lhs;
-        this.rhs = rhs;
+        this.rhs = Lists.newArrayList(rhs);
+        arity = rhs.size();
     }
 
-    public Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
+    protected Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
-        this.rhs = rhs;
+        this.rhs = Lists.newArrayList(rhs);
+        arity = rhs.size();
         leftRecursivePos = leftRecPos;
         rightRecursivePos = rightRecPos;
     }
 
-    @Override public Symbol leftHand() {
+    @Override public ISymbol leftHand() {
         return lhs;
     }
 
-    @Override public List<Symbol> rightHand() {
+    @Override public List<ISymbol> rightHand() {
+        return rhs.stream().collect(Collectors.toList());
+    }
+
+    public Symbol getLhs() {
+        return lhs;
+    }
+
+    public List<Symbol> getRhs() {
         return rhs;
     }
 
-    @Override public int rightRecursivePosition() {
+    public int rightRecursivePosition() {
         return rightRecursivePos;
     }
 
-    @Override public int leftRecursivePosition() {
+    public int leftRecursivePosition() {
         return leftRecursivePos;
+    }
+    
+    protected void setRightRecursivePosition(int pos) {
+        rightRecursivePos = pos;
+    }
+    
+    protected void setLeftRecursivePosition(int pos) {
+        leftRecursivePos = pos;
     }
 
     @Override public String toString() {
@@ -58,30 +79,31 @@ public class Production implements IProduction, Serializable {
 
         prod += " -> ";
 
-        for(Symbol s : rhs)
+        for(ISymbol s : rhs)
             prod += s.name() + " ";
 
         return prod;
     }
 
-    @Override public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
+    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
         ITermFactory tf = ParseTableIO.getTermfactory();
-        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
-        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
-        for(Symbol s : rhs) {
-            rhs_terms.add(s.toAterm(tf));
+        IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
+        for(ISymbol s : rhs) {
+            rhs_terms.add(((Symbol) s).toAterm(tf));
         }
 
-        for(IAttribute a : prod_attrs.get(this)) {
+        final Set<IAttribute> attributes = prod_attrs.get(this);
+        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        for(IAttribute a : attributes) {
             attrs_terms.add(a.toAterm(tf));
         }
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
+            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
                 tf.makeAppl(tf.makeConstructor("no-attrs", 0)));
         }
 
-        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
+        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
             tf.makeAppl(tf.makeConstructor("attrs", 1), tf.makeList(attrs_terms)));
     }
 
@@ -114,7 +136,7 @@ public class Production implements IProduction, Serializable {
         return true;
     }
 
-    @Override public void calculateRecursion(NormGrammar grammar) {
+    public void calculateRecursion(NormGrammar grammar) {
 
         // left recursion
         for(int i = 0; i < rhs.size(); i++) {
@@ -122,7 +144,7 @@ public class Production implements IProduction, Serializable {
                 leftRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).isNullable()) {
+            if(!((Symbol) rhs.get(i)).isNullable()) {
                 break;
             }
         }
@@ -133,35 +155,41 @@ public class Production implements IProduction, Serializable {
                 rightRecursivePos = i;
                 break;
             }
-            if(!rhs.get(i).isNullable()) {
+            if(!((Symbol) rhs.get(i)).isNullable()) {
                 break;
             }
         }
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
+    public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         ITermFactory tf = ParseTableIO.getTermfactory();
-        List<IStrategoTerm> rhs_terms = Lists.newArrayList();
-        List<IStrategoTerm> attrs_terms = Lists.newArrayList();
-        for(Symbol s : rhs) {
-            rhs_terms.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
+        IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
+        for(ISymbol s : rhs) {
+            rhs_terms.add(((Symbol) s).toSDF3Aterm(tf, ctx_vals, ctx_val));
         }
 
-        for(IAttribute a : prod_attrs.get(this)) {
+        final Set<IAttribute> attributes = prod_attrs.get(this);
+        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        for(IAttribute a : attributes) {
             attrs_terms.add(a.toSDF3Aterm(tf));
         }
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            return tf.makeAppl(tf.makeConstructor("SdfProduction", 3),
+                ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
                 tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
                 tf.makeAppl(tf.makeConstructor("NoAttrs", 0)));
         } else {
             // with constructor
         }
 
-        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), lhs.toSDF3Aterm(tf, ctx_vals, ctx_val),
+        return tf.makeAppl(tf.makeConstructor("SdfProduction", 3), ((Symbol) lhs).toSDF3Aterm(tf, ctx_vals, ctx_val),
             tf.makeAppl(tf.makeConstructor("Rhs", 1), tf.makeList(rhs_terms)),
             tf.makeAppl(tf.makeConstructor("Attrs", 1), tf.makeList(attrs_terms)));
+    }
+
+    public int arity() {
+        return arity;
     }
 }

@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 name: TemplateLang
-metaborgVersion: 2.5.7
+metaborgVersion: 2.6.0-SNAPSHOT
 metaborgBaselineVersion: 2.3.0
 dependencies:
   compile:
@@ -9,9 +9,14 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lang.nabl:${metaborgBaselineVersion}
   - org.metaborg:org.metaborg.meta.lang.esv:${metaborgBaselineVersion}
   - org.metaborg:org.metaborg.meta.lang.ts:${metaborgBaselineVersion}
+  - org.metaborg:statix.lang:${metaborgVersion}
   source:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
+  - org.metaborg:statix.runtime:${metaborgVersion}
+contributions:
+- name: TemplateLang
+  id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 generates:
 - language: EditorService
   directory: src-gen
@@ -23,7 +28,17 @@ generates:
   directory: src-gen
 exports:
 - language: Stratego-Sugar
-  directory: src-gen  
+  directory: trans
+  includes:
+  - "**/*.str"
+- language: Stratego-Sugar
+  directory: src-gen
+  includes:
+  - "**/*.str"
+- language: ATerm
+  directory: src-gen/statix
+  includes:
+  - "**/*.stx"
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar

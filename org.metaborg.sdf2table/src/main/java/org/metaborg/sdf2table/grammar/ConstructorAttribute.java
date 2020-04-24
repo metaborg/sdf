@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -11,7 +12,7 @@ public class ConstructorAttribute implements IAttribute, Serializable {
 
     private final String constructor;
 
-    public ConstructorAttribute(String constructor) {
+    protected ConstructorAttribute(String constructor) {
         this.constructor = constructor;
     }
 
@@ -56,4 +57,6 @@ public class ConstructorAttribute implements IAttribute, Serializable {
             return false;
         return true;
     }
+
+    
 }

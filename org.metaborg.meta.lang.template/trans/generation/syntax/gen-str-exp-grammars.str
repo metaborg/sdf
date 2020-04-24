@@ -1,0 +1,351 @@
+module generation/syntax/gen-str-exp-grammars
+
+imports 
+  libstratego-sglr
+  libstratego-lib
+  libspoofax/resource/cache
+  libspoofax/stratego/debug
+  generation/gen-utils/remove-template
+  libstratego-lib
+  libstrc
+  generation/syntax/gen-exp-grammars
+  analysis/desugar
+  
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+  
+signature constructors
+  GreaterThan : SortCons1 * SortCons2 -> PrioRelation
+  LeftAssoc   : SortCons1 * SortCons2 -> PrioRelation
+  RightAssoc  : SortCons1 * SortCons2 -> PrioRelation
+  NonAssoc    : SortCons1 * SortCons2 -> PrioRelation
+  
+rules
+  
+   module-to-str-expr-grammar:
+     m@Module(Unparameterized(mn), _, sections*) -> 
+        Module 
+     |[ module ~mn 
+        
+        signature
+          constructors
+            L : String -> Exp
+    
+        rules
+          number-of-productions = !~number-of-prods
+          
+          constructor-list = !~constructor-list*
+          
+          operators = !~operators*
+          
+          recursive = !~operators*
+          
+       rules
+          // TODO does not work with indexed or non-transitive priorities 
+          ~prec-and-assoc*
+    ]|
+      where
+        tokenize-chars    := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
+        number-exp-prods  := <mapconcat(get-productions <+ ![]); flatten-list; length> [m];
+        number-of-prods   := NoAnnoList(Int(number-exp-prods));
+        productions       := <get-productions; flatten-list> m;
+        priorities        := <get-priorities; flatten-list> m;
+        constructor-list* := NoAnnoList(List(<filter(get-constructor-list(|tokenize-chars))> productions));
+        operators*        := NoAnnoList(List(<filter(get-operators-str)> productions));
+        prec*             := <filter(collect-prio-relations); flatten-list; add-transitive-relations; make-set; map(create-str-prio-rule)> priorities;
+        associativity*    := <flatten-list; make-set; map(create-str-prio-rule)> [<filter(create-assoc-from-prod)> productions, <filter(create-assoc-from-prio)> priorities];
+        prec-and-assoc*   := [prec*, associativity*]
+        
+        
+  get-constructor-list(|chars):
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), _) -> result
+    where      
+      result := Tuple([ NoAnnoList(Str(c)),
+                        NoAnnoList(List(
+                          <map(rhs-symbol-to-str)> rhs*))])
+  
+  get-constructor-list(|chars):
+    t@TemplateProductionWithCons(SortCons(SortDef(s), _), _, _) -> result
+    where
+       prod := <topdown(try(desugar-template)); template-to-sdf3-prod(|chars)> t;
+       result := <get-constructor-list(|chars)> prod
+                          
+  rhs-symbol-to-str:
+    Sort(s) -> Str(s)
+    
+  rhs-symbol-to-str:
+    Lit(l) -> Op("L", [NoAnnoList(Str(l))])                
+    
+  get-operators-str:   
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), _) -> Str(c)
+      
+  get-operators-str:   
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, _) -> Str(c)  
+    
+  add-transitive-relations:
+    gt-relations -> result
+    where
+      result := <map(expand-relation(|[], gt-relations)); flatten-list> gt-relations
+      
+  expand-relation(|symbols-list*, relations-list*):
+    GreaterThan(sc1, sc2) -> [GreaterThan(sc1, sc2), result*]
+    where
+       result* := <map(create-gt-relation(|sc2, [sc1, symbols-list*], relations-list*))> relations-list*
+       
+  create-gt-relation(|sc, symbols-list*, relations-list*):
+    GreaterThan(sc1, sc2) -> [result*, new-relations*]
+    where
+      <?sc> sc1
+    where
+      result*        := <map(create-gt-relation(|sc2, [sc1, symbols-list*], relations-list*))> relations-list*;
+      new-relations* := <map(create-gt-term(|sc2))> symbols-list*
+  
+  create-gt-relation(|sc, symbols-list*, relations-list*):
+    GreaterThan(sc1, sc2) -> []
+    where
+      <not(?sc)> sc1
+      
+  create-gt-term(|sc2):
+    sc -> GreaterThan(sc, sc2) 
+    
+  create-gt-term-inv(|sc):
+    sc2 -> GreaterThan(sc, sc2)   
+  
+  // elements of the list are higher than sc  
+  create-gt-terms(|sc-list*):
+    sc -> result*
+    where
+      result* := <map(create-gt-term(|sc))> sc-list*  
+      
+  collect-prio-relations :
+    Chain(prio-chain*) -> relations*
+    where
+      relations* := <create-relations-from-chain
+//      ; ppdebug(|"priorities chain ")
+      > prio-chain*
+  
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> <flatten-list> [GreaterThan(sc1, sc2), <create-relations-from-chain> hs1]
+    where
+      <not(?[])> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?SimpleRefGroup(sc2)> h2    
+      
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> [GreaterThan(sc1, sc2)]
+    where
+      <?[]> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?SimpleRefGroup(sc2)> h2   
+      
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> <flatten-list> [result*, <create-relations-from-chain> hs1]
+    where
+      <not(?[])> hs2
+    where
+      <?AssocRefGroup(associativity, sc-list*) <+ ?ProdsRefGroup(sc-list*)> h1;
+      <?SimpleRefGroup(sc2)> h2;
+      result* := <map(create-gt-term(|sc2))> sc-list* 
+      
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> <flatten-list> [result*, <create-relations-from-chain> hs1]
+    where
+      <not(?[])> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?AssocRefGroup(associativity, sc-list*) <+ ?ProdsRefGroup(sc-list*)> h2;
+      result* := <map(create-gt-term-inv(|sc1))> sc-list*   
+      
+   create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> <flatten-list> [result*, <create-relations-from-chain> hs1]
+    where
+      <not(?[])> hs2
+    where
+      <?AssocRefGroup(_, sc-list1*) <+ ?ProdsRefGroup(sc-list1*)> h1;
+      <?AssocRefGroup(_, sc-list2*) <+ ?ProdsRefGroup(sc-list2*)> h2;
+      result* := <map(create-gt-terms(|sc-list1*)); flatten-list> sc-list2*          
+       
+   create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> result*
+    where
+      <?[]> hs2
+    where
+      <?SimpleRefGroup(sc1)> h1;
+      <?AssocRefGroup(associativity, sc-list*) <+ ?ProdsRefGroup(sc-list*)> h2;
+      result* := <map(create-gt-term-inv(|sc1))> sc-list*  
+      
+   create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> result*
+    where
+      <?[]> hs2
+    where
+      <?AssocRefGroup(associativity, sc-list*) <+ ?ProdsRefGroup(sc-list*)> h1;
+      <?SimpleRefGroup(sc2)> h2;
+      result* := <map(create-gt-term(|sc2))> sc-list*      
+      
+  create-relations-from-chain:
+    [h1 | hs1@[h2 | hs2]] -> result*
+    where
+      <?[]> hs2
+    where
+      <?AssocRefGroup(_, sc-list1*) <+ ?ProdsRefGroup(sc-list1*)> h1;
+      <?AssocRefGroup(_, sc-list2*) <+ ?ProdsRefGroup(sc-list2*)> h2;
+      result* := <map(create-gt-terms(|sc-list1*)); flatten-list> sc-list2*           
+      
+  create-relations-from-chain:
+    [h | hs] -> []
+    where
+      <?[]> hs
+      
+  create-relations-from-chain:
+    [] -> []
+  
+  create-assoc-from-prod:
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), attrs) -> LeftAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(Left()))> a*
+      
+  create-assoc-from-prod:
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), attrs) -> RightAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(Right()))> a*    
+      
+  create-assoc-from-prod:
+    SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), Rhs(rhs*), attrs) -> NonAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(NonAssoc()))> a*
+      
+  create-assoc-from-prod:
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, attrs) -> LeftAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(Left()))> a*
+      
+  create-assoc-from-prod:
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, attrs) -> RightAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(Right()))> a*    
+      
+  create-assoc-from-prod:
+    TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), _, attrs) -> NonAssoc(SortConsRef(Sort(s), Constructor(c)), SortConsRef(Sort(s), Constructor(c)))
+    where
+      <?Attrs(a*)> attrs
+    where
+      <fetch(?Assoc(NonAssoc()))> a*            
+       
+  create-assoc-from-prio:
+    Chain(prio-chain*) -> result*
+    where
+      assoc-groups* := <filter(?AssocRefGroup(_, _))> prio-chain*;
+      result*       := <mapconcat(create-assoc-rules)> assoc-groups*
+      
+  
+  create-assoc-rules:
+    AssocRefGroup(Left(), sc-list*) -> result*
+    where
+      result* := <map(create-left-assoc-rules(|sc-list*)); flatten-list> sc-list*    
+  
+  create-left-assoc-rules(|sc-list*):
+    sc -> result*
+    where
+      result* := <map(create-left-assoc-rule(|sc))> sc-list*
+      
+  create-left-assoc-rule(|sc):
+    sc2 -> LeftAssoc(sc, sc2)     
+    
+  create-assoc-rules:
+    AssocRefGroup(Right(), sc-list*) -> result*
+    where
+      result* := <map(create-right-assoc-rules(|sc-list*)); flatten-list> sc-list*   
+      
+  create-right-assoc-rules(|sc-list*):
+    sc -> result*
+    where
+      result* := <map(create-right-assoc-rule(|sc))> sc-list* 
+      
+  create-right-assoc-rule(|sc):
+    sc2 -> RightAssoc(sc, sc2)           
+    
+  create-assoc-rules:
+    AssocRefGroup(NonAssoc(), sc-list*) -> result*
+    where
+      result* := <map(create-non-assoc-rules(|sc-list*)); flatten-list> sc-list*   
+      
+  create-non-assoc-rules(|sc-list*):
+    sc -> result*
+    where
+      result* := <map(create-non-assoc-rule(|sc))> sc-list* 
+      
+  create-non-assoc-rule(|sc):
+    sc2 -> NonAssoc(sc, sc2)    
+    
+  create-str-prio-rule:   
+    LeftAssoc(SortConsRef(_, Constructor(c1)), SortConsRef(_, Constructor(c2))) -> SDefNoArgs(
+          "left-assoc"
+        , Match(
+            NoAnnoList(
+              Tuple([NoAnnoList(Str(c1)), NoAnnoList(Str(c2))])
+            )
+          )
+        )    
+        
+  create-str-prio-rule:   
+    RightAssoc(SortConsRef(_, Constructor(c1)), SortConsRef(_, Constructor(c2))) -> SDefNoArgs(
+          "right-assoc"
+        , Match(
+            NoAnnoList(
+              Tuple([NoAnnoList(Str(c1)), NoAnnoList(Str(c2))])
+            )
+          )
+        )          
+        
+  create-str-prio-rule:   
+    NonAssoc(SortConsRef(_, Constructor(c1)), SortConsRef(_, Constructor(c2))) -> SDefNoArgs(
+          "non-assoc"
+        , Match(
+            NoAnnoList(
+              Tuple([NoAnnoList(Str(c1)), NoAnnoList(Str(c2))])
+            )
+          )
+        )            
+    
+  create-str-prio-rule:   
+    GreaterThan(SortConsRef(_, Constructor(c1)), SortConsRef(_, Constructor(c2))) -> SDefNoArgs(
+          "greater-than"
+        , Match(
+            NoAnnoList(
+              Tuple([NoAnnoList(Str(c1)), NoAnnoList(Str(c2))])
+            )
+          )
+        )  

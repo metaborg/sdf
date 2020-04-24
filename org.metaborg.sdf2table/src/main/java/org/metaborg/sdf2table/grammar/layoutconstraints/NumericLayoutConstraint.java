@@ -3,7 +3,7 @@ package org.metaborg.sdf2table.grammar.layoutconstraints;
 import java.io.Serializable;
 import java.util.List;
 
-import org.metaborg.sdf2table.grammar.Symbol;
+import org.metaborg.sdf2table.grammar.ISymbol;
 
 public class NumericLayoutConstraint implements Serializable, ILayoutConstraint {
 
@@ -35,10 +35,10 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
         return tree;
     }       
     
-    public void normalizeConstraint(List<Symbol> rhs) {
+    public void normalizeConstraint(List<ISymbol> rhs) {
         int normalizedtree = 0;
         int count = tree;
-        for(Symbol s : rhs) {
+        for(ISymbol s : rhs) {
             if(s.toString().equals("LAYOUT?-CF")) {
                 normalizedtree++;
                 continue;

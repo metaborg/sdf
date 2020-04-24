@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -9,10 +10,10 @@ public class GeneralAttribute implements IAttribute, Serializable {
 
     private static final long serialVersionUID = 6844193956229562479L;
 
-    private String name;
+    private final String name;
 
-    public GeneralAttribute(String name) {
-        this.setName(name);
+    protected GeneralAttribute(String name) {
+        this.name = name;
     }
 
     @Override public String toString() {
@@ -22,7 +23,7 @@ public class GeneralAttribute implements IAttribute, Serializable {
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
         return result;
     }
 
@@ -34,20 +35,16 @@ public class GeneralAttribute implements IAttribute, Serializable {
         if(getClass() != obj.getClass())
             return false;
         GeneralAttribute other = (GeneralAttribute) obj;
-        if(getName() == null) {
-            if(other.getName() != null)
+        if(name == null) {
+            if(other.name != null)
                 return false;
-        } else if(!getName().equals(other.getName()))
+        } else if(!name.equals(other.name))
             return false;
         return true;
     }
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {

@@ -18,6 +18,7 @@ context-free syntax
 
 Symbol.Start = <\<START\>>
 Symbol.FileStart = <\<Start\>>
+Symbol.EOF = <\<EOF\>>
 
 Grammar.LexicalPriorities = <
 	lexical priorities 

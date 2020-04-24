@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import org.metaborg.parsetable.actions.IReduceLookahead;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.sdf2table.grammar.CharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -13,9 +12,9 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
 
     private static final long serialVersionUID = 4938045344795755011L;
 
-    CharacterClass[] lookahead;
+    private ICharacterClass[] lookahead;
 
-    public ReduceLookahead(ParseTableProduction prod, int prod_label, CharacterClass cc, CharacterClass[] lookahead) {
+    public ReduceLookahead(ParseTableProduction prod, int prod_label, ICharacterClass cc, ICharacterClass[] lookahead) {
         super(prod, prod_label, cc);
         this.lookahead = lookahead;
     }
@@ -26,13 +25,13 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
             lookaheadTerm[i] = lookahead[i].toAterm(tf);
         }
 
-        return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.getProduction().rightHand().size()),
+        return tf.makeAppl(tf.makeConstructor("reduce", 4), tf.makeInt(prod.getProduction().arity()),
             tf.makeInt(prod_label), tf.makeInt(getStatusFromParseTableProduction(pt)),
             tf.makeList(tf.makeAppl(tf.makeConstructor("follow-restriction", 1), tf.makeList(lookaheadTerm))));
     }
 
     @Override public String toString() {
-        return "reduce(" + prod.getProduction().rightHand().size() + "," + prod_label + "," + productionType()
+        return "reduce(" + prod.getProduction().arity() + "," + prod_label + "," + productionType()
             + ",follow-restriction" + Arrays.toString(lookahead) + ")";
     }
 
@@ -55,7 +54,7 @@ public class ReduceLookahead extends Reduce implements IReduceLookahead, Seriali
         if(lookahead == null) {
             if(other.lookahead != null)
                 return false;
-        } else if(!lookahead.equals(other.lookahead))
+        } else if(!Arrays.equals(lookahead, other.lookahead))
             return false;
         if(prod_label != other.prod_label)
             return false;

@@ -10,7 +10,8 @@ imports
   generation/gen-utils/remove-template
   names/analysis/names
   runtime/analysis/core
-  editor/build-utils  
+  editor/build-utils
+  pp/characterclass/Character-pp
   pp/layout-constraints/Layout-Constraints-pp
   libstratego-gpp
   utils/tokenize
@@ -37,7 +38,15 @@ imports
   signatures/sorts/-
   signatures/symbols/-
   signatures/TemplateLang-sig
-  
+
+signature
+  constructors
+    Numeric : Int -> Character // Used as normalized form of character classes, uses Int instead of String
+rules
+    prettyprint-TemplateLang-Character :
+        Numeric(c) -> <prettyprint-TemplateLang-Character> Decimal(<int-to-string> c)
+    is-TemplateLang-Character = ?Numeric(_)
+
 rules
 
     cputime = prim("SSL_cputime")
@@ -120,7 +129,7 @@ rules
             lexical-start-prods*       := <map(lex-start-prod)> lex-start-symbols*;
             start-prods*               := <map(kernel-start-prod)> start-symbols*;
             cf-start-prods*            := <map(cf-start-prod)> cf-start-symbols*;
-            new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())];
+            new-top-sorts-prods*       := [lexical-start-prods*, start-prods*, cf-start-prods*, SdfProduction(FileStart(), Rhs([Start(), EOF()]), NoAttrs())];
             after-normalizing-top-sorts := <cputime>;
             
 //            where(!(after-normalizing-top-sorts, before-normalizing-top-sorts); subt; cputime-to-seconds; ?total-time-top-sorts; <debug(!"time spent top sorts ")> (<strip-annos> mn, total-time-top-sorts))
@@ -225,8 +234,8 @@ rules
               (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
               plhd-restr* := [SDFSection(LexicalRestrictions([Follow(<map(!Lit(<concat-strings; double-quote> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, 
                                                                         Single(CharClass(Simple(Present(
-                                                                                       Conc(Range(Short("a"), Short("z"))
-                                                                                          , Range(Short("A"), Short("Z"))))))))]))]
+                                                                                       Conc(Range(Regular("a"), Regular("z"))
+                                                                                          , Range(Regular("A"), Regular("Z"))))))))]))]
           end;                                                                                     
       // lexical restrictions
         x    := <filter(case-sensitive-template-prods); nub> prods*;
@@ -369,12 +378,15 @@ rules
     kernel-basic-norm-symb:
         s -> <id>
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-kernel-sorts:+ "kernel-symbols" -> s') 
-    
-        
+
+    is-terminal = is-base-terminal + is-labeled-terminal
+    is-labeled-terminal = ?Label(_, s) ; !s ; is-base-terminal
+    is-base-terminal = ?Lit(_) + ?CharClass(_) + ?CiLit(_)
+
     cf-basic-norm-prod(|tokenize-chars):
         SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> SdfProductionWithCons(SortCons(symbol', Constructor(cons)), Rhs(symbols'*), attrs')
         with
@@ -403,7 +415,7 @@ rules
     cf-basic-norm-symb:
         s -> Cf(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-cf-sorts:+ "cf-symbols" -> Cf(s')) 
@@ -438,7 +450,7 @@ rules
     lex-basic-norm-symb:
         s -> Lex(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where
             s' := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             rules(get-lexical-sorts:+ "lexical-symbols" -> Lex(s')) 
@@ -498,7 +510,7 @@ rules
     
                 
     top-sorts:
-        Module(Unparameterized(mn), i*, [SDFSection(Kernel(prods*)) | sections*]) -> Module(Unparameterized(mn), i*, [SDFSection(Kernel([new-prods*, prods*, SdfProduction(FileStart(), Rhs([Start(), CharClass(Simple(Present(Numeric("\\256"))))]), NoAttrs())])) | sections'*])
+        Module(Unparameterized(mn), i*, [SDFSection(Kernel(prods*)) | sections*]) -> Module(Unparameterized(mn), i*, [SDFSection(Kernel([new-prods*, prods*, SdfProduction(FileStart(), Rhs([Start(), EOF()]), NoAttrs())])) | sections'*])
         with
             lex-start-symbols*     := <filter(?SDFSection(LexicalStartSymbols(<id>))); flatten-list> sections*;
             cf-start-symbols*      := <filter(?SDFSection(ContextFreeStartSymbols(<id>))); flatten-list> sections*;
@@ -615,9 +627,9 @@ rules
             new-regular-prods-lex-s*           := <regular-norm-symbol <+ ![]> lex-s      
             
      regular-norm-symbol:
-        symb@Cf(Iter(s)) -> [SdfProduction(symb, Rhs([cf-s]), NoAttrs()),
-                         SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-s]), NoAttrs()),
-                         SdfProduction(cf-iter-star, Rhs([]), NoAttrs()),
+        symb@Cf(Iter(s)) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                         SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))> [symb, cf-s]), NoAttrs()),
+                         SdfProductionWithCons(SortCons(cf-iter-star, Constructor("Nil")), Rhs([]), NoAttrs()),
                          SdfProduction(cf-iter-star, Rhs([symb]), NoAttrs()),  new-regular-prods-cf-s*]
         with
             cf-iter-star            := <try(cf-norm-symb)> IterStar(s);
@@ -625,9 +637,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
      
      regular-norm-symbol:
-        symb@Cf(IterStar(s)) -> [SdfProduction(cf-iter, Rhs([cf-s]), NoAttrs()),
-                           SdfProduction(cf-iter, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-s]), NoAttrs()),
-                           SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@Cf(IterStar(s)) -> [SdfProductionWithCons(SortCons(cf-iter, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                           SdfProductionWithCons(SortCons(cf-iter, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter, cf-s]), NoAttrs()),
+                           SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                            SdfProduction(symb, Rhs([cf-iter]), NoAttrs()), new-regular-prods-cf-s*]
         with
             cf-iter                 := <try(cf-norm-symb)> Iter(s);
@@ -635,18 +647,18 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s         
             
      regular-norm-symbol:
-        symb@Iter(s) -> [SdfProduction(symb, Rhs([s]), NoAttrs()),
-                              SdfProduction(symb, Rhs([symb, s]), NoAttrs()),
-                              SdfProduction(iter-star, Rhs([]), NoAttrs()),
+        symb@Iter(s) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                              SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs([symb, s]), NoAttrs()),
+                              SdfProductionWithCons(SortCons(iter-star, Constructor("Nil")), Rhs([]), NoAttrs()),
                               SdfProduction(iter-star, Rhs([symb]), NoAttrs()), new-regular-prods-s*]
         with
             iter-star             := IterStar(s);
             new-regular-prods-s*  := <regular-norm-symbol <+ ![]> s
          
     regular-norm-symbol:
-        symb@IterStar(s) -> [SdfProduction(lex-iter, Rhs([s]), NoAttrs()),
-                                  SdfProduction(lex-iter, Rhs([lex-iter, s]), NoAttrs()),
-                                  SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@IterStar(s) -> [SdfProductionWithCons(SortCons(lex-iter, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                  SdfProductionWithCons(SortCons(lex-iter, Constructor("Snoc")), Rhs([lex-iter, s]), NoAttrs()),
+                                  SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                   SdfProduction(symb, Rhs([lex-iter]), NoAttrs()), new-regular-prods-s*]
         with
             lex-iter                :=  Iter(s);
@@ -677,9 +689,9 @@ rules
             new-regular-prods-lex-s*           := <regular-norm-symbol <+ ![]> lex-s       
             
       regular-norm-symbol:
-        symb@Cf(IterSep(s, sep)) -> [ SdfProduction(symb, Rhs([cf-s]), NoAttrs()),
-                                      SdfProduction(symb, Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-sep, cf-s]), NoAttrs()),
-                                      SdfProduction(cf-iter-star-sep, Rhs([]), NoAttrs()),
+        symb@Cf(IterSep(s, sep)) -> [ SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[symb, cf-sep, cf-s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(cf-iter-star-sep, Constructor("Nil")), Rhs([]), NoAttrs()),
                                       SdfProduction(cf-iter-star-sep, Rhs([symb]), NoAttrs()) 
                                       , new-regular-prods-cf-s*]
         with
@@ -689,9 +701,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
      
      regular-norm-symbol:
-        symb@Cf(IterStarSep(s, sep)) -> [ SdfProduction(cf-iter-sep, Rhs([cf-s]), NoAttrs()),
-                                          SdfProduction(cf-iter-sep, Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter-sep, cf-sep, cf-s]), NoAttrs()),
-                                          SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@Cf(IterStarSep(s, sep)) -> [ SdfProductionWithCons(SortCons(cf-iter-sep, Constructor("Ins")), Rhs([cf-s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(cf-iter-sep, Constructor("Snoc")), Rhs(<separate-by(!Cf(Opt(Layout())))>[cf-iter-sep, cf-sep, cf-s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                           SdfProduction(symb, Rhs([cf-iter-sep]), NoAttrs()),
                                           new-regular-prods-cf-s*]
         with
@@ -701,9 +713,9 @@ rules
             new-regular-prods-cf-s* := <regular-norm-symbol <+ ![]> cf-s
             
      regular-norm-symbol:
-        symb@IterSep(s, sep) -> [SdfProduction(symb, Rhs([s]), NoAttrs()),
-                                      SdfProduction(symb, Rhs([symb, sep, s]), NoAttrs()),
-                                      SdfProduction(iter-star-sep, Rhs([]), NoAttrs()),
+        symb@IterSep(s, sep) -> [SdfProductionWithCons(SortCons(symb, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(symb, Constructor("Snoc")), Rhs([symb, sep, s]), NoAttrs()),
+                                      SdfProductionWithCons(SortCons(iter-star-sep, Constructor("Nil")), Rhs([]), NoAttrs()),
                                       SdfProduction(iter-star-sep, Rhs([symb]), NoAttrs()), 
                                       new-regular-prods-s*]
         with
@@ -711,9 +723,9 @@ rules
             new-regular-prods-s*   := <regular-norm-symbol <+ ![]> s
             
      regular-norm-symbol:
-        symb@IterStarSep(s, sep) -> [SdfProduction(iter-sep, Rhs([s]), NoAttrs()),
-                                          SdfProduction(iter-sep, Rhs([iter-sep, sep, s]), NoAttrs()),
-                                          SdfProduction(symb, Rhs([]), NoAttrs()),
+        symb@IterStarSep(s, sep) -> [SdfProductionWithCons(SortCons(iter-sep, Constructor("Ins")), Rhs([s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(iter-sep, Constructor("Snoc")), Rhs([iter-sep, sep, s]), NoAttrs()),
+                                          SdfProductionWithCons(SortCons(symb, Constructor("Nil")), Rhs([]), NoAttrs()),
                                           SdfProduction(symb, Rhs([iter-sep]), NoAttrs()),
                                           new-regular-prods-s*]
         with
@@ -1093,7 +1105,7 @@ rules
      lex-norm-symb:
         s -> (Lex(s), new-prod)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
         where  
             s'             := <strip-annos; try(?SortDef(x); !Sort(x))> s;
             lex-sorts*     := <bagof-get-lexical-sorts> "lexical-symbols";
@@ -1104,7 +1116,7 @@ rules
      cf-norm-symb:
         s -> Cf(s)
         where
-            not(?Lit(_) + ?CharClass(_) + ?CiLit(_))
+            not(is-terminal)
      
      //QUESTION: do we add the productions from the priority list to the syntax section?
      //or do they need to be defined in the grammar?       
@@ -1167,6 +1179,21 @@ rules
             <?Attrs(<id>); fetch(?Assoc(NonAssoc()))> attrs
         with
             group := SimpleGroup(SdfProduction(symbol, Rhs(symbols*), NoAttrs()))
+            
+     //non-nested associativity productions    
+     assoc-prio-fun:
+        SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> Assoc(group, NonNested(), group)
+        where
+            <?Attrs(<id>); fetch(?Assoc(NonNested()))> attrs
+        with
+            group := SimpleRefGroup(SortConsRef(symbol, Constructor(cons)))
+        
+     assoc-prio-fun:
+        p@SdfProduction(symbol, Rhs(symbols*), attrs) -> Assoc(group, NonNested(), group)
+        where
+            <?Attrs(<id>); fetch(?Assoc(NonNested()))> attrs
+        with
+            group := SimpleGroup(SdfProduction(symbol, Rhs(symbols*), NoAttrs()))       
          
      norm-prio-fun(|tokenize-chars) :
         Chain([first-group | pps]) -> [first-binary, <try(norm-prio-fun(|tokenize-chars))> Chain([<try(remove-constructor)> second-group | ppss])]  
@@ -1481,18 +1508,6 @@ rules
         where
             new-chains := [<try(norm-prio-fun(|tokenize-chars))> Chain([assocGroup]), <try(norm-prio-fun(|tokenize-chars))> Assoc(associativity, group, ProdsRefGroup(p*))]                       
      
-
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default([arity2]))), SimpleGroup(p1')])]
-//        where
-//            <?Left() + ?Assoc()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2;
-//            <not(?p1')> p2';            
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
-//            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
-            
      norm-prio-fun(|tokenize-chars):
         Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> <id>       
      
@@ -1504,88 +1519,6 @@ rules
      
      norm-prio-fun(|tokenize-chars):
         Assoc(SimpleRefGroup(p1_ref), associativity, SimpleGroup(p2)) -> <id>
-     
-     //<sortcons-to-prod(|tokenize-chars)> ref
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p2'), Default(["0"]))), SimpleGroup(p1')])]
-//        where
-//            <?Right()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2;
-//            <not(?p1')> p2'
-            
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')])
-//        where
-//            <?Right()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2
-//     
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleRefGroup(p1), associativity, SimpleGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleGroup(p2')])
-//        where
-//            <?Right()> associativity
-//        where
-//            p2'    := <try(remove-constructor); strip-annos> p2
-//            
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleRefGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleRefGroup(p2)])
-//        where
-//            <?Right()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1  
-//
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleRefGroup(p1), associativity, SimpleRefGroup(p2)) -> Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleRefGroup(p2)])
-//        where
-//            <?Right()> associativity
-            
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(SimpleGroup(p1')), SimpleGroup(p2')]), Chain([NonTransitive(SimpleGroup(p2')), SimpleGroup(p1')])]
-//        where
-//            <?NonAssoc()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2;
-//            <not(?p1')> p2';            
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1';
-//            arity2 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p2'
-            
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleGroup(p2')])]
-//        where
-//            <?NonAssoc()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2;
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
-//            
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleRefGroup(p1), associativity, SimpleGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleGroup(p2')]), Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default([arity1]))), SimpleGroup(p2')])]
-//        where
-//            <?NonAssoc()> associativity
-//        where
-//            p1'    := <get-referenced-prod> p1;
-//            p2'    := <try(remove-constructor); strip-annos> p2;
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
-//     
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleGroup(p1), associativity, SimpleRefGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default(["0"]))), SimpleRefGroup(p2)]), Chain([NonTransitive(WithArguments(SimpleGroup(p1'), Default([arity1]))), SimpleRefGroup(p2)])]
-//        where
-//            <?NonAssoc()> associativity
-//        where
-//            p1'    := <try(remove-constructor); strip-annos> p1;
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'              
-//     
-//     norm-prio-fun(|tokenize-chars):
-//        Assoc(SimpleRefGroup(p1), associativity, SimpleRefGroup(p2)) -> [Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default(["0"]))), SimpleRefGroup(p2)]), Chain([NonTransitive(WithArguments(SimpleRefGroup(p1), Default([arity1]))), SimpleRefGroup(p2)])]
-//        where
-//            <?NonAssoc()> associativity
-//        where
-//            p1'    := <get-referenced-prod> p1;
-//            arity1 := <?SdfProduction(_, Rhs(<length; dec; int-to-string>), _)> p1'
             
      norm-prio-fun(|tokenize-chars):
         Chain([AssocGroup(associativity, [p])]) -> <norm-prio-fun(|tokenize-chars)> Assoc(SimpleGroup(p), associativity, SimpleGroup(p))   
@@ -1689,7 +1622,7 @@ rules
      
      //create char-classes with numbers already instead of strings avoiding ![<id>]; implode-string;      
      charclass-from-char:
-        c -> CharClass(Simple(Present(Numeric($[\[c]]))))   
+        c -> CharClass(Simple(Present(Numeric(c))))
      
      charclass-from-case-insensitive:
         c -> result
@@ -1697,60 +1630,77 @@ rules
             c1 := <try(to-upper)> c;
             c2 := <try(to-lower)> c; 
             if <?c1> c2 then
-                result := CharClass(Simple(Present(Numeric($[\[c1]]))))
+                result := CharClass(Simple(Present(Numeric(c1))))
             else               
-                result := CharClass(Simple(Present(Conc(Numeric($[\[c1]]), Numeric($[\[c2]])))))
+                result := CharClass(Simple(Present(Conc(Numeric(c1), Numeric(c2)))))
             end
             
      //char-class-norm:
      //   m@Module(Unparameterized(mn), i*, sections*) -> m'
      //   with
      //       m' := <topdown(try(character-norm-fun)); bottomup(try(pre-char-class-norm)); char-class-norm-fun; bottomup(try(cc-set-operations)) > m
-        
-     character-norm-fun:
-        Short(c) -> Numeric($[\[c']])
-        where
-            c' := <unquote; unescape; explode-string; last> c
-     
-     character-norm-fun:
-        Top() -> Numeric($[\255])
 
      character-norm-fun:
-        Bot() -> Numeric($[\0])
-        
+        Regular(c) -> Numeric(<unquote; explode-string; Hd> c)
+
      character-norm-fun:
-        LabelStart() -> Numeric($[\257])
-        
+        Escaped("t") -> Numeric(9)
+
+     character-norm-fun:
+        Escaped("n") -> Numeric(10)
+
+     character-norm-fun:
+        Escaped("v") -> Numeric(11)
+
+     character-norm-fun:
+        Escaped("f") -> Numeric(12)
+
+     character-norm-fun:
+        Escaped("r") -> Numeric(13)
+
+     character-norm-fun:
+        Escaped(c) -> Numeric(<unquote; explode-string; Hd> c)
+
+     character-norm-fun:
+        Binary(c) -> Numeric(<bin-string-to-int> c)
+
+     character-norm-fun:
+        Octal(c) -> Numeric(<oct-string-to-int> c)
+
+     character-norm-fun:
+        Decimal(c) -> Numeric(<string-to-int> c)
+
+     character-norm-fun:
+        Hexadecimal(c) -> Numeric(<hex-string-to-int> c)
+
+     character-norm-fun:
+        Bot() -> Numeric(0)
+
+     character-norm-fun:
+        Top() -> Numeric(1114111)
+
+     character-norm-fun:
+        LabelStart() -> Numeric(257)
+
      pre-char-class-norm:
-        Range(Numeric(c1), Numeric(c2)) -> Numeric(c1)
-        where
-            <?c1> c2
-            
+        Range(Numeric(c), Numeric(c)) -> Numeric(c)
+
      pre-char-class-norm:
         Range(Numeric(c1), Numeric(c2)) -> Absent()
         where
-            <not(?c1)> c2
-        where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <gt> (c1-int, c2-int)
-            
+            <gt> (c1, c2)
+
      pre-char-class-norm:
         Present(Absent()) -> Absent()       
         
      is-member:
-        (Numeric(c), Numeric(c2)) -> <id>
-        where
-            <?c> c2
-     
+        (Numeric(c), Numeric(c)) -> <id>
+
      is-member:
         (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c-int  := <ltrim-chars(?'\'); string-to-int> c;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <geq> (c-int, c1-int);
-            <geq> (c2-int, c-int)
+            <geq> (c, c1);
+            <geq> (c2, c)
             
      is-member:
         (c1@Numeric(c), Conc(cr1, cr2)) -> <id>
@@ -1761,7 +1711,7 @@ rules
         (Range(cr1@Numeric(c1), cr2@Numeric(c2)), cr) -> <id>
         where
             <is-member> (cr1, cr);
-            <is-member> (Range(Numeric(<cc-succ> c1), Numeric(c2)), cr)
+            <is-member> (Range(Numeric(<inc> c1), Numeric(c2)), cr)
             
      is-member:
         (Range(cr1@Numeric(c1), Numeric(c1)), cr) -> <id>
@@ -1778,88 +1728,64 @@ rules
         (Absent(), cr) -> <id>         
      
      left-smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c2, c1)
             
      left-smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c1, c)
             
      left-smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c, c1)
             
      left-smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int) 
+            <gt> (c3, c1)
             
      smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c2, c1)
             
      smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c1-int)
+            <gt> (c1, c)
             
      smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c2-int)
+            <gt> (c, c2)
             
      smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, c2-int)       
+            <gt> (c3, c2)
             
      strictly-smaller:
-        (Numeric(c1), Numeric(c3)) -> <id>
+        (Numeric(c1), Numeric(c2)) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c1-int)
+            <gt> (c2, <inc> c1)
             
      strictly-smaller:
-        (Numeric(c1), Range(Numeric(c3), Numeric(c4))) -> <id>
+        (Numeric(c), Range(Numeric(c1), Numeric(c2))) -> <id>
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c1-int)
+            <gt> (c1, <inc> c)
             
      strictly-smaller:
-        (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> <id>
+        (Range(Numeric(c1), Numeric(c2)), Numeric(c)) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c2-int)
+            <gt> (c, <inc> c2)
             
      strictly-smaller:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> <id>
         where
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <gt> (c3-int, <inc> c2-int)                                     
+            <gt> (c3, <inc> c2)
       
      char-class-norm-fun = bottomup(try(order-ranges)); bottomup(try(merge-overlapping-cc))
       
@@ -1907,43 +1833,30 @@ rules
      merge-cc:
         (Numeric(c1), Numeric(c2)) -> Range(Numeric(c1), Numeric(c2))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            <eq> (c2-int, <inc> c1-int)
+            <eq> (c2, <inc> c1)
             
      merge-cc:
         (Range(Numeric(c1), Numeric(c2)), Numeric(c3)) -> Range(Numeric(c1), Numeric(<max-character> (c2, c3)))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <geq> (c3-int, c1-int);
-            <geq> (<inc> c2-int, c3-int)   
+            <geq> (c3, c1);
+            <geq> (<inc> c2, c3)
             
      merge-cc:
         (Numeric(c1), Range(Numeric(c2), Numeric(c3))) -> Range(Numeric(c1), Numeric(c3))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <eq <+ <eq> (<inc> c1-int, c2-int) > (c1-int, c2-int) 
+            <eq <+ <eq> (<inc> c1, c2) > (c1, c2)
      
      merge-cc:
         (Range(Numeric(c1), Numeric(c2)), Range(Numeric(c3), Numeric(c4))) -> Range(Numeric(c1), Numeric(<max-character> (c2, c4)))
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            <geq> (c3-int, c1-int);
-            <geq> (<inc> c2-int, c3-int)
+            <geq> (c3, c1);
+            <geq> (<inc> c2, c3)
            
      
      max-character:
         (c1, c2) -> result
         where
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            if <gt> (c1-int, c2-int) then
+            if <gt> (c1, c2) then
                 result := c1
             else
                 result := c2
@@ -1995,10 +1908,7 @@ rules
         where
             <?Simple(Present(Numeric(c1)))> cc1;
             <?Simple(Present(Range(Numeric(c3), Numeric(c4))))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            c4-int := <ltrim-chars(?'\'); string-to-int> c4;            
-            if <geq> (c1-int, c3-int); <geq> (c4-int, c1-int)  then
+            if <geq> (c1, c3); <geq> (c4, c1)  then
                 result := Simple(Absent())
             else
                 result := cc1
@@ -2009,12 +1919,9 @@ rules
         where
             <?Simple(Present(Range(Numeric(c1), Numeric(c2))))> cc1;
             <?Simple(Present(Numeric(c3)))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;            
-            if <geq> (c3-int, c1-int); <geq> (c2-int, c3-int)  then
-                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
-                                            , <try(pre-char-class-norm)> Range(Numeric(<cc-succ> c3), Numeric(c2))))
+            if <geq> (c3, c1); <geq> (c2, c3)  then
+                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<dec> c3))
+                                            , <try(pre-char-class-norm)> Range(Numeric(<inc> c3), Numeric(c2))))
             else
                 result := cc1
             end       
@@ -2024,14 +1931,9 @@ rules
         where
             <?Simple(Present(Range(Numeric(c1), Numeric(c2))))> cc1;
             <?Simple(Present(Range(Numeric(c3), Numeric(c4))))> cc2;
-            c1-int := <ltrim-chars(?'\'); string-to-int> c1;       
-            c2-int := <ltrim-chars(?'\'); string-to-int> c2;
-            c3-int := <ltrim-chars(?'\'); string-to-int> c3;
-            c4-int := <ltrim-chars(?'\'); string-to-int> c4;
-            c4'    := <cc-succ> c4;
-            c4-int':= <ltrim-chars(?'\'); string-to-int> c4';
-            if <geq> (c2-int, c3-int); <geq> (c4-int', c1-int)  then
-                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<cc-pred> c3))
+            c4'    := <inc> c4;
+            if <geq> (c2, c3); <geq> (c4', c1)  then
+                result := Simple(<try(merge-overlapping-cc); (?Absent() <+ !Present(<id>))> Conc(<try(pre-char-class-norm)> Range(Numeric(c1), Numeric(<dec> c3))
                                             , <try(pre-char-class-norm)> Range(Numeric(c4'), Numeric(c2))))
             else
                 result := cc1
@@ -2071,12 +1973,12 @@ rules
             result := <bottomup(try(cc-set-operations))> Diff(Union(Diff(Simple(Present(cr1-head)), Simple(Present(cr2-head))), tail-cr1), Union(Diff(Simple(Present(cr2-head)), Simple(Present(cr1-head))), tail-cr2))   
       
       cc-set-operations:
-        Comp(cc) -> Simple(Present(Range(Numeric("\\0"), Numeric("\\255"))))
+        Comp(cc) -> Simple(Present(Range(Numeric(0), Numeric(1114111))))
         where
             <?Simple(Absent())> cc
             
       cc-set-operations:
-        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric("\\0"), Numeric("\\255")))), cc)
+        Comp(cc) -> <cc-set-operations> Diff(Simple(Present(Range(Numeric(0), Numeric(1114111)))), cc)
         where
             <not(?Simple(Absent()))> cc   
             
@@ -2128,20 +2030,8 @@ rules
         not(?Conc(c1, _))
         
       cc-tail:
-        Conc(c1, cr)-> cr  
-        
-      cc-succ:
-        char -> char'
-        where
-            int-succ-char :=  <ltrim-chars(?'\'); string-to-int; inc> char;
-            char'         :=  $[\[int-succ-char]]
-     
-     cc-pred:
-        char -> char'
-        where
-            int-pred-char :=  <ltrim-chars(?'\'); string-to-int; dec> char;
-            char'         :=  $[\[int-pred-char]]       
-     
+        Conc(c1, cr)-> cr
+
      restrictions-norm:
         Module(Unparameterized(mn), i*, [kernel | sections*]) -> Module(Unparameterized(mn), i*, [kernel, new-restrictions, priorities])
         where
@@ -2262,4 +2152,4 @@ rules
      create-assoc(|g1, g2, associativity) = !Assoc(g1, associativity, g2)
      
      replace-sort-def :
-       SortDef(s) -> Sort(s)                
+       SortDef(s) -> Sort(s)

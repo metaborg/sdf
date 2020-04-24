@@ -1,0 +1,49 @@
+module test
+
+language TemplateLang
+
+
+fixture [[
+  module test
+
+  lexical syntax
+    ID = [ [[...]] ]
+]]
+
+test regularA [[ A ]]        parse to Present(Regular("A"))
+test regulara [[ a ]]        parse to Present(Regular("a"))
+test regular0 [[ 0 ]]        parse to Present(Regular("0"))
+
+test escape   [[ \@ ]]       parse to Present(Escaped("@"))
+test quote1   [[ \' ]]       parse to Present(Escaped("'"))
+test quote2   [[ \" ]]       parse to Present(Escaped("\""))
+
+// Enable these tests once SDF3 is bootstrapped with Unicode support
+//test unicode  [[ \Σ ]]       parse to Present(Escaped("Σ"))
+//test emoji    [[ \😀 ]]      parse to Present(Escaped("😀"))
+
+test tab      [[ \t ]]       parse to Present(Escaped("t"))
+test newline  [[ \n ]]       parse to Present(Escaped("n"))
+test vtab     [[ \v ]]       parse to Present(Escaped("v"))
+test formfeed [[ \f ]]       parse to Present(Escaped("f"))
+test car-ret  [[ \r ]]       parse to Present(Escaped("r"))
+
+test binary   [[ \0b0110 ]]  parse to Present(Binary("0110"))
+test octal    [[ \015 ]]     parse to Present(Octal("15"))
+test decimal1 [[ \7 ]]       parse to Present(Decimal("7"))
+test decimal2 [[ \65 ]]      parse to Present(Decimal("65"))
+test hex      [[ \0x41 ]]    parse to Present(Hexadecimal("41"))
+test hex2     [[ \0x1f600 ]] parse to Present(Hexadecimal("1f600"))
+test bin fail [[ \0b 0 ]]    parse fails
+test hex fail [[ \0x 1 ]]    parse fails
+test bin char [[ \0b11 0 ]]  parse to Present(Conc(Binary("11"),Regular("0")))
+test hex char [[ \0x41 c ]]  parse to Present(Conc(Hexadecimal("41"),Regular("c")))
+
+test zero     [[ \0 ]]       parse to Present(Decimal("0"))
+test 2 zeroes [[ \00 ]]      parse to Present(Octal("0"))
+test 3 zeroes [[ \000 ]]     parse to Present(Octal("00"))
+test bin zero [[ \0b000 ]]   parse to Present(Binary("000"))
+test hex zero [[ \0x000 ]]   parse to Present(Hexadecimal("000"))
+
+test bot      [[ \BOT ]]     parse to Present(Bot())
+test top      [[ \TOP ]]     parse to Present(Top())

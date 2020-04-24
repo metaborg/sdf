@@ -1,10 +1,15 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.metaborg.parsetable.symbols.ISymbol;
+import org.metaborg.parsetable.symbols.SortCardinality;
+import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -17,7 +22,8 @@ public class SequenceSymbol extends Symbol {
     private final Symbol first;
     private final List<Symbol> tail;
 
-    public SequenceSymbol(Symbol first, List<Symbol> tail) {        
+
+    protected SequenceSymbol(Symbol first, List<Symbol> tail) {        
         this.first = first;
         this.tail = tail;
         followRestrictionsLookahead = Lists.newArrayList();
@@ -37,25 +43,27 @@ public class SequenceSymbol extends Symbol {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        List<IStrategoTerm> tail_aterm = Lists.newArrayList();
-    
+        IStrategoList.Builder tail_aterm = tf.arrayListBuilder(tail.size());
+
         for(Symbol s : tail) {
             tail_aterm.add(s.toAterm(tf));
         }
-    
+
         return tf.makeAppl(tf.makeConstructor("seq", 2), first.toAterm(tf), tf.makeList(tail_aterm));
     }
 
-    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf,
-        Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
-        List<IStrategoTerm> tail_aterm = Lists.newArrayList();
-        
+    @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
+        IStrategoList.Builder tail_aterm = tf.arrayListBuilder(tail.size());
+
         for(Symbol s : tail) {
             tail_aterm.add(s.toSDF3Aterm(tf, ctx_vals, ctx_val));
         }
-    
-        return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val), tf.makeList(tail_aterm));
+
+        return tf.makeAppl(tf.makeConstructor("Sequence", 2), first.toSDF3Aterm(tf, ctx_vals, ctx_val),
+            tf.makeList(tail_aterm));
     }
+
+  
 
     @Override public int hashCode() {
         final int prime = 31;
@@ -84,5 +92,16 @@ public class SequenceSymbol extends Symbol {
         } else if(!tail.equals(other.tail))
             return false;
         return true;
+    }
+
+    @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
+        List<ISymbol> symbols = new ArrayList<>();
+
+        symbols.add(first.toParseTableSymbol(syntaxContext, cardinality));
+        for(Symbol tailSymbol : tail) {
+            symbols.add(tailSymbol.toParseTableSymbol(syntaxContext, cardinality));
+        }
+
+        return new org.metaborg.parsetable.symbols.SequenceSymbol(syntaxContext, cardinality, symbols);
     }
 }

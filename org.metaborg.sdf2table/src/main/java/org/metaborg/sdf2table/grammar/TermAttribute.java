@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 
+import org.metaborg.sdf2table.grammar.IAttribute;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
@@ -9,10 +10,10 @@ public class TermAttribute implements IAttribute, Serializable {
 
     private static final long serialVersionUID = 7822056824144207749L;
 
-    IStrategoTerm term;
-    String term_name;    
+    private final IStrategoTerm term;
+    private final String term_name;    
 
-    public TermAttribute(IStrategoTerm term, String term_name) {
+    protected TermAttribute(IStrategoTerm term, String term_name) {
         this.term = term;
         this.term_name = term_name;
     }
