@@ -154,7 +154,8 @@ rules
   // stx-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Statix.OpDecl
   stx-inj-to-sig: (sortname, body) -> OpDecl(consname, op)
   with body' := <collect-om-concat(stx-cfg-sort-to-sig)> body
-     ; op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
+  where <?[_|_]> body'
+  with op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
      ; consname := <stx-generate-injection-name> (<collect-om-concat(is-string)> body', sortname)
 
 
