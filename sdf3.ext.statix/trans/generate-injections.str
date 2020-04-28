@@ -236,13 +236,13 @@ rules
   
   str-arg-to-explication(|lang): (sort, newname) -> App(<str-arg-to-explication-call(|lang)> sort, Var(newname))
   str-arg-to-explication-call(|lang): Sort(name) -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
-  str-arg-to-explication-call(|lang): Opt(sort) -> <fail>	// TODO: Implement
+  str-arg-to-explication-call(|lang): Opt(sort) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   str-arg-to-explication-call(|lang): IterSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   str-arg-to-explication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   
   str-arg-to-implication(|lang): (sort, newname) -> App(<str-arg-to-implication-call(|lang)> sort, Var(newname))
   str-arg-to-implication-call(|lang): Sort(name) -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
-  str-arg-to-implication-call(|lang): Opt(sort) -> <fail>	// TODO: Implement
+  str-arg-to-implication-call(|lang): Opt(sort) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
   str-arg-to-implication-call(|lang): IterSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
   str-arg-to-implication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
 
