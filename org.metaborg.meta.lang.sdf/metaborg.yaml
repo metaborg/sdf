@@ -19,6 +19,7 @@ pardonedLanguages:
 language:
   sdf:
     version: sdf2
+    sdf2table: c
     args:
     - -Idef
     - ${path:root}/lib/SDF.def
