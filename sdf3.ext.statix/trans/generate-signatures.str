@@ -171,14 +171,12 @@ rules
 
 
   // stx-cfg-sort-to-sig :: SDF3.SortSymbol -> Statix.SortRef
-  stx-cfg-sort-to-sig:
-    Sort(name) -> SimpleSort(name)
-  stx-cfg-sort-to-sig:
-    Opt(sort) -> <stx-cfg-sort-to-sig> sort
-  stx-cfg-sort-to-sig:
-    IterStarSep(sort, _) -> ListSort(<stx-cfg-sort-to-sig> sort)
-  stx-cfg-sort-to-sig:
-    IterSep(sort, _) -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: Sort(name)           -> SimpleSort(name)
+  stx-cfg-sort-to-sig: Opt(sort)            -> <stx-cfg-sort-to-sig> sort
+  stx-cfg-sort-to-sig: Iter(sort)           -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterSep(sort, _)     -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterStar(sort)       -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterStarSep(sort, _) -> ListSort(<stx-cfg-sort-to-sig> sort)
 
 
   // stx-ignore-production :: [SDF3.Attribute] -> SDF3.Attribute

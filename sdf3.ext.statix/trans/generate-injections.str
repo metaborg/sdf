@@ -126,10 +126,12 @@ rules
   with consname := <stx-generate-injection-name> (<collect-all-concat(is-string)> body', sortname)
 
   // str-cf-sort-to-sig :: SDF3.SortSymbol -> Stratego.?
-  str-cf-sort-to-sig:
-    Sort(name) -> ConstType(SortNoArgs(name))
-  str-cf-sort-to-sig:
-    IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: Sort(name)           -> ConstType(SortNoArgs(name))
+  str-cf-sort-to-sig: Opt(sort)            -> ConstType(<str-cf-sort-to-sig> sort)
+  str-cf-sort-to-sig: Iter(sort)           -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterSep(sort, _)     -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStar(sort)       -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
   
 rules
 
@@ -369,15 +371,21 @@ rules
     with argname := $[t[<next-counter> "injections"]]
   str-extract-sort-arg: s@Opt(sort) -> (s, argname)
     with argname := $[t[<next-counter> "injections"]]
-  str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
+  str-extract-sort-arg: s@Iter(sort) -> (s, argname)
     with argname := $[ts[<next-counter> "injections"]]
   str-extract-sort-arg: s@IterSep(sort, _) -> (s, argname)
     with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterStar(sort) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
   
-  str-sort-get-name: Sort(name) -> name
-  str-sort-get-name: Opt(sort) -> <str-sort-get-name> sort
+  str-sort-get-name: Sort(name)           -> name
+  str-sort-get-name: Opt(sort)            -> <str-sort-get-name> sort
+  str-sort-get-name: Iter(sort)           -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterSep(sort, _)     -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterStar(sort)       -> $[[<str-sort-get-name> sort]s]
   str-sort-get-name: IterStarSep(sort, _) -> $[[<str-sort-get-name> sort]s]
-  str-sort-get-name: IterSep(sort, _) -> $[[<str-sort-get-name> sort]s]
   
   
   // Generates a constructor name for the injection with the specified sort name and arguments
