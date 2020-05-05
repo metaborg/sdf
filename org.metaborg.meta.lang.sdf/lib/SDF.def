@@ -111,8 +111,8 @@ exports
   sorts Sort
   lexical syntax
     head:[A-Z]                          -> Sort {cons("one-char")}
-    head:[A-Z] middle:[A-Za-z0-9\-]* last:[A-Za-z0-9] -> Sort 
-	{cons("more-chars")}
+    head:[A-Z] middle:[A-Za-z0-9\_\-]* last:[A-Za-z0-9] -> Sort
+  {cons("more-chars")}
 
   context-free syntax
     Sort                                    -> Symbol  {cons("sort")}
@@ -121,7 +121,7 @@ exports
     "sorts" Symbols -> Grammar {cons("sorts")}
 
   lexical restrictions
-    Sort -/- [A-Za-z0-9]
+    Sort -/- [A-Za-z0-9\_]
 
 module languages/sdf2/syntax/Character
 
@@ -594,7 +594,7 @@ exports
     "assoc"
     "non-assoc"
     "bracket"
-    "sorts"             -/- [A-Za-z0-9]
+    "sorts"             -/- [A-Za-z0-9\_]
     <NatCon -CF>        -/- [0-9]
     <LAYOUT?-CF>        -/- [\ \t\n\%]
     <NumChar -CF>       -/- [0-9]
