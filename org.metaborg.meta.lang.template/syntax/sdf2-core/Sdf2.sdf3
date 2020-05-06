@@ -97,7 +97,7 @@ context-free syntax
     "non-assoc"
     "non-nested"
     "bracket"
-    "sorts"             -/- [A-Za-z0-9]
+    "sorts"             -/- [A-Za-z0-9\_]
     NatCon-CF        -/- [0-9]
     LAYOUT?-CF        -/- [\ \t\n\%]
     ModuleName-CF    -/- [A-Za-z0-9\_\-]

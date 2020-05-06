@@ -1,0 +1,399 @@
+module generate-injections
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-  
+  generation/gen-utils/to-str
+  analysis/desugar
+  generate-signatures
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+  
+rules
+  language-spec-name = prim("pp_language_spec_name") <+ !"unknown"
+
+rules
+
+  // str-generate-signatures :: SDF3.Module -> Stratego.Module
+  str-generate-injections = strip-annos; str-module-to-injections
+
+  // Generate Stratego strategies and rules for explicating and implicating injections
+  // str-module-to-injections :: SDF3.Module -> Stratego.Module
+  str-module-to-injections:
+    Module(modname, imports, sections) -> Module(modname', [
+	  imports0,
+	  imports1*,
+	  Signature([Constructors(signatures)]),
+	  Signature([Constructors(lex-signatures)]),
+	  Rules(is-rules),
+	  Rules(cflex-is-rules),
+	  Rules(lex-is-rules),
+	  Rules(explication-rules),
+	  Rules(lexsort-explication-rules),
+	  Rules(placeholder-rules),
+	  Rules(sort-strategies)
+    ])
+  with modname'  := <to-str-module-name(|"-injections", "injections")> Module(modname)
+     ; lang := <language-spec-name>
+     // CF and LEX sorts
+     ; cfsorts := <filter(?SDFSection(Sorts(_))); collect-all(stx-collect-sorts)> sections
+     ; cflexsortpairs := <map(\cfsort -> (cfsort, <stx-cfsort-to-lexsort> cfsort)\)> cfsorts
+     ; lexsorts := <map(Snd)> cflexsortpairs
+     // Imports
+     ; imports0  := Imports([
+     	Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
+     	Import(<to-str-module-name(|"-pp","pp")> Module(modname))
+       ])
+     ; imports1*  := <map(to-str-import(|"-injections", "injections"))> imports
+     // Stratego injection signatures
+     ; signatures := <filter(str-section-to-inj-sigs); flatten-list-once> sections
+     ; lex-signatures := <map(str-cflexsortpair-to-lex-injection-sig(|lang))> cflexsortpairs
+     // is-Sort-or-inj rules
+     ; is-rules := <filter(str-section-to-is-rules(|lang)); flatten-list-once> sections
+     ; cflex-is-rules := <map(str-cflexsortpair-inj-to-is-rule(|lang))> cflexsortpairs
+     ; lex-is-rules := <map(str-lex-inj-to-is-rule(|lang))> lexsorts
+     // explicate-injections-Lang-Sort rules
+     ; explication-rules := <filter(str-section-to-explication-rules(|lang)); flatten-list-once; flatten-list-once> sections
+     ; lexsort-explication-rules := <map(str-cflexsortpair-to-explication-rules(|lang)); flatten-list-once> cflexsortpairs
+     ; placeholder-rules := <map(str-sort-to-placeholder-rules(|lang)); flatten-list-once> cfsorts
+     ; sort-strategies := <map(str-sort-to-strategies(|lang)); flatten-list-once> cfsorts
+     
+rules
+
+  // str-section-to-inj-sigs :: SDF3.Section -> [Stratego.?]
+
+  str-section-to-inj-sigs:
+    SDFSection(ContextFreeSyntax(productions)) -> signatures
+  with signatures := <filter(str-cf-production-to-inj-sig <+ str-cf-template-to-inj-sig)> productions
+
+  str-section-to-inj-sigs:
+    TemplateSection(templates) -> signatures
+  with signatures := <filter(str-cf-template-to-inj-sig)> templates
+
+  str-section-to-inj-sigs:
+    SDFSection(Kernel(productions)) -> signatures
+  with signatures := <filter(str-cf-production-to-inj-sig)> productions
+
+
+  // str-cf-production-to-inj-sig :: SDF3.SdfProduction -> Stratego.?
+
+  str-cf-production-to-inj-sig:
+    SdfProduction(SortDef(sortname), Rhs(body), Attrs(attrs))
+    -> <str-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-production-to-inj-sig:
+    SdfProduction(Cf(SortDef(sortname)), Rhs(body), Attrs(attrs))
+    -> <str-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  // str-cf-template-to-inj-sig :: SDF3.TemplateProduction -> Stratego.?
+
+  str-cf-template-to-inj-sig:
+    TemplateProduction(SortDef(sortname), body, Attrs(attrs))
+    -> <str-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  // str-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
+  str-inj-to-sig: (sortname, body) -> OpDecl(consname, FunType(body', ConstType(SortNoArgs(sortname))))
+  with body' := <collect-om-concat(str-cf-sort-to-sig)> body
+  where <?[_|_]> body'
+  with consname := <stx-generate-injection-name> (<collect-all-concat(is-string)> body', sortname)
+
+  // str-cf-sort-to-sig :: SDF3.SortSymbol -> Stratego.?
+  str-cf-sort-to-sig: Sort(name)           -> ConstType(SortNoArgs(name))
+  str-cf-sort-to-sig: Opt(sort)            -> ConstType(<str-cf-sort-to-sig> sort)
+  str-cf-sort-to-sig: Iter(sort)           -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterSep(sort, _)     -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStar(sort)       -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  
+rules
+
+  str-sort-to-strategies(|lang):
+    sortname -> [
+      SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]]))),
+      SDefNoArgs($[implicate-injections-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]])))
+    ]
+
+rules
+
+  // str-section-to-explication-rules :: SDF3.Section -> [Stratego.?]
+
+  str-section-to-explication-rules(|lang):
+    SDFSection(ContextFreeSyntax(productions)) -> expl-rules
+  with expl-rules := <filter(str-cf-production-to-explication-rules(|lang) <+ str-cf-template-to-explication-rules(|lang))> productions
+
+  str-section-to-explication-rules(|lang):
+    TemplateSection(templates) -> expl-rules
+  with expl-rules := <filter(str-cf-template-to-explication-rules(|lang))> templates
+
+  str-section-to-explication-rules(|lang):
+    SDFSection(Kernel(productions)) -> expl-rules
+  with expl-rules := <filter(str-cf-production-to-explication-rules(|lang))> productions
+
+
+  // str-cf-production-to-explication-rule :: SDF3.SdfProduction -> Stratego.?
+
+  str-cf-production-to-explication-rules(|lang):
+    SdfProduction(SortDef(sortname), Rhs(body), Attrs(attrs))
+    -> <str-inj-to-explication-rules(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-production-to-explication-rules(|lang):
+    SdfProduction(Cf(SortDef(sortname)), Rhs(body), Attrs(attrs))
+    -> <str-inj-to-explication-rules(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-production-to-explication-rules(|lang):
+    SdfProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-explication-rules(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-production-to-explication-rules(|lang):
+    SdfProductionWithCons(SortCons(Cf(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-explication-rules(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-production-to-explication-rules(|lang):
+    SdfProductionWithCons(SortCons(Lex(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-explication-rules(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+
+
+  // str-cf-template-to-explication-rule :: SDF3.TemplateProduction -> Stratego.?
+
+  str-cf-template-to-explication-rules(|lang):
+    TemplateProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-explication-rules(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cf-template-to-explication-rules(|lang):
+    TemplateProduction(SortDef(sortname), body, Attrs(attrs))
+    -> <str-inj-to-explication-rules(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+
+  // str-inj-to-explication-rule :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
+  str-inj-to-explication-rules(|lang): (sortname, body)
+  -> [
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+      Var("t"), NoAnnoList(Op(consname, [App(CallNoArgs(SVar($[explicate-injections-[lang]-[tosortname]])), Var("t"))]))
+    , BA(CallNoArgs(SVar($[is-[lang]-[tosortname]-or-inj])), Var("t"))
+    )),
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+      NoAnnoList(Op(consname, [Var("t")])),
+      App(CallNoArgs(SVar($[implicate-injections-[lang]-[tosortname]])), Var("t"))
+    ))
+  ]
+  where args@[(tosort, _)] := <str-extract-sort-args> body
+  with  tosortname := <str-sort-get-name> tosort
+      ; consname := <str-generate-inj-name> (sortname, args)
+
+
+  // str-cons-to-explication-rule :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Stratego.?
+  str-cons-to-explication-rules(|lang): (sortname, consname, body)
+  -> [
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+      NoAnnoList(Op(consname, vars))
+    , NoAnnoList(Op(consname, expl-ops))
+    )),
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+      NoAnnoList(Op(consname, vars))
+    , NoAnnoList(Op(consname, impl-ops))
+    ))
+  ]
+  with <reset-counter> "injections"
+     ; args := <str-extract-sort-args> body
+     ; vars := <map(str-arg-to-var)> args
+     ; expl-ops := <map(str-arg-to-explication(|lang))> args
+     ; impl-ops := <map(str-arg-to-implication(|lang))> args
+  
+  str-arg-to-var: (_, newname) -> Var(newname)
+  
+  str-arg-to-explication(|lang): (sort, newname) -> App(<str-arg-to-explication-call(|lang)> sort, Var(newname))
+  str-arg-to-explication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+  str-arg-to-explication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  
+  str-arg-to-implication(|lang): (sort, newname) -> App(<str-arg-to-implication-call(|lang)> sort, Var(newname))
+  str-arg-to-implication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+  str-arg-to-implication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+
+rules
+
+  str-cflexsortpair-to-explication-rules(|lang): (cfsort, lexsort)
+  -> [
+    RDefNoArgs($[explicate-injections-[lang]-[cfsort]], Rule(
+      Var("t"), NoAnnoList(Op(consname, [Var("t")]))
+    , BA(CallNoArgs(SVar($[is-[lang]-[lexsort]-or-inj])), Var("t"))
+    )),
+    RDefNoArgs($[implicate-injections-[lang]-[cfsort]], RuleNoCond(
+      NoAnnoList(Op(consname, [Var("t")])), Var("t")
+    ))
+  ]
+  with args := [(Sort(lexsort), lexsort)]
+     ; consname := <str-generate-inj-name> (cfsort, args)
+     
+  str-cflexsortpair-to-lex-injection-sig(|lang): (cfsort, lexsort)
+  -> <str-inj-to-sig> (cfsort, Sort(lexsort))
+
+rules
+
+  str-sort-to-placeholder-rules(|lang):
+    sortname -> [
+	  RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+	    NoAnnoList(Op($[[sortname]-Plhdr], []))
+	  , NoAnnoList(Op($[[sortname]-Plhdr], []))
+	  )),
+	  RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+        NoAnnoList(Op($[[sortname]-Plhdr], []))
+      , NoAnnoList(Op($[[sortname]-Plhdr], []))
+      ))
+    ]
+	   
+
+
+rules
+
+  // str-section-to-is-rules :: SDF3.Section -> [Stratego.?]
+
+  str-section-to-is-rules(|lang):
+    SDFSection(ContextFreeSyntax(productions)) -> signatures
+  with signatures := <filter(str-cfg-production-to-is-rule(|lang) <+ str-cfg-template-to-is-rule(|lang))> productions
+
+  str-section-to-is-rules(|lang):
+    TemplateSection(templates) -> signatures
+  with signatures := <filter(str-cfg-template-to-is-rule(|lang))> templates
+
+  str-section-to-is-rules(|lang):
+    SDFSection(Kernel(productions)) -> signatures
+  with signatures := <filter(str-cfg-production-to-is-rule(|lang))> productions
+
+
+  // stx-cfg-production-to-is-rule :: SDF3.SdfProduction -> Stratego.?
+
+  str-cfg-production-to-is-rule(|lang):
+    SdfProduction(SortDef(sortname), Rhs(body), Attrs(attrs))
+    -> <str-cf-inj-to-is-rule(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cfg-production-to-is-rule(|lang):
+    SdfProduction(Cf(SortDef(sortname)), Rhs(body), Attrs(attrs))
+    -> <str-cf-inj-to-is-rule(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cfg-production-to-is-rule(|lang):
+    SdfProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-is-rule(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cfg-production-to-is-rule(|lang):
+    SdfProductionWithCons(SortCons(Cf(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-is-rule(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cfg-production-to-is-rule(|lang):
+    SdfProductionWithCons(SortCons(Lex(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-is-rule(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+  
+  // str-cfg-template-to-is-sig :: SDF3.TemplateProduction -> Stratego.?
+
+  str-cfg-template-to-is-rule(|lang):
+    TemplateProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <str-cons-to-is-rule(|lang)> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  str-cfg-template-to-is-rule(|lang):
+    TemplateProduction(SortDef(sortname), body, Attrs(attrs))
+    -> <str-cf-inj-to-is-rule(|lang)> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  // str-cf-inj-to-is-rule :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
+  str-cf-inj-to-is-rule(|lang): (sortname, body)
+  -> SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-[lang]-[tosortname]-or-inj])))
+  where args@[(tosort, _)] := <str-extract-sort-args> body
+  with  tosortname := <str-sort-get-name> tosort
+      ; consname := <str-generate-inj-name> (sortname, args)
+     
+  // str-lex-inj-to-is-rule :: SDF3.Sort -> Stratego.?
+  str-lex-inj-to-is-rule(|lang): sortname
+  -> SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string])))
+  
+  // str-cflexsortpair-inj-to-is-rule :: SDF3.? -> Stratego.?
+  str-cflexsortpair-inj-to-is-rule(|lang): (cfsort, lexsort)
+  -> SDefNoArgs($[is-[lang]-[cfsort]-or-inj], CallNoArgs(SVar($[is-[lang]-[lexsort]-or-inj])))
+
+  // str-cons-to-is-rule :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Stratego.?
+  str-cons-to-is-rule(|lang): (sortname, consname, body)
+  -> SDefNoArgs(
+    $[is-[lang]-[sortname]-or-inj]
+  , Match(NoAnnoList(Op(consname, args)))
+  )
+  with args := <str-extract-sort-args; map(!Wld())> body
+
+rules
+
+  // Extracts the arguments of an SDF production and assigns them unique names
+  str-extract-sort-args = collect-om-concat(str-extract-sort-arg)
+
+  str-extract-sort-arg: s@Sort(name) -> (s, argname)
+    with argname := $[t[<next-counter> "injections"]]
+  str-extract-sort-arg: s@Opt(sort) -> (s, argname)
+    with argname := $[t[<next-counter> "injections"]]
+  str-extract-sort-arg: s@Iter(sort) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterSep(sort, _) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterStar(sort) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  
+  str-sort-get-name: Sort(name)           -> name
+  str-sort-get-name: Opt(sort)            -> <str-sort-get-name> sort
+  str-sort-get-name: Iter(sort)           -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterSep(sort, _)     -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterStar(sort)       -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterStarSep(sort, _) -> $[[<str-sort-get-name> sort]s]
+  
+  
+  // Generates a constructor name for the injection with the specified sort name and arguments
+  str-generate-inj-name: (sortname, args) -> consname
+  where <?[_|_]> args
+  with consname := <stx-generate-injection-name> (<map(?(<id>, _); str-sort-get-name)> args, sortname)
+  

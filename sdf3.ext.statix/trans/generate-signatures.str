@@ -1,0 +1,218 @@
+module generate-signatures
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  signatures/statix/-
+  pp/statix/-
+  pp/statix/lang/-
+  generate-signatures
+  generate-injections
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
+
+  // stx-generate-signatures :: SDF3.Module -> Statix.Module
+  stx-generate-signatures = strip-annos; stx-module-to-sig
+
+
+  // stx-module-to-sig :: SDF3.Module -> Statix.Module
+  stx-module-to-sig:
+    Module(Unparameterized(modname), imports, sections) -> Module(modname', [
+    	Imports(imports'),
+    	Signature([Sorts(<concatenate> (lexsorts, cfsorts)), Constructors(lexsort-injection-signatures), Constructors(cfplaceholder-signatures)]),
+    	Signature([Constructors(signatures)])
+    ])
+  with modname' := <conc-strings> ("signatures/", modname, "-sig")
+     ; imports' := <flatmap(stx-to-str-import(|"-sig", "signatures"))> imports
+     ; cfsortnames := <filter(?SDFSection(Sorts(_))); collect-all(stx-collect-sorts)> sections
+     ; cflexsortpairs := <map(\cfsort -> (cfsort, <stx-cfsort-to-lexsort> cfsort)\)> cfsortnames
+     ; lexsortnames := <map(Snd)> cflexsortpairs
+     ; cfsorts := <map(stx-cfsort-to-sig)> cfsortnames
+     ; lexsorts := <map(stx-lexsort-to-sig)> lexsortnames
+     ; lexsort-injection-signatures := <map(stx-cflexsortpair-to-injection-sig)> cflexsortpairs
+     ; signatures := <filter(stx-section-to-ctors); flatten-list-once> sections
+     ; cfplaceholder-signatures := <map(stx-sort-to-placeholder)> cfsortnames
+
+rules
+
+  // stx-collect-sorts :: SDF3.GeneralProduction -> SDF3.Sort
+  stx-collect-sorts =
+       ?DeclSort(<id>)
+    <+ ?TemplateProduction(SortDef(s),_,Attrs(<not(fetch-elem(?Reject()))>)); !s
+    <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+    <+ ?SdfProduction(SortDef(<id>),_,_)
+    <+ ?SdfProductionWithCons(SortCons(SortDef(<id>), _), _, _)
+    <+ ?SdfProduction(Cf(SortDef(<id>)), _, _)
+    <+ ?SdfProductionWithCons(SortCons(Cf(SortDef(<id>)), _), _, _)
+    <+ ?DeclSort(<id>)
+    
+  // stx-cfsort-to-sig :: SDF3.Sort -> SDF3.Sort
+  stx-cfsort-to-lexsort = !$[[<id>]-LEX]
+
+  // stx-cfsort-to-sig :: SDF3.Sort -> Statix.SortDecl
+  stx-cfsort-to-sig = !SortDecl(<id>)
+
+
+  // stx-lexsort-to-sig :: SDF3.Sort -> Statix.SortDecl
+  stx-lexsort-to-sig = !SortAlias(<id>, StringSort())
+
+  // stx-to-str-import :: SDF3.ImpSection -> [Statix.Import]
+  stx-to-str-import(|ext, folder):
+    Imports(imports) -> <map(!Import(<stx-to-module-name(|ext, folder)>))> imports
+
+
+  // stx-to-module-name(|string, string) :: SDF3.Import -> string
+  stx-to-module-name(|ext, folder):
+    Module(Unparameterized(m)) -> <conc-strings> (folder, "/" , m, ext)
+
+rules
+
+  // stx-section-to-ctors :: SDF3.Section -> [Statix.OpDecl]
+
+  stx-section-to-ctors:
+    SDFSection(ContextFreeSyntax(productions)) -> signatures
+  with signatures := <filter(stx-cfg-production-to-cons-sig <+ stx-cfg-template-to-cons-sig)> productions
+
+  stx-section-to-ctors:
+    TemplateSection(templates) -> signatures
+  with signatures := <filter(stx-cfg-template-to-cons-sig)> templates
+
+  stx-section-to-ctors:
+    SDFSection(Kernel(productions)) -> signatures
+  with signatures := <filter(stx-cfg-production-to-cons-sig)> productions
+
+
+  // stx-cfg-production-to-cons-sig :: SDF3.SdfProduction -> Statix.OpDecl
+
+  stx-cfg-production-to-cons-sig:
+    SdfProduction(SortDef(sortname), Rhs(body), Attrs(attrs))
+    -> <stx-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  stx-cfg-production-to-cons-sig:
+    SdfProduction(Cf(SortDef(sortname)), Rhs(body), Attrs(attrs))
+    -> <stx-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+  stx-cfg-production-to-cons-sig:
+    SdfProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <stx-cons-to-sig> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  stx-cfg-production-to-cons-sig:
+    SdfProductionWithCons(SortCons(Cf(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <stx-cons-to-sig> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  stx-cfg-production-to-cons-sig:
+    SdfProductionWithCons(SortCons(Lex(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
+    -> <stx-cons-to-sig> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+
+
+  // stx-cfg-template-to-cons-sig :: SDF3.TemplateProduction -> Statix.OpDecl
+
+  stx-cfg-template-to-cons-sig:
+    TemplateProductionWithCons(SortCons(SortDef(sortname), Constructor(consname)), body, Attrs(attrs))
+    -> <stx-cons-to-sig> (sortname, consname, body)
+  where <not(stx-ignore-production)> attrs
+
+  stx-cfg-template-to-cons-sig:
+    TemplateProduction(SortDef(sortname), body, Attrs(attrs))
+    -> <stx-inj-to-sig> (sortname, body)
+  where <not(stx-ignore-production)> attrs
+
+
+  // stx-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Statix.OpDecl
+  stx-inj-to-sig: (sortname, body) -> OpDecl(consname, op)
+  with body' := <collect-om-concat(stx-cfg-sort-to-sig)> body
+  where <?[_|_]> body'
+  with op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
+     ; consname := <stx-generate-injection-name> (<collect-om-concat(is-string)> body', sortname)
+
+
+  // stx-cons-to-sig :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Statix.OpDecl
+  stx-cons-to-sig: (sortname, consname, body) -> OpDecl(consname, op)
+  with body' := <collect-om-concat(stx-cfg-sort-to-sig)> body
+     ; op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
+
+
+  // stx-generate-injection-name :: (Statix.SortId, [Statix.Sort]) -> OpId
+  stx-generate-injection-name: (bodynames, targetname) -> <string-join(|"2")> [sourcename, targetname]
+  where sourcename := <string-join(|"-")> bodynames
+
+
+  // stx-cfg-sort-to-sig :: SDF3.SortSymbol -> Statix.SortRef
+  stx-cfg-sort-to-sig: Sort(name)           -> SimpleSort(name)
+  stx-cfg-sort-to-sig: Opt(sort)            -> <stx-cfg-sort-to-sig> sort
+  stx-cfg-sort-to-sig: Iter(sort)           -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterSep(sort, _)     -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterStar(sort)       -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: IterStarSep(sort, _) -> ListSort(<stx-cfg-sort-to-sig> sort)
+
+
+  // stx-ignore-production :: [SDF3.Attribute] -> SDF3.Attribute
+  stx-ignore-production = fetch-elem(?Reject() + ?Bracket())
+
+rules
+
+  // stx-lexsort-to-injection-sig :: SDF3.Sort -> Statix.SortDecl
+  stx-cflexsortpair-to-injection-sig: (cfsort, lexsort) -> OpDecl(consname, ArrowOp(lexsort, SimpleSort(cfsort)))
+  with consname := <stx-generate-injection-name> ([lexsort], cfsort)
+  
+rules
+
+  // stx-sort-to-placeholder :: SDF3.Sort -> Statix.SortDecl
+  stx-sort-to-placeholder = !OpDecl($[[<id>]-Plhdr], ConstOp(SimpleSort(<id>)))
+
+rules
+
+  // collect-all-concat<T>(? -> T) :: ? -> [T]
+  collect-all-concat(s) = collect-all(s, concatenate)
+
+  // collect-om-concat<T>(? -> T) :: ? -> [T]
+  collect-om-concat(s) = collect-om(s, concatenate)
+
+
+  // concatenate<T> :: ([T], [T]) -> [T]
+  concatenate: (l1, l2) -> <at-end(!l2)> l1
+
+
+  // flatten-list-once<T> ::  [[T]] -> [T]
+  flatten-list-once = foldr(![], (is-list, id) < conc + MkCons)
+
+
+  // string-join(|string) :: [string] -> string
+  string-join(|t) = separate-by(|t); concat-strings
+
+
+  // flatmap(? -> [T]) :: [?] -> [T]
+  flatmap(s) = map(s); flatten-list-once

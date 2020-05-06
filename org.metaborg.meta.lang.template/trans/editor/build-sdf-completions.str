@@ -40,5 +40,5 @@ rules
    where
      <?Module(Unparameterized(mn), i*, sections)> ast ;
      selected' := <desugar-templates> selected;
-     filename  := <create-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf3")> mn;
+     filename  := <get-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf3")> mn;
      result    := <module-to-sdf3-completions; pp-SDF3-string <+ !""; debug(!"The sdf3 file could not be generated.\n"); fail> selected'

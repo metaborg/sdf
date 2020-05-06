@@ -14,6 +14,9 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lib.analysis:${metaborgVersion}
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
   - org.metaborg:statix.runtime:${metaborgVersion}
+contributions:
+- name: TemplateLang
+  id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 generates:
 - language: EditorService
   directory: src-gen
@@ -25,9 +28,17 @@ generates:
   directory: src-gen
 exports:
 - language: Stratego-Sugar
-  directory: src-gen  
+  directory: trans
+  includes:
+  - "**/*.str"
+- language: Stratego-Sugar
+  directory: src-gen
+  includes:
+  - "**/*.str"
 - language: ATerm
   directory: src-gen/statix
+  includes:
+  - "**/*.stx"
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
@@ -36,6 +47,7 @@ pardonedLanguages:
 - NameBindingLanguage
 language:
   sdf:
+    sdf2table: c
     args:
     - -Idef
     - ${path:root}/lib/SDF.def

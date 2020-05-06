@@ -2,8 +2,8 @@ module analysis/lifting
 imports
   libstratego-lib
   signatures/TemplateLang-sig
-  trans/utils/attributes
-  trans/utils/misc
+  utils/attributes
+  utils/misc
   libspoofax/term/origin
   names/analysis/names
 

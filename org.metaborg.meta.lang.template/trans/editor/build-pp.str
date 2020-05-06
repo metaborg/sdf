@@ -17,7 +17,7 @@ rules
       selected'     := <desugar-templates> selected;
       result   :=  <module-to-pp> selected'
      // ; fn       :=  <get-filename> mn
-      ; filename := <create-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
+      ; filename := <get-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
 
   generate-pp-concrete:
 
@@ -30,5 +30,5 @@ rules
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
       result   := <module-to-pp; pp-stratego-string <+ !""; debug(!"The pp file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
-      ; filename := <create-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn
+      ; filename := <get-src-gen(|project-path, "pp", "-pp.str"); debug(!"filename ")> mn
 
