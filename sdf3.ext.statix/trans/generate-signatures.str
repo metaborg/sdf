@@ -44,9 +44,9 @@ rules
   // stx-module-to-sig :: SDF3.Module -> Statix.Module
   stx-module-to-sig:
     Module(Unparameterized(modname), imports, sections) -> Module(modname', [
-    	Imports(imports'),
-    	Signature([Sorts(<concatenate> (lexsorts, cfsorts)), Constructors(lexsort-injection-signatures), Constructors(cfplaceholder-signatures)]),
-    	Signature([Constructors(signatures)])
+      Imports(imports'),
+      Signature([Sorts(<concatenate> (lexsorts, cfsorts)), Constructors(lexsort-injection-signatures), Constructors(cfplaceholder-signatures)]),
+      Signature([Constructors(signatures)])
     ])
   with modname' := <conc-strings> ("signatures/", modname, "-sig")
      ; imports' := <flatmap(stx-to-str-import(|"-sig", "signatures"))> imports
@@ -71,7 +71,7 @@ rules
     <+ ?SdfProduction(Cf(SortDef(<id>)), _, _)
     <+ ?SdfProductionWithCons(SortCons(Cf(SortDef(<id>)), _), _, _)
     <+ ?DeclSort(<id>)
-    
+
   // stx-cfsort-to-sig :: SDF3.Sort -> SDF3.Sort
   stx-cfsort-to-lexsort = !$[[<id>]-LEX]
 
@@ -182,7 +182,7 @@ rules
   // stx-lexsort-to-injection-sig :: SDF3.Sort -> Statix.SortDecl
   stx-cflexsortpair-to-injection-sig: (cfsort, lexsort) -> OpDecl(consname, ArrowOp(lexsort, SimpleSort(cfsort)))
   with consname := <str-generate-inj-name> (cfsort, [(Sort(lexsort), "x")])
-  
+
 rules
 
   // stx-sort-to-placeholder :: SDF3.Sort -> Statix.SortDecl
