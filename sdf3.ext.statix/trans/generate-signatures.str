@@ -10,7 +10,6 @@ imports
   signatures/statix/-
   pp/statix/-
   pp/statix/lang/-
-  generate-signatures
   generate-injections
 
 imports
@@ -154,20 +153,16 @@ rules
   // stx-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Statix.OpDecl
   stx-inj-to-sig: (sortname, body) -> OpDecl(consname, op)
   with body' := <collect-om-concat(stx-cfg-sort-to-sig)> body
-  where <?[_|_]> body'
+  with args := <str-extract-sort-args> body
+  where <?[_|_]> body'; <?[_|_]> args
   with op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
-     ; consname := <stx-generate-injection-name> (<collect-om-concat(is-string)> body', sortname)
+     ; consname := <str-generate-inj-name> (sortname, args)
 
 
   // stx-cons-to-sig :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Statix.OpDecl
   stx-cons-to-sig: (sortname, consname, body) -> OpDecl(consname, op)
   with body' := <collect-om-concat(stx-cfg-sort-to-sig)> body
      ; op := <?[] < !ConstOp(SimpleSort(sortname)) + !ArrowOp(<id>, SimpleSort(sortname))> body'
-
-
-  // stx-generate-injection-name :: (Statix.SortId, [Statix.Sort]) -> OpId
-  stx-generate-injection-name: (bodynames, targetname) -> <string-join(|"2")> [sourcename, targetname]
-  where sourcename := <string-join(|"-")> bodynames
 
 
   // stx-cfg-sort-to-sig :: SDF3.SortSymbol -> Statix.SortRef
@@ -186,7 +181,7 @@ rules
 
   // stx-lexsort-to-injection-sig :: SDF3.Sort -> Statix.SortDecl
   stx-cflexsortpair-to-injection-sig: (cfsort, lexsort) -> OpDecl(consname, ArrowOp(lexsort, SimpleSort(cfsort)))
-  with consname := <stx-generate-injection-name> ([lexsort], cfsort)
+  with consname := <str-generate-inj-name> (cfsort, [(Sort(lexsort), "x")])
   
 rules
 
