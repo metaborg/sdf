@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sdf3ExtStatix language Eclipse plugin
 Bundle-SymbolicName: sdf3.ext.statix.eclipse;singleton:=true
-Bundle-Version: 2.5.8
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: org.metaborg
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.metaborg.spoofax.eclipse

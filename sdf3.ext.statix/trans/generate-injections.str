@@ -6,7 +6,7 @@ imports
   analysis/types
   runtime/nabl/-
   runtime/task/-
-  runtime/types/-  
+  runtime/types/-
   generation/gen-utils/to-str
   analysis/desugar
   generate-signatures
@@ -33,7 +33,7 @@ imports
   signatures/sorts/-
   signatures/symbols/-
   signatures/TemplateLang-sig
-  
+
 rules
   language-spec-name = prim("pp_language_spec_name") <+ !"unknown"
 
@@ -46,17 +46,17 @@ rules
   // str-module-to-injections :: SDF3.Module -> Stratego.Module
   str-module-to-injections:
     Module(modname, imports, sections) -> Module(modname', [
-	  imports0,
-	  imports1*,
-	  Signature([Constructors(signatures)]),
-	  Signature([Constructors(lex-signatures)]),
-	  Rules(is-rules),
-	  Rules(cflex-is-rules),
-	  Rules(lex-is-rules),
-	  Rules(explication-rules),
-	  Rules(lexsort-explication-rules),
-	  Rules(placeholder-rules),
-	  Rules(sort-strategies)
+    imports0,
+    imports1*,
+    Signature([Constructors(signatures)]),
+    Signature([Constructors(lex-signatures)]),
+    Rules(is-rules),
+    Rules(cflex-is-rules),
+    Rules(lex-is-rules),
+    Rules(explication-rules),
+    Rules(lexsort-explication-rules),
+    Rules(placeholder-rules),
+    Rules(sort-strategies)
     ])
   with modname'  := <to-str-module-name(|"-injections", "injections")> Module(modname)
      ; lang := <language-spec-name>
@@ -66,8 +66,8 @@ rules
      ; lexsorts := <map(Snd)> cflexsortpairs
      // Imports
      ; imports0  := Imports([
-     	Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
-     	Import(<to-str-module-name(|"-pp","pp")> Module(modname))
+       Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
+       Import(<to-str-module-name(|"-pp","pp")> Module(modname))
        ])
      ; imports1*  := <map(to-str-import(|"-injections", "injections"))> imports
      // Stratego injection signatures
@@ -82,7 +82,7 @@ rules
      ; lexsort-explication-rules := <map(str-cflexsortpair-to-explication-rules(|lang)); flatten-list-once> cflexsortpairs
      ; placeholder-rules := <map(str-sort-to-placeholder-rules(|lang)); flatten-list-once> cfsorts
      ; sort-strategies := <map(str-sort-to-strategies(|lang)); flatten-list-once> cfsorts
-     
+
 rules
 
   // str-section-to-inj-sigs :: SDF3.Section -> [Stratego.?]
@@ -122,14 +122,18 @@ rules
   // str-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
   str-inj-to-sig: (sortname, body) -> OpDecl(consname, FunType(body', ConstType(SortNoArgs(sortname))))
   with body' := <collect-om-concat(str-cf-sort-to-sig)> body
-     ; consname := <stx-generate-injection-name> (<collect-all-concat(is-string)> body', sortname)
+  with args  := <str-extract-sort-args> body
+  where <?[_|_]> body'; <?[_|_]> args
+  with consname := <str-generate-inj-name> (sortname, args)
 
   // str-cf-sort-to-sig :: SDF3.SortSymbol -> Stratego.?
-  str-cf-sort-to-sig:
-    Sort(name) -> ConstType(SortNoArgs(name))
-  str-cf-sort-to-sig:
-    IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
-  
+  str-cf-sort-to-sig: Sort(name)           -> ConstType(SortNoArgs(name))
+  str-cf-sort-to-sig: Opt(sort)            -> ConstType(<str-cf-sort-to-sig> sort)
+  str-cf-sort-to-sig: Iter(sort)           -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterSep(sort, _)     -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStar(sort)       -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+  str-cf-sort-to-sig: IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+
 rules
 
   str-sort-to-strategies(|lang):
@@ -201,17 +205,16 @@ rules
   str-inj-to-explication-rules(|lang): (sortname, body)
   -> [
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
-      Var("t"), NoAnnoList(Op(consname, [App(CallNoArgs(SVar($[explicate-injections-[lang]-[tosortname]])), Var("t"))]))
-    , BA(CallNoArgs(SVar($[is-[lang]-[tosortname]-or-inj])), Var("t"))
+      Var("t"), NoAnnoList(Op(consname, [<str-arg-to-explication(|lang)> (tosort, "t")]))
+    , BA(<str-cf-inj-to-is-rule-call(|lang)> tosort, Var("t"))
     )),
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op(consname, [Var("t")])),
-      App(CallNoArgs(SVar($[implicate-injections-[lang]-[tosortname]])), Var("t"))
+      <str-arg-to-implication(|lang)> (tosort, "t")
     ))
   ]
   where args@[(tosort, _)] := <str-extract-sort-args> body
-  with  tosortname := <str-sort-get-name> tosort
-      ; consname := <str-generate-inj-name> (sortname, args)
+  with  consname := <str-generate-inj-name> (sortname, args)
 
 
   // str-cons-to-explication-rule :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Stratego.?
@@ -231,19 +234,23 @@ rules
      ; vars := <map(str-arg-to-var)> args
      ; expl-ops := <map(str-arg-to-explication(|lang))> args
      ; impl-ops := <map(str-arg-to-implication(|lang))> args
-  
+
   str-arg-to-var: (_, newname) -> Var(newname)
-  
+
   str-arg-to-explication(|lang): (sort, newname) -> App(<str-arg-to-explication-call(|lang)> sort, Var(newname))
-  str-arg-to-explication-call(|lang): Sort(name) -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
-  str-arg-to-explication-call(|lang): Opt(sort) -> <fail>	// TODO: Implement
-  str-arg-to-explication-call(|lang): IterSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+  str-arg-to-explication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   str-arg-to-explication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
-  
+
   str-arg-to-implication(|lang): (sort, newname) -> App(<str-arg-to-implication-call(|lang)> sort, Var(newname))
-  str-arg-to-implication-call(|lang): Sort(name) -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
-  str-arg-to-implication-call(|lang): Opt(sort) -> <fail>	// TODO: Implement
-  str-arg-to-implication-call(|lang): IterSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+  str-arg-to-implication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
   str-arg-to-implication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
 
 rules
@@ -260,7 +267,7 @@ rules
   ]
   with args := [(Sort(lexsort), lexsort)]
      ; consname := <str-generate-inj-name> (cfsort, args)
-     
+
   str-cflexsortpair-to-lex-injection-sig(|lang): (cfsort, lexsort)
   -> <str-inj-to-sig> (cfsort, Sort(lexsort))
 
@@ -268,16 +275,16 @@ rules
 
   str-sort-to-placeholder-rules(|lang):
     sortname -> [
-	  RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
-	    NoAnnoList(Op($[[sortname]-Plhdr], []))
-	  , NoAnnoList(Op($[[sortname]-Plhdr], []))
-	  )),
-	  RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+      NoAnnoList(Op($[[sortname]-Plhdr], []))
+    , NoAnnoList(Op($[[sortname]-Plhdr], []))
+    )),
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
         NoAnnoList(Op($[[sortname]-Plhdr], []))
       , NoAnnoList(Op($[[sortname]-Plhdr], []))
       ))
     ]
-	   
+
 
 
 rules
@@ -323,7 +330,7 @@ rules
     SdfProductionWithCons(SortCons(Lex(SortDef(sortname)), Constructor(consname)), body, Attrs(attrs))
     -> <str-cons-to-is-rule(|lang)> (sortname, consname, body)
   where <not(stx-ignore-production)> attrs
-  
+
   // str-cfg-template-to-is-sig :: SDF3.TemplateProduction -> Stratego.?
 
   str-cfg-template-to-is-rule(|lang):
@@ -338,15 +345,16 @@ rules
 
   // str-cf-inj-to-is-rule :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
   str-cf-inj-to-is-rule(|lang): (sortname, body)
-  -> SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-[lang]-[tosortname]-or-inj])))
+  -> SDefNoArgs($[is-[lang]-[sortname]-or-inj],call)
   where args@[(tosort, _)] := <str-extract-sort-args> body
   with  tosortname := <str-sort-get-name> tosort
       ; consname := <str-generate-inj-name> (sortname, args)
-     
+      ; call := <str-cf-inj-to-is-rule-call(|lang)> tosort
+
   // str-lex-inj-to-is-rule :: SDF3.Sort -> Stratego.?
   str-lex-inj-to-is-rule(|lang): sortname
   -> SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string])))
-  
+
   // str-cflexsortpair-inj-to-is-rule :: SDF3.? -> Stratego.?
   str-cflexsortpair-inj-to-is-rule(|lang): (cfsort, lexsort)
   -> SDefNoArgs($[is-[lang]-[cfsort]-or-inj], CallNoArgs(SVar($[is-[lang]-[lexsort]-or-inj])))
@@ -359,6 +367,23 @@ rules
   )
   with args := <str-extract-sort-args; map(!Wld())> body
 
+  str-cf-inj-to-is-rule-call(|lang): Sort(name)
+  -> CallNoArgs(SVar($[is-[lang]-[name]-or-inj]))
+  str-cf-inj-to-is-rule-call(|lang): Opt(name)
+  -> <fail>
+  str-cf-inj-to-is-rule-call(|lang): Iter(sort)
+  -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): IterSep(sort, _)
+  -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): IterStar(sort)
+  -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): IterStarSep(sort, _)
+  -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
+
+  str-cf-inj-to-is-rule-call-list(|lang): nestedSort
+  -> Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<str-cf-inj-to-is-rule-call(|lang)> nestedSort]))
+
+
 rules
 
   // Extracts the arguments of an SDF production and assigns them unique names
@@ -368,18 +393,29 @@ rules
     with argname := $[t[<next-counter> "injections"]]
   str-extract-sort-arg: s@Opt(sort) -> (s, argname)
     with argname := $[t[<next-counter> "injections"]]
-  str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
+  str-extract-sort-arg: s@Iter(sort) -> (s, argname)
     with argname := $[ts[<next-counter> "injections"]]
   str-extract-sort-arg: s@IterSep(sort, _) -> (s, argname)
     with argname := $[ts[<next-counter> "injections"]]
-  
-  str-sort-get-name: Sort(name) -> name
-  str-sort-get-name: Opt(sort) -> <str-sort-get-name> sort
+  str-extract-sort-arg: s@IterStar(sort) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
+    with argname := $[ts[<next-counter> "injections"]]
+
+  str-sort-get-name: Sort(name)           -> name
+  str-sort-get-name: Opt(sort)            -> <str-sort-get-name> sort
+  str-sort-get-name: Iter(sort)           -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterSep(sort, _)     -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: IterStar(sort)       -> $[[<str-sort-get-name> sort]s]
   str-sort-get-name: IterStarSep(sort, _) -> $[[<str-sort-get-name> sort]s]
-  str-sort-get-name: IterSep(sort, _) -> $[[<str-sort-get-name> sort]s]
-  
-  
+
+
   // Generates a constructor name for the injection with the specified sort name and arguments
   str-generate-inj-name: (sortname, args) -> consname
+  where <?[_|_]> args
   with consname := <stx-generate-injection-name> (<map(?(<id>, _); str-sort-get-name)> args, sortname)
-  
+
+  // stx-generate-injection-name :: (Statix.SortId, [Statix.Sort]) -> OpId
+  stx-generate-injection-name: (bodynames, targetname) -> $[[sourcename]2[targetname]]
+  where sourcename := <string-join(|"-")> bodynames
+
