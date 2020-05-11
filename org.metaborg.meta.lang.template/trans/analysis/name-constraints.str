@@ -122,11 +122,10 @@ rules
     <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> m
 
   nabl-constraint(|ctx):
-     Sort(s) -> <fail>
+     sort@Sort(s) -> <fail>
     where
       <has-annotation(?Use(task))> s;
-      msg := $[Unresolved reference to sort '[s]'];
-      <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
+      <task-create-error-on-triggers(|ctx, [Failure(task)], $[Unresolved reference to sort '[s]'])> s
 
   nabl-constraint(|ctx):
     TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
@@ -299,20 +298,22 @@ rules
   nabl-constraint(|ctx):
     d@DeclSortCf(sort) -> <fail>
   where
-    task := <nabl-lookup-local(|ctx)> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate CF sort declaration [sort]])> d
+    task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate context-free sort declaration [sort]])> d
 
   nabl-constraint(|ctx):
     d@DeclSortLex(sort) -> <fail>
   where
-    task := <nabl-lookup-local(|ctx)> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate LEX sort declaration [sort]])> d
+    task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate lexical sort declaration [sort]])> d
 
   nabl-constraint(|ctx):
     d@DeclSortVar(sort) -> <fail>
   where
-    task := <nabl-lookup-local(|ctx)> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate VAR sort declaration [sort]])> d
+    task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate variable sort declaration [sort]])> d
+
+
 
 
   prod-without-constructor:

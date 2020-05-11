@@ -76,15 +76,12 @@ binding rules
     defines non-unique Sort s of type SortType(s)
     scopes Label
 
-
-//  DeclSort(s):    // this should be desugared
-//    defines DeclSort s
   DeclSortCf(s):
-    defines DeclSort s// of type SortTypeCf(s)
+    defines DeclSort s
   DeclSortLex(s):
-    defines DeclSort s// of type SortTypeLex(s)
+    defines DeclSort s
   DeclSortVar(s):
-    defines DeclSort s// of type SortTypeVar(s)
+    defines DeclSort s
 
   SortConsRef(Lex(Sort(s)), Constructor(c)):
     refers to Sort s
