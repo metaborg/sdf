@@ -8,9 +8,9 @@ imports
 
 namespaces
 
-  Module Sort Constructor Label
-// LexSort CfSort
-  // Option
+  Module Sort
+  Constructor Label
+  DeclSort
 
 properties
 
@@ -76,12 +76,15 @@ binding rules
     defines non-unique Sort s of type SortType(s)
     scopes Label
 
- DeclSort(s):
-  defines non-unique Sort s of type SortType(s)
 
- SortConsRef(Sort(s), Constructor(c)):
-    refers to Sort s
-    refers to Constructor c of sort s
+//  DeclSort(s):    // this should be desugared
+//    defines DeclSort s
+  DeclSortCf(s):
+    defines DeclSort s// of type SortTypeCf(s)
+  DeclSortLex(s):
+    defines DeclSort s// of type SortTypeLex(s)
+  DeclSortVar(s):
+    defines DeclSort s// of type SortTypeVar(s)
 
   SortConsRef(Lex(Sort(s)), Constructor(c)):
     refers to Sort s
