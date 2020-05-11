@@ -50,7 +50,7 @@ rules // Statix pre and post-transformation
 
   disambiguate-all-constructors = topdown(try(disambiguate-constructor))
   ambiguate-all-constructors    = topdown(try(   ambiguate-constructor))
-  
+
   explicate-injection      = fail
   unexplicate-injection    = fail
   disambiguate-constructor = fail
@@ -110,7 +110,7 @@ rules
   unexplicate-injection = TemplateProductionWithCons(unexplicate-injection, id, id)
   unexplicate-injection = KeywordAttributes         (unexplicate-symboldef, id)
 
-  explicate-symboldef: symbol -> SymbolDef_Symbol(symbol) 
+  explicate-symboldef: symbol -> SymbolDef_Symbol(symbol)
   where <not(?SortDef(_) <+ ?Cf(_) <+ ?Lex(_) <+ ?Var(_))> symbol
   unexplicate-symboldef: SymbolDef_Symbol(symbol) -> symbol
 
@@ -120,7 +120,7 @@ signature constructors // SymbolDef and ambiguous constructors
   SymbolDefLex : SymbolDef -> SymbolDef
   SymbolDefVar : SymbolDef -> SymbolDef
 
-rules 
+rules
 
   disambiguate-constructor = SdfProduction             (disambiguate-symboldef-constructor, id, id)
   disambiguate-constructor = SdfProductionWithCons     (disambiguate-constructor, id, id)
@@ -132,10 +132,10 @@ rules
   ambiguate-constructor = TemplateProduction        (ambiguate-symboldef-constructor, id, id)
   ambiguate-constructor = TemplateProductionWithCons(ambiguate-constructor, id, id)
   ambiguate-constructor = KeywordAttributes         (ambiguate-symboldef-constructor, id)
-  
+
   disambiguate-constructor = SortCons(disambiguate-symboldef-constructor, id)
   ambiguate-constructor = SortCons(ambiguate-symboldef-constructor, id)
-  
+
   disambiguate-symboldef-constructor:  Cf(symbolDef) -> SymbolDefCf (symbolDef)
   disambiguate-symboldef-constructor: Lex(symbolDef) -> SymbolDefLex(symbolDef)
   disambiguate-symboldef-constructor: Var(symbolDef) -> SymbolDefVar(symbolDef)
@@ -149,11 +149,11 @@ signature constructors // SymbolDef ambiguous constructors
   DeclSymbolLex : DeclSymbol -> DeclSymbol
   DeclSymbolVar : DeclSymbol -> DeclSymbol
 
-rules 
+rules
 
   disambiguate-constructor = Sorts(map(disambiguate-declsymbol-constructor))
   ambiguate-constructor = Sorts(map(ambiguate-declsymbol-constructor))
-  
+
   disambiguate-declsymbol-constructor:  Cf(symbolDef) -> DeclSymbolCf (symbolDef)
   disambiguate-declsymbol-constructor: Lex(symbolDef) -> DeclSymbolLex(symbolDef)
   disambiguate-declsymbol-constructor: Var(symbolDef) -> DeclSymbolVar(symbolDef)

@@ -12,5 +12,5 @@ rules
 
   generate-textmate-grammar:
     (selected, position, ast, path, project-path) -> ("spoofaxlang.tmLanguage.json", result)
-    where 
+    where
       result := <to-textmate(|project-path, path)> ast

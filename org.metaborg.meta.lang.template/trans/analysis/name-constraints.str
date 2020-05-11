@@ -16,7 +16,7 @@ imports
   analysis/desugar
   runtime/properties/-
   generation/gen-utils/remove-template
-  
+
   signatures/aliases/-
   signatures/aterms/-
   signatures/basic/-
@@ -37,8 +37,8 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig 
-  
+  signatures/TemplateLang-sig
+
 
 strategies
 
@@ -78,7 +78,7 @@ rules
     where
       msg := "In Stratego, Cons is the list constructor, and Cons(_) does not match this constructor (use a different constructor name)";
       <task-create-error(|ctx, msg)> c
-    
+
     nabl-constraint(|ctx):
       sc@SortConsRef(Sort(s), Constructor(c)) -> <fail>
       where
@@ -99,21 +99,21 @@ rules
         <has-annotation(?Use(task))> c;
         msg := $[Unresolved reference to constructor '[c]' of sort '[s]'];
         <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-        
+
     nabl-constraint(|ctx):
       sc@LabelRef(l) -> <fail>
       where
         <has-annotation(?Use(task))> l;
         msg := $[Invalid tree selector - undefined label '[l]'];
         <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> sc
-        
+
     nabl-constraint(|ctx):
       sc@LabelRef(l) -> <fail>
       where
         <has-annotation(?Use(task))> l;
         msg := $[Invalid tree selector - multiple definitions for label '[l]'];
-        <task-create-error-on-triggers(|ctx, [Multiple(task)], msg)> sc    
-    
+        <task-create-error-on-triggers(|ctx, [Multiple(task)], msg)> sc
+
     nabl-constraint(|ctx):
       Module(Unparameterized(m)) -> <fail>
       where
@@ -127,7 +127,7 @@ rules
         <has-annotation(?Use(task))> s;
         msg := $[Unresolved reference to sort '[s]'];
         <task-create-error-on-triggers(|ctx, [Failure(task)], msg)> s
-        
+
     nabl-constraint(|ctx):
       TemplateProductionWithCons(SortCons(s, Constructor(c)), template, attrs) -> <fail>
       where
@@ -145,27 +145,27 @@ rules
             sequences*    := <filter(check-for-sequences); flatten-list> p*;
             <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
             <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*
-            
+
     nabl-constraint(|ctx):
         SDFSection(Kernel(p*)) -> <fail>
         where
             alternatives* := <filter(check-for-alternatives); flatten-list> p*;
             sequences*    := <filter(check-for-sequences); flatten-list> p*;
             <map(task-create-error(|ctx, $[Alternatives can be used only in lexical syntax. Instead of C = A | B, use C = A C = B]))> alternatives*;
-            <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*        
-    
+            <map(task-create-error(|ctx, $[Sequences can be used only in lexical syntax]))> sequences*
+
     check-for-alternatives:
         p -> alt*
     where
         alt* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Alt(_,_)); filter(?Alt(_,_))> p
-        
+
     check-for-sequences:
         p -> seq*
     where
         seq* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Sequence(_,_)); filter(?Sequence(_,_))> p
-    
-   
-    
+
+
+
     nabl-constraint(|ctx):
       Module(Unparameterized(m), i*, s*) -> <fail>
     where
@@ -177,87 +177,87 @@ rules
       <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
       <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
       <map(task-create-error(|ctx, $[Invalid tree selector - unary align should be applied to list non-terminal]))> align-list*
-      
+
     check-for-pos-ref(|chars) :
-        prod -> invalid* 
+        prod -> invalid*
         where
           posRef*  := <collect-all(?PosRef(<id>), collapse-lists)> prod;
-          invalid* := <filter(is-invalid-pos(|prod, chars))> posRef* 
-          
+          invalid* := <filter(is-invalid-pos(|prod, chars))> posRef*
+
     is-invalid-pos(|p, chars) :
         position -> <id>
         where
-          intPos := <string-to-int> position; 
-          <gt> (intPos, <production-arity(|chars)> p) 
-    
+          intPos := <string-to-int> position;
+          <gt> (intPos, <production-arity(|chars)> p)
+
     production-arity(|chars) :
       SdfProduction(_, Rhs(rhs*), _) -> <length> rhs*
-      
+
     production-arity(|chars) :
       SdfProductionWithCons(_, Rhs(rhs*), _) -> <length> rhs*
-      
+
     production-arity(|chars) :
       t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
-      
+
     production-arity(|chars) :
       t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
-          
+
     collapse-lists:
       (l1*, l2*) -> [l1*, l2*]
-        
+
     check-for-literals(|chars) :
         prod -> invalid*
     where
        litRef* := <collect-all(?LiteralRef(<id>), collapse-lists)> prod;
        invalid* := <filter(is-invalid-lit(|prod, chars))> litRef*
-    
+
     is-invalid-lit(|prod, chars):
       lit -> <id>
       where
         literal := Lit(lit);
         <not(get-production-rhs(|chars); is-defined-not-duplicated-literal(|literal))> prod
-        
+
     get-production-rhs(|chars):
       SdfProduction(_, Rhs(rhs*), _) -> rhs*
-    
+
     get-production-rhs(|chars):
       SdfProductionWithCons(_, Rhs(rhs*), _) -> rhs*
-      
+
     get-production-rhs(|chars):
       t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
-    
+
     get-production-rhs(|chars):
       t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
-      
+
     get-production-attrs:
       SdfProduction(_, _, Attrs(attrs*)) -> attrs*
-    
+
     get-production-attrs:
       SdfProductionWithCons(_, _, Attrs(attrs*)) -> attrs*
-      
+
     get-production-attrs:
       TemplateProduction(_, _, Attrs(attrs*)) -> attrs*
-      
+
     get-production-attrs:
-      TemplateProductionWithCons(_, _, Attrs(attrs*)) -> attrs*      
-      
+      TemplateProductionWithCons(_, _, Attrs(attrs*)) -> attrs*
+
     is-defined-not-duplicated-literal(|lit):
       rhs* ->  <eq> (1, <length> rhs'*)
         where
-          rhs'* := <filter(?lit)> rhs*       
-          
+          rhs'* := <filter(?lit)> rhs*
+
     check-align-list(|chars):
       prod -> invalid*
         where
           rhs*     := <get-production-rhs(|chars)> prod;
           pos*     := <get-production-attrs; collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> prod;
           invalid* := <filter(check-non-terminal-symbol(|rhs*))> pos*
-          
+
     check-non-terminal-symbol(|rhs*):
       pos -> <id>
       where
         <get-non-terminal-symbol(|rhs*); not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _)) > pos
-      
+
     nabl-constraint(|lang, ctx, uri*):
       String(s) -> <fail>
     where
@@ -266,7 +266,7 @@ rules
     where
       lookup := <nabl-use-candidate(|lang, ctx, uri*, s)> UseCandidate(NablNsSort(), [], Current(), (), ());
       <task-create-warning-on-triggers(|ctx,[Success(lookup)], $[Possible use of nonterminal placeholder as terminal (use &lt;&lt;[s]&gt;&gt; instead?)])> s
-                
+
     nabl-constraint(|ctx):
         SDFSection(ContextFreeSyntax(p*)) -> <fail>
         where
