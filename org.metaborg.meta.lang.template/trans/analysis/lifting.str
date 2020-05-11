@@ -12,8 +12,8 @@ imports
 
 
   strategies
-
-  lift-all = bottomup(try(lift-terms))
+  
+  lift-all = bottomup(try(lift-terms + lift-sorts-section))
 
   rules
 
@@ -110,8 +110,12 @@ imports
 
   lift-constr:
     Constructor(c) -> Constructor(<unquote>  c)
+    
+  
+     
+  // 'sorts' is an alias for 'context-free sorts'
+  lift-sorts-section: Sorts(srtDecls)-> Sorts(<map(try(\DeclSort(sort) -> DeclSortCf(sort)\))> srtDecls)
 
-
-
-
-
+  lift-sorts-section: CfSorts(srts)  -> Sorts(<map(!DeclSortCf(<id>))> srts)
+  lift-sorts-section: LexSorts(srts) -> Sorts(<map(!DeclSortLex(<id>))> srts)
+  lift-sorts-section: VarSorts(srts) -> Sorts(<map(!DeclSortVar(<id>))> srts)

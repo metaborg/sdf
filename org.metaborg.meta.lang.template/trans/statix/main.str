@@ -143,20 +143,24 @@ rules
   ambiguate-symboldef-constructor: SymbolDefLex(symbolDef) -> Lex(symbolDef)
   ambiguate-symboldef-constructor: SymbolDefVar(symbolDef) -> Var(symbolDef)
 
-signature constructors // SymbolDef ambiguous constructors
-
-  DeclSymbolCf  : DeclSymbol -> DeclSymbol
-  DeclSymbolLex : DeclSymbol -> DeclSymbol
-  DeclSymbolVar : DeclSymbol -> DeclSymbol
-
-rules
-
-  disambiguate-constructor = Sorts(map(disambiguate-declsymbol-constructor))
-  ambiguate-constructor = Sorts(map(ambiguate-declsymbol-constructor))
-
-  disambiguate-declsymbol-constructor:  Cf(symbolDef) -> DeclSymbolCf (symbolDef)
-  disambiguate-declsymbol-constructor: Lex(symbolDef) -> DeclSymbolLex(symbolDef)
-  disambiguate-declsymbol-constructor: Var(symbolDef) -> DeclSymbolVar(symbolDef)
-  ambiguate-declsymbol-constructor: DeclSymbolCf (symbolDef) -> Cf (symbolDef)
-  ambiguate-declsymbol-constructor: DeclSymbolLex(symbolDef) -> Lex(symbolDef)
-  ambiguate-declsymbol-constructor: DeclSymbolVar(symbolDef) -> Var(symbolDef)
+//signature constructors // SymbolDef ambiguous constructors
+//
+//  DeclSymbolCf  : DeclSymbol -> DeclSymbol
+//  DeclSymbolLex : DeclSymbol -> DeclSymbol
+//  DeclSymbolVar : DeclSymbol -> DeclSymbol
+//
+//rules
+//
+//  disambiguate-constructor = CfSorts(map(disambiguate-declsymbol-constructor))
+//  disambiguate-constructor = LexSorts(map(disambiguate-declsymbol-constructor))
+//  disambiguate-constructor = KernelSorts(map(disambiguate-declsymbol-constructor))
+//  ambiguate-constructor = CfSorts(map(ambiguate-declsymbol-constructor))
+//  ambiguate-constructor = LexSorts(map(ambiguate-declsymbol-constructor))
+//  ambiguate-constructor = KernelSorts(map(ambiguate-declsymbol-constructor))
+//
+//  disambiguate-declsymbol-constructor:  Cf(symbolDef) -> DeclSymbolCf (symbolDef)
+//  disambiguate-declsymbol-constructor: Lex(symbolDef) -> DeclSymbolLex(symbolDef)
+//  disambiguate-declsymbol-constructor: Var(symbolDef) -> DeclSymbolVar(symbolDef)
+//  ambiguate-declsymbol-constructor: DeclSymbolCf (symbolDef) -> Cf (symbolDef)
+//  ambiguate-declsymbol-constructor: DeclSymbolLex(symbolDef) -> Lex(symbolDef)
+//  ambiguate-declsymbol-constructor: DeclSymbolVar(symbolDef) -> Var(symbolDef)

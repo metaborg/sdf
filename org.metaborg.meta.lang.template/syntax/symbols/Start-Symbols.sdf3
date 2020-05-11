@@ -5,22 +5,16 @@ symbols/Symbols
 
 context-free syntax
 Grammar.KernelStartSymbols = <
-  start-symbols
-
-    <Symbols>
+  start-symbols <Symbols>
 
   >
 
 Grammar.LexicalStartSymbols = <
-  lexical start-symbols
-
-    <Symbols>
+  lexical start-symbols <Symbols>
 
   >
 
 Grammar.ContextFreeStartSymbols = <
-  context-free start-symbols
-
-    <Symbols>
+  context-free start-symbols <Symbols>
 
   >
