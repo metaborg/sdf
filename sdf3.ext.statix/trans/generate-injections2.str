@@ -1,0 +1,379 @@
+module generate-injections2
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  utils
+//  generate-signatures
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+signature
+  sorts Signature Param ExtSort
+  constructors
+    /*             sortname   consname?     parameters  */
+    CfSignature  : string   * opt(string) * list(Param) -> Signature
+    LexSignature : string   * opt(string) * list(Param) -> Signature
+    VarSignature : string   * opt(string) * list(Param) -> Signature
+    /*             sort   varname */
+    Param        : Sort * string  -> Param
+    /*             sort */
+    CfSort       : Sort -> ExtSort
+    LexSort      : Sort -> ExtSort
+    VarSort      : Sort -> ExtSort
+
+
+/**
+ * Generate injection strategies
+ */
+rules
+  language-spec-name = prim("pp_language_spec_name") <+ !"unknown"
+
+  // str-generate-signatures :: SDF3.Module -> Stratego.Module
+  str-generate-injections = strip-annos; str-module-to-injections
+
+  str-module-to-injections = fail
+
+//  // Generate Stratego strategies and rules for explicating and implicating injections
+//  // str-module-to-injections :: SDF3.Module -> Stratego.Module
+//  str-module-to-injections:
+//    Module(modname, imports, sections) -> Module(modname', [
+//    imports0,
+//    imports1*,
+//    Signature([Constructors(cf-signatures)]),
+//    Signature([Constructors(lex-signatures)]),
+//    Rules(is-rules),
+//    Rules(cflex-is-rules),
+//    Rules(lex-is-rules),
+//    Rules(explication-rules),
+//    Rules(lexsort-explication-rules),
+//    Rules(placeholder-rules),
+//    Rules(sort-strategies)
+//    ])
+//  with modname'  := <to-str-module-name(|"-injections", "injections")> Module(modname)
+//     ; lang := <language-spec-name>
+//     // CF and LEX sorts
+//     ; cfsorts := <filter(?SDFSection(Sorts(_))); collect-all(stx-collect-sorts)> sections
+//     ; cflexsortpairs := <map(\cfsort -> (cfsort, <stx-cfsort-to-lexsort> cfsort)\)> cfsorts
+//     ; lexsorts := <map(Snd)> cflexsortpairs
+//     // Imports
+//     ; imports0  := Imports([
+//       Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
+//       Import(<to-str-module-name(|"-pp","pp")> Module(modname))
+//       ])
+//     ; imports1*  := <map(to-str-import(|"-injections", "injections"))> imports
+//     // Stratego injection signatures
+//     ; cf-signatures := <filter(str-section-to-inj-sigs); flatten-list-once> sections
+//     ; lex-signatures := <map(str-cflexsortpair-to-lex-injection-sig(|lang))> cflexsortpairs
+//     // is-Sort-or-inj rules
+//     ; is-rules := <filter(str-section-to-is-rules(|lang)); flatten-list-once> sections
+//     ; cflex-is-rules := <map(str-cflexsortpair-inj-to-is-rule(|lang))> cflexsortpairs
+//     ; lex-is-rules := <map(str-lex-inj-to-is-rule(|lang))> lexsorts
+//     // explicate-injections-Lang-Sort rules
+//     ; explication-rules := <filter(str-section-to-explication-rules(|lang)); flatten-list-once; flatten-list-once> sections
+//     ; lexsort-explication-rules := <map(str-cflexsortpair-to-explication-rules(|lang)); flatten-list-once> cflexsortpairs
+//     ; placeholder-rules := <map(str-sort-to-placeholder-rules(|lang)); flatten-list-once> cfsorts
+//     ; sort-strategies := <map(str-sort-to-strategies(|lang)); flatten-list-once> cfsorts
+
+
+/**
+ * Collecting signatures from sections
+ */
+rules
+
+  // stx-sections-to-signatures :: list(SDF3.Section) -> list(Signature)
+  stx-sections-to-signatures = filter(stx-section-to-signatures); flatten-list-once
+
+
+  // stx-section-to-signatures :: SDF3.Section -> list(Signature)
+  stx-section-to-signatures: SDFSection(ContextFreeSyntax(productions)) -> signatures
+  with signatures := <filter(stx-production-to-signature(stx-make-cf-signature))> productions
+
+  stx-section-to-signatures: SDFSection(LexicalSyntax(productions)) -> signatures
+  with signatures := <filter(stx-production-to-signature(stx-make-lex-signature))> productions
+
+  stx-section-to-signatures: SDFSection(Variables(productions)) -> signatures
+  with signatures := <filter(stx-production-to-signature(stx-make-var-signature))> productions
+
+  stx-section-to-signatures: SDFSection(Kernel(productions)) -> signatures
+  with signatures := <filter(stx-kernel-production-to-signature)> productions
+
+  stx-section-to-signatures: TemplateSection(templates) -> signatures
+  with signatures := <filter(stx-template-to-signature(stx-make-cf-signature))> templates
+
+
+  // stx-make-cf-signature(|string, opt(string), list(Param)) :: Signature
+  stx-make-cf-signature(|sortname, cons, params)  = !CfSignature(sortname, cons, params)
+  // stx-make-lex-signature(|string, opt(string), list(Param)) :: Signature
+  stx-make-lex-signature(|sortname, cons, params) = !LexSignature(sortname, cons, params)
+  // stx-make-var-signature(|string, opt(string), list(Param)) :: Signature
+  stx-make-var-signature(|sortname, cons, params) = !VarSignature(sortname, cons, params)
+
+
+  // stx-production-to-signature(string * opt(string) * list(Param) -> Signature) :: SDF3.GeneralProduction -> Signature
+  stx-production-to-signature(s): SdfProduction(symboldef, Rhs(body), Attrs(attrs))
+  -> <s(|sortname, None(), params)>
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-production-to-signature(s): SdfProductionWithCons(SortCons(symboldef, Constructor(consname)), Rhs(body), Attrs(attrs))
+  -> <s(|sortname, Some(consname), params)>
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+
+  // stx-template-to-signature(string * opt(string) * list(Param) -> Signature) :: SDF3.GeneralProduction -> Signature
+  stx-template-to-signature(s): TemplateProduction(symboldef, Template(body), Attrs(attrs))
+  -> <s(|sortname, None(), params)>
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-template-to-signature(s): TemplateProductionWithCons(SortCons(symboldef, Constructor(consname)), Template(body), Attrs(attrs))
+  -> <s(|sortname, Some(consname), params)>
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+
+  // stx-kernel-production-to-signature :: SDF3.GeneralProduction -> Signature
+  stx-kernel-production-to-signature: SdfProduction(Cf(symboldef), Rhs(body), Attrs(attrs))
+  -> CfSignature(sortname, None(), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Cf(symboldef), Constructor(consname)), Rhs(body), Attrs(attrs))
+  -> CfSignature(sortname, Some(consname), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-kernel-production-to-signature: SdfProduction(Lex(symboldef), Rhs(body), Attrs(attrs))
+  -> LexSignature(sortname, None(), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Lex(symboldef), Constructor(consname)), Rhs(body), Attrs(attrs))
+  -> LexSignature(sortname, Some(consname), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-kernel-production-to-signature: SdfProduction(Var(symboldef), Rhs(body), Attrs(attrs))
+  -> VarSignature(sortname, None(), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+  stx-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Var(symboldef), Constructor(consname)), Rhs(body), Attrs(attrs))
+  -> VarSignature(sortname, Some(consname), params)
+  where <not(stx-ignore-production)> attrs
+  with sortname := <stx-symboldef-to-name> symboldef
+     ; params := <stx-body-to-params> body
+
+
+  // stx-body-to-params :: SDF3.Symbols -> list(Param)
+  stx-body-to-params = collect-om-concat(stx-sort-to-param)
+
+
+  // stx-body-to-param :: SDF3.Symbol             -> Param
+  stx-sort-to-param: s@Sort(name)                 -> Param(s, $[t[<next-counter>  "injections"]])
+  stx-sort-to-param: s@Opt(sort)                  -> Param(s, $[t[<next-counter>  "injections"]])
+  stx-sort-to-param: s@Iter(sort)                 -> Param(s, $[ts[<next-counter> "injections"]])
+  stx-sort-to-param: s@IterSep(sort, _)           -> Param(s, $[ts[<next-counter> "injections"]])
+  stx-sort-to-param: s@IterStar(sort)             -> Param(s, $[ts[<next-counter> "injections"]])
+  stx-sort-to-param: s@IterStarSep(sort, _)       -> Param(s, $[ts[<next-counter> "injections"]])
+  stx-sort-to-param: Cf(symbol)                   -> <stx-sort-to-param> symbol
+  stx-sort-to-param: Lex(symbol)                  -> <stx-sort-to-param> symbol
+  stx-sort-to-param: Varsym(symbol)               -> <stx-sort-to-param> symbol
+  stx-sort-to-param: Label(_, symbol)             -> <stx-sort-to-param> symbol
+  stx-sort-to-param: CharClass(_)                 -> <fail>
+  stx-sort-to-param: Lit(_)                       -> <fail>
+  stx-sort-to-param: CiLit(_)                     -> <fail>
+  stx-sort-to-param: Sequence(_, _)               -> <fail>
+  stx-sort-to-param: Alt(_, _)                    -> <fail>
+  stx-sort-to-param: Start()                      -> <fail>
+  stx-sort-to-param: FileStart()                  -> <fail>
+  stx-sort-to-param: EOF()                        -> <fail>
+  stx-sort-to-param: ParameterizedSort(_, _)      -> <fail>
+
+
+  // stx-symboldef-to-name :: SDF3.SymbolDef      -> string
+  stx-symboldef-to-name: SortDef(sort)            -> sort
+  stx-symboldef-to-name: Cf(sortdef)              -> <stx-symboldef-to-name> sortdef   // For kernel productions,  Cf(_) is handled in the strategy. For other productions, this is invalid.
+  stx-symboldef-to-name: Lex(sortdef)             -> <stx-symboldef-to-name> sortdef   // For kernel productions, Lex(_) is handled in the strategy. For other productions, this is invalid.
+  stx-symboldef-to-name: Var(sortdef)             -> <stx-symboldef-to-name> sortdef   // For kernel productions, Var(_) is handled in the strategy. For other productions, this is invalid.
+
+
+  // stx-ignore-production :: [SDF3.Attribute] -> SDF3.Attribute
+  stx-ignore-production = fetch-elem(?Reject() + ?Bracket())
+
+
+/**
+ * Collecting sorts from sections
+ */
+rules
+
+  // stx-sections-to-sorts :: list(SDF3.Section) -> list(ExtSort)
+  stx-sections-to-sorts = filter(stx-section-to-sorts); flatten-list-once
+
+
+  // stx-section-to-signatures :: SDF3.Section -> list(Signature)
+  stx-section-to-sorts: SDFSection(Sorts(srts)) -> srts'
+  with srts' := <stx-sort-to-extsort> srts
+
+
+  // stx-sort-to-extsort :: SDF3.SymbolDef -> ExtSort
+  stx-sort-to-extsort: DeclSortCf(name)  -> CfSort(name)
+  stx-sort-to-extsort: DeclSortLex(name) -> LexSort(name)
+  stx-sort-to-extsort: DeclSortVar(name) -> VarSort(name)
+
+
+rules
+
+  // stx-sort-to-name :: SDF3.Symbol              -> string
+  stx-sort-to-name: Sort(name)                    -> name
+  stx-sort-to-name: Opt(symbol)                   -> <stx-sort-to-name> symbol
+  stx-sort-to-name: Iter(symbol)                  -> $[[<stx-sort-to-name> symbol]s]
+  stx-sort-to-name: IterSep(symbol, _)            -> $[[<stx-sort-to-name> symbol]s]
+  stx-sort-to-name: IterStar(symbol)              -> $[[<stx-sort-to-name> symbol]s]
+  stx-sort-to-name: IterStarSep(symbol, _)        -> $[[<stx-sort-to-name> symbol]s]
+  stx-sort-to-name: Cf(symbol)                    -> <stx-sort-to-name> symbol
+  stx-sort-to-name: Lex(symbol)                   -> <stx-sort-to-name> symbol
+  stx-sort-to-name: Varsym(symbol)                -> <stx-sort-to-name> symbol
+  stx-sort-to-name: Label(_, symbol)              -> <stx-sort-to-name> symbol
+  stx-sort-to-name: CharClass(_)                  -> <fail>
+  stx-sort-to-name: Lit(_)                        -> <fail>
+  stx-sort-to-name: CiLit(_)                      -> <fail>
+  stx-sort-to-name: Sequence(_, _)                -> <fail>
+  stx-sort-to-name: Alt(_, _)                     -> <fail>
+  stx-sort-to-name: Start()                       -> <fail>
+  stx-sort-to-name: FileStart()                   -> <fail>
+  stx-sort-to-name: EOF()                         -> <fail>
+  stx-sort-to-name: ParameterizedSort(_, _)       -> <fail>
+
+
+///**
+// * Generate Stratego strategies for 'explicate', 'implicate', and 'is'
+// */
+//rules
+//
+//  stx-gen-all-stratego-rules = map(stx-gen-stratego-rules); flatten-list-once
+//
+//  stx-gen-stratego-rules: CfSignature(sortname, Some(consname), params) -> <fail>
+//
+//
+//  stx-gen-explication-strategy(|lang): CfSignature(sortname, Some(consname), params)
+//  -> RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+//       Var("t"), NoAnnoList(Op(consname, [<str-arg-to-explication(|lang)> (tosort, "t")]))
+//     , BA(<str-cf-inj-to-is-rule-call(|lang)> tosort, Var("t"))
+//     ))
+//  where [Param(tosort, _)] := params
+//
+//  // str-inj-to-explication-rule :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
+//  str-inj-to-explication-rules(|lang): (sortname, body)
+//  -> [
+//    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+//      Var("t"), NoAnnoList(Op(consname, [<str-arg-to-explication(|lang)> (tosort, "t")]))
+//    , BA(<str-cf-inj-to-is-rule-call(|lang)> tosort, Var("t"))
+//    )),
+//    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+//      NoAnnoList(Op(consname, [Var("t")])),
+//      <str-arg-to-implication(|lang)> (tosort, "t")
+//    ))
+//  ]
+//  where args@[(tosort, _)] := <str-extract-sort-args> body
+//  with  consname := <str-generate-inj-name> (sortname, args)
+//
+//
+//  // str-cons-to-explication-rule :: (SDF3.Sort, SDF3.IdCon, SDF3.RHS + SDF3.Template) -> Stratego.?
+//  str-cons-to-explication-rules(|lang): (sortname, consname, body)
+//  -> [
+//    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+//      NoAnnoList(Op(consname, vars))
+//    , NoAnnoList(Op(consname, expl-ops))
+//    )),
+//    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+//      NoAnnoList(Op(consname, vars))
+//    , NoAnnoList(Op(consname, impl-ops))
+//    ))
+//  ]
+//  with <reset-counter> "injections"
+//     ; args := <str-extract-sort-args> body
+//     ; vars := <map(str-arg-to-var)> args
+//     ; expl-ops := <map(str-arg-to-explication(|lang))> args
+//     ; impl-ops := <map(str-arg-to-implication(|lang))> args
+//
+//  str-arg-to-var: (_, newname) -> Var(newname)
+//
+//  str-arg-to-explication(|lang): (sort, newname) -> App(<str-arg-to-explication-call(|lang)> sort, Var(newname))
+//  str-arg-to-explication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+//  str-arg-to-explication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+//  str-arg-to-explication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+//  str-arg-to-explication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+//  str-arg-to-explication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+//  str-arg-to-explication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+//
+//  str-arg-to-implication(|lang): (sort, newname) -> App(<str-arg-to-implication-call(|lang)> sort, Var(newname))
+//  str-arg-to-implication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+//  str-arg-to-implication-call(|lang): Opt(sort)            -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+//  str-arg-to-implication-call(|lang): Iter(sort)           -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+//  str-arg-to-implication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+//  str-arg-to-implication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+//  str-arg-to-implication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+//
+//
+///**
+// * Generate Stratego signatures for injections
+// */
+//rules
+//
+//
+//
+//  // str-inj-to-sig :: (SDF3.Sort, SDF3.RHS + SDF3.Template) -> Stratego.?
+//  str-inj-to-sig: (sortname, body) -> OpDecl(consname, FunType(body', ConstType(SortNoArgs(sortname))))
+//  with body' := <collect-om-concat(str-cf-sort-to-sig)> body
+//  with args  := <str-extract-sort-args> body
+//  where <?[_|_]> body'; <?[_|_]> args
+//  with consname := <str-generate-inj-name> (sortname, args)
+//
+//  // str-cf-sort-to-sig :: SDF3.SortSymbol -> Stratego.?
+//  str-cf-sort-to-sig: Sort(name)           -> ConstType(SortNoArgs(name))
+//  str-cf-sort-to-sig: Opt(sort)            -> ConstType(<str-cf-sort-to-sig> sort)
+//  str-cf-sort-to-sig: Iter(sort)           -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+//  str-cf-sort-to-sig: IterSep(sort, _)     -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+//  str-cf-sort-to-sig: IterStar(sort)       -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))
+//  str-cf-sort-to-sig: IterStarSep(sort, _) -> ConstType(Sort("List", [<str-cf-sort-to-sig> sort]))

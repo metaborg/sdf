@@ -1,0 +1,25 @@
+module utils
+
+rules
+
+  // collect-all-concat<T>(? -> T) :: ? -> [T]
+  collect-all-concat(s) = collect-all(s, concatenate)
+
+  // collect-om-concat<T>(? -> T) :: ? -> [T]
+  collect-om-concat(s) = collect-om(s, concatenate)
+
+
+  // concatenate<T> :: ([T], [T]) -> [T]
+  concatenate: (l1, l2) -> <at-end(!l2)> l1
+
+
+  // flatten-list-once<T> ::  [[T]] -> [T]
+  flatten-list-once = foldr(![], (is-list, id) < conc + MkCons)
+
+
+  // string-join(|string) :: [string] -> string
+  string-join(|t) = separate-by(|t); concat-strings
+
+
+  // flatmap(? -> [T]) :: [?] -> [T]
+  flatmap(s) = map(s); flatten-list-once
