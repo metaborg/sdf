@@ -244,6 +244,9 @@ rules
   str-arg-to-explication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   str-arg-to-explication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
   str-arg-to-explication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-explication-call(|lang)> sort])
+  str-arg-to-explication-call(|lang): Cf(sort)             -> <str-arg-to-explication-call(|lang)> sort
+  str-arg-to-explication-call(|lang): Lex(sort)            -> <str-arg-to-explication-call(|lang)> sort
+  str-arg-to-explication-call(|lang): Var(sort)            -> <str-arg-to-explication-call(|lang)> sort
 
   str-arg-to-implication(|lang): (sort, newname) -> App(<str-arg-to-implication-call(|lang)> sort, Var(newname))
   str-arg-to-implication-call(|lang): Sort(name)           -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
@@ -252,6 +255,9 @@ rules
   str-arg-to-implication-call(|lang): IterSep(sort, _)     -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
   str-arg-to-implication-call(|lang): IterStar(sort)       -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
   str-arg-to-implication-call(|lang): IterStarSep(sort, _) -> Call(SVar("map"), [<str-arg-to-implication-call(|lang)> sort])
+  str-arg-to-implication-call(|lang): Cf(sort)             -> <str-arg-to-implication-call(|lang)> sort
+  str-arg-to-implication-call(|lang): Lex(sort)            -> <str-arg-to-implication-call(|lang)> sort
+  str-arg-to-implication-call(|lang): Var(sort)            -> <str-arg-to-implication-call(|lang)> sort
 
 rules
 
@@ -379,6 +385,12 @@ rules
   -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
   str-cf-inj-to-is-rule-call(|lang): IterStarSep(sort, _)
   -> <str-cf-inj-to-is-rule-call-list(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): Cf(sort)
+  -> <str-cf-inj-to-is-rule-call(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): Lex(sort)
+  -> <str-cf-inj-to-is-rule-call(|lang)> sort
+  str-cf-inj-to-is-rule-call(|lang): Var(sort)
+  -> <str-cf-inj-to-is-rule-call(|lang)> sort
 
   str-cf-inj-to-is-rule-call-list(|lang): nestedSort
   -> Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<str-cf-inj-to-is-rule-call(|lang)> nestedSort]))
@@ -401,6 +413,9 @@ rules
     with argname := $[ts[<next-counter> "injections"]]
   str-extract-sort-arg: s@IterStarSep(sort, _) -> (s, argname)
     with argname := $[ts[<next-counter> "injections"]]
+  str-extract-sort-arg: Cf(sort)  -> <str-extract-sort-arg> sort
+  str-extract-sort-arg: Lex(sort) -> <str-extract-sort-arg> sort
+  str-extract-sort-arg: Var(sort) -> <str-extract-sort-arg> sort
 
   str-sort-get-name: Sort(name)           -> name
   str-sort-get-name: Opt(sort)            -> <str-sort-get-name> sort
@@ -408,6 +423,9 @@ rules
   str-sort-get-name: IterSep(sort, _)     -> $[[<str-sort-get-name> sort]s]
   str-sort-get-name: IterStar(sort)       -> $[[<str-sort-get-name> sort]s]
   str-sort-get-name: IterStarSep(sort, _) -> $[[<str-sort-get-name> sort]s]
+  str-sort-get-name: Cf(sort)             -> <str-sort-get-name> sort
+  str-sort-get-name: Lex(sort)            -> <str-sort-get-name> sort
+  str-sort-get-name: Var(sort)            -> <str-sort-get-name> sort
 
 
   // Generates a constructor name for the injection with the specified sort name and arguments

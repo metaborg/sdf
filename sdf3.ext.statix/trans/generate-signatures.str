@@ -172,6 +172,9 @@ rules
   stx-cfg-sort-to-sig: IterSep(sort, _)     -> ListSort(<stx-cfg-sort-to-sig> sort)
   stx-cfg-sort-to-sig: IterStar(sort)       -> ListSort(<stx-cfg-sort-to-sig> sort)
   stx-cfg-sort-to-sig: IterStarSep(sort, _) -> ListSort(<stx-cfg-sort-to-sig> sort)
+  stx-cfg-sort-to-sig: Cf(sort)             -> <stx-cfg-sort-to-sig> sort
+  stx-cfg-sort-to-sig: Lex(sort)            -> <stx-cfg-sort-to-sig> sort
+  stx-cfg-sort-to-sig: Var(sort)            -> <stx-cfg-sort-to-sig> sort
 
 
   // stx-ignore-production :: [SDF3.Attribute] -> SDF3.Attribute
