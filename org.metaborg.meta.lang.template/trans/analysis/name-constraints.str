@@ -296,6 +296,25 @@ rules
       <task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
 
+  nabl-constraint(|ctx):
+    d@DeclSortCf(sort) -> <fail>
+  where
+    task := <nabl-lookup-local(|ctx)> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate CF sort declaration [sort]])> d
+
+  nabl-constraint(|ctx):
+    d@DeclSortLex(sort) -> <fail>
+  where
+    task := <nabl-lookup-local(|ctx)> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate LEX sort declaration [sort]])> d
+
+  nabl-constraint(|ctx):
+    d@DeclSortVar(sort) -> <fail>
+  where
+    task := <nabl-lookup-local(|ctx)> sort;
+    <task-create-error-on-multiple(|ctx, task, $[Duplicate VAR sort declaration [sort]])> d
+
+
   prod-without-constructor:
     p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
     where
