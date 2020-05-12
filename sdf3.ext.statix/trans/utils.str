@@ -1,25 +1,166 @@
 module utils
 
+/**
+ * List and collection operations.
+ */
 rules
 
-  // collect-all-concat<T>(? -> T) :: ? -> [T]
+  /**
+   * Collect all terms for which s succeeds,
+   * and concatenate them in a single list.
+   */
+  // collect-all-concat<T>(? -> T) :: ? -> list(T)
   collect-all-concat(s) = collect-all(s, concatenate)
 
-  // collect-om-concat<T>(? -> T) :: ? -> [T]
+  /**
+   * Collect the outermost terms for which s succeeds,
+   * and concatenate them in a single list.
+   */
+  // collect-om-concat<T>(? -> T) :: ? -> list(T)
   collect-om-concat(s) = collect-om(s, concatenate)
 
-
-  // concatenate<T> :: ([T], [T]) -> [T]
+  /**
+   * Concatenates a tuple of two lists.
+   */
+  // concatenate<T> :: (list(T), list(T)) -> list(T)
   concatenate: (l1, l2) -> <at-end(!l2)> l1
 
-
-  // flatten-list-once<T> ::  [[T]] -> [T]
+  /**
+   * Flattens a list once.
+   */
+  // flatten-list-once<T> ::  list(list(T)) -> list(T)
   flatten-list-once = foldr(![], (is-list, id) < conc + MkCons)
 
+  /**
+   * Maps strategy s over a list and flattens the resulting lists.
+   */
+  // flatmap<T>(? -> list(T)) :: list(?) -> list(T)
+  flatmap(s) = map(s); flatten-list-once
 
-  // string-join(|string) :: [string] -> string
+  /**
+   * Filters strategy s over a list and flattens the resulting lists.
+   */
+  // flatfilter<T>(? -> list(T)) :: list(?) -> list(T)
+  flatfilter(s) = filter(s); flatten-list-once
+
+  /**
+   * Returns a list with all elements that occur twice or more times in a list.
+   */
+  // get-dups<T>(T -> ?) :: list(T) -> list(T)
+  get-dups(eq) = group-by(eq); filter(?[_,_|_]); map(head)
+
+  /**
+   * Groups a list of elements into a list of lists of elements
+   * that are equal according to the eq strategy.
+   */
+  // group-by<T>(T -> ?) :: list(T) -> list(list(T))
+  group-by(eq): [x|xs] -> <group-by(eq); __add-to-group(eq|x)> xs
+  group-by(eq): []     -> []
+
+  // __add-to-group<T>(T -> ?|T) :: list(list(T)) -> list(list(T))
+  __add-to-group(eq|x): [group@[y|_]|ys] -> [[x|group]|ys]
+  where <eq> (x, y)
+  __add-to-group(eq|x): [group@[y|_]|ys] -> [group|<__add-to-group(eq|x)> ys]
+  where <not(eq)> (x, y)
+  __add-to-group(eq|x): [] -> [[x]]
+
+  /**
+   * Returns the head of a list.
+   */
+  // head<T> :: list(T) -> T
+  head = ?[<id>|_]
+
+  /**
+   * Returns the tail of a list.
+   */
+  // tail<T> :: list(T) -> list(T)
+  tail = ?[_|<id>]
+
+/**
+ * String operations
+ */
+rules
+
+  /**
+   * Joins a list of string with separator t.
+   */
+  // string-join(|string) :: list(string) -> string
   string-join(|t) = separate-by(|t); concat-strings
 
+  /**
+   * Converts a string into a camel-cased version with only alphanumeric characters.
+   */
+  // to-camel-case :: string -> string
+  to-camel-case
+    = str-split-into-words                  // Split into words
+    ; flatmap(str-split-camelcase)          // Split into words
+    ; filter(not(?""))                      // Remove empty words
+    // Remove illegal characters, lowercase everything, capitalize every word except the first
+    ; [string-as-chars(filter(is-alphanum); map(to-lower))|map(string-as-chars(filter(is-alphanum); map(to-lower); [to-upper|id]))]
+    ; concat-strings                        // Concatenate back into a single string
 
-  // flatmap(? -> [T]) :: [?] -> [T]
-  flatmap(s) = map(s); flatten-list-once
+  /**
+   * Splits a string into words, delimited by spaces, dashes, and underscores.
+   *
+   * The delmiters are not included in the final result.
+   * The resulting list can contain empty strings when two delimiters where found next to each other.
+   */
+  // str-split-into-words :: string -> list(string)
+  str-split-into-words = str-split-at(?[<id>|_]; where(?'-' + ?'_' + ?' '))
+
+  /**
+   * Splits a camelcase string into words.
+   *
+   * The resulting list can start with an empty string,
+   * when the string to be split starts with an uppercase letter.
+   */
+  // str-split-camelcase :: string -> list(string)
+  str-split-camelcase = str-split-before(chars-start-with-upper-or-num)
+
+  // chars-start-with-upper-or-num :: list(int) -> list(int)
+  chars-start-with-upper-or-num: [c1, c2|_] -> <id>
+  where <is-upper + is-num> c1
+      ; <not(is-upper + is-num)> c2
+
+  /**
+   * Splits before the character that matches condition c.
+   */
+  // str-split-before(list(int) -> ?) :: string -> list(string)
+  str-split-before(c) = str-split(c, tail, id)
+  /**
+   * Splits at the character that matches condition c, removing the character.
+   */
+  // str-split-at(list(int) -> ?) :: string -> list(string)
+  str-split-at(c) = str-split(c, tail, tail)
+  /**
+   * Splits after the character that matches condition c.
+   */
+  // str-split-after(list(int) -> ?) :: string -> list(string)
+  str-split-after(c) = str-split(c, id, tail)
+
+
+  /**
+   * Splits a string into a list of substrings
+   * everywhere strategy cond succeeds on the list of remaining chars.
+   *
+   * cond :: list(int) -> ? When succeeds, indicates a split.
+   * prev :: list(int) -> list(int) Returns the reversed list of chars to include in the previous element.
+   * next :: list(int) -> list(int) Returns the reversed list of chars to include in the next element.
+   */
+  // str-split(list(int) -> ?, list(int) -> list(int), list(int) -> list(int)) :: string -> list(string)
+  str-split(cond, prev, next) = explode-string; __str-split-init; rec x(__str-split-exit <+ __str-split-next(cond, prev, next); x)
+
+  // __str-split-init :: list(int) -> (list(string), list(int), list(int))
+  __str-split-init: cs -> ([], [], cs)
+
+  // __str-split-next(list(int) -> ?, list(int) -> list(int), list(int) -> list(int)) :: list(int) -> (list(string), list(int), list(int))
+  __str-split-next(cond, prev, next): (acc, curr, rest@[c|cs]) ->
+  ([<prev; reverse; implode-string> [c|curr] | acc], <next> [c], cs)
+  where <cond> rest
+
+  __str-split-next(cond, prev, next): (acc, curr, rest@[c|cs]) -> (acc, [c|curr], cs)
+  where <not(cond)> rest
+
+  // __str-split-exit :: (list(string), list(int), list(int)) -> list(string)
+  __str-split-exit: (acc, curr, []) ->
+  <reverse> [<reverse; implode-string> curr|acc]

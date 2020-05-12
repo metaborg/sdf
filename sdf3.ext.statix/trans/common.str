@@ -3,11 +3,11 @@ module common
 imports
   libstratego-lib
   libstrc
-  analysis/types
   runtime/nabl/-
   runtime/task/-
   runtime/types/-
   generation/gen-utils/to-str
+  analysis/types
   analysis/desugar
 
 imports
@@ -165,30 +165,43 @@ rules
      ; params   := <geninj-body-to-params> body
 
 
-  // geninj-body-to-params :: SDF3.Symbols -> list(Param)
-  geninj-body-to-params = where(<reset-counter> "injections"); collect-om-concat(geninj-symbol-to-param)
+  geninj-body-to-params
+    = collect-om-concat(geninj-symbol-to-param)
+    ; where(
+        map(?Param(_, <id>))
+      ; get-dups(eq)
+      ; ?dups
+      ; map(<reset-counter> $[geninj-[<id>]])
+    );
+    map(geninj-rename-param(|dups))
 
 
-  // geninj-symbol-to-param :: SDF3.Symbol              -> Param
-  geninj-symbol-to-param: s@Sort(name)                  -> Param(s, $[t[<next-counter>  "injections"]])
-  geninj-symbol-to-param: s@Opt(sort)                   -> Param(s, $[t[<next-counter>  "injections"]])
-  geninj-symbol-to-param: s@Iter(sort)                  -> Param(s, $[ts[<next-counter> "injections"]])
-  geninj-symbol-to-param: s@IterSep(sort, _)            -> Param(s, $[ts[<next-counter> "injections"]])
-  geninj-symbol-to-param: s@IterStar(sort)              -> Param(s, $[ts[<next-counter> "injections"]])
-  geninj-symbol-to-param: s@IterStarSep(sort, _)        -> Param(s, $[ts[<next-counter> "injections"]])
-  geninj-symbol-to-param: Cf(symbol)                    -> <geninj-symbol-to-param> symbol
-  geninj-symbol-to-param: Lex(symbol)                   -> <geninj-symbol-to-param> symbol
-  geninj-symbol-to-param: Varsym(symbol)                -> <geninj-symbol-to-param> symbol
-  geninj-symbol-to-param: Label(_, symbol)              -> <geninj-symbol-to-param> symbol
-  geninj-symbol-to-param: CharClass(_)                  -> <fail>
-  geninj-symbol-to-param: Lit(_)                        -> <fail>
-  geninj-symbol-to-param: CiLit(_)                      -> <fail>
-  geninj-symbol-to-param: Sequence(_, _)                -> <fail>
-  geninj-symbol-to-param: Alt(_, _)                     -> <fail>
-  geninj-symbol-to-param: Start()                       -> <fail>
-  geninj-symbol-to-param: FileStart()                   -> <fail>
-  geninj-symbol-to-param: EOF()                         -> <fail>
-  geninj-symbol-to-param: ParameterizedSort(_, _)       -> <fail>
+  geninj-rename-param(|dups): Param(s, oldname) -> Param(s, newname)
+  where
+    newname := <fetch(?oldname) < !$[[oldname][<next-counter> $[geninj-[oldname]]]] + !oldname> dups
+
+  // geninj-symbol-to-param :: SDF3.Symbol -> Param
+  geninj-symbol-to-param = !Param(<geninj-symbol-to-sort>, <geninj-symbol-to-sortname; geninj-generate-paramname>)
+
+  geninj-symbol-to-sort: s@Sort(_)                      -> s
+  geninj-symbol-to-sort: s@Opt(sort)                    -> s
+  geninj-symbol-to-sort: s@Iter(sort)                   -> s
+  geninj-symbol-to-sort: s@IterSep(sort, _)             -> s
+  geninj-symbol-to-sort: s@IterStar(sort)               -> s
+  geninj-symbol-to-sort: s@IterStarSep(sort, _)         -> s
+  geninj-symbol-to-sort: Cf(symbol)                     -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Lex(symbol)                    -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Varsym(symbol)                 -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Label(_, symbol)               -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: CharClass(_)                   -> <fail>
+  geninj-symbol-to-sort: Lit(_)                         -> <fail>
+  geninj-symbol-to-sort: CiLit(_)                       -> <fail>
+  geninj-symbol-to-sort: Sequence(_, _)                 -> <fail>
+  geninj-symbol-to-sort: Alt(_, _)                      -> <fail>
+  geninj-symbol-to-sort: Start()                        -> <fail>
+  geninj-symbol-to-sort: FileStart()                    -> <fail>
+  geninj-symbol-to-sort: EOF()                          -> <fail>
+  geninj-symbol-to-sort: ParameterizedSort(_, _)        -> <fail>
 
 
   // geninj-symboldef-to-name :: SDF3.SymbolDef         -> string
@@ -245,30 +258,29 @@ rules
 
 rules
 
-  // geninj-symbol-to-name :: SDF3.Symbol               -> string
-  geninj-symbol-to-name: Sort(name)                     -> name
-  geninj-symbol-to-name: Opt(symbol)                    -> <geninj-symbol-to-name> symbol
-  geninj-symbol-to-name: Iter(symbol)                   -> $[[<geninj-symbol-to-name> symbol]s]
-  geninj-symbol-to-name: IterSep(symbol, _)             -> $[[<geninj-symbol-to-name> symbol]s]
-  geninj-symbol-to-name: IterStar(symbol)               -> $[[<geninj-symbol-to-name> symbol]s]
-  geninj-symbol-to-name: IterStarSep(symbol, _)         -> $[[<geninj-symbol-to-name> symbol]s]
-  geninj-symbol-to-name: Cf(symbol)                     -> <geninj-symbol-to-name> symbol
-  geninj-symbol-to-name: Lex(symbol)                    -> <geninj-symbol-to-name> symbol
-  geninj-symbol-to-name: Varsym(symbol)                 -> <geninj-symbol-to-name> symbol
-  geninj-symbol-to-name: Label(_, symbol)               -> <geninj-symbol-to-name> symbol
-  geninj-symbol-to-name: Alt(_, _)                      -> <fail>
-  geninj-symbol-to-name: CharClass(_)                   -> <fail>
-  geninj-symbol-to-name: CiLit(_)                       -> <fail>
-  geninj-symbol-to-name: EOF()                          -> <fail>
-  geninj-symbol-to-name: FileStart()                    -> <fail>
-  geninj-symbol-to-name: Layout()                       -> <fail>
-  geninj-symbol-to-name: Lit(_)                         -> <fail>
-  geninj-symbol-to-name: ParameterizedSort(_, _)        -> <fail>
-  geninj-symbol-to-name: Sequence(_, _)                 -> <fail>
-  geninj-symbol-to-name: Start()                        -> <fail>
+  // geninj-symbol-to-sortname :: SDF3.Symbol               -> string
+  geninj-symbol-to-sortname: Sort(name)                     -> name
+  geninj-symbol-to-sortname: Opt(symbol)                    -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Iter(symbol)                   -> $[[<geninj-symbol-to-sortname> symbol]s]
+  geninj-symbol-to-sortname: IterSep(symbol, _)             -> $[[<geninj-symbol-to-sortname> symbol]s]
+  geninj-symbol-to-sortname: IterStar(symbol)               -> $[[<geninj-symbol-to-sortname> symbol]s]
+  geninj-symbol-to-sortname: IterStarSep(symbol, _)         -> $[[<geninj-symbol-to-sortname> symbol]s]
+  geninj-symbol-to-sortname: Cf(symbol)                     -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Lex(symbol)                    -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Varsym(symbol)                 -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Label(name, symbol)            -> name
+  geninj-symbol-to-sortname: Alt(_, _)                      -> <fail>
+  geninj-symbol-to-sortname: CharClass(_)                   -> <fail>
+  geninj-symbol-to-sortname: CiLit(_)                       -> <fail>
+  geninj-symbol-to-sortname: EOF()                          -> <fail>
+  geninj-symbol-to-sortname: FileStart()                    -> <fail>
+  geninj-symbol-to-sortname: Layout()                       -> <fail>
+  geninj-symbol-to-sortname: Lit(_)                         -> <fail>
+  geninj-symbol-to-sortname: ParameterizedSort(_, _)        -> <fail>
+  geninj-symbol-to-sortname: Sequence(_, _)                 -> <fail>
+  geninj-symbol-to-sortname: Start()                        -> <fail>
 
-  geninj-param-to-name: Param(symbol, _) -> <geninj-symbol-to-name> symbol
-
+  geninj-param-to-name: Param(symbol, _) -> <geninj-symbol-to-sortname> symbol
 
 rules
 
@@ -278,3 +290,38 @@ rules
   with paramnames := <map(geninj-param-to-name)> params
      ; sourcename := <string-join(|"-")> paramnames
 
+rules
+
+
+  geninj-generate-paramname: "" -> "t"
+  geninj-generate-paramname: basename -> paramname
+  where <not(?"")> basename
+  with paramname := <to-camel-case; geninj-make-valid-paramname> basename
+
+  geninj-make-valid-paramname = not(geninj-is-invalid-name) <+ (<concat-strings> ["_", <id>])
+
+  // Reserved in Stratego
+  geninj-is-invalid-name = ?"all"
+  geninj-is-invalid-name = ?"constructors"
+  geninj-is-invalid-name = ?"fail"
+  geninj-is-invalid-name = ?"id"
+  geninj-is-invalid-name = ?"in"
+  geninj-is-invalid-name = ?"let"
+  geninj-is-invalid-name = ?"module"
+  geninj-is-invalid-name = ?"not"
+  geninj-is-invalid-name = ?"one"
+  geninj-is-invalid-name = ?"overlays"
+  geninj-is-invalid-name = ?"prim"
+  geninj-is-invalid-name = ?"rules"
+  geninj-is-invalid-name = ?"script"
+  geninj-is-invalid-name = ?"signature"
+  geninj-is-invalid-name = ?"some"
+  geninj-is-invalid-name = ?"sorts"
+  geninj-is-invalid-name = ?"strategies"
+  geninj-is-invalid-name = ?"stratego"
+  geninj-is-invalid-name = ?"test"
+  geninj-is-invalid-name = ?"where"
+  geninj-is-invalid-name = ?"import-term"
+
+  // Identifiers cannot start with a number
+  geninj-is-invalid-name = string-as-chars([is-num|id])

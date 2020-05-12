@@ -41,7 +41,8 @@ imports
 rules
 
   // geninj-generate-statix :: SDF3.Module -> Statix.Module
-  geninj-generate-statix = strip-annos; geninj-module-to-sig
+  geninj-generate-statix =
+    strip-annos; geninj-module-to-sig
 
 
   // geninj-module-to-sig :: SDF3.Module -> Statix.Module
