@@ -50,7 +50,7 @@ rules
     Module(modname, imports, sections) -> Module(modname', [
       Imports(imports'),
       Signature([
-        Sorts(<concatenate> (stx-lexsorts, stx-cfsorts)),
+        Sorts(stx-sorts),
         Constructors(stx-plhdr-sorts)
       ]),
       Signature([Constructors(stx-sigs)])
@@ -58,19 +58,14 @@ rules
   with modname'         := $[signatures/[<?Unparameterized(<id>)> modname]-sig]
      ; imports'         := <flatmap(geninj-imports-to-stx-imports(|"-sig", "signatures"))> imports
      // Collect CF and LEX sorts
-     ; allsorts         := <geninj-sections-to-sorts; debug(!"All sorts: ")> sections
-     ; cfsorts          := <filter(?CfSort(_)); debug(!"CF sorts: ")>  allsorts
-     ; lexsorts         := <filter(?LexSort(_)); debug(!"LEX sorts: ")> allsorts
+     ; allsorts         := <geninj-sections-to-sorts> sections
      // Collect signatures
-     ; allsigs          := <geninj-sections-to-signatures; debug(!"All sigs: ")> sections
-     ; injsigs          := <filter(?CfSignature(_, None(), _)); debug(!"Inj sigs: ")> allsigs
-     ; conssigs         := <filter(?CfSignature(_, Some(_), _)); debug(!"Cons sigs: ")> allsigs
+     ; allsigs          := <geninj-sections-to-signatures> sections
      // Statix sorts
-     ; stx-lexsorts     := <map(geninj-lexsort-to-stxsort)> lexsorts
-     ; stx-cfsorts      := <map(geninj-cfsort-to-stxsort)> cfsorts
-     ; stx-plhdr-sorts  := <map(geninj-sort-to-stxsig)> cfsorts
+     ; stx-sorts        := <flatfilter(geninj-sort-to-stxsort)> allsorts
+     ; stx-plhdr-sorts  := <flatfilter(geninj-sort-to-stxsig)> allsorts
      // Statix signatures
-     ; stx-sigs         := <filter(geninj-sig-to-stxsig); flatten-list-once> injsigs
+     ; stx-sigs         := <flatfilter(geninj-sig-to-stxsig)> allsigs
 
 rules
 
@@ -87,12 +82,10 @@ rules
 rules
 
   // geninj-lexsort-to-stxsort :: ExtSort -> Statix.SortDecl
-  geninj-lexsort-to-stxsort: LexSort(sortname) ->
+  geninj-sort-to-stxsort: LexSort(sortname) ->
     SortAlias(sortname, StringSort())
 
-
-  // geninj-cfsort-to-stxsort :: ExtSort -> Statix.SortDecl
-  geninj-cfsort-to-stxsort: CfSort(sortname) ->
+  geninj-sort-to-stxsort: CfSort(sortname) ->
     SortDecl(sortname)
 
 rules
@@ -109,8 +102,8 @@ rules
      ; op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
 
   geninj-sort-to-stxsig: CfSort(sortname)  -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
-  geninj-sort-to-stxsig: LexSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
-  geninj-sort-to-stxsig: VarSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
+//  geninj-sort-to-stxsig: LexSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
+//  geninj-sort-to-stxsig: VarSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
 
 rules
 

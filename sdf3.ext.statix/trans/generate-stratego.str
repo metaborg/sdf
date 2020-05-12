@@ -49,34 +49,38 @@ rules
       imports0,
       imports1*,
       Signature([Constructors(signatures)]),
-      Rules(lex-rules),
-      Rules(cf-rules),
-      Rules(inj-rules),
-      Rules(cons-rules)
+      Rules(sort-is-rules),
+      Rules(sig-is-rules),
+      Rules(sort-expl-rules),
+      Rules(sig-expl-rules),
+      Rules(sort-impl-rules),
+      Rules(sig-impl-rules),
+      Rules(expl-plhdr-rules),
+      Rules(impl-plhdr-rules)
     ])
-  with modname'   := <to-str-module-name(|"-injections", "injections")> Module(modname)
+  with modname'         := <to-str-module-name(|"-injections", "injections")> Module(modname)
      ; lang := <language-spec-name>
      // Imports
-     ; imports0   := Imports([
-       Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
-       Import(<to-str-module-name(|"-pp","pp")> Module(modname))
+     ; imports0         := Imports([
+         Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
+         Import(<to-str-module-name(|"-pp","pp")> Module(modname))
        ])
-     ; imports1*  := <map(to-str-import(|"-injections", "injections"))> imports
+     ; imports1*        := <map(to-str-import(|"-injections", "injections"))> imports
      // Collect CF and LEX sorts
-     ; allsorts   := <geninj-sections-to-sorts> sections
-     ; cfsorts    := <filter(?CfSort(_))>  allsorts
-     ; lexsorts   := <filter(?LexSort(_))> allsorts
+     ; allsorts         := <geninj-sections-to-sorts> sections
      // Collect signatures
-     ; allsigs    := <geninj-sections-to-signatures> sections
-     ; injsigs    := <filter(?CfSignature(_, None(), _))> allsigs
-     ; conssigs   := <filter(?CfSignature(_, Some(_), _))> allsigs
+     ; allsigs          := <geninj-sections-to-signatures> sections
      // Stratego signatures
-     ; signatures := <filter(geninj-injsig-to-strsig)> injsigs
+     ; signatures       := <filter(geninj-sig-to-strsig)> allsigs
      // Stratego rules and strategies
-     ; lex-rules  := <map(geninj-lexsort-to-rules(|lang)); flatten-list-once> lexsorts
-     ; cf-rules   := <map(geninj-cfsort-to-rules(|lang)); flatten-list-once> cfsorts
-     ; inj-rules  := <map(geninj-injsig-to-rules(|lang)); flatten-list-once> injsigs
-     ; cons-rules := <map(geninj-conssig-to-rules(|lang)); flatten-list-once> conssigs
+     ; sort-expl-rules  := <flatfilter(geninj-sort-to-lang-explication-rule(|lang))> allsorts
+     ; sort-impl-rules  := <flatfilter(geninj-sort-to-lang-implication-rule(|lang))> allsorts
+     ; sort-is-rules    := <flatfilter(geninj-sort-to-is-rule(|lang))> allsorts
+     ; expl-plhdr-rules := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
+     ; impl-plhdr-rules := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
+     ; sig-expl-rules   := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
+     ; sig-impl-rules   := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
+     ; sig-is-rules     := <flatfilter(geninj-sig-to-is-rule(|lang))> allsigs
 
 rules
 
@@ -87,27 +91,20 @@ rules
 
 rules
 
-  geninj-cfsort-to-rules(|lang) = ![
-    <geninj-cfsort-to-lang-explication-rule(|lang)>,
-    <geninj-cfsort-to-lang-implication-rule(|lang)>,
-    <geninj-cfsort-to-explicate-placeholder-rule(|lang)>,
-    <geninj-cfsort-to-implicate-placeholder-rule(|lang)>
-  ]
-
-  geninj-cfsort-to-lang-explication-rule(|lang): CfSort(sortname) ->
+  geninj-sort-to-lang-explication-rule(|lang): CfSort(sortname) ->
     // explicate-injections-MyLang = explicate-injections-MyLang-MySort
     SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]])))
-  geninj-cfsort-to-lang-implication-rule(|lang): CfSort(sortname) ->
+  geninj-sort-to-lang-implication-rule(|lang): CfSort(sortname) ->
     // implicate-injections-MyLang = implicate-injections-MyLang-MySort
     SDefNoArgs($[implicate-injections-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]])))
 
-  geninj-cfsort-to-explicate-placeholder-rule(|lang): CfSort(sortname) ->
+  geninj-sort-to-explicate-placeholder-rule(|lang): CfSort(sortname) ->
     // explicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op($[[sortname]-Plhdr], []))
     , NoAnnoList(Op($[[sortname]-Plhdr], []))
     ))
-  geninj-cfsort-to-implicate-placeholder-rule(|lang): CfSort(sortname) ->
+  geninj-sort-to-implicate-placeholder-rule(|lang): CfSort(sortname) ->
     // implicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op($[[sortname]-Plhdr], []))
@@ -116,26 +113,20 @@ rules
 
 rules
 
-  geninj-lexsort-to-rules(|lang) = ![
-    <geninj-lexsort-to-explication-rule(|lang)>,
-    <geninj-lexsort-to-implication-rule(|lang)>,
-    <geninj-lexsort-to-is-rule(|lang)>
-  ]
-
-  geninj-lexsort-to-explication-rule(|lang): LexSort(sortname) ->
+  geninj-sort-to-explication-rule(|lang): LexSort(sortname) ->
     // explicate-injections-MyLang-MySort: t -> t
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
-  geninj-lexsort-to-implication-rule(|lang): LexSort(sortname) ->
+  geninj-sort-to-implication-rule(|lang): LexSort(sortname) ->
     // implicate-injections-MyLang-MySort: t -> t
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
-  geninj-lexsort-to-is-rule(|lang): LexSort(sortname) ->
+  geninj-sort-to-is-rule(|lang): LexSort(sortname) ->
     // is-MyLang-MySort-or-inj = is-string
     SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string])))
 
 
 rules
 
-  geninj-injsig-to-strsig: CfSignature(sortname, None(), params) ->
+  geninj-sig-to-strsig: CfSignature(sortname, None(), params) ->
     OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
   with str-paramsigs := <map(geninj-param-to-strsig)> params
      ; consname  := <geninj-generate-inj-name> (sortname, params)
@@ -151,13 +142,7 @@ rules
 
 rules
 
-  geninj-injsig-to-rules(|lang) = ![
-    <geninj-injsig-to-explication-rule(|lang)>,
-    <geninj-injsig-to-implication-rule(|lang)>,
-    <geninj-injsig-to-is-rule(|lang)>
-  ]
-
-  geninj-injsig-to-explication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
     // explicate-injections-MyLang-MySort: t -> ToSort2MySort(<explicate-injections-MyLang-ToSort> t)
     //   where <is-MyLang-MySort-or-inj> t
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
@@ -168,7 +153,7 @@ rules
      ; expl-call  := <geninj-param-to-explication-call(|lang)> param
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
 
-  geninj-injsig-to-implication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
     // implicate-injections-MyLang-MySort: ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op(consname, [Var(varname)])),
@@ -177,7 +162,7 @@ rules
   with consname   := <geninj-generate-inj-name> (sortname, [param])
      ; impl-call  := <geninj-param-to-implication-call(|lang)> param
 
-  geninj-injsig-to-is-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) ->
+  geninj-sig-to-is-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) ->
     SDefNoArgs($[is-[lang]-[sortname]-or-inj], is-call)
   with consname   := <geninj-generate-inj-name> (sortname, [param])
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
@@ -185,13 +170,7 @@ rules
 
 rules
 
-  geninj-conssig-to-rules(|lang) = ![
-    <geninj-conssig-to-explication-rule(|lang)>,
-    <geninj-conssig-to-implication-rule(|lang)>,
-    <geninj-conssig-to-is-rule(|lang)>
-  ]
-
-  geninj-conssig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
     // explicate-injections-MyLang-MySort: MyCons(t) -> MyCons(<explicate-injections-MyLang-SubSort> t)
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op(consname, vars))
@@ -200,7 +179,7 @@ rules
   with vars := <geninj-params-to-vars> params
      ; ops  := <geninj-params-to-explication-calls(|lang)> params
 
-  geninj-conssig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
     // implicate-injections-MyLang-MySort: MyCons(t) -> MyCons(<implicate-injections-MyLang-SubSort> t)
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
       NoAnnoList(Op(consname, vars))
@@ -209,7 +188,7 @@ rules
   with vars := <geninj-params-to-vars> params
      ; ops  := <geninj-params-to-implication-calls(|lang)> params
 
-  geninj-conssig-to-is-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+  geninj-sig-to-is-rule(|lang): CfSignature(sortname, Some(consname), params) ->
     // is-MyLang-MySort-or-inj = ?MyCons(_)
     SDefNoArgs(
       $[is-[lang]-[sortname]-or-inj]
