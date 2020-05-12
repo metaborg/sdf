@@ -1,4 +1,4 @@
-module generate-injections
+module generate-stratego
 
 imports
   libstratego-lib
@@ -11,9 +11,8 @@ imports
   analysis/desugar
 
 imports
-  injections-utils
-  injections-common
-  generate-signatures
+  common
+  utils
 
 imports
   signatures/aliases/-
@@ -40,8 +39,8 @@ imports
 
 rules
 
-  // geninj-generate-signatures :: SDF3.Module -> Stratego.Module
-  geninj-generate-injections = strip-annos; geninj-module-to-injections
+  // geninj-generate-stratego :: SDF3.Module -> Stratego.Module
+  geninj-generate-stratego = strip-annos; geninj-module-to-injections
 
   // Generate Stratego strategies and rules for explicating and implicating injections
   // geninj-module-to-injections :: SDF3.Module -> Stratego.Module

@@ -1,4 +1,4 @@
-module injections-common
+module common
 
 imports
   libstratego-lib
@@ -11,7 +11,7 @@ imports
   analysis/desugar
 
 imports
-  injections-utils
+  utils
 
 imports
   signatures/aliases/-

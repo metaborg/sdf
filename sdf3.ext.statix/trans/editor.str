@@ -25,8 +25,8 @@ imports
 
 imports
   analysis/desugar
-  generate-signatures
-  generate-injections
+  generate-statix
+  generate-stratego
   pp/StatixLang-pp
   pp/StatixLang-parenthesize
   pp/statix/lang/-
@@ -44,11 +44,11 @@ rules
       ast'     := <desugar-templates> ast;
       <?Module(Unparameterized(mn), i*, sections)> ast
     where
-      statix-sig-string    := <geninj-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The Statix signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-sig-string    := <geninj-generate-statix; pp-statix-to-string  <+ !""; debug(!"The Statix signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       statix-sig-filename  := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn;
       statix-sig-result    := (statix-sig-filename, statix-sig-string)
     where
-      statix-inj-string    := <geninj-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-inj-string    := <geninj-generate-stratego; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       statix-inj-filename  := <get-src-gen(|project-path, "injections", "-injections.str")> mn;
       statix-inj-result    := (statix-inj-filename, statix-inj-string)
     where
@@ -68,7 +68,7 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <geninj-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected';
+      result        := <geninj-generate-statix; pp-statix-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected';
       filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn
 
   generate-statix-signatures-abstract:
@@ -80,7 +80,7 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <geninj-generate-signatures> selected';
+      result        := <geninj-generate-statix> selected';
       filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx.aterm")> mn
 
 
@@ -95,7 +95,7 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <geninj-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      result        := <geninj-generate-stratego; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename    := <get-src-gen(|project-path, "injections", "-injections.str")> mn
 
   generate-statix-injections-abstract:
@@ -107,7 +107,7 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <geninj-generate-injections> selected';
+      result        := <geninj-generate-stratego> selected';
       filename      := <get-src-gen(|project-path, "injections", "-injections.str.aterm")> mn
 
 

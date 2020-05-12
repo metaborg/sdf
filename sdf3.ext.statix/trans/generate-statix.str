@@ -1,4 +1,4 @@
-module generate-signatures
+module generate-statix
 
 imports
   libstratego-lib
@@ -12,8 +12,8 @@ imports
   pp/statix/lang/-
 
 imports
-  injections-common
-  injections-utils
+  common
+  utils
 
 imports
   signatures/aliases/-
@@ -40,8 +40,8 @@ imports
 
 rules
 
-  // geninj-generate-signatures :: SDF3.Module -> Statix.Module
-  geninj-generate-signatures = strip-annos; geninj-module-to-sig
+  // geninj-generate-statix :: SDF3.Module -> Statix.Module
+  geninj-generate-statix = strip-annos; geninj-module-to-sig
 
 
   // geninj-module-to-sig :: SDF3.Module -> Statix.Module
