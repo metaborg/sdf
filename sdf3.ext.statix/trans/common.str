@@ -61,7 +61,7 @@ rules
 rules
 
   // geninj-sections-to-signatures :: list(SDF3.Section) -> list(Signature)
-  geninj-sections-to-signatures = filter(geninj-section-to-signatures); flatten-list-once
+  geninj-sections-to-signatures = flatfilter(geninj-section-to-signatures)
 
 
   // geninj-section-to-signatures :: SDF3.Section -> list(Signature)
@@ -242,7 +242,7 @@ rules
 rules
 
   // geninj-sections-to-sorts :: list(SDF3.Section) -> list(ExtSort)
-  geninj-sections-to-sorts = filter(geninj-section-to-sorts); flatten-list-once
+  geninj-sections-to-sorts = flatfilter(geninj-section-to-sorts)
 
 
   // geninj-section-to-signatures :: SDF3.Section -> list(Signature)
