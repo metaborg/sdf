@@ -298,7 +298,7 @@ rules
   where <not(?"")> basename
   with paramname := <to-camel-case; geninj-make-valid-paramname> basename
 
-  geninj-make-valid-paramname = not(geninj-is-invalid-name) <+ (<concat-strings> ["_", <id>])
+  geninj-make-valid-paramname = not(geninj-is-invalid-name) <+ (<concat-strings> [<id>, "_"])
 
   // Reserved in Stratego
   geninj-is-invalid-name = ?"all"
