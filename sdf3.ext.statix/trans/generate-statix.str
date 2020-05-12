@@ -119,3 +119,6 @@ rules
   geninj-symbol-to-stxsig: IterSep(sort, _)     -> ListSort(<geninj-symbol-to-stxsig> sort)
   geninj-symbol-to-stxsig: IterStar(sort)       -> ListSort(<geninj-symbol-to-stxsig> sort)
   geninj-symbol-to-stxsig: IterStarSep(sort, _) -> ListSort(<geninj-symbol-to-stxsig> sort)
+  geninj-symbol-to-stxsig: Cf(sort)             -> <geninj-symbol-to-stxsig> sort
+  geninj-symbol-to-stxsig: Lex(sort)            -> <geninj-symbol-to-stxsig> sort
+  geninj-symbol-to-stxsig: Var(sort)            -> <geninj-symbol-to-stxsig> sort
