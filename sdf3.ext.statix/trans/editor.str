@@ -21,8 +21,8 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig  
-  
+  signatures/TemplateLang-sig
+
 imports
   analysis/desugar
   generate-signatures
@@ -35,7 +35,7 @@ imports
   libstratego-aterm
   libstratego-gpp
 
-rules 
+rules
 
   generate-statix-all:
     (selected, position, ast, path, project-path) -> result
@@ -44,11 +44,11 @@ rules
       ast'     := <desugar-templates> ast;
       <?Module(Unparameterized(mn), i*, sections)> ast
     where
-      statix-sig-string    := <stx-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The Statix signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-sig-string    := <geninj-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The Statix signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       statix-sig-filename  := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn;
       statix-sig-result    := (statix-sig-filename, statix-sig-string)
     where
-      statix-inj-string    := <str-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      statix-inj-string    := <geninj-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       statix-inj-filename  := <get-src-gen(|project-path, "injections", "-injections.str")> mn;
       statix-inj-result    := (statix-inj-filename, statix-inj-string)
     where
@@ -56,8 +56,8 @@ rules
         statix-sig-result,
         statix-inj-result
       ]
-     
-     
+
+
 
   generate-statix-signatures:
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -68,9 +68,9 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <stx-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected';
+      result        := <geninj-generate-signatures; pp-statix-to-string  <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected';
       filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx")> mn
-   
+
   generate-statix-signatures-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
@@ -80,12 +80,12 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <stx-generate-signatures> selected';
+      result        := <geninj-generate-signatures> selected';
       filename      := <get-src-gen(|project-path, "statix/signatures", "-sig.stx.aterm")> mn
-   
-     
-     
-     
+
+
+
+
   generate-statix-injections:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
@@ -95,9 +95,9 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <str-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      result        := <geninj-generate-injections; pp-stratego-string  <+ !""; debug(!"The injection strategy file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       ; filename    := <get-src-gen(|project-path, "injections", "-injections.str")> mn
-   
+
   generate-statix-injections-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     where
@@ -107,22 +107,22 @@ rules
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result        := <str-generate-injections> selected';
+      result        := <geninj-generate-injections> selected';
       filename      := <get-src-gen(|project-path, "injections", "-injections.str.aterm")> mn
-   
-   
+
+
 
   pp-statix-to-string = pp-Statix-string(prettyprint-Statix-start-symbols)
-  
+
   get-src-gen(|project-path, folder, ext):
     filename -> filename'
     with
-      fn := <get-filename> filename; 
+      fn := <get-filename> filename;
       src-gen-path := <concat-strings> [project-path, "/src-gen"];
       src-gen-folder := <concat-strings> [src-gen-path, "/" ,folder];
       file-folder := <get-dir(|src-gen-folder)> filename ;
       filename' := <concat-strings> [file-folder, "/" , fn, ext]
-      
+
 
   get-dir(|path) :
     s -> s'
