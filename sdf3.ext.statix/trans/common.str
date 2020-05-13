@@ -193,15 +193,15 @@ rules
   geninj-symbol-to-sort: Lex(symbol)                    -> <geninj-symbol-to-sort> symbol
   geninj-symbol-to-sort: Varsym(symbol)                 -> <geninj-symbol-to-sort> symbol
   geninj-symbol-to-sort: Label(_, symbol)               -> <geninj-symbol-to-sort> symbol
-  geninj-symbol-to-sort: CharClass(_)                   -> <fail>
-  geninj-symbol-to-sort: Lit(_)                         -> <fail>
-  geninj-symbol-to-sort: CiLit(_)                       -> <fail>
-  geninj-symbol-to-sort: Sequence(_, _)                 -> <fail>
   geninj-symbol-to-sort: Alt(_, _)                      -> <fail>
-  geninj-symbol-to-sort: Start()                        -> <fail>
-  geninj-symbol-to-sort: FileStart()                    -> <fail>
+  geninj-symbol-to-sort: CharClass(_)                   -> <fail>
+  geninj-symbol-to-sort: CiLit(_)                       -> <fail>
   geninj-symbol-to-sort: EOF()                          -> <fail>
+  geninj-symbol-to-sort: FileStart()                    -> <fail>
+  geninj-symbol-to-sort: Lit(_)                         -> <fail>
   geninj-symbol-to-sort: ParameterizedSort(_, _)        -> <fail>
+  geninj-symbol-to-sort: Sequence(_, _)                 -> <fail>
+  geninj-symbol-to-sort: Start()                        -> <fail>
 
 
   // geninj-symboldef-to-name :: SDF3.SymbolDef         -> string
@@ -298,30 +298,35 @@ rules
   where <not(?"")> basename
   with paramname := <to-camel-case; geninj-make-valid-paramname> basename
 
-  geninj-make-valid-paramname = not(geninj-is-invalid-name) <+ (<concat-strings> [<id>, "_"])
+  // NOTE: We add an underscore suffix for reserved names.
+  // We cannot add an undercore prefix as something like "_id" results in ambiguities in Stratego.
+  // For invalid names, we must add an underscore prefix, as the name would otherwise still be invalid.
+  geninj-make-valid-paramname
+    = (not(geninj-is-reserved-name) <+ (<concat-strings> [<id>, "_"]))
+    ; (not(geninj-is-invalid-name)  <+ (<concat-strings> ["_", <id>]))
 
   // Reserved in Stratego
-  geninj-is-invalid-name = ?"all"
-  geninj-is-invalid-name = ?"constructors"
-  geninj-is-invalid-name = ?"fail"
-  geninj-is-invalid-name = ?"id"
-  geninj-is-invalid-name = ?"in"
-  geninj-is-invalid-name = ?"let"
-  geninj-is-invalid-name = ?"module"
-  geninj-is-invalid-name = ?"not"
-  geninj-is-invalid-name = ?"one"
-  geninj-is-invalid-name = ?"overlays"
-  geninj-is-invalid-name = ?"prim"
-  geninj-is-invalid-name = ?"rules"
-  geninj-is-invalid-name = ?"script"
-  geninj-is-invalid-name = ?"signature"
-  geninj-is-invalid-name = ?"some"
-  geninj-is-invalid-name = ?"sorts"
-  geninj-is-invalid-name = ?"strategies"
-  geninj-is-invalid-name = ?"stratego"
-  geninj-is-invalid-name = ?"test"
-  geninj-is-invalid-name = ?"where"
-  geninj-is-invalid-name = ?"import-term"
+  geninj-is-reserved-name = ?"all"
+  geninj-is-reserved-name = ?"constructors"
+  geninj-is-reserved-name = ?"fail"
+  geninj-is-reserved-name = ?"id"
+  geninj-is-reserved-name = ?"in"
+  geninj-is-reserved-name = ?"let"
+  geninj-is-reserved-name = ?"module"
+  geninj-is-reserved-name = ?"not"
+  geninj-is-reserved-name = ?"one"
+  geninj-is-reserved-name = ?"overlays"
+  geninj-is-reserved-name = ?"prim"
+  geninj-is-reserved-name = ?"rules"
+  geninj-is-reserved-name = ?"script"
+  geninj-is-reserved-name = ?"signature"
+  geninj-is-reserved-name = ?"some"
+  geninj-is-reserved-name = ?"sorts"
+  geninj-is-reserved-name = ?"strategies"
+  geninj-is-reserved-name = ?"stratego"
+  geninj-is-reserved-name = ?"test"
+  geninj-is-reserved-name = ?"where"
+  geninj-is-reserved-name = ?"import-term"
 
   // Identifiers cannot start with a number
   geninj-is-invalid-name = string-as-chars([is-num|id])
