@@ -202,7 +202,14 @@ rules
      ; expl-call  := <geninj-param-to-explication-app(|lang)> param
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
 
-  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
+    // explicate-injections-MyLang-MySort: MyCons() -> MyCons()
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+        NoAnnoList(Op(consname, []))
+      , NoAnnoList(Op(consname, []))
+    ))
+
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
     // explicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
     // with t1' := <explicate-injections-MyLang-SubSort> t1
     //    ; t2' := <explicate-injections-MyLang-SubSort> t2
@@ -226,7 +233,14 @@ rules
   with consname   := <geninj-generate-inj-name> (sortname, [param])
      ; impl-call  := <geninj-param-to-implication-app(|lang)> param
 
-  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
+    // implicate-injections-MyLang-MySort: MyCons() -> MyCons()
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+        NoAnnoList(Op(consname, []))
+      , NoAnnoList(Op(consname, []))
+    ))
+
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
     // implicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
     // with t1' := <implicate-injections-MyLang-SubSort> t1
     //    ; t2' := <implicate-injections-MyLang-SubSort> t2
