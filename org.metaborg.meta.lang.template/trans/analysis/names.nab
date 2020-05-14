@@ -76,7 +76,7 @@ binding rules
     defines non-unique Sort s of type SortType(s)
     scopes Label
 
-  DeclSortCf(s):
+  DeclSort(s):     // context-free
     defines DeclSort s
   DeclSortLex(s):
     defines DeclSort s

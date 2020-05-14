@@ -19,8 +19,8 @@ SymbolDef.Cf      = <<SymbolDef>-CF> {prefer}
 SymbolDef.Lex     = <<SymbolDef>-LEX> {prefer}
 SymbolDef.Var     = <<SymbolDef>-VAR> {prefer}
 
-DeclSort.DeclSort    = <<Sort>>     // desugared
-DeclSort.DeclSortCf  = <<Sort>-CF>
+DeclSort.DeclSort    = <<Sort>>     // context-free
+DeclSort.DeclSortCf  = <<Sort>-CF>  // desugared to DeclSort
 DeclSort.DeclSortLex = <<Sort>-LEX>
 DeclSort.DeclSortVar = <<Sort>-VAR>
 

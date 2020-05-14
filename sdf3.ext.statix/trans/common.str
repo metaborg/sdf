@@ -251,7 +251,7 @@ rules
 
 
   // geninj-sort-to-extsort :: SDF3.SymbolDef -> ExtSort
-  geninj-sort-to-extsort: DeclSortCf(name)  -> CfSort(name)
+  geninj-sort-to-extsort: DeclSort(name)    -> CfSort(name)
   geninj-sort-to-extsort: DeclSortLex(name) -> LexSort(name)
   geninj-sort-to-extsort: DeclSortVar(name) -> VarSort(name)
 

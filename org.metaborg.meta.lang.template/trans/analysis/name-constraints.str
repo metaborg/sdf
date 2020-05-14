@@ -299,19 +299,19 @@ rules
     d@DeclSortCf(sort) -> <fail>
   where
     task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate context-free sort declaration [sort]])> d
+    <task-create-error-on-triggers(|ctx, [Multiple(task)], $[Duplicate context-free sort declaration [sort]])> d
 
   nabl-constraint(|ctx):
     d@DeclSortLex(sort) -> <fail>
   where
     task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate lexical sort declaration [sort]])> d
+    <task-create-error-on-triggers(|ctx, [Multiple(task)], $[Duplicate lexical sort declaration [sort]])> d
 
   nabl-constraint(|ctx):
     d@DeclSortVar(sort) -> <fail>
   where
     task := <nabl-lookup-local(|ctx, NablNsDeclSort())> sort;
-    <task-create-error-on-multiple(|ctx, task, $[Duplicate variable sort declaration [sort]])> d
+    <task-create-error-on-triggers(|ctx, [Multiple(task)], $[Duplicate variable sort declaration [sort]])> d
 
 
 
