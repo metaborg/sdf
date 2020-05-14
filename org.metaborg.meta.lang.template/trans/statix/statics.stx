@@ -480,16 +480,15 @@ signature
     DeclSort    : string -> DeclSymbol  // context-free
     DeclSortLex : string -> DeclSymbol
     DeclSortVar : string -> DeclSymbol
-    DeclSortVar : DeclSymbol -> DeclSymbol
 
 rules
 
   grammarOK(s, Sorts(declSymbols)) :- declSymbolsOK(s, declSymbols).
 
   declSymbolOK: scope * DeclSymbol
-  declSymbolOK(s, DeclSort(symbolDef))    :- typeOfSort(s, name) == _.
-  declSymbolOK(s, DeclSortLex(symbolDef)) :- declSymbolOK(s, symbolDef).
-  declSymbolOK(s, DeclSortVar(symbolDef)) :- declSymbolOK(s, symbolDef).
+  declSymbolOK(s, DeclSort(name))    :- typeOfSort(s, name) == _.
+  declSymbolOK(s, DeclSortLex(name)) :- typeOfSort(s, name) == _.
+  declSymbolOK(s, DeclSortVar(name)) :- typeOfSort(s, name) == _.
   declSymbolsOK maps declSymbolOK(*, list(*))
 
 //
