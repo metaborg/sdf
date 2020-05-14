@@ -79,13 +79,13 @@ binding rules
 
  DeclSort(s):     // context-free
   defines non-unique Sort s of type SortType(s)
-  defines DeclSort s
+//  defines DeclSort s
  DeclSortLex(s):
   defines non-unique Sort s of type SortType(s)
-  defines DeclSort s
+//  defines DeclSort s
  DeclSortVar(s):
   defines non-unique Sort s of type SortType(s)
-  defines DeclSort s
+//  defines DeclSort s
 
  SortConsRef(Sort(s), Constructor(c)):
     refers to Sort s
