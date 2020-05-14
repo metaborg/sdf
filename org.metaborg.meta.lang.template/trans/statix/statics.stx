@@ -26,15 +26,20 @@ signature
 signature
 
   sorts TYPE constructors
-    SORT   : occurrence        -> TYPE
-    SEQ    : TYPE * list(TYPE) -> TYPE
-    OPT    : TYPE              -> TYPE
-    ITER   : TYPE              -> TYPE
-    ALT    : TYPE * TYPE       -> TYPE
-    LAYOUT :                      TYPE
-    STRING :                      TYPE
-    PROD   : list(TYPE) * TYPE -> TYPE
-    MOD    : scope             -> TYPE
+    SORT      : occurrence * SORTTYPE -> TYPE
+    SEQ       : TYPE * list(TYPE)     -> TYPE
+    OPT       : TYPE                  -> TYPE
+    ITER      : TYPE                  -> TYPE
+    ALT       : TYPE * TYPE           -> TYPE
+    LAYOUT    :                          TYPE
+    STRING    :                          TYPE
+    PROD      : list(TYPE) * TYPE     -> TYPE
+    MOD       : scope                -> TYPE
+
+  sorts SORTTYPE constructors
+    CF        : SORTTYPE
+    LEX       : SORTTYPE
+    VAR       : SORTTYPE
 
   relations
     typeOfDecl : occurrence -> TYPE
@@ -216,13 +221,14 @@ rules
 
   typeOfTemplateProduction: scope * TemplateProduction -> TYPE
   typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSymbolDef(s, symbolDef) == Tsort,
+    typeOfCfSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort),
     injectionProductionOK(Tprod, attrs, symbolDef).
-  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+  typeOfTemplateProduction(s, TemplateProductionWithCons(SortCons(symbolDef, Constructor(constructorName)), template, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfCfSymbolDef(s, symbolDef) == Tsort,
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols.
   typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
@@ -270,7 +276,8 @@ rules
   sectionOK(s, TemplateOptions(templateOptions)) :- templateOptionsOK(s, templateOptions).
 
   templateOptionOK: scope * TemplateOption
-  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- declareSymbolDef(s, symbolDef) == _.
+  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :-
+    typeOfCfSymbolDef(s, symbolDef) == _.
   templateOptionOK(s, _).
   templateOptionsOK maps templateOptionOK(*, list(*))
 
@@ -313,11 +320,11 @@ rules
   grammarOK(s, Contextfree(productions))               :- productionsOK(s, productions).
   grammarOK(s, Variables(productions))                 :- productionsOK(s, productions).
   grammarOK(s, LexVariables(productions))              :- productionsOK(s, productions).
-  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
+  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfVarSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfVarSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, Kernel(sdfProductions))                 :- typeOfKernelSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfLexSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalCfProductionsOK(s, generalProductions).
 
   productionOK: scope * Production
   productionOK(s, Prod(symbols, symbol, _)) :- {sProd}
@@ -326,25 +333,60 @@ rules
     typeOfSymbol(sProd, symbol) == _.
   productionsOK maps productionOK(*, list(*))
 
-  generalProductionOK: scope * GeneralProduction
-  generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
-    typeOfSdfProduction(s, sdfProduction) == _.
-  generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
+  generalCfProductionOK: scope * GeneralProduction
+  generalCfProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
+    typeOfCfSdfProduction(s, sdfProduction) == _.
+  generalCfProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
     typeOfTemplateProduction(s, templateProduction) == _.
-  generalProductionsOK maps generalProductionOK(*, list(*))
+  generalCfProductionsOK maps generalCfProductionOK(*, list(*))
 
-  typeOfSdfProduction: scope * SdfProduction -> TYPE
-  typeOfSdfProduction(s, SdfProduction(symbolDef, Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSymbolDef(s, symbolDef) == Tsort,
+  typeOfCfSdfProduction: scope * SdfProduction -> TYPE
+  typeOfCfSdfProduction(s, p@SdfProduction(symbolDef, _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfCfSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfCfSdfProduction(s, p@SdfProductionWithCons(SortCons(symbolDef, Constructor(_)), _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfCfSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfCfSdfProductions maps typeOfCfSdfProduction(*, list(*)) = list(*)
+
+  typeOfLexSdfProduction: scope * SdfProduction -> TYPE
+  typeOfLexSdfProduction(s, p@SdfProduction(symbolDef, _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfLexSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfLexSdfProduction(s, p@SdfProductionWithCons(SortCons(symbolDef, Constructor(_)), _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfLexSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfLexSdfProductions maps typeOfLexSdfProduction(*, list(*)) = list(*)
+
+  typeOfVarSdfProduction: scope * SdfProduction -> TYPE
+  typeOfVarSdfProduction(s, p@SdfProduction(symbolDef, _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfVarSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfVarSdfProduction(s, p@SdfProductionWithCons(SortCons(symbolDef, Constructor(_)), _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfVarSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfVarSdfProductions maps typeOfVarSdfProduction(*, list(*)) = list(*)
+
+  typeOfKernelSdfProduction: scope * SdfProduction -> TYPE
+  typeOfKernelSdfProduction(s, p@SdfProduction(symbolDef, _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfKernelSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfKernelSdfProduction(s, p@SdfProductionWithCons(SortCons(symbolDef, Constructor(_)), _, _)) = Tprod :- {sProd Tsymbols Tsort}
+    typeOfKernelSymbolDef(s, symbolDef) == Tsort,
+    typeOfAnySdfProduction(s, Tsort, p) == Tprod.
+  typeOfKernelSdfProductions maps typeOfKernelSdfProduction(*, list(*)) = list(*)
+
+  typeOfAnySdfProduction: scope * TYPE * SdfProduction -> TYPE
+  typeOfAnySdfProduction(s, Tsort, SdfProduction(symbolDef, Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols}
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == PROD(Tsymbols, Tsort),
     injectionProductionOK(Tprod, attrs, symbolDef).
-  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+  typeOfAnySdfProduction(s, Tsort, SdfProductionWithCons(SortCons(symbolDef, Constructor(constructorName)), Rhs(symbols), _)) = Tprod :- {sProd Tsymbols}
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols.
-  typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
+  typeOfAnySdfProductions maps typeOfAnySdfProduction(*, *, list(*)) = list(*)
 
 //
 // Reusable grammar productions constraints
@@ -355,7 +397,7 @@ rules
   injectionProductionOK: TYPE * Attributes * SymbolDef
   injectionProductionOK(PROD([Tsymbol], Tsort), attrs, loc) :-
     // TODO: do not generate warning when there is a reject or bracket attribute.
-    try { Tsymbol == SORT(_) } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+    try { Tsymbol == SORT(_, _) } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
   injectionProductionOK(_, attrs, loc).
 
   //constructorProductionOK:
@@ -437,7 +479,7 @@ rules
 
   priorityProductionOK: scope * PriorityProduction
   // TODO: these should not declare new productions, but instead should be checked against existing ones?
-  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, sdfProduction) == _.
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfAnySdfProduction(s, _, sdfProduction) == _.
   priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
   priorityProductionsOK maps priorityProductionOK(*, list(*))
 
@@ -474,24 +516,26 @@ rules
 signature
 
   constructors
-    Sorts : list(DeclSymbol) -> Grammar
+    Sorts : list(DeclSort) -> Grammar
 
-  sorts DeclSymbol constructors
-    DeclSort    : string     -> DeclSymbol
-    DeclSortCf  : DeclSymbol -> DeclSymbol
-    DeclSortLex : DeclSymbol -> DeclSymbol
-    DeclSortVar : DeclSymbol -> DeclSymbol
+  sorts DeclSort constructors
+    DeclSort    : string -> DeclSort  // context-free
+    DeclSortLex : string -> DeclSort
+    DeclSortVar : string -> DeclSort
 
 rules
 
-  grammarOK(s, Sorts(declSymbols)) :- declSymbolsOK(s, declSymbols).
+  grammarOK(s, Sorts(declSymbols)) :- declSortsOK(s, declSymbols).
 
-  declSymbolOK: scope * DeclSymbol
-  declSymbolOK(s, DeclSort(name))         :- typeOfSort(s, name) == _.
-  declSymbolOK(s, DeclSortCf(symbolDef))  :- declSymbolOK(s, symbolDef).
-  declSymbolOK(s, DeclSortLex(symbolDef)) :- declSymbolOK(s, symbolDef).
-  declSymbolOK(s, DeclSortVar(symbolDef)) :- declSymbolOK(s, symbolDef).
-  declSymbolsOK maps declSymbolOK(*, list(*))
+  declSortOK : scope * DeclSort
+  declSortOK(s, DeclSort(name))         :-
+    declareSortCf(s, name) == _.
+  declSortOK(s, DeclSortLex(name)) :-
+    declareSortLex(s, name) == _.
+  declSortOK(s, DeclSortVar(name)) :-
+    declareSortVar(s, name) == _.
+  declSortsOK maps declSortOK(*, list(*))
+
 
 //
 // Sorts and Constructors
@@ -517,17 +561,40 @@ signature
 
 rules
 
-  declareSortCons: scope * list(TYPE) * SortCons -> TYPE
-  declareSortCons(s, Tsymbols, SortCons(symbolDef, Constructor(constructorName))) = Tprod :- {Tsort}
-    declareSymbolDef(s, symbolDef) == Tsort,
-    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
+  typeOfSymbolDef : scope * SymbolDef -> TYPE
+  typeOfSymbolDef(s, SortDef(name)) = T :-
+    typeOfSort(s, name) == T.
+  typeOfSymbolDef(s, SymbolDefCf(symbolDef)) = T :-
+    typeOfCfSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDefLex(symbolDef)) = T :-
+    typeOfLexSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDefVar(symbolDef)) = T :-
+    typeOfVarSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDef_Symbol(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
 
-  declareSymbolDef: scope * SymbolDef -> TYPE
-  declareSymbolDef(s, SortDef(name))            = Tsort :- declareSort(s, name)           == Tsort.
-  declareSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- declareSymbolDef(s, symbolDef) == T.
-  declareSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
-  declareSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
-  declareSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)        == T.
+  typeOfCfSymbolDef : scope * SymbolDef -> TYPE
+  typeOfCfSymbolDef(s, symbolDef) = Tsort :-
+    typeOfSymbolDef(s, symbolDef) == Tsort,
+    try { Tsort == SORT(_, CF()) } | error $[The sort is not declared as a context-free sort.] @symbolDef.
+
+  typeOfLexSymbolDef : scope * SymbolDef -> TYPE
+  typeOfLexSymbolDef(s, symbolDef) = Tsort :-
+    typeOfSymbolDef(s, symbolDef) == Tsort,
+    try { Tsort == SORT(_, LEX()) } | error $[The sort is not declared as a lexical sort.] @symbolDef.
+
+  typeOfVarSymbolDef : scope * SymbolDef -> TYPE
+  typeOfVarSymbolDef(s, symbolDef) = Tsort :-
+    typeOfSymbolDef(s, symbolDef) == Tsort,
+    try { Tsort == SORT(_, VAR()) } | error $[The sort is not declared as a variable sort.] @symbolDef.
+
+  typeOfKernelSymbolDef : scope * SymbolDef -> TYPE
+  typeOfKernelSymbolDef(s, SymbolDefCf(symbolDef)) = Tsort :-
+    typeOfCfSymbolDef(s, symbolDef) == Tsort.
+  typeOfKernelSymbolDef(s, SymbolDefLex(symbolDef)) = Tsort :-
+    typeOfLexSymbolDef(s, symbolDef) == Tsort.
+  typeOfKernelSymbolDef(s, SymbolDefVar(symbolDef)) = Tsort :-
+    typeOfVarSymbolDef(s, symbolDef) == Tsort.
 
   typeOfSortConsRef: scope * SortConsRef -> TYPE
   typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}
@@ -537,9 +604,19 @@ rules
 
 rules // Sort reusable predicates
 
-  declareSort : scope * string -> TYPE
-  declareSort(s, name) = Tsort :-
-    Tsort == SORT(Sort{name}),
+  declareSortCf : scope * string -> TYPE
+  declareSortCf(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}, CF()),
+    s -> Sort{name} with typeOfDecl Tsort.
+
+  declareSortLex : scope * string -> TYPE
+  declareSortLex(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}, LEX()),
+    s -> Sort{name} with typeOfDecl Tsort.
+
+  declareSortVar : scope * string -> TYPE
+  declareSortVar(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}, VAR()),
     s -> Sort{name} with typeOfDecl Tsort.
 
   typeOfSort : scope * string -> TYPE
