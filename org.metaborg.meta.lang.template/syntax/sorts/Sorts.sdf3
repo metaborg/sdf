@@ -6,11 +6,11 @@ basic/Basic
 regular/Regular
 
 lexical syntax
-	//head:[A-Z] -> Sort {cons("one-char")}
+  //head:[A-Z] -> Sort {cons("one-char")}
     Sort.OneChar = [A-Z]
     //head:[A-Z] middle:[A-Za-z0-9\_\-]* last:[A-Za-z0-9] -> Sort {cons("more-chars")}
     Sort.MoreChars = [A-Z] [A-Za-z0-9\_\-]* [A-Za-z0-9]
-     
+
 context-free syntax
 Symbol.Sort = <<Sort>>
 Symbol.ParameterizedSort = <<Sort> [[<parameters:{Symbol ", "}+>]]>
@@ -27,12 +27,12 @@ DeclSymbol.Var = <<DeclSymbol>-VAR> {prefer}
 
 
 Grammar.Sorts = <
-	sorts
+  sorts
 
-		<DeclSymbol*>
-		
-		>
- 
+    <DeclSymbol*>
+
+    >
+
 lexical restrictions
     Sort -/- [A-Za-z0-9\_]
 
