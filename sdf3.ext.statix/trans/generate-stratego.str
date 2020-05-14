@@ -172,17 +172,21 @@ rules
     , BA(is-call, Var(varname))
     ))
   with consname   := <geninj-generate-inj-name> (sortname, [param])
-     ; expl-call  := <geninj-param-to-explication-call(|lang)> param
+     ; expl-call  := <geninj-param-to-explication-app(|lang)> param
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
 
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
-    // explicate-injections-MyLang-MySort: MyCons(t) -> MyCons(<explicate-injections-MyLang-SubSort> t)
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
-      NoAnnoList(Op(consname, vars))
-    , NoAnnoList(Op(consname, ops))
+    // explicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
+    // with t1' := <explicate-injections-MyLang-SubSort> t1
+    //    ; t2' := <explicate-injections-MyLang-SubSort> t2
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+      NoAnnoList(Op(consname, from-vars))
+    , NoAnnoList(Op(consname, to-vars))
+    , [ WithClause(body) ]
     ))
-  with vars := <geninj-params-to-vars> params
-     ; ops  := <geninj-params-to-explication-calls(|lang)> params
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-explication-assigns(|lang)> params
 
 rules
 
@@ -193,16 +197,20 @@ rules
       impl-call
     ))
   with consname   := <geninj-generate-inj-name> (sortname, [param])
-     ; impl-call  := <geninj-param-to-implication-call(|lang)> param
+     ; impl-call  := <geninj-param-to-implication-app(|lang)> param
 
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params) ->
-    // implicate-injections-MyLang-MySort: MyCons(t) -> MyCons(<implicate-injections-MyLang-SubSort> t)
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
-      NoAnnoList(Op(consname, vars))
-    , NoAnnoList(Op(consname, ops))
+    // implicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
+    // with t1' := <implicate-injections-MyLang-SubSort> t1
+    //    ; t2' := <implicate-injections-MyLang-SubSort> t2
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
+      NoAnnoList(Op(consname, from-vars))
+    , NoAnnoList(Op(consname, to-vars))
+    , [ WithClause(body) ]
     ))
-  with vars := <geninj-params-to-vars> params
-     ; ops  := <geninj-params-to-implication-calls(|lang)> params
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-implication-assigns(|lang)> params
 
 rules
 
@@ -225,8 +233,22 @@ rules
   geninj-params-to-vars = map(geninj-param-to-var)
   geninj-param-to-var: Param(_, newname) -> Var(newname)
 
-  geninj-params-to-explication-calls(|lang) = map(geninj-param-to-explication-call(|lang))
-  geninj-param-to-explication-call(|lang): Param(symbol, newname) -> App(<geninj-symbol-to-explication-call(|lang)> symbol, Var(newname))
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+
+rules
+
+  geninj-params-to-explication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-explication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-explication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-explication-app(|lang)> param
+
+  geninj-params-to-explication-apps(|lang) = map(geninj-param-to-explication-app(|lang))
+  geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
   geninj-symbol-to-explication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
   geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -251,8 +273,17 @@ rules
 
 rules
 
-  geninj-params-to-implication-calls(|lang) = map(geninj-param-to-implication-call(|lang))
-  geninj-param-to-implication-call(|lang): Param(symbol, newname) -> App(<geninj-symbol-to-implication-call(|lang)> symbol, Var(newname))
+  geninj-params-to-implication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-implication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-implication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-implication-app(|lang)> param
+
+  geninj-params-to-implication-apps(|lang) = map(geninj-param-to-implication-app(|lang))
+  geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-implication-call(|lang)> symbol
 
   geninj-symbol-to-implication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
   geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
@@ -303,4 +334,10 @@ rules
     // is-list; map(is-MySort-or-inj)
     Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-call(|lang)> nestedSort]))
 
+rules
+
+  // Makes a list of strategy calls into nested Seq calls with the strategies
+  geninj-strs-to-seqs: [] -> Id()
+  geninj-strs-to-seqs: [x] -> x
+  geninj-strs-to-seqs: [x|xs@[_|_]] -> Seq(x, <geninj-strs-to-seqs> xs)
 
