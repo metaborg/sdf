@@ -129,7 +129,7 @@ rules
   with sortname := <geninj-symboldef-to-name> symboldef
      ; params   := <geninj-body-to-params> body
 
-  geninj-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Cf(symboldef), Constructor(consname)), body, Attrs(attrs))
+  geninj-kernel-production-to-signature: SdfProductionWithCons(SortCons(Cf(symboldef), Constructor(consname)), body, Attrs(attrs))
   -> CfSignature(sortname, Some(consname), params)
   where <not(geninj-ignored-production-symboldef)> symboldef
       ; <not(geninj-ignored-production-attr)> attrs
@@ -143,7 +143,7 @@ rules
   with sortname := <geninj-symboldef-to-name> symboldef
      ; params   := <geninj-body-to-params> body
 
-  geninj-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Var(symboldef), Constructor(consname)), body, Attrs(attrs))
+  geninj-kernel-production-to-signature: SdfProductionWithCons(SortCons(Var(symboldef), Constructor(consname)), body, Attrs(attrs))
   -> VarSignature(sortname, Some(consname), params)
   where <not(geninj-ignored-production-symboldef)> symboldef
       ; <not(geninj-ignored-production-attr)> attrs
