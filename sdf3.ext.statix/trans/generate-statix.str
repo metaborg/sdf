@@ -102,8 +102,6 @@ rules
      ; op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
 
   geninj-sort-to-stxsig: CfSort(sortname)  -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
-//  geninj-sort-to-stxsig: LexSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
-//  geninj-sort-to-stxsig: VarSort(sortname) -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
 
 rules
 
@@ -114,7 +112,7 @@ rules
 
   // geninj-symbol-to-stxsig :: SDF3.Symbol             -> Statix.SortRef
   geninj-symbol-to-stxsig: Sort(name)                   -> SimpleSort(name)
-  geninj-symbol-to-stxsig: Opt(symbol)                  -> <geninj-symbol-to-stxsig> symbol
+  geninj-symbol-to-stxsig: Opt(symbol)                  -> <debug(!"ERROR: Optional sorts are not supported by Statix: "); fail> //OptSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: Iter(symbol)                 -> ListSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: IterSep(symbol, _)           -> ListSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: IterStar(symbol)             -> ListSort(<geninj-symbol-to-stxsig> symbol)
@@ -124,12 +122,12 @@ rules
   geninj-symbol-to-stxsig: Var(symbol)                  -> <geninj-symbol-to-stxsig> symbol
   geninj-symbol-to-stxsig: Varsym(symbol)               -> <geninj-symbol-to-stxsig> symbol
   geninj-symbol-to-stxsig: Label(_, symbol)             -> <geninj-symbol-to-stxsig> symbol
-  geninj-symbol-to-stxsig: Alt(_, _)                    -> <fail>
-  geninj-symbol-to-stxsig: CharClass(_)                 -> <fail>
-  geninj-symbol-to-stxsig: CiLit(_)                     -> <fail>
-  geninj-symbol-to-stxsig: EOF()                        -> <fail>
-  geninj-symbol-to-stxsig: FileStart()                  -> <fail>
-  geninj-symbol-to-stxsig: Lit(_)                       -> <fail>
-  geninj-symbol-to-stxsig: ParameterizedSort(_, _)      -> <fail>
-  geninj-symbol-to-stxsig: Sequence(_, _)               -> <fail>
-  geninj-symbol-to-stxsig: Start()                      -> <fail>
+  geninj-symbol-to-stxsig: Alt(_, _)                    -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-stxsig: CharClass(_)                 -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-stxsig: CiLit(_)                     -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-stxsig: EOF()                        -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-stxsig: FileStart()                  -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-stxsig: Lit(_)                       -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-stxsig: ParameterizedSort(_, _)      -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-stxsig: Sequence(_, _)               -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-stxsig: Start()                      -> <debug(!"ERROR: Start is not supported. "); fail>

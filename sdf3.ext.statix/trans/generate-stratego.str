@@ -169,7 +169,7 @@ rules
   geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
 
   geninj-symbol-to-strsig: Sort(name)                   -> ConstType(SortNoArgs(name))
-  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(<geninj-symbol-to-strsig> symbol)
+  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(Sort("Option", <geninj-symbol-to-strsig> symbol))
   geninj-symbol-to-strsig: Iter(symbol)                 -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
   geninj-symbol-to-strsig: IterSep(symbol, _)           -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
   geninj-symbol-to-strsig: IterStar(symbol)             -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
@@ -179,15 +179,15 @@ rules
   geninj-symbol-to-strsig: Var(symbol)                  -> <geninj-symbol-to-strsig> symbol
   geninj-symbol-to-strsig: Varsym(symbol)               -> <geninj-symbol-to-strsig> symbol
   geninj-symbol-to-strsig: Label(_, symbol)             -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Alt(_, _)                    -> <fail>
-  geninj-symbol-to-strsig: CharClass(_)                 -> <fail>
-  geninj-symbol-to-strsig: CiLit(_)                     -> <fail>
-  geninj-symbol-to-strsig: EOF()                        -> <fail>
-  geninj-symbol-to-strsig: FileStart()                  -> <fail>
-  geninj-symbol-to-strsig: Lit(_)                       -> <fail>
-  geninj-symbol-to-strsig: ParameterizedSort(_, _)      -> <fail>
-  geninj-symbol-to-strsig: Sequence(_, _)               -> <fail>
-  geninj-symbol-to-strsig: Start()                      -> <fail>
+  geninj-symbol-to-strsig: Alt(_, _)                    -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-strsig: CharClass(_)                 -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-strsig: CiLit(_)                     -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-strsig: EOF()                        -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-strsig: FileStart()                  -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-strsig: Lit(_)                       -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-strsig: ParameterizedSort(_, _)      -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-strsig: Sequence(_, _)               -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-strsig: Start()                      -> <debug(!"ERROR: Start is not supported. "); fail>
 
 rules
 
@@ -292,7 +292,7 @@ rules
   with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
   geninj-symbol-to-explication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
-  geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -302,15 +302,15 @@ rules
   geninj-symbol-to-explication-call(|lang): Var(symbol)                   -> <geninj-symbol-to-explication-call(|lang)> symbol
   geninj-symbol-to-explication-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-explication-call(|lang)> symbol
   geninj-symbol-to-explication-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-explication-call(|lang)> symbol
-  geninj-symbol-to-explication-call(|lang): Alt(_, _)                     -> <fail>
-  geninj-symbol-to-explication-call(|lang): CharClass(_)                  -> <fail>
-  geninj-symbol-to-explication-call(|lang): CiLit(_)                      -> <fail>
-  geninj-symbol-to-explication-call(|lang): EOF()                         -> <fail>
-  geninj-symbol-to-explication-call(|lang): FileStart()                   -> <fail>
-  geninj-symbol-to-explication-call(|lang): Lit(_)                        -> <fail>
-  geninj-symbol-to-explication-call(|lang): ParameterizedSort(_, _)       -> <fail>
-  geninj-symbol-to-explication-call(|lang): Sequence(_, _)                -> <fail>
-  geninj-symbol-to-explication-call(|lang): Start()                       -> <fail>
+  geninj-symbol-to-explication-call(|lang): Alt(_, _)                     -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): CharClass(_)                  -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): CiLit(_)                      -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): EOF()                         -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): FileStart()                   -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Lit(_)                        -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): ParameterizedSort(_, _)       -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Sequence(_, _)                -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Start()                       -> <debug(!"ERROR: Start is not supported. "); fail>
 
 rules
 
@@ -327,7 +327,7 @@ rules
   with call := <geninj-symbol-to-implication-call(|lang)> symbol
 
   geninj-symbol-to-implication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
-  geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
@@ -337,21 +337,21 @@ rules
   geninj-symbol-to-implication-call(|lang): Var(symbol)                   -> <geninj-symbol-to-implication-call(|lang)> symbol
   geninj-symbol-to-implication-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-implication-call(|lang)> symbol
   geninj-symbol-to-implication-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-implication-call(|lang)> symbol
-  geninj-symbol-to-implication-call(|lang): Alt(_, _)                     -> <fail>
-  geninj-symbol-to-implication-call(|lang): CharClass(_)                  -> <fail>
-  geninj-symbol-to-implication-call(|lang): CiLit(_)                      -> <fail>
-  geninj-symbol-to-implication-call(|lang): EOF()                         -> <fail>
-  geninj-symbol-to-implication-call(|lang): FileStart()                   -> <fail>
-  geninj-symbol-to-implication-call(|lang): Lit(_)                        -> <fail>
-  geninj-symbol-to-implication-call(|lang): ParameterizedSort(_, _)       -> <fail>
-  geninj-symbol-to-implication-call(|lang): Sequence(_, _)                -> <fail>
-  geninj-symbol-to-implication-call(|lang): Start()                       -> <fail>
+  geninj-symbol-to-implication-call(|lang): Alt(_, _)                     -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): CharClass(_)                  -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): CiLit(_)                      -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): EOF()                         -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): FileStart()                   -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Lit(_)                        -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): ParameterizedSort(_, _)       -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Sequence(_, _)                -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Start()                       -> <debug(!"ERROR: Start is not supported. "); fail>
 
 
 rules
 
   geninj-symbol-to-is-call(|lang): Sort(name)                             -> CallNoArgs(SVar($[is-[lang]-[name]-or-inj]))
-  geninj-symbol-to-is-call(|lang): Opt(symbol)                            -> <fail>
+  geninj-symbol-to-is-call(|lang): Opt(symbol)                            -> <geninj-symbol-to-is-call-opt(|lang)> symbol
   geninj-symbol-to-is-call(|lang): Iter(symbol)                           -> <geninj-symbol-to-is-call-list(|lang)> symbol
   geninj-symbol-to-is-call(|lang): IterSep(symbol, _)                     -> <geninj-symbol-to-is-call-list(|lang)> symbol
   geninj-symbol-to-is-call(|lang): IterStar(symbol)                       -> <geninj-symbol-to-is-call-list(|lang)> symbol
@@ -361,19 +361,23 @@ rules
   geninj-symbol-to-is-call(|lang): Var(symbol)                            -> <geninj-symbol-to-is-call(|lang)> symbol
   geninj-symbol-to-is-call(|lang): Varsym(symbol)                         -> <geninj-symbol-to-is-call(|lang)> symbol
   geninj-symbol-to-is-call(|lang): Label(_, symbol)                       -> <geninj-symbol-to-is-call(|lang)> symbol
-  geninj-symbol-to-is-call(|lang): Alt(_, _)                              -> <fail>
-  geninj-symbol-to-is-call(|lang): CharClass(_)                           -> <fail>
-  geninj-symbol-to-is-call(|lang): CiLit(_)                               -> <fail>
-  geninj-symbol-to-is-call(|lang): EOF()                                  -> <fail>
-  geninj-symbol-to-is-call(|lang): FileStart()                            -> <fail>
-  geninj-symbol-to-is-call(|lang): Lit(_)                                 -> <fail>
-  geninj-symbol-to-is-call(|lang): ParameterizedSort(_, _)                -> <fail>
-  geninj-symbol-to-is-call(|lang): Sequence(_, _)                         -> <fail>
-  geninj-symbol-to-is-call(|lang): Start()                                -> <fail>
+  geninj-symbol-to-is-call(|lang): Alt(_, _)                              -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): CharClass(_)                           -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): CiLit(_)                               -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): EOF()                                  -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): FileStart()                            -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Lit(_)                                 -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): ParameterizedSort(_, _)                -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Sequence(_, _)                         -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Start()                                -> <debug(!"ERROR: Start is not supported. "); fail>
 
   geninj-symbol-to-is-call-list(|lang): nestedSort ->
-    // is-list; map(is-MySort-or-inj)
+    // is-list; map(is-MyLang-MySort-or-inj)
     Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-call(|lang)> nestedSort]))
+    
+  geninj-symbol-to-is-call-opt(|lang): nestedSort ->
+    // Some(is-MyLang-MySort-or-inj) + ?None()
+    Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
 
 rules
 
