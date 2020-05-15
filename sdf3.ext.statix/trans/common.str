@@ -167,7 +167,7 @@ rules
     newname := <fetch(?oldname) < !$[[oldname][<next-counter> $[geninj-[oldname]]]] + !oldname> dups
 
   // geninj-symbol-to-param :: SDF3.Symbol -> Param
-  geninj-symbol-to-param = !Param(<geninj-symbol-to-sort>, <geninj-symbol-to-sortname; geninj-generate-paramname>)
+  geninj-symbol-to-param = !Param(<geninj-symbol-to-sort>, <geninj-generate-paramname>)
 
   geninj-symbol-to-sort: s@Sort(_)                      -> s
   geninj-symbol-to-sort: s@Opt(sort)                    -> s
@@ -244,13 +244,18 @@ rules
 
 rules
 
+  geninj-param-to-name: Param(symbol, _) -> $[[<geninj-symbol-to-sortname> symbol]s]
+  where <geninj-symbol-is-plural> symbol
+  geninj-param-to-name: Param(symbol, _) -> <geninj-symbol-to-sortname> symbol
+  where <not(geninj-symbol-is-plural)> symbol
+
   // geninj-symbol-to-sortname :: SDF3.Symbol               -> string
   geninj-symbol-to-sortname: Sort(name)                     -> name
   geninj-symbol-to-sortname: Opt(symbol)                    -> <geninj-symbol-to-sortname> symbol
-  geninj-symbol-to-sortname: Iter(symbol)                   -> $[[<geninj-symbol-to-sortname> symbol]s]
-  geninj-symbol-to-sortname: IterSep(symbol, _)             -> $[[<geninj-symbol-to-sortname> symbol]s]
-  geninj-symbol-to-sortname: IterStar(symbol)               -> $[[<geninj-symbol-to-sortname> symbol]s]
-  geninj-symbol-to-sortname: IterStarSep(symbol, _)         -> $[[<geninj-symbol-to-sortname> symbol]s]
+  geninj-symbol-to-sortname: Iter(symbol)                   -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterSep(symbol, _)             -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterStar(symbol)               -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterStarSep(symbol, _)         -> <geninj-symbol-to-sortname> symbol
   geninj-symbol-to-sortname: Cf(symbol)                     -> <geninj-symbol-to-sortname> symbol
   geninj-symbol-to-sortname: Lex(symbol)                    -> <geninj-symbol-to-sortname> symbol
   geninj-symbol-to-sortname: Varsym(symbol)                 -> <geninj-symbol-to-sortname> symbol
@@ -265,8 +270,20 @@ rules
   geninj-symbol-to-sortname: ParameterizedSort(_, _)        -> <fail>
   geninj-symbol-to-sortname: Sequence(_, _)                 -> <fail>
   geninj-symbol-to-sortname: Start()                        -> <fail>
-
-  geninj-param-to-name: Param(symbol, _) -> <geninj-symbol-to-sortname> symbol
+  
+  geninj-symbol-is-plural
+    = ?Iter(_)
+    + ?IterSep(_, _)
+    + ?IterStar(_)
+    + ?IterStarSep(_, _)
+    + ?Sequence(_, _)
+    + Opt(geninj-symbol-is-plural)
+    + Cf(geninj-symbol-is-plural)
+    + Lex(geninj-symbol-is-plural) 
+    + Varsym(geninj-symbol-is-plural)
+    + Label(id, geninj-symbol-is-plural)
+    + ParameterizedSort(geninj-symbol-is-plural, id)
+    + Alt(geninj-symbol-is-plural, geninj-symbol-is-plural)
 
 rules
 
@@ -278,11 +295,24 @@ rules
 
 rules
 
+  geninj-generate-paramname: symbol -> name
+  where <geninj-symbol-is-plural> symbol
+      ; name := <geninj-symbol-to-sortname; geninj-make-paramname-plural> symbol
+  
+  geninj-generate-paramname: symbol -> name
+  where <not(geninj-symbol-is-plural)> symbol
+      ; name := <geninj-symbol-to-sortname; geninj-make-paramname> symbol
 
-  geninj-generate-paramname: "" -> "t"
-  geninj-generate-paramname: basename -> paramname
+  geninj-make-paramname: "" -> "t"
+  geninj-make-paramname: basename -> paramname
   where <not(?"")> basename
   with paramname := <to-camel-case; geninj-make-valid-paramname> basename
+  
+  geninj-make-paramname-plural: "" -> "ts"
+  geninj-make-paramname-plural: basename -> paramname
+  where <not(?"")> basename
+  with camelcase := <to-camel-case> basename
+     ; paramname := <geninj-make-valid-paramname> $[[camelcase]s]
 
   // NOTE: We add an underscore suffix for reserved names.
   // We cannot add an undercore prefix as something like "_id" results in ambiguities in Stratego.
