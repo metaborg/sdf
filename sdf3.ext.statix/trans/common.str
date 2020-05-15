@@ -136,20 +136,6 @@ rules
   with sortname := <geninj-symboldef-to-name> symboldef
      ; params   := <geninj-body-to-params> body
 
-  geninj-kernel-production-to-signature: SdfProduction(Lex(symboldef), body, Attrs(attrs))
-  -> LexSignature(sortname, None(), params)
-  where <not(geninj-ignored-production-symboldef)> symboldef
-      ; <not(geninj-ignored-production-attr)> attrs
-  with sortname := <geninj-symboldef-to-name> symboldef
-     ; params   := <geninj-body-to-params> body
-
-  geninj-kernel-production-to-signature(s): SdfProductionWithCons(SortCons(Lex(symboldef), Constructor(consname)), body, Attrs(attrs))
-  -> LexSignature(sortname, Some(consname), params)
-  where <not(geninj-ignored-production-symboldef)> symboldef
-      ; <not(geninj-ignored-production-attr)> attrs
-  with sortname := <geninj-symboldef-to-name> symboldef
-     ; params   := <geninj-body-to-params> body
-
   geninj-kernel-production-to-signature: SdfProduction(Var(symboldef), body, Attrs(attrs))
   -> VarSignature(sortname, None(), params)
   where <not(geninj-ignored-production-symboldef)> symboldef
