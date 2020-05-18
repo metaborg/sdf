@@ -38,7 +38,7 @@ exports:
 - language: ATerm
   directory: src-gen/statix
   includes:
-  - "**/*.stx"
+  - "**/*.aterm"
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
