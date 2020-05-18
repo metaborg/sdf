@@ -90,7 +90,7 @@ rules
 
 rules
 
-  geninj-sig-to-stxsig: CfSignature(sortname, None(), params) ->
+  geninj-sig-to-stxsig: CfSignature(sortname, None(), params@[_|_]) ->
     OpDecl(consname, op)
   with consname := <geninj-generate-inj-name> (sortname, params)
      ; stx-paramsigs := <map(geninj-param-to-stxsig)> params

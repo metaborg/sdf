@@ -161,7 +161,7 @@ rules
 
 rules
 
-  geninj-sig-to-strsig: CfSignature(sortname, None(), params) ->
+  geninj-sig-to-strsig: CfSignature(sortname, None(), params@[_|_]) ->
     OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
   with str-paramsigs := <map(geninj-param-to-strsig)> params
      ; consname  := <geninj-generate-inj-name> (sortname, params)

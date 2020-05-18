@@ -288,8 +288,7 @@ rules
 rules
 
   // Generates a constructor name for the injection with the specified sort name and arguments
-  geninj-generate-inj-name: (targetname, params) ->  $[[sourcename]2[targetname]]
-  where <?[_|_]> params
+  geninj-generate-inj-name: (targetname, params@[_|_]) ->  $[[sourcename]2[targetname]]
   with paramnames := <map(geninj-param-to-name)> params
      ; sourcename := <string-join(|"-")> paramnames
 
