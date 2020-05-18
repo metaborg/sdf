@@ -6,6 +6,8 @@ pluginManagement {
   }
 }
 
+enableFeaturePreview("GRADLE_METADATA")
+
 fun includeProject(id: String, path: String = "org.metaborg.$id") {
   include(id)
   project(":$id").projectDir = file(path)
