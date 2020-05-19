@@ -117,3 +117,5 @@ imports
   lift-sorts-section: CfSorts(srts)  -> Sorts(<map(!DeclSort(<id>))> srts)
   lift-sorts-section: LexSorts(srts) -> Sorts(<map(!DeclSortLex(<id>))> srts)
   lift-sorts-section: VarSorts(srts) -> Sorts(<map(!DeclSortVar(<id>))> srts)
+  lift-sorts-section: Sorts(srts)    -> Sorts(<map(?DeclSortCf(s) < !DeclSort(s) + id)> srts)
+
