@@ -141,7 +141,7 @@ public class ParseTable implements IParseTable, Serializable {
         this.productionsMapping.clear();
         this.rightmostContextsMapping.clear();
         this.grammar.cleanupGrammar();
-        
+        System.gc();
     }
 
     private void calculateNullable() {
