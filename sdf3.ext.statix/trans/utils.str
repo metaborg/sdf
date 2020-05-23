@@ -96,7 +96,8 @@ rules
     ; flatmap(str-split-camelcase)          // Split into words
     ; filter(not(?""))                      // Remove empty words
     // Remove illegal characters, lowercase everything, capitalize every word except the first
-    ; [string-as-chars(filter(is-alphanum); map(to-lower))|map(string-as-chars(filter(is-alphanum); map(to-lower); [to-upper|id]))]
+    ; [string-as-chars(filter(is-alphanum); map(to-lower))|map(string-as-chars(filter(is-alphanum); map(to-lower); ?[] <+ [to-upper|id]))]
+    ; filter(not(?""))                      // Remove empty words
     ; concat-strings                        // Concatenate back into a single string
 
   /**

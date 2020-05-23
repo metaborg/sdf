@@ -259,7 +259,8 @@ rules
   geninj-symbol-to-sortname: Cf(symbol)                     -> <geninj-symbol-to-sortname> symbol
   geninj-symbol-to-sortname: Lex(symbol)                    -> <geninj-symbol-to-sortname> symbol
   geninj-symbol-to-sortname: Varsym(symbol)                 -> <geninj-symbol-to-sortname> symbol
-  geninj-symbol-to-sortname: Label(name, symbol)            -> name
+  geninj-symbol-to-sortname: Label(Unquoted(name), _)       -> name
+  geninj-symbol-to-sortname: Label(Quoted(name), _)         -> <unquote(?'"')> name
   geninj-symbol-to-sortname: Alt(_, _)                      -> <fail>
   geninj-symbol-to-sortname: CharClass(_)                   -> <fail>
   geninj-symbol-to-sortname: CiLit(_)                       -> <fail>
@@ -270,7 +271,7 @@ rules
   geninj-symbol-to-sortname: ParameterizedSort(_, _)        -> <fail>
   geninj-symbol-to-sortname: Sequence(_, _)                 -> <fail>
   geninj-symbol-to-sortname: Start()                        -> <fail>
-  
+
   geninj-symbol-is-plural
     = ?Iter(_)
     + ?IterSep(_, _)
@@ -279,7 +280,7 @@ rules
     + ?Sequence(_, _)
     + Opt(geninj-symbol-is-plural)
     + Cf(geninj-symbol-is-plural)
-    + Lex(geninj-symbol-is-plural) 
+    + Lex(geninj-symbol-is-plural)
     + Varsym(geninj-symbol-is-plural)
     + Label(id, geninj-symbol-is-plural)
     + ParameterizedSort(geninj-symbol-is-plural, id)
@@ -297,7 +298,7 @@ rules
   geninj-generate-paramname: symbol -> name
   where <geninj-symbol-is-plural> symbol
       ; name := <geninj-symbol-to-sortname; geninj-make-paramname-plural> symbol
-  
+
   geninj-generate-paramname: symbol -> name
   where <not(geninj-symbol-is-plural)> symbol
       ; name := <geninj-symbol-to-sortname; geninj-make-paramname> symbol
@@ -306,7 +307,7 @@ rules
   geninj-make-paramname: basename -> paramname
   where <not(?"")> basename
   with paramname := <to-camel-case; geninj-make-valid-paramname> basename
-  
+
   geninj-make-paramname-plural: "" -> "ts"
   geninj-make-paramname-plural: basename -> paramname
   where <not(?"")> basename
