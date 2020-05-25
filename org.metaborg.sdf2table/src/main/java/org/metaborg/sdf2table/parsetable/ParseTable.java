@@ -1020,7 +1020,7 @@ public class ParseTable implements IParseTable, Serializable {
                     false, leftmostContextsMapping, rightmostContextsMapping);
                 Context danglingRight_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.RIGHTMOST,
                     false, leftmostContextsMapping, rightmostContextsMapping);
-                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
+                if(ctx_s.containsProduction(labelP) || ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
                     || ctx_s.getContexts().contains(danglingLeft_ctx)
                     || ctx_s.getContexts().contains(danglingRight_ctx)) {
                     continue;
