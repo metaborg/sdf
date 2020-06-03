@@ -343,6 +343,8 @@ rules
   geninj-is-reserved-name = ?"test"
   geninj-is-reserved-name = ?"where"
   geninj-is-reserved-name = ?"import-term"
+  // Reserved
+  geninj-is-reserved-name = ?"anno"
 
   // Identifiers cannot start with a number
   geninj-is-invalid-name = string-as-chars([is-num|id])
