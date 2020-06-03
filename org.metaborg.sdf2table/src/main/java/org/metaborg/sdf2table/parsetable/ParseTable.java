@@ -369,6 +369,10 @@ public class ParseTable implements IParseTable, Serializable {
         for(Priority p : grammar.priorities().keySet()) {
             grammar.getHigherPriorityProductions().put(p.higher(), p);
         }
+        
+        for(Priority p : grammar.getIndexedPriorities().keySet()) {
+            grammar.getHigherPriorityProductions().put(p.higher(), p);
+        }
 
     }
 
