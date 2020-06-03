@@ -113,8 +113,8 @@ rules
   geninj-sort-to-explicate-placeholder-rule(|lang): CfSort(sortname) ->
     // explicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
-      NoAnnoList(Op($[[sortname]-Plhdr], []))
-    , NoAnnoList(Op($[[sortname]-Plhdr], []))
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
 
 rules
@@ -122,8 +122,8 @@ rules
   geninj-sort-to-implicate-placeholder-rule(|lang): CfSort(sortname) ->
     // implicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
-      NoAnnoList(Op($[[sortname]-Plhdr], []))
-    , NoAnnoList(Op($[[sortname]-Plhdr], []))
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
 
 rules
@@ -132,8 +132,8 @@ rules
     // explicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
     //   with alts' := <map(explicate-injections-MyLang-MySort)> alts
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
-        NoAnnoList(Op("amb", [Var("alts")]))
-      , NoAnnoList(Op("amb", [Var("alts'")]))
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
       , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
@@ -145,8 +145,8 @@ rules
     // implicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
     //   with alts' := <map(implicate-injections-MyLang-MySort)> alts
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
-        NoAnnoList(Op("amb", [Var("alts")]))
-      , NoAnnoList(Op("amb", [Var("alts'")]))
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
       , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
@@ -205,8 +205,8 @@ rules
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
     // explicate-injections-MyLang-MySort: MyCons() -> MyCons()
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
-        NoAnnoList(Op(consname, []))
-      , NoAnnoList(Op(consname, []))
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
 
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
@@ -214,8 +214,8 @@ rules
     // with t1' := <explicate-injections-MyLang-SubSort> t1
     //    ; t2' := <explicate-injections-MyLang-SubSort> t2
     RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
-      NoAnnoList(Op(consname, from-vars))
-    , NoAnnoList(Op(consname, to-vars))
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
     , [ WithClause(body) ]
     ))
   with from-vars := <geninj-params-to-vars> params
@@ -236,8 +236,8 @@ rules
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
     // implicate-injections-MyLang-MySort: MyCons() -> MyCons()
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
-        NoAnnoList(Op(consname, []))
-      , NoAnnoList(Op(consname, []))
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
 
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
@@ -245,8 +245,8 @@ rules
     // with t1' := <implicate-injections-MyLang-SubSort> t1
     //    ; t2' := <implicate-injections-MyLang-SubSort> t2
     RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
-      NoAnnoList(Op(consname, from-vars))
-    , NoAnnoList(Op(consname, to-vars))
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
     , [ WithClause(body) ]
     ))
   with from-vars := <geninj-params-to-vars> params
@@ -374,7 +374,7 @@ rules
   geninj-symbol-to-is-call-list(|lang): nestedSort ->
     // is-list; map(is-MyLang-MySort-or-inj)
     Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-call(|lang)> nestedSort]))
-    
+
   geninj-symbol-to-is-call-opt(|lang): nestedSort ->
     // Some(is-MyLang-MySort-or-inj) + ?None()
     Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
