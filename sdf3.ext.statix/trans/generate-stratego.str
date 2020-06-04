@@ -49,6 +49,7 @@ rules
       imports0,
       imports1*,
       Signature([Constructors(signatures)]),
+      Signature([Constructors(plhdr-signatures)]),
       Rules(sort-is-rules),
       Rules(sig-is-rules),
       Rules(sort-expl-rules),
@@ -72,6 +73,7 @@ rules
      ; allsigs            := <geninj-sections-to-signatures> sections
      // Stratego signatures
      ; signatures         := <filter(geninj-sig-to-strsig)> allsigs
+     ; plhdr-signatures   := <filter(geninj-sort-to-plhdrsig)> allsorts
      // Stratego rules and strategies
      ; sort-expl-rules    := <flatfilter(geninj-sort-to-explication-rule(|lang))> allsorts
      ; sort-impl-rules    := <flatfilter(geninj-sort-to-implication-rule(|lang))> allsorts
@@ -188,6 +190,12 @@ rules
   geninj-symbol-to-strsig: ParameterizedSort(_, _)      -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
   geninj-symbol-to-strsig: Sequence(_, _)               -> <debug(!"ERROR: Sequences are not supported. "); fail>
   geninj-symbol-to-strsig: Start()                      -> <debug(!"ERROR: Start is not supported. "); fail>
+
+rules
+
+  geninj-sort-to-plhdrsig: CfSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
 
 rules
 
