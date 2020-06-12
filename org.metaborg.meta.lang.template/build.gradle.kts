@@ -5,7 +5,10 @@ plugins {
 }
 
 ecj {
-  toolVersion = "3.20.0"
+  toolVersion = "3.21.0"
+}
+tasks.withType<JavaCompile> { // ECJ does not support headerOutputDirectory (-h argument).
+  options.headerOutputDirectory.convention(provider { null })
 }
 
 // HACK: Temporarily set group to 'org.metaborggggg' to prevent substitution of baseline version of SDF3 to this project.
