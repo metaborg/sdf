@@ -64,7 +64,8 @@ rules
      // Imports
      ; imports0           := Imports([
          Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
-         Import(<to-str-module-name(|"-pp","pp")> Module(modname))
+         Import(<to-str-module-name(|"-pp","pp")> Module(modname)),
+         Import("libspoofax/term/origin")
        ])
      ; imports1*          := <map(to-str-import(|"-injections", "injections"))> imports
      // Collect CF and LEX sorts
@@ -299,7 +300,7 @@ rules
   geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
   with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
-  geninj-symbol-to-explication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+  geninj-symbol-to-explication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
   geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -334,7 +335,7 @@ rules
   geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
   with call := <geninj-symbol-to-implication-call(|lang)> symbol
 
-  geninj-symbol-to-implication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+  geninj-symbol-to-implication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
   geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
@@ -394,3 +395,4 @@ rules
   geninj-strs-to-seqs: [x] -> x
   geninj-strs-to-seqs: [x|xs@[_|_]] -> Seq(x, <geninj-strs-to-seqs> xs)
 
+  origin-preserving: s -> Call(SVar("origin-track-forced"), [s])
