@@ -1223,5 +1223,9 @@ public class ParseTable implements IParseTable, Serializable {
         return cf;
     }
 
+    @Override public boolean isLayoutSensitive() {
+        return config.isLayoutSensitive();
+    }
+
 
 }

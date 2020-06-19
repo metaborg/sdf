@@ -11,14 +11,16 @@ public class ParseTableConfiguration implements Serializable {
     private final boolean solveDeepConflicts;
     private final boolean checkOverlap;
     private final boolean checkPriorities;
+    private final boolean layoutSensitive;
 
     public ParseTableConfiguration(boolean dynamic, boolean dataDependent, boolean solveDeepConflicts,
-        boolean checkOverlap, boolean checkPriorities) {
+        boolean checkOverlap, boolean checkPriorities, boolean layoutSensitive) {
         this.dynamic = dynamic;
         this.dataDependent = dataDependent;
         this.solveDeepConflicts = solveDeepConflicts;
         this.checkOverlap = checkOverlap;
         this.checkPriorities = checkPriorities;
+        this.layoutSensitive = layoutSensitive;
     }
 
     public boolean isDataDependent() {
@@ -39,6 +41,10 @@ public class ParseTableConfiguration implements Serializable {
 
     public boolean isCheckPriorities() {
         return checkPriorities;
+    }
+
+    public boolean isLayoutSensitive() {
+        return layoutSensitive;
     }
 
 
