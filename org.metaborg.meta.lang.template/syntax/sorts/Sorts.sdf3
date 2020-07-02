@@ -6,33 +6,42 @@ basic/Basic
 regular/Regular
 
 lexical syntax
-	//head:[A-Z] -> Sort {cons("one-char")}
-    Sort.OneChar = [A-Z]
-    //head:[A-Z] middle:[A-Za-z0-9\_\-]* last:[A-Za-z0-9] -> Sort {cons("more-chars")}
-    Sort.MoreChars = [A-Z] [A-Za-z0-9\_\-]* [A-Za-z0-9]
-     
+  //head:[A-Z] -> Sort {cons("one-char")}
+  Sort.OneChar = [A-Z]
+  //head:[A-Z] middle:[A-Za-z0-9\_\-]* last:[A-Za-z0-9] -> Sort {cons("more-chars")}
+  Sort.MoreChars = [A-Z] [A-Za-z0-9\_\-]* [A-Za-z0-9]
+
 context-free syntax
 Symbol.Sort = <<Sort>>
 Symbol.ParameterizedSort = <<Sort> [[<parameters:{Symbol ", "}+>]]>
 SymbolDef.SortDef = <<Sort>> {prefer}
-SymbolDef.Cf = <<SymbolDef>-CF> {prefer}
-SymbolDef.Lex = <<SymbolDef>-LEX> {prefer}
-SymbolDef.Var = <<SymbolDef>-VAR> {prefer}
+SymbolDef.Cf      = <<SymbolDef>-CF> {prefer}
+SymbolDef.Lex     = <<SymbolDef>-LEX> {prefer}
+SymbolDef.Var     = <<SymbolDef>-VAR> {prefer}
 
-DeclSymbol         = Symbol
-DeclSymbol.DeclSort = <<Sort>> {prefer}
-DeclSymbol.Cf = <<DeclSymbol>-CF> {prefer}
-DeclSymbol.Lex = <<DeclSymbol>-LEX> {prefer}
-DeclSymbol.Var = <<DeclSymbol>-VAR> {prefer}
+DeclSort.DeclSort    = <<Sort>>     // context-free
+DeclSort.DeclSortCf  = <<Sort>-CF>  // desugared to DeclSort
+DeclSort.DeclSortLex = <<Sort>-LEX>
+DeclSort.DeclSortVar = <<Sort>-VAR>
 
 
 Grammar.Sorts = <
-	sorts
+  sorts <DeclSort*>
 
-		<DeclSymbol*>
-		
-		>
- 
+    >
+Grammar.LexSorts = /* desugared */ <
+  lexical sorts <Sort*>
+
+    >
+Grammar.CfSorts = /* desugared */ <
+  context-free sorts <Sort*>
+
+    >
+Grammar.VarSorts = /* desugared */ <
+  variable sorts <Sort*>
+
+    >
+
 lexical restrictions
     Sort -/- [A-Za-z0-9\_]
 

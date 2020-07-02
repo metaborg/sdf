@@ -1,8 +1,8 @@
 module analysis/attributes
 imports
-	libstratego-lib
-	libstratego-sglr
-	signatures/TemplateLang-sig
+  libstratego-lib
+  libstratego-sglr
+  signatures/TemplateLang-sig
 
 signature
   constructors
@@ -46,7 +46,7 @@ strategies
     attrs(attr*) -> <one(?reject())> attr*
 
   is-completion-prefer:
-  	attrs(attr*) -> <one(?sdf-completion-prefer())> attr*
+    attrs(attr*) -> <one(?sdf-completion-prefer())> attr*
 
   is-completion-avoid:
     attrs(attr*) -> <one(?sdf-completion-avoid())> attr*

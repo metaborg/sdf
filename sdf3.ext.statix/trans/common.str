@@ -1,0 +1,350 @@
+module common
+
+imports
+  libstratego-lib
+  libstrc
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/types
+  analysis/desugar
+
+imports
+  utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+signature
+  sorts Signature Param ExtSort
+  constructors
+    /*             sortname   consname?     parameters  */
+    CfSignature  : string   * opt(string) * list(Param) -> Signature
+    LexSignature : string   * opt(string) * list(Param) -> Signature
+    VarSignature : string   * opt(string) * list(Param) -> Signature
+    /*             sort   varname */
+    Param        : Sort * string  -> Param
+    /*             sort */
+    CfSort       : Sort -> ExtSort
+    LexSort      : Sort -> ExtSort
+    VarSort      : Sort -> ExtSort
+
+
+rules
+  language-spec-name = prim("pp_language_spec_name") <+ !"unknown"
+
+
+/**
+ * Collecting signatures from sections
+ */
+rules
+
+  // geninj-sections-to-signatures :: list(SDF3.Section) -> list(Signature)
+  geninj-sections-to-signatures = flatfilter(geninj-section-to-signatures)
+
+
+  // geninj-section-to-signatures :: SDF3.Section -> list(Signature)
+  geninj-section-to-signatures: SDFSection(ContextFreeSyntax(productions)) -> signatures
+  with signatures := <filter(geninj-production-to-signature(geninj-make-cf-signature) + geninj-template-to-signature(geninj-make-cf-signature))> productions
+
+  geninj-section-to-signatures: SDFSection(LexicalSyntax(productions)) -> signatures
+  with signatures := <filter(geninj-production-to-signature(geninj-make-lex-signature))> productions
+
+  geninj-section-to-signatures: SDFSection(Variables(productions)) -> signatures
+  with signatures := <filter(geninj-production-to-signature(geninj-make-var-signature))> productions
+
+  geninj-section-to-signatures: SDFSection(Kernel(productions)) -> signatures
+  with signatures := <filter(geninj-kernel-production-to-signature)> productions
+
+  geninj-section-to-signatures: TemplateSection(templates) -> signatures
+  with signatures := <filter(geninj-template-to-signature(geninj-make-cf-signature))> templates
+
+
+  // geninj-make-cf-signature(|string, opt(string), list(Param)) :: Signature
+  geninj-make-cf-signature(|sortname, cons, params)  = !CfSignature(sortname, cons, params)
+  // geninj-make-lex-signature(|string, opt(string), list(Param)) :: Signature
+  geninj-make-lex-signature(|sortname, cons, params) = !LexSignature(sortname, cons, params)
+  // geninj-make-var-signature(|string, opt(string), list(Param)) :: Signature
+  geninj-make-var-signature(|sortname, cons, params) = !VarSignature(sortname, cons, params)
+
+
+  // geninj-production-to-signature(string * opt(string) * list(Param) -> Signature) :: SDF3.GeneralProduction -> Signature
+  geninj-production-to-signature(s): SdfProduction(symboldef, Rhs(body), Attrs(attrs))
+  -> <s(|sortname, None(), params)>
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+  geninj-production-to-signature(s): SdfProductionWithCons(SortCons(symboldef, Constructor(consname)), body, Attrs(attrs))
+  -> <s(|sortname, Some(consname), params)>
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+
+  // geninj-template-to-signature(string * opt(string) * list(Param) -> Signature) :: SDF3.GeneralProduction -> Signature
+  geninj-template-to-signature(s): TemplateProduction(symboldef, body, Attrs(attrs))
+  -> <s(|sortname, None(), params)>
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+  geninj-template-to-signature(s): TemplateProductionWithCons(SortCons(symboldef, Constructor(consname)), body, Attrs(attrs))
+  -> <s(|sortname, Some(consname), params)>
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+
+  // geninj-kernel-production-to-signature :: SDF3.GeneralProduction -> Signature
+  geninj-kernel-production-to-signature: SdfProduction(Cf(symboldef), body, Attrs(attrs))
+  -> CfSignature(sortname, None(), params)
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+  geninj-kernel-production-to-signature: SdfProductionWithCons(SortCons(Cf(symboldef), Constructor(consname)), body, Attrs(attrs))
+  -> CfSignature(sortname, Some(consname), params)
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+  geninj-kernel-production-to-signature: SdfProduction(Var(symboldef), body, Attrs(attrs))
+  -> VarSignature(sortname, None(), params)
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+  geninj-kernel-production-to-signature: SdfProductionWithCons(SortCons(Var(symboldef), Constructor(consname)), body, Attrs(attrs))
+  -> VarSignature(sortname, Some(consname), params)
+  where <not(geninj-ignored-production-symboldef)> symboldef
+      ; <not(geninj-ignored-production-attr)> attrs
+  with sortname := <geninj-symboldef-to-name> symboldef
+     ; params   := <geninj-body-to-params> body
+
+
+  geninj-body-to-params
+    = collect-om-concat(geninj-symbol-to-param)
+    ; where(
+        map(?Param(_, <id>))
+      ; get-dups(eq)
+      ; ?dups
+      ; map(<reset-counter> $[geninj-[<id>]])
+    );
+    map(geninj-rename-param(|dups))
+
+
+  geninj-rename-param(|dups): Param(s, oldname) -> Param(s, newname)
+  where
+    newname := <fetch(?oldname) < !$[[oldname][<next-counter> $[geninj-[oldname]]]] + !oldname> dups
+
+  // geninj-symbol-to-param :: SDF3.Symbol -> Param
+  geninj-symbol-to-param = !Param(<geninj-symbol-to-sort>, <geninj-generate-paramname>)
+
+  geninj-symbol-to-sort: s@Sort(_)                      -> s
+  geninj-symbol-to-sort: s@Opt(sort)                    -> s
+  geninj-symbol-to-sort: s@Iter(sort)                   -> s
+  geninj-symbol-to-sort: s@IterSep(sort, _)             -> s
+  geninj-symbol-to-sort: s@IterStar(sort)               -> s
+  geninj-symbol-to-sort: s@IterStarSep(sort, _)         -> s
+  geninj-symbol-to-sort: Cf(symbol)                     -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Lex(symbol)                    -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Varsym(symbol)                 -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Label(_, symbol)               -> <geninj-symbol-to-sort> symbol
+  geninj-symbol-to-sort: Alt(_, _)                      -> <fail>
+  geninj-symbol-to-sort: CharClass(_)                   -> <fail>
+  geninj-symbol-to-sort: CiLit(_)                       -> <fail>
+  geninj-symbol-to-sort: EOF()                          -> <fail>
+  geninj-symbol-to-sort: FileStart()                    -> <fail>
+  geninj-symbol-to-sort: Lit(_)                         -> <fail>
+  geninj-symbol-to-sort: ParameterizedSort(_, _)        -> <fail>
+  geninj-symbol-to-sort: Sequence(_, _)                 -> <fail>
+  geninj-symbol-to-sort: Start()                        -> <fail>
+
+
+  // geninj-symboldef-to-name :: SDF3.SymbolDef         -> string
+  geninj-symboldef-to-name: SortDef(sort)               -> sort
+  geninj-symboldef-to-name: Cf(sortdef)                 -> <geninj-symboldef-to-name> sortdef   // For kernel productions,  Cf(_) is handled in the strategy. For other productions, this is invalid.
+  geninj-symboldef-to-name: Lex(sortdef)                -> <geninj-symboldef-to-name> sortdef   // For kernel productions, Lex(_) is handled in the strategy. For other productions, this is invalid.
+  geninj-symboldef-to-name: Var(sortdef)                -> <geninj-symboldef-to-name> sortdef   // For kernel productions, Var(_) is handled in the strategy. For other productions, this is invalid.
+
+
+rules
+
+  // geninj-ignored-production-symboldef :: SDF3.SymbolDef -> SDF3.SymbolDef
+  geninj-ignored-production-symboldef = ?Alt(_, _)
+  geninj-ignored-production-symboldef = ?CharClass(_)
+  geninj-ignored-production-symboldef = ?CiLit(_)
+  geninj-ignored-production-symboldef = ?EOF()
+  geninj-ignored-production-symboldef = ?FileStart()
+  geninj-ignored-production-symboldef = ?Iter(_)
+  geninj-ignored-production-symboldef = ?IterSep(_, _)
+  geninj-ignored-production-symboldef = ?IterStar(_)
+  geninj-ignored-production-symboldef = ?IterStarSep(_, _)
+  geninj-ignored-production-symboldef = ?Label(_)
+  geninj-ignored-production-symboldef = ?Layout()
+  geninj-ignored-production-symboldef = ?Lit(_)
+  geninj-ignored-production-symboldef = ?Opt(_)
+  geninj-ignored-production-symboldef = ?ParameterizedSort(_, _)
+  geninj-ignored-production-symboldef = ?Sequence(_, _)
+  geninj-ignored-production-symboldef = ?Start()
+  geninj-ignored-production-symboldef = ?Varsym(_)
+
+  // geninj-ignored-production-attr :: [SDF3.Attribute] -> SDF3.Attribute
+  geninj-ignored-production-attr = fetch-elem(?Reject() + ?Bracket())
+
+
+/**
+ * Collecting sorts from sections
+ */
+rules
+
+  // geninj-sections-to-sorts :: list(SDF3.Section) -> list(ExtSort)
+  geninj-sections-to-sorts = flatfilter(geninj-section-to-sorts)
+
+
+  // geninj-section-to-signatures :: SDF3.Section -> list(Signature)
+  geninj-section-to-sorts: SDFSection(Sorts(srts)) -> srts'
+  with srts' := <map(geninj-sort-to-extsort)> srts
+
+
+  // geninj-sort-to-extsort :: SDF3.SymbolDef -> ExtSort
+  geninj-sort-to-extsort: DeclSort(name)    -> CfSort(name)
+  geninj-sort-to-extsort: DeclSortLex(name) -> LexSort(name)
+  geninj-sort-to-extsort: DeclSortVar(name) -> VarSort(name)
+
+
+rules
+
+  geninj-param-to-name: Param(symbol, _) -> $[[<geninj-symbol-to-sortname> symbol]s]
+  where <geninj-symbol-is-plural> symbol
+  geninj-param-to-name: Param(symbol, _) -> <geninj-symbol-to-sortname> symbol
+  where <not(geninj-symbol-is-plural)> symbol
+
+  // geninj-symbol-to-sortname :: SDF3.Symbol               -> string
+  geninj-symbol-to-sortname: Sort(name)                     -> name
+  geninj-symbol-to-sortname: Opt(symbol)                    -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Iter(symbol)                   -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterSep(symbol, _)             -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterStar(symbol)               -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: IterStarSep(symbol, _)         -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Cf(symbol)                     -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Lex(symbol)                    -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Varsym(symbol)                 -> <geninj-symbol-to-sortname> symbol
+  geninj-symbol-to-sortname: Label(Unquoted(name), _)       -> name
+  geninj-symbol-to-sortname: Label(Quoted(name), _)         -> <unquote(?'"')> name
+  geninj-symbol-to-sortname: Alt(_, _)                      -> <fail>
+  geninj-symbol-to-sortname: CharClass(_)                   -> <fail>
+  geninj-symbol-to-sortname: CiLit(_)                       -> <fail>
+  geninj-symbol-to-sortname: EOF()                          -> <fail>
+  geninj-symbol-to-sortname: FileStart()                    -> <fail>
+  geninj-symbol-to-sortname: Layout()                       -> <fail>
+  geninj-symbol-to-sortname: Lit(_)                         -> <fail>
+  geninj-symbol-to-sortname: ParameterizedSort(_, _)        -> <fail>
+  geninj-symbol-to-sortname: Sequence(_, _)                 -> <fail>
+  geninj-symbol-to-sortname: Start()                        -> <fail>
+
+  geninj-symbol-is-plural
+    = ?Iter(_)
+    + ?IterSep(_, _)
+    + ?IterStar(_)
+    + ?IterStarSep(_, _)
+    + ?Sequence(_, _)
+    + Opt(geninj-symbol-is-plural)
+    + Cf(geninj-symbol-is-plural)
+    + Lex(geninj-symbol-is-plural)
+    + Varsym(geninj-symbol-is-plural)
+    + Label(id, geninj-symbol-is-plural)
+    + ParameterizedSort(geninj-symbol-is-plural, id)
+    + Alt(geninj-symbol-is-plural, geninj-symbol-is-plural)
+
+rules
+
+  // Generates a constructor name for the injection with the specified sort name and arguments
+  geninj-generate-inj-name: (targetname, params@[_|_]) ->  $[[sourcename]2[targetname]]
+  with paramnames := <map(geninj-param-to-name)> params
+     ; sourcename := <string-join(|"-")> paramnames
+
+rules
+
+  geninj-generate-paramname: symbol -> name
+  where <geninj-symbol-is-plural> symbol
+      ; name := <geninj-symbol-to-sortname; geninj-make-paramname-plural> symbol
+
+  geninj-generate-paramname: symbol -> name
+  where <not(geninj-symbol-is-plural)> symbol
+      ; name := <geninj-symbol-to-sortname; geninj-make-paramname> symbol
+
+  geninj-make-paramname: "" -> "t"
+  geninj-make-paramname: basename -> paramname
+  where <not(?"")> basename
+  with paramname := <to-camel-case; geninj-make-valid-paramname> basename
+
+  geninj-make-paramname-plural: "" -> "ts"
+  geninj-make-paramname-plural: basename -> paramname
+  where <not(?"")> basename
+  with camelcase := <to-camel-case> basename
+     ; paramname := <geninj-make-valid-paramname> $[[camelcase]s]
+
+  // NOTE: We add an underscore suffix for reserved names.
+  // We cannot add an undercore prefix as something like "_id" results in ambiguities in Stratego.
+  // For invalid names, we must add an underscore prefix, as the name would otherwise still be invalid.
+  geninj-make-valid-paramname
+    = (not(geninj-is-reserved-name) <+ (<concat-strings> [<id>, "_"]))
+    ; (not(geninj-is-invalid-name)  <+ (<concat-strings> ["_", <id>]))
+
+  // Reserved in Stratego
+  geninj-is-reserved-name = ?"all"
+  geninj-is-reserved-name = ?"constructors"
+  geninj-is-reserved-name = ?"fail"
+  geninj-is-reserved-name = ?"id"
+  geninj-is-reserved-name = ?"in"
+  geninj-is-reserved-name = ?"let"
+  geninj-is-reserved-name = ?"module"
+  geninj-is-reserved-name = ?"not"
+  geninj-is-reserved-name = ?"one"
+  geninj-is-reserved-name = ?"overlays"
+  geninj-is-reserved-name = ?"prim"
+  geninj-is-reserved-name = ?"rules"
+  geninj-is-reserved-name = ?"script"
+  geninj-is-reserved-name = ?"signature"
+  geninj-is-reserved-name = ?"some"
+  geninj-is-reserved-name = ?"sorts"
+  geninj-is-reserved-name = ?"strategies"
+  geninj-is-reserved-name = ?"stratego"
+  geninj-is-reserved-name = ?"test"
+  geninj-is-reserved-name = ?"where"
+  geninj-is-reserved-name = ?"import-term"
+  // Reserved
+  geninj-is-reserved-name = ?"anno"
+
+  // Identifiers cannot start with a number
+  geninj-is-invalid-name = string-as-chars([is-num|id])

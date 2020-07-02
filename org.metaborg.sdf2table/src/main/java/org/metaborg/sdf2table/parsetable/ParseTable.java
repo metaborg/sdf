@@ -141,7 +141,7 @@ public class ParseTable implements IParseTable, Serializable {
         this.productionsMapping.clear();
         this.rightmostContextsMapping.clear();
         this.grammar.cleanupGrammar();
-        
+        System.gc();
     }
 
     private void calculateNullable() {
@@ -367,6 +367,10 @@ public class ParseTable implements IParseTable, Serializable {
 
         // to calculate the parenthesizer
         for(Priority p : grammar.priorities().keySet()) {
+            grammar.getHigherPriorityProductions().put(p.higher(), p);
+        }
+        
+        for(Priority p : grammar.getIndexedPriorities().keySet()) {
             grammar.getHigherPriorityProductions().put(p.higher(), p);
         }
 
@@ -1020,7 +1024,7 @@ public class ParseTable implements IParseTable, Serializable {
                     false, leftmostContextsMapping, rightmostContextsMapping);
                 Context danglingRight_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.RIGHTMOST,
                     false, leftmostContextsMapping, rightmostContextsMapping);
-                if(ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
+                if(ctx_s.containsProduction(labelP) || ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
                     || ctx_s.getContexts().contains(danglingLeft_ctx)
                     || ctx_s.getContexts().contains(danglingRight_ctx)) {
                     continue;
@@ -1217,6 +1221,10 @@ public class ParseTable implements IParseTable, Serializable {
 
     public ContextualFactory getContextualFactory() {
         return cf;
+    }
+
+    @Override public boolean isLayoutSensitive() {
+        return config.isLayoutSensitive();
     }
 
 

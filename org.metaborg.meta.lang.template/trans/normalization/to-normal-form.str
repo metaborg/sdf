@@ -80,7 +80,7 @@ rules
             //TODO: Only one tokenize section works per file, have proper granularity for this
             tokenize-chars             := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
             kfr                        := <collect-one(?KeywordFollowRestriction(<id>)) <+ !None()> sections*;
-            kattrs                     := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections*;
+            kattrs                     := <collect-all(?KeywordAttributes(_, _)) <+ !None()> sections*;
             
             desugared-sections*        := <lift-all; desugar-templates; desugar-layout-constraints(|tokenize-chars)> sections*;
             new-lex-restrictions*      := <generate-follow-restrictions-reject-keywords(|kfr, tokenize-chars, kattrs)> desugared-sections*;
@@ -263,10 +263,14 @@ rules
         if ![ci-r*, r*] => [] + !kattrs => None() then
            reject-prods* := []
         else
-           <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
-           reject-prods* := <nub; map(!SdfProduction(symbol-kattrs, Rhs([<id>]), attr-kattrs))> [ci-r*, r*]
+           reject-prods* := <mapconcat(generate-reject-prods-keyword(|[ci-r*, r*]))> kattrs
         end
- 
+        
+        
+  generate-reject-prods-keyword(|literal-symbols*):
+    KeywordAttributes(symbol-kattrs, attr-kattrs) -> reject-prods*
+    where
+      reject-prods* := <nub; map(!SdfProduction(symbol-kattrs, Rhs([<id>]), attr-kattrs))> literal-symbols* 
  
   string-to-norm(|chars) =
     string-edge-tokenize(where({x: ?x; <one(?x)> chars}));

@@ -19,7 +19,7 @@ rules
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       result   := <bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
       filename := <get-src-gen(|project-path, "formatted", ".aterm")> mn
-  
+
   pp-sdf3:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
@@ -33,7 +33,7 @@ rules
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       result   := <bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
       filename := <get-src-gen(|project-path, "formatted", ".sdf3")> mn
-        
+
   lift-sdf3-template-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
@@ -46,21 +46,21 @@ rules
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       result   := < module-to-template;bottomup(try(sugar-attributes);try(sugar-priorities)); pp-SDF3-string> ast;
-      filename := <get-src-gen(|project-path, "formatted", ".sdf3")> mn    
-      
-  extract-regular-productions:    
+      filename := <get-src-gen(|project-path, "formatted", ".sdf3")> mn
+
+  extract-regular-productions:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities)); pp-SDF3-string> ast;
-      filename := <get-src-gen(|project-path, "formatted", ".sdf3")> mn    
-    
-  extract-regular-productions-abstract:   
+      filename := <get-src-gen(|project-path, "formatted", ".sdf3")> mn
+
+  extract-regular-productions-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
       result   := <desugar-templates; remove-templates(|chars); bottomup(try(sugar-attributes); try(sugar-priorities))> ast;
-      filename := <get-src-gen(|project-path, "formatted", ".aterm")> mn   
+      filename := <get-src-gen(|project-path, "formatted", ".aterm")> mn
 

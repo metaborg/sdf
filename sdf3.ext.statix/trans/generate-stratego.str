@@ -1,0 +1,398 @@
+module generate-stratego
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  common
+  utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
+
+  // geninj-generate-stratego :: SDF3.Module -> Stratego.Module
+  geninj-generate-stratego = strip-annos; geninj-module-to-injections
+
+  // Generate Stratego strategies and rules for explicating and implicating injections
+  // geninj-module-to-injections :: SDF3.Module -> Stratego.Module
+  geninj-module-to-injections:
+    Module(modname, imports, sections) -> Module(modname', [
+      imports0,
+      imports1*,
+      Signature([Constructors(signatures)]),
+      Signature([Constructors(plhdr-signatures)]),
+      Rules(sort-is-rules),
+      Rules(sig-is-rules),
+      Rules(sort-expl-rules),
+      Rules(sig-expl-rules),
+      Rules(sort-impl-rules),
+      Rules(sig-impl-rules),
+      Rules([expl-plhdr-rules*, expl-amb-rules*]),
+      Rules([impl-plhdr-rules*, impl-amb-rules*])
+    ])
+  with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
+     ; lang := <language-spec-name>
+     // Imports
+     ; imports0           := Imports([
+         Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
+         Import(<to-str-module-name(|"-pp","pp")> Module(modname)),
+         Import("libspoofax/term/origin")
+       ])
+     ; imports1*          := <map(to-str-import(|"-injections", "injections"))> imports
+     // Collect CF and LEX sorts
+     ; allsorts           := <geninj-sections-to-sorts> sections
+     // Collect signatures
+     ; allsigs            := <geninj-sections-to-signatures> sections
+     // Stratego signatures
+     ; signatures         := <filter(geninj-sig-to-strsig)> allsigs
+     ; plhdr-signatures   := <filter(geninj-sort-to-plhdrsig)> allsorts
+     // Stratego rules and strategies
+     ; sort-expl-rules    := <flatfilter(geninj-sort-to-explication-rule(|lang))> allsorts
+     ; sort-impl-rules    := <flatfilter(geninj-sort-to-implication-rule(|lang))> allsorts
+     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-rule(|lang))> allsorts
+     ; expl-plhdr-rules*  := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
+     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
+     ; expl-amb-rules*    := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
+     ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
+     ; sig-expl-rules     := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
+     ; sig-impl-rules     := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
+     ; sig-is-rules       := <flatfilter(geninj-sig-to-is-rule(|lang))> allsigs
+
+rules
+
+
+
+rules
+
+  geninj-sort-to-explication-rule(|lang): LexSort(sortname) ->
+    // explicate-injections-MyLang-MySort: t -> t
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
+
+  geninj-sort-to-explication-rule(|lang): CfSort(sortname) ->
+    // explicate-injections-MyLang = explicate-injections-MyLang-MySort
+    SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]])))
+
+rules
+
+  geninj-sort-to-implication-rule(|lang): LexSort(sortname) ->
+    // implicate-injections-MyLang-MySort: t -> t
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
+
+  geninj-sort-to-implication-rule(|lang): CfSort(sortname) ->
+    // implicate-injections-MyLang = implicate-injections-MyLang-MySort
+    SDefNoArgs($[implicate-injections-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]])))
+
+rules
+
+  geninj-sort-to-explicate-placeholder-rule(|lang): CfSort(sortname) ->
+    // explicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    ))
+
+rules
+
+  geninj-sort-to-implicate-placeholder-rule(|lang): CfSort(sortname) ->
+    // implicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    ))
+
+rules
+
+  geninj-sort-to-explicate-ambiguity-rule(|lang): CfSort(sortname) ->
+    // explicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
+    //   with alts' := <map(explicate-injections-MyLang-MySort)> alts
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
+      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  with call := <geninj-symbol-to-explication-call(|lang)> Iter(Sort(sortname))
+
+rules
+
+  geninj-sort-to-implicate-ambiguity-rule(|lang): CfSort(sortname) ->
+    // implicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
+    //   with alts' := <map(implicate-injections-MyLang-MySort)> alts
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
+      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  with call := <geninj-symbol-to-implication-call(|lang)> Iter(Sort(sortname))
+
+rules
+
+  geninj-sort-to-is-rule(|lang): LexSort(sortname) ->
+    // is-MyLang-MySort-or-inj = is-string
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string])))
+
+
+rules
+
+  geninj-sig-to-strsig: CfSignature(sortname, None(), params@[_|_]) ->
+    OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
+  with str-paramsigs := <map(geninj-param-to-strsig)> params
+     ; consname  := <geninj-generate-inj-name> (sortname, params)
+
+  geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
+
+  geninj-symbol-to-strsig: Sort(name)                   -> ConstType(SortNoArgs(name))
+  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(Sort("Option", <geninj-symbol-to-strsig> symbol))
+  geninj-symbol-to-strsig: Iter(symbol)                 -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterSep(symbol, _)           -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStar(symbol)             -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStarSep(symbol, _)       -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: Cf(symbol)                   -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Lex(symbol)                  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Var(symbol)                  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Varsym(symbol)               -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Label(_, symbol)             -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Alt(_, _)                    -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-strsig: CharClass(_)                 -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-strsig: CiLit(_)                     -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-strsig: EOF()                        -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-strsig: FileStart()                  -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-strsig: Lit(_)                       -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-strsig: ParameterizedSort(_, _)      -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-strsig: Sequence(_, _)               -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-strsig: Start()                      -> <debug(!"ERROR: Start is not supported. "); fail>
+
+rules
+
+  geninj-sort-to-plhdrsig: CfSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
+
+rules
+
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
+    // explicate-injections-MyLang-MySort: t -> ToSort2MySort(<explicate-injections-MyLang-ToSort> t)
+    //   where <is-MyLang-MySort-or-inj> t
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+      Var(varname), NoAnnoList(Op(consname, [expl-call]))
+    , BA(is-call, Var(varname))
+    ))
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; expl-call  := <geninj-param-to-explication-app(|lang)> param
+     ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
+
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
+    // explicate-injections-MyLang-MySort: MyCons() -> MyCons()
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+
+  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
+    // explicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
+    // with t1' := <explicate-injections-MyLang-SubSort> t1
+    //    ; t2' := <explicate-injections-MyLang-SubSort> t2
+    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
+    , [ WithClause(body) ]
+    ))
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-explication-assigns(|lang)> params
+
+rules
+
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) ->
+    // implicate-injections-MyLang-MySort: ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+      NoAnnoList(Op(consname, [Var(varname)])),
+      impl-call
+    ))
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; impl-call  := <geninj-param-to-implication-app(|lang)> param
+
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), []) ->
+    // implicate-injections-MyLang-MySort: MyCons() -> MyCons()
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+
+  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) ->
+    // implicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
+    // with t1' := <implicate-injections-MyLang-SubSort> t1
+    //    ; t2' := <implicate-injections-MyLang-SubSort> t2
+    RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
+    , [ WithClause(body) ]
+    ))
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-implication-assigns(|lang)> params
+
+rules
+
+  geninj-sig-to-is-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) ->
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], is-call)
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
+
+  geninj-sig-to-is-rule(|lang): CfSignature(sortname, Some(consname), params) ->
+    // is-MyLang-MySort-or-inj = ?MyCons(_)
+    SDefNoArgs(
+      $[is-[lang]-[sortname]-or-inj]
+    , Match(NoAnnoList(Op(consname, args)))
+    )
+  with args := <map(!Wld())> params
+
+
+rules
+
+  geninj-params-to-vars = map(geninj-param-to-var)
+  geninj-param-to-var: Param(_, newname) -> Var(newname)
+
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+
+rules
+
+  geninj-params-to-explication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-explication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-explication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-explication-app(|lang)> param
+
+  geninj-params-to-explication-apps(|lang) = map(geninj-param-to-explication-app(|lang))
+  geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-explication-call(|lang)> symbol
+
+  geninj-symbol-to-explication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+  geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): IterStarSep(symbol, _)        -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): Cf(symbol)                    -> <geninj-symbol-to-explication-call(|lang)> symbol
+  geninj-symbol-to-explication-call(|lang): Lex(symbol)                   -> <geninj-symbol-to-explication-call(|lang)> symbol
+  geninj-symbol-to-explication-call(|lang): Var(symbol)                   -> <geninj-symbol-to-explication-call(|lang)> symbol
+  geninj-symbol-to-explication-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-explication-call(|lang)> symbol
+  geninj-symbol-to-explication-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-explication-call(|lang)> symbol
+  geninj-symbol-to-explication-call(|lang): Alt(_, _)                     -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): CharClass(_)                  -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): CiLit(_)                      -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): EOF()                         -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): FileStart()                   -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Lit(_)                        -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): ParameterizedSort(_, _)       -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Sequence(_, _)                -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-explication-call(|lang): Start()                       -> <debug(!"ERROR: Start is not supported. "); fail>
+
+rules
+
+  geninj-params-to-implication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-implication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-implication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-implication-app(|lang)> param
+
+  geninj-params-to-implication-apps(|lang) = map(geninj-param-to-implication-app(|lang))
+  geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-implication-call(|lang)> symbol
+
+  geninj-symbol-to-implication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+  geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): IterStarSep(symbol, _)        -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): Cf(symbol)                    -> <geninj-symbol-to-implication-call(|lang)> symbol
+  geninj-symbol-to-implication-call(|lang): Lex(symbol)                   -> <geninj-symbol-to-implication-call(|lang)> symbol
+  geninj-symbol-to-implication-call(|lang): Var(symbol)                   -> <geninj-symbol-to-implication-call(|lang)> symbol
+  geninj-symbol-to-implication-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-implication-call(|lang)> symbol
+  geninj-symbol-to-implication-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-implication-call(|lang)> symbol
+  geninj-symbol-to-implication-call(|lang): Alt(_, _)                     -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): CharClass(_)                  -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): CiLit(_)                      -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): EOF()                         -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): FileStart()                   -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Lit(_)                        -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): ParameterizedSort(_, _)       -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Sequence(_, _)                -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-implication-call(|lang): Start()                       -> <debug(!"ERROR: Start is not supported. "); fail>
+
+
+rules
+
+  geninj-symbol-to-is-call(|lang): Sort(name)                             -> CallNoArgs(SVar($[is-[lang]-[name]-or-inj]))
+  geninj-symbol-to-is-call(|lang): Opt(symbol)                            -> <geninj-symbol-to-is-call-opt(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Iter(symbol)                           -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterSep(symbol, _)                     -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterStar(symbol)                       -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterStarSep(symbol, _)                 -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Cf(symbol)                             -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Lex(symbol)                            -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Var(symbol)                            -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Varsym(symbol)                         -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Label(_, symbol)                       -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Alt(_, _)                              -> <debug(!"ERROR: Alternative are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): CharClass(_)                           -> <debug(!"ERROR: Character classes are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): CiLit(_)                               -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): EOF()                                  -> <debug(!"ERROR: EOF is not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): FileStart()                            -> <debug(!"ERROR: Filestart is not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Lit(_)                                 -> <debug(!"ERROR: Literals are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): ParameterizedSort(_, _)                -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Sequence(_, _)                         -> <debug(!"ERROR: Sequences are not supported. "); fail>
+  geninj-symbol-to-is-call(|lang): Start()                                -> <debug(!"ERROR: Start is not supported. "); fail>
+
+  geninj-symbol-to-is-call-list(|lang): nestedSort ->
+    // is-list; map(is-MyLang-MySort-or-inj)
+    Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-call(|lang)> nestedSort]))
+
+  geninj-symbol-to-is-call-opt(|lang): nestedSort ->
+    // Some(is-MyLang-MySort-or-inj) + ?None()
+    Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
+
+rules
+
+  // Makes a list of strategy calls into nested Seq calls with the strategies
+  geninj-strs-to-seqs: [] -> Id()
+  geninj-strs-to-seqs: [x] -> x
+  geninj-strs-to-seqs: [x|xs@[_|_]] -> Seq(x, <geninj-strs-to-seqs> xs)
+
+  origin-preserving: s -> Call(SVar("origin-track-forced"), [s])

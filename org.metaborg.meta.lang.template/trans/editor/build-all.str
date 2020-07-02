@@ -21,15 +21,15 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig  
-  
+  signatures/TemplateLang-sig
+
 imports
   analysis/desugar
   editor/build-utils
   generation/completion/-
   generation/pp/-
   generation/signatures/-
-  generation/syntax/-  
+  generation/syntax/-
   generation/syntax/to-namespaced
   libstrc
   normalization/to-normal-form
@@ -39,7 +39,8 @@ rules
   check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ !"unknown"
   
 
-rules 
+
+rules
 
 // On-save handler
   generate-all:
@@ -51,11 +52,11 @@ rules
     where
       esv-cc-filename      := <get-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
       esv-cc-string        := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-      esv-result           := (esv-cc-filename, esv-cc-string)   
+      esv-result           := (esv-cc-filename, esv-cc-string)
     where
       ncp-string           := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       ncp-filename         := <get-src-gen(|project-path, "completion", "-cp.str")> mn;
-      ncp-result           := (ncp-filename, ncp-string)             
+      ncp-result           := (ncp-filename, ncp-string)
     where
       sig-string           := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       sig-filename         := <get-src-gen(|project-path, "signatures", "-sig.str")> mn;
@@ -67,16 +68,16 @@ rules
     where
     version             := <check-sdf2table>;
       if <?"disabled" <+ ?"mixin-grammar"> version then
-        // regular table     
+        // regular table
         norm-filename       := <get-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
         norm-ast            := <module-to-permissive; to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
         norm-result         := (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast);
-        
-        // completions table 
+
+        // completions table
         sdf-completions-filename         := <get-src-gen(|project-path, "syntax/normalized/completion", "-completion-insertions-norm.aterm")> mn;
         sdf-completions-ast              := <module-to-sdf3-completions; to-normal-form(|$[[project-path]/[<dirname> path]]) <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
-        sdf-completions-result           := (sdf-completions-filename, <aterm-escape-strings; pp-aterm> sdf-completions-ast);  
-        
+        sdf-completions-result           := (sdf-completions-filename, <aterm-escape-strings; pp-aterm> sdf-completions-ast);
+
         chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
         newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
         kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
@@ -84,12 +85,12 @@ rules
         sdf-filename         := <get-src-gen(|project-path, "syntax", ".sdf")> mn;
         sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
         sdf-result           := (sdf-filename, sdf-ast);
-          
+
         // to completions table from sdf2table
         sdf-completions-sdf2table-filename         := <get-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf")> mn;
         sdf-completions-sdf2table-ast              := <module-to-sdf-completions; pp-sdf-to-string  <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
         sdf-completions-sdf2table-result           := (sdf-completions-sdf2table-filename, sdf-completions-sdf2table-ast);
-        
+
         sdf2table-result* := [
           norm-result,
           sdf-completions-result,
@@ -97,29 +98,29 @@ rules
           sdf-completions-sdf2table-result
         ]
       else if <?"java" <+ ?"dynamic" <+ ?"incremental"> version then
-          // regular table     
+          // regular table
           norm-filename       := <get-src-gen(|project-path, "syntax/normalized",  "-norm.aterm")> mn;
           norm-ast            := <module-to-permissive; to-normal-form(|$[[project-path]/[<dirname> path]])> ast';
           norm-result         := (norm-filename, <aterm-escape-strings; pp-aterm> norm-ast);
-          
-          // completions table 
+
+          // completions table
           sdf-completions-filename         := <get-src-gen(|project-path, "syntax/normalized/completion", "-completion-insertions-norm.aterm")> mn;
           sdf-completions-ast              := <module-to-sdf3-completions; to-normal-form(|$[[project-path]/[<dirname> path]]) <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
           sdf-completions-result           := (sdf-completions-filename, <aterm-escape-strings; pp-aterm> sdf-completions-ast)  ;
-          
+
           sdf2table-result* := [
             norm-result,
             sdf-completions-result
           ]
         else
-          	chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
-        		newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
-          	kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
-          	kattrs               := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
-          	sdf-filename         := <get-src-gen(|project-path, "syntax", ".sdf")> mn;
-          	sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
-          	sdf-result           := (sdf-filename, sdf-ast);
-  	      
+            chars                := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections;
+            newline              := <collect-one(?Newlines(<id>)) <+ !None()> sections;
+            kfr                  := <collect-one(?KeywordFollowRestriction(<id; term-translation>)) <+ !None()> sections;
+            kattrs               := <collect-one(?KeywordAttributes(_, _)) <+ !None()> sections;
+            sdf-filename         := <get-src-gen(|project-path, "syntax", ".sdf")> mn;
+            sdf-ast              := <to-sdf(|chars, newline, kfr, kattrs); pp-sdf-to-string <+ !""; debug(!"SDF files could not be generated.\n"); fail > ast';
+            sdf-result           := (sdf-filename, sdf-ast);
+
           // to completions table from sdf2table
           sdf-completions-filename         := <get-src-gen(|project-path, "syntax/completion", "-completion-insertions.sdf")> mn;
           sdf-completions-ast              := <module-to-sdf-completions; pp-sdf-to-string  <+ !""; debug(!"SDF completion files could not be generated.\n"); fail > ast';
@@ -129,12 +130,12 @@ rules
             sdf-result,
             sdf-completions-result
           ]
-        end  
+        end
       end
     where
         pp-string            := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
       ; pp-filename          := <get-src-gen(|project-path, "pp", "-pp.str")> mn;
-        pp-result            := (pp-filename, pp-string)  
+        pp-result            := (pp-filename, pp-string)
     where
         result := <unzip> [
           esv-result,
@@ -144,4 +145,4 @@ rules
           sdf2table-result*,
           pp-result
         ]
-     
+
