@@ -29,16 +29,16 @@ public class ContextualFactory implements Serializable {
         contextualSymbols = Maps.newHashMap();
     }
 
-    public Context createContext(int c, ContextType type, ContextPosition position, boolean isIndirect,
+    public Context createContext(int c, ContextType type, ContextPosition position,
         final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
         List<Object> contextFields =
-            Lists.newArrayList(c, type, position, isIndirect, leftmostContextsMapping, rightmostContextsMapping);
+            Lists.newArrayList(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
 
         if(contexts.containsKey(contextFields)) {
             return contexts.get(contextFields);
         }
 
-        Context context = new Context(c, type, position, isIndirect, leftmostContextsMapping, rightmostContextsMapping);
+        Context context = new Context(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
         contexts.put(contextFields, context);
 
         return context;
@@ -95,13 +95,20 @@ public class ContextualFactory implements Serializable {
         // FIXME propagate context considering nullable symbols
         for(Context c : contexts) {
             if(c.getType() == ContextType.DEEP) {
+                ISymbol nonTerminalContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+
                 // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
                 // that are not 0 or |rhs|
                 for(int i = 0; i < origProduction.arity(); i++) {
-                    if((i == 0 && i == origProduction.leftRecursivePosition()
-                        && (c.getPosition().equals(ContextPosition.LEFTMOST)))
-                        || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
+                    /*
+                     * if Ctx (B.C) is leftmost and X1 =*> B ... then new_X1 = {Ctx}X1
+                     * 
+                     * if Ctx (B.C) is rightmost and XN =*> ... B then new_XN = XN{Ctx}
+                     */
+                    if((i == 0 && c.getPosition().equals(ContextPosition.LEFTMOST)
+                        && pt.normalizedGrammar().getLeftDerivable().get(origProduction.rightHand().get(i)).contains(nonTerminalContext))
+                        || (i == origProduction.arity() - 1 && c.getPosition().equals(ContextPosition.RIGHTMOST) && pt
+                            .normalizedGrammar().getRightDerivable().get(origProduction.rightHand().get(i)).contains(nonTerminalContext))) {
                         ContextualSymbol newSymbol;
                         if(rhs.get(i) instanceof ContextualSymbol) {
                             newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);

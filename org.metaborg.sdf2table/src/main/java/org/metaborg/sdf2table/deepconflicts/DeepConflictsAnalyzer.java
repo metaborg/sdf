@@ -229,24 +229,24 @@ public class DeepConflictsAnalyzer {
                 .contains(p.lower().leftHand());
     }
 
-    private Context deepContextFrom(int productionId, ContextPosition position, boolean isIndirect) {
+    private Context deepContextFrom(int productionId, ContextPosition position) {
         if(isContextMappingStable) {
-            return pt.getContextualFactory().createContext(productionId, ContextType.DEEP, position, isIndirect,
+            return pt.getContextualFactory().createContext(productionId, ContextType.DEEP, position, 
                 leftmostContextsMapping, rightmostContextsMapping);
         } else {
             // use dummy values
-            return pt.getContextualFactory().createContext(productionId, ContextType.DEEP, position, isIndirect,
+            return pt.getContextualFactory().createContext(productionId, ContextType.DEEP, position,
                 Collections.emptyMap(), Collections.emptyMap());
         }
     }
 
-    private Context danglingContextFrom(int productionId, ContextPosition position, boolean isIndirect) {
+    private Context danglingContextFrom(int productionId, ContextPosition position) {
         if(isContextMappingStable) {
-            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position, isIndirect,
+            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position,
                 leftmostContextsMapping, rightmostContextsMapping);
         } else {
             // use dummy values
-            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position, isIndirect,
+            return pt.getContextualFactory().createContext(productionId, ContextType.DANGLING, position,
                 Collections.emptyMap(), Collections.emptyMap());
         }
     }
@@ -267,7 +267,7 @@ public class DeepConflictsAnalyzer {
         if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
             rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
         }
-        Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
+        Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
@@ -303,7 +303,7 @@ public class DeepConflictsAnalyzer {
         if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
             leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
         }
-        Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+        Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST);
         contexts.add(new_context);
 
         Set<Integer> conflicting_args = Sets.newHashSet();
@@ -334,8 +334,8 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
             }
-            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
-            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST);
+            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST);
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
@@ -372,8 +372,8 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                 leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
             }
-            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST, false);
-            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST, false);
+            Context new_context_right = danglingContextFrom(labelLower, ContextPosition.RIGHTMOST);
+            Context new_context_left = danglingContextFrom(labelLower, ContextPosition.LEFTMOST);
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
@@ -419,7 +419,7 @@ public class DeepConflictsAnalyzer {
                 // if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 // rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
                 // }
-                Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST, true);
+                Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST);
                 contexts.add(new_context);
 
                 // create production E = A<lower> beta
@@ -452,7 +452,7 @@ public class DeepConflictsAnalyzer {
                 if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                     leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
                 }
-                Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST, true);
+                Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST);
                 contexts.add(new_context);
 
                 // create production E = alpha B<lower>
@@ -482,7 +482,7 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelP)) {
                 leftmostContextsMapping.put(labelP, leftmostContextsMapping.size());
             }
-            Context new_context = deepContextFrom(labelP, ContextPosition.LEFTMOST, false);
+            Context new_context = deepContextFrom(labelP, ContextPosition.LEFTMOST);
             contexts.add(new_context);
         }
 
@@ -530,7 +530,7 @@ public class DeepConflictsAnalyzer {
             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelP)) {
                 rightmostContextsMapping.put(labelP, rightmostContextsMapping.size());
             }
-            Context new_context = deepContextFrom(labelP, ContextPosition.RIGHTMOST, false);
+            Context new_context = deepContextFrom(labelP, ContextPosition.RIGHTMOST);
             contexts.add(new_context);
         }
 
@@ -596,7 +596,7 @@ public class DeepConflictsAnalyzer {
                             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelNewProd)) {
                                 rightmostContextsMapping.put(labelNewProd, rightmostContextsMapping.size());
                             }
-                            Context new_context = deepContextFrom(labelNewProd, ContextPosition.RIGHTMOST, false);
+                            Context new_context = deepContextFrom(labelNewProd, ContextPosition.RIGHTMOST);
                             contexts.add(new_context);
 
                             newProductions.put(newProd, p);

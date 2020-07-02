@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.metaborg.parsetable.IParseTable;
 import org.metaborg.parsetable.states.IState;
+import org.metaborg.parsetable.symbols.LiteralSymbol;
 import org.metaborg.sdf2table.deepconflicts.*;
 import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.util.CheckOverlap;
@@ -81,6 +82,7 @@ public class ParseTable implements IParseTable, Serializable {
         calculateNullable();
 
         // calculate left and right recursive productions (considering nullable symbols)
+        // and leftmost and rightmost derivations of symbols
         calculateRecursion();
 
         // normalize priorities according to recursion
@@ -198,6 +200,88 @@ public class ParseTable implements IParseTable, Serializable {
         for(Production p : grammar.getUniqueProductionMapping().values()) {
             p.calculateRecursion(grammar);
         }
+
+        calculateDerivations();
+    }
+
+
+    // for every symbol A
+    // for every production A = A1 ... AN
+    // deriveLeft(A) = {A ++ A1 ++ deriveLeft(A1)}
+    // deriveRight(A) = {A ++ AN ++ deriveRight(AN)}
+    // FIXME consider nullable symbols
+    private void calculateDerivations() {
+
+        List<ISymbol> processedSymbols = Lists.newArrayList();
+        for(ISymbol s : grammar.getSymbolProductionsMapping().keySet()) {
+            calculateDerivations(s, processedSymbols);
+        }
+    }
+
+    private void calculateDerivations(ISymbol s, List<ISymbol> processedSymbols) {
+        if(processedSymbols.contains(s)) {
+            return;
+        }
+
+        grammar.getLeftDerivable().put(s, s);
+        grammar.getRightDerivable().put(s, s);
+
+        for(IProduction p : grammar.getSymbolProductionsMapping().get(s)) {
+            if(p.rightHand().isEmpty())
+                continue;
+            ISymbol leftmost = p.rightHand().get(0);
+            ISymbol rightmost = p.rightHand().get(p.arity() - 1);
+            if(!(leftmost instanceof Sort && ((Sort) leftmost).getType() != null) && !(leftmost instanceof CharacterClassSymbol)) {
+                grammar.getLeftDerivable().put(s, leftmost);
+                putLeftDerivables(s, leftmost, processedSymbols);
+
+            }
+            if(!(rightmost instanceof Sort && ((Sort) rightmost).getType() != null)&& !(rightmost instanceof CharacterClassSymbol)) {
+                grammar.getRightDerivable().put(s, rightmost);
+                putRightDerivables(s, rightmost, processedSymbols);
+
+            }
+        }
+
+        processedSymbols.add(s);
+    }
+
+    private void putRightDerivables(ISymbol s, ISymbol rightmost, List<ISymbol> processedSymbols) {
+        if(processedSymbols.contains(rightmost)) {
+            grammar.getRightDerivable().putAll(s, grammar.getRightDerivable().get(rightmost));
+        }
+
+        for(IProduction p : grammar.getSymbolProductionsMapping().get(rightmost)) {
+            if(p.rightHand().isEmpty())
+                continue;
+            ISymbol right = p.rightHand().get(p.arity() - 1);
+            if(!(right instanceof Sort && ((Sort) right).getType() != null)
+                && !grammar.getRightDerivable().get(s).contains(right)
+                && !(right instanceof CharacterClassSymbol)) {
+                grammar.getRightDerivable().put(s, right);
+                putRightDerivables(s, right, processedSymbols);
+            }
+        }
+
+    }
+
+    private void putLeftDerivables(ISymbol s, ISymbol leftmost, List<ISymbol> processedSymbols) {
+        if(processedSymbols.contains(leftmost)) {
+            grammar.getLeftDerivable().putAll(s, grammar.getLeftDerivable().get(leftmost));
+        }
+
+        for(IProduction p : grammar.getSymbolProductionsMapping().get(leftmost)) {
+            if(p.rightHand().isEmpty())
+                continue;
+            ISymbol left = p.rightHand().get(0);
+            if(!(left instanceof Sort && ((Sort) left).getType() != null)
+                && !grammar.getLeftDerivable().get(s).contains(left)
+                && !(left instanceof CharacterClassSymbol)) {
+                grammar.getLeftDerivable().put(s, left);
+                putLeftDerivables(s, left, processedSymbols);
+            }
+        }
+
     }
 
     private void leftRecursive(IProduction prod, List<Symbol> seen, List<IProduction> prodsVisited) {
@@ -1016,16 +1100,16 @@ public class ParseTable implements IParseTable, Serializable {
                 int labelP = productionLabels.get(p);
 
                 // generate new productions for deep contexts
-                Context deepLeft_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.LEFTMOST, false,
+                Context deepLeft_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.LEFTMOST, 
                     leftmostContextsMapping, rightmostContextsMapping);
-                Context deepRight_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, false,
+                Context deepRight_ctx = cf.createContext(labelP, ContextType.DEEP, ContextPosition.RIGHTMOST, 
                     leftmostContextsMapping, rightmostContextsMapping);
                 Context danglingLeft_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.LEFTMOST,
-                    false, leftmostContextsMapping, rightmostContextsMapping);
+                     leftmostContextsMapping, rightmostContextsMapping);
                 Context danglingRight_ctx = cf.createContext(labelP, ContextType.DANGLING, ContextPosition.RIGHTMOST,
-                    false, leftmostContextsMapping, rightmostContextsMapping);
-                if(ctx_s.containsProduction(labelP) || ctx_s.getContexts().contains(deepLeft_ctx) || ctx_s.getContexts().contains(deepRight_ctx)
-                    || ctx_s.getContexts().contains(danglingLeft_ctx)
+                     leftmostContextsMapping, rightmostContextsMapping);
+                if(ctx_s.containsProduction(labelP) || ctx_s.getContexts().contains(deepLeft_ctx)
+                    || ctx_s.getContexts().contains(deepRight_ctx) || ctx_s.getContexts().contains(danglingLeft_ctx)
                     || ctx_s.getContexts().contains(danglingRight_ctx)) {
                     continue;
                 }

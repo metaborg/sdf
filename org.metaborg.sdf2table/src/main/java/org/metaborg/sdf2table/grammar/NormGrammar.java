@@ -89,6 +89,10 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     // non-recursive symbols
     private final SetMultimap<Symbol, Symbol> nonRecursive;
+    
+    // left and right derivable symbols from a symbol
+    private final SetMultimap<ISymbol, ISymbol> leftDerivable;
+    private final SetMultimap<ISymbol, ISymbol> rightDerivable;
 
     public NormGrammar() {
         this.filesRead = Sets.newHashSet();
@@ -125,6 +129,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.combinedExpressionGrammars = Sets.newHashSet();
         this.indirectlyRecursive = HashMultimap.create();
         this.nonRecursive = HashMultimap.create();
+        this.leftDerivable = HashMultimap.create();
+        this.rightDerivable = HashMultimap.create();
     }
 
     public Map<UniqueProduction, Production> syntax() {
@@ -338,6 +344,14 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.transitivePriorities.clear();
         this.transitivePriorityArgs.clear();
         this.filesRead.clear();
+    }
+
+    public SetMultimap<ISymbol, ISymbol> getLeftDerivable() {
+        return leftDerivable;
+    }
+
+    public SetMultimap<ISymbol, ISymbol> getRightDerivable() {
+        return rightDerivable;
     }
 
 }
