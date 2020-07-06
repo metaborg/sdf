@@ -9,9 +9,9 @@ imports
   lib/sdf-parenthesize
   signatures/kernel/Kernel-sig
   signatures/TemplateLang-sig
-  
+
 rules
-  
+
   //pretty-printer for the generated sdf
   pp-sdf-to-string =
   sdf-desugar;
@@ -51,11 +51,11 @@ rules
   <+
     tbl := <import-term(target/metaborg/EditorService-pretty.pp.af)>;
     rules(DescriptorPPTable := tbl)
-    
+
   get-src-gen(|project-path, folder, ext):
     filename -> filename'
     with
-        fn := <get-filename> filename; 
+        fn := <get-filename> filename;
         src-gen-path := <concat-strings> [project-path, "/src-gen"];
         src-gen-folder := <concat-strings> [src-gen-path, "/" ,folder];
         file-folder := <get-dir(|src-gen-folder)> filename ;

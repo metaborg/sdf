@@ -45,14 +45,14 @@ imports
 rules // Analysis
 
   // topdown(where(try(debug(!$[[<(origin-offset; write-to-string) <+ !"NO ORIGINS">][" "]]))))
-  
-  
+
+
 
   editor-analyze = analyze-all(lifting, id, id|<language>)
 
-  
-  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
-      
+
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all
+
 rules // Editor services
 
   editor-resolve:
@@ -74,7 +74,7 @@ rules // Debugging
 
   debug-show-aterm:
     (selected, position, ast, path, project-path) -> (filename, selected)
-    with     
+    with
       filename := <guarantee-extension(|"aterm")> path
 
   debug-show-desugared:
@@ -82,6 +82,12 @@ rules // Debugging
     with
       filename := <guarantee-extension(|"desugared.aterm")> path;
       result   := <desugar-templates> selected
+
+  debug-show-pre-analyzed:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"desugared.aterm")> path;
+      result   := <lifting> selected
 
   debug-show-analyzed:
     (selected, position, ast, path, project-path) -> (filename, selected)

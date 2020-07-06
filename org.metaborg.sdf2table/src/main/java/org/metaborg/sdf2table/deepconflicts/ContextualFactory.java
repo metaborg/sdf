@@ -29,16 +29,16 @@ public class ContextualFactory implements Serializable {
         contextualSymbols = Maps.newHashMap();
     }
 
-    public Context createContext(int c, ContextType type, ContextPosition position, boolean isIndirect,
+    public Context createContext(int c, ContextType type, ContextPosition position,
         final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
         List<Object> contextFields =
-            Lists.newArrayList(c, type, position, isIndirect, leftmostContextsMapping, rightmostContextsMapping);
+            Lists.newArrayList(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
 
         if(contexts.containsKey(contextFields)) {
             return contexts.get(contextFields);
         }
 
-        Context context = new Context(c, type, position, isIndirect, leftmostContextsMapping, rightmostContextsMapping);
+        Context context = new Context(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
         contexts.put(contextFields, context);
 
         return context;
@@ -94,105 +94,46 @@ public class ContextualFactory implements Serializable {
 
         // FIXME propagate context considering nullable symbols
         for(Context c : contexts) {
-            // contextual tokens for indirect recursion need to be propagated
-            // in the opposite direction (i.e., if conflict occurs at the rightmost symbol, they need to be
-            // propagated to the leftmost symbol) until they reach the recursive symbol
             if(c.getType() == ContextType.DEEP) {
-                if(c.isIndirect()) {
-                    ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
-                    for(int i = 0; i < origProduction.arity(); i++) {
-                        if((i == 0 && i == origProduction.leftRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)))
-                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
-                                && (c.getPosition().equals(ContextPosition.LEFTMOST)))) {
-                            ContextualSymbol newSymbol;
-                            if(rhs.get(i) instanceof ContextualSymbol) {
-                                ISymbol nonContextualSymbol = ((ContextualSymbol) rhs.get(i)).getOrigSymbol();
-                                if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
-                                    newSymbol = ((ContextualSymbol) rhs.get(i))
-                                        .addContext(createContext(c.getContext(), c.getType(), c.getPosition(), false,
-                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
-                                } else {
-                                    newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
-                                }
-                            } else {
-                                if(lefthandSymbolFromContext.equals(rhs.get(i))) {
-                                    newSymbol = createContextualSymbol(
-                                        (Symbol) rhs.get(i), createContext(c.getContext(), c.getType(), c.getPosition(),
-                                            false, pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
-                                        this);
-                                } else {
-                                    newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
-                                }
-                            }
-                            rhs.set(i, newSymbol);
+                ISymbol nonTerminalContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+
+                // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
+                // that are not 0 or |rhs|
+                for(int i = 0; i < origProduction.arity(); i++) {
+                    /*
+                     * if Ctx (B.C) is leftmost and X1 =*> B ... then new_X1 = {Ctx}X1
+                     * 
+                     * if Ctx (B.C) is rightmost and XN =*> ... B then new_XN = XN{Ctx}
+                     */
+                    if((i == 0 && c.getPosition().equals(ContextPosition.LEFTMOST)
+                        && pt.normalizedGrammar().getLeftDerivable().get(origProduction.rightHand().get(i)).contains(nonTerminalContext))
+                        || (i == origProduction.arity() - 1 && c.getPosition().equals(ContextPosition.RIGHTMOST) && pt
+                            .normalizedGrammar().getRightDerivable().get(origProduction.rightHand().get(i)).contains(nonTerminalContext))) {
+                        ContextualSymbol newSymbol;
+                        if(rhs.get(i) instanceof ContextualSymbol) {
+                            newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                        } else {
+                            newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
                         }
-                    }
-                    // propagate contextual tokens considering direct recursion
-                } else {
-                    // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
-                    // that are not 0 or |rhs|
-                    for(int i = 0; i < origProduction.arity(); i++) {
-                        if((i == 0 && i == origProduction.leftRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.LEFTMOST)))
-                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition()
-                                && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
-                            ContextualSymbol newSymbol;
-                            if(rhs.get(i) instanceof ContextualSymbol) {
-                                newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
-                            } else {
-                                newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
-                            }
-                            rhs.set(i, newSymbol);
-                        }
+                        rhs.set(i, newSymbol);
                     }
                 }
             } else if(c.getType() == ContextType.DANGLING) {
-                if(c.isIndirect()) {
-                    ISymbol lefthandSymbolFromContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
-                    for(int i = 0; i < origProduction.arity(); i++) {
-                        if((i == 0 && i == origProduction.leftRecursivePosition())
-                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition())) {
-                            ContextualSymbol newSymbol;
-                            if(rhs.get(i) instanceof ContextualSymbol) {
-                                ISymbol nonContextualSymbol = ((ContextualSymbol) rhs.get(i)).getOrigSymbol();
-                                if(lefthandSymbolFromContext.equals(nonContextualSymbol)) {
-                                    newSymbol = ((ContextualSymbol) rhs.get(i))
-                                        .addContext(createContext(c.getContext(), c.getType(), c.getPosition(), false,
-                                            pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()));
-                                } else {
-                                    newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
-                                }
-                            } else {
-                                if(lefthandSymbolFromContext.equals(rhs.get(i))) {
-                                    newSymbol = createContextualSymbol(
-                                        (Symbol) rhs.get(i), createContext(c.getContext(), c.getType(), c.getPosition(),
-                                            false, pt.getLeftmostContextsMapping(), pt.getRightmostContextsMapping()),
-                                        this);
-                                } else {
-                                    newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
-                                }
-                            }
-                            rhs.set(i, newSymbol);
+                // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
+                // that are not 0 or |rhs|
+                for(int i = 0; i < origProduction.arity(); i++) {
+                    if((i == 0 && i == origProduction.leftRecursivePosition())
+                        || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition())) {
+                        ContextualSymbol newSymbol;
+                        if(rhs.get(i) instanceof ContextualSymbol) {
+                            newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
+                        } else {
+                            newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
                         }
-                    }
-                    // propagate contextual tokens considering direct recursion
-                } else {
-                    // verify all symbols in rhs to consider leftRecursivePosition() or rightRecursivePosition()
-                    // that are not 0 or |rhs|
-                    for(int i = 0; i < origProduction.arity(); i++) {
-                        if((i == 0 && i == origProduction.leftRecursivePosition())
-                            || (i == origProduction.arity() - 1 && i == origProduction.rightRecursivePosition())) {
-                            ContextualSymbol newSymbol;
-                            if(rhs.get(i) instanceof ContextualSymbol) {
-                                newSymbol = ((ContextualSymbol) rhs.get(i)).addContext(c);
-                            } else {
-                                newSymbol = createContextualSymbol((Symbol) rhs.get(i), c, this);
-                            }
-                            rhs.set(i, newSymbol);
-                        }
+                        rhs.set(i, newSymbol);
                     }
                 }
+
             }
 
         }

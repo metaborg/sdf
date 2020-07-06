@@ -250,14 +250,24 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     }
 
     private boolean topdownHasSpaces(List<ISymbol> rightHand) {
-        // This function has been copied from the JSGLR1 with the following comment:
+        // This function has been modified from the JSGLR1 with the following comment:
         // Return true if any character range of this contains spaces
+        return rightHand.stream().anyMatch(this::topdownHasSpaces);
+    }
 
-        for(ISymbol s : rightHand) {
-            if(s instanceof CharacterClassSymbol && ((CharacterClassSymbol) s).getCC().contains('0')) {
-                return true;
-            }
-        }
+    private boolean topdownHasSpaces(ISymbol s) {
+        if(s instanceof CharacterClassSymbol && ((CharacterClassSymbol) s).getCC().contains(' '))
+            return true;
+        if(s instanceof LexicalSymbol)
+            return topdownHasSpaces(((LexicalSymbol) s).getSymbol());
+        if(s instanceof IterStarSepSymbol)
+            return topdownHasSpaces(((IterStarSepSymbol) s).getSymbol());
+        if(s instanceof IterStarSymbol)
+            return topdownHasSpaces(((IterStarSymbol) s).getSymbol());
+        if(s instanceof IterSepSymbol)
+            return topdownHasSpaces(((IterSepSymbol) s).getSymbol());
+        if(s instanceof IterSymbol)
+            return topdownHasSpaces(((IterSymbol) s).getSymbol());
         return false;
     }
 

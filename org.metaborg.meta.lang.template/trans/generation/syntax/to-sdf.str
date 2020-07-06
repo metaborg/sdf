@@ -11,29 +11,6 @@ imports
   analysis/attributes
   analysis/desugar
   pp/layout-constraints/Layout-Constraints-pp
-  
-imports
-  signatures/aliases/-
-  signatures/aterms/-
-  signatures/basic/-
-  signatures/characterclass/-
-  signatures/constants/-
-  signatures/grammar/-
-  signatures/kernel/-
-  signatures/labels/-
-  signatures/layout/-
-  signatures/layout-constraints/-
-  signatures/lifting/-
-  signatures/literals/-
-  signatures/modules/-
-  signatures/priority/-
-  signatures/regular/-
-  signatures/renaming/-
-  signatures/restrictions/-
-  signatures/sdf2-core/-
-  signatures/sorts/-
-  signatures/symbols/-
-  signatures/TemplateLang-sig
 
 imports
   signatures/aliases/-
@@ -58,12 +35,35 @@ imports
   signatures/symbols/-
   signatures/TemplateLang-sig
 
-rules 
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
   placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")
 
 rules
- 
-  to-sdf(|chars, newline, kfr, kattrs) = 
+
+  to-sdf(|chars, newline, kfr, kattrs) =
   module-to-sdf(|chars, newline, kfr, kattrs) <+ section-to-sdf(|chars, newline, kfr, kattrs) <+ priority-to-sdf(|chars, newline) <+ prod-to-sdf(|chars, newline) <+ prod-to-sdf
 
   module-to-sdf(|chars, newline, kfr, kattrs):
@@ -84,13 +84,13 @@ rules
   module-to-sdf:
     Module(Parameterized(mn, symbols)) -> 'module(parameterized(mn, symbols'))
     with
-      symbols' := <term-translation> symbols      
-  
-  imports-to-sdf: 
+      symbols' := <term-translation> symbols
+
+  imports-to-sdf:
     Imports(mod) -> imports(i)
     with
       i := <map(module-to-sdf)> mod
-    
+
   /* SDF3 sections */
   //Context-free Start Symbols
   section-to-sdf(|chars, newline, kfr, kattrs):
@@ -112,11 +112,11 @@ rules
 
   //productive productions section
   section-to-sdf(|chars, newline, kfr, kattrs):
-  	SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, plhdr-restr*, restr*]
-  	with
-  		prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
-  		// explicit placeholder prods
-  		sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
+    SDFSection(ContextFreeSyntax(prods*)) -> [context-free-syntax(prods'), lexical-syntax(reject-prods*), plhdr-prods*, plhdr-restr*, restr*]
+    with
+      prods' := <map(prod-to-sdf <+ prod-to-sdf(|chars, newline))> prods*;
+      // explicit placeholder prods
+      sorts*     := < collect(?SortDef(<strip-annos>) <+ ?Sort(<strip-annos>))
                         ; nub> prods*;
       plhdr*     := <map(sort-to-plhdr-prod); term-translation> sorts*;
       if [] := sorts* then
@@ -126,9 +126,9 @@ rules
               (left-placeholder-chars, right-placeholder-chars) := <placeholder-chars>;
               plhdr-prods* := [context-free-syntax([plhdr*])];
               plhdr-restr* := [lexical-restrictions([follow(<map(!lit(<concat-strings> [left-placeholder-chars, <id>, right-placeholder-chars]))> sorts*, single(char-class(simple-charclass(
-                                                                                            present(conc(range(short("a"), short("z")), 
+                                                                                            present(conc(range(short("a"), short("z")),
                                                                                                          range(short("A"), short("Z"))))))))])]
-          end;                    
+          end;
       // lexical restrictions
       x    := <filter(case-sensitive-template-prods); nub> prods*;
       ci-x := <filter(case-insensitive-template-prods); nub> prods*;
@@ -144,7 +144,7 @@ rules
                filter(string-ends-with-identifier-char; string-to-sdf(|chars); last)> x;
         ci-r* := <collect-om(?String(<string-edge-tokenize(where({ci-x: ?ci-x; <one(?ci-x)> chars}))>));
            flatten-list;
-               filter(string-ends-with-identifier-char; string-to-sdf-insensitive(|chars); last)> ci-x;       
+               filter(string-ends-with-identifier-char; string-to-sdf-insensitive(|chars); last)> ci-x;
           if ![ci-r*, r*] => [] + !kfr => None() then
             restr* := []
           else
@@ -158,26 +158,26 @@ rules
          <?KeywordAttributes(symbol-kattrs, attr-kattrs)> kattrs;
          reject-prods* := <nub; map(!prod([<id>], <term-translation> symbol-kattrs, <term-translation> attr-kattrs))> [ci-r*, r*]
       end
-       
+
   case-sensitive-template-prods:
     TemplateProduction(SortDef(_), _, attrs) -> <id>
     where
       <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
-      
+
   case-sensitive-template-prods:
     TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
     where
       <not(?Attrs(<id>); fetch-elem(?CaseInsensitive()))> attrs
-      
+
   case-insensitive-template-prods:
     TemplateProduction(SortDef(_), _, attrs) -> <id>
     where
       <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
-      
+
   case-insensitive-template-prods:
     TemplateProductionWithCons(SortCons(SortDef(_), Constructor(_)), _, attrs) -> <id>
     where
-      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs 
+      <?Attrs(<id>); fetch-elem(?CaseInsensitive())> attrs
 
   //lexical syntax productive section
   section-to-sdf(|chars, newline, kfr, kattrs):
@@ -334,7 +334,7 @@ rules
     with
       case := <?Attrs(<id>); fetch-elem(?CaseInsensitive()) <+ !""> a ;
       result := <template-to-sdf(|chars, newline, case)> t
-  
+
   //Productions
   prod-to-sdf:
     SdfProductionWithCons(SortCons(symbol, Constructor(cons)), Rhs(symbols*), attrs) -> prod(symbols'*, symbol', a''*)
@@ -360,7 +360,7 @@ rules
       p* := <map(prod-to-sdf(|chars, newline))> x;
         //content complete prods
         cc* := < map(?TemplateProduction(SortDef(<id>), _, _) <+ ?TemplateProductionWithCons(SortCons(SortDef(<id>), Constructor(_)), _, _))
-             ; nub 
+             ; nub
              ; map(sort-to-plhdr-prod)> x;
         if [] := cc*
         then
@@ -411,19 +411,19 @@ rules
     SingleLineTemplate(elems) -> elems'
     with
     elems' := <filter(template-elem-to-sdf(|chars, case)); flatten-list> elems
-    
+
   template-elem-to-sdf(|chars, case):
     String(t) -> result
     where
-    if CaseInsensitive() := case then 
+    if CaseInsensitive() := case then
       result := <string-to-sdf-insensitive(|chars)> t
     else
       result := <string-to-sdf(|chars)> t
     end
-  
-  //removing layout from separator  
+
+  //removing layout from separator
   template-elem-to-sdf(|chars, case):
-    Placeholder(symbol, option) -> symbol' 
+    Placeholder(symbol, option) -> symbol'
     where
       <?IterSep(_, Lit(lit)) + ?IterStarSep(_, Lit(lit)) + ?Label(_, IterSep(_, Lit(lit))) + ?Label(_, IterStarSep(_, Lit(lit)))> symbol
     with
@@ -444,8 +444,8 @@ rules
           case ?Label(l, IterSep(sym, _)) : symbol'     := <term-translation> Label(l, IterSep(sym, Lit(lit')))
           case ?Label(l, IterStarSep(sym, _)) : symbol' := <term-translation> Label(l, IterStarSep(sym, Lit(lit')))
         end
-      end 
-      
+      end
+
   template-elem-to-sdf(|chars, case):
     Placeholder(symbol, option) -> <term-translation> symbol
     where
@@ -462,12 +462,12 @@ rules
 
   add-newline-last :
     Line(elem*) -> Line([elem*, String("\n")])
- 
+
   line-to-sdf(|chars, case):
     Line(elems*) -> elems'*
     where
       elems'* := <filter(template-elem-to-sdf(|chars, case)); flatten-list; not(?[])> elems*
-  
+
 rules //conversion of SDF3 terms into SDF2
 
   term-translation = topdown(try(terms-to-sdf <+ special-term-to-sdf <+ term-to-sdf ))
@@ -485,11 +485,11 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     Right() -> right()
-  
+
   // non-nested has no special behaviour in SDF2
   // semantics is similar to right
   special-term-to-sdf:
-    NonNested() -> right()  
+    NonNested() -> right()
 
   special-term-to-sdf:
     IterStar(sort) -> iter-star(sort)
@@ -559,9 +559,9 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     SortDef(s) -> sort(s)
-    
+
   special-term-to-sdf:
-    DeclSort(s) -> sort(s)  
+    DeclSort(s) -> sort(s)
 
   special-term-to-sdf:
     Deprecated() -> term(default(fun(unquoted("deprecated"))))
@@ -577,32 +577,32 @@ rules //conversion of SDF3 terms into SDF2
 
   special-term-to-sdf:
     LayoutConstraint(constr) -> term(default(appl(unquoted("layout"), [fun(quoted($["[<prettyprint-TemplateLang-Constraint; !V([], <id>); box2text-string(|120)> constr]"]))])))
-      
+
   special-term-to-sdf:
     IgnoreLayout() -> term(default(fun(unquoted("ignore-layout"))))
 
   special-term-to-sdf:
     CaseInsensitive() -> term(default(fun(unquoted("case-insensitive"))))
-    
+
   special-term-to-sdf:
-    EnforceNewLine() -> term(default(fun(unquoted("enforce-newline"))))  
-    
+    EnforceNewLine() -> term(default(fun(unquoted("enforce-newline"))))
+
   special-term-to-sdf:
-    LongestMatch() -> term(default(fun(unquoted("longest-match"))))      
-    
+    LongestMatch() -> term(default(fun(unquoted("longest-match"))))
+
   special-term-to-sdf:
-    Placeholder() -> term(default(fun(unquoted("placeholder"))))  
-    
+    Placeholder() -> term(default(fun(unquoted("placeholder"))))
+
   special-term-to-sdf:
-    PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))  
-    
+    PlaceholderInsertion() -> term(default(fun(unquoted("placeholder-insertion"))))
+
   special-term-to-sdf:
-    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))         
-    
+    LiteralCompletion() -> term(default(fun(unquoted("literal-completion"))))
+
   special-term-to-sdf:
     Recover() -> term(default(fun(unquoted("recover"))))
-  
-    
+
+
   terms-to-sdf:
     [term | tail] -> <id>
 
@@ -643,7 +643,7 @@ rules //conversion of SDF3 terms into SDF2
       right-placeholder-chars := <?(_, <id>)> placeholder-chars;
       rhs := lit(<concat-strings> [left-placeholder-chars, s, right-placeholder-chars]);
       c := <double-quote> $[[s]-Plhdr]
-    
+
 template-escape =
     string-replace(|"\\", "\\\\");
     string-replace(|"\t", "\\t");

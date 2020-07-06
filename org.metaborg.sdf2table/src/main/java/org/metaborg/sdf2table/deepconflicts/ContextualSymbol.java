@@ -197,4 +197,13 @@ public final class ContextualSymbol extends Symbol {
         return s.toParseTableSymbol(syntaxContext, cardinality);
     }
 
+    public boolean containsProduction(int label) {
+        for (Context c : this.contexts) {
+            if (c.getContext() == label) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

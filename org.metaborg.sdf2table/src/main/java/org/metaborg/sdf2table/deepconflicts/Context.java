@@ -11,14 +11,12 @@ public final class Context implements Serializable {
     private final int context;
     private final ContextType type;
     private final ContextPosition position;
-    private final boolean isIndirect;
     private final long contextBitmap;
 
-    public Context(int context, ContextType type, ContextPosition position, boolean isIndirect, final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
+    public Context(int context, ContextType type, ContextPosition position, final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
         this.context = context;
         this.type = type;
         this.position = position;
-        this.isIndirect = isIndirect;
 
         if (position == ContextPosition.LEFTMOST && leftmostContextsMapping.containsKey(context)) {
             contextBitmap = 1L << leftmostContextsMapping.get(context);
@@ -40,7 +38,6 @@ public final class Context implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + context;
-        result = prime * result + (isIndirect ? 1231 : 1237);
         result = prime * result + ((position == null) ? 0 : position.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
@@ -56,8 +53,6 @@ public final class Context implements Serializable {
             return false;
         Context other = (Context) obj;
         if(context != other.context)
-            return false;
-        if(isIndirect != other.isIndirect)
             return false;
         if(position != other.position)
             return false;
@@ -80,10 +75,6 @@ public final class Context implements Serializable {
 
     public long getContextBitmap() {
         return contextBitmap;
-    }
-
-    public boolean isIndirect() {
-        return isIndirect;
     }
 
 }

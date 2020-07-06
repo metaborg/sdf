@@ -8,4 +8,4 @@ imports
 strategies
 
   lifting =
-    lift-all      
+    lift-all

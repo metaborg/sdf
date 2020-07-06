@@ -1,5 +1,5 @@
 ---
-id: org.metaborg:sdf.meta.integrationtest:2.5.9
+id: org.metaborg:sdf.meta.integrationtest:2.6.0-SNAPSHOT
 name: sdf-meta-integrationtest
 dependencies:
   compile:
@@ -11,8 +11,6 @@ pardonedLanguages:
 - EditorService
 - Stratego-Sugar
 - SDF
-debug:
-  typesmart: false
 language:
   sdf:
     pretty-print: sdf-meta-integrationtest
