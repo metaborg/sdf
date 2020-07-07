@@ -190,8 +190,9 @@ signature
     TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
 
   sorts Template constructors
-    Template       : list(TemplateLine) -> Template
-    TemplateSquare : list(TemplateLine) -> Template
+    Template           : list(TemplateLine) -> Template
+    TemplateSquare     : list(TemplateLine) -> Template
+    SingleLineTemplate : list(TemplatePart) -> Template
 
   sorts TemplateLine constructors
     Line : list(TemplatePart) -> TemplateLine
@@ -230,8 +231,12 @@ rules
   typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
-  typeOfTemplate(s, Template(lines))       = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
-  typeOfTemplate(s, TemplateSquare(lines)) = flattenTypes(typeOfTemplateLines(s, lines)). /* Flatten nested list */
+  typeOfTemplate(s, Template(lines))            = flattenTypes(typeOfTemplateLines(s, lines)).     /* Flatten nested list */
+  typeOfTemplate(s, TemplateSquare(lines))      = flattenTypes(typeOfTemplateLines(s, lines)).     /* Flatten nested list */
+  typeOfTemplate(s, SingleLineTemplate([p|ps])) = appendTypes(TmaybePart, Trest) /* Append maybe-list */ :-
+    maybeTypeOfTemplatePart(s, p) == TmaybePart,
+    typeOfTemplate(s, SingleLineTemplate(ps)) == Trest.
+  typeOfTemplate(s, SingleLineTemplate([])) = [].
 
   // Returns nested lists of types, as a template has multiple lines, with multiple parts.
   typeOfTemplateLines : scope * list(TemplateLine) -> list(list(TYPE))
@@ -355,23 +360,23 @@ rules
 //
 
 rules
-  
+
   injectionProductionOK: TYPE * Attributes * SymbolDef
   injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
     try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
   injectionProductionOK(_, _, _).
-  
+
   // TODO: error: Missing bracket attribute or constructor name
   // - LHS must be a single sort (injection)
   // - RHS must be in the form of '(' Sort ')'
   // - attributes must NOT contain Bracket() nor Reject()
-  
+
   // TODO: warning: Illegal use of the {bracket} attribute
   // - HS must be a single sort (injection)
   // - RHS must NOT be in the form of '(' Sort ')'
   // - attributes must contain Bracket()
   // - attributes must NOT contain Reject()
-  
+
   // TODO: warning: Illegal use of the {bracket} attribute
   // - LHS must be a sort + constructor (not an injection)
   // - attributes must contain Bracket()
