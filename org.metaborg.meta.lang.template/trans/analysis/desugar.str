@@ -7,7 +7,7 @@ imports
   libspoofax/term/origin
   libspoofax/term/annotation
   analysis/name-constraints
-  
+
   signatures/aliases/-
   signatures/aterms/-
   signatures/basic/-
@@ -28,12 +28,12 @@ imports
   signatures/sdf2-core/-
   signatures/sorts/-
   signatures/symbols/-
-  signatures/TemplateLang-sig 
+  signatures/TemplateLang-sig
 
 signature constructors
-	// desugar templates with one line into a single line template
-	SingleLineTemplate	: List(TemplatePart1) -> Template
-	SingleLineTemplate	: List(TemplatePart2) -> Template
+  // desugar templates with one line into a single line template
+  SingleLineTemplate	: List(TemplatePart1) -> Template
+  SingleLineTemplate	: List(TemplatePart2) -> Template
 
 
 strategies
@@ -42,32 +42,32 @@ strategies
     alltd(origin-track-forced(preserve-annotations-attachments(desugar-template)))
 
 rules
-  
+
   desugar-template:
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     with
-      elem'* := <desugar-elements; filter-breaks> elem* 
+      elem'* := <desugar-elements; filter-breaks> elem*
 
   //desugar templates with one line into a single line template
   desugar-template:
     <?Template([Line(elem*)]) + ?TemplateSquare([Line(elem*)]) + ?TemplateDeprecated([Line(elem*)]) + ?TemplateSquareDeprecated([Line(elem*)])> -> SingleLineTemplate(elem'*)
     with
-      elem'* := <desugar-elements; concatenate-consecutive-strings; filter-breaks> elem* 
+      elem'* := <desugar-elements; concatenate-consecutive-strings; filter-breaks> elem*
 
   desugar-template:
-  	TemplateSquare(lines*) -> result
-  	with
-  		result := <desugar-template> Template(lines*)
-  		
+    TemplateSquare(lines*) -> result
+    with
+      result := <desugar-template> Template(lines*)
+
   desugar-template:
-  	TemplateDeprecated(lines*) -> result
-  	with
-  		result := <desugar-template> Template(lines*)
-  	
-  desugar-template: 
-  	TemplateSquareDeprecated(lines*) -> result
-  	with
-  		result := <desugar-template> Template(lines*)  
+    TemplateDeprecated(lines*) -> result
+    with
+      result := <desugar-template> Template(lines*)
+
+  desugar-template:
+    TemplateSquareDeprecated(lines*) -> result
+    with
+      result := <desugar-template> Template(lines*)
 
   //desugar template contents
   desugar-template:
@@ -75,13 +75,13 @@ rules
     where
       not(!line* => [_])
    with
-      let   
+      let
           element-is-empty =
             ?Layout(_) + ?BreakAngled() + ?BreakSquared()
-          
+
           line-is-empty =
             ?Line([]) + Line(all(element-is-empty))
-          
+
           remove-head-if-empty =
             try(\[<line-is-empty> | t] -> t\)
 
@@ -121,14 +121,14 @@ rules
         unindent;
         map(Line(concatenate-consecutive-strings; filter-breaks));
         ?line'*
-      end 
+      end
 
   desugar-elements =
     alltd(origin-track-forced(desugar-brackets)) ; alltd(origin-track-forced(desugar-element))
 
 signature constructors
-	// cons-list of options replaced by list of options
-	: List(PlaceholderOption) -> PlaceholderOptions
+  // cons-list of options replaced by list of options
+  : List(PlaceholderOption) -> PlaceholderOptions
 
 rules
   desugar-element:
@@ -139,7 +139,7 @@ rules
 
   desugar-option:
     Text(x) -> Text(<origin-track-forced(un-double-quote; unescape)> x)
- 
+
   desugar-element:
     Escape(t) -> String(t')
     with
@@ -172,62 +172,61 @@ rules
       in
         t' := <origin-track-forced(unescape)> t
       end
-      
+
 
   desugar-element:
     Layout(t) -> Layout(t')
     with
       t' := <origin-track-forced(string-replace(|"\t", "  "))> t
-     
 
 signature constructors
-	// Squared and Angled removed
-	: Placeholder -> TemplatePart1
-	: Placeholder -> TemplatePart2
+  // Squared and Angled removed
+  : Placeholder -> TemplatePart1
+  : Placeholder -> TemplatePart2
 
 rules
   desugar-brackets:
-  	Squared(p) ->  p
-  
+    Squared(p) ->  p
+
   desugar-brackets:
-  	Angled(p) ->  p
-  	
+    Angled(p) ->  p
+
   filter-breaks =
-  	filter(not(?BreakAngled() + ?BreakSquared()))
-  	
+    filter(not(?BreakAngled() + ?BreakSquared()))
+
 rules
 
   desugar-layout-constraints(|chars):
     sections* -> sections'*
     where
       sections'* := <map(desugar-lc-section(|chars) <+ id)> sections*
-      
+
   desugar-lc-section(|chars):
     SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax([p'*, align-list*]))
     where
       align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
       p'*         := <map(desugar-lc-prod(|chars)); innermost(remove-align-list-and-pp-constraints); topdown(try(remove-align-list-and-pp-constraints)); topdown(try(flatten-list))> p*
-      
+
   desugar-lc-section(|chars):
     SDFSection(Kernel(p*)) -> SDFSection(Kernel([p'*, align-list*]))
     where
       align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
       p'*         := <map(desugar-lc-prod(|chars)); topdown(try(remove-align-list-and-pp-constraints)); topdown(try(remove-align-list-and-pp-constraints)); topdown(try(flatten-list))> p*
-      
+
   create-productions-align-list(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
       pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
-            
+
   create-productions-align-list(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
       pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
-            
+
   create-productions-align-list(|chars):
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
     where
@@ -235,153 +234,153 @@ rules
       pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
-      
+
   create-productions-align-list(|chars):
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
       pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
-      prods*         := <filter(generate-align-productions)> non-terminals* 
-      
+      prods*         := <filter(generate-align-productions)> non-terminals*
+
   generate-align-productions:
     Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
-  
+
   generate-align-productions:
     IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
-  
+
   generate-align-productions:
     IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
-    
+
   generate-align-productions:
     IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
-        
+
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
     where
       attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
-      
+
   desugar-lc-prod(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs'*))
       where
       attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
-      
+
   desugar-lc-prod(|chars):
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> TemplateProduction(lhs, rhs, Attrs(attrs'*))
     where
       rhs*    := <get-production-rhs(|chars)> t;
       attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
-      
+
   desugar-lc-prod(|chars):
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> TemplateProductionWithCons(lhs, rhs, Attrs(attrs'*))
     where
       rhs*    := <get-production-rhs(|chars)> t;
       attrs'* := <map(desugar-lc-attr(|rhs*) <+ id)> attrs*
-  
+
   desugar-lc-attr(|rhs*):
-    LayoutConstraint(constraint) -> LayoutConstraint(constraint') 
+    LayoutConstraint(constraint) -> LayoutConstraint(constraint')
     where
-      constraint' := <topdown(try(rewrite-constraint(|rhs*)))> constraint 
-      
+      constraint' := <topdown(try(rewrite-constraint(|rhs*)))> constraint
+
   rewrite-constraint(|rhs*):
     Indent(ref-pos, pos*) -> constraint
     where
-      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;
       constraint := <map(get-tree-position(|rhs*); create-indent-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
 
   rewrite-constraint(|rhs*):
     NewLineIndent(ref-pos, pos*) -> constraint
     where
-      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;
       constraint := <map(get-tree-position(|rhs*); create-newline-indent-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
-  
+
   rewrite-constraint(|rhs*):
     Offside(ref-pos, pos*) -> constraint
     where
       <not(?[])> pos*;
-      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;
       constraint := <map(get-tree-position(|rhs*); create-offside-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
-      
+
   combine-constraints:
     [x | xs] -> And(x, <combine-constraints> xs)
     where
-      <not(?[])> xs    
-  
+      <not(?[])> xs
+
   combine-constraints:
     [x] -> x
-      
+
   rewrite-constraint(|rhs*):
     Offside(ref-pos, pos*) -> Gt(Col(Left(ref-pos')), Col(First(ref-pos')))
     where
       <?[]> pos*;
       ref-pos' := <get-tree-position(|rhs*)> ref-pos
-    
+
   rewrite-constraint(|rhs*):
     Align(ref-pos, pos*) -> constraint
     where
       <not(?[])> pos*;
-      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;      
+      ref-pos'   := <get-tree-position(|rhs*)> ref-pos;
       constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
-    
+
   get-tree-position(|rhs*):
-    PosRef(p) -> Tree(p)  
-  
+    PosRef(p) -> Tree(p)
+
   get-tree-position(|rhs*):
     LiteralRef(l) -> Tree(<int-to-string> p)
     where
       p := <get-index> (Lit(l), rhs*)
-      
+
   get-tree-position(|rhs*):
     LabelRef(l) -> Tree(<int-to-string> p)
     where
       l'    := <strip-annos> l;
       rhs'* := <strip-annos> rhs*;
       <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*;
-      p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)  
-      
+      p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)
+
   get-non-terminal-symbol(|rhs*):
     PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int> p, rhs*)
-    
+
   get-non-terminal-symbol(|rhs*):
     PosRef(p) -> <index> (<string-to-int> p, rhs*)
-      
+
   get-non-terminal-symbol(|rhs*):
     LabelRef(l) -> symbol
     where
       l'    := <strip-annos> l;
       rhs'* := <strip-annos> rhs*;
-      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'* 
-  
+      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*
+
   get-non-terminal-symbol(|rhs*):
     LiteralRef(l) -> symbol
     where
       symbol := <fetch-elem(?Lit(l))> rhs*
-  
+
   create-offside-constraint(|ref-pos):
     Tree(p) -> Gt(Col(Left(Tree(p))), Col(First(ref-pos)))
-    
+
   create-indent-constraint(|ref-pos):
     Tree(p) -> Gt(Col(First(Tree(p))), Col(First(ref-pos)))
-    
+
   create-newline-indent-constraint(|ref-pos):
     Tree(p) -> And(Gt(Col(First(Tree(p))), Col(First(ref-pos))), Gt(Line(First(Tree(p))), Line(Last(ref-pos))))
-    
+
   create-align-constraint(|ref-pos):
     Tree(p) -> Eq(Col(First(Tree(p))), Col(First(ref-pos)))
-   
+
   remove-align-list-and-pp-constraints:
     And(<remove-constraint>, c) -> c
-    
+
   remove-align-list-and-pp-constraints:
     And(c, <remove-constraint>) -> c
-  
+
   remove-align-list-and-pp-constraints:
     Or(<remove-constraint>, c) -> c
-  
+
   remove-align-list-and-pp-constraints:
     Or(c, <remove-constraint>) -> c
-    
+
   remove-align-list-and-pp-constraints:
     LayoutConstraint(<remove-constraint>) -> []
-  
+
   remove-constraint = ?Align(_) + ?PPAlign(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _)

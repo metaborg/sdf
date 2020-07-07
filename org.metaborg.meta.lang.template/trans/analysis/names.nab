@@ -1,101 +1,109 @@
 module analysis/names
 
-imports 
+imports
   signatures/TemplateLang-sig
   analysis/types
   libstrc
-  
- 
+
+
 namespaces
-  
-  Module Sort Constructor Label 
-// LexSort CfSort
-  // Option
-  
+
+  Module Sort
+  Constructor Label
+  DeclSort
+
+
 properties
 
   def of Constructor       : SdfProduction
   sort of Constructor      : Sort
   ast of Module            : Module
-  
+
   constructorName of Sort	   : Constructor
-  
+
 binding rules
 
   mod@Module(Unparameterized(m), i*, s*):
     defines Module m
-    scopes Sort, Constructor 
-    
+    scopes Sort, Constructor
+
   Module(Unparameterized(m)):
     imports Sort, Constructor from Module m
-    
-  //Kernel Productions  
-  p@SdfProductionWithCons(SortCons(Lex(SortDef(s)), Constructor(c)), rhs, attrs): 
+
+  //Kernel Productions
+  p@SdfProductionWithCons(SortCons(Lex(SortDef(s)), Constructor(c)), rhs, attrs):
     defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
     scopes Label
-      
-      
-  p@SdfProduction(Lex(SortDef(s)), rhs, attrs): 
+
+
+  p@SdfProduction(Lex(SortDef(s)), rhs, attrs):
     defines non-unique Sort s of type SortType(s)
     scopes Label
-   
-   p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs): 
+
+   p@SdfProductionWithCons(SortCons(Cf(SortDef(s)), Constructor(c)), rhs, attrs):
     defines non-unique Sort s of type SortType(s)  of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
     scopes Label
-      
-  p@SdfProduction(Cf(SortDef(s)), rhs, attrs): 
+
+  p@SdfProduction(Cf(SortDef(s)), rhs, attrs):
     defines non-unique Sort s of type SortType(s)
     scopes Label
-  
+
   //Regular Productions
-  p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs): 
+  p@SdfProductionWithCons(SortCons(SortDef(s), Constructor(c)), rhs, attrs):
     defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
       where rhs has type ty*
     scopes Label
-  
-  p@SdfProduction(SortDef(s), rhs, attrs): 
+
+  p@SdfProduction(SortDef(s), rhs, attrs):
     defines non-unique Sort s of type SortType(s)
     scopes Label
-          
-  p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs): 
+
+  p@TemplateProductionWithCons(SortCons(SortDef(s), Constructor(c)), t, attrs):
     defines non-unique Sort s of type SortType(s) of constructorName c
     defines unique Constructor c
       of type FunType(ty*, SortType(s))
      where t has type ty*
      scopes Label
-  
-  p@TemplateProduction(SortDef(s), t, attrs): 
-    defines non-unique Sort s of type SortType(s) 
+
+  p@TemplateProduction(SortDef(s), t, attrs):
+    defines non-unique Sort s of type SortType(s)
     scopes Label
- 
- DeclSort(s):
-  defines non-unique Sort s of type SortType(s) 
-  	
+
+ DeclSort(s):     // context-free
+  defines non-unique Sort s of type SortType(s)
+//  defines DeclSort s
+ DeclSortLex(s):
+  defines non-unique Sort s of type SortType(s)
+//  defines DeclSort s
+ DeclSortVar(s):
+  defines non-unique Sort s of type SortType(s)
+//  defines DeclSort s
+
  SortConsRef(Sort(s), Constructor(c)):
-  	refers to Sort s 
-  	refers to Constructor c of sort s	
-  	
+    refers to Sort s
+    refers to Constructor c of sort s
+
   SortConsRef(Lex(Sort(s)), Constructor(c)):
-  	refers to Sort s 
-  	refers to Constructor c of sort s	 	
-  
+    refers to Sort s
+    refers to Constructor c of sort s
+
    SortConsRef(Cf(Sort(s)), Constructor(c)):
-  	refers to Sort s 
-  	refers to Constructor c of sort s	
-  	  	
+    refers to Sort s
+    refers to Constructor c of sort s
+
  Sort(s):
- 	refers to Sort s 
-  
- Label(Unquoted(l), _): 
+   refers to Sort s
+
+ Label(Unquoted(l), _):
   defines unique Label l
-  
+
  LabelRef(l):
   refers to Label l

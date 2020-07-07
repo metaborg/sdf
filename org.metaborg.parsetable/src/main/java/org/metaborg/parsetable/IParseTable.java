@@ -10,5 +10,5 @@ public interface IParseTable {
 
     int totalStates();
     
-
+    boolean isLayoutSensitive();
 }

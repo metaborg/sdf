@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.deepconflicts.ContextPosition;
 import org.metaborg.sdf2table.deepconflicts.ContextType;
@@ -17,9 +14,16 @@ import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.ConstructorAttribute;
 import org.metaborg.sdf2table.grammar.ContextFreeSymbol;
+import org.metaborg.sdf2table.grammar.IAttribute;
+import org.metaborg.sdf2table.grammar.IProduction;
+import org.metaborg.sdf2table.grammar.ISymbol;
+import org.metaborg.sdf2table.grammar.IterSepSymbol;
+import org.metaborg.sdf2table.grammar.IterSymbol;
 import org.metaborg.sdf2table.grammar.NormGrammar;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
+import org.metaborg.sdf2table.grammar.Sort;
+import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
@@ -77,13 +81,24 @@ public class Parenthesizer {
         IStrategoTerm parenthesizeStrategy = defineStrategy("parenthesize-" + name,
             createStrategoTermCall("innermost", createStrategoTermCall(rule_name, null)));
 
+
+        // get-term-sort(|t) = prim("SSL_EXT_get_sort_imploder_attachment", <id>) <+ !"unknown"
+        IStrategoTerm getTermSort = tf.parseFromString("SDefT(\n" + "          \"get-term-sort\"\n" + "        , []\n"
+            + "        , [DefaultVarDec(\"t\")]\n" + "        , LChoice(\n"
+            + "            Prim(\"\\\"SSL_EXT_get_sort_imploder_attachment\\\"\", [RootApp(Id())])\n"
+            + "          , Build(NoAnnoList(Str(\"\\\"unknown\\\"\")))\n" + "          )\n" + "        )");
+
         // Rules
         List<IStrategoTerm> shallowConflictRuleList = Lists.newArrayList();
 
 
+        // processed list non-terminals
+        List<ISymbol> listNonTerminals = Lists.newArrayList();
+
         for(Production prod : grammar.getHigherPriorityProductions().keySet()) {
             String constructor = getConstructor(prod, grammar);
-            if(constructor != null) {
+
+            if(constructor != null && !Sort.isListNonTerminal(prod.leftHand())) {
                 SetMultimap<Integer, IProduction> conflicts = HashMultimap.create();
                 for(Priority prio : grammar.getHigherPriorityProductions().get(prod)) {
                     for(Integer arg : grammar.priorities().get(prio)) {
@@ -98,7 +113,7 @@ public class Parenthesizer {
                             conflicts.put(arg, prio.lower());
                         }
                     }
-                    
+
                 }
                 for(Integer arg : conflicts.keySet()) {
                     // create stratego rule
@@ -124,6 +139,98 @@ public class Parenthesizer {
                         tf.makeString(name + "Parenthesize"), ruleBody);
                     shallowConflictRuleList.add(ruleDef);
                 }
+            } else {
+                // indexed priorities without constructor
+                // A+ > A.Foo, i.e., {A+.Snoc A+.Ins} A.Foo
+                // FIXME consider also general terms and not only lists
+                if(Symbol.isListNonTerminal(prod.leftHand()) && !listNonTerminals.contains(prod.leftHand())) {
+                    listNonTerminals.add(prod.leftHand());
+
+                    ISymbol listSymbol = prod.leftHand();
+                    ISymbol listElement = getListElementSymbol(listSymbol);
+
+                    if(listElement == null) {
+                        continue;
+                    }
+
+                    /*  @formatter:off         
+                        LangParenthesize :
+                            l* -> l'*
+                            where
+                              s := <get-term-sort(|l*)>;
+                              <?LHS-SORT> s;
+                              l'* := <map(parenthesize-elem-LHS-SORT <+ id)> l*;
+                              <not(?l*)> l'*           
+                    @formatter:on */
+
+
+                    IStrategoTerm inputTerm = tf.makeAppl(tf.makeConstructor("Var", 1),
+                        tf.makeAppl(tf.makeConstructor("ListVar", 1), tf.makeString("l*")));
+                    IStrategoTerm outputTerm = tf.makeAppl(tf.makeConstructor("Var", 1),
+                        tf.makeAppl(tf.makeConstructor("ListVar", 1), tf.makeString("l'*")));
+
+
+                    IStrategoTerm assign = tf.parseFromString(
+                        "Assign(\n" + "                          Var(\"s\")\n" + "                        , RootApp(\n"
+                            + "                            CallT(SVar(\"get-term-sort\"), [], [Var(ListVar(\"l*\"))])\n"
+                            + "                          )\n" + "                        )");
+
+                    IStrategoTerm mapOverSymbols = tf.parseFromString("Seq(\n" + "                            Assign(\n"
+                        + "                              Var(ListVar(\"l'*\"))\n"
+                        + "                            , App(\n" + "                                Call(\n"
+                        + "                                  SVar(\"map\")\n"
+                        + "                                , [LChoice(CallNoArgs(SVar(\"parenthesize-elem-"
+                        + listElement.name() + "\")), Id())]\n" + "                                )\n"
+                        + "                              , Var(ListVar(\"l*\"))\n" + "                              )\n"
+                        + "                            )\n" + "                          , BA(\n"
+                        + "                              Not(Match(Var(ListVar(\"l*\"))))\n"
+                        + "                            , Var(ListVar(\"l'*\"))\n" + "                            )\n"
+                        + "                          )");
+
+                    IStrategoTerm sortName = tf.makeString(listElement.name());
+
+                    IStrategoTerm matchListNonTerminal = tf.makeAppl(tf.makeConstructor("BA", 2),
+                        tf.makeAppl(tf.makeConstructor("Match", 1),
+                            tf.makeAppl(tf.makeConstructor("NoAnnoList", 1),
+                                tf.makeAppl(tf.makeConstructor("Str", 1), sortName))),
+                        tf.makeAppl(tf.makeConstructor("Var", 1), tf.makeString("s")));
+
+
+                    IStrategoTerm condition = tf.makeAppl(tf.makeConstructor("Seq", 2), assign,
+                        tf.makeAppl(tf.makeConstructor("Seq", 2), matchListNonTerminal, mapOverSymbols));
+
+
+                    IStrategoTerm ruleBody =
+                        tf.makeAppl(tf.makeConstructor("Rule", 3), inputTerm, outputTerm, condition);
+                    IStrategoTerm ruleDef = tf.makeAppl(tf.makeConstructor("RDefNoArgs", 2),
+                        tf.makeString(name + "Parenthesize"), ruleBody);
+                    shallowConflictRuleList.add(ruleDef);
+
+                    for(Priority prio : grammar.getHigherPriorityProductions().get(prod)) {
+                        if(getConstructor(prio.lower(), grammar) != null) {
+                            // parenthesize-elem-LHS-SORT:
+                            // t@constructor(_ , _) -> Parenthetical(t)
+
+                            IStrategoTerm inputTermParenthesizeElem = tf.makeAppl(tf.makeConstructor("As", 2),
+                                tf.makeAppl(tf.makeConstructor("Var", 1), tf.makeString("t")),
+                                tf.makeAppl(tf.makeConstructor("NoAnnoList", 1),
+                                    createStrategoTermOp(getConstructor(prio.lower(), grammar), prio.lower()))
+
+                            );
+
+                            IStrategoTerm outputTermParenthesizeElement =
+                                tf.parseFromString("NoAnnoList(Op(\"Parenthetical\", [Var(\"t\")]))");
+
+                            IStrategoTerm ruleBodyParenthesizeElement = tf.makeAppl(tf.makeConstructor("RuleNoCond", 2),
+                                inputTermParenthesizeElem, outputTermParenthesizeElement);
+
+
+                            IStrategoTerm ruleDefParenthesizeElement = tf.makeAppl(tf.makeConstructor("RDefNoArgs", 2),
+                                tf.makeString("parenthesize-elem-" + listElement.name()), ruleBodyParenthesizeElement);
+                            shallowConflictRuleList.add(ruleDefParenthesizeElement);
+                        }
+                    }
+                }
             }
         }
 
@@ -140,12 +247,14 @@ public class Parenthesizer {
                         for(Context ctx : ((ContextualSymbol) s).getContexts()) {
                             if((ctx.getType() == ContextType.DEEP || ctx.getType() == ContextType.DANGLING)
                                 && ctx.getPosition() == ContextPosition.LEFTMOST
-                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
+                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()),
+                                    grammar) != null) {
                                 leftConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));
                             }
                             if((ctx.getType() == ContextType.DEEP || ctx.getType() == ContextType.DANGLING)
                                 && ctx.getPosition() == ContextPosition.RIGHTMOST
-                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()), grammar) != null) {
+                                && getConstructor(table.productionLabels().inverse().get(ctx.getContext()),
+                                    grammar) != null) {
                                 rightConflicts.put(i, table.productionLabels().inverse().get(ctx.getContext()));
                             }
                         }
@@ -160,21 +269,17 @@ public class Parenthesizer {
                         tf.makeAppl(tf.makeConstructor("NoAnnoList", 1), createStrategoTermOpResult(constructor,
                             prod.getOrigProduction(), normalizeArg(arg, prod.getOrigProduction())));
 
-                    IStrategoTerm condition =
-                        tf.makeAppl(
-                            tf.makeConstructor("Assign",
-                                2),
-                            tf.makeAppl(
-                                tf.makeConstructor("Var",
-                                    1),
-                                tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction()) + "'")),
-                            tf.makeAppl(tf.makeConstructor("App", 2), tf.makeAppl(tf.makeConstructor("Choice", 2),
+                    IStrategoTerm condition = tf.makeAppl(tf.makeConstructor("Assign", 2),
+                        tf.makeAppl(tf.makeConstructor("Var", 1),
+                            tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction()) + "'")),
+                        tf.makeAppl(tf.makeConstructor("App", 2),
+                            tf.makeAppl(tf.makeConstructor("Choice", 2),
                                 tf.makeAppl(tf.makeConstructor("Call", 2), tf.parseFromString("SVar(\"LeftContext\")"),
                                     tf.makeList(
                                         createMatchesNoFail(Queues.newArrayDeque(leftConflicts.get(arg)), grammar))),
                                 tf.makeAppl(tf.makeConstructor("Fail", 0))),
-                                tf.makeAppl(tf.makeConstructor("Var", 1),
-                                    tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction())))));
+                            tf.makeAppl(tf.makeConstructor("Var", 1),
+                                tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction())))));
 
 
                     IStrategoTerm ruleBody =
@@ -198,8 +303,7 @@ public class Parenthesizer {
                         tf.makeAppl(tf.makeConstructor("Var", 1),
                             tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction()) + "'")),
                         tf.makeAppl(tf.makeConstructor("App", 2),
-                            tf.makeAppl(
-                                tf.makeConstructor("Choice", 2),
+                            tf.makeAppl(tf.makeConstructor("Choice", 2),
                                 tf.makeAppl(tf.makeConstructor("Call", 2), tf.parseFromString("SVar(\"RightContext\")"),
                                     tf.makeList(
                                         createMatchesNoFail(Queues.newArrayDeque(rightConflicts.get(arg)), grammar))),
@@ -218,8 +322,6 @@ public class Parenthesizer {
 
             }
         }
-
-
 
         if(shallowConflictRuleList.isEmpty()) {
             ioStrategy = defineStrategy("io-" + name + "-parenthesize",
@@ -240,8 +342,8 @@ public class Parenthesizer {
             tf.makeList(tf.makeAppl(tf.makeConstructor("Constructors", 1),
                 tf.makeList(defineSignature("Parenthetical", Lists.newArrayList("Unknown"), "Unknown")))));
 
-        IStrategoTerm strategies =
-            tf.makeAppl(tf.makeConstructor("Strategies", 1), tf.makeList(ioStrategy, parenthesizeStrategy));
+        IStrategoTerm strategies = tf.makeAppl(tf.makeConstructor("Strategies", 1),
+            tf.makeList(ioStrategy, parenthesizeStrategy, getTermSort));
         IStrategoTerm sections;
         if(shallowConflictRuleList.isEmpty()) {
             sections = tf.makeList(imports, strategies, signature);
@@ -266,6 +368,18 @@ public class Parenthesizer {
 
 
         return result;
+    }
+
+    private static ISymbol getListElementSymbol(ISymbol s) {
+        if(s instanceof ContextFreeSymbol) {
+            return getListElementSymbol(((ContextFreeSymbol) s).getSymbol());
+        } else if(s instanceof IterSepSymbol) {
+            return ((IterSepSymbol) s).getSymbol();
+        } else if(s instanceof IterSymbol) {
+            return ((IterSymbol) s).getSymbol();
+        }
+
+        return null;
     }
 
     private static IStrategoTerm importModule(String name) {
@@ -424,9 +538,8 @@ public class Parenthesizer {
             tf.makeAppl(tf.makeConstructor("Seq", 2),
                 tf.parseFromString("BA(Not(Match(NoAnnoList(Op(\"Parenthetical\", [Wld()])))), Var(\"t\"))"),
                 tf.makeAppl(tf.makeConstructor("Assign", 2), tf.parseFromString("Var(ListVar(\"args'*\"))"),
-                    tf.makeAppl(tf.makeConstructor("App", 2),
-                        tf.parseFromString(
-                            "Call(SVar(\"at-last\"), [LChoice(Call(SVar(\"RightContext\"), [CallNoArgs(SVar(\"s\"))]), Fail())])"),
+                    tf.makeAppl(tf.makeConstructor("App", 2), tf.parseFromString(
+                        "Call(SVar(\"at-last\"), [LChoice(Call(SVar(\"RightContext\"), [CallNoArgs(SVar(\"s\"))]), Fail())])"),
                         tf.parseFromString("Var(ListVar(\"args*\"))")))));
 
         checkContextRuleList.add(tf.makeAppl(tf.makeConstructor("RDef", 3), tf.makeString("RightContext"),
@@ -490,9 +603,8 @@ public class Parenthesizer {
             tf.parseFromString("BA(Not(Match(NoAnnoList(List([])))), Var(\"cons\"))"),
             tf.makeAppl(tf.makeConstructor("Seq", 2),
                 tf.parseFromString("BA(Not(Match(NoAnnoList(Op(\"Parenthetical\", [Wld()])))), Var(\"t\"))"),
-                tf.makeAppl(tf.makeConstructor("Seq", 2),
-                    tf.parseFromString(
-                        "Assign(Var(\"head\"), App(Match(NoAnnoList(ListTail([RootApp(LChoice(Call(SVar(\"LeftContext\"), [CallNoArgs(SVar(\"s\"))]), Fail()))],Var(\"hs\")))),Var(ListVar(\"args*\"))))"),
+                tf.makeAppl(tf.makeConstructor("Seq", 2), tf.parseFromString(
+                    "Assign(Var(\"head\"), App(Match(NoAnnoList(ListTail([RootApp(LChoice(Call(SVar(\"LeftContext\"), [CallNoArgs(SVar(\"s\"))]), Fail()))],Var(\"hs\")))),Var(ListVar(\"args*\"))))"),
                     tf.parseFromString(
                         "Assign(Var(ListVar(\"args'*\")), NoAnnoList(ListTail([Var(\"head\")], Var(\"hs\"))))"))));
 

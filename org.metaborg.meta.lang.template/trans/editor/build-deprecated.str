@@ -7,7 +7,7 @@ imports
   analysis/desugar
   editor/build-utils
   generation/deprecated/to-esv
-  generation/deprecated/to-ast-checker  
+  generation/deprecated/to-ast-checker
 
 rules
 

@@ -23,7 +23,7 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     // all files used in this grammar
     private final Set<File> filesRead;
-    
+
     // factory to create all symbols in the grammar
     private final GrammarFactory gf;
 
@@ -64,7 +64,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<Priority, Integer> transitivePriorityArgs;
     private final SetMultimap<Priority, Integer> nonTransitivePriorityArgs;
     private final SetMultimap<Production, Priority> higherPriorityProductions;
-    
+
     // non-assoc and non-nested priorities that should shown as warnings to the user
     private final SetMultimap<String, String> nonAssocPriorities;
     private final SetMultimap<String, String> nonNestedPriorities;
@@ -336,7 +336,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.productionsOnPriorities.clear();
         this.symbolProductionsMapping.clear();
         this.transitivePriorities.clear();
-        this.transitivePriorityArgs.clear();      
+        this.transitivePriorityArgs.clear();
+        this.filesRead.clear();
     }
 
 }

@@ -54,4 +54,3 @@ rules
       selected'     := <desugar-templates> selected;
       result   := <module-to-ds-sig> selected';
       filename := <get-src-gen(|project-path, "ds-signatures/ds", "-dssig.aterm")> mn
-   

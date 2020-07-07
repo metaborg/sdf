@@ -6,7 +6,7 @@ imports
   analysis/types
   runtime/nabl/-
   runtime/task/-
-  runtime/types/-  
+  runtime/types/-
   generation/gen-utils/to-str
   analysis/desugar
 
@@ -34,7 +34,7 @@ imports
   signatures/TemplateLang-sig
 
 rules
-  
+
   module-to-sig:
     Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, s'])
   with
@@ -43,68 +43,75 @@ rules
     sort* := <filter(sorts-section-to-sig)> s*;
     cons* := <filter(section-to-sig); flatten-list> s*;
     s'    := Signature([sort*, Constructors(cons*)])
- 
+
   sorts-section-to-sig:
     SDFSection(Sorts(s*)) -> Sorts(s'*)
     with
       s'* := <map(sort-to-sig)> s*
-      
+
   section-to-sig:
     SDFSection(LexicalSyntax(p*)) -> sig*
     where
         sig* := <filter(get-sort-from-prod)
-               ; nub 
+               ; nub
                ; map(lexsort-to-injection)
-               ; not(?[])> p* 
-  
+               ; not(?[])> p*
+
   get-sort-from-prod:
     <?SdfProduction(SortDef(sort), _, Attrs(a*)) + ?SdfProductionWithCons(SortCons(SortDef(sort), Constructor(_)), _, Attrs(a*))> -> sort
     where
       <not(fetch-elem(?Reject()))> a*
-  
+
   lexsort-to-injection:
     s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
-        
+
   section-to-sig:
     SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]
     where
       cc-sig*      := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-                      ; nub 
+                      ; nub
                       ; map(sort-to-placeholder-sig)> p*;
       cc-ins-sig* :=  < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-                      ; nub 
+                      ; nub
                       ; map(sort-to-placeholder-insertion-sig)> p*;
-      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>)) 
-                             + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _) 
-                             <+ ?TemplateProductionWithCons(SortCons(SortDef(<strip-annos>), _), SingleLineTemplate([]), _)) 
-                     ; nub 
-                     ; map(sort-to-opt-placeholder-sig)> p*    
+      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>))
+                             + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _)
+                             <+ ?TemplateProductionWithCons(SortCons(SortDef(<strip-annos>), _), SingleLineTemplate([]), _))
+                     ; nub
+                     ; map(sort-to-opt-placeholder-sig)> p*
     where
       sig*    := <filter(cfg-to-sig <+ template-to-sig)> p*
-    
+
   section-to-sig:
     SDFSection(Kernel(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]
     where
       cc-sig*     := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-                     ; nub 
+                     ; nub
                      ; map(sort-to-placeholder-sig)> p*;
       cc-ins-sig* := < collect(?SortDef(<strip-annos>) + ?Sort(<strip-annos>))
-                     ; nub 
+                     ; nub
                      ; map(sort-to-placeholder-insertion-sig)> p*;
-      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>)) + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _)) 
-                     ; nub 
+      cc-opt-sig* := < collect(?Opt(Sort(<strip-annos>)) + ?IterStarSep(Sort(<strip-annos>), _) + ?IterStar(Sort(<strip-annos>)) + ?SdfProductionWithCons(SortCons(SortDef(<strip-annos>), _), Rhs([]), _))
+                     ; nub
                      ; map(sort-to-opt-placeholder-sig)> p*
     where
-      sig* := <filter(cfg-to-sig)> p*   
- 
+      sig* := <filter(cfg-to-sig)> p*
+
   sort-to-sig:
-    DeclSort(s) -> SortNoArgs(s)
+    DeclSort(s)    -> SortNoArgs(s)
+    // TODO:
+  sort-to-sig:
+    DeclSortLex(s) -> SortNoArgs(s)
+  sort-to-sig:
+    DeclSortCf(s)  -> SortNoArgs(s)
+  sort-to-sig:
+    DeclSortVar(s) -> SortNoArgs(s)
 
   cfg-to-sig:
     SdfProductionWithCons(SortCons(SortDef(s),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-      
+
   cfg-to-sig:
     SdfProduction(SortDef(s), rhs, Attrs(a*)) -> OpDeclInj(t')
     where
@@ -112,7 +119,7 @@ rules
     with  
       rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
-    
+
   // kernel productions
    cfg-to-sig:
      SdfProduction(Lex(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
@@ -121,7 +128,7 @@ rules
      with 
       rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
-      
+
   cfg-to-sig:
      SdfProduction(Cf(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
@@ -129,27 +136,27 @@ rules
      with 
       rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
-      
+
   cfg-to-sig:
     SdfProductionWithCons(SortCons(Cf(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-      
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   cfg-to-sig:
     SdfProductionWithCons(SortCons(Lex(SortDef(s)),c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a* 
-   
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   section-to-sig:
     TemplateSection(t*) -> sig*
     with
       sig* := <filter(template-to-sig); not(?[])> t*
-          
+
   template-to-sig:
     TemplateProductionWithCons(SortCons(SortDef(s), c), _, Attrs(a*)) -> <cons-to-decl> c
     where
-      <not(fetch-elem(?Reject() + ?Bracket()))> a*  
-      
+      <not(fetch-elem(?Reject() + ?Bracket()))> a*
+
   template-to-sig:
     TemplateProduction(SortDef(s), t, Attrs(a*)) -> OpDeclInj(t')
     where
@@ -157,23 +164,23 @@ rules
     with  
       temp-type := <get-sdf3-type> t;
       t'        := <try(check-fun-type)> FunType(temp-type, SortType(<strip-annos> s))
-      
+
   cons-to-decl:
     Constructor(c) -> OpDecl(c, t)
     with
       t := <get-sdf3-type; try(check-fun-type)> c
      
   check-fun-type: FunType([], t) -> t
-  
+
   sort-to-placeholder-sig:
         sort -> OpDecl($[[sort]-Plhdr], ConstType(SortNoArgs($[[sort]])))
-  
+
   sort-to-opt-placeholder-sig:
         sort -> OpDecl($[[sort]-Opt-Plhdr], ConstType(SortNoArgs($[[sort]])))
-  
+
   sort-to-placeholder-insertion-sig:
         sort -> OpDecl(
               $[[sort]-Plhdr]
             , FunType([ConstType(SortNoArgs("COMPLETION-INSERTION"))], ConstType(SortNoArgs($[[sort]])))
-            )    
-        
+            )
+

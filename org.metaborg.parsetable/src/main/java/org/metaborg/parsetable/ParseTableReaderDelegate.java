@@ -52,11 +52,17 @@ class ParseTableReaderDelegate {
         IStrategoList statesTermList = toListAt(pt.getSubterm(3), 0);
 
         IProduction[] productions = readProductions(productionsTermList);
+        
         IState[] states = readStates(statesTermList, productions);
 
         markRejectableStates(states);
+       
+        return new ParseTable(states, startStateId, hasLayoutConstraint(productionsTermList));
+    }
 
-        return new ParseTable(states, startStateId);
+    private boolean hasLayoutConstraint(IStrategoList productionsTermList) {
+        // FIXME is there a better way to check for layout constraints in the parse table?
+        return productionsTermList.toString().contains("term(layout(");
     }
 
     private IProduction[] readProductions(IStrategoList productionsTermList) throws ParseTableReadException {

@@ -1,8 +1,12 @@
 module sdf3extstatix
 
 imports
-  
+
   libstratego-lib
   editor
-  generate-injections
-  generate-signatures
+
+imports
+  generate-stratego
+  generate-statix
+  common
+  utils

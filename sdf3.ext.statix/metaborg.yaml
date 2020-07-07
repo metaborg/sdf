@@ -26,8 +26,6 @@ generates:
   directory: src-gen
 - language: StatixLang
   directory: src-gen/statix
-debug:
-  typesmart: false
 language:
   sdf:
     enabled: false
