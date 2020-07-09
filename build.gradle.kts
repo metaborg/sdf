@@ -14,5 +14,7 @@ subprojects {
 }
 
 allprojects {
-  version = "2.6.0-SNAPSHOT" // Override version from Git, as Spoofax Core uses a different versioning scheme.
+  // Override version from gitonium, as Spoofax Core uses a different versioning scheme.
+  // Needs to be kept in sync with metaborgVersion of Spoofax 3 and theSpoofax 2 Gradle plugin.
+  version = "2.5.10"
 }
