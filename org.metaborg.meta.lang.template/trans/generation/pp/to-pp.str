@@ -820,10 +820,10 @@ rules
       <collect-om(?Sort(s))> symbol;
       <?[]> a*
     with
-       if <fetch-elem(?Anchor())> option* then
-         ppo := "pp-one-V"
-       else
+       if <fetch-elem(?Floating())> option* then
          ppo := "pp-one-Z"
+       else
+         ppo := "pp-one-V"
        end
        
   placeholder-to-pp-one(|lang):
@@ -838,10 +838,10 @@ rules
       <not(?[])> a*;
       <collect-om(?Sort(s))> symbol
     with
-       if <fetch-elem(?Anchor())> option* then
-         ppo := "pp-one-V"
-       else
+       if <fetch-elem(?Floating())> option* then
          ppo := "pp-one-Z"
+       else
+         ppo := "pp-one-V"
        end
     
   //Label(l), Sort(x), <Star() + Plus()>
@@ -853,9 +853,9 @@ rules
       <?[]> a*
     with
         <fetch-elem(?Wrap())> option* < 
-          <fetch-elem(?Anchor())> option* < 
-            ppl := SVar("pp-HV-list") // wrap and anchor
-              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+          <fetch-elem(?Floating())> option* < 
+            ppl := SVar("pp-HZ-list") // wrap and anchor
+              + ppl := SVar("pp-HV-list") // wrap and !anchor
         + ppl := SVar("pp-H-list")  // !wrap and !anchor
     with 
         ppx := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));
@@ -872,9 +872,9 @@ rules
       <not(?[])> a*
     with
         <fetch-elem(?Wrap())> option* < 
-          <fetch-elem(?Anchor())> option* < 
-            ppl := SVar("pp-HV-list") // wrap and anchor
-              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+          <fetch-elem(?Floating())> option* < 
+            ppl := SVar("pp-HZ-list") // wrap and anchor
+              + ppl := SVar("pp-HV-list") // wrap and !anchor
         + ppl := SVar("pp-H-list")  // !wrap and !anchor
     with 
         ppx := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));
@@ -889,9 +889,9 @@ rules
         <?[]> a*
     with 
         <fetch-elem(?Wrap())> option* < 
-          <fetch-elem(?Anchor())> option* < 
-            ppl := SVar("pp-HV-list") // wrap and anchor
-              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+          <fetch-elem(?Floating())> option* < 
+            ppl := SVar("pp-HZ-list") // wrap and anchor
+              + ppl := SVar("pp-HV-list") // wrap and !anchor
         + ppl := SVar("pp-H-list")  // !wrap and !anchor
     with 
         ppx       := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));
@@ -928,9 +928,9 @@ rules
         <not(?[])> a*
     with 
         <fetch-elem(?Wrap())> option* < 
-          <fetch-elem(?Anchor())> option* < 
-            ppl := SVar("pp-HV-list") // wrap and anchor
-              + ppl := SVar("pp-HZ-list") // wrap and !anchor
+          <fetch-elem(?Floating())> option* < 
+            ppl := SVar("pp-HZ-list") // wrap and anchor
+              + ppl := SVar("pp-HV-list") // wrap and !anchor
         + ppl := SVar("pp-H-list")  // !wrap and !anchor
     with 
         ppx       := CallNoArgs(SVar($[prettyprint-[lang]-[x]]));

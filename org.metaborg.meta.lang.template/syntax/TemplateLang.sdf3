@@ -113,6 +113,7 @@ PlaceholderOptions.Options = <;<{PlaceholderOption ", "}+>>
 PlaceholderOption.Hide = <hide>
 PlaceholderOption.Wrap = <wrap>
 PlaceholderOption.Anchor = <anchor>
+PlaceholderOption.Floating = <float>
 PlaceholderOption.CompCursor = <cursor>
 //mark as deprecated
 PlaceholderOption.Separator = <separator=<StrCon>> {deprecated("Use list with separator symbol instead: {S \"separator\"}*")}
