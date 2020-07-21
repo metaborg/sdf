@@ -38,9 +38,11 @@ context-free syntax
   Constraint.Ge = <<Constraint> \>= <Constraint>> 
   Constraint.And = <<Constraint> && <Constraint>> 
   Constraint.Or = <<Constraint> || <Constraint>> 
+  Constraint = <(<Constraint>)> {bracket}
   
   ShortConstraint.And              = <<ShortConstraint> && <ShortConstraint>> {left}
   ShortConstraint.Or               = <<ShortConstraint> || <ShortConstraint>> {left}
+  ShortConstraint = <(<ShortConstraint>)> {bracket}
   
   ShortConstraint.Offside         = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
   ShortConstraint.Indent          = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
