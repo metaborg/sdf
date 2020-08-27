@@ -738,13 +738,13 @@ rules
             )
           , Seq(
               CallNoArgs(SVar("flatten-list")),
-          CallT(SVar("pp-indent"), [], [NoAnnoList(Str(is))])))
+          CallT(SVar("pp-indent"), [], [NoAnnoList(Str('is))])))
         , NoAnnoList(List(elem'*))
       )
     where
       not(!indent => "");
       not(!elem* => []);
-      is     := <string-length; int-to-string; double-quote> indent;
+      'is     := <string-length; int-to-string; double-quote> indent;
       elem'* := <template-line-elements-to-stratego(|lang)> elem*
  
   template-line-to-stratego(|lang): //template line starting with empty layout
