@@ -17,7 +17,7 @@ lexical restrictions
 context-free syntax
    
   ConstraintTree.Tree = NatCon 
-  Constraint.Num = <num(<NatCon>)> 
+  Constraint.Num = NatCon 
   Constraint = LayoutVar 
   Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> 
   ConstraintToken.First = <<ConstraintTree>.first> 
