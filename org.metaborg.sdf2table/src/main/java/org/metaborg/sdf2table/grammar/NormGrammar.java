@@ -311,8 +311,9 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.literalProductionsMapping.clear();
         this.longestMatchProdsBack.clear();
         this.longestMatchProdsFront.clear();
-        this.nonAssocProductions.clear();
-        this.nonNestedProductions.clear();
+        // TODO: these maps are used in JSGLR1 to generate warnings for non-assoc and non-nested.
+        // this.nonAssocProductions.clear();
+        // this.nonNestedProductions.clear();
         this.nonTransitivePriorities.clear();
         this.nonTransitivePriorityArgs.clear();
         this.productionsOnPriorities.clear();
