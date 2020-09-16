@@ -25,6 +25,12 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
     public static String intToString(int character) {
         if(character == EOF_INT)
             return "EOF";
+        else if(isNewLine(character))
+            return "\\n";
+        else if(isCarriageReturn(character))
+            return "\\r";
+        else if(isTab(character))
+            return "\\t";
         else if(Character.isSupplementaryCodePoint(character))
             return new String(Character.toChars(character));
         else
@@ -33,6 +39,10 @@ public class CharacterClassFactory implements ICharacterClassFactory, Serializab
 
     public static boolean isNewLine(int character) {
         return character == (int) '\n';
+    }
+
+    public static boolean isCarriageReturn(int character) {
+        return character == (int) '\r';
     }
 
     public static boolean isTab(int character) {
