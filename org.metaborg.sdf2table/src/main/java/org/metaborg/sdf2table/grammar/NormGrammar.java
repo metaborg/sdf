@@ -9,13 +9,7 @@ import java.util.Set;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 public class NormGrammar implements INormGrammar, Serializable {
 
@@ -84,12 +78,6 @@ public class NormGrammar implements INormGrammar, Serializable {
     // expression grammars collapsed
     private final Set<Set<IProduction>> combinedExpressionGrammars;
 
-    // indirectly recursive symbols
-    private final SetMultimap<Symbol, Symbol> indirectlyRecursive;
-
-    // non-recursive symbols
-    private final SetMultimap<Symbol, Symbol> nonRecursive;
-    
     // left and right derivable symbols from a symbol
     private final SetMultimap<ISymbol, ISymbol> leftDerivable;
     private final SetMultimap<ISymbol, ISymbol> rightDerivable;
@@ -127,8 +115,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.literalProductionsMapping = HashMultimap.create();
         this.expressionGrammars = HashMultimap.create();
         this.combinedExpressionGrammars = Sets.newHashSet();
-        this.indirectlyRecursive = HashMultimap.create();
-        this.nonRecursive = HashMultimap.create();
         this.leftDerivable = HashMultimap.create();
         this.rightDerivable = HashMultimap.create();
     }
@@ -289,14 +275,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         return expressionGrammars;
     }
 
-    public SetMultimap<Symbol, Symbol> getIndirectlyRecursive() {
-        return indirectlyRecursive;
-    }
-
-    public SetMultimap<Symbol, Symbol> getNonRecursive() {
-        return nonRecursive;
-    }
-
     public Set<Set<IProduction>> getCombinedExpressionGrammars() {
         return combinedExpressionGrammars;
     }
@@ -328,7 +306,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.contextualSymbols.clear();
         this.derivedContextualProds.clear();
         this.expressionGrammars.clear();
-        this.indirectlyRecursive.clear();
         this.leftRecursiveSymbolsMapping.clear();
         this.rightRecursiveSymbolsMapping.clear();
         this.literalProductionsMapping.clear();
@@ -336,7 +313,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.longestMatchProdsFront.clear();
         this.nonAssocPriorities.clear();
         this.nonNestedPriorities.clear();
-        this.nonRecursive.clear();
         this.nonTransitivePriorities.clear();
         this.nonTransitivePriorityArgs.clear();
         this.productionsOnPriorities.clear();
