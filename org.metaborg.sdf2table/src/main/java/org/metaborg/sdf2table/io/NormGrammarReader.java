@@ -838,9 +838,8 @@ public class NormGrammarReader {
 
         } else if(TermUtils.isAppl(chain) && ((IStrategoAppl) chain).getName().equals("Assoc")) {
             IStrategoTerm first_group = chain.getSubterm(0);
-            IStrategoTerm assoc = chain.getSubterm(1);
+            String assoc = chain.getSubterm(1).toString();
             IStrategoTerm second_group = chain.getSubterm(2);
-
 
             Production higher = processGroup(first_group);
             Production lower = processGroup(second_group);
@@ -850,11 +849,11 @@ public class NormGrammarReader {
             grammar.getNonTransitivePriorities().add(p);
 
             // actual argument values will be processed later when defining recursion
-            if(assoc.toString().contains("Left")) {
+            if(assoc.contains("Left")) {
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
-            } else if(assoc.toString().contains("Right")) {
+            } else if(assoc.contains("Right")) {
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
-            } else if(assoc.toString().contains("NonAssoc")) {
+            } else if(assoc.contains("NonAssoc")) {
                 // consider non-assoc as left and add warning
                 // grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
@@ -867,7 +866,7 @@ public class NormGrammarReader {
 
                 grammar.getNonAssocPriorities().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
-            } else if(assoc.toString().contains("NonNested")) {
+            } else if(assoc.contains("NonNested")) {
                 // add warning for non-nested
                 String higherSort = Symbol.getSort(p.higher().leftHand());
                 String higherConstructor = grammar.getConstructors().get(p.higher()).getConstructor();
