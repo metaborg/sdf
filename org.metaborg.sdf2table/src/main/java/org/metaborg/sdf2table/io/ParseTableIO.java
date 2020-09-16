@@ -349,28 +349,17 @@ public class ParseTableIO implements IParseTableGenerator {
         return ccFactory;
     }
 
-    @Override public SetMultimap<String, String> getNonAssocPriorities() {
-        SetMultimap<String, String> result = null;
+    @Override public SetMultimap<String, String> getNonAssocProductions() {
         if(tableCreated) {
-            result = pt.normalizedGrammar().getNonAssocPriorities();
+            return pt.normalizedGrammar().getNonAssocProductions();
         }
-
-        if(result != null)
-            return result;
-
         return HashMultimap.create();
     }
 
-    @Override public SetMultimap<String, String> getNonNestedPriorities() {
-        SetMultimap<String, String> result = null;
-
+    @Override public SetMultimap<String, String> getNonNestedProductions() {
         if(tableCreated) {
-            result = pt.normalizedGrammar().getNonNestedPriorities();
+            return pt.normalizedGrammar().getNonNestedProductions();
         }
-
-        if(result != null)
-            return result;
-
         return HashMultimap.create();
     }
 

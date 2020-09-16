@@ -60,8 +60,8 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<Production, Priority> higherPriorityProductions;
 
     // non-assoc and non-nested priorities that should shown as warnings to the user
-    private final SetMultimap<String, String> nonAssocPriorities;
-    private final SetMultimap<String, String> nonNestedPriorities;
+    private final SetMultimap<String, String> nonAssocProductions;
+    private final SetMultimap<String, String> nonNestedProductions;
 
     private final HashMap<String, Symbol> cacheSymbolsRead; // caching symbols read
     private final HashMap<String, Production> cacheProductionsRead; // caching productions read
@@ -106,8 +106,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.transitivePriorityArgs = HashMultimap.create();
         this.nonTransitivePriorityArgs = HashMultimap.create();
         this.higherPriorityProductions = HashMultimap.create();
-        this.nonAssocPriorities = HashMultimap.create();
-        this.nonNestedPriorities = HashMultimap.create();
+        this.nonAssocProductions = HashMultimap.create();
+        this.nonNestedProductions = HashMultimap.create();
         this.symbolProductionsMapping = HashMultimap.create();
         this.cacheSymbolsRead = Maps.newHashMap();
         this.cacheProductionsRead = Maps.newHashMap();
@@ -279,8 +279,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         return combinedExpressionGrammars;
     }
 
-    public SetMultimap<String, String> getNonAssocPriorities() {
-        return nonAssocPriorities;
+    public SetMultimap<String, String> getNonAssocProductions() {
+        return nonAssocProductions;
     }
 
     public void setInitialProduction(Production prod) {
@@ -291,8 +291,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         return indexedPriorities;
     }
 
-    public SetMultimap<String, String> getNonNestedPriorities() {
-        return nonNestedPriorities;
+    public SetMultimap<String, String> getNonNestedProductions() {
+        return nonNestedProductions;
     }
 
     public GrammarFactory getGrammarFactory() {
@@ -311,8 +311,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.literalProductionsMapping.clear();
         this.longestMatchProdsBack.clear();
         this.longestMatchProdsFront.clear();
-        this.nonAssocPriorities.clear();
-        this.nonNestedPriorities.clear();
+        this.nonAssocProductions.clear();
+        this.nonNestedProductions.clear();
         this.nonTransitivePriorities.clear();
         this.nonTransitivePriorityArgs.clear();
         this.productionsOnPriorities.clear();

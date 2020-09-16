@@ -10,8 +10,9 @@ public interface IParseTableGenerator {
     IParseTable getParseTable();
 
     IStrategoTerm getStateAterm(IState s);
-    
-    SetMultimap<String, String> getNonAssocPriorities();
 
-    SetMultimap<String, String> getNonNestedPriorities();
+    SetMultimap<String, String> getNonAssocProductions();
+
+    SetMultimap<String, String> getNonNestedProductions();
+
 }

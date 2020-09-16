@@ -63,7 +63,7 @@ public class NormGrammarReader {
 
     public void addModuleAst(IStrategoTerm module) {
         if(module instanceof IStrategoAppl) {
-            IStrategoAppl app = (IStrategoAppl)module;
+            IStrategoAppl app = (IStrategoAppl) module;
             if(app.getName().equals("Module")) {
                 String modName = moduleName(app);
                 moduleAsts.put(modName, module);
@@ -864,7 +864,7 @@ public class NormGrammarReader {
                 String lowerSort = Symbol.getSort(p.lower().leftHand());
                 String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
 
-                grammar.getNonAssocPriorities().put(higherSort + "." + higherConstructor,
+                grammar.getNonAssocProductions().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
             } else if(assoc.contains("NonNested")) {
                 // add warning for non-nested
@@ -874,7 +874,7 @@ public class NormGrammarReader {
                 String lowerSort = Symbol.getSort(p.lower().leftHand());
                 String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
 
-                grammar.getNonNestedPriorities().put(higherSort + "." + higherConstructor,
+                grammar.getNonNestedProductions().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
             }
 
