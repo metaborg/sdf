@@ -1,10 +1,11 @@
 package org.metaborg.sdf2table.parsetable;
 
+import static org.metaborg.sdf2table.grammar.AssociativityInfo.getAllProductionLabels;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.productions.ProductionType;
@@ -202,16 +203,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
                 .flatMap(o -> getAllProductionLabels(labels, o)).collect(ImmutableSet.toImmutableSet());
         } else
             nonAssocWith = nonNestedWith = null;
-    }
-
-    // If the production `p` is a regular production, this means that `labels` contains a label for it.
-    // If the production `p` is a contextual production, `labels` only contains contextual productions derived from `p`.
-    // In this case, return all labels for all contextual productions that have `p` as original production.
-    public static Stream<Integer> getAllProductionLabels(BiMap<IProduction, Integer> labels, Production p) {
-        return labels.containsKey(p) ? Stream.of(labels.get(p))
-            : labels.keySet().stream().filter(
-                cp -> cp instanceof ContextualProduction && ((ContextualProduction) cp).getOrigProduction().equals(p))
-                .map(labels::get);
     }
 
     private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<ISymbol> rightHand) {

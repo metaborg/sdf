@@ -1,11 +1,11 @@
 package org.metaborg.sdf2table.grammar;
 
-import static org.metaborg.sdf2table.parsetable.ParseTableProduction.getAllProductionLabels;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
@@ -43,4 +43,15 @@ public class AssociativityInfo implements Serializable {
             tf.makeAppl(tf.makeConstructor("non-assoc", 1), tf.makeList(nonAssocLabels)),
             tf.makeAppl(tf.makeConstructor("non-nested", 1), tf.makeList(nonNestedLabels)));
     }
+
+    // If the production `p` is a regular production, this means that `labels` contains a label for it.
+    // If the production `p` is a contextual production, `labels` only contains contextual productions derived from `p`.
+    // In this case, return all labels for all contextual productions that have `p` as original production.
+    public static Stream<Integer> getAllProductionLabels(BiMap<IProduction, Integer> labels, Production p) {
+        return labels.containsKey(p) ? Stream.of(labels.get(p))
+            : labels.keySet().stream().filter(
+                cp -> cp instanceof ContextualProduction && ((ContextualProduction) cp).getOrigProduction().equals(p))
+                .map(labels::get);
+    }
+
 }
