@@ -860,27 +860,9 @@ public class NormGrammarReader {
                 // grammar.getNonTransitivePriorityArgs().put(p, Integer.MIN_VALUE);
                 grammar.getNonTransitivePriorityArgs().put(p, Integer.MAX_VALUE);
 
-                String higherSort = Symbol.getSort(p.higher().leftHand());
-                String higherConstructor = grammar.getConstructors().get(p.higher()).getConstructor();
-
-                String lowerSort = Symbol.getSort(p.lower().leftHand());
-                String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
-
-                grammar.getNonAssocProductions().put(higherSort + "." + higherConstructor,
-                    lowerSort + "." + lowerConstructor);
-
                 p.higher().putNonAssociativity(p.lower());
             } else if(assoc.contains("NonNested")) {
                 // add warning for non-nested
-                String higherSort = Symbol.getSort(p.higher().leftHand());
-                String higherConstructor = grammar.getConstructors().get(p.higher()).getConstructor();
-
-                String lowerSort = Symbol.getSort(p.lower().leftHand());
-                String lowerConstructor = grammar.getConstructors().get(p.lower()).getConstructor();
-
-                grammar.getNonNestedProductions().put(higherSort + "." + higherConstructor,
-                    lowerSort + "." + lowerConstructor);
-
                 p.higher().putNonNested(p.lower());
             }
 
