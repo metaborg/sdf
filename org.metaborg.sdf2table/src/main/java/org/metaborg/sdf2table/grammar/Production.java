@@ -12,6 +12,7 @@ import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 
@@ -23,6 +24,7 @@ public class Production implements IProduction, Serializable {
     private final List<Symbol> rhs;
     private final int arity;
 
+    private AssociativityInfo associativityInfo;
     private int leftRecursivePos = -1;
     private int rightRecursivePos = -1;
 
@@ -63,13 +65,29 @@ public class Production implements IProduction, Serializable {
     public int leftRecursivePosition() {
         return leftRecursivePos;
     }
-    
+
     protected void setRightRecursivePosition(int pos) {
         rightRecursivePos = pos;
     }
-    
+
     protected void setLeftRecursivePosition(int pos) {
         leftRecursivePos = pos;
+    }
+
+    public AssociativityInfo getAssociativityInfo() {
+        return associativityInfo;
+    }
+
+    public void putNonAssociativity(Production other) {
+        if(associativityInfo == null)
+            associativityInfo = new AssociativityInfo();
+        associativityInfo.getNonAssocWith().add(other);
+    }
+
+    public void putNonNested(Production other) {
+        if(associativityInfo == null)
+            associativityInfo = new AssociativityInfo();
+        associativityInfo.getNonNestedWith().add(other);
     }
 
     @Override public String toString() {
@@ -85,7 +103,8 @@ public class Production implements IProduction, Serializable {
         return prod;
     }
 
-    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
+    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs,
+        BiMap<IProduction, Integer> productionLabels) {
         ITermFactory tf = ParseTableIO.getTermfactory();
         IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
         for(ISymbol s : rhs) {
@@ -93,17 +112,19 @@ public class Production implements IProduction, Serializable {
         }
 
         final Set<IAttribute> attributes = prod_attrs.get(this);
-        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size());
+        IStrategoList.Builder attrs_terms = tf.arrayListBuilder(attributes.size() + 1);
         for(IAttribute a : attributes) {
             attrs_terms.add(a.toAterm(tf));
         }
+        if(associativityInfo != null)
+            attrs_terms.add(associativityInfo.toAterm(tf, productionLabels));
 
         if(attrs_terms.isEmpty()) {
-            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
+            return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
                 tf.makeAppl(tf.makeConstructor("no-attrs", 0)));
         }
 
-        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), ((Symbol) lhs).toAterm(tf),
+        return tf.makeAppl(tf.makeConstructor("prod", 3), tf.makeList(rhs_terms), lhs.toAterm(tf),
             tf.makeAppl(tf.makeConstructor("attrs", 1), tf.makeList(attrs_terms)));
     }
 

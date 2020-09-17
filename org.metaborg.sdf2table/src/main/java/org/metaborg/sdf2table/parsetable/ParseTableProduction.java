@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.productions.ProductionType;
@@ -14,6 +15,8 @@ import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class ParseTableProduction implements org.metaborg.parsetable.productions.IProduction, Serializable {
@@ -41,11 +44,15 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final boolean isIgnoreLayoutConstraint;
     private final boolean isLongestMatch;
 
+    private final Set<Integer> nonAssocWith;
+    private final Set<Integer> nonNestedWith;
+
     private final long cachedContextBitmapL;
     private final long cachedContextBitmapR;
 
     public ParseTableProduction(int productionNumber, IProduction p, Set<IAttribute> attrs,
-        Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping) {
+        Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping,
+        BiMap<IProduction, Integer> labels) {
         this.p = p;
 
         if(leftmostContextsMapping.containsKey(productionNumber)) {
@@ -186,6 +193,25 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         }
         isLongestMatch = longestMatch;
         isIgnoreLayoutConstraint = ignoreLayout;
+
+        AssociativityInfo associativityInfo = ((Production) p).getAssociativityInfo();
+        if(associativityInfo != null) {
+            nonAssocWith = associativityInfo.getNonAssocWith().stream().flatMap(o -> getAllProductionLabels(labels, o))
+                .collect(ImmutableSet.toImmutableSet());
+            nonNestedWith = associativityInfo.getNonNestedWith().stream()
+                .flatMap(o -> getAllProductionLabels(labels, o)).collect(ImmutableSet.toImmutableSet());
+        } else
+            nonAssocWith = nonNestedWith = null;
+    }
+
+    // If the production `p` is a regular production, this means that `labels` contains a label for it.
+    // If the production `p` is a contextual production, `labels` only contains contextual productions derived from `p`.
+    // In this case, return all labels for all contextual productions that have `p` as original production.
+    public static Stream<Integer> getAllProductionLabels(BiMap<IProduction, Integer> labels, Production p) {
+        return labels.containsKey(p) ? Stream.of(labels.get(p))
+            : labels.keySet().stream().filter(
+                cp -> cp instanceof ContextualProduction && ((ContextualProduction) cp).getOrigProduction().equals(p))
+                .map(labels::get);
     }
 
     private LayoutConstraintAttribute normalizeConstraint(LayoutConstraintAttribute attr, List<ISymbol> rightHand) {
@@ -425,6 +451,14 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
     @Override public boolean isBracket() {
         return isBracket;
+    }
+
+    @Override public boolean isNonAssocWith(org.metaborg.parsetable.productions.IProduction other) {
+        return nonAssocWith != null && nonAssocWith.contains(other.id());
+    }
+
+    @Override public boolean isNonNestedWith(org.metaborg.parsetable.productions.IProduction other) {
+        return nonNestedWith != null && nonNestedWith.contains(other.id());
     }
 
 }

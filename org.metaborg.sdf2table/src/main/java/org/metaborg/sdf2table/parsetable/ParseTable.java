@@ -1069,7 +1069,7 @@ public class ParseTable implements IParseTable, Serializable {
 
             ParseTableProduction prod = new ParseTableProduction(i + FIRST_PRODUCTION_LABEL, p,
                 grammar.getProductionAttributesMapping().get(orig_p), leftmostContextsMapping,
-                rightmostContextsMapping);
+                rightmostContextsMapping, labels);
             productions.add(prod);
             productionsMapping.put(p, prod);
         }

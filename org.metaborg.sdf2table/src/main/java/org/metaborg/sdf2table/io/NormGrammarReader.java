@@ -538,6 +538,8 @@ public class NormGrammarReader {
                             return gf.createGeneralAttribute("assoc");
                         case "NonAssoc":
                             return gf.createGeneralAttribute("non-assoc");
+                        case "NonNested":
+                            return gf.createGeneralAttribute("non-nested");
                         default:
                             System.err.println("Unknown associativity: `" + assoc.getName() + "'.");
                             break;
@@ -866,6 +868,8 @@ public class NormGrammarReader {
 
                 grammar.getNonAssocProductions().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
+
+                p.higher().putNonAssociativity(p.lower());
             } else if(assoc.contains("NonNested")) {
                 // add warning for non-nested
                 String higherSort = Symbol.getSort(p.higher().leftHand());
@@ -876,6 +880,8 @@ public class NormGrammarReader {
 
                 grammar.getNonNestedProductions().put(higherSort + "." + higherConstructor,
                     lowerSort + "." + lowerConstructor);
+
+                p.higher().putNonNested(p.lower());
             }
 
         } else {
