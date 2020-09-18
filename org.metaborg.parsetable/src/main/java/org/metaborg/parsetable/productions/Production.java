@@ -175,4 +175,12 @@ public class Production implements IProduction {
         return attributes.isBracket;
     }
 
+    @Override public boolean isNonAssocWith(IProduction other) {
+        return attributes.nonAssocWith != null && attributes.nonAssocWith.contains(other.id());
+    }
+
+    @Override public boolean isNonNestedWith(IProduction other) {
+        return attributes.nonNestedWith != null && attributes.nonNestedWith.contains(other.id());
+    }
+
 }

@@ -221,10 +221,6 @@ public final class ContextualProduction implements IProduction, Serializable {
     }
 
 
-    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
-        return getOrigProduction().toAterm(prod_attrs);
-    }
-
     public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
         ITermFactory tf = ParseTableIO.getTermfactory();

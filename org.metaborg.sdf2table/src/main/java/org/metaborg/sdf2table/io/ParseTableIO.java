@@ -1,13 +1,6 @@
 package org.metaborg.sdf2table.io;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,17 +12,8 @@ import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
-import org.metaborg.sdf2table.grammar.IAttribute;
-import org.metaborg.sdf2table.grammar.IProduction;
-import org.metaborg.sdf2table.grammar.LexicalSymbol;
-import org.metaborg.sdf2table.grammar.NormGrammar;
-import org.metaborg.sdf2table.grammar.Priority;
-import org.metaborg.sdf2table.grammar.Production;
-import org.metaborg.sdf2table.parsetable.Action;
-import org.metaborg.sdf2table.parsetable.Goto;
-import org.metaborg.sdf2table.parsetable.ParseTable;
-import org.metaborg.sdf2table.parsetable.ParseTableConfiguration;
-import org.metaborg.sdf2table.parsetable.State;
+import org.metaborg.sdf2table.grammar.*;
+import org.metaborg.sdf2table.parsetable.*;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoList;
@@ -140,7 +124,7 @@ public class ParseTableIO implements IParseTableGenerator {
         IAttribute placeholder_insertion =
             pt.normalizedGrammar().getGrammarFactory().createGeneralAttribute("placeholder-insertion");
 
-        for(IProduction p : pt.productionLabels().keySet()) {  
+        for(IProduction p : pt.productionLabels().keySet()) {
             if(pt.isLayoutSymbol(p.leftHand())) {
                 continue;
             }
@@ -160,7 +144,7 @@ public class ParseTableIO implements IParseTableGenerator {
         }
 
         for(IProduction p : pt.productionLabels().keySet()) {
-            
+
             if(!recursiveSymbols.contains(p.leftHand())) {
                 continue;
             }
@@ -172,13 +156,13 @@ public class ParseTableIO implements IParseTableGenerator {
                 productions.add(((Production) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
                     pt.getCtxUniqueInt(), null));
             } else if(p instanceof ContextualProduction) {
-                Set<IAttribute> attrs = pt.normalizedGrammar().getProductionAttributesMapping().get(((ContextualProduction) p).getOrigProduction());
+                Set<IAttribute> attrs = pt.normalizedGrammar().getProductionAttributesMapping()
+                    .get(((ContextualProduction) p).getOrigProduction());
                 if(attrs.contains(placeholder)) {
                     continue;
                 }
-                productions
-                    .add(((ContextualProduction) p).toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(),
-                        pt.getCtxUniqueInt(), null));
+                productions.add(((ContextualProduction) p)
+                    .toSDF3Aterm(pt.normalizedGrammar().getProductionAttributesMapping(), pt.getCtxUniqueInt(), null));
             }
 
         }
@@ -206,8 +190,7 @@ public class ParseTableIO implements IParseTableGenerator {
             for(Goto goto_action : s.gotos()) {
                 goto_terms.add(goto_action.toAterm(termFactory));
             }
-            IStrategoList.Builder
-                action_terms = termFactory.arrayListBuilder(s.actionsMapping().keySet().size());
+            IStrategoList.Builder action_terms = termFactory.arrayListBuilder(s.actionsMapping().keySet().size());
             for(ICharacterClass cc : s.actionsMapping().keySet()) {
                 final Set<Action> actionSet = s.actionsMapping().get(cc);
                 IStrategoList.Builder actions = termFactory.arrayListBuilder(actionSet.size());
@@ -270,19 +253,11 @@ public class ParseTableIO implements IParseTableGenerator {
 
         for(int i = 257 + pt.productionLabels().size() - 1; i >= 257; i--) {
             IProduction p = pt.productionLabels().inverse().get(i);
-            IStrategoTerm p_term;
-
-            if(p instanceof Production) {
-                p_term = termFactory.makeAppl(termFactory.makeConstructor("label", 2),
-                    ((Production) p).toAterm(pt.normalizedGrammar().getProductionAttributesMapping()),
-                    termFactory.makeInt(i));
-            } else {
-                p_term = termFactory.makeAppl(termFactory.makeConstructor("label", 2),
-                    ((ContextualProduction) p).toAterm(pt.normalizedGrammar().getProductionAttributesMapping()),
-                    termFactory.makeInt(i));
-            }
-
-            terms.add(p_term);
+            Production orig_p =
+                p instanceof Production ? (Production) p : ((ContextualProduction) p).getOrigProduction();
+            terms.add(termFactory.makeAppl(termFactory.makeConstructor("label", 2),
+                orig_p.toAterm(pt.normalizedGrammar().getProductionAttributesMapping(), pt.productionLabels()),
+                termFactory.makeInt(i)));
         }
 
         return termFactory.makeList(terms);
@@ -320,7 +295,7 @@ public class ParseTableIO implements IParseTableGenerator {
     public static void outputToFile(IStrategoTerm parseTable, File output) {
         logger.trace("Outputting parsetable without creating a string for it first. ");
         if(output != null) {
-            //noinspection ResultOfMethodCallIgnored
+            // noinspection ResultOfMethodCallIgnored
             output.getParentFile().mkdirs();
             try(final FileWriter out = new FileWriter(output)) {
                 parseTable.writeAsString(out);
@@ -347,31 +322,6 @@ public class ParseTableIO implements IParseTableGenerator {
 
     public static CharacterClassFactory getCharacterClassFactory() {
         return ccFactory;
-    }
-
-    @Override public SetMultimap<String, String> getNonAssocPriorities() {
-        SetMultimap<String, String> result = null;
-        if(tableCreated) {
-            result = pt.normalizedGrammar().getNonAssocPriorities();
-        }
-
-        if(result != null)
-            return result;
-
-        return HashMultimap.create();
-    }
-
-    @Override public SetMultimap<String, String> getNonNestedPriorities() {
-        SetMultimap<String, String> result = null;
-
-        if(tableCreated) {
-            result = pt.normalizedGrammar().getNonNestedPriorities();
-        }
-
-        if(result != null)
-            return result;
-
-        return HashMultimap.create();
     }
 
 }

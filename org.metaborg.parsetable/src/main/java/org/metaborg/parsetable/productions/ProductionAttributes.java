@@ -1,5 +1,7 @@
 package org.metaborg.parsetable.productions;
 
+import java.util.Set;
+
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
@@ -19,11 +21,13 @@ public class ProductionAttributes {
     public final boolean isCaseInsensitive;
     public final boolean isIndentPaddingLexical;
     public final boolean isFlatten;
+    public final Set<Integer> nonAssocWith;
+    public final Set<Integer> nonNestedWith;
 
     ProductionAttributes(ProductionType type, IStrategoTerm constructorTerm, boolean isRecovery, boolean isBracket,
         boolean isCompletion, boolean isPlaceholderInsertion, boolean isLiteralCompletion, boolean isIgnoreIndent,
         boolean isNewlineEnforced, boolean isLongestMatch, boolean isCaseInsensitive, boolean isIndentPaddingLexical,
-        boolean isFlatten) {
+        boolean isFlatten, Set<Integer> nonAssocWith, Set<Integer> nonNestedWith) {
         this.type = type;
         this.constructorTerm = constructorTerm;
         this.constructor = constructorTerm == null ? null : ((IStrategoNamed) constructorTerm).getName();
@@ -38,6 +42,8 @@ public class ProductionAttributes {
         this.isCaseInsensitive = isCaseInsensitive;
         this.isIndentPaddingLexical = isIndentPaddingLexical;
         this.isFlatten = isFlatten;
+        this.nonAssocWith = nonAssocWith;
+        this.nonNestedWith = nonNestedWith;
     }
 
     public boolean isCompletion() {

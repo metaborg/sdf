@@ -64,4 +64,8 @@ public interface IProduction {
 
     boolean isBracket();
 
+    boolean isNonAssocWith(IProduction other);
+
+    boolean isNonNestedWith(IProduction other);
+
 }
