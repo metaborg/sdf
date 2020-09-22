@@ -32,7 +32,6 @@ public class GrammarFactory implements Serializable {
     private final Map<List<Object>, Production> productions;
     private final Map<List<Object>, UniqueProduction> uniqueProductions;
     private final Map<List<Object>, ProductionReference> productionReferences;
-    private final Map<IStrategoTerm, LayoutConstraintAttribute> layoutConstraintAttributes;
     private final Map<List<Object>, TermAttribute> termAttributes;
     private Layout layoutSymbol;
     private FileStartSymbol fileStartSymbol;
@@ -54,7 +53,6 @@ public class GrammarFactory implements Serializable {
         iterSymbols = Maps.newHashMap();
         priorities = Maps.newHashMap();
         sequenceSymbols = Maps.newHashMap();
-        layoutConstraintAttributes = Maps.newHashMap();
         productions = Maps.newHashMap();
         uniqueProductions = Maps.newHashMap();
         productionReferences = Maps.newHashMap();
@@ -213,12 +211,7 @@ public class GrammarFactory implements Serializable {
 
 
     public LayoutConstraintAttribute createLayoutConstraintAttribute(IStrategoTerm t) throws Exception {
-        if(layoutConstraintAttributes.containsKey(t)) {
-            return layoutConstraintAttributes.get(t);
-        }
-
         LayoutConstraintAttribute lca = new LayoutConstraintAttribute(t);
-        layoutConstraintAttributes.put(t, lca);
 
         return lca;
     }
