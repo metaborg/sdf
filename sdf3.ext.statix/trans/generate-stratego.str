@@ -57,7 +57,8 @@ rules
       Rules(sort-impl-rules),
       Rules(sig-impl-rules),
       Rules([expl-plhdr-rules*, expl-amb-rules*]),
-      Rules([impl-plhdr-rules*, impl-amb-rules*])
+      Rules([impl-plhdr-rules*, impl-amb-rules*]),
+      Rules([expl-opt-rules*, impl-opt-rules*])
     ])
   with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
      ; lang := <language-spec-name>
@@ -86,10 +87,59 @@ rules
      ; sig-expl-rules     := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
      ; sig-impl-rules     := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
      ; sig-is-rules       := <flatfilter(geninj-sig-to-is-rule(|lang))> allsigs
+     // Generic option rules
+     ; expl-opt-rules*    := <geninj-explicate-option-rule>
+     ; impl-opt-rules*    := <geninj-implicate-option-rule>
 
 rules
 
+  geninj-explicate-option-rule: _ -> [
+    // explicate-option(s): None() -> []
+    RDef($[explicate-option]
+    , [DefaultVarDec("s")]
+    , RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      , AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    )
+    // explicate-option(s): Some(t) -> [<s> t]
+  , RDef($[explicate-option]
+    , [DefaultVarDec("s")]
+    , RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+  ]
 
+rules
+
+  geninj-implicate-option-rule: _ -> [
+    // implicate-option(s): [] -> None()
+    RDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      )
+    )
+    // implicate-option(s): [t] -> Some(<s> t)
+  , RDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , RuleNoCond(
+        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+    // implicate-option(s): _ -> <fail>
+  , RDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , RuleNoCond(
+        ListTail([Wld(), Wld()], Wld())
+      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
+      )
+    )
+  ]
 
 rules
 
@@ -172,7 +222,7 @@ rules
   geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
 
   geninj-symbol-to-strsig: Sort(name)                   -> ConstType(SortNoArgs(name))
-  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(Sort("Option", <geninj-symbol-to-strsig> symbol))
+  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol])) // ConstType(Sort("Option", [<geninj-symbol-to-strsig> symbol]))
   geninj-symbol-to-strsig: Iter(symbol)                 -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
   geninj-symbol-to-strsig: IterSep(symbol, _)           -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
   geninj-symbol-to-strsig: IterStar(symbol)             -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
@@ -301,7 +351,7 @@ rules
   with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
   geninj-symbol-to-explication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
-  geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-explication-call(|lang)> symbol])
+  geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("explicate-option"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -336,7 +386,7 @@ rules
   with call := <geninj-symbol-to-implication-call(|lang)> symbol
 
   geninj-symbol-to-implication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
-  geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("map-opt"), [<geninj-symbol-to-implication-call(|lang)> symbol])
+  geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("implicate-option"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterStar(symbol)              -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
