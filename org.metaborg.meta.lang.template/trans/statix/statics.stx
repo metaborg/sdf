@@ -362,8 +362,9 @@ rules
 rules
 
   injectionProductionOK: TYPE * Attributes * SymbolDef
-  injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
-    try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+  // Disabled for now: produces spurious errors in some cases.
+  //injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
+  //  try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
   injectionProductionOK(_, _, _).
 
   // TODO: error: Missing bracket attribute or constructor name
