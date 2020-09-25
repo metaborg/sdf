@@ -25,23 +25,27 @@ signature constructors // Types
 
   SORT : Occurrence        -> TYPE
   PROD : list(TYPE) * TYPE -> TYPE
-  
+  ITER : TYPE              -> TYPE
+
 rules // Types
 
   statix-get-type:
     node -> type'
-    where 
-      a     := <stx--get-ast-analysis <+ fail-msg(|$[no analysis on node [<write-to-string> node]])> node
-    ; type  := <stx--get-ast-property(|a, Prop("type")) <+ fail-msg(|$[no type on node [<write-to-string> node]])> node
+    where
+      a     := <stx-get-ast-analysis <+ fail-msg(|$[no analysis on node [<write-to-string> node]])> node
+    ; type  := <stx-get-ast-type(|a) <+ fail-msg(|$[no type on node [<write-to-string> node]])> node
     ; type' := <try(to-compatible-type)> type
 
   fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
-  
+
   to-compatible-type:
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
-  
+
   to-compatible-type:
     PROD(ts, t) -> FunType(<map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
+
+  to-compatible-type:
+    ITER(t) -> ConstType(Sort("List", [<try(to-compatible-type)> t]))
 
 rules // Debugging
 
