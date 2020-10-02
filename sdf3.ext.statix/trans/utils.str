@@ -1,5 +1,8 @@
 module utils
 
+imports
+  libspoofax/term/origin
+
 /**
  * List and collection operations.
  */
@@ -165,3 +168,16 @@ rules
   // __str-split-exit :: (list(string), list(int), list(int)) -> list(string)
   __str-split-exit: (acc, curr, []) ->
   <reverse> [<reverse; implode-string> curr|acc]
+
+  
+rules
+
+  errormsg(msg) = errormsg(msg, id)
+
+  errormsg(msg, pp): t -> t
+  with  ofile := <origin-file <+ !"<unknown>"> t
+      ; oline := <(origin-line; inc; int-to-string) <+ !"?"> t
+      ; ocol  := <(origin-column; inc; int-to-string) <+ !"?"> t
+  where fmsg  := <concat-strings> ["ERRROR: ", <msg> t, " (", ofile, ":", oline, ":", ocol, "): "]
+      ; <fprintnl> (stderr(), [fmsg,<pp> t])
+
