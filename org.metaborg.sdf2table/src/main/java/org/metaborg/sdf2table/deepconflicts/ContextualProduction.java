@@ -140,15 +140,23 @@ public final class ContextualProduction implements IProduction, Serializable {
 
         // FIXME pass contextual token considering nullable symbols
         ISymbol new_lhs = cf.createContextualSymbol(getOrigProduction().getLhs(), contexts, cf);
+        List<ISymbol> rhs = Lists.newArrayList(getOrigProduction().getRhs());
 
         for(Context c : contexts) {
+            ISymbol nonTerminalContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();
+
+            /*
+             * if Ctx (B.C) is leftmost and X1 =*> B ... new_X1 = {Ctx}X1
+             * 
+             * if Ctx (B.C) is rightmost and XN =*> ... B new_XN = XN{Ctx}
+             */
             if(c.getType().equals(ContextType.DEEP)) {
                 for(int i = 0; i < getOrigProduction().getRhs().size(); i++) {
-                    if((i == 0 && i == getOrigProduction().leftRecursivePosition()
-                        && (c.getPosition().equals(ContextPosition.LEFTMOST)))
-                        || (i == getOrigProduction().getRhs().size() - 1
-                            && i == getOrigProduction().rightRecursivePosition()
-                            && (c.getPosition().equals(ContextPosition.RIGHTMOST)))) {
+                    if((i == 0 && c.getPosition().equals(ContextPosition.LEFTMOST)
+                        && pt.normalizedGrammar().getLeftDerivable().get(rhs.get(i)).contains(nonTerminalContext))
+                        || (i == getOrigProduction().arity() - 1 && c.getPosition().equals(ContextPosition.RIGHTMOST)
+                            && pt.normalizedGrammar().getRightDerivable().get(rhs.get(i))
+                                .contains(nonTerminalContext))) {
                         ContextualSymbol new_symbol;
                         if(newRhs.get(i) instanceof ContextualSymbol) {
                             new_symbol = ((ContextualSymbol) newRhs.get(i)).addContext(c);
@@ -212,10 +220,6 @@ public final class ContextualProduction implements IProduction, Serializable {
         return prod;
     }
 
-
-    public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs) {
-        return getOrigProduction().toAterm(prod_attrs);
-    }
 
     public IStrategoTerm toSDF3Aterm(SetMultimap<IProduction, IAttribute> prod_attrs,
         Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {

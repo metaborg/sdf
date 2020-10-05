@@ -8,18 +8,24 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 public class NumericLayoutConstraint implements Serializable, ILayoutConstraint {
 
     private static final long serialVersionUID = 3882560568034774612L;
-    
+
     private final ConstraintElement elem;
     private final ConstraintSelector token;
     private int tree;
-    
+
     public NumericLayoutConstraint(ConstraintElement elem, ConstraintSelector token, int tree) {
         this.elem = elem;
         this.token = token;
         this.tree = tree;
     }
-    
-    @Override public String toString() {        
+
+    public NumericLayoutConstraint(int num) {
+        this.tree = num;
+        this.token = null;
+        this.elem = null;
+    }
+
+    @Override public String toString() {
         return tree + "." + token + "." + elem;
     }
 
@@ -33,9 +39,12 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
 
     public int getTree() {
         return tree;
-    }       
-    
+    }
+
     public void normalizeConstraint(List<ISymbol> rhs) {
+        if(this.elem == null && this.token == null)
+            return;
+
         int normalizedtree = 0;
         int count = tree;
         for(ISymbol s : rhs) {
@@ -44,7 +53,7 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
                 continue;
             } else {
                 count--;
-            } 
+            }
             if(count == 0) {
                 tree = normalizedtree;
                 return;

@@ -92,14 +92,14 @@ rules
 
   geninj-sig-to-stxsig: CfSignature(sortname, None(), params@[_|_]) ->
     OpDecl(consname, op)
-  with consname := <geninj-generate-inj-name> (sortname, params)
-     ; stx-paramsigs := <map(geninj-param-to-stxsig)> params
-     ; op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
+  where stx-paramsigs := <map(geninj-param-to-stxsig)> params
+  with  consname := <geninj-generate-inj-name> (sortname, params)
+      ; op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
 
 
   geninj-sig-to-stxsig: CfSignature(sortname, Some(consname), params) -> OpDecl(consname, op)
-  with stx-paramsigs := <map(geninj-param-to-stxsig)> params
-     ; op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
+  where stx-paramsigs := <map(geninj-param-to-stxsig)> params
+  with  op := <geninj-stxparamsigs-to-op(|sortname)> stx-paramsigs
 
   geninj-sort-to-stxsig: CfSort(sortname)  -> OpDecl($[[sortname]-Plhdr], ConstOp(SimpleSort(sortname)))
 
@@ -112,7 +112,7 @@ rules
 
   // geninj-symbol-to-stxsig :: SDF3.Symbol             -> Statix.SortRef
   geninj-symbol-to-stxsig: Sort(name)                   -> SimpleSort(name)
-  geninj-symbol-to-stxsig: Opt(symbol)                  -> <debug(!"ERROR: Optional sorts are not supported by Statix: "); fail> //OptSort(<geninj-symbol-to-stxsig> symbol)
+  geninj-symbol-to-stxsig: Opt(symbol)                  -> ListSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: Iter(symbol)                 -> ListSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: IterSep(symbol, _)           -> ListSort(<geninj-symbol-to-stxsig> symbol)
   geninj-symbol-to-stxsig: IterStar(symbol)             -> ListSort(<geninj-symbol-to-stxsig> symbol)
@@ -122,12 +122,13 @@ rules
   geninj-symbol-to-stxsig: Var(symbol)                  -> <geninj-symbol-to-stxsig> symbol
   geninj-symbol-to-stxsig: Varsym(symbol)               -> <geninj-symbol-to-stxsig> symbol
   geninj-symbol-to-stxsig: Label(_, symbol)             -> <geninj-symbol-to-stxsig> symbol
-  geninj-symbol-to-stxsig: Alt(_, _)                    -> <debug(!"ERROR: Alternative are not supported. "); fail>
-  geninj-symbol-to-stxsig: CharClass(_)                 -> <debug(!"ERROR: Character classes are not supported. "); fail>
-  geninj-symbol-to-stxsig: CiLit(_)                     -> <debug(!"ERROR: Literals are not supported. "); fail>
-  geninj-symbol-to-stxsig: EOF()                        -> <debug(!"ERROR: EOF is not supported. "); fail>
-  geninj-symbol-to-stxsig: FileStart()                  -> <debug(!"ERROR: Filestart is not supported. "); fail>
-  geninj-symbol-to-stxsig: Lit(_)                       -> <debug(!"ERROR: Literals are not supported. "); fail>
-  geninj-symbol-to-stxsig: ParameterizedSort(_, _)      -> <debug(!"ERROR: Parameterized sorts are not supported. "); fail>
-  geninj-symbol-to-stxsig: Sequence(_, _)               -> <debug(!"ERROR: Sequences are not supported. "); fail>
-  geninj-symbol-to-stxsig: Start()                      -> <debug(!"ERROR: Start is not supported. "); fail>
+  geninj-symbol-to-stxsig: Alt(_, _)                    -> <errormsg(!"ERROR: Alternative are not supported"); fail>
+  geninj-symbol-to-stxsig: CharClass(_)                 -> <errormsg(!"ERROR: Character classes are not supported"); fail>
+  geninj-symbol-to-stxsig: CiLit(_)                     -> <errormsg(!"ERROR: Literals are not supported"); fail>
+  geninj-symbol-to-stxsig: EOF()                        -> <errormsg(!"ERROR: EOF is not supported"); fail>
+  geninj-symbol-to-stxsig: FileStart()                  -> <errormsg(!"ERROR: Filestart is not supported"); fail>
+  geninj-symbol-to-stxsig: Lit(_)                       -> <errormsg(!"ERROR: Literals are not supported"); fail>
+  geninj-symbol-to-stxsig: ParameterizedSort(_, _)      -> <errormsg(!"ERROR: Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-stxsig: Sequence(_, _)               -> <errormsg(!"ERROR: Sequences are not supported"); fail>
+  geninj-symbol-to-stxsig: Start()                      -> <errormsg(!"ERROR: Start is not supported"); fail>
+  

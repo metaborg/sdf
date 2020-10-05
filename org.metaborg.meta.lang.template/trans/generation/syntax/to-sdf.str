@@ -564,6 +564,12 @@ rules //conversion of SDF3 terms into SDF2
     DeclSort(s) -> sort(s)
 
   special-term-to-sdf:
+    DeclSortLex(s) -> sort(s)
+
+  special-term-to-sdf:
+    DeclSortVar(s) -> sort(s)
+
+  special-term-to-sdf:
     Deprecated() -> term(default(fun(unquoted("deprecated"))))
 
   special-term-to-sdf:

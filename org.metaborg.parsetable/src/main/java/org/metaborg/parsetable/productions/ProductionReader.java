@@ -1,6 +1,10 @@
 package org.metaborg.parsetable.productions;
 
+import static org.spoofax.terms.util.TermUtils.*;
+
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
@@ -12,7 +16,7 @@ import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.terms.TermVisitor;
 
-import static org.spoofax.terms.util.TermUtils.*;
+import com.google.common.collect.ImmutableSet;
 
 public class ProductionReader {
 
@@ -127,6 +131,8 @@ public class ProductionReader {
             boolean isCaseInsensitive = false;
             boolean isIndentPaddingLexical = false;
             boolean isFlatten = false;
+            Set<Integer> nonAssocWith = null;
+            Set<Integer> nonNestedWith = null;
 
             IStrategoList attributesTermsList = (IStrategoList) attributesTerm.getSubterm(0);
 
@@ -152,6 +158,28 @@ public class ProductionReader {
                     case "assoc":
                         // This attribute is used to indicate left/right/assoc associativity. Since this is irrelevant
                         // during parsing/imploding we ignore it here.
+                        break;
+                    case "assoc-with":
+                        // This attribute is used to indicate non-assoc/non-nested associativity.
+                        // This is ignored during parsing, but does generate an error after parsing.
+                        for(IStrategoTerm assocInfo : attributeTermNamed.getAllSubterms()) {
+                            IStrategoAppl assocInfoAppl = toAppl(assocInfo);
+                            String assocName = assocInfoAppl.getConstructor().getName();
+                            Set<Integer> assocWithSet =
+                                Arrays.stream(toList(assocInfoAppl.getSubterm(0)).getAllSubterms())
+                                    .map(t -> toInt(t).intValue()).collect(ImmutableSet.toImmutableSet());
+                            switch(assocName) {
+                                case "non-assoc":
+                                    nonAssocWith = assocWithSet;
+                                    break;
+                                case "non-nested":
+                                    nonNestedWith = assocWithSet;
+                                    break;
+                                default:
+                                    throw new ParseTableReadException(
+                                        "Unknown associativity info within assoc-with attribute: " + assocName);
+                            }
+                        }
                         break;
                     case "term":
                         if(attributeTermNamed.getSubterm(0) instanceof IStrategoNamed) {
@@ -212,10 +240,10 @@ public class ProductionReader {
 
             return new ProductionAttributes(type, constructor, isRecover, isBracket, isCompletion,
                 isPlaceholderInsertion, isLiteralCompletion, isIgnoreLayout, isNewlineEnforced, isLongestMatch,
-                isCaseInsensitive, isIndentPaddingLexical, isFlatten);
+                isCaseInsensitive, isIndentPaddingLexical, isFlatten, nonAssocWith, nonNestedWith);
         } else if(attributesTerm.getName().equals("no-attrs")) {
             return new ProductionAttributes(ProductionType.NO_TYPE, null, false, false, false, false, false, false,
-                false, false, false, false, false);
+                false, false, false, false, false, null, null);
         }
 
         throw new ParseTableReadException("Unknown production attribute type: " + attributesTerm);

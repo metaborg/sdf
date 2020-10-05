@@ -32,7 +32,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         this.constraint = constraint;
         lc = createLayoutConstraint(constraint);
     }
-    
+
     @Override public String toString() {
         if(TermUtils.isAppl(constraint) && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
             return "ignore-layout";
@@ -69,9 +69,11 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     private ILayoutConstraint createLayoutConstraint(IStrategoTerm constraintTerm) throws Exception {
-        if(TermUtils.isAppl(constraintTerm)
-            && ((IStrategoAppl) constraintTerm).getName().equals("IgnoreLayout")) {
+        if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("IgnoreLayout")) {
             return new IgnoreLayoutConstraint();
+        } else if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("Num")) {
+            return new NumericLayoutConstraint(
+                Integer.parseInt(((IStrategoString) constraintTerm.getSubterm(0)).stringValue()));
         } else if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("And")) {
             return new BooleanLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
                 LayoutConstraintBooleanOperator.AND, createLayoutConstraint(constraintTerm.getSubterm(1)));
@@ -108,8 +110,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         } else if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("Mul")) {
             return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
                 LayoutConstraintArithmeticOperator.MUL, createLayoutConstraint(constraintTerm.getSubterm(1)));
-        } else if(TermUtils.isAppl(constraintTerm)
-            && ((IStrategoAppl) constraintTerm).getName().equals("Line")) {
+        } else if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("Line")) {
             return new NumericLayoutConstraint(ConstraintElement.LINE, createToken(constraintTerm.getSubterm(0)),
                 createTree(constraintTerm.getSubterm(0).getSubterm(0)));
         } else if(TermUtils.isAppl(constraintTerm) && ((IStrategoAppl) constraintTerm).getName().equals("Col")) {
@@ -154,6 +155,9 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     private IStrategoTerm toSDF2constraint(IStrategoTerm c, ITermFactory tf) throws Exception {
         if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("IgnoreLayout")) {
             return tf.makeAppl(tf.makeConstructor("ignore-layout", 0));
+        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Num")) {
+            String tree = c.getSubterm(0).toString();
+            return tf.makeAppl(tf.makeConstructor("num", 1), tf.makeString(tree));
         } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("And")) {
             return tf.makeAppl(tf.makeConstructor("and", 2), toSDF2constraint(c.getSubterm(0), tf),
                 toSDF2constraint(c.getSubterm(1), tf));
