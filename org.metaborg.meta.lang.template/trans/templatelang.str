@@ -50,11 +50,11 @@ rules // Analysis
 
   editor-analyze = analyze-all(lifting, id, id|<language>)
 
-  
-  editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
-  
-  get-sdf3-type = statix-get-type
-      
+
+  editor-save =  generate-all//analysis-save-default(|<language>); generate-all
+
+  get-sdf3-type = get-type
+
 rules // Editor services
 
   editor-resolve:
