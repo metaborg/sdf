@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class ParseTableConfiguration implements Serializable {
 
@@ -47,5 +48,20 @@ public class ParseTableConfiguration implements Serializable {
         return layoutSensitive;
     }
 
+    
+    @Override public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        final ParseTableConfiguration that = (ParseTableConfiguration)o;
+        return dynamic == that.dynamic &&
+            dataDependent == that.dataDependent &&
+            solveDeepConflicts == that.solveDeepConflicts &&
+            checkOverlap == that.checkOverlap &&
+            checkPriorities == that.checkPriorities &&
+            layoutSensitive == that.layoutSensitive;
+    }
 
+    @Override public int hashCode() {
+        return Objects.hash(dynamic, dataDependent, solveDeepConflicts, checkOverlap, checkPriorities, layoutSensitive);
+    }
 }
