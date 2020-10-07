@@ -178,7 +178,7 @@ rules // context free syntax
   cons-to-ds-decl:
     Constructor(c) -> cons-decl
     with
-      FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-type> c;
+      FunType(rhs-type*, ConstType(SortNoArgs(sort-type))) := <get-sdf3-type> c;
       sort := SimpleSort(<ds-escape-sortname> sort-type);
       rhs* := <map(get-sort-name)> rhs-type*;
       c' := <ds-escape-consname> c;

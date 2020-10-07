@@ -116,8 +116,8 @@ rules
     SdfProduction(SortDef(s), rhs, Attrs(a*)) -> OpDeclInj(t')
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-    with
-      rhs-type := <get-type> rhs;
+    with  
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
 
   // kernel productions
@@ -125,16 +125,16 @@ rules
      SdfProduction(Lex(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-     with
-      rhs-type := <get-type> rhs;
+     with 
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(s))
 
   cfg-to-sig:
      SdfProduction(Cf(SortDef(s)), rhs, Attrs(a*)) -> OpDeclInj(t')
      where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-     with
-      rhs-type := <get-type> rhs;
+     with 
+      rhs-type := <get-sdf3-type> rhs;
       t'       := <try(check-fun-type)> FunType(rhs-type, SortType(<strip-annos> s))
 
   cfg-to-sig:
@@ -161,15 +161,15 @@ rules
     TemplateProduction(SortDef(s), t, Attrs(a*)) -> OpDeclInj(t')
     where
       <not(fetch-elem(?Reject() + ?Bracket()))> a*
-    with
-      temp-type := <get-type> t;
+    with  
+      temp-type := <get-sdf3-type> t;
       t'        := <try(check-fun-type)> FunType(temp-type, SortType(<strip-annos> s))
 
   cons-to-decl:
     Constructor(c) -> OpDecl(c, t)
     with
-      t := <get-type; try(check-fun-type)> c
-
+      t := <get-sdf3-type; try(check-fun-type)> c
+     
   check-fun-type: FunType([], t) -> t
 
   sort-to-placeholder-sig:

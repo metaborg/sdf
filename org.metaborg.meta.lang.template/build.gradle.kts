@@ -4,21 +4,13 @@ plugins {
   `maven-publish`
 }
 
-spoofax {
-  createPublication = true
-}
-
 ecj {
-  toolVersion = "3.20.0"
+  toolVersion = "3.21.0"
+}
+tasks.withType<JavaCompile> { // ECJ does not support headerOutputDirectory (-h argument).
+  options.headerOutputDirectory.convention(provider { null })
 }
 
-// HACK: Temporarily set group to 'org.metaborgg' to prevent substitution of baseline version of SDF3 to this project.
-// I could not find another way to disable this substitution.
-group = "org.metaborgg"
-// Set group back to 'org.metaborg' before build is executed.
-val fixGroupTask = tasks.register("fixGroup") {
-  group = "org.metaborg"
-}
-tasks.named("build") {
-  dependsOn(fixGroupTask)
-}
+// HACK: Set different group to prevent substitution of the baseline version to this project. I could not find another
+// way to disable this substitution.
+group = "org.metaborg.bootstraphack"

@@ -34,9 +34,10 @@ imports
   libstrc
   normalization/to-normal-form
   libstratego-aterm
-
-rules
-  check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ "unknown"
+  
+rules 
+  check-sdf2table = prim("SSL_EXT_check_sdf2_table") <+ !"unknown"
+  
 
 
 rules

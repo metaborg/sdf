@@ -60,7 +60,7 @@ rules
         where(after := <cputime>; !(after, before); subt; match)    
         
 rules 
-    placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ ("[[", "]]")    
+    placeholder-chars = prim("SSL_EXT_placeholder_chars") <+ !("[[", "]]")    
   
 rules
     
