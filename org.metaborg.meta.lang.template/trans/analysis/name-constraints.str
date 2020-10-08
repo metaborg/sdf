@@ -295,12 +295,6 @@ rules
         same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
         <task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
 
-    nabl-constraint(|ctx):
-      prefer-avoid -> <fail>
-      where
-        <?Prefer() + ?Avoid()> prefer-avoid;
-        <task-create-warning-on-triggers(|ctx, [], $[Prefer and avoid are deprecated and will be removed in a future version of SDF3])> prefer-avoid
-
 
   prod-without-constructor:
         p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
