@@ -19,6 +19,6 @@ dependencies {
   compileOnly("com.google.code.findbugs:jsr305")
   api("com.google.guava:guava")
   testCompileOnly("junit:junit")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.1.0")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")
 }
