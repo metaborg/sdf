@@ -45,7 +45,6 @@ rules
         chars               := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
         sections'*          := <desugar-templates; remove-templates(|chars)> sections*;
 //        imported-sections*  := <filter(expand-import-permissive(|path)); flatten-list> import-names*;
-        water-prods*        := <get-boilerplate-water>;
         cf-prods*           := <filter(?SDFSection(ContextFreeSyntax(<id>))); concat> [sections'*];
         closing-brckts-lit* := <filter(fetch-closing-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* ;
         opening-brckts-lit* := <filter(fetch-opening-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* 
@@ -59,7 +58,6 @@ rules
 //        import-names*       := <collect(?Module(Unparameterized(<id>)))> i*; 
         chars               := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> sections*;
         sections'*          := <desugar-templates; remove-templates(|chars)> sections*;
-        water-prods*        := <get-boilerplate-water>;
         cf-prods*           := <filter(?SDFSection(ContextFreeSyntax(<id>))); concat> [sections'*];
         closing-brckts-lit* := <filter(fetch-closing-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* ;
         opening-brckts-lit* := <filter(fetch-opening-brackets-lit); map(make-recover-insertion-prod); nub> cf-prods* 
@@ -115,53 +113,3 @@ rules
     SdfProductionWithCons(_, Rhs(rhs*@[l@Lit(lit) | hs]), _) -> l
     where
       <not(?"\"\"")> lit      
-    
-        
-        
-
-    
- 
- /*
-   lexical syntax
-    [A-Za-z0-9\_]                  -> WATERTOKENSTART     {recover, avoid}
-    WATERTOKENSTART [A-Za-z0-9\_]* -> WATERTOKEN          
-    ~[A-Za-z0-9\_\ \t\12\r\n\*]    -> WATERTOKENSEPARATOR {recover, avoid}
-    "*"                            -> WATERTOKENSTAR      {recover, avoid}
-    WATERTOKEN                     -> WATER               
-    WATERTOKENSEPARATOR            -> WATER               
-    WATERTOKENSTAR                 -> WATER               
-                                   -> WATEREOF      
-    
-    lexical restrictions
-    WATERTOKEN -/- [A-Za-z0-9\_]
-    WATERTOKENSTAR -/- [\/]
-
-  context-free syntax
-    WATER -> LAYOUT {cons("WATER")}
-
-  lexical restrictions
-    WATEREOF -/- ~[]
- 
- */
- 
-  get-boilerplate-water = ![ SDFSection(LexicalSyntax([ SdfProduction(SortDef("WATERTOKENSTART"), Rhs([CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Regular("\\_")))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
-        , SdfProduction(SortDef("WATERTOKEN"), Rhs([Sort("WATERTOKENSTART"), IterStar(CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Escaped("_"))))))))]), NoAttrs())
-        , SdfProduction(SortDef("WATERTOKENSEPARATOR"), Rhs([CharClass(Comp(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Conc(Escaped("_"), Conc(Escaped(" "), Conc(Range(Escaped("t"), Escaped("r")), Escaped("*")))))))))))]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
-        , SdfProduction(SortDef("WATERTOKENSTAR"), Rhs([Lit("\"*\"")]), Attrs([Term(Default(Fun(Unquoted("recover")))), Avoid()]))
-        , SdfProduction(SortDef("WATER"), Rhs([Sort("WATERTOKEN")]), NoAttrs())
-        , SdfProduction(SortDef("WATER"), Rhs([Sort("WATERTOKENSEPARATOR")]), NoAttrs())
-        , SdfProduction(SortDef("WATER"), Rhs([Sort("WATERTOKENSTAR")]), NoAttrs())
-        , SdfProduction(SortDef("WATEREOF"), Rhs([]), NoAttrs())
-        ]
-      )
-    )
-  , SDFSection(LexicalRestrictions(
-        [ Follow([Sort("WATERTOKEN")], Single(CharClass(Simple(Present(Conc(Range(Regular("A"), Regular("Z")), Conc(Range(Regular("a"), Regular("z")), Conc(Range(Regular("0"), Regular("9")), Escaped("_")))))))))
-        , Follow([Sort("WATERTOKENSTAR")], Single(CharClass(Simple(Present(Escaped("/"))))))
-        ]
-      )
-    )
-  , SDFSection(ContextFreeSyntax([SdfProductionWithCons(SortCons(Layout(), Constructor("WATER")), Rhs([Sort("WATER")]), NoAttrs())]))
-  , SDFSection(LexicalRestrictions([Follow([Sort("WATEREOF")], Single(CharClass(Comp(Simple(Absent())))))]))
-  ]
-              
