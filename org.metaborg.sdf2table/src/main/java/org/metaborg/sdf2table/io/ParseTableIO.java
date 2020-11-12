@@ -47,18 +47,18 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     public ParseTableIO(File tableFile) throws Exception {
-        this(new FileInputStream(tableFile));
+        this(new FileInputStream(tableFile), true);
     }
 
     public ParseTableIO(FileObject tableFile) throws Exception {
-        this(tableFile.getContent().getInputStream());
+        this(tableFile.getContent().getInputStream(), true);
     }
 
-    public ParseTableIO(InputStream is) throws Exception {
+    public ParseTableIO(InputStream is, boolean classLoaderObjectInputStream) throws Exception {
         // Use ClassLoaderObjectInputStream instead of regular ObjectInputStream to ensure that objects get deserialized
         // with the classloader of this class, instead of some other arbitrary classloader chosen by the JVM which is
         // wrong in environments with custom classloaders such as Maven and Gradle plugins.
-        try(final ObjectInputStream ois = new ClassLoaderObjectInputStream(getClass().getClassLoader(), is)) {
+        try(final ObjectInputStream ois = classLoaderObjectInputStream ? new ClassLoaderObjectInputStream(getClass().getClassLoader(), is) : new ObjectInputStream(is)) {
             // read persisted normalized grammar
             pt = (ParseTable) ois.readObject();
         }
