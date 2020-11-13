@@ -72,15 +72,17 @@ public class NormGrammarReader {
     }
 
     public NormGrammar readGrammar(File input) throws Exception {
-        IStrategoTerm mainModule = termFromFile(input);
-
-        return readGrammar(mainModule);
+        return readGrammar(termFromFile(input));
     }
 
     public NormGrammar readGrammar(IStrategoTerm mainModule) throws Exception {
         readModule(mainModule);
 
-        // only read priority sections after reading all productions to get constructor references
+        return getGrammar();
+    }
+    
+    public NormGrammar getGrammar() throws Exception {
+    	// only read priority sections after reading all productions to get constructor references
         for(IStrategoAppl section : prioritySections) {
             addPriorities(section);
         }
@@ -108,6 +110,10 @@ public class NormGrammarReader {
                 grammar.priorities().get(p).remove(arg);
             }
         }
+    }
+
+    public void readModule(File input) throws Exception {
+    	readModule(termFromFile(input));
     }
 
     private void readModule(IStrategoTerm module) throws Exception {

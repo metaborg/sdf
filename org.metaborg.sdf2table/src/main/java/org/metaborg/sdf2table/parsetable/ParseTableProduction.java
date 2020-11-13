@@ -216,6 +216,9 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         if(symb instanceof ContextFreeSymbol) {
             symb = ((ContextFreeSymbol) symb).getSymbol();
         }
+        if(symb instanceof LexicalSymbol) {
+            symb = ((LexicalSymbol) symb).getSymbol();
+        }
         if(symb instanceof OptionalSymbol) {
             symb = ((OptionalSymbol) symb).getSymbol();
         }
