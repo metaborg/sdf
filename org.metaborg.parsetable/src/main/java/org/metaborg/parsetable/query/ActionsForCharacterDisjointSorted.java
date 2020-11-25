@@ -96,7 +96,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     @Override public IAction[] getActions() {
         List<IAction> res = new ArrayList<>();
 
-        for(ActionsForRange actionsForRange : actionsForSortedDisjointRanges) {
+        for(ActionsForRange actionsForRange : recoveryActionsForSortedDisjointRanges) {
             Collections.addAll(res, actionsForRange.actions);
         }
         Collections.addAll(res, actionsForEOF.actions);
