@@ -20,9 +20,10 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     private final ActionsForRange[] actionsForSortedDisjointRanges;
     private final ActionsForRange[] recoveryActionsForSortedDisjointRanges;
 
-    public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
+    public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses,
+        Set<Integer> recoveryStateIds) {
         this.actionsForSortedDisjointRanges =
-            toDisjointSortedRanges(filterNonRecoveryActions(actionsPerCharacterClasses));
+            toDisjointSortedRanges(filterNonRecoveryActions(actionsPerCharacterClasses, recoveryStateIds));
         this.recoveryActionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
         this.actionsForEOF =
             new ActionsForRange(getActionsForEOF(actionsPerCharacterClasses).toArray(new IAction[0]), EOF_INT, EOF_INT);
