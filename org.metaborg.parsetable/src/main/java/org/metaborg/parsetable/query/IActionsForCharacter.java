@@ -43,8 +43,8 @@ public interface IActionsForCharacter {
                     (action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
                         && ((IReduce) action).production().isRecovery();
 
-                boolean isShiftToRecoveryState = (action.actionType() == ActionType.SHIFT) && recoveryStateIds.stream()
-                    .anyMatch(recoveryStateId -> recoveryStateId == ((IShift) action).shiftStateId());
+                boolean isShiftToRecoveryState = action.actionType() == ActionType.SHIFT
+                    && recoveryStateIds.contains(((IShift) action).shiftStateId());
 
                 return isRecoveryReduce || isShiftToRecoveryState;
             });
