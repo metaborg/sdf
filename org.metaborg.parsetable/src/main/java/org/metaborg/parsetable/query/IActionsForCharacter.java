@@ -12,14 +12,14 @@ public interface IActionsForCharacter {
     IAction[] getActions();
 
     /*
-     * Returns actions applicable to the given configuration (i.e. current character and lookahead).
+     * Returns actions applicable to the given configuration (i.e. current character and lookahead) and parsing mode.
      */
-    Iterable<IAction> getApplicableActions(IActionQuery actionQuery);
+    Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
     /*
      * Returns reduce actions (possibly with lookahead) applicable to the given configuration (i.e. current character
-     * and lookahead).
+     * and lookahead) and parsing mode.
      */
-    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery);
+    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
 }

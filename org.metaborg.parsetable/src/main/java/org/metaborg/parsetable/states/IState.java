@@ -3,6 +3,7 @@ package org.metaborg.parsetable.states;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.query.IActionQuery;
+import org.metaborg.parsetable.query.ParsingMode;
 
 public interface IState {
 
@@ -10,9 +11,9 @@ public interface IState {
 
     boolean isRejectable();
 
-    Iterable<IAction> getApplicableActions(IActionQuery actionQuery);
+    Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
-    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery);
+    Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
     int getGotoId(int productionId);
 

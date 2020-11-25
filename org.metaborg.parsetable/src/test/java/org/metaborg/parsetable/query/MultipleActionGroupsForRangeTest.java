@@ -84,8 +84,10 @@ public class MultipleActionGroupsForRangeTest {
         for(int character = 0; character < CHARACTERS; character++) {
             IActionQuery actionQuery = new MockActionQuery(character);
 
-            Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
-            Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
+            Set<IAction> actionForSeparated =
+                iterableToSet(separated.getApplicableActions(actionQuery, ParsingMode.Standard));
+            Set<IAction> actionForDisjointSorted =
+                iterableToSet(disjointSorted.getApplicableActions(actionQuery, ParsingMode.Standard));
 
             if(!actionForSeparated.equals(actionForDisjointSorted))
                 fail("Action sets not equal for character " + character);
@@ -93,8 +95,10 @@ public class MultipleActionGroupsForRangeTest {
 
         IActionQuery actionQuery = new MockActionQuery(EOF_INT);
 
-        Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
-        Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
+        Set<IAction> actionForSeparated =
+            iterableToSet(separated.getApplicableActions(actionQuery, ParsingMode.Standard));
+        Set<IAction> actionForDisjointSorted =
+            iterableToSet(disjointSorted.getApplicableActions(actionQuery, ParsingMode.Standard));
 
         assertEquals("Action sets not equal for EOF", actionForSeparated, actionForDisjointSorted);
     }

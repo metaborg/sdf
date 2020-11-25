@@ -14,6 +14,7 @@ import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
 import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
+import org.metaborg.parsetable.query.ParsingMode;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -363,12 +364,12 @@ public class State implements IState, Comparable<State>, Serializable {
         return label;
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
-        return actionsForCharacter.getApplicableActions(actionQuery);
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode) {
+        return actionsForCharacter.getApplicableActions(actionQuery, parsingMode);
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
-        return actionsForCharacter.getApplicableReduceActions(actionQuery);
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode) {
+        return actionsForCharacter.getApplicableReduceActions(actionQuery, parsingMode);
     }
 
     @Override public int getGotoId(int productionId) {

@@ -23,6 +23,11 @@ public final class ActionsPerCharacterClass implements Serializable {
         this.actions = Arrays.asList(actions);
     }
 
+    public ActionsPerCharacterClass(ICharacterClass characterClass, List<IAction> actions) {
+        this.characterClass = characterClass;
+        this.actions = actions;
+    }
+
     public final boolean appliesTo(int character) {
         return characterClass.contains(character);
     }
