@@ -3,14 +3,8 @@ package org.metaborg.parsetable.query;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import org.metaborg.parsetable.actions.ActionType;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -68,29 +62,6 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         assert newRangeActions.isEmpty();
 
         return actionsForRanges.toArray(new ActionsForRange[0]);
-    }
-
-    private ActionsPerCharacterClass[] filterNonRecoveryActions(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
-        ActionsPerCharacterClass[] filteredActionsPerCharacterClasses =
-            new ActionsPerCharacterClass[actionsPerCharacterClasses.length];
-
-        int i = 0;
-        for(ActionsPerCharacterClass actionsPerCharacterClass : actionsPerCharacterClasses) {
-            List<IAction> filteredActions = new ArrayList<>(actionsPerCharacterClass.actions);
-
-            filteredActions.removeIf(action -> {
-                return (action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
-                    && ((IReduce) action).production().isRecovery();
-            });
-
-            if(filteredActions.size() == actionsPerCharacterClass.actions.size())
-                filteredActionsPerCharacterClasses[i++] = actionsPerCharacterClass;
-            else if(filteredActions.size() > 0)
-                filteredActionsPerCharacterClasses[i++] =
-                    new ActionsPerCharacterClass(actionsPerCharacterClass.characterClass, filteredActions);
-        }
-
-        return Arrays.copyOf(filteredActionsPerCharacterClasses, i);
     }
 
     private static int getMinIndex(int[][] ranges, int[] indices) {
