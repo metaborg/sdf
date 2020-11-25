@@ -3,8 +3,14 @@ package org.metaborg.parsetable.query;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.metaborg.parsetable.actions.ActionType;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
 
@@ -18,9 +24,12 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
     private final ActionsForRange actionsForEOF;
     private final ActionsForRange[] actionsForSortedDisjointRanges;
+    private final ActionsForRange[] recoveryActionsForSortedDisjointRanges;
 
     public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
-        this.actionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
+        this.actionsForSortedDisjointRanges =
+            toDisjointSortedRanges(filterNonRecoveryActions(actionsPerCharacterClasses));
+        this.recoveryActionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
         this.actionsForEOF =
             new ActionsForRange(getActionsForEOF(actionsPerCharacterClasses).toArray(new IAction[0]), EOF_INT, EOF_INT);
     }
@@ -59,6 +68,29 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         assert newRangeActions.isEmpty();
 
         return actionsForRanges.toArray(new ActionsForRange[0]);
+    }
+
+    private ActionsPerCharacterClass[] filterNonRecoveryActions(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
+        ActionsPerCharacterClass[] filteredActionsPerCharacterClasses =
+            new ActionsPerCharacterClass[actionsPerCharacterClasses.length];
+
+        int i = 0;
+        for(ActionsPerCharacterClass actionsPerCharacterClass : actionsPerCharacterClasses) {
+            List<IAction> filteredActions = new ArrayList<>(actionsPerCharacterClass.actions);
+
+            filteredActions.removeIf(action -> {
+                return (action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
+                    && ((IReduce) action).production().isRecovery();
+            });
+
+            if(filteredActions.size() == actionsPerCharacterClass.actions.size())
+                filteredActionsPerCharacterClasses[i++] = actionsPerCharacterClass;
+            else if(filteredActions.size() > 0)
+                filteredActionsPerCharacterClasses[i++] =
+                    new ActionsPerCharacterClass(actionsPerCharacterClass.characterClass, filteredActions);
+        }
+
+        return Arrays.copyOf(filteredActionsPerCharacterClasses, i);
     }
 
     private static int getMinIndex(int[][] ranges, int[] indices) {
@@ -100,17 +132,20 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return res.toArray(new IAction[0]);
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode) {
         if(actionQuery.actionQueryCharacter() == EOF_INT)
             return actionsForEOF.getApplicableActions(actionQuery);
 
-        if(actionsForSortedDisjointRanges.length > 0) {
-            int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+        ActionsForRange[] actions = parsingMode == ParsingMode.Recovery ? recoveryActionsForSortedDisjointRanges
+            : actionsForSortedDisjointRanges;
+
+        if(actions.length > 0) {
+            int low = 0, high = actions.length - 1;
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
-                ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
+                ActionsForRange actionsForMidRange = actions[mid];
 
                 int currentChar = actionQuery.actionQueryCharacter();
 
@@ -126,18 +161,21 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return Collections.emptyList();
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode) {
         if(actionQuery.actionQueryCharacter() == EOF_INT)
             return actionsForEOF.getApplicableReduceActions(actionQuery);
 
-        if(actionsForSortedDisjointRanges.length > 0) {
-            int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+        ActionsForRange[] actions = parsingMode == ParsingMode.Recovery ? recoveryActionsForSortedDisjointRanges
+            : actionsForSortedDisjointRanges;
+
+        if(actions.length > 0) {
+            int low = 0, high = actions.length - 1;
             int currentChar = actionQuery.actionQueryCharacter();
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
-                ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
+                ActionsForRange actionsForMidRange = actions[mid];
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
                     return actionsForMidRange.getApplicableReduceActions(actionQuery);

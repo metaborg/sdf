@@ -5,6 +5,7 @@ import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.query.IActionQuery;
 import org.metaborg.parsetable.query.IActionsForCharacter;
 import org.metaborg.parsetable.query.IProductionToGoto;
+import org.metaborg.parsetable.query.ParsingMode;
 
 public final class State implements IState {
 
@@ -37,12 +38,12 @@ public final class State implements IState {
         return actionsForCharacter.getActions();
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
-        return actionsForCharacter.getApplicableActions(actionQuery);
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode) {
+        return actionsForCharacter.getApplicableActions(actionQuery, parsingMode);
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
-        return actionsForCharacter.getApplicableReduceActions(actionQuery);
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode) {
+        return actionsForCharacter.getApplicableReduceActions(actionQuery, parsingMode);
     }
 
     public boolean hasGoto(int productionId) {

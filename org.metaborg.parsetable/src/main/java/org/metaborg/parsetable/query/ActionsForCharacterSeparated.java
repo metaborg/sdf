@@ -37,7 +37,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
         return res;
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode mode) {
         return () -> new Iterator<IAction>() {
             int index = 0;
 
@@ -55,7 +55,7 @@ public final class ActionsForCharacterSeparated implements IActionsForCharacter,
         };
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode mode) {
         return () -> new Iterator<IReduce>() {
             int index = 0;
 
