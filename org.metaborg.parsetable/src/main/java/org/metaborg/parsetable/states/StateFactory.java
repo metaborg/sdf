@@ -30,7 +30,7 @@ public class StateFactory implements IStateFactory {
                 actionsForCharacter = new ActionsForCharacterDisjointSorted(actionsPerCharacterClass, recoveryStateIds);
                 break;
             case Separated:
-                actionsForCharacter = new ActionsForCharacterSeparated(actionsPerCharacterClass);
+                actionsForCharacter = new ActionsForCharacterSeparated(actionsPerCharacterClass, recoveryStateIds);
                 break;
             default:
                 actionsForCharacter = null;
