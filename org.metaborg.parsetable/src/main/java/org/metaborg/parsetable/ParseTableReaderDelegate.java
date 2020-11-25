@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.metaborg.parsetable.actions.*;
@@ -84,7 +85,8 @@ class ParseTableReaderDelegate {
         throws ParseTableReadException {
         int stateCount = statesTermList.getSubtermCount();
 
-        StateActions[] statesActions = new StateActions[stateCount];
+        IGoto[][] stateGotos = new IGoto[stateCount][];
+        ActionsPerCharacterClass[][] stateActions = new ActionsPerCharacterClass[stateCount][];
 
         for(IStrategoTerm stateTerm : statesTermList) {
             IStrategoNamed stateTermNamed = (IStrategoNamed) stateTerm;
@@ -94,45 +96,28 @@ class ParseTableReaderDelegate {
             IStrategoList gotosTermList = toListAt(stateTermNamed, 1);
             IStrategoList actionsTermList = toListAt(stateTermNamed, 2);
 
-            IGoto[] gotos = readGotos(gotosTermList);
-            ActionsPerCharacterClass[] actions = readActions(actionsTermList, productions);
-
-            StateActions stateActions = new StateActions(stateId, gotos, actions);
-
-            statesActions[stateId] = stateActions;
+            stateGotos[stateId] = readGotos(gotosTermList);
+            stateActions[stateId] = readActions(actionsTermList, productions);
         }
 
-        Set<Integer> recoveryStateIds = Arrays.stream(statesActions).filter(StateActions::containsOnlyRecoveryReduces)
-            .map(stateActions -> stateActions.stateId).collect(Collectors.toSet());
+        Set<Integer> recoveryStateIds = IntStream.range(0, stateCount)
+            .filter(stateId -> containsOnlyRecoveryReduces(stateActions[stateId])).boxed().collect(Collectors.toSet());
 
         IState[] states = new IState[stateCount];
 
-        for(StateActions stateActions : statesActions) {
-            states[stateActions.stateId] =
-                stateFactory.from(stateActions.stateId, stateActions.gotos, stateActions.actions, recoveryStateIds);
+        for(int stateId = 0; stateId < stateCount; stateId++) {
+            states[stateId] = stateFactory.from(stateId, stateGotos[stateId], stateActions[stateId], recoveryStateIds);
         }
 
         return states;
     }
 
-    private static class StateActions {
-        final int stateId;
-        final IGoto[] gotos;
-        final ActionsPerCharacterClass[] actions;
-
-        StateActions(int stateId, IGoto[] gotos, ActionsPerCharacterClass[] actions) {
-            this.stateId = stateId;
-            this.gotos = gotos;
-            this.actions = actions;
-        }
-
-        boolean containsOnlyRecoveryReduces() {
-            return Arrays.stream(actions)
-                .allMatch(actionsPerCharacterClass -> actionsPerCharacterClass.actions.stream()
-                    .allMatch(action -> (action.actionType() == ActionType.REDUCE
-                        || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
-                        && ((IReduce) action).production().isRecovery()));
-        }
+    static boolean containsOnlyRecoveryReduces(ActionsPerCharacterClass[] actions) {
+        return Arrays.stream(actions)
+            .allMatch(actionsPerCharacterClass -> actionsPerCharacterClass.actions.stream()
+                .allMatch(action -> (action.actionType() == ActionType.REDUCE
+                    || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
+                    && ((IReduce) action).production().isRecovery()));
     }
 
     private IGoto[] readGotos(IStrategoList gotosTermList) {
