@@ -79,7 +79,8 @@ public class MultipleActionGroupsForRangeTest {
     }
 
     public void test(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
-        IActionsForCharacter separated = new ActionsForCharacterSeparated(actionsPerCharacterClasses);
+        IActionsForCharacter separated =
+            new ActionsForCharacterSeparated(actionsPerCharacterClasses, Collections.emptySet());
         IActionsForCharacter disjointSorted =
             new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses, Collections.emptySet());
 
