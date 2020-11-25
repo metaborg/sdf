@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -79,7 +80,8 @@ public class MultipleActionGroupsForRangeTest {
 
     public void test(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
         IActionsForCharacter separated = new ActionsForCharacterSeparated(actionsPerCharacterClasses);
-        IActionsForCharacter disjointSorted = new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses);
+        IActionsForCharacter disjointSorted =
+            new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses, Collections.emptySet());
 
         for(int character = 0; character < CHARACTERS; character++) {
             IActionQuery actionQuery = new MockActionQuery(character);

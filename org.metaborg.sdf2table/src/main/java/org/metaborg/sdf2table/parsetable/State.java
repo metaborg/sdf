@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,11 +11,7 @@ import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
-import org.metaborg.parsetable.query.ActionsForCharacterDisjointSorted;
-import org.metaborg.parsetable.query.ActionsPerCharacterClass;
-import org.metaborg.parsetable.query.IActionQuery;
-import org.metaborg.parsetable.query.IActionsForCharacter;
-import org.metaborg.parsetable.query.ParsingMode;
+import org.metaborg.parsetable.query.*;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -377,7 +374,8 @@ public class State implements IState, Comparable<State>, Serializable {
     }
 
     public void calculateActionsForCharacter() {
-        actionsForCharacter = new ActionsForCharacterDisjointSorted(readActions());
+        // TODO: this should take into account which states only contain recovery reduces
+        actionsForCharacter = new ActionsForCharacterDisjointSorted(readActions(), Collections.emptySet());
     }
 
     private ActionsPerCharacterClass[] readActions() {

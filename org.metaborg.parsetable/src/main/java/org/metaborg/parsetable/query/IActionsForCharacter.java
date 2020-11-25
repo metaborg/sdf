@@ -3,10 +3,12 @@ package org.metaborg.parsetable.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.metaborg.parsetable.actions.ActionType;
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.actions.IShift;
 
 public interface IActionsForCharacter {
 
@@ -27,7 +29,8 @@ public interface IActionsForCharacter {
      */
     Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
-    default ActionsPerCharacterClass[] filterNonRecoveryActions(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
+    default ActionsPerCharacterClass[] filterNonRecoveryActions(ActionsPerCharacterClass[] actionsPerCharacterClasses,
+        Set<Integer> recoveryStateIds) {
         ActionsPerCharacterClass[] filteredActionsPerCharacterClasses =
             new ActionsPerCharacterClass[actionsPerCharacterClasses.length];
 
@@ -36,8 +39,14 @@ public interface IActionsForCharacter {
             List<IAction> filteredActions = new ArrayList<>(actionsPerCharacterClass.actions);
 
             filteredActions.removeIf(action -> {
-                return (action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
-                    && ((IReduce) action).production().isRecovery();
+                boolean isRecoveryReduce =
+                    (action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
+                        && ((IReduce) action).production().isRecovery();
+
+                boolean isShiftToRecoveryState = (action.actionType() == ActionType.SHIFT) && recoveryStateIds.stream()
+                    .anyMatch(recoveryStateId -> recoveryStateId == ((IShift) action).shiftStateId());
+
+                return isRecoveryReduce || isShiftToRecoveryState;
             });
 
             if(filteredActions.size() == actionsPerCharacterClass.actions.size())
