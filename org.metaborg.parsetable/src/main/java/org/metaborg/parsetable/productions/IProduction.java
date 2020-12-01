@@ -49,6 +49,10 @@ public interface IProduction {
 
     boolean isRecovery();
 
+    default boolean isWater() {
+        return (sort() != null && sort().contains("WATER")) || "WATER".equals(constructor());
+    }
+
     boolean isCompletion();
 
     // The methods below are for tokenization / syntax highlighting
