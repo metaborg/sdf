@@ -116,7 +116,7 @@ public class NormGrammarReader {
     	readModule(termFromFile(input));
     }
 
-    private void readModule(IStrategoTerm module) throws Exception {
+    public void readModule(IStrategoTerm module) throws Exception {
         if(module instanceof IStrategoAppl) {
             IStrategoAppl app = (IStrategoAppl) module;
             if(app.getName().equals("Module")) {
