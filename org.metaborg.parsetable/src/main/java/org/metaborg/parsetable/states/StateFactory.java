@@ -1,5 +1,7 @@
 package org.metaborg.parsetable.states;
 
+import java.util.Set;
+
 import org.metaborg.parsetable.actions.IGoto;
 import org.metaborg.parsetable.query.*;
 
@@ -18,16 +20,17 @@ public class StateFactory implements IStateFactory {
         this.productionToGotoRepresentation = productionToGotoType;
     }
 
-    @Override public IState from(int stateId, IGoto[] gotos, ActionsPerCharacterClass[] actionsPerCharacterClass) {
+    @Override public IState from(int stateId, IGoto[] gotos, ActionsPerCharacterClass[] actionsPerCharacterClass,
+        Set<Integer> recoveryStateIds) {
         IActionsForCharacter actionsForCharacter;
         IProductionToGoto productionToGoto;
 
         switch(actionsForCharacterRepresentation) {
             case DisjointSorted:
-                actionsForCharacter = new ActionsForCharacterDisjointSorted(actionsPerCharacterClass);
+                actionsForCharacter = new ActionsForCharacterDisjointSorted(actionsPerCharacterClass, recoveryStateIds);
                 break;
             case Separated:
-                actionsForCharacter = new ActionsForCharacterSeparated(actionsPerCharacterClass);
+                actionsForCharacter = new ActionsForCharacterSeparated(actionsPerCharacterClass, recoveryStateIds);
                 break;
             default:
                 actionsForCharacter = null;
