@@ -1,7 +1,27 @@
 plugins {
-  id("org.metaborg.spoofax.gradle.langspec")
+  id("org.metaborg.devenv.spoofax.gradle.langspec")
   id("de.set.ecj") // Use ECJ to speed up compilation of Stratego's generated Java files.
   `maven-publish`
+}
+
+// Replace language dependencies with overridden/local ones.
+fun compositeBuild(name: String) = "$group:$name:$version"
+val spoofax2BaselineVersion: String by ext
+val spoofax2Version: String by ext
+spoofaxLanguageSpecification {
+  addSourceDependenciesFromMetaborgYaml.set(false)
+  addCompileDependenciesFromMetaborgYaml.set(false)
+}
+dependencies {
+  compileLanguage("org.metaborg:org.metaborg.meta.lang.template:$spoofax2BaselineVersion")
+  compileLanguage("org.metaborg:org.metaborg.meta.lang.nabl:$spoofax2BaselineVersion")
+  compileLanguage("org.metaborg:org.metaborg.meta.lang.esv:$spoofax2BaselineVersion")
+  compileLanguage("org.metaborg:org.metaborg.meta.lang.ts:$spoofax2BaselineVersion")
+  compileLanguage(compositeBuild("statix.lang"))
+
+  sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
+  sourceLanguage(compositeBuild("meta.lib.spoofax"))
+  sourceLanguage(compositeBuild("statix.runtime"))
 }
 
 ecj {
@@ -10,7 +30,3 @@ ecj {
 tasks.withType<JavaCompile> { // ECJ does not support headerOutputDirectory (-h argument).
   options.headerOutputDirectory.convention(provider { null })
 }
-
-// HACK: Set different group to prevent substitution of the baseline version to this project. I could not find another
-// way to disable this substitution.
-group = "org.metaborg.bootstraphack"
