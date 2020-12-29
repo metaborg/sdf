@@ -336,22 +336,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             return ConcreteSyntaxContext.ContextFree;
     }
 
-    @Override public boolean isContextFree() {
-        return isContextFree;
-    }
-
-    @Override public boolean isLayout() {
-        return isLayout;
-    }
-
-    @Override public boolean isLiteral() {
-        return isLiteral;
-    }
-
-    @Override public boolean isLexical() {
-        return isLexical;
-    }
-
     @Override public boolean isList() {
         return isList;
     }
