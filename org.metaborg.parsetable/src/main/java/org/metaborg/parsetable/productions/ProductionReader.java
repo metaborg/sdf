@@ -66,12 +66,6 @@ public class ProductionReader {
         return topdownHasSpaces(rhs);
     }
 
-    private boolean getIsNumberLiteral(IStrategoTerm rhs) {
-        IStrategoTerm range = getFirstRange(rhs);
-
-        return range != null && toJavaIntAt(range, 0) == '0' && toJavaIntAt(range, 1) == '9';
-    }
-
     private boolean topdownHasSpaces(IStrategoTerm term) {
         Iterator<IStrategoTerm> iterator = TermVisitor.tryGetListIterator(term);
 
@@ -93,8 +87,10 @@ public class ProductionReader {
         return false;
     }
 
-    private boolean isRangeAppl(IStrategoTerm child) {
-        return isAppl(child) && ((IStrategoAppl) child).getName().equals("range");
+    private boolean getIsNumberLiteral(IStrategoTerm rhs) {
+        IStrategoTerm range = getFirstRange(rhs);
+
+        return range != null && toJavaIntAt(range, 0) == '0' && toJavaIntAt(range, 1) == '9';
     }
 
     private IStrategoTerm getFirstRange(IStrategoTerm term) {
@@ -112,6 +108,10 @@ public class ProductionReader {
         }
 
         return null;
+    }
+
+    private boolean isRangeAppl(IStrategoTerm child) {
+        return isAppl(child) && ((IStrategoAppl) child).getName().equals("range");
     }
 
     private ProductionAttributes readProductionAttributes(IStrategoAppl attributesTerm) throws ParseTableReadException {
