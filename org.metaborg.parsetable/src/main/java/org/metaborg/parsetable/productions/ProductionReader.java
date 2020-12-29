@@ -3,7 +3,6 @@ package org.metaborg.parsetable.productions;
 import static org.spoofax.terms.util.TermUtils.*;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.metaborg.parsetable.ParseTableReadException;
@@ -15,7 +14,6 @@ import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.TermVisitor;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -66,24 +64,12 @@ public class ProductionReader {
             return false;
     }
 
-    private boolean getIsStringLiteral(IStrategoTerm rhs) {
-        return topdownHasSpaces(rhs);
-    }
+    private boolean getIsStringLiteral(IStrategoList rhs) {
+        for(IStrategoTerm term : rhs) {
+            if(isAppl(term)) {
+                ICharacterClass cc = getCharacterClass(toAppl(term));
 
-    private boolean topdownHasSpaces(IStrategoTerm term) {
-        Iterator<IStrategoTerm> iterator = TermVisitor.tryGetListIterator(term);
-
-        for(int i = 0, max = term.getSubtermCount(); i < max; i++) {
-            IStrategoTerm child = iterator == null ? term.getSubterm(i) : iterator.next();
-
-            if(isRangeAppl(child)) {
-                int start = toJavaIntAt(child, 0);
-                int end = toJavaIntAt(child, 1);
-
-                if(start <= ' ' && ' ' <= end)
-                    return true;
-            } else {
-                if(topdownHasSpaces(child))
+                if(cc != null && cc.contains(' '))
                     return true;
             }
         }
@@ -108,10 +94,6 @@ public class ProductionReader {
             return getCharacterClass(toApplAt(term, 0));
         else
             return null;
-    }
-
-    private boolean isRangeAppl(IStrategoTerm child) {
-        return isAppl(child) && ((IStrategoAppl) child).getName().equals("range");
     }
 
     private ProductionAttributes readProductionAttributes(IStrategoAppl attributesTerm) throws ParseTableReadException {
