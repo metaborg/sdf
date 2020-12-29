@@ -52,7 +52,7 @@ public class SymbolReader {
             case "layout":
                 return readNonTerminal(symbolTermUnpacked, syntaxContext, cardinality);
             case "char-class":
-                return readTerminal(symbolTermUnpacked, cardinality);
+                return readTerminal(symbolTermUnpacked, syntaxContext, cardinality);
             case "alt":
                 ISymbol first = read(toApplAt(symbolTermUnpacked, 0));
                 ISymbol second = read(toApplAt(symbolTermUnpacked, 1));
@@ -146,11 +146,12 @@ public class SymbolReader {
         }
     }
 
-    private ITerminalSymbol readTerminal(IStrategoAppl terminalTerm, SortCardinality cardinality) {
+    private ITerminalSymbol readTerminal(IStrategoAppl terminalTerm, SyntaxContext syntaxContext,
+        SortCardinality cardinality) {
         IStrategoList characterClassTermList = toListAt(terminalTerm, 0);
         ICharacterClass characterClass = characterClassReader.read(characterClassTermList);
 
-        return new TerminalSymbol(characterClass, cardinality);
+        return new TerminalSymbol(characterClass, syntaxContext, cardinality);
     }
 
     private IMetaVarSymbol readMetaVar(IStrategoAppl metaVarTerm) {
