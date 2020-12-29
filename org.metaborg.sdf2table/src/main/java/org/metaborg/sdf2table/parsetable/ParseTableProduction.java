@@ -162,7 +162,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             symb2 = ((ContextFreeSymbol) symb2).getSymbol();
         }
 
-        if(symb2 instanceof SequenceSymbol || isIterSymbol(symb2)) {
+        if(symb2 instanceof SequenceSymbol || isIterSymbol(symb2)
+            || ((symb2 instanceof LexicalSymbol) && isIterSymbol(((LexicalSymbol) symb2).getSymbol()))) {
             isList = true;
         }
 
