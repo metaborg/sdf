@@ -27,7 +27,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final IProduction p;
     private final int productionNumber;
     private final String sort;
-    private final boolean isContextFree;
     private final boolean isLayout;
     private final boolean isLiteral;
     private final boolean isLexical;
@@ -148,10 +147,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             isLexicalRhs = false;
         }
 
-        this.isLexical = p.leftHand() instanceof LexicalSymbol || isLexicalRhs;
+        ISymbol leftHandUnpacked = unpackIterSymbol(p.leftHand());
 
-        this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
-
+        this.isLexical =
+            p.leftHand() instanceof LexicalSymbol || leftHandUnpacked instanceof CharacterClassSymbol || isLexicalRhs;
 
         ISymbol symb2 = p.leftHand();
         // not considering varsym
@@ -305,6 +304,19 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private boolean isIterSymbol(ISymbol s) {
         return (s instanceof IterSymbol) || (s instanceof IterStarSymbol) || (s instanceof IterStarSepSymbol)
             || (s instanceof IterSepSymbol);
+    }
+
+    private ISymbol unpackIterSymbol(ISymbol s) {
+        if(s instanceof IterSymbol)
+            return ((IterSymbol) s).getSymbol();
+        else if(s instanceof IterStarSymbol)
+            return ((IterStarSymbol) s).getSymbol();
+        else if(s instanceof IterStarSepSymbol)
+            return ((IterStarSepSymbol) s).getSymbol();
+        else if(s instanceof IterSepSymbol)
+            return ((IterSepSymbol) s).getSymbol();
+        else
+            return null;
     }
 
     public IProduction getProduction() {
