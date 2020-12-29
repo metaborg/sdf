@@ -322,7 +322,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     }
 
     @Override public String descriptor() {
-        return "";
+        return toString();
     }
 
     @Override public ConcreteSyntaxContext concreteSyntaxContext() {
