@@ -61,6 +61,10 @@ public interface IProduction {
         return (sort() != null && sort().contains("WATER")) || "WATER".equals(constructor());
     }
 
+    default boolean isInsertion() {
+        return "INSERTION".equals(constructor());
+    }
+
     boolean isCompletion();
 
     // The methods below are for tokenization / syntax highlighting
