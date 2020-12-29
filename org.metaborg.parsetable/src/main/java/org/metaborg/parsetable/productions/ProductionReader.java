@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SymbolReader;
 import org.spoofax.interpreter.terms.IStrategoAppl;
@@ -21,9 +22,12 @@ import com.google.common.collect.ImmutableSet;
 public class ProductionReader {
 
     private final CharacterClassReader characterClassReader;
+    private final ICharacterClass digitsCharacterClass;
 
     public ProductionReader(CharacterClassReader characterClassReader) {
         this.characterClassReader = characterClassReader;
+        this.digitsCharacterClass = characterClassReader.characterClassFactory
+            .finalize(characterClassReader.characterClassFactory.fromRange('0', '9'));
     }
 
     public IProduction read(IStrategoTerm productionWithIdTerm) throws ParseTableReadException {
@@ -87,27 +91,23 @@ public class ProductionReader {
         return false;
     }
 
-    private boolean getIsNumberLiteral(IStrategoTerm rhs) {
-        IStrategoTerm range = getFirstRange(rhs);
+    private boolean getIsNumberLiteral(IStrategoList rhs) {
+        if(isApplAt(rhs, 0)) {
+            ICharacterClass cc = getCharacterClass(toApplAt(rhs, 0));
 
-        return range != null && toJavaIntAt(range, 0) == '0' && toJavaIntAt(range, 1) == '9';
-    }
-
-    private IStrategoTerm getFirstRange(IStrategoTerm term) {
-        for(int i = 0; i < term.getSubtermCount(); i++) {
-            IStrategoTerm child = term.getSubterm(i);
-
-            if(isRangeAppl(child))
-                return child;
-            else {
-                child = getFirstRange(child);
-
-                if(child != null)
-                    return child;
-            }
+            return cc != null && cc.equals(digitsCharacterClass);
         }
 
-        return null;
+        return false;
+    }
+
+    private ICharacterClass getCharacterClass(IStrategoAppl term) {
+        if("char-class".equals(term.getName()))
+            return characterClassReader.read(toListAt(term, 0));
+        else if("lex".equals(term.getName()) || "iter".equals(term.getName()) || "iter-star".equals(term.getName()))
+            return getCharacterClass(toApplAt(term, 0));
+        else
+            return null;
     }
 
     private boolean isRangeAppl(IStrategoTerm child) {

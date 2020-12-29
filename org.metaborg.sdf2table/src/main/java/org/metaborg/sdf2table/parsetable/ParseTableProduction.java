@@ -172,8 +172,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
         this.isStringLiteral = topdownHasSpaces(p.rightHand());
 
-        CharacterClassSymbol cc = checkFirstRange(p.rightHand());
-        this.isNumberLiteral = (cc != null);
+        this.isNumberLiteral = getIsNumberLiteral(p.rightHand());
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
 
@@ -235,25 +234,19 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return false;
     }
 
+    private boolean getIsNumberLiteral(List<ISymbol> rhs) {
+        if(!rhs.isEmpty()) {
+            ISymbol s = getFirstRange(rhs.get(0));
 
-    private CharacterClassSymbol checkFirstRange(List<ISymbol> rhs) {
-        for(ISymbol s : rhs) {
-
-            s = getFirstRange(s);
             if(s instanceof CharacterClassSymbol) {
-                CharacterClassSymbol characterClassSymbol = (CharacterClassSymbol) s;
-                ICharacterClass cc = characterClassSymbol.getCC();
+                ICharacterClass cc = ((CharacterClassSymbol) s).getCC();
                 ICharacterClass intCC = ParseTableIO.getCharacterClassFactory().fromRange('0', '9');
-                if(!cc.isEmpty()) {
-                    if(cc.equals(intCC.intersection(cc))) {
-                        return characterClassSymbol;
-                    }
-                } else {
-                    return null;
-                }
+
+                return intCC.equals(cc);
             }
         }
-        return null;
+
+        return false;
     }
 
     private ISymbol getFirstRange(ISymbol s) {
