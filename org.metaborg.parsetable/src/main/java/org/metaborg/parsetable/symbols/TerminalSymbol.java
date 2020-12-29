@@ -10,7 +10,7 @@ public class TerminalSymbol extends Symbol implements ITerminalSymbol {
     public TerminalSymbol(ICharacterClass characterClass, SyntaxContext syntaxContext, SortCardinality cardinality) {
         super(cardinality);
         this.characterClass = characterClass;
-        this.syntaxContext = syntaxContext;
+        this.syntaxContext = syntaxContext != null ? syntaxContext : SyntaxContext.Lexical;
     }
 
     @Override public ICharacterClass characterClass() {
