@@ -10,7 +10,7 @@ import org.spoofax.interpreter.terms.IStrategoTerm;
 
 public class CharacterClassReader {
 
-    protected final ICharacterClassFactory characterClassFactory;
+    public final ICharacterClassFactory characterClassFactory;
 
     public CharacterClassReader(ICharacterClassFactory characterClassFactory) {
         this.characterClassFactory = characterClassFactory;

@@ -116,6 +116,8 @@ public abstract class Symbol implements Serializable, ISymbol {
             return getSort(((LexicalSymbol) s).getSymbol());
         } else if(s instanceof AltSymbol) {
             return getSort(((AltSymbol) s).left()) + "_" + getSort(((AltSymbol) s).right());
+        } else if(s instanceof StartSymbol || s instanceof FileStartSymbol) {
+            return s.name();
         }
         return null;
     }
