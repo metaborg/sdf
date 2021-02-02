@@ -17,7 +17,7 @@ dependencies {
   compileLanguage(compositeBuild("org.metaborg.meta.lang.esv"))
 
   sourceLanguage(compositeBuild("meta.lib.spoofax"))
-  sourceLanguage("org.metaborg:org.metaborg.meta.lang.template:$spoofax2Version")
+  sourceLanguage(compositeBuild("org.metaborg.meta.lang.template"))
   sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
   sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.shared"))
   sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.runtime"))
