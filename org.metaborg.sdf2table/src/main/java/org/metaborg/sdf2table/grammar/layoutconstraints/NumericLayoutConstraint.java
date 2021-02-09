@@ -54,7 +54,7 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
             } else {
                 count--;
             }
-            if(count == 0) {
+            if(count < 0) {
                 tree = normalizedtree;
                 return;
             }

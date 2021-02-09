@@ -188,7 +188,7 @@ rules
         position -> <id>
         where
           intPos := <string-to-int> position;
-          <gt> (intPos, <production-arity(|chars)> p)
+          <gt> (intPos, <production-arity(|chars); dec> p)
 
     production-arity(|chars) :
       SdfProduction(_, Rhs(rhs*), _) -> <length> rhs*
