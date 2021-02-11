@@ -1,12 +1,14 @@
 module layout-constraints/Layout-Constraints
 
-imports constants/NatCon
-        constants/StrCon
-        constants/IdentifierCon
+imports
+
+  constants/NatCon
+  constants/StrCon
+  constants/IdentifierCon
 
 lexical syntax
 
-  LayoutVar = [a-zA-Z] [a-zA-Z0-9]* 
+  LayoutVar = [a-zA-Z] [a-zA-Z0-9]*
   LayoutVar = "all" {reject}
 
 lexical restrictions
@@ -15,55 +17,54 @@ lexical restrictions
   "all" -/- [a-zA-Z0-9]
 
 context-free syntax
-   
-  ConstraintTree.Tree = NatCon 
-  Constraint.Num = NatCon 
-  Constraint = LayoutVar 
+
+  ConstraintTree.Tree = NatCon
+  Constraint.Num = NatCon
+  Constraint = LayoutVar
   Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> {deprecated("all layout constraint will be removed in a future version. Use align-list instead")}
-  ConstraintToken.First = <<ConstraintTree>.first> 
-  ConstraintToken.Left = <<ConstraintTree>.left> 
-  ConstraintToken.Right = <<ConstraintTree>.right> 
-  ConstraintToken.Last = <<ConstraintTree>.last> 
-  Constraint.Line = <<ConstraintToken>.line> 
-  Constraint.Col = <<ConstraintToken>.col> 
-  Constraint.Not = <!<Constraint>> 
-  Constraint.Mul = <<Constraint> * <Constraint>> 
-  Constraint.Div = <<Constraint> / <Constraint>> 
-  Constraint.Add = <<Constraint> + <Constraint>> 
-  Constraint.Sub = <<Constraint> - <Constraint>> 
-  Constraint.Eq = <<Constraint> == <Constraint>>  
-  Constraint.Lt = <<Constraint> \< <Constraint>> 
-  Constraint.Le = <<Constraint> \<= <Constraint>> 
-  Constraint.Gt = <<Constraint> \> <Constraint>> 
-  Constraint.Ge = <<Constraint> \>= <Constraint>> 
-  Constraint.And = <<Constraint> && <Constraint>> 
-  Constraint.Or = <<Constraint> || <Constraint>> 
+  ConstraintToken.First = <<ConstraintTree>.first>
+  ConstraintToken.Left = <<ConstraintTree>.left>
+  ConstraintToken.Right = <<ConstraintTree>.right>
+  ConstraintToken.Last = <<ConstraintTree>.last>
+  Constraint.Line = <<ConstraintToken>.line>
+  Constraint.Col = <<ConstraintToken>.col>
+  Constraint.Not = <!<Constraint>>
+  Constraint.Mul = <<Constraint> * <Constraint>>
+  Constraint.Div = <<Constraint> / <Constraint>>
+  Constraint.Add = <<Constraint> + <Constraint>>
+  Constraint.Sub = <<Constraint> - <Constraint>>
+  Constraint.Eq = <<Constraint> == <Constraint>>
+  Constraint.Lt = <<Constraint> \< <Constraint>>
+  Constraint.Le = <<Constraint> \<= <Constraint>>
+  Constraint.Gt = <<Constraint> \> <Constraint>>
+  Constraint.Ge = <<Constraint> \>= <Constraint>>
+  Constraint.And = <<Constraint> && <Constraint>>
+  Constraint.Or = <<Constraint> || <Constraint>>
   Constraint = <(<Constraint>)> {bracket}
-  
-  ShortConstraint.And              = <<ShortConstraint> && <ShortConstraint>> {left}
-  ShortConstraint.Or               = <<ShortConstraint> || <ShortConstraint>> {left}
+
+  ShortConstraint.And = <<ShortConstraint> && <ShortConstraint>> {left}
+  ShortConstraint.Or = <<ShortConstraint> || <ShortConstraint>> {left}
   ShortConstraint = <(<ShortConstraint>)> {bracket}
-  
-  ShortConstraint.Offside         = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
-  ShortConstraint.Indent          = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align           = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align           = <align-list <ConstraintTreeReference>>
-  ShortConstraint.NewLineIndent   = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  
-  ShortConstraint.PPOffside         = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
-  ShortConstraint.PPIndent          = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPAlign           = <pp-align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPAlign           = <pp-align-list <ConstraintTreeReference>>
-  ShortConstraint.PPNewLineIndent   = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+
+  ShortConstraint.Offside = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.Indent = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.Align = <align-list <ConstraintTreeReference>>
+  ShortConstraint.NewLineIndent = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+
+  ShortConstraint.PPOffside = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
+  ShortConstraint.PPIndent = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign = <pp-align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  ShortConstraint.PPAlign = <pp-align-list <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineIndent = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
   ShortConstraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPNewLine         = <pp-newline <ConstraintTreeReference>>
-  ShortConstraint.PPNewLineBy       = <pp-newline(<NatCon>) <ConstraintTreeReference>>
-  
-  ConstraintTreeReference.PosRef   = NatCon
+  ShortConstraint.PPNewLine = <pp-newline <ConstraintTreeReference>>
+  ShortConstraint.PPNewLineBy = <pp-newline(<NatCon>) <ConstraintTreeReference>>
+
+  ConstraintTreeReference.PosRef = NatCon
   ConstraintTreeReference.LiteralRef = StrCon
   ConstraintTreeReference.LabelRef = IdCon
-  
-  
+
 context-free priorities
 
     Constraint.Not > {left:
@@ -71,12 +72,12 @@ context-free priorities
     Constraint.Div } > {left:
     Constraint.Add
     Constraint.Sub} > {left:
-    Constraint.Eq 
-    Constraint.Lt 
+    Constraint.Eq
+    Constraint.Lt
     Constraint.Le
-    Constraint.Gt 
+    Constraint.Gt
     Constraint.Ge} > {left:
     Constraint.And} > {left:
     Constraint.Or},
-    
+
     {left: ShortConstraint.And ShortConstraint.Or}
