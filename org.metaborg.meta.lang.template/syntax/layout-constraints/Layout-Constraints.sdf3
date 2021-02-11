@@ -16,6 +16,11 @@ lexical restrictions
   LayoutVar -/- [a-zA-Z0-9]
   "all" -/- [a-zA-Z0-9]
 
+template options
+
+  LayoutVar = keyword {restrict}
+  keyword -/- [a-zA-Z0-9]
+
 context-free syntax
 
   ConstraintTree.Tree = NatCon
