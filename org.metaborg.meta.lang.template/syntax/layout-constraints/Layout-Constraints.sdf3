@@ -49,7 +49,6 @@ context-free syntax
   ShortConstraint.Align           = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
   ShortConstraint.Align           = <align-list <ConstraintTreeReference>>
   ShortConstraint.NewLineIndent   = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-//  ShortConstraint.NewLineIndentBy = <newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
   
   ShortConstraint.PPOffside         = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
   ShortConstraint.PPIndent          = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
@@ -81,24 +80,3 @@ context-free priorities
     Constraint.Or},
     
     {left: ShortConstraint.And ShortConstraint.Or}
-    
-    
-context-free syntax
-
-  NewLayoutConstraint.Constraint   = <<LCOperand> <LCOperation> <LCOperand>>
-  
-  
-  LCOperation.GreaterThan        = [>]
-  LCOperation.GreaterThanEqual   = [>=]
-  LCOperation.LessThan           = [<]
-  LCOperation.LessThanEqual      = [<=]
-  LCOperation.Equal              = [==]
-  LCOperand.Line                 = <l_<LCTreeIndex>>
-  LCOperand.Column               = <c_<LCTreeIndex>>
-  LCOperand.EndLine              = <el_<LCTreeIndex>>
-  LCOperand.EndColumn            = <ec_<LCTreeIndex>>
-  LCOperand.LineParent           = <l>
-  LCOperand.ColumnParent         = <c>
-  LCOperand.EndLineParent        = <el>
-  LCOperand.EndColumnParent      = <ec>
-  LCTreeIndex.Idx                = NatCon
