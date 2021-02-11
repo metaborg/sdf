@@ -28,18 +28,18 @@ context-free syntax
   ConstraintToken.Last = <<ConstraintTree>.last>
   Constraint.Line = <<ConstraintToken>.line>
   Constraint.Col = <<ConstraintToken>.col>
+  Constraint.Mul = <<Constraint> * <Constraint>> {left}
+  Constraint.Div = <<Constraint> / <Constraint>> {left}
+  Constraint.Add = <<Constraint> + <Constraint>> {left}
+  Constraint.Sub = <<Constraint> - <Constraint>> {left}
+  Constraint.Eq = <<Constraint> == <Constraint>> {non-assoc}
+  Constraint.Lt = <<Constraint> \< <Constraint>> {non-assoc}
+  Constraint.Le = <<Constraint> \<= <Constraint>> {non-assoc}
+  Constraint.Gt = <<Constraint> \> <Constraint>> {non-assoc}
+  Constraint.Ge = <<Constraint> \>= <Constraint>> {non-assoc}
   Constraint.Not = <!<Constraint>>
-  Constraint.Mul = <<Constraint> * <Constraint>>
-  Constraint.Div = <<Constraint> / <Constraint>>
-  Constraint.Add = <<Constraint> + <Constraint>>
-  Constraint.Sub = <<Constraint> - <Constraint>>
-  Constraint.Eq = <<Constraint> == <Constraint>>
-  Constraint.Lt = <<Constraint> \< <Constraint>>
-  Constraint.Le = <<Constraint> \<= <Constraint>>
-  Constraint.Gt = <<Constraint> \> <Constraint>>
-  Constraint.Ge = <<Constraint> \>= <Constraint>>
-  Constraint.And = <<Constraint> && <Constraint>>
-  Constraint.Or = <<Constraint> || <Constraint>>
+  Constraint.And = <<Constraint> && <Constraint>> {left}
+  Constraint.Or = <<Constraint> || <Constraint>> {left}
   Constraint = <(<Constraint>)> {bracket}
 
   ShortConstraint.And = <<ShortConstraint> && <ShortConstraint>> {left}
@@ -71,7 +71,7 @@ context-free priorities
     Constraint.Mul
     Constraint.Div } > {left:
     Constraint.Add
-    Constraint.Sub} > {left:
+    Constraint.Sub} > {non-assoc:
     Constraint.Eq
     Constraint.Lt
     Constraint.Le
