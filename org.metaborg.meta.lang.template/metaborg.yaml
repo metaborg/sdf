@@ -47,7 +47,7 @@ pardonedLanguages:
 - NameBindingLanguage
 language:
   sdf:
-    sdf2table: c
+    sdf2table: java
     args:
     - -Idef
     - ${path:root}/lib/SDF.def
