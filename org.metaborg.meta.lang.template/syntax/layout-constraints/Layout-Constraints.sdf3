@@ -19,7 +19,7 @@ context-free syntax
   ConstraintTree.Tree = NatCon 
   Constraint.Num = NatCon 
   Constraint = LayoutVar 
-  Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> 
+  Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> {deprecated("all layout constraint will be removed in a future version. Use align-list instead")}
   ConstraintToken.First = <<ConstraintTree>.first> 
   ConstraintToken.Left = <<ConstraintTree>.left> 
   ConstraintToken.Right = <<ConstraintTree>.right> 
