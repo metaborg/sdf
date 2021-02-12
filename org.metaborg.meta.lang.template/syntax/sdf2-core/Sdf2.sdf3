@@ -72,7 +72,6 @@ context-free syntax
     ATermAttribute = <placeholder-insertion> {reject}
     ATermAttribute = <literal-completion> {reject}
     ATermAttribute = <layout(<Constraint>)> {reject}
-    ATermAttribute = <layout(<ShortConstraint>)> {reject}
     ATermAttribute = <deprecated(<StrCon>)> {reject}
     ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
     ATermAttribute = <id(<ModuleName>)> {reject}
