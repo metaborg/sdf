@@ -267,7 +267,7 @@ rules
     with
         <reset-counter> "pp";
         line'*           := <map(introduce-labels-line)> line*;
-        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?Align(_) <+ ?PPOffside(_, []) <+ ?PPAlign(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?AlignList(_) <+ ?PPOffside(_, []) <+ ?PPAlignList(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
         line''*          := <annotate-lines(|lc-selectors*)> line'*;
         output           := <map(template-line-to-stratego(|lang))> line''*;
         arg*             := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -297,13 +297,13 @@ rules
   apply-align-layout-constraint(|t, a*):
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     where
-      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?AlignList(<id>) + ?PPAlignList(<id>), collapse-lists); not(?[])> a*;
       elem'*   := <replace-list-align(|pos-ref*)> (1, elem*)
       
   apply-align-layout-constraint(|t, a*):
     Template(line*) -> Template(line'*)
     where
-      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?AlignList(<id>) + ?PPAlignList(<id>), collapse-lists); not(?[])> a*;
       line'*   := <replace-list-align-line(|pos-ref*)> (1, line*)
       
   replace-list-align-line(|pos-ref*):
@@ -539,7 +539,7 @@ rules
     with
       <reset-counter> "pp";
       line'*        := <map(introduce-labels-line)> line*;
-      lc-selectors* := <collect-om(?Align(_) <+ ?Offside(_, []) <+ ?PPAlign(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+      lc-selectors* := <collect-om(?AlignList(_) <+ ?Offside(_, []) <+ ?PPAlignList(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
       line''*       := <annotate-lines(|lc-selectors*)> line'*;
       output        := <map(template-line-to-stratego(|lang))> line''*;
       arg*          := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -578,10 +578,10 @@ rules
     PPAlign(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
   
   create-constraint-term:
-    Align(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    AlignList(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
     
   create-constraint-term:
-    PPAlign(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    PPAlignList(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
   
   create-constraint-term:
     Offside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
@@ -669,10 +669,10 @@ rules
       else
         elem'' := elem'
       end;
-      if align-list-or-offside-constraint := <fetch-elem(?Align(LabelRef(label')) + 
-                                                         ?Align(PosRef(start-pos')) +
-                                                         ?PPAlign(LabelRef(label')) + 
-                                                         ?PPAlign(PosRef(start-pos')) +
+      if align-list-or-offside-constraint := <fetch-elem(?AlignList(LabelRef(label')) + 
+                                                         ?AlignList(PosRef(start-pos')) +
+                                                         ?PPAlignList(LabelRef(label')) + 
+                                                         ?PPAlignList(PosRef(start-pos')) +
                                                          ?Offside(LabelRef(label'), []) +
                                                          ?Offside(PosRef(start-pos'), []) +
                                                          ?PPOffside(LabelRef(label'), []) +

@@ -14,11 +14,11 @@ test nat add constraint [[2 + 3]] parse fails
 test nat sub constraint [[3 - 2]] parse fails
 test nat mul constraint [[1 * 2]] parse fails
 test nat div constraint [[1 / 2]] parse fails
-test nat eq constraint [[1 == 2]] parse fails
-test nat gt constraint [[1 > 2]] parse fails
-test nat ge constraint [[1 >= 2]] parse fails
-test nat lt constraint [[1 < 2]] parse fails
-test nat le constraint [[1 <= 2]] parse fails
+test nat eq constraint [[1 == 2]] parse succeeds
+test nat gt constraint [[1 > 2]] parse succeeds
+test nat ge constraint [[1 >= 2]] parse succeeds
+test nat lt constraint [[1 < 2]] parse succeeds
+test nat le constraint [[1 <= 2]] parse succeeds
 
 test index constraint [[1.first.col]] parse fails
 test index add constraint [[1.first.col + 1]] parse fails
@@ -53,7 +53,7 @@ test not nat constraint [[!2]] parse fails
 test and constraint [[1.first.col == 0 && 2.first.col == 0]] parse succeeds
 test or constraint [[1.first.col == 0 || 2.first.col == 0]] parse succeeds
 test logical priority constraint [[!(1.first.col < 1 + 2 * 3 && 2.first.col > 2)]]
-parse to Not(And(Lt(Col(First(Tree("1"))),Add(Num("1"),Mul(Num("2"),Num("3")))),Gt(Col(First(Tree("2"))),Num("2"))))
+parse to Not(And(Lt(Col(First(PosRef("1"))),Add(Num("1"),Mul(Num("2"),Num("3")))),Gt(Col(First(PosRef("2"))),Num("2"))))
 
 test nat [[offside 1 2]] parse succeeds
 test nat ref [[offside 2 other]] parse succeeds
@@ -83,7 +83,7 @@ test newline-indent one [[newline-indent ref other]] parse succeeds
 test newline-indent more [[newline-indent ref other, more]] parse succeeds
 test newline-indent more non-separated [[newline-indent ref other more]] parse fails
 
-test not declaration [[!offside ref]] parse fails
+test not declaration [[!offside ref]] parse succeeds
 test declaration and declaration [[align this that && indent that other]] parse succeeds
 test declaration or declaration [[align this that || align this other]] parse succeeds
 test declaratation and constraint [[offside ref && other.first.line > ref.last.line]] parse succeeds
