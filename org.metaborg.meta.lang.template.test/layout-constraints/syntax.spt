@@ -1,0 +1,90 @@
+module layout-constraints/syntax
+
+language TemplateLang
+
+fixture [[
+module test
+
+context-free syntax
+  A.A = "1" {layout([[...]])}
+]]
+
+test nat constraint [[2]] parse fails
+test nat add constraint [[2 + 3]] parse fails
+test nat sub constraint [[3 - 2]] parse fails
+test nat mul constraint [[1 * 2]] parse fails
+test nat div constraint [[1 / 2]] parse fails
+test nat eq constraint [[1 == 2]] parse fails
+test nat gt constraint [[1 > 2]] parse fails
+test nat ge constraint [[1 >= 2]] parse fails
+test nat lt constraint [[1 < 2]] parse fails
+test nat le constraint [[1 <= 2]] parse fails
+
+test index constraint [[1.first.col]] parse fails
+test index add constraint [[1.first.col + 1]] parse fails
+test index add index constraint [[1.first.col + 2.first.col]] parse fails
+
+test index first col [[1.first.col == 1.first.col]] parse succeeds
+test index first line [[1.first.line == 1.first.line]] parse succeeds
+test index left col [[1.left.col == 1.left.col]] parse succeeds
+test index left line [[1.left.line == 1.left.line]] parse succeeds
+test index right col [[1.right.col == 1.right.col]] parse succeeds
+test index right line [[1.right.line == 1.right.line]] parse succeeds
+test index last col [[1.last.col == 1.last.col]] parse succeeds
+test index last line [[1.last.line == 1.last.line]] parse succeeds
+
+test ref constraint [[ref1.first.line == ref2.last.line]] parse succeeds
+
+test index eq constraint [[1.first.col == 1]] parse succeeds
+test index gt constraint [[1.first.col > 1]] parse succeeds
+test index ge constraint [[1.first.col >= 1]] parse succeeds
+test index lt constraint [[1.first.col < 1]] parse succeeds
+test index le constraint [[1.first.col <= 1]] parse succeeds
+
+test index eq index constraint [[1.first.col == 1.first.col]] parse succeeds
+test index gt index constraint [[1.first.col > 1.first.col]] parse succeeds
+test index ge index constraint [[1.first.col >= 1.first.col]] parse succeeds
+test index lt index constraint [[1.first.col < 1.first.col]] parse succeeds
+test index le index constraint [[1.first.col <= 1.first.col]] parse succeeds
+
+test not constraint [[!1.first.col == 2.first.col]] parse succeeds
+test not index constraint [[!1.first.col]] parse fails
+test not nat constraint [[!2]] parse fails
+test and constraint [[1.first.col == 0 && 2.first.col == 0]] parse succeeds
+test or constraint [[1.first.col == 0 || 2.first.col == 0]] parse succeeds
+test logical priority constraint [[!(1.first.col < 1 + 2 * 3 && 2.first.col > 2)]]
+parse to Not(And(Lt(Col(First(Tree("1"))),Add(Num("1"),Mul(Num("2"),Num("3")))),Gt(Col(First(Tree("2"))),Num("2"))))
+
+test nat [[offside 1 2]] parse succeeds
+test nat ref [[offside 2 other]] parse succeeds
+
+test offside [[offside ref]] parse succeeds
+test offside none [[offside]] parse fails
+test offside one [[offside ref other]] parse succeeds
+test offside more [[offside ref other, this, that]] parse succeeds
+
+test indent none [[indent ref]] parse fails
+test indent none [[indent]] parse fails
+test indent one [[indent ref other]] parse succeeds
+test indent more [[indent ref other, more]] parse succeeds
+
+test align none [[align ref]] parse fails
+test align one [[align ref other]] parse succeeds
+test align more [[align ref other, more]] parse succeeds
+test align more non-separated [[align ref other more]] parse fails
+
+test align-list none [[align-list]] parse fails
+test align-list [[align-list list]] parse succeeds
+test align-list more [[align-list this that]] parse fails
+
+test newline-indent none [[newline-indent]] parse fails
+test newline-indent with none [[newline-indent ref]] parse fails
+test newline-indent one [[newline-indent ref other]] parse succeeds
+test newline-indent more [[newline-indent ref other, more]] parse succeeds
+test newline-indent more non-separated [[newline-indent ref other more]] parse fails
+
+test not declaration [[!offside ref]] parse fails
+test declaration and declaration [[align this that && indent that other]] parse succeeds
+test declaration or declaration [[align this that || align this other]] parse succeeds
+test declaratation and constraint [[offside ref && other.first.line > ref.last.line]] parse succeeds
+test declaration or constraint [[offside ref || ref.first.line == other.last.line]] parse succeeds
