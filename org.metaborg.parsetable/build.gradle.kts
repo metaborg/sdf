@@ -20,7 +20,7 @@ dependencies {
   api(compositeBuild("org.spoofax.terms"))
 
   compileOnly("com.google.code.findbugs:jsr305")
-  api("com.google.guava:guava")
+  implementation("com.google.guava:guava")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")
