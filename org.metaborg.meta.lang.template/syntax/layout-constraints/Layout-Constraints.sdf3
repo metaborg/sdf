@@ -60,7 +60,7 @@ context-free syntax
   Constraint.Or = <<Constraint> || <Constraint>> {left}
 
   Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint>)> {
-    deprecated("all layout constraint will be removed in a future version. Use align-list instead")}
+    deprecated("The 'all' layout constraint will be removed in a future version. Use align-list instead")}
 
   Constraint.Offside = <offside <ConstraintTreeRef> <{ConstraintTreeRef ", "}*>>
   Constraint.Indent = <indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
