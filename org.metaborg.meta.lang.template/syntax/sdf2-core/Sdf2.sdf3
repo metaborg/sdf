@@ -1,6 +1,7 @@
 module sdf2-core/Sdf2
 
 imports 
+  aterms/Aterms
   sdf2-core/Sdf2-Syntax 
   constants/StrCon 
   constants/NatCon 
@@ -72,6 +73,7 @@ context-free syntax
     ATermAttribute = <placeholder-insertion> {reject}
     ATermAttribute = <literal-completion> {reject}
     ATermAttribute = <layout(<Constraint>)> {reject}
+    ATermAttribute = <layout(<ATerm>)> {reject}
     ATermAttribute = <deprecated(<StrCon>)> {reject}
     ATermAttribute.Constructor = <cons(<StrCon>)>{reject}
     ATermAttribute = <id(<ModuleName>)> {reject}
