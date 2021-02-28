@@ -122,7 +122,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     private int createTree(IStrategoTerm term) throws Exception {
-        if(TermUtils.isAppl(term) && ((IStrategoAppl) term).getName().equals("Tree")) {
+        if(TermUtils.isAppl(term) && ((IStrategoAppl) term).getName().equals("PosRef")) {
             try {
                 return Integer.parseInt(((IStrategoString) term.getSubterm(0)).stringValue());
             } catch(Exception e) {
@@ -205,7 +205,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
             return tf.makeAppl(tf.makeConstructor("left", 1), toSDF2constraint(c.getSubterm(0), tf));
         } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Right")) {
             return tf.makeAppl(tf.makeConstructor("right", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Tree")) {
+        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("PosRef")) {
             String tree = c.getSubterm(0).toString();
             return tf.makeInt(Integer.parseInt(tree.substring(1, tree.length() - 1)));
         } else {
