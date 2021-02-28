@@ -87,7 +87,7 @@ context-free priorities
       Constraint.Gt
       Constraint.Ge
     } >
-    {left: Constraint.And} >
-    {left: Constraint.Or},
+    Constraint.And >
+    Constraint.Or,
 
     {left: ConstraintExp.Mul ConstraintExp.Div } > {left: ConstraintExp.Add ConstraintExp.Sub}
