@@ -86,8 +86,8 @@ rules
      ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
      ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
      // is-X-or-inj
-     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-rule(|lang))> allsorts
-     ; sig-is-rules       := <flatfilter(geninj-sig-to-is-rule(|lang))> allsigs
+     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
+     ; sig-is-rules       := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
      // Generic option rules (library)
      ; expl-opt-rules*    := <geninj-explicate-option-rule>
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
@@ -223,7 +223,7 @@ rules
 
 rules
 
-  geninj-sort-to-is-rule(|lang): LexSort(sortname) -> [
+  geninj-sort-to-is-sort-or-inj-rule(|lang): LexSort(sortname) -> [
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = is-string
@@ -369,7 +369,7 @@ rules
 
 rules
 
-  geninj-sig-to-is-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) -> [
+  geninj-sig-to-is-sort-or-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) -> [
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = [...]
@@ -378,7 +378,7 @@ rules
   with consname   := <geninj-generate-inj-name> (sortname, [param])
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
 
-  geninj-sig-to-is-rule(|lang): CfSignature(sortname, Some(consname), params) -> [
+  geninj-sig-to-is-sort-or-inj-rule(|lang): CfSignature(sortname, Some(consname), params) -> [
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = ?MyCons(_)
