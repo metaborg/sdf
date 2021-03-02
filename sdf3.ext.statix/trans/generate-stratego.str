@@ -52,8 +52,9 @@ rules
       imports1*,
       Signature([Constructors(signatures)]),
       Signature([Constructors(plhdr-signatures)]),
-      Rules(sort-is-rules),
-      Rules(sig-is-rules),
+      Rules([sort-is-rules*]),
+      Rules([sig-is-rules*]),
+      Rules([sig-is-inj-rules*]),
       Rules([expl-sort-rules*, expl-sig-rules*, expl-plhdr-rules*, expl-amb-rules*]),
       Rules([impl-sort-rules*, impl-sig-rules*, impl-plhdr-rules*, impl-amb-rules*]),
       // Extra: should be in a library
@@ -86,8 +87,10 @@ rules
      ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
      ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
      // is-X-or-inj
-     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
-     ; sig-is-rules       := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
+     ; sort-is-rules*     := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
+     ; sig-is-rules*      := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
+     // is-inj
+     ; sig-is-inj-rules*  := <flatfilter(geninj-sig-to-is-inj-rule(|lang))> allsigs
      // Generic option rules (library)
      ; expl-opt-rules*    := <geninj-explicate-option-rule>
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
@@ -119,9 +122,10 @@ rules
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var("t"), Var("t"),
-      BA(CallNoArgs(SVar($[is-[lang]-[sortname]-or-inj])), Var("t"))
+      BA(is-call, Var("t"))
     ))
   ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
 
   geninj-sort-to-explication-rule(|lang): CfSort(sortname) -> [
     // explicate-injections-MyLang :: ? -> ?
@@ -146,9 +150,10 @@ rules
     // \)
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var("t"), Var("t"),
-      BA(CallNoArgs(SVar($[is-[lang]-[sortname]-or-inj])), Var("t"))
+      BA(is-call, Var("t"))
     ))
   ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
 
   geninj-sort-to-implication-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang :: ? -> ?
@@ -231,7 +236,6 @@ rules
     // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
     SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
   ]
-
 
 rules
 
@@ -382,13 +386,20 @@ rules
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = ?MyCons(_)
-    SDefNoArgs(
-      $[is-[lang]-[sortname]-or-inj]
-    , Match(NoAnnoList(Op(consname, args)))
-    )
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op(consname, args))))
   ]
   with args := <map(!Wld())> params
 
+
+rules
+
+  geninj-sig-to-is-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(_, _)]) -> [
+    // is-MyLang-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-inj = ?MySort2MyOtherSort(_)
+    SDefNoArgs($[is-[lang]-inj], Match(NoAnnoList(Op(consname, [Wld()]))))
+  ]
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
 
 rules
 
