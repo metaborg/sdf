@@ -106,10 +106,21 @@ rules
 rules
 
   geninj-sort-to-explication-rule(|lang): LexSort(sortname) -> [
+    // explicate-injections-MyLang :: ? -> ?
+    DefHasType($[explicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // explicate-injections-MyLang = explicate-injections-MyLang-MySort
+    SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]]))),
+
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: t -> t
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(CallNoArgs(SVar($[is-[lang]-[sortname]-or-inj])), Var("t"))
+    ))
   ]
 
   geninj-sort-to-explication-rule(|lang): CfSort(sortname) -> [
@@ -122,10 +133,21 @@ rules
 rules
 
   geninj-sort-to-implication-rule(|lang): LexSort(sortname) -> [
+    // implicate-injections-MyLang :: ? -> ?
+    DefHasType($[implicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // implicate-injections-MyLang = implicate-injections-MyLang-MySort
+    SDefNoArgs($[implicate-injections-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]]))),
+
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: t -> t
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(Var("t"), Var("t")))
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(CallNoArgs(SVar($[is-[lang]-[sortname]-or-inj])), Var("t"))
+    ))
   ]
 
   geninj-sort-to-implication-rule(|lang): CfSort(sortname) -> [
