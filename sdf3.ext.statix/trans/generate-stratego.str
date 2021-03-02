@@ -45,7 +45,9 @@ rules
   // Generate Stratego strategies and rules for explicating and implicating injections
   // geninj-module-to-injections :: SDF3.Module -> Stratego.Module
   geninj-module-to-injections:
-    Module(modname, imports, sections) -> <remove-gradual-types> Module(modname', [
+    Module(modname, imports, sections)		// SDF3
+    -> <remove-gradual-types; remove-empty-sections>
+    Module(modname', [						// Stratego
       imports0,
       imports1*,
       Signature([Constructors(signatures)]),
@@ -92,6 +94,14 @@ rules
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
 
    remove-gradual-types = topdown(try(remove-all(?DefHasType(_, _))))
+
+   remove-empty-sections = Module(id, remove-all(
+       ?Imports([])
+     + ?Signature([])
+     + ?Signature([Constructors([])])
+     + ?Rules([])
+     + ?Strategies([])
+   ))
 
 
 rules
