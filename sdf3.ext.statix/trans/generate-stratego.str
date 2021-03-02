@@ -90,62 +90,9 @@ rules
      // Generic option rules
      ; expl-opt-rules*    := <geninj-explicate-option-rule>
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
-     
+
    remove-gradual-types = topdown(try(remove-all(?DefHasType(_, _))))
 
-rules
-
-  // TODO: Move these generic rules somewhere else, rather than generating them for every file
-
-  geninj-explicate-option-rule: _ -> [
-    // explicate-option(s): None() -> []
-    RDef($[explicate-option]
-    , [DefaultVarDec("s")]
-    , RuleNoCond(
-        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
-      , AnnoList(List([]), [Var(ListVar("anno*"))])
-      )
-    )
-    // explicate-option(s): Some(t) -> [<s> t]
-  , RDef($[explicate-option]
-    , [DefaultVarDec("s")]
-    , RuleNoCond(
-        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
-      )
-    )
-  ]
-
-rules
-
-  // TODO: Move these generic rules somewhere else, rather than generating them for every file
-
-  geninj-implicate-option-rule: _ -> [
-    // implicate-option(s): [] -> None()
-    RDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , RuleNoCond(
-        AnnoList(List([]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
-      )
-    )
-    // implicate-option(s): [t] -> Some(<s> t)
-  , RDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , RuleNoCond(
-        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
-      )
-    )
-    // implicate-option(s): _ -> <fail>
-  , RDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , RuleNoCond(
-        ListTail([Wld(), Wld()], Wld())
-      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
-      )
-    )
-  ]
 
 rules
 
@@ -184,8 +131,10 @@ rules
   geninj-sort-to-explicate-placeholder-rule(|lang): CfSort(sortname) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> MySort-Plhdr(){anno*}
+    // /)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
@@ -196,8 +145,10 @@ rules
   geninj-sort-to-implicate-placeholder-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: MySort-Plhdr() -> MySort-Plhdr()
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> MySort-Plhdr(){anno*}
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
@@ -208,9 +159,11 @@ rules
   geninj-sort-to-explicate-ambiguity-rule(|lang): CfSort(sortname) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
     //   with alts' := <map(explicate-injections-MyLang-MySort)> alts
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+    // \)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
         AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
       , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
       , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
@@ -224,9 +177,11 @@ rules
   geninj-sort-to-implicate-ambiguity-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: amb(alts) -> amb(alts')
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
     //   with alts' := <map(implicate-injections-MyLang-MySort)> alts
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
         AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
       , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
       , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
@@ -286,9 +241,11 @@ rules
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: t -> ToSort2MySort(<explicate-injections-MyLang-ToSort> t)
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   t -> ToSort2MySort(<explicate-injections-MyLang-ToSort> t)
     //   where <is-MyLang-MySort-or-inj> t
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+    // \)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), NoAnnoList(Op(consname, [expl-call]))
     , BA(is-call, Var(varname))
     ))
@@ -300,8 +257,10 @@ rules
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: MyCons() -> MyCons()
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], RuleNoCond(
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
         AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
       , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
@@ -310,10 +269,12 @@ rules
   geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // explicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
-    // with t1' := <explicate-injections-MyLang-SubSort> t1
-    //    ; t2' := <explicate-injections-MyLang-SubSort> t2
-    RDefNoArgs($[explicate-injections-[lang]-[sortname]], Rule(
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <explicate-injections-MyLang-SubSort> t1
+    //      ; t2' := <explicate-injections-MyLang-SubSort> t2
+    // \)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
     , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
     , [ WithClause(body) ]
@@ -328,8 +289,10 @@ rules
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       NoAnnoList(Op(consname, [Var(varname)])),
       impl-call
     ))
@@ -340,8 +303,10 @@ rules
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: MyCons() -> MyCons()
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], RuleNoCond(
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
         AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
       , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
@@ -350,10 +315,12 @@ rules
   geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort: MyCons(t1, t2) -> MyCons(t1', t2')
-    // with t1' := <implicate-injections-MyLang-SubSort> t1
-    //    ; t2' := <implicate-injections-MyLang-SubSort> t2
-    RDefNoArgs($[implicate-injections-[lang]-[sortname]], Rule(
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <implicate-injections-MyLang-SubSort> t1
+    //      ; t2' := <implicate-injections-MyLang-SubSort> t2
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
     , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
     , [ WithClause(body) ]
@@ -408,7 +375,7 @@ rules
   geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
   with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
-  geninj-symbol-to-explication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
+  geninj-symbol-to-explication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
   geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("explicate-option"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
   geninj-symbol-to-explication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -443,7 +410,7 @@ rules
   geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
   with call := <geninj-symbol-to-implication-call(|lang)> symbol
 
-  geninj-symbol-to-implication-call(|lang): Sort(name)                    -> <origin-preserving> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
+  geninj-symbol-to-implication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
   geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("implicate-option"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): IterSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
@@ -496,6 +463,72 @@ rules
     // Some(is-MyLang-MySort-or-inj) + ?None()
     Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
 
+
+rules
+
+  // TODO: Move these generic rules somewhere else, rather than generating them for every file
+
+  geninj-explicate-option-rule: _ -> [
+    // explicate-option(s) = origin-track-forced(\
+    //   None() -> []
+    // \)
+    SDef($[explicate-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      , AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    )
+    // explicate-option(s) = origin-track-forced(\
+    //  Some(t) -> [<s> t]
+    // \)
+  , SDef($[explicate-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+  ]
+
+rules
+
+  // TODO: Move these generic rules somewhere else, rather than generating them for every file
+
+  geninj-implicate-option-rule: _ -> [
+    // implicate-option(s) = origin-track-forced(\
+    //   [] -> None()
+    // \)
+    SDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      )
+    )
+    // implicate-option(s) = origin-track-forced(\
+    //   [t] -> Some(<s> t)
+    // \)
+  , SDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+    // implicate-option(s) = origin-track-forced(\
+    //   _ -> <fail>
+    // \)
+  , SDef($[implicate-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        ListTail([Wld(), Wld()], Wld())
+      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
+      )
+    )
+  ]
+
+
 rules
 
   // Makes a list of strategy calls into nested Seq calls with the strategies
@@ -504,3 +537,4 @@ rules
   geninj-strs-to-seqs: [x|xs@[_|_]] -> Seq(x, <geninj-strs-to-seqs> xs)
 
   origin-preserving: s -> Call(SVar("origin-track-forced"), [s])
+  origin-preserving-rule: r -> <origin-preserving> LRule(r)
