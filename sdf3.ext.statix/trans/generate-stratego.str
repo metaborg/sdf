@@ -196,7 +196,9 @@ rules
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = is-string
-    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string])))
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string]))),
+    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
   ]
 
 
@@ -233,6 +235,10 @@ rules
 rules
 
   geninj-sort-to-plhdrsig: CfSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
+
+  geninj-sort-to-plhdrsig: LexSort(sortname) ->
     // MySort-Plhdr : MySort
     OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
 
