@@ -54,12 +54,9 @@ rules
       Signature([Constructors(plhdr-signatures)]),
       Rules(sort-is-rules),
       Rules(sig-is-rules),
-      Rules(sort-expl-rules),
-      Rules(sig-expl-rules),
-      Rules(sort-impl-rules),
-      Rules(sig-impl-rules),
-      Rules([expl-plhdr-rules*, expl-amb-rules*]),
-      Rules([impl-plhdr-rules*, impl-amb-rules*]),
+      Rules([expl-sort-rules*, expl-sig-rules*, expl-plhdr-rules*, expl-amb-rules*]),
+      Rules([impl-sort-rules*, impl-sig-rules*, impl-plhdr-rules*, impl-amb-rules*]),
+      // Extra: should be in a library
       Rules([expl-opt-rules*, impl-opt-rules*])
     ])
   with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
@@ -78,18 +75,20 @@ rules
      // Stratego signatures
      ; signatures         := <filter(geninj-sig-to-strsig)> allsigs
      ; plhdr-signatures   := <filter(geninj-sort-to-plhdrsig)> allsorts
-     // Stratego rules and strategies
-     ; sort-expl-rules    := <flatfilter(geninj-sort-to-explication-rule(|lang))> allsorts
-     ; sort-impl-rules    := <flatfilter(geninj-sort-to-implication-rule(|lang))> allsorts
-     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-rule(|lang))> allsorts
+     // explicate-injections
+     ; expl-sort-rules*   := <flatfilter(geninj-sort-to-explication-rule(|lang))> allsorts
+     ; expl-sig-rules*    := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
      ; expl-plhdr-rules*  := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
-     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
      ; expl-amb-rules*    := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
+     // implicate-injections
+     ; impl-sort-rules*   := <flatfilter(geninj-sort-to-implication-rule(|lang))> allsorts
+     ; impl-sig-rules*    := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
+     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
      ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
-     ; sig-expl-rules     := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
-     ; sig-impl-rules     := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
+     // is-X-or-inj
+     ; sort-is-rules      := <flatfilter(geninj-sort-to-is-rule(|lang))> allsorts
      ; sig-is-rules       := <flatfilter(geninj-sig-to-is-rule(|lang))> allsigs
-     // Generic option rules
+     // Generic option rules (library)
      ; expl-opt-rules*    := <geninj-explicate-option-rule>
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
 
