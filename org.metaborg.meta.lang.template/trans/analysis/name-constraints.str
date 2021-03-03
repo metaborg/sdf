@@ -250,7 +250,7 @@ rules
       prod -> invalid*
         where
           rhs*     := <get-production-rhs(|chars)> prod;
-          pos*     := <get-production-attrs; collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> prod;
+          pos*     := <get-production-attrs; collect-all(?AlignList(<id>) + ?PPAlignList(<id>), collapse-lists); not(?[])> prod;
           invalid* := <filter(check-non-terminal-symbol(|rhs*))> pos*
 
     check-non-terminal-symbol(|rhs*):

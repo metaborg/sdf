@@ -21,68 +21,73 @@ template options
   LayoutVar = keyword {restrict}
   keyword -/- [a-zA-Z0-9]
 
+context-free sorts
+
+  Constraint
+  ConstraintExp
+  ConstraintToken
+  ConstraintTreeRef
+
 context-free syntax
 
-  ConstraintTree.Tree = NatCon
-  Constraint.Num = NatCon
-  Constraint = LayoutVar
-  Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint> )> {deprecated("all layout constraint will be removed in a future version. Use align-list instead")}
-  ConstraintToken.First = <<ConstraintTree>.first>
-  ConstraintToken.Left = <<ConstraintTree>.left>
-  ConstraintToken.Right = <<ConstraintTree>.right>
-  ConstraintToken.Last = <<ConstraintTree>.last>
-  Constraint.Line = <<ConstraintToken>.line>
-  Constraint.Col = <<ConstraintToken>.col>
-  Constraint.Mul = <<Constraint> * <Constraint>> {left}
-  Constraint.Div = <<Constraint> / <Constraint>> {left}
-  Constraint.Add = <<Constraint> + <Constraint>> {left}
-  Constraint.Sub = <<Constraint> - <Constraint>> {left}
-  Constraint.Eq = <<Constraint> == <Constraint>> {non-assoc}
-  Constraint.Lt = <<Constraint> \< <Constraint>> {non-assoc}
-  Constraint.Le = <<Constraint> \<= <Constraint>> {non-assoc}
-  Constraint.Gt = <<Constraint> \> <Constraint>> {non-assoc}
-  Constraint.Ge = <<Constraint> \>= <Constraint>> {non-assoc}
+  ConstraintTreeRef.PosRef = NatCon
+  ConstraintTreeRef.LiteralRef = StrCon
+  ConstraintTreeRef.LabelRef = IdCon
+
+  ConstraintToken.First = <<ConstraintTreeRef>.first>
+  ConstraintToken.Left = <<ConstraintTreeRef>.left>
+  ConstraintToken.Right = <<ConstraintTreeRef>.right>
+  ConstraintToken.Last = <<ConstraintTreeRef>.last>
+
+  ConstraintExp = <(<ConstraintExp>)> {bracket}
+  ConstraintExp.Mul = <<ConstraintExp> * <ConstraintExp>> {left}
+  ConstraintExp.Div = <<ConstraintExp> / <ConstraintExp>> {left}
+  ConstraintExp.Add = <<ConstraintExp> + <ConstraintExp>> {left}
+  ConstraintExp.Sub = <<ConstraintExp> - <ConstraintExp>> {left}
+  ConstraintExp.Line = <<ConstraintToken>.line>
+  ConstraintExp.Col = <<ConstraintToken>.col>
+  ConstraintExp.Num = NatCon
+  ConstraintExp.LayoutVar = LayoutVar
+
+  Constraint = <(<Constraint>)> {bracket}
+  Constraint.Eq = <<ConstraintExp> == <ConstraintExp>> {non-assoc}
+  Constraint.Lt = <<ConstraintExp> \< <ConstraintExp>> {non-assoc}
+  Constraint.Le = <<ConstraintExp> \<= <ConstraintExp>> {non-assoc}
+  Constraint.Gt = <<ConstraintExp> \> <ConstraintExp>> {non-assoc}
+  Constraint.Ge = <<ConstraintExp> \>= <ConstraintExp>> {non-assoc}
   Constraint.Not = <!<Constraint>>
   Constraint.And = <<Constraint> && <Constraint>> {left}
   Constraint.Or = <<Constraint> || <Constraint>> {left}
-  Constraint = <(<Constraint>)> {bracket}
 
-  ShortConstraint.And = <<ShortConstraint> && <ShortConstraint>> {left}
-  ShortConstraint.Or = <<ShortConstraint> || <ShortConstraint>> {left}
-  ShortConstraint = <(<ShortConstraint>)> {bracket}
+  Constraint.All = <all(<LayoutVar>, <Constraint>, <Constraint>)> {
+    deprecated("The 'all' layout constraint will be removed in a future version. Use align-list instead")}
 
-  ShortConstraint.Offside = <offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
-  ShortConstraint.Indent = <indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align = <align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.Align = <align-list <ConstraintTreeReference>>
-  ShortConstraint.NewLineIndent = <newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
+  Constraint.Offside = <offside <ConstraintTreeRef> <{ConstraintTreeRef ", "}*>>
+  Constraint.Indent = <indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.Align = <align <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.AlignList = <align-list <ConstraintTreeRef>>
+  Constraint.NewLineIndent = <newline-indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
 
-  ShortConstraint.PPOffside = <pp-offside <ConstraintTreeReference> <{ConstraintTreeReference ", "}*>>
-  ShortConstraint.PPIndent = <pp-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPAlign = <pp-align <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPAlign = <pp-align-list <ConstraintTreeReference>>
-  ShortConstraint.PPNewLineIndent = <pp-newline-indent <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeReference> <{ConstraintTreeReference ", "}+>>
-  ShortConstraint.PPNewLine = <pp-newline <ConstraintTreeReference>>
-  ShortConstraint.PPNewLineBy = <pp-newline(<NatCon>) <ConstraintTreeReference>>
-
-  ConstraintTreeReference.PosRef = NatCon
-  ConstraintTreeReference.LiteralRef = StrCon
-  ConstraintTreeReference.LabelRef = IdCon
+  Constraint.PPOffside = <pp-offside <ConstraintTreeRef> <{ConstraintTreeRef ", "}*>>
+  Constraint.PPIndent = <pp-indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.PPAlign = <pp-align <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.PPAlignList = <pp-align-list <ConstraintTreeRef>>
+  Constraint.PPNewLineIndent = <pp-newline-indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.PPNewLineIndentBy = <pp-newline-indent-by(<NatCon>) <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.PPNewLine = <pp-newline <ConstraintTreeRef>>
+  Constraint.PPNewLineBy = <pp-newline(<NatCon>) <ConstraintTreeRef>>
 
 context-free priorities
 
-    Constraint.Not > {left:
-    Constraint.Mul
-    Constraint.Div } > {left:
-    Constraint.Add
-    Constraint.Sub} > {non-assoc:
-    Constraint.Eq
-    Constraint.Lt
-    Constraint.Le
-    Constraint.Gt
-    Constraint.Ge} > {left:
-    Constraint.And} > {left:
-    Constraint.Or},
+    Constraint.Not >
+    {non-assoc:
+      Constraint.Eq
+      Constraint.Lt
+      Constraint.Le
+      Constraint.Gt
+      Constraint.Ge
+    } >
+    Constraint.And >
+    Constraint.Or,
 
-    {left: ShortConstraint.And ShortConstraint.Or}
+    {left: ConstraintExp.Mul ConstraintExp.Div } > {left: ConstraintExp.Add ConstraintExp.Sub}

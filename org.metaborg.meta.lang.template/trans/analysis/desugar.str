@@ -216,14 +216,14 @@ rules
   create-productions-align-list(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
   create-productions-align-list(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -231,7 +231,7 @@ rules
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -239,21 +239,21 @@ rules
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?Align(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
   generate-align-productions:
-    Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("1")))))]))
+    Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("1")))))]))
 
   generate-align-productions:
-    IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("1")))))]))
+    IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("1")))))]))
 
   generate-align-productions:
-    IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("2")))))]))
+    IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("2")))))]))
 
   generate-align-productions:
-    IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("2")))))]))
+    IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("2")))))]))
 
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
@@ -323,15 +323,15 @@ rules
       constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
 
   get-tree-position(|rhs*):
-    PosRef(p) -> Tree(<dec> p)
+    PosRef(p) -> PosRef(<dec> p)
 
   get-tree-position(|rhs*):
-    LiteralRef(l) -> Tree(<dec; int-to-string> p)
+    LiteralRef(l) -> PosRef(<dec; int-to-string> p)
     where
       p := <get-index> (Lit(l), rhs*)
 
   get-tree-position(|rhs*):
-    LabelRef(l) -> Tree(<dec; int-to-string> p)
+    LabelRef(l) -> PosRef(<dec; int-to-string> p)
     where
       l'    := <strip-annos> l;
       rhs'* := <strip-annos> rhs*;
@@ -357,16 +357,16 @@ rules
       symbol := <fetch-elem(?Lit(l))> rhs*
 
   create-offside-constraint(|ref-pos):
-    Tree(p) -> Gt(Col(Left(Tree(p))), Col(First(ref-pos)))
+    PosRef(p) -> Gt(Col(Left(PosRef(p))), Col(First(ref-pos)))
 
   create-indent-constraint(|ref-pos):
-    Tree(p) -> Gt(Col(First(Tree(p))), Col(First(ref-pos)))
+    PosRef(p) -> Gt(Col(First(PosRef(p))), Col(First(ref-pos)))
 
   create-newline-indent-constraint(|ref-pos):
-    Tree(p) -> And(Gt(Col(First(Tree(p))), Col(First(ref-pos))), Gt(Line(First(Tree(p))), Line(Last(ref-pos))))
+    PosRef(p) -> And(Gt(Col(First(PosRef(p))), Col(First(ref-pos))), Gt(Line(First(PosRef(p))), Line(Last(ref-pos))))
 
   create-align-constraint(|ref-pos):
-    Tree(p) -> Eq(Col(First(Tree(p))), Col(First(ref-pos)))
+    PosRef(p) -> Eq(Col(First(PosRef(p))), Col(First(ref-pos)))
 
   remove-align-list-and-pp-constraints:
     And(<remove-constraint>, c) -> c
@@ -383,4 +383,4 @@ rules
   remove-align-list-and-pp-constraints:
     LayoutConstraint(<remove-constraint>) -> []
 
-  remove-constraint = ?Align(_) + ?PPAlign(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _)
+  remove-constraint = ?AlignList(_) + ?PPAlignList(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _)
