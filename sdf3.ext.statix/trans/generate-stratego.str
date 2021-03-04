@@ -52,13 +52,15 @@ rules
       imports1*,
       Signature([Constructors(signatures)]),
       Signature([Constructors(plhdr-signatures)]),
-      Rules([sort-is-rules*]),
-      Rules([sig-is-rules*]),
-      Rules([sig-is-inj-rules*]),
+      Rules([sort-is-rules*, sig-is-rules*]),
+      Rules([sort-is-inj-rules*, sig-is-inj-rules*]),
       Rules([expl-sort-rules*, expl-sig-rules*, expl-plhdr-rules*, expl-amb-rules*]),
       Rules([impl-sort-rules*, impl-sig-rules*, impl-plhdr-rules*, impl-amb-rules*]),
+      Rules([upgr-sort-rules*, upgr-sig-rules*, upgr-plhdr-rules*, upgr-amb-rules*]),
+      Rules([dngr-sort-rules*, dngr-sig-rules*, dngr-plhdr-rules*, dngr-amb-rules*]),
       // Extra: should be in a library
-      Rules([expl-opt-rules*, impl-opt-rules*])
+      Rules([expl-opt-rules*, impl-opt-rules*]),
+      Rules([upgr-opt-rules*, dngr-opt-rules*])
     ])
   with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
      ; lang               := <language-spec-name>
@@ -76,24 +78,37 @@ rules
      // Stratego signatures
      ; signatures         := <filter(geninj-sig-to-strsig)> allsigs
      ; plhdr-signatures   := <filter(geninj-sort-to-plhdrsig)> allsorts
-     // explicate-injections
-     ; expl-sort-rules*   := <flatfilter(geninj-sort-to-explication-rule(|lang))> allsorts
-     ; expl-sig-rules*    := <flatfilter(geninj-sig-to-explication-rule(|lang))> allsigs
-     ; expl-plhdr-rules*  := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
-     ; expl-amb-rules*    := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
-     // implicate-injections
-     ; impl-sort-rules*   := <flatfilter(geninj-sort-to-implication-rule(|lang))> allsorts
-     ; impl-sig-rules*    := <flatfilter(geninj-sig-to-implication-rule(|lang))> allsigs
-     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
-     ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
      // is-X-or-inj
      ; sort-is-rules*     := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
      ; sig-is-rules*      := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
      // is-inj
+     ; sort-is-inj-rules* := <flatfilter(geninj-sort-to-is-inj-rule(|lang))> allsorts
      ; sig-is-inj-rules*  := <flatfilter(geninj-sig-to-is-inj-rule(|lang))> allsigs
+     // explicate-injections
+     ; expl-sort-rules*   := <flatfilter(geninj-sort-to-explicate-rule(|lang))> allsorts
+     ; expl-sig-rules*    := <flatfilter(geninj-sig-to-explicate-rule(|lang))> allsigs
+     ; expl-plhdr-rules*  := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
+     ; expl-amb-rules*    := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
+     // implicate-injections
+     ; impl-sort-rules*   := <flatfilter(geninj-sort-to-implicate-rule(|lang))> allsorts
+     ; impl-sig-rules*    := <flatfilter(geninj-sig-to-implicate-rule(|lang))> allsigs
+     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
+     ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
+     // upgrade-placeholders
+     ; upgr-sort-rules*   := <flatfilter(geninj-sort-to-upgrade-rule(|lang))> allsorts
+     ; upgr-sig-rules*    := <flatfilter(geninj-sig-to-upgrade-rule(|lang))> allsigs
+     ; upgr-plhdr-rules*  := <flatfilter(geninj-sort-to-upgrade-placeholder-rule(|lang))> allsorts
+     ; upgr-amb-rules*    := <flatfilter(geninj-sort-to-upgrade-ambiguity-rule(|lang))> allsorts
+     // downgrade-placeholders
+     ; dngr-sort-rules*   := <flatfilter(geninj-sort-to-downgrade-rule(|lang))> allsorts
+     ; dngr-sig-rules*    := <flatfilter(geninj-sig-to-downgrade-rule(|lang))> allsigs
+     ; dngr-plhdr-rules*  := <flatfilter(geninj-sort-to-downgrade-placeholder-rule(|lang))> allsorts
+     ; dngr-amb-rules*    := <flatfilter(geninj-sort-to-downgrade-ambiguity-rule(|lang))> allsorts
      // Generic option rules (library)
      ; expl-opt-rules*    := <geninj-explicate-option-rule>
      ; impl-opt-rules*    := <geninj-implicate-option-rule>
+     ; upgr-opt-rules*    := <geninj-upgrade-option-rule>
+     ; dngr-opt-rules*    := <geninj-downgrade-option-rule>
 
    remove-gradual-types = topdown(try(remove-all(?DefHasType(_, _))))
 
@@ -105,10 +120,13 @@ rules
      + ?Strategies([])
    ))
 
+////////////////////////////////////
+// Explicate/implicate injections //
+////////////////////////////////////
 
 rules
 
-  geninj-sort-to-explication-rule(|lang): LexSort(sortname) -> [
+  geninj-sort-to-explicate-rule(|lang): LexSort(sortname) -> [
     // explicate-injections-MyLang :: ? -> ?
     DefHasType($[explicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // explicate-injections-MyLang = explicate-injections-MyLang-MySort
@@ -127,16 +145,7 @@ rules
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
 
-  geninj-sort-to-explication-rule(|lang): CfSort(sortname) -> [
-    // explicate-injections-MyLang :: ? -> ?
-    DefHasType($[explicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
-    // explicate-injections-MyLang = explicate-injections-MyLang-MySort
-    SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]])))
-  ]
-
-rules
-
-  geninj-sort-to-implication-rule(|lang): LexSort(sortname) -> [
+  geninj-sort-to-implicate-rule(|lang): LexSort(sortname) -> [
     // implicate-injections-MyLang :: ? -> ?
     DefHasType($[implicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // implicate-injections-MyLang = implicate-injections-MyLang-MySort
@@ -155,7 +164,14 @@ rules
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
 
-  geninj-sort-to-implication-rule(|lang): CfSort(sortname) -> [
+  geninj-sort-to-explicate-rule(|lang): CfSort(sortname) -> [
+    // explicate-injections-MyLang :: ? -> ?
+    DefHasType($[explicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // explicate-injections-MyLang = explicate-injections-MyLang-MySort
+    SDefNoArgs($[explicate-injections-[lang]], CallNoArgs(SVar($[explicate-injections-[lang]-[sortname]])))
+  ]
+
+  geninj-sort-to-implicate-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang :: ? -> ?
     DefHasType($[implicate-injections-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // implicate-injections-MyLang = implicate-injections-MyLang-MySort
@@ -175,8 +191,6 @@ rules
     , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
   ]
-
-rules
 
   geninj-sort-to-implicate-placeholder-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
@@ -208,8 +222,6 @@ rules
   ]
   with call := <geninj-symbol-to-explication-call(|lang)> Iter(Sort(sortname))
 
-rules
-
   geninj-sort-to-implicate-ambiguity-rule(|lang): CfSort(sortname) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
@@ -228,58 +240,7 @@ rules
 
 rules
 
-  geninj-sort-to-is-sort-or-inj-rule(|lang): LexSort(sortname) -> [
-    // is-MyLang-MySort-or-inj :: MySort -> MySort
-    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // is-MyLang-MySort-or-inj = is-string
-    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string]))),
-    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
-    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
-  ]
-
-rules
-
-  geninj-sig-to-strsig: CfSignature(sortname, None(), params@[_|_]) ->
-    OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
-  with str-paramsigs := <map(geninj-param-to-strsig)> params
-     ; consname  := <geninj-generate-inj-name> (sortname, params)
-
-  geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
-
-  geninj-symbol-to-strsig: Sort(name)                   -> ConstType(SortNoArgs(name))
-  geninj-symbol-to-strsig: Opt(symbol)                  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol])) // ConstType(Sort("Option", [<geninj-symbol-to-strsig> symbol]))
-  geninj-symbol-to-strsig: Iter(symbol)                 -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
-  geninj-symbol-to-strsig: IterSep(symbol, _)           -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
-  geninj-symbol-to-strsig: IterStar(symbol)             -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
-  geninj-symbol-to-strsig: IterStarSep(symbol, _)       -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
-  geninj-symbol-to-strsig: Cf(symbol)                   -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Lex(symbol)                  -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Var(symbol)                  -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Varsym(symbol)               -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Label(_, symbol)             -> <geninj-symbol-to-strsig> symbol
-  geninj-symbol-to-strsig: Alt(_, _)                    -> <errormsg(!"Alternative are not supported"); fail>
-  geninj-symbol-to-strsig: CharClass(_)                 -> <errormsg(!"Character classes are not supported"); fail>
-  geninj-symbol-to-strsig: CiLit(_)                     -> <errormsg(!"Literals are not supported"); fail>
-  geninj-symbol-to-strsig: EOF()                        -> <errormsg(!"EOF is not supported"); fail>
-  geninj-symbol-to-strsig: FileStart()                  -> <errormsg(!"Filestart is not supported"); fail>
-  geninj-symbol-to-strsig: Lit(_)                       -> <errormsg(!"Literals are not supported"); fail>
-  geninj-symbol-to-strsig: ParameterizedSort(_, _)      -> <errormsg(!"Parameterized sorts are not supported"); fail>
-  geninj-symbol-to-strsig: Sequence(_, _)               -> <errormsg(!"Sequences are not supported"); fail>
-  geninj-symbol-to-strsig: Start()                      -> <errormsg(!"Start is not supported"); fail>
-
-rules
-
-  geninj-sort-to-plhdrsig: CfSort(sortname) ->
-    // MySort-Plhdr : MySort
-    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
-
-  geninj-sort-to-plhdrsig: LexSort(sortname) ->
-    // MySort-Plhdr : MySort
-    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
-
-rules
-
-  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+  geninj-sig-to-explicate-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // explicate-injections-MyLang-MySort = origin-track-forced(\
@@ -295,7 +256,21 @@ rules
      ; expl-call  := <geninj-param-to-explication-app(|lang)> param
      ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
 
-  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+  geninj-sig-to-implicate-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+    // implicate-injections-MyLang-MySort :: MySort -> MySort
+    DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      NoAnnoList(Op(consname, [Var(varname)])),
+      impl-call
+    ))
+  ]
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; impl-call  := <geninj-param-to-implication-app(|lang)> param
+
+  geninj-sig-to-explicate-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // explicate-injections-MyLang-MySort = origin-track-forced(\
@@ -307,7 +282,19 @@ rules
     ))
   ]
 
-  geninj-sig-to-explication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+  geninj-sig-to-implicate-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+    // implicate-injections-MyLang-MySort :: MySort -> MySort
+    DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sig-to-explicate-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
     // explicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // explicate-injections-MyLang-MySort = origin-track-forced(\
@@ -325,35 +312,7 @@ rules
      ; to-vars   := <geninj-params-to-vars-tick> params
      ; body      := <geninj-params-to-explication-assigns(|lang)> params
 
-rules
-
-  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
-    // implicate-injections-MyLang-MySort :: MySort -> MySort
-    DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort = origin-track-forced(\
-    //   ToSort2MySort(t) -> <implicate-injections-MyLang-ToSort> t
-    // \)
-    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-      NoAnnoList(Op(consname, [Var(varname)])),
-      impl-call
-    ))
-  ]
-  with consname   := <geninj-generate-inj-name> (sortname, [param])
-     ; impl-call  := <geninj-param-to-implication-app(|lang)> param
-
-  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
-    // implicate-injections-MyLang-MySort :: MySort -> MySort
-    DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort = origin-track-forced(\
-    //   MyCons(){anno*} -> MyCons(){anno*}
-    // \)
-    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-    ))
-  ]
-
-  geninj-sig-to-implication-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+  geninj-sig-to-implicate-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
     // implicate-injections-MyLang-MySort :: MySort -> MySort
     DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // implicate-injections-MyLang-MySort = origin-track-forced(\
@@ -370,6 +329,326 @@ rules
   with from-vars := <geninj-params-to-vars> params
      ; to-vars   := <geninj-params-to-vars-tick> params
      ; body      := <geninj-params-to-implication-assigns(|lang)> params
+
+
+rules
+
+  geninj-params-to-explication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-explication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-params-to-implication-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-implication-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-explication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-explication-app(|lang)> param
+
+  geninj-param-to-implication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-implication-app(|lang)> param
+
+rules
+
+  geninj-params-to-explication-apps(|lang) = map(geninj-param-to-explication-app(|lang))
+  geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-explication-call(|lang)> symbol
+
+  geninj-params-to-implication-apps(|lang) = map(geninj-param-to-implication-app(|lang))
+  geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-implication-call(|lang)> symbol
+
+rules
+
+  geninj-params-to-vars = map(geninj-param-to-var)
+  geninj-param-to-var: Param(_, newname) -> Var(newname)
+
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+
+
+////////////////////////////////////
+// Upgrade/downgrade placeholders //
+////////////////////////////////////
+
+rules
+
+  geninj-sort-to-upgrade-rule(|lang): LexSort(sortname) -> [
+    // upgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // upgrade-placeholders-MyLang = explicate-injections-MyLang-MySort
+    SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))),
+
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(is-call, Var("t"))
+    ))
+  ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
+
+  geninj-sort-to-downgrade-rule(|lang): LexSort(sortname) -> [
+    // downgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // downgrade-placeholders-MyLang = implicate-injections-MyLang-MySort
+    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))),
+
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(is-call, Var("t"))
+    ))
+  ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
+
+  geninj-sort-to-upgrade-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // upgrade-placeholders-MyLang = explicate-injections-MyLang-MySort
+    SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]])))
+  ]
+
+  geninj-sort-to-downgrade-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // downgrade-placeholders-MyLang = implicate-injections-MyLang-MySort
+    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]])))
+  ]
+
+rules
+
+  geninj-sort-to-upgrade-placeholder-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> p{anno*}
+    //   with p := <make-placeholder> "MySort"
+    // /)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Var("p"), [Var(ListVar("anno*"))])
+    , [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
+    ))
+  ]
+
+  geninj-sort-to-downgrade-placeholder-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   p{anno*} -> MySort-Plhdr(){anno*}
+    //   where <is-placeholder> p
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Var("p"), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , BA(CallNoArgs(SVar("is-placeholder")), Var("p"))
+    ))
+  ]
+
+rules
+
+  geninj-sort-to-upgrade-ambiguity-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
+    //   with alts' := <map(upgrade-placeholders-MyLang-MySort)> alts
+    // \)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
+      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  ]
+  with call := <geninj-symbol-to-upgrade-call(|lang)> Iter(Sort(sortname))
+
+  geninj-sort-to-downgrade-ambiguity-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
+    //   with alts' := <map(downgrade-placeholders-MyLang-MySort)> alts
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
+      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  ]
+  with call := <geninj-symbol-to-downgrade-call(|lang)> Iter(Sort(sortname))
+
+rules
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> <upgrade-placeholders-MyLang-ToSort> t
+    //   where <is-MyLang-MySort-or-inj + is-MyLang-MySort-inj-cons> t
+    // \)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var(varname), upgr-call
+    , BA(Choice(is-call, is-inj-call), Var(varname))
+    ))
+  ]
+  with consname    := <geninj-generate-inj-name> (sortname, [param])
+     ; upgr-call   := <geninj-param-to-upgrade-app(|lang)> param
+     ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
+     ; is-inj-call := <geninj-symbol-to-is-inj-cons-call(|lang)> tosort
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> <downgrade-placeholders-MyLang-ToSort> t
+    //   where <is-MyLang-MySort-or-inj + is-MyLang-MySort-inj-cons> t
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      Var(varname), dngr-call
+    , BA(Choice(is-call, is-inj-call), Var(varname))
+    ))
+  ]
+  with consname    := <geninj-generate-inj-name> (sortname, [param])
+     ; dngr-call   := <geninj-param-to-downgrade-app(|lang)> param
+     ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
+     ; is-inj-call := <geninj-symbol-to-is-inj-cons-call(|lang)> tosort
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <upgrade-placeholders-MyLang-SubSort> t1
+    //      ; t2' := <upgrade-placeholders-MyLang-SubSort> t2
+    // \)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
+    , [ WithClause(body) ]
+    ))
+  ]
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-upgrade-assigns(|lang)> params
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <downgrade-placeholders-MyLang-SubSort> t1
+    //      ; t2' := <downgrade-placeholders-MyLang-SubSort> t2
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
+    , [ WithClause(body) ]
+    ))
+  ]
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-downgrade-assigns(|lang)> params
+
+rules
+
+  geninj-params-to-upgrade-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-upgrade-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-params-to-downgrade-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-downgrade-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-upgrade-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-upgrade-app(|lang)> param
+
+  geninj-param-to-downgrade-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-downgrade-app(|lang)> param
+
+rules
+
+  geninj-params-to-upgrade-apps(|lang) = map(geninj-param-to-upgrade-app(|lang))
+  geninj-param-to-upgrade-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-upgrade-call(|lang)> symbol
+
+  geninj-params-to-downgrade-apps(|lang) = map(geninj-param-to-downgrade-app(|lang))
+  geninj-param-to-downgrade-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-downgrade-call(|lang)> symbol
+
+rules
+
+  geninj-params-to-vars = map(geninj-param-to-var)
+  geninj-param-to-var: Param(_, newname) -> Var(newname)
+
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+
+
+
+
+/////////////////////////////
+// is-MyLang-MySort-or-inj //
+/////////////////////////////
+
+rules
+
+  geninj-sort-to-is-sort-or-inj-rule(|lang): LexSort(sortname) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = is-string
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string]))),
+    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+  ]
+
+rules
+
+  geninj-sort-to-plhdrsig: CfSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
+
+  geninj-sort-to-plhdrsig: LexSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
 
 rules
 
@@ -391,37 +670,66 @@ rules
   with args := <map(!Wld())> params
 
 
+//////////////////////////////////
+// is-MyLang-MySort-or-inj-cons //
+//////////////////////////////////
+
 rules
 
-  geninj-sig-to-is-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(_, _)]) -> [
-    // is-MyLang-inj :: MySort -> MySort
-    DefHasType($[is-[lang]-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // is-MyLang-inj = ?MySort2MyOtherSort(_)
-    SDefNoArgs($[is-[lang]-inj], Match(NoAnnoList(Op(consname, [Wld()]))))
+  geninj-sort-to-is-inj-rule(|lang): CfSort(sortname) -> [
+    // is-MyLang-inj-cons :: ? -> ?
+    DefHasType($[is-[lang]-inj-cons], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // is-MyLang-inj-cons = is-MyLang-MySort-inj-cons
+    SDefNoArgs($[is-[lang]-inj-cons], CallNoArgs(SVar($[is-[lang]-[sortname]-inj-cons]))),
+
+    // is-MyLang-inj-cons :: ? -> ?
+    DefHasType($[is-[lang]-[sortname]-inj-cons], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // We generate a fail rule, to prevent calling an undefined rule when there is no injection defined in any file
+    // is-MyLang-inj-cons = fail
+    SDefNoArgs($[is-[lang]-[sortname]-inj-cons], Fail())
+  ]
+
+rules
+
+
+  geninj-sig-to-is-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) -> [
+    // is-MyLang-MyOtherSort-inj-cons = ?MySort2MyOtherSort(_)
+    SDefNoArgs($[is-[lang]-[tosortname]-inj-cons], Match(NoAnnoList(Op(consname, [Wld()]))))
   ]
   with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; tosortname := <geninj-symbol-to-sortname> tosort
 
 rules
 
-  geninj-params-to-vars = map(geninj-param-to-var)
-  geninj-param-to-var: Param(_, newname) -> Var(newname)
+  geninj-sig-to-strsig: CfSignature(sortname, None(), params@[_|_]) ->
+    OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
+  with str-paramsigs := <map(geninj-param-to-strsig)> params
+     ; consname  := <geninj-generate-inj-name> (sortname, params)
 
-  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
-  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+  geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
+
+  geninj-symbol-to-strsig: Sort(name)                   				  -> ConstType(SortNoArgs(name))
+  geninj-symbol-to-strsig: Opt(symbol)                  				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol])) // ConstType(Sort("Option", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: Iter(symbol)                 				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterSep(symbol, _)           				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStar(symbol)             				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStarSep(symbol, _)       				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: Cf(symbol)                   				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Lex(symbol)                  				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Var(symbol)                  				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Varsym(symbol)               				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Label(_, symbol)             				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Alt(_, _)                    				  -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-strsig: CharClass(_)                 				  -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-strsig: CiLit(_)                     				  -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-strsig: EOF()                        				  -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-strsig: FileStart()                  				  -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-strsig: Lit(_)                       				  -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-strsig: ParameterizedSort(_, _)      				  -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-strsig: Sequence(_, _)               				  -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-strsig: Start()                      				  -> <errormsg(!"Start is not supported"); fail>
 
 rules
-
-  geninj-params-to-explication-assigns(|lang): params -> seqs
-  with assigns := <map(geninj-param-to-explication-assign(|lang))> params
-     ; seqs := <geninj-strs-to-seqs> assigns
-
-  geninj-param-to-explication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
-  with to-var := <geninj-param-to-var-tick> param
-     ; app := <geninj-param-to-explication-app(|lang)> param
-
-  geninj-params-to-explication-apps(|lang) = map(geninj-param-to-explication-app(|lang))
-  geninj-param-to-explication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
-  with call := <geninj-symbol-to-explication-call(|lang)> symbol
 
   geninj-symbol-to-explication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[explicate-injections-[lang]-[name]]))
   geninj-symbol-to-explication-call(|lang): Opt(symbol)                   -> Call(SVar("explicate-option"), [<geninj-symbol-to-explication-call(|lang)> symbol])
@@ -444,20 +752,6 @@ rules
   geninj-symbol-to-explication-call(|lang): Sequence(_, _)                -> <errormsg(!"Sequences are not supported"); fail>
   geninj-symbol-to-explication-call(|lang): Start()                       -> <errormsg(!"Start is not supported"); fail>
 
-rules
-
-  geninj-params-to-implication-assigns(|lang): params -> seqs
-  with assigns := <map(geninj-param-to-implication-assign(|lang))> params
-     ; seqs := <geninj-strs-to-seqs> assigns
-
-  geninj-param-to-implication-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
-  with to-var := <geninj-param-to-var-tick> param
-     ; app := <geninj-param-to-implication-app(|lang)> param
-
-  geninj-params-to-implication-apps(|lang) = map(geninj-param-to-implication-app(|lang))
-  geninj-param-to-implication-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
-  with call := <geninj-symbol-to-implication-call(|lang)> symbol
-
   geninj-symbol-to-implication-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[implicate-injections-[lang]-[name]]))
   geninj-symbol-to-implication-call(|lang): Opt(symbol)                   -> Call(SVar("implicate-option"), [<geninj-symbol-to-implication-call(|lang)> symbol])
   geninj-symbol-to-implication-call(|lang): Iter(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-implication-call(|lang)> symbol])
@@ -479,6 +773,49 @@ rules
   geninj-symbol-to-implication-call(|lang): Sequence(_, _)                -> <errormsg(!"Sequences are not supported"); fail>
   geninj-symbol-to-implication-call(|lang): Start()                       -> <errormsg(!"Start is not supported"); fail>
 
+rules
+
+  geninj-symbol-to-upgrade-call(|lang): Sort(name)                        -> CallNoArgs(SVar($[upgrade-placeholders-[lang]-[name]]))
+  geninj-symbol-to-upgrade-call(|lang): Opt(symbol)                       -> Call(SVar("upgrade-option"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): Iter(symbol)                      -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterSep(symbol, _)                -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStar(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStarSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): Cf(symbol)                        -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Lex(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Var(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Varsym(symbol)                    -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Label(_, symbol)                  -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Alt(_, _)                         -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): CharClass(_)                      -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): CiLit(_)                          -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): EOF()                             -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): FileStart()                       -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Lit(_)                            -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): ParameterizedSort(_, _)           -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Sequence(_, _)                    -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Start()                           -> <errormsg(!"Start is not supported"); fail>
+
+  geninj-symbol-to-downgrade-call(|lang): Sort(name)                      -> CallNoArgs(SVar($[downgrade-placeholders-[lang]-[name]]))
+  geninj-symbol-to-downgrade-call(|lang): Opt(symbol)                     -> Call(SVar("downgrade-option"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): Iter(symbol)                    -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterSep(symbol, _)              -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStar(symbol)                -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStarSep(symbol, _)          -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): Cf(symbol)                      -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Lex(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Var(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Varsym(symbol)                  -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Label(_, symbol)                -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Alt(_, _)                       -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): CharClass(_)                    -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): CiLit(_)                        -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): EOF()                           -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): FileStart()                     -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Lit(_)                          -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): ParameterizedSort(_, _)         -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Sequence(_, _)                  -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Start()                         -> <errormsg(!"Start is not supported"); fail>
 
 rules
 
@@ -511,6 +848,37 @@ rules
     // Some(is-MyLang-MySort-or-inj) + ?None()
     Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
 
+rules
+
+  geninj-symbol-to-is-inj-cons-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[is-[lang]-[name]-inj-cons]))
+  geninj-symbol-to-is-inj-cons-call(|lang): Opt(symbol)                   -> <geninj-symbol-to-is-inj-cons-call-opt(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Iter(symbol)                  -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterSep(symbol, _)            -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterStar(symbol)              -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterStarSep(symbol, _)        -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Cf(symbol)                    -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Lex(symbol)                   -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Var(symbol)                   -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Alt(_, _)                     -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): CharClass(_)                  -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): CiLit(_)                      -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): EOF()                         -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): FileStart()                   -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Lit(_)                        -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): ParameterizedSort(_, _)       -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Sequence(_, _)                -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Start()                       -> <errormsg(!"Start is not supported"); fail>
+
+  geninj-symbol-to-is-inj-cons-call-list(|lang): nestedSort ->
+    // is-list; map(is-MyLang-MySort-inj-cons)
+    Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-inj-cons-call(|lang)> nestedSort]))
+
+  geninj-symbol-to-is-inj-cons-call-opt(|lang): nestedSort ->
+    // Some(is-MyLang-MySort-inj-cons) + ?None()
+    Choice(Call(SVar("Some"), [<geninj-symbol-to-is-inj-cons-call(|lang)> nestedSort]), Call(SVar("None"), []))
+
 
 rules
 
@@ -538,10 +906,6 @@ rules
       )
     )
   ]
-
-rules
-
-  // TODO: Move these generic rules somewhere else, rather than generating them for every file
 
   geninj-implicate-option-rule: _ -> [
     // implicate-option(s) = origin-track-forced(\
@@ -572,6 +936,66 @@ rules
     , <origin-preserving-rule> RuleNoCond(
         ListTail([Wld(), Wld()], Wld())
       , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
+      )
+    )
+  ]
+
+rules
+
+  // TODO: Move these generic rules somewhere else, rather than generating them for every file
+
+  geninj-upgrade-option-rule: _ -> [
+    // upgrade-option(s) = origin-track-forced(\
+    //   None() -> []
+    // \)
+    SDef($[upgrade-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      , AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    )
+    // upgrade-option(s) = origin-track-forced(\
+    //  Some(t) -> [<s> t]
+    // \)
+  , SDef($[upgrade-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+  ]
+
+  geninj-downgrade-option-rule: _ -> [
+    // downgrade-option(s) = origin-track-forced(\
+    //   [] -> None()
+    // \)
+    SDef($[downgrade-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      )
+    )
+    // downgrade-option(s) = origin-track-forced(\
+    //   [t] -> Some(<s> t)
+    // \)
+  , SDef($[downgrade-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
+      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    )
+    // downgrade-option(s) = origin-track-forced(\
+    //   _ -> <fail>
+    // \)
+  , SDef($[downgrade-option]
+    , [DefaultVarDec("s")]
+    , <origin-preserving-rule> RuleNoCond(
+        ListTail([Wld(), Wld()], Wld())
+      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
       )
     )
   ]
