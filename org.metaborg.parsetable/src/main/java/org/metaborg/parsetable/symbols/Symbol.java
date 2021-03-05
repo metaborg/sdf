@@ -18,7 +18,7 @@ abstract class Symbol implements ISymbol {
         if(cardinality != null)
             s = s + cardinality.sign;
 
-        if(syntaxContext() != null) {
+        if(syntaxContext() != null && concreteSyntaxContext() != ConcreteSyntaxContext.Lexical) {
             switch(syntaxContext()) {
                 case ContextFree:
                     return s + "-CF";
