@@ -15,9 +15,8 @@ abstract class Symbol implements ISymbol {
     @Override public String toString() {
         String s = descriptor();
 
-        if(cardinality() != null) {
-            s = cardinality().descriptor + "(" + s + ")";
-        }
+        if(cardinality != null)
+            s = s + cardinality.sign;
 
         if(syntaxContext() != null) {
             switch(syntaxContext()) {
