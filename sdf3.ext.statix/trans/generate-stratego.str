@@ -415,15 +415,15 @@ rules
   geninj-sort-to-upgrade-rule(|lang): CfSort(sortname) -> [
     // upgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
-    // upgrade-placeholders-MyLang = explicate-injections-MyLang-MySort
+    // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
     SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]])))
   ]
 
   geninj-sort-to-downgrade-rule(|lang): CfSort(sortname) -> [
     // downgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
-    // downgrade-placeholders-MyLang = implicate-injections-MyLang-MySort
-    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[implicate-injections-[lang]-[sortname]])))
+    // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
+    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]])))
   ]
 
 rules
