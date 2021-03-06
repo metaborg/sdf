@@ -1,0 +1,63 @@
+module layout-constraints/analysis
+
+language TemplateLang
+
+fixture [[
+module layout-constraints/analysis
+
+context-free syntax
+  A.A = <<l:L*> test { <b:B> } <c:C+>> {layout([[...]])}
+  L.L = "L"
+  B.B = "B"
+  C.C = "C"
+]]
+
+test offside label one [[offside b]] analysis succeeds
+test offside index one [[offside 3]] analysis succeeds
+test offside index terminal [[offside [[1]] ]] 1 error at #1
+test offside label more [[offside l b, c]] analysis succeeds
+test offside index more [[offside 1 2, 4]] analysis succeeds
+test offside mixed ref more [[offside b 4, c]] analysis succeeds
+test offside before invalid [[offside c b]] analysis fails
+test offside same [[offside b 3]] analysis fails
+test offside list not in order [[offside 1 c, b]] analysis succeeds
+test offside out of bounds index [[offside [[7]] [[8]],[[9]] ]] 3 error at #1, #2, #3
+test offside invalid label [[offside [[f]] [[g]] ]] 2 errors at #1, #2
+
+test indent label one [[indent b c]] analysis succeeds
+test indent index one [[indent 1 2]] analysis succeeds
+test indent label index [[indent b 5]] analysis succeeds
+test indent index label [[indent 2 b]] analysis succeeds
+test indent more [[indent l 1, b, 4, c]] analysis succeeds
+test indent same [[indent b 3]] analysis fails
+test indent out of bounds index [[indent b [[6]] ]] 1 error at #1
+test indent invalid label [[indent b [[d]] ]] 1 error at #1
+
+test align label one [[align b c]] analysis succeeds
+test align index one [[align 2 3]] analysis succeeds
+test align label index [[align b 4]] analysis succeeds
+test align index label [[align 1 b]] analysis succeeds
+test align mixed more [[align l 1, 2, b, 4, c]] analysis succeeds
+test align same [[align b 3, b]] analysis fails
+test align out of bounds index [[align c [[6]] ]] 1 error at #1
+test align invalid label [[align [[d]] 3]] 1 error at #1
+
+test align list label zero or more [[align-list l]] analysis succeeds
+test align list label one or more [[align-list c]] analysis succeeds
+test align list index zero or more [[align-list 0]] analysis succeeds
+test align list index one or more [[align-list 5]] analysis succeeds
+test align list label invalid non-terminal [[align-list [[b]] ]] 1 error at #1
+test align list index invalid non-terminal [[align-list [[3]] ]] 1 error at #1
+test align list index invalid terminal [[align-list [[1]] ]] 1 error at #1
+test align list out of bounds index [[align-list [[6]] ]] 1 error at #1
+test align list invalid label [[align-list [[z]] ]] 1 error at #1
+
+test newline indent label one [[newline-indent b c]] analysis succeeds
+test newline indent index one [[newline-indent 1 2]] analysis succeeds
+test newline indent label more [[newline-indent l b, c]] analysis succeeds
+test newline indent index more [[newline-indent 1 2, 4]] analysis succeeds
+test newline indent mixed [[newline-indent 1 b, 4, c]] analysis succeeds
+test newline indent same [[newline-indent b 3]] analysis fails
+test newline indent wrong order [[newline-indent c b]] analysis fails
+test newline indent out of bounds index [[newline-indent b [[7]], [[8]] ]] 2 errors at #1, #2
+test newline indent invalid label [[newline-indent [[d]] [[z]] ]] 2 errors at #1, #2
