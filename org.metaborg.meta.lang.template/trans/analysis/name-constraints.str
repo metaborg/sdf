@@ -174,9 +174,12 @@ rules
       positions*  := <filter(check-for-pos-ref(|chars)); flatten-list> prods*;
       literals*   := <filter(check-for-literals(|chars)); flatten-list> prods*;
       align-list* := <filter(check-align-list(|chars)); flatten-list> prods*;
+      offside*    := <filter(check-offside(|chars)); flatten-list> prods*;
       <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
       <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - align-list should be applied to list non-terminal]))> align-list*
+      <map(task-create-error(|ctx, $[Invalid tree selector - align-list should be applied to list non-terminal]))> align-list*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - offside with single argument should be applied to non-terminal]))> offside*
+
 
     check-for-pos-ref(|chars) :
         prod -> invalid*
@@ -251,12 +254,22 @@ rules
         where
           rhs*     := <get-production-rhs(|chars)> prod;
           pos*     := <get-production-attrs; collect-all(?AlignList(<id>) + ?PPAlignList(<id>), collapse-lists); not(?[])> prod;
-          invalid* := <filter(check-non-terminal-symbol(|rhs*))> pos*
+          invalid* := <filter-invalid-pos(not-iter|rhs*)> pos*
 
-    check-non-terminal-symbol(|rhs*):
-      pos -> <id>
-      where
-        <get-non-terminal-symbol(|rhs*); not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _)) > pos
+    not-iter = not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _))
+
+    check-offside(|chars):
+      prod -> invalid*
+        where
+          rhs*     := <get-production-rhs(|chars)> prod;
+          pos*     := <get-production-attrs; collect-all(offside-to-argument, conc); not(?[])> prod;
+          invalid* := <filter-invalid-pos(?Lit(_)|rhs*)> pos*
+
+    offside-to-argument: Offside(p, []) -> p
+    offside-to-argument: PPOffside(p, []) -> p
+
+    filter-invalid-pos(invalid|rhs*) = filter(where(get-non-terminal-symbol(|rhs*); invalid))
+
 
     nabl-constraint(|lang, ctx, uri*):
       String(s) -> <fail>
