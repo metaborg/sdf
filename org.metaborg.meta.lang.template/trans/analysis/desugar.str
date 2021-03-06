@@ -339,10 +339,10 @@ rules
       p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)
 
   get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int> p, rhs*)
+    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int; inc> p, rhs*)
 
   get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index> (<string-to-int> p, rhs*)
+    PosRef(p) -> <index> (<string-to-int; inc> p, rhs*)
 
   get-non-terminal-symbol(|rhs*):
     LabelRef(l) -> symbol
