@@ -6,7 +6,7 @@ fixture [[
 module layout-constraints/analysis
 
 context-free syntax
-  A.A = <<l:L*> test { <b:B> } <c:C+>> {layout([[...]])}
+  A.A = <<l:L*> test - <b:B> - <c:C+>> {layout([[...]])}
   L.L = "L"
   B.B = "B"
   C.C = "C"
@@ -46,6 +46,7 @@ test align list label zero or more [[align-list l]] analysis succeeds
 test align list label one or more [[align-list c]] analysis succeeds
 test align list index zero or more [[align-list 0]] analysis succeeds
 test align list index one or more [[align-list 5]] analysis succeeds
+test align list literal [[align-list [["test"]] ]] 1 error at #1
 test align list label invalid non-terminal [[align-list [[b]] ]] 1 error at #1
 test align list index invalid non-terminal [[align-list [[3]] ]] 1 error at #1
 test align list index invalid terminal [[align-list [[1]] ]] 1 error at #1
@@ -56,8 +57,11 @@ test newline indent label one [[newline-indent b c]] analysis succeeds
 test newline indent index one [[newline-indent 1 2]] analysis succeeds
 test newline indent label more [[newline-indent l b, c]] analysis succeeds
 test newline indent index more [[newline-indent 1 2, 4]] analysis succeeds
+test newline indent literal label [[newline-indent "test" b]] analysis succeeds
 test newline indent mixed [[newline-indent 1 b, 4, c]] analysis succeeds
 test newline indent same [[newline-indent b 3]] analysis fails
 test newline indent wrong order [[newline-indent c b]] analysis fails
+test newline indent undefined literal [[newline-indent [["["]] c]] 1 error at #1
+test newline indent duplicate literal [[newline-indent [["-"]] c]] 1 error at #1
 test newline indent out of bounds index [[newline-indent b [[7]], [[8]] ]] 2 errors at #1, #2
 test newline indent invalid label [[newline-indent [[d]] [[z]] ]] 2 errors at #1, #2
