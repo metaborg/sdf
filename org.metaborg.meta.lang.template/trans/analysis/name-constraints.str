@@ -175,10 +175,12 @@ rules
       literals*   := <filter(check-for-literals(|chars)); flatten-list> prods*;
       align-list* := <filter(check-align-list(|chars)); flatten-list> prods*;
       offside*    := <filter(check-offside(|chars)); flatten-list> prods*;
+      duplicate*  := <filter(check-duplicate(|chars)); flatten-list> prods*;
       <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
       <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
       <map(task-create-error(|ctx, $[Invalid tree selector - align-list should be applied to list non-terminal]))> align-list*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - offside with single argument should be applied to non-terminal]))> offside*
+      <map(task-create-error(|ctx, $[Invalid tree selector - offside with single argument should be applied to non-terminal]))> offside*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - declaration cannot be applied to the same tree]))> duplicate*
 
 
     check-for-pos-ref(|chars) :
@@ -269,6 +271,32 @@ rules
     offside-to-argument: PPOffside(p, []) -> p
 
     filter-invalid-pos(invalid|rhs*) = filter(where(get-non-terminal-symbol(|rhs*); invalid))
+
+    check-duplicate(|chars):
+      prod -> invalid*
+        where
+          rhs* := <get-production-rhs(|chars)> prod;
+          pos* := <get-production-attrs; collect-all(decls-to-arguments, collapse-lists); not(?[])> prod;
+          invalid* := <map(get-duplicate-pos(|rhs*)); flatten-list> pos*
+
+    decls-to-arguments: Offside(p, ps) -> [p | ps] where <not(?[])> ps
+    decls-to-arguments: Indent(p, ps) -> [p | ps] where <not(?[])> ps
+    decls-to-arguments: Align(p, ps) -> [p | ps] where <not(?[])> ps
+    decls-to-arguments: NewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
+
+    get-duplicate-pos(|rhs*):
+      pos* -> dups
+        where
+          (_, dups) := <foldl(fold-duplicate-tree(|rhs*))> (pos*, ([],[]))
+
+    fold-duplicate-tree(|rhs*) =
+      ?(pos, (set, dups));
+      tree := <get-tree-position(|rhs*)> pos;
+      if <member> (tree, set) then
+        !(set,[pos|dups])
+      else
+        !([tree|set],dups)
+      end
 
 
     nabl-constraint(|lang, ctx, uri*):
