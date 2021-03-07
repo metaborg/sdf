@@ -323,7 +323,7 @@ rules
       constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
 
   get-tree-position(|rhs*):
-    PosRef(p) -> PosRef(<dec> p)
+    PosRef(p) -> PosRef(p)
 
   get-tree-position(|rhs*):
     LiteralRef(l) -> PosRef(<dec; int-to-string> p)

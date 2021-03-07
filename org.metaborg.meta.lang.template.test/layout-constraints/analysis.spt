@@ -19,9 +19,9 @@ test offside label more [[offside l b, c]] analysis succeeds
 test offside index more [[offside 1 2, 4]] analysis succeeds
 test offside mixed ref more [[offside b 4, c]] analysis succeeds
 test offside before invalid [[offside c b]] analysis fails
-test offside same [[offside b 3]] analysis fails
+test offside same [[offside b [[3]], 1, [["test"]] ]] 2 errors at #1, #2
 test offside list not in order [[offside 1 c, b]] analysis succeeds
-test offside out of bounds index [[offside [[7]] [[8]],[[9]] ]] 3 error at #1, #2, #3
+test offside out of bounds index [[offside [[7]] [[8]],[[9]] ]] 3 errors at #1, #2, #3
 test offside invalid label [[offside [[f]] [[g]] ]] 2 errors at #1, #2
 
 test indent label one [[indent b c]] analysis succeeds
