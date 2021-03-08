@@ -504,7 +504,7 @@ rules
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), upgr-call
-    , BA(Choice(is-call), Var(varname))
+    , BA(is-call, Var(varname))
     )),
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
@@ -527,7 +527,7 @@ rules
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), dngr-call
-    , BA(Choice(is-call), Var(varname))
+    , BA(is-call, Var(varname))
     )),
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
