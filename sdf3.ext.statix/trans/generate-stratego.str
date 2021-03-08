@@ -497,34 +497,46 @@ rules
     DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   t -> <upgrade-placeholders-MyLang-ToSort> t
-    //   where <is-MyLang-MySort-or-inj + is-MyLang-MySort-inj-cons> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t){anno*} -> ToSort2MySort(<upgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), upgr-call
-    , BA(Choice(is-call, is-inj-call), Var(varname))
+    , BA(Choice(is-call), Var(varname))
+    )),
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, [upgr-call]), [Var(ListVar("anno*"))])
     ))
   ]
   with consname    := <geninj-generate-inj-name> (sortname, [param])
      ; upgr-call   := <geninj-param-to-upgrade-app(|lang)> param
      ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
-     ; is-inj-call := <geninj-symbol-to-is-inj-cons-call(|lang)> tosort
 
   geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
     // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
     DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   t -> <downgrade-placeholders-MyLang-ToSort> t
-    //   where <is-MyLang-MySort-or-inj + is-MyLang-MySort-inj-cons> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t){anno*} -> ToSort2MySort(<downgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), dngr-call
-    , BA(Choice(is-call, is-inj-call), Var(varname))
+    , BA(Choice(is-call), Var(varname))
+    )),
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
+    , AnnoList(Op(consname, [dngr-call]), [Var(ListVar("anno*"))])
     ))
   ]
   with consname    := <geninj-generate-inj-name> (sortname, [param])
      ; dngr-call   := <geninj-param-to-downgrade-app(|lang)> param
      ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
-     ; is-inj-call := <geninj-symbol-to-is-inj-cons-call(|lang)> tosort
 
   geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
     // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
