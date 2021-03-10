@@ -12,6 +12,16 @@ context-free syntax
   C.C = "C"
 ]]
 
+
+test constraint num [[1 == 1]] analysis fails
+test constraint index num [[1.first.line == 0]] analysis succeeds
+test constraint label num [[b.first.line == 0]] analysis succeeds
+test constraint index [[1.first.line == 5.last.line]] analysis succeeds
+test constraint label [[l.first.line == b.last.line]] analysis succeeds
+test constraint literal [["test".first.line == "test".last.line]] analysis succeeds
+test constraint out of bounds index [[7.first.col == 0]] analysis fails
+test constraint dupblicate literal [["-".first.col == "-".first.col]] analysis fails
+
 test offside label one [[offside b]] analysis succeeds
 test offside index one [[offside 3]] analysis succeeds
 test offside index terminal [[offside [[1]] ]] 1 error at #1
