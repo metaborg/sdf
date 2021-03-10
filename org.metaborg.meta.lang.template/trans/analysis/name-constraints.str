@@ -165,161 +165,130 @@ rules
         seq* := <collect(?Lex(_) <+ ?Cf(_) <+ ?Sequence(_,_)); filter(?Sequence(_,_))> p
 
 
-
-    nabl-constraint(|ctx):
-      Module(Unparameterized(m), i*, s*) -> <fail>
+/********************
+ * Layout Constraints
+ ********************/
+rules
+  nabl-constraint(|ctx): Module(Unparameterized(_), _, s) -> <fail>
     where
-      chars       := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> s*;
-      prods*      := <filter(?SDFSection(ContextFreeSyntax(<id>)) <+ ?SDFSection(Kernel(<id>))); flatten-list> s*;
-      positions*  := <filter(check-for-pos-ref(|chars)); flatten-list> prods*;
-      literals*   := <filter(check-for-literals(|chars)); flatten-list> prods*;
-      align-list* := <filter(check-align-list(|chars)); flatten-list> prods*;
-      offside*    := <filter(check-offside(|chars)); flatten-list> prods*;
-      duplicate*  := <filter(check-duplicate(|chars)); flatten-list> prods*;
-      order*      := <filter(check-order(|chars)); flatten-list> prods*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - align-list should be applied to list non-terminal]))> align-list*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - offside with single argument should be applied to non-terminal]))> offside*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - declaration cannot be applied to the same tree]))> duplicate*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - All arguments should come after the first argument]))> order*
+      chars := <collect-one(?Tokenize(<id; explode-string; un-double-quote-chars>)) <+ !['(', ')']> s;
+      prods := <filter(?SDFSection(ContextFreeSyntax(<id>)) <+ ?SDFSection(Kernel(<id>))); flatten-list> s;
+      <filter(check-layout-constraints(|ctx, chars))> prods
 
+  create-errors(|ctx): (errors, msg) -> <map(task-create-error(|ctx, msg))> errors
 
-    check-for-pos-ref(|chars) :
-        prod -> invalid*
-        where
-          posRef*  := <collect-all(?PosRef(<id>), collapse-lists)> prod;
-          invalid* := <filter(is-invalid-pos(|prod, chars))> posRef*
-
-    is-invalid-pos(|p, chars) :
-        position -> <id>
-        where
-          intPos := <string-to-int> position;
-          <gt> (intPos, <production-arity(|chars); dec> p)
-
-    production-arity(|chars) :
-      SdfProduction(_, Rhs(rhs*), _) -> <length> rhs*
-
-    production-arity(|chars) :
-      SdfProductionWithCons(_, Rhs(rhs*), _) -> <length> rhs*
-
-    production-arity(|chars) :
-      t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
-
-    production-arity(|chars) :
-      t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); production-arity(|chars)> t
-
-    collapse-lists:
-      (l1*, l2*) -> [l1*, l2*]
-
-    check-for-literals(|chars) :
-        prod -> invalid*
+  check-layout-constraints(|ctx, chars): prod -> <id>
     where
-       litRef* := <collect-all(?LiteralRef(<id>), collapse-lists)> prod;
-       invalid* := <filter(is-invalid-lit(|prod, chars))> litRef*
-
-    is-invalid-lit(|prod, chars):
-      lit -> <id>
-      where
-        literal := Lit(lit);
-        <not(get-production-rhs(|chars); is-defined-not-duplicated-literal(|literal))> prod
-
-    get-production-rhs(|chars):
-      SdfProduction(_, Rhs(rhs*), _) -> rhs*
-
-    get-production-rhs(|chars):
-      SdfProductionWithCons(_, Rhs(rhs*), _) -> rhs*
-
-    get-production-rhs(|chars):
-      t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
-
-    get-production-rhs(|chars):
-      t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
-
-    get-production-attrs:
-      SdfProduction(_, _, Attrs(attrs*)) -> attrs*
-
-    get-production-attrs:
-      SdfProductionWithCons(_, _, Attrs(attrs*)) -> attrs*
-
-    get-production-attrs:
-      TemplateProduction(_, _, Attrs(attrs*)) -> attrs*
-
-    get-production-attrs:
-      TemplateProductionWithCons(_, _, Attrs(attrs*)) -> attrs*
-
-    is-defined-not-duplicated-literal(|lit):
-      rhs* ->  <eq> (1, <length> rhs'*)
-        where
-          rhs'* := <filter(?lit)> rhs*
-
-    check-align-list(|chars):
-      prod -> invalid*
-        where
-          rhs*     := <get-production-rhs(|chars)> prod;
-          pos*     := <get-production-attrs; collect-all(?AlignList(<id>) + ?PPAlignList(<id>), collapse-lists); not(?[])> prod;
-          invalid* := <filter-invalid-pos(not-iter|rhs*)> pos*
-
-    not-iter = not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _))
-
-    check-offside(|chars):
-      prod -> invalid*
-        where
-          rhs*     := <get-production-rhs(|chars)> prod;
-          pos*     := <get-production-attrs; collect-all(offside-to-argument, conc); not(?[])> prod;
-          invalid* := <filter-invalid-pos(?Lit(_)|rhs*)> pos*
-
-    offside-to-argument: Offside(p, []) -> p
-    offside-to-argument: PPOffside(p, []) -> p
-
-    filter-invalid-pos(invalid|rhs*) = filter(where(get-non-terminal-symbol(|rhs*); invalid))
-
-    check-duplicate(|chars):
-      prod -> invalid*
-        where
-          rhs* := <get-production-rhs(|chars)> prod;
-          pos* := <get-production-attrs; collect-all(decls-to-arguments, collapse-lists); not(?[])> prod;
-          invalid* := <map(get-duplicate-pos(|rhs*)); flatten-list> pos*
-
-    decls-to-arguments: Offside(p, ps) -> [p | ps] where <not(?[])> ps
-    decls-to-arguments: Indent(p, ps) -> [p | ps] where <not(?[])> ps
-    decls-to-arguments: Align(p, ps) -> [p | ps] where <not(?[])> ps
-    decls-to-arguments: NewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
-
-    get-duplicate-pos(|rhs*):
-      pos* -> dups
-        where
-          (_, dups) := <foldl(fold-duplicate-tree(|rhs*))> (pos*, ([],[]))
-
-    fold-duplicate-tree(|rhs*) =
-      ?(pos, (set, dups));
-      tree := <get-tree-position(|rhs*)> pos;
-      if <member> (tree, set) then
-        !(set,[pos|dups])
-      else
-        !([tree|set],dups)
-      end
-
-    check-order(|chars):
-      prod -> invalid*
-        where
-          rhs* := <get-production-rhs(|chars)> prod;
-          pos* := <get-production-attrs; collect-all(decls-to-pair, collapse-lists); not(?[])> prod;
-          invalid* := <map(get-out-of-order(|rhs*)); flatten-list> pos*
-
-    get-out-of-order(|rhs*): (refpos, pos*) -> <filter(is-out-of-order(|rhs*, ref))> pos*
-      where
-        PosRef(ref) := <get-tree-position(|rhs*)> refpos
-
-    is-out-of-order(|rhs*, ref): pos -> <id>
-      where
-        PosRef(tree) := <get-tree-position(|rhs*)> pos;
-        <ltS> (tree, ref)
-
-    decls-to-pair: Offside(p, ps) -> (p, ps) where <not(?[])> ps
-    decls-to-pair: NewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
+      rhs := <get-production-rhs(|chars)> prod;
+      attrs := <get-production-attrs> prod;
+      <try(check-for-pos-ref; create-errors(|ctx))> (rhs, attrs);
+      <try(check-for-literals; create-errors(|ctx))> (rhs, attrs);
+      <try(check-align-list; create-errors(|ctx))> (rhs, attrs);
+      <try(check-offside; create-errors(|ctx))> (rhs, attrs);
+      <try(check-duplicate; create-errors(|ctx))> (rhs, attrs);
+      <try(check-order; create-errors(|ctx))> (rhs, attrs)
 
 
+  get-production-rhs(|chars): SdfProduction(_, Rhs(rhs), _) -> rhs
+  get-production-rhs(|chars): SdfProductionWithCons(_, Rhs(rhs), _) -> rhs
+  get-production-rhs(|chars):
+    t@TemplateProduction(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
+  get-production-rhs(|chars):
+    t@TemplateProductionWithCons(_, _, _) -> <desugar-templates; template-to-sdf3-prod(|chars); get-production-rhs(|chars)> t
+
+  get-production-attrs: SdfProduction(_, _, Attrs(attrs)) -> attrs
+  get-production-attrs: SdfProductionWithCons(_, _, Attrs(attrs)) -> attrs
+  get-production-attrs: TemplateProduction(_, _, Attrs(attrs)) -> attrs
+  get-production-attrs: TemplateProductionWithCons(_, _, Attrs(attrs)) -> attrs
+
+
+  check-for-pos-ref: (rhs, attrs) -> (invalids, "Invalid tree selector - index ouf of bounds")
+    where
+      posRefs := <collect-all(?PosRef(<id>), conc)> attrs;
+      invalids := <filter(is-invalid-pos(|rhs))> posRefs
+
+  is-invalid-pos(|rhs): pos -> <id>
+    where
+      <gt> (<string-to-int> pos, <length; dec> rhs)
+
+
+  check-for-literals: (rhs, attrs) -> (invalids, "Invalid tree selector - undefined or duplicated literal")
+    where
+      litRefs := <collect-all(?LiteralRef(<id>), conc)> attrs;
+      invalids := <filter(is-invalid-lit(|rhs))> litRefs
+
+  is-invalid-lit(|rhs): lit -> <id>
+    where
+      <not(eq)> (1, <filter(?Lit(lit)); length> rhs)
+
+
+  check-align-list: (rhs, attrs) -> (invalids, "Invalid tree selector - align-list should be applied to list non-terminal")
+    where
+      positions := <collect-all(?AlignList(<id>) + ?PPAlignList(<id>), conc); not(?[])> attrs;
+      invalids := <filter-invalid-pos(not-iter|rhs)> positions
+
+  not-iter = not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _))
+
+
+  check-offside: (rhs, attrs) -> (invalids, "Invalid tree selector - offside with single argument should be applied to non-terminal")
+    where
+      positions := <collect-all(?Offside(<id>, []) + ?PPOffside(<id>, []), conc); not(?[])> attrs;
+      invalids := <filter-invalid-pos(?Lit(_)|rhs)> positions
+
+
+  filter-invalid-pos(invalid|rhs) = filter(where(get-non-terminal-symbol(|rhs); invalid))
+
+
+  check-duplicate: (rhs, attrs) -> (invalids, "Invalid tree selector - declaration cannot be applied to the same tree")
+    where
+      positions := <collect-all(decls-to-arguments, conc); not(?[])> attrs;
+      invalids := <map(get-duplicate-pos(|rhs)); flatten-list> positions
+
+  decls-to-arguments: Offside(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: PPOffside(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: Indent(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: PPIndent(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: Align(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: PPAlign(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: NewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: PPNewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: PPNewLineIndentBy(_, p, ps) -> [p | ps] where <not(?[])> ps
+
+  get-duplicate-pos(|rhs): positions -> dups
+    where
+      (_, dups) := <foldl(fold-duplicate-tree(|rhs))> (positions, ([],[]))
+
+  fold-duplicate-tree(|rhs) =
+    ?(pos, (set, dups));
+    tree := <get-tree-position(|rhs)> pos;
+    if <member> (tree, set) then
+      !(set, [pos|dups])
+    else
+      !([tree|set], dups)
+    end
+
+
+  check-order: (rhs, attrs) -> (invalids, "Invalid tree selector - All arguments should come after the first argument")
+    where
+      positions := <collect-all(decls-to-pair, conc); not(?[])> attrs;
+      invalids := <map(get-out-of-order(|rhs)); flatten-list> positions
+
+  decls-to-pair: Offside(p, ps) -> (p, ps) where <not(?[])> ps
+  decls-to-pair: PPOffside(p, ps) -> (p, ps) where <not(?[])> ps
+  decls-to-pair: NewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
+  decls-to-pair: PPNewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
+  decls-to-pair: PPNewLineIndentBy(_, p, ps) -> (p, ps) where <not(?[])> ps
+
+  get-out-of-order(|rhs): (ref, positions) -> <filter(where(is-out-of-order(|rhs, posRef)))> positions
+    where
+      PosRef(posRef) := <get-tree-position(|rhs)> ref
+
+  is-out-of-order(|rhs, ref): pos -> <ltS> (tree, ref)
+    where
+      PosRef(tree) := <get-tree-position(|rhs)> pos
+
+
+rules
     nabl-constraint(|lang, ctx, uri*):
       String(s) -> <fail>
     where
@@ -356,7 +325,6 @@ rules
         cons-types := <type-lookup(|ctx)> lookup;
         same-types := <task-create-rewrite(|ctx, "match-sort-type")> (type, cons-types);
         <task-create-warning-on-triggers(|ctx, [Multiple(same-types)], $[Duplicated definition for constructor [c]: the generated pretty-printer might not work properly])> c
-
 
   prod-without-constructor:
         p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
