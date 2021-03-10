@@ -176,11 +176,13 @@ rules
       align-list* := <filter(check-align-list(|chars)); flatten-list> prods*;
       offside*    := <filter(check-offside(|chars)); flatten-list> prods*;
       duplicate*  := <filter(check-duplicate(|chars)); flatten-list> prods*;
+      order*      := <filter(check-order(|chars)); flatten-list> prods*;
       <map(task-create-error(|ctx, $[Invalid tree selector - index ouf of bounds]))> positions*;
       <map(task-create-error(|ctx, $[Invalid tree selector - undefined or duplicated literal]))> literals*;
       <map(task-create-error(|ctx, $[Invalid tree selector - align-list should be applied to list non-terminal]))> align-list*;
       <map(task-create-error(|ctx, $[Invalid tree selector - offside with single argument should be applied to non-terminal]))> offside*;
-      <map(task-create-error(|ctx, $[Invalid tree selector - declaration cannot be applied to the same tree]))> duplicate*
+      <map(task-create-error(|ctx, $[Invalid tree selector - declaration cannot be applied to the same tree]))> duplicate*;
+      <map(task-create-error(|ctx, $[Invalid tree selector - All arguments should come after the first argument]))> order*
 
 
     check-for-pos-ref(|chars) :
@@ -297,6 +299,25 @@ rules
       else
         !([tree|set],dups)
       end
+
+    check-order(|chars):
+      prod -> invalid*
+        where
+          rhs* := <get-production-rhs(|chars)> prod;
+          pos* := <get-production-attrs; collect-all(decls-to-pair, collapse-lists); not(?[])> prod;
+          invalid* := <map(get-out-of-order(|rhs*)); flatten-list> pos*
+
+    get-out-of-order(|rhs*): (refpos, pos*) -> <filter(is-out-of-order(|rhs*, ref))> pos*
+      where
+        PosRef(ref) := <get-tree-position(|rhs*)> refpos
+
+    is-out-of-order(|rhs*, ref): pos -> <id>
+      where
+        PosRef(tree) := <get-tree-position(|rhs*)> pos;
+        <ltS> (tree, ref)
+
+    decls-to-pair: Offside(p, ps) -> (p, ps) where <not(?[])> ps
+    decls-to-pair: NewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
 
 
     nabl-constraint(|lang, ctx, uri*):

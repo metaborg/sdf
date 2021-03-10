@@ -27,9 +27,9 @@ test offside index one [[offside 3]] analysis succeeds
 test offside index terminal [[offside [[1]] ]] 1 error at #1
 test offside label more [[offside l b, c]] analysis succeeds
 test offside index more [[offside 1 2, 4]] analysis succeeds
-test offside mixed ref more [[offside b 4, c]] analysis succeeds
-test offside before invalid [[offside c b]] analysis fails
-test offside same [[offside b [[3]], 1, [["test"]] ]] 2 errors at #1, #2
+test offside mixed ref more [[offside b c, 4]] analysis succeeds
+test offside before invalid [[offside c [[b]], [[1]] ]] 2 errors at #1, #2
+test offside same [[offside b [[3]], c, [[5]] ]] 2 errors at #1, #2
 test offside list not in order [[offside 1 c, b]] analysis succeeds
 test offside out of bounds index [[offside [[7]] [[8]],[[9]] ]] 3 errors at #1, #2, #3
 test offside invalid label [[offside [[f]] [[g]] ]] 2 errors at #1, #2
@@ -40,6 +40,7 @@ test indent label index [[indent b 5]] analysis succeeds
 test indent index label [[indent 2 b]] analysis succeeds
 test indent more [[indent l 1, b, 4, c]] analysis succeeds
 test indent same [[indent b 3]] analysis fails
+test indent out of order [[indent c b]] analysis succeeds
 test indent out of bounds index [[indent b [[6]] ]] 1 error at #1
 test indent invalid label [[indent b [[d]] ]] 1 error at #1
 
@@ -49,6 +50,7 @@ test align label index [[align b 4]] analysis succeeds
 test align index label [[align 1 b]] analysis succeeds
 test align mixed more [[align l 1, 2, b, 4, c]] analysis succeeds
 test align same [[align b 3, b]] analysis fails
+test align out of order [[align c b]] analysis succeeds
 test align out of bounds index [[align c [[6]] ]] 1 error at #1
 test align invalid label [[align [[d]] 3]] 1 error at #1
 
@@ -70,7 +72,7 @@ test newline indent index more [[newline-indent 1 2, 4]] analysis succeeds
 test newline indent literal label [[newline-indent "test" b]] analysis succeeds
 test newline indent mixed [[newline-indent 1 b, 4, c]] analysis succeeds
 test newline indent same [[newline-indent b 3]] analysis fails
-test newline indent wrong order [[newline-indent c b]] analysis fails
+test newline indent out of order [[newline-indent c [[b]], [[4]] ]] 2 errors at #1, #2
 test newline indent undefined literal [[newline-indent [["["]] c]] 1 error at #1
 test newline indent duplicate literal [[newline-indent [["-"]] c]] 1 error at #1
 test newline indent out of bounds index [[newline-indent b [[7]], [[8]] ]] 2 errors at #1, #2
