@@ -216,14 +216,14 @@ rules
   create-productions-align-list(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
   create-productions-align-list(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -231,7 +231,7 @@ rules
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -239,7 +239,7 @@ rules
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
