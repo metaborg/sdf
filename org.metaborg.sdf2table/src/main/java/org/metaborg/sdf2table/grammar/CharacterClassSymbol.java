@@ -66,6 +66,6 @@ public class CharacterClassSymbol extends Symbol {
     }
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
-        return new org.metaborg.parsetable.symbols.TerminalSymbol(cc, cardinality);
+        return new org.metaborg.parsetable.symbols.TerminalSymbol(cc, syntaxContext, cardinality);
     }
 }

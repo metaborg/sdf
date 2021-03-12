@@ -18,9 +18,13 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
 
     private final ActionsForRange actionsForEOF;
     private final ActionsForRange[] actionsForSortedDisjointRanges;
+    private final ActionsForRange[] recoveryActionsForSortedDisjointRanges;
 
-    public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
-        this.actionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
+    public ActionsForCharacterDisjointSorted(ActionsPerCharacterClass[] actionsPerCharacterClasses,
+        Set<Integer> recoveryStateIds) {
+        this.actionsForSortedDisjointRanges =
+            toDisjointSortedRanges(filterNonRecoveryActions(actionsPerCharacterClasses, recoveryStateIds));
+        this.recoveryActionsForSortedDisjointRanges = toDisjointSortedRanges(actionsPerCharacterClasses);
         this.actionsForEOF =
             new ActionsForRange(getActionsForEOF(actionsPerCharacterClasses).toArray(new IAction[0]), EOF_INT, EOF_INT);
     }
@@ -92,7 +96,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
     @Override public IAction[] getActions() {
         List<IAction> res = new ArrayList<>();
 
-        for(ActionsForRange actionsForRange : actionsForSortedDisjointRanges) {
+        for(ActionsForRange actionsForRange : recoveryActionsForSortedDisjointRanges) {
             Collections.addAll(res, actionsForRange.actions);
         }
         Collections.addAll(res, actionsForEOF.actions);
@@ -100,17 +104,20 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return res.toArray(new IAction[0]);
     }
 
-    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery) {
+    @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode) {
         if(actionQuery.actionQueryCharacter() == EOF_INT)
             return actionsForEOF.getApplicableActions(actionQuery);
 
-        if(actionsForSortedDisjointRanges.length > 0) {
-            int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+        ActionsForRange[] actions = parsingMode == ParsingMode.Recovery ? recoveryActionsForSortedDisjointRanges
+            : actionsForSortedDisjointRanges;
+
+        if(actions.length > 0) {
+            int low = 0, high = actions.length - 1;
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
-                ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
+                ActionsForRange actionsForMidRange = actions[mid];
 
                 int currentChar = actionQuery.actionQueryCharacter();
 
@@ -126,18 +133,21 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
         return Collections.emptyList();
     }
 
-    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery) {
+    @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode) {
         if(actionQuery.actionQueryCharacter() == EOF_INT)
             return actionsForEOF.getApplicableReduceActions(actionQuery);
 
-        if(actionsForSortedDisjointRanges.length > 0) {
-            int low = 0, high = actionsForSortedDisjointRanges.length - 1;
+        ActionsForRange[] actions = parsingMode == ParsingMode.Recovery ? recoveryActionsForSortedDisjointRanges
+            : actionsForSortedDisjointRanges;
+
+        if(actions.length > 0) {
+            int low = 0, high = actions.length - 1;
             int currentChar = actionQuery.actionQueryCharacter();
 
             while(low <= high) {
                 int mid = (low + high) / 2;
 
-                ActionsForRange actionsForMidRange = actionsForSortedDisjointRanges[mid];
+                ActionsForRange actionsForMidRange = actions[mid];
 
                 if(actionsForMidRange.from <= currentChar && currentChar <= actionsForMidRange.to)
                     return actionsForMidRange.getApplicableReduceActions(actionQuery);

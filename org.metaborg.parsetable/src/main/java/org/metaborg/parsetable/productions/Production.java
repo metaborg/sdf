@@ -98,22 +98,6 @@ public class Production implements IProduction {
         return concreteSyntaxContext;
     }
 
-    @Override public boolean isContextFree() {
-        return concreteSyntaxContext == ConcreteSyntaxContext.ContextFree;
-    }
-
-    @Override public boolean isLayout() {
-        return concreteSyntaxContext == ConcreteSyntaxContext.Layout;
-    }
-
-    @Override public boolean isLiteral() {
-        return concreteSyntaxContext == ConcreteSyntaxContext.Literal;
-    }
-
-    @Override public boolean isLexical() {
-        return concreteSyntaxContext == ConcreteSyntaxContext.Lexical;
-    }
-
     @Override public boolean isList() {
         return (lhs.cardinality() != null && lhs.cardinality().isList) || isListConstructor || attributes.isFlatten;
     }

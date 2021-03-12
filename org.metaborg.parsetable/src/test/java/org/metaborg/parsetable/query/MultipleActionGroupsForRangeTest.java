@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.CHARACTERS;
 import static org.metaborg.parsetable.characterclasses.ICharacterClass.EOF_INT;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,14 +79,18 @@ public class MultipleActionGroupsForRangeTest {
     }
 
     public void test(ActionsPerCharacterClass[] actionsPerCharacterClasses) {
-        IActionsForCharacter separated = new ActionsForCharacterSeparated(actionsPerCharacterClasses);
-        IActionsForCharacter disjointSorted = new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses);
+        IActionsForCharacter separated =
+            new ActionsForCharacterSeparated(actionsPerCharacterClasses, Collections.emptySet());
+        IActionsForCharacter disjointSorted =
+            new ActionsForCharacterDisjointSorted(actionsPerCharacterClasses, Collections.emptySet());
 
         for(int character = 0; character < CHARACTERS; character++) {
             IActionQuery actionQuery = new MockActionQuery(character);
 
-            Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
-            Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
+            Set<IAction> actionForSeparated =
+                iterableToSet(separated.getApplicableActions(actionQuery, ParsingMode.Standard));
+            Set<IAction> actionForDisjointSorted =
+                iterableToSet(disjointSorted.getApplicableActions(actionQuery, ParsingMode.Standard));
 
             if(!actionForSeparated.equals(actionForDisjointSorted))
                 fail("Action sets not equal for character " + character);
@@ -93,8 +98,10 @@ public class MultipleActionGroupsForRangeTest {
 
         IActionQuery actionQuery = new MockActionQuery(EOF_INT);
 
-        Set<IAction> actionForSeparated = iterableToSet(separated.getApplicableActions(actionQuery));
-        Set<IAction> actionForDisjointSorted = iterableToSet(disjointSorted.getApplicableActions(actionQuery));
+        Set<IAction> actionForSeparated =
+            iterableToSet(separated.getApplicableActions(actionQuery, ParsingMode.Standard));
+        Set<IAction> actionForDisjointSorted =
+            iterableToSet(disjointSorted.getApplicableActions(actionQuery, ParsingMode.Standard));
 
         assertEquals("Action sets not equal for EOF", actionForSeparated, actionForDisjointSorted);
     }

@@ -3,9 +3,11 @@ package org.metaborg.parsetable;
 import static org.spoofax.terms.util.TermUtils.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.metaborg.parsetable.actions.*;
@@ -52,12 +54,17 @@ class ParseTableReaderDelegate {
         IStrategoList statesTermList = toListAt(pt.getSubterm(3), 0);
 
         IProduction[] productions = readProductions(productionsTermList);
-        
+
         IState[] states = readStates(statesTermList, productions);
 
         markRejectableStates(states);
-       
-        return new ParseTable(states, startStateId, hasLayoutConstraint(productionsTermList));
+
+        return new ParseTable(states, startStateId, productionsToList(productions),
+            hasLayoutConstraint(productionsTermList));
+    }
+
+    private List<IProduction> productionsToList(IProduction[] productions) {
+        return Arrays.asList(Arrays.copyOfRange(productions, 257, productions.length));
     }
 
     private boolean hasLayoutConstraint(IStrategoList productionsTermList) {
@@ -83,7 +90,8 @@ class ParseTableReaderDelegate {
         throws ParseTableReadException {
         int stateCount = statesTermList.getSubtermCount();
 
-        IState[] states = new IState[stateCount];
+        IGoto[][] stateGotos = new IGoto[stateCount][];
+        ActionsPerCharacterClass[][] stateActions = new ActionsPerCharacterClass[stateCount][];
 
         for(IStrategoTerm stateTerm : statesTermList) {
             IStrategoNamed stateTermNamed = (IStrategoNamed) stateTerm;
@@ -93,15 +101,28 @@ class ParseTableReaderDelegate {
             IStrategoList gotosTermList = toListAt(stateTermNamed, 1);
             IStrategoList actionsTermList = toListAt(stateTermNamed, 2);
 
-            IGoto[] gotos = readGotos(gotosTermList);
-            ActionsPerCharacterClass[] actions = readActions(actionsTermList, productions);
+            stateGotos[stateId] = readGotos(gotosTermList);
+            stateActions[stateId] = readActions(actionsTermList, productions);
+        }
 
-            IState state = stateFactory.from(stateId, gotos, actions);
+        Set<Integer> recoveryStateIds = IntStream.range(0, stateCount)
+            .filter(stateId -> containsOnlyRecoveryReduces(stateActions[stateId])).boxed().collect(Collectors.toSet());
 
-            states[state.id()] = state;
+        IState[] states = new IState[stateCount];
+
+        for(int stateId = 0; stateId < stateCount; stateId++) {
+            states[stateId] = stateFactory.from(stateId, stateGotos[stateId], stateActions[stateId], recoveryStateIds);
         }
 
         return states;
+    }
+
+    static boolean containsOnlyRecoveryReduces(ActionsPerCharacterClass[] actions) {
+        return Arrays.stream(actions)
+            .allMatch(actionsPerCharacterClass -> actionsPerCharacterClass.actions.stream()
+                .allMatch(action -> (action.actionType() == ActionType.REDUCE
+                    || action.actionType() == ActionType.REDUCE_LOOKAHEAD)
+                    && ((IReduce) action).production().isRecovery()));
     }
 
     private IGoto[] readGotos(IStrategoList gotosTermList) {

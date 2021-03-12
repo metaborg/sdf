@@ -27,7 +27,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     private final IProduction p;
     private final int productionNumber;
     private final String sort;
-    private final boolean isContextFree;
     private final boolean isLayout;
     private final boolean isLiteral;
     private final boolean isLexical;
@@ -148,10 +147,10 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             isLexicalRhs = false;
         }
 
-        this.isLexical = p.leftHand() instanceof LexicalSymbol || isLexicalRhs;
+        ISymbol leftHandUnpacked = unpackIterSymbol(p.leftHand());
 
-        this.isContextFree = !(isLayout || isLiteral || isLexical || isLexicalRhs);
-
+        this.isLexical =
+            p.leftHand() instanceof LexicalSymbol || leftHandUnpacked instanceof CharacterClassSymbol || isLexicalRhs;
 
         ISymbol symb2 = p.leftHand();
         // not considering varsym
@@ -162,7 +161,8 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             symb2 = ((ContextFreeSymbol) symb2).getSymbol();
         }
 
-        if(symb2 instanceof SequenceSymbol || isIterSymbol(symb2)) {
+        if(symb2 instanceof SequenceSymbol || isIterSymbol(symb2)
+            || ((symb2 instanceof LexicalSymbol) && isIterSymbol(((LexicalSymbol) symb2).getSymbol()))) {
             isList = true;
         }
 
@@ -172,8 +172,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
         this.isStringLiteral = topdownHasSpaces(p.rightHand());
 
-        CharacterClassSymbol cc = checkFirstRange(p.rightHand());
-        this.isNumberLiteral = (cc != null);
+        this.isNumberLiteral = getIsNumberLiteral(p.rightHand());
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
 
@@ -235,25 +234,19 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return false;
     }
 
+    private boolean getIsNumberLiteral(List<ISymbol> rhs) {
+        if(!rhs.isEmpty()) {
+            ISymbol s = getFirstRange(rhs.get(0));
 
-    private CharacterClassSymbol checkFirstRange(List<ISymbol> rhs) {
-        for(ISymbol s : rhs) {
-
-            s = getFirstRange(s);
             if(s instanceof CharacterClassSymbol) {
-                CharacterClassSymbol characterClassSymbol = (CharacterClassSymbol) s;
-                ICharacterClass cc = characterClassSymbol.getCC();
+                ICharacterClass cc = ((CharacterClassSymbol) s).getCC();
                 ICharacterClass intCC = ParseTableIO.getCharacterClassFactory().fromRange('0', '9');
-                if(!cc.isEmpty()) {
-                    if(cc.equals(intCC.intersection(cc))) {
-                        return characterClassSymbol;
-                    }
-                } else {
-                    return null;
-                }
+
+                return intCC.equals(cc);
             }
         }
-        return null;
+
+        return false;
     }
 
     private ISymbol getFirstRange(ISymbol s) {
@@ -306,6 +299,19 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             || (s instanceof IterSepSymbol);
     }
 
+    private ISymbol unpackIterSymbol(ISymbol s) {
+        if(s instanceof IterSymbol)
+            return ((IterSymbol) s).getSymbol();
+        else if(s instanceof IterStarSymbol)
+            return ((IterStarSymbol) s).getSymbol();
+        else if(s instanceof IterStarSepSymbol)
+            return ((IterStarSepSymbol) s).getSymbol();
+        else if(s instanceof IterSepSymbol)
+            return ((IterSepSymbol) s).getSymbol();
+        else
+            return null;
+    }
+
     public IProduction getProduction() {
         return p;
     }
@@ -322,7 +328,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
     }
 
     @Override public String descriptor() {
-        return "";
+        return toString();
     }
 
     @Override public ConcreteSyntaxContext concreteSyntaxContext() {
@@ -334,22 +340,6 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
             return ConcreteSyntaxContext.Lexical;
         else
             return ConcreteSyntaxContext.ContextFree;
-    }
-
-    @Override public boolean isContextFree() {
-        return isContextFree;
-    }
-
-    @Override public boolean isLayout() {
-        return isLayout;
-    }
-
-    @Override public boolean isLiteral() {
-        return isLiteral;
-    }
-
-    @Override public boolean isLexical() {
-        return isLexical;
     }
 
     @Override public boolean isList() {
