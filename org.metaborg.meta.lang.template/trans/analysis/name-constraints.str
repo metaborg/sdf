@@ -176,6 +176,7 @@ rules
       <filter(check-layout-constraints(|ctx, chars))> prods
 
   create-errors(|ctx): (errors, msg) -> <map(task-create-error(|ctx, msg))> errors
+  create-warnings(|ctx): (warnings, msg) -> <map(task-create-warning(|ctx, msg))> warnings
 
   check-layout-constraints(|ctx, chars): prod -> <id>
     where
@@ -186,7 +187,8 @@ rules
       <try(check-align-list; create-errors(|ctx))> (rhs, attrs);
       <try(check-offside; create-errors(|ctx))> (rhs, attrs);
       <try(check-duplicate; create-errors(|ctx))> (rhs, attrs);
-      <try(check-order; create-errors(|ctx))> (rhs, attrs)
+      <try(check-order; create-errors(|ctx))> (rhs, attrs);
+      <try(check-irrelevant; create-warnings(|ctx))> (rhs, attrs)
 
 
   get-production-rhs(|chars): SdfProduction(_, Rhs(rhs), _) -> rhs
@@ -286,6 +288,16 @@ rules
   is-out-of-order(|rhs, ref): pos -> <ltS> (tree, ref)
     where
       PosRef(tree) := <get-tree-position(|rhs)> pos
+
+
+  check-irrelevant: (rhs, attrs) -> (warnings, "Irrelevant layout constraint, no reference of tree selectors")
+    where
+      constraints := <collect-all(?Eq(_,_) + ?Lt(_,_) + ?Le(_,_) + ?Gt(_,_) + ?Ge(_,_), conc); not(?[])> attrs;
+      warnings := <filter(is-irrelevant-constraint)> constraints
+
+  is-irrelevant-constraint: constraint -> <id>
+    where
+      <not(collect-one(?Line(_) + ?Col(_)))> constraint
 
 
 rules

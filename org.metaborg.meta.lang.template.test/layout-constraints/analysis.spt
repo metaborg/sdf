@@ -13,7 +13,12 @@ context-free syntax
 ]]
 
 
-test constraint num [[1 == 1]] analysis fails
+test constraint irrelevant eq [[ [[1 == 1]] ]] 1 warning at #1
+test constraint irrelevant lt [[ [[1 + 1 < 1]] ]] 1 warning at #1
+test constraint irrelevant le [[ [[1 - 2 <= 1]] ]] 1 warning at #1
+test constraint irrelevant gt [[ [[1 > 1 * 4]] ]] 1 warning at #1
+test constraint irrelevant ge [[ [[1 >= 2 / 1]] ]] 1 warning at #1
+
 test constraint index num [[1.first.line == 0]] analysis succeeds
 test constraint label num [[b.first.line == 0]] analysis succeeds
 test constraint index [[1.first.line == 5.last.line]] analysis succeeds
