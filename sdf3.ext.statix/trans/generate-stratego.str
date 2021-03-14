@@ -807,10 +807,10 @@ rules
 
   geninj-symbol-to-upgrade-call(|lang): Sort(name)                        -> CallNoArgs(SVar($[upgrade-placeholders-[lang]-[name]]))
   geninj-symbol-to-upgrade-call(|lang): Opt(symbol)                       -> Call(SVar("upgrade-option"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
-  geninj-symbol-to-upgrade-call(|lang): Iter(symbol)                      -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
-  geninj-symbol-to-upgrade-call(|lang): IterSep(symbol, _)                -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
-  geninj-symbol-to-upgrade-call(|lang): IterStar(symbol)                  -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
-  geninj-symbol-to-upgrade-call(|lang): IterStarSep(symbol, _)            -> Call(SVar("map"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): Iter(symbol)                      -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterSep(symbol, _)                -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStar(symbol)                  -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStarSep(symbol, _)            -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
   geninj-symbol-to-upgrade-call(|lang): Cf(symbol)                        -> <geninj-symbol-to-upgrade-call(|lang)> symbol
   geninj-symbol-to-upgrade-call(|lang): Lex(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
   geninj-symbol-to-upgrade-call(|lang): Var(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
@@ -828,10 +828,10 @@ rules
 
   geninj-symbol-to-downgrade-call(|lang): Sort(name)                      -> CallNoArgs(SVar($[downgrade-placeholders-[lang]-[name]]))
   geninj-symbol-to-downgrade-call(|lang): Opt(symbol)                     -> Call(SVar("downgrade-option"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
-  geninj-symbol-to-downgrade-call(|lang): Iter(symbol)                    -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
-  geninj-symbol-to-downgrade-call(|lang): IterSep(symbol, _)              -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
-  geninj-symbol-to-downgrade-call(|lang): IterStar(symbol)                -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
-  geninj-symbol-to-downgrade-call(|lang): IterStarSep(symbol, _)          -> Call(SVar("map"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): Iter(symbol)                    -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterSep(symbol, _)              -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStar(symbol)                -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStarSep(symbol, _)          -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
   geninj-symbol-to-downgrade-call(|lang): Cf(symbol)                      -> <geninj-symbol-to-downgrade-call(|lang)> symbol
   geninj-symbol-to-downgrade-call(|lang): Lex(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
   geninj-symbol-to-downgrade-call(|lang): Var(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
@@ -959,7 +959,7 @@ rules
       )
     ),
     // implicate-option(s) = origin-track-forced(\
-    //   _ -> <fail>
+    //   [_, _|_] -> <fatal-err(|"Cannot implicate multi-element list to option.")>
     // \)
     SDef($[implicate-option],
       [DefaultVarDec("s")],
@@ -1048,7 +1048,7 @@ rules
       )
     ),
     // downgrade-option(s) = origin-track-forced(\
-    //   _ -> <fail>
+    //   [_, _|_] -> <fatal-err(|"Cannot downgrade multi-element list to option.")>
     // \)
     SDef($[downgrade-option]
     , [DefaultVarDec("s")]
