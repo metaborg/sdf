@@ -377,18 +377,27 @@ rules
   geninj-sort-to-upgrade-rule(|lang): LexSort(sortname) -> [
     // upgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
-    // upgrade-placeholders-MyLang = explicate-injections-MyLang-MySort
+    // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
     SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))),
 
     // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
     DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   t -> t
-    //   where <is-MyLang-MySort-or-inj> t
+    //   where <is-string> t
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var("t"), Var("t"),
-      BA(is-call, Var("t"))
+      BA(CallNoArgs(SVar("is-string")), Var("t"))
+    )),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> p{anno*}
+    //   with p := <make-placeholder> "MySort"
+    // /)
+    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , AnnoList(Var("p"), [Var(ListVar("anno*"))])
+    , [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
     ))
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
@@ -396,18 +405,27 @@ rules
   geninj-sort-to-downgrade-rule(|lang): LexSort(sortname) -> [
     // downgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
-    // downgrade-placeholders-MyLang = implicate-injections-MyLang-MySort
+    // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
     SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))),
 
     // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
     DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
-    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   t -> t
-    //   where <is-MyLang-MySort-or-inj> t
+    //   where <is-string> t
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var("t"), Var("t"),
-      BA(is-call, Var("t"))
+      BA(CallNoArgs(SVar("is-string")), Var("t"))
+    )),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   p{anno*} -> MySort-Plhdr(){anno*}
+    //   where <is-placeholder> p
+    // \)
+    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+      AnnoList(Var("p"), [Var(ListVar("anno*"))])
+    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    , BA(CallNoArgs(SVar("is-placeholder")), Var("p"))
     ))
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
