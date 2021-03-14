@@ -59,8 +59,8 @@ rules
       Rules([upgr-sort-rules*, upgr-sig-rules*, upgr-plhdr-rules*, upgr-amb-rules*]),
       Rules([dngr-sort-rules*, dngr-sig-rules*, dngr-plhdr-rules*, dngr-amb-rules*]),
       // Extra: should be in a library
-      Rules([expl-opt-rules*, impl-opt-rules*]),
-      Rules([upgr-opt-rules*, dngr-opt-rules*])
+      Rules([expl-gen-rules*, impl-gen-rules*]),
+      Rules([upgr-gen-rules*, dngr-gen-rules*])
     ])
   with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
      ; lang               := <language-spec-name>
@@ -105,10 +105,10 @@ rules
      ; dngr-plhdr-rules*  := <flatfilter(geninj-sort-to-downgrade-placeholder-rule(|lang))> allsorts
      ; dngr-amb-rules*    := <flatfilter(geninj-sort-to-downgrade-ambiguity-rule(|lang))> allsorts
      // Generic option rules (library)
-     ; expl-opt-rules*    := <geninj-explicate-option-rule>
-     ; impl-opt-rules*    := <geninj-implicate-option-rule>
-     ; upgr-opt-rules*    := <geninj-upgrade-option-rule>
-     ; dngr-opt-rules*    := <geninj-downgrade-option-rule>
+     ; expl-gen-rules*    := <geninj-explicate-generic-rules>
+     ; impl-gen-rules*    := <geninj-implicate-generic-rules>
+     ; upgr-gen-rules*    := <geninj-upgrade-generic-rules>
+     ; dngr-gen-rules*    := <geninj-downgrade-generic-rules>
 
    remove-gradual-types = topdown(try(remove-all(?DefHasType(_, _))))
 
@@ -914,58 +914,58 @@ rules
 
   // TODO: Move these generic rules somewhere else, rather than generating them for every file
 
-  geninj-explicate-option-rule: _ -> [
+  geninj-explicate-generic-rules: _ -> [
     // explicate-option(s) = origin-track-forced(\
     //   None() -> []
     // \)
-    SDef($[explicate-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
-      , AnnoList(List([]), [Var(ListVar("anno*"))])
+    SDef($[explicate-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))]),
+        AnnoList(List([]), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // explicate-option(s) = origin-track-forced(\
     //  Some(t) -> [<s> t]
     // \)
-  , SDef($[explicate-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+    SDef($[explicate-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
       )
     )
   ]
 
-  geninj-implicate-option-rule: _ -> [
+  geninj-implicate-generic-rules: _ -> [
     // implicate-option(s) = origin-track-forced(\
     //   [] -> None()
     // \)
-    SDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+    SDef($[implicate-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // implicate-option(s) = origin-track-forced(\
     //   [t] -> Some(<s> t)
     // \)
-  , SDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+    SDef($[implicate-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // implicate-option(s) = origin-track-forced(\
     //   _ -> <fail>
     // \)
-  , SDef($[implicate-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        ListTail([Wld(), Wld()], Wld())
-      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
+    SDef($[implicate-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        ListTail([Wld(), Wld()], Wld()),
+        RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot implicate multi-element list to option.\""))]))
       )
     )
   ]
@@ -974,30 +974,59 @@ rules
 
   // TODO: Move these generic rules somewhere else, rather than generating them for every file
 
-  geninj-upgrade-option-rule: _ -> [
+  geninj-upgrade-generic-rules: _ -> [
     // upgrade-option(s) = origin-track-forced(\
     //   None() -> []
     // \)
-    SDef($[upgrade-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
-      , AnnoList(List([]), [Var(ListVar("anno*"))])
+    SDef($[upgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))]),
+        AnnoList(List([]), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // upgrade-option(s) = origin-track-forced(\
     //  Some(t) -> [<s> t]
     // \)
-  , SDef($[upgrade-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+    SDef($[upgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // upgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <is-list> l
+    //   with l' := <map(s)> l
+    // \)
+    SDef($[upgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("l"), Var("l'"), [
+          WhereClause(BA(CallNoArgs(SVar("is-list")), Var("l"))),
+          WithClause(Assign(Var("l'"), App(Call(SVar("map"), [CallNoArgs(SVar("s"))]), Var("l"))))
+        ]
+      )
+    ),
+    // FUTURE: List placeholders are not currently supported, so this rule always fails.
+    // upgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <fail> l
+    //   with l' := <make-placeholder> "list"
+    // \)
+    SDef($[upgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("l"), Var("l'"), [
+          WhereClause(BA(Fail(), Var("l"))),
+          WithClause(Assign(Var("l'"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str("\"list\"")))))
+        ]
       )
     )
   ]
 
-  geninj-downgrade-option-rule: _ -> [
+  geninj-downgrade-generic-rules: _ -> [
     // downgrade-option(s) = origin-track-forced(\
     //   [] -> None()
     // \)
@@ -1007,25 +1036,54 @@ rules
         AnnoList(List([]), [Var(ListVar("anno*"))])
       , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // downgrade-option(s) = origin-track-forced(\
     //   [t] -> Some(<s> t)
     // \)
-  , SDef($[downgrade-option]
+    SDef($[downgrade-option]
     , [DefaultVarDec("s")]
     , <origin-preserving-rule> RuleNoCond(
         AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
       , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
       )
-    )
+    ),
     // downgrade-option(s) = origin-track-forced(\
     //   _ -> <fail>
     // \)
-  , SDef($[downgrade-option]
+    SDef($[downgrade-option]
     , [DefaultVarDec("s")]
     , <origin-preserving-rule> RuleNoCond(
         ListTail([Wld(), Wld()], Wld())
       , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
+      )
+    ),
+    // downgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <is-list> l
+    //   with l' := <map(s)> l
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("l"), Var("l'"), [
+          WhereClause(BA(CallNoArgs(SVar("is-list")), Var("l"))),
+          WithClause(Assign(Var("l'"), App(Call(SVar("map"), [CallNoArgs(SVar("s"))]), Var("l"))))
+        ]
+      )
+    ),
+	// FUTURE: List placeholders are not currently supported, so we replace it with an empty list.
+    // downgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <is-placeholder> l
+    //   with l' := []
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("p"), Var("p'"), [
+          WhereClause(BA(CallNoArgs(SVar("is-placeholder")), Var("p"))),
+          WithClause(Assign(Var("p'"), NoAnnoList(List([]))))
+        ]
       )
     )
   ]
