@@ -1,0 +1,68 @@
+module generate-stratego-sigs
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  common
+  utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+rules
+
+  geninj-sig-to-strsig: CfSignature(sortname, None(), params@[_|_]) ->
+    OpDecl(consname, FunType(str-paramsigs, ConstType(SortNoArgs(sortname))))
+  with str-paramsigs := <map(geninj-param-to-strsig)> params
+     ; consname  := <geninj-generate-inj-name> (sortname, params)
+
+  geninj-param-to-strsig: Param(symbol, _) -> <geninj-symbol-to-strsig> symbol
+
+  geninj-symbol-to-strsig: Sort(name)                   				  -> ConstType(SortNoArgs(name))
+  geninj-symbol-to-strsig: Opt(symbol)                  				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol])) // ConstType(Sort("Option", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: Iter(symbol)                 				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterSep(symbol, _)           				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStar(symbol)             				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: IterStarSep(symbol, _)       				  -> ConstType(Sort("List", [<geninj-symbol-to-strsig> symbol]))
+  geninj-symbol-to-strsig: Cf(symbol)                   				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Lex(symbol)                  				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Var(symbol)                  				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Varsym(symbol)               				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Label(_, symbol)             				  -> <geninj-symbol-to-strsig> symbol
+  geninj-symbol-to-strsig: Alt(_, _)                    				  -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-strsig: CharClass(_)                 				  -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-strsig: CiLit(_)                     				  -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-strsig: EOF()                        				  -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-strsig: FileStart()                  				  -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-strsig: Lit(_)                       				  -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-strsig: ParameterizedSort(_, _)      				  -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-strsig: Sequence(_, _)               				  -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-strsig: Start()                      				  -> <errormsg(!"Start is not supported"); fail>
