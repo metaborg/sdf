@@ -187,8 +187,8 @@ rules
     //   MySort-Plhdr(){anno*} -> MySort-Plhdr(){anno*}
     // /)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -199,8 +199,8 @@ rules
     //   MySort-Plhdr(){anno*} -> MySort-Plhdr(){anno*}
     // \)
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -214,9 +214,9 @@ rules
     //   with alts' := <map(explicate-injections-MyLang-MySort)> alts
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
-        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
-      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+      AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
   ]
@@ -230,9 +230,9 @@ rules
     //   with alts' := <map(implicate-injections-MyLang-MySort)> alts
     // \)
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
-        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
-      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+      AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
   ]
@@ -248,8 +248,8 @@ rules
     //   where <is-MyLang-MySort-or-inj> t
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      Var(varname), NoAnnoList(Op(consname, [expl-call]))
-    , BA(is-call, Var(varname))
+      Var(varname), NoAnnoList(Op(consname, [expl-call])),
+      BA(is-call, Var(varname))
     ))
   ]
   with consname   := <geninj-generate-inj-name> (sortname, [param])
@@ -277,8 +277,8 @@ rules
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -289,8 +289,8 @@ rules
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -303,9 +303,9 @@ rules
     //      ; t2' := <explicate-injections-MyLang-SubSort> t2
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
-    , [ WithClause(body) ]
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
     ))
   ]
   with from-vars := <geninj-params-to-vars> params
@@ -321,9 +321,9 @@ rules
     //      ; t2' := <implicate-injections-MyLang-SubSort> t2
     // \)
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
-    , [ WithClause(body) ]
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
     ))
   ]
   with from-vars := <geninj-params-to-vars> params
@@ -395,9 +395,9 @@ rules
     //   with p := <make-placeholder> "MySort"
     // /)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , AnnoList(Var("p"), [Var(ListVar("anno*"))])
-    , [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
     ))
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
@@ -420,12 +420,15 @@ rules
     )),
     // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   p{anno*} -> MySort-Plhdr(){anno*}
-    //   where <is-placeholder> p
+    //   where <is-placeholder + ?MySort-Plhdr()> p
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Var("p"), [Var(ListVar("anno*"))])
-    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , BA(CallNoArgs(SVar("is-placeholder")), Var("p"))
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      BA(Choice(
+        CallNoArgs(SVar("is-placeholder")),
+        Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))
+      ), Var("p"))
     ))
   ]
   with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
@@ -454,9 +457,9 @@ rules
     //   with p := <make-placeholder> "MySort"
     // /)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , AnnoList(Var("p"), [Var(ListVar("anno*"))])
-    , [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
     ))
   ]
 
@@ -465,12 +468,15 @@ rules
     DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   p{anno*} -> MySort-Plhdr(){anno*}
-    //   where <is-placeholder> p
+    //   where <is-placeholder + ?MySort-Plhdr()> p
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Var("p"), [Var(ListVar("anno*"))])
-    , AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
-    , BA(CallNoArgs(SVar("is-placeholder")), Var("p"))
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      BA(Choice(
+        CallNoArgs(SVar("is-placeholder")),
+        Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))
+      ), Var("p"))
     ))
   ]
 
@@ -484,9 +490,9 @@ rules
     //   with alts' := <map(upgrade-placeholders-MyLang-MySort)> alts
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
-      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+        [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
   ]
@@ -500,9 +506,9 @@ rules
     //   with alts' := <map(downgrade-placeholders-MyLang-MySort)> alts
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))])
-      , [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+        [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
       )]
     ))
   ]
@@ -521,12 +527,12 @@ rules
     //   ToSort2MySort(t){anno*} -> ToSort2MySort(<upgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      Var(varname), upgr-call
-    , BA(is-call, Var(varname))
+      Var(varname), upgr-call,
+      BA(is-call, Var(varname))
     )),
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, [upgr-call]), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, [upgr-call]), [Var(ListVar("anno*"))])
     ))
   ]
   with consname    := <geninj-generate-inj-name> (sortname, [param])
@@ -544,12 +550,12 @@ rules
     //   ToSort2MySort(t){anno*} -> ToSort2MySort(<downgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      Var(varname), dngr-call
-    , BA(is-call, Var(varname))
+      Var(varname), dngr-call,
+      BA(is-call, Var(varname))
     )),
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, [dngr-call]), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, [dngr-call]), [Var(ListVar("anno*"))])
     ))
   ]
   with consname    := <geninj-generate-inj-name> (sortname, [param])
@@ -563,8 +569,8 @@ rules
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -575,8 +581,8 @@ rules
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
-        AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
-      , AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -589,9 +595,9 @@ rules
     //      ; t2' := <upgrade-placeholders-MyLang-SubSort> t2
     // \)
     SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
-    , [ WithClause(body) ]
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
     ))
   ]
   with from-vars := <geninj-params-to-vars> params
@@ -607,9 +613,9 @@ rules
     //      ; t2' := <downgrade-placeholders-MyLang-SubSort> t2
     // \)
     SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
-      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))])
-    , AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))])
-    , [ WithClause(body) ]
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
     ))
   ]
   with from-vars := <geninj-params-to-vars> params
@@ -1030,31 +1036,31 @@ rules
     // downgrade-option(s) = origin-track-forced(\
     //   [] -> None()
     // \)
-    SDef($[downgrade-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+    SDef($[downgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
       )
     ),
     // downgrade-option(s) = origin-track-forced(\
     //   [t] -> Some(<s> t)
     // \)
-    SDef($[downgrade-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))])
-      , AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+    SDef($[downgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
       )
     ),
     // downgrade-option(s) = origin-track-forced(\
     //   [_, _|_] -> <fatal-err(|"Cannot downgrade multi-element list to option.")>
     // \)
-    SDef($[downgrade-option]
-    , [DefaultVarDec("s")]
-    , <origin-preserving-rule> RuleNoCond(
-        ListTail([Wld(), Wld()], Wld())
-      , RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
+    SDef($[downgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        ListTail([Wld(), Wld()], Wld()),
+        RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
       )
     ),
     // downgrade-list(s) = origin-track-forced(\
