@@ -366,7 +366,7 @@ rules
   origin-preserving:      s -> Call(SVar("origin-track-forced"), [s])
   origin-preserving-rule: r -> <origin-preserving> LRule(r)
   
-  geninj-debug-pre(|n):  t -> [ Call(SVar("debug"), [Build(NoAnnoList(Str($["[n]: "])))]) ]
+  geninj-debug-pre(|n):  t -> []
   geninj-debug-post(|n): t -> []
   
   geninj-sdef-0-0(|n): body -> SDefNoArgs(n, extbody)
