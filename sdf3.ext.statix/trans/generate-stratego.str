@@ -378,7 +378,9 @@ rules
     // upgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
-    SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))),
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))
+    ),
 
     // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
     DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
@@ -386,7 +388,7 @@ rules
     //   t -> t
     //   where <is-string> t
     // \)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       Var("t"), Var("t"),
       BA(CallNoArgs(SVar("is-string")), Var("t"))
     )),
@@ -394,7 +396,7 @@ rules
     //   MySort-Plhdr(){anno*} -> p{anno*}
     //   with p := <make-placeholder> "MySort"
     // /)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       AnnoList(Var("p"), [Var(ListVar("anno*"))]),
       [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
@@ -406,7 +408,9 @@ rules
     // downgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
-    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))),
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))
+    ),
 
     // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
     DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
@@ -414,7 +418,7 @@ rules
     //   t -> t
     //   where <is-string> t
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       Var("t"), Var("t"),
       BA(CallNoArgs(SVar("is-string")), Var("t"))
     )),
@@ -422,7 +426,7 @@ rules
     //   p{anno*} -> MySort-Plhdr(){anno*}
     //   where <is-placeholder + ?MySort-Plhdr()> p
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Var("p"), [Var(ListVar("anno*"))]),
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       BA(Choice(
@@ -437,14 +441,18 @@ rules
     // upgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
-    SDefNoArgs($[upgrade-placeholders-[lang]], CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]])))
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))
+    )
   ]
 
   geninj-sort-to-downgrade-rule(|lang): CfSort(sortname) -> [
     // downgrade-placeholders-MyLang :: ? -> ?
     DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
     // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
-    SDefNoArgs($[downgrade-placeholders-[lang]], CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]])))
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))
+    )
   ]
 
 rules
@@ -456,7 +464,7 @@ rules
     //   MySort-Plhdr(){anno*} -> p{anno*}
     //   with p := <make-placeholder> "MySort"
     // /)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       AnnoList(Var("p"), [Var(ListVar("anno*"))]),
       [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
@@ -470,7 +478,7 @@ rules
     //   p{anno*} -> MySort-Plhdr(){anno*}
     //   where <is-placeholder + ?MySort-Plhdr()> p
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Var("p"), [Var(ListVar("anno*"))]),
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       BA(Choice(
@@ -489,7 +497,7 @@ rules
     //   amb(alts){anno*} -> amb(alts'){anno*}
     //   with alts' := <map(upgrade-placeholders-MyLang-MySort)> alts
     // \)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
         AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
         AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
         [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
@@ -505,7 +513,7 @@ rules
     //   amb(alts){anno*} -> amb(alts'){anno*}
     //   with alts' := <map(downgrade-placeholders-MyLang-MySort)> alts
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
         AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
         AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
         [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
@@ -526,11 +534,11 @@ rules
     // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   ToSort2MySort(t){anno*} -> ToSort2MySort(<upgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       Var(varname), upgr-call,
       BA(is-call, Var(varname))
     )),
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, [upgr-call]), [Var(ListVar("anno*"))])
     ))
@@ -549,11 +557,11 @@ rules
     // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   ToSort2MySort(t){anno*} -> ToSort2MySort(<downgrade-placeholders-MyLang-ToSort> t){anno*}
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       Var(varname), dngr-call,
       BA(is-call, Var(varname))
     )),
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, [dngr-call]), [Var(ListVar("anno*"))])
     ))
@@ -568,7 +576,7 @@ rules
     // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
@@ -580,7 +588,7 @@ rules
     // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
     //   MyCons(){anno*} -> MyCons(){anno*}
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
       AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
     ))
@@ -594,7 +602,7 @@ rules
     //   with t1' := <upgrade-placeholders-MyLang-SubSort> t1
     //      ; t2' := <upgrade-placeholders-MyLang-SubSort> t2
     // \)
-    SDefNoArgs($[upgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
       [ WithClause(body) ]
@@ -612,7 +620,7 @@ rules
     //   with t1' := <downgrade-placeholders-MyLang-SubSort> t1
     //      ; t2' := <downgrade-placeholders-MyLang-SubSort> t2
     // \)
-    SDefNoArgs($[downgrade-placeholders-[lang]-[sortname]], <origin-preserving-rule> Rule(
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
       AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
       AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
       [ WithClause(body) ]
@@ -1104,3 +1112,8 @@ rules
 
   origin-preserving: s -> Call(SVar("origin-track-forced"), [s])
   origin-preserving-rule: r -> <origin-preserving> LRule(r)
+  
+  geninj-debug-pre(|n): t -> [ Call(SVar("debug"), [Build(NoAnnoList(Str($["[n]: "])))]) ]
+  geninj-debug-post(|n): t -> []
+  
+  geninj-sdef-0-0(|n): body -> SDefNoArgs(n, <concat; geninj-strs-to-seqs> [ <geninj-debug-pre(|n)> body, [body], <geninj-debug-post(|n)> body ])
