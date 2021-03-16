@@ -1,0 +1,529 @@
+module generate-stratego-upgrade
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  common
+  utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+
+////////////////////////////////////
+// Upgrade/downgrade placeholders //
+////////////////////////////////////
+
+rules
+
+  geninj-sort-to-upgrade-rule(|lang): LexSort(sortname) -> [
+    // upgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))
+    ),
+
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-string> t
+    // \)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(CallNoArgs(SVar("is-string")), Var("t"))
+    )),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> p{anno*}
+    //   with p := <make-placeholder> "MySort"
+    // /)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
+    ))
+  ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
+
+  geninj-sort-to-downgrade-rule(|lang): LexSort(sortname) -> [
+    // downgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))
+    ),
+
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> t
+    //   where <is-string> t
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      Var("t"), Var("t"),
+      BA(CallNoArgs(SVar("is-string")), Var("t"))
+    )),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   p{anno*} -> MySort-Plhdr(){anno*}
+    //   where <is-placeholder + ?MySort-Plhdr()> p
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      BA(Choice(
+        CallNoArgs(SVar("is-placeholder")),
+        Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))
+      ), Var("p"))
+    ))
+  ]
+  with is-call := <geninj-symbol-to-is-call(|lang)> Sort(sortname)
+
+  geninj-sort-to-upgrade-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[upgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // upgrade-placeholders-MyLang = upgrade-placeholders-MyLang-MySort
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[upgrade-placeholders-[lang]-[sortname]]))
+    )
+  ]
+
+  geninj-sort-to-downgrade-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang :: ? -> ?
+    DefHasType($[downgrade-placeholders-[lang]], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // downgrade-placeholders-MyLang = downgrade-placeholders-MyLang-MySort
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]])> (
+      CallNoArgs(SVar($[downgrade-placeholders-[lang]-[sortname]]))
+    )
+  ]
+
+rules
+
+  geninj-sort-to-upgrade-placeholder-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MySort-Plhdr(){anno*} -> p{anno*}
+    //   with p := <make-placeholder> "MySort"
+    // /)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      [ WithClause(Assign(Var("p"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str($["[sortname]"]))))) ]
+    ))
+  ]
+
+  geninj-sort-to-downgrade-placeholder-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   p{anno*} -> MySort-Plhdr(){anno*}
+    //   where <is-placeholder + ?MySort-Plhdr()> p
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Var("p"), [Var(ListVar("anno*"))]),
+      AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
+      BA(Choice(
+        CallNoArgs(SVar("is-placeholder")),
+        Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))
+      ), Var("p"))
+    ))
+  ]
+
+rules
+
+  geninj-sort-to-upgrade-ambiguity-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
+    //   with alts' := <map(upgrade-placeholders-MyLang-MySort)> alts
+    // \)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+        [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  ]
+  with call := <geninj-symbol-to-upgrade-call(|lang)> Iter(Sort(sortname))
+
+  geninj-sort-to-downgrade-ambiguity-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   amb(alts){anno*} -> amb(alts'){anno*}
+    //   with alts' := <map(downgrade-placeholders-MyLang-MySort)> alts
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+        AnnoList(Op("amb", [Var("alts")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("amb", [Var("alts'")]), [Var(ListVar("anno*"))]),
+        [ WithClause(Assign(Var("alts'"), App(call, Var("alts")))
+      )]
+    ))
+  ]
+  with call := <geninj-symbol-to-downgrade-call(|lang)> Iter(Sort(sortname))
+
+rules
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> <upgrade-placeholders-MyLang-ToSort> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t){anno*} -> ToSort2MySort(<upgrade-placeholders-MyLang-ToSort> t){anno*}
+    // \)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      Var(varname), upgr-call,
+      BA(is-call, Var(varname))
+    )),
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, [upgr-call]), [Var(ListVar("anno*"))])
+    ))
+  ]
+  with consname    := <geninj-generate-inj-name> (sortname, [param])
+     ; upgr-call   := <geninj-param-to-upgrade-app(|lang)> param
+     ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, varname)]) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   t -> <downgrade-placeholders-MyLang-ToSort> t
+    //   where <is-MyLang-MySort-or-inj> t
+    // \)
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   ToSort2MySort(t){anno*} -> ToSort2MySort(<downgrade-placeholders-MyLang-ToSort> t){anno*}
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      Var(varname), dngr-call,
+      BA(is-call, Var(varname))
+    )),
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, [Var(varname)]), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, [dngr-call]), [Var(ListVar("anno*"))])
+    ))
+  ]
+  with consname    := <geninj-generate-inj-name> (sortname, [param])
+     ; dngr-call   := <geninj-param-to-downgrade-app(|lang)> param
+     ; is-call     := <geninj-symbol-to-is-call(|lang)> tosort
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, Some(consname), []) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(){anno*} -> MyCons(){anno*}
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sig-to-upgrade-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <upgrade-placeholders-MyLang-SubSort> t1
+    //      ; t2' := <upgrade-placeholders-MyLang-SubSort> t2
+    // \)
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
+    ))
+  ]
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-upgrade-assigns(|lang)> params
+
+  geninj-sig-to-downgrade-rule(|lang): CfSignature(sortname, Some(consname), params@[_|_]) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(\
+    //   MyCons(t1, t2){anno*} -> MyCons(t1', t2'){anno*}
+    //   with t1' := <downgrade-placeholders-MyLang-SubSort> t1
+    //      ; t2' := <downgrade-placeholders-MyLang-SubSort> t2
+    // \)
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> Rule(
+      AnnoList(Op(consname, from-vars), [Var(ListVar("anno*"))]),
+      AnnoList(Op(consname, to-vars), [Var(ListVar("anno*"))]),
+      [ WithClause(body) ]
+    ))
+  ]
+  with from-vars := <geninj-params-to-vars> params
+     ; to-vars   := <geninj-params-to-vars-tick> params
+     ; body      := <geninj-params-to-downgrade-assigns(|lang)> params
+
+rules
+
+  geninj-params-to-upgrade-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-upgrade-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-params-to-downgrade-assigns(|lang): params -> seqs
+  with assigns := <map(geninj-param-to-downgrade-assign(|lang))> params
+     ; seqs := <geninj-strs-to-seqs> assigns
+
+  geninj-param-to-upgrade-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-upgrade-app(|lang)> param
+
+  geninj-param-to-downgrade-assign(|lang): param@Param(symbol, newname) -> Assign(to-var, app)
+  with to-var := <geninj-param-to-var-tick> param
+     ; app := <geninj-param-to-downgrade-app(|lang)> param
+
+rules
+
+  geninj-params-to-upgrade-apps(|lang) = map(geninj-param-to-upgrade-app(|lang))
+  geninj-param-to-upgrade-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-upgrade-call(|lang)> symbol
+
+  geninj-params-to-downgrade-apps(|lang) = map(geninj-param-to-downgrade-app(|lang))
+  geninj-param-to-downgrade-app(|lang): Param(symbol, newname) -> App(call, Var(newname))
+  with call := <geninj-symbol-to-downgrade-call(|lang)> symbol
+
+rules
+
+  geninj-params-to-vars = map(geninj-param-to-var)
+  geninj-param-to-var: Param(_, newname) -> Var(newname)
+
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
+
+
+
+rules
+
+  geninj-symbol-to-upgrade-call(|lang): Sort(name)                        -> CallNoArgs(SVar($[upgrade-placeholders-[lang]-[name]]))
+  geninj-symbol-to-upgrade-call(|lang): Opt(symbol)                       -> Call(SVar("upgrade-option"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): Iter(symbol)                      -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterSep(symbol, _)                -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStar(symbol)                  -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): IterStarSep(symbol, _)            -> Call(SVar("upgrade-list"), [<geninj-symbol-to-upgrade-call(|lang)> symbol])
+  geninj-symbol-to-upgrade-call(|lang): Cf(symbol)                        -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Lex(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Var(symbol)                       -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Varsym(symbol)                    -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Label(_, symbol)                  -> <geninj-symbol-to-upgrade-call(|lang)> symbol
+  geninj-symbol-to-upgrade-call(|lang): Alt(_, _)                         -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): CharClass(_)                      -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): CiLit(_)                          -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): EOF()                             -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): FileStart()                       -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Lit(_)                            -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): ParameterizedSort(_, _)           -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Sequence(_, _)                    -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-upgrade-call(|lang): Start()                           -> <errormsg(!"Start is not supported"); fail>
+
+  geninj-symbol-to-downgrade-call(|lang): Sort(name)                      -> CallNoArgs(SVar($[downgrade-placeholders-[lang]-[name]]))
+  geninj-symbol-to-downgrade-call(|lang): Opt(symbol)                     -> Call(SVar("downgrade-option"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): Iter(symbol)                    -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterSep(symbol, _)              -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStar(symbol)                -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): IterStarSep(symbol, _)          -> Call(SVar("downgrade-list"), [<geninj-symbol-to-downgrade-call(|lang)> symbol])
+  geninj-symbol-to-downgrade-call(|lang): Cf(symbol)                      -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Lex(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Var(symbol)                     -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Varsym(symbol)                  -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Label(_, symbol)                -> <geninj-symbol-to-downgrade-call(|lang)> symbol
+  geninj-symbol-to-downgrade-call(|lang): Alt(_, _)                       -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): CharClass(_)                    -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): CiLit(_)                        -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): EOF()                           -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): FileStart()                     -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Lit(_)                          -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): ParameterizedSort(_, _)         -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Sequence(_, _)                  -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-downgrade-call(|lang): Start()                         -> <errormsg(!"Start is not supported"); fail>
+
+rules
+
+  // TODO: Move these generic rules somewhere else, rather than generating them for every file
+
+  geninj-upgrade-generic-rules: _ -> [
+    // upgrade-option(s) = origin-track-forced(\
+    //   None() -> []
+    // \)
+    SDef($[upgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))]),
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // upgrade-option(s) = origin-track-forced(\
+    //  Some(t) -> [<s> t]
+    // \)
+    SDef($[upgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(List([App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // upgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <is-list> l
+    //   with l' := <map(s)> l
+    // \)
+    SDef($[upgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("l"), Var("l'"), [
+          WhereClause(BA(CallNoArgs(SVar("is-list")), Var("l"))),
+          WithClause(Assign(Var("l'"), App(Call(SVar("map"), [CallNoArgs(SVar("s"))]), Var("l"))))
+        ]
+      )
+    ),
+    // FIXME: List placeholders are not currently supported, so this rule always fails.
+    // upgrade-list(s) = origin-track-forced(\
+    //   l -> l'
+    //   where <fail> l
+    //   with l' := <make-placeholder> "list"
+    // \)
+    SDef($[upgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("l"), Var("l'"), [
+          WhereClause(BA(Fail(), Var("l"))),
+          WithClause(Assign(Var("l'"), App(CallNoArgs(SVar("make-placeholder")), NoAnnoList(Str("\"list\"")))))
+        ]
+      )
+    )
+  ]
+
+  geninj-downgrade-generic-rules: _ -> [
+    // downgrade-option(s) = origin-track-forced(\
+    //   None() -> None()
+    // \)
+    SDef($[downgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))]),
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))])
+      )
+    ),
+    // downgrade-option(s) = origin-track-forced(\
+    //   Some(t) -> Some(<s> t)
+    // \)
+    SDef($[downgrade-option],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // // downgrade-option(s) = origin-track-forced(\
+    // //   [_, _|_] -> <fatal-err(|"Cannot downgrade multi-element list to option.")>
+    // // \)
+    // SDef($[downgrade-option],
+    //   [DefaultVarDec("s")],
+    //   <origin-preserving-rule> RuleNoCond(
+    //     ListTail([Wld(), Wld()], Wld()),
+    //     RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
+    //   )
+    // ),
+	// FIXME: List placeholders are not currently supported, so we replace it with an empty list.
+    // downgrade-list(s) = origin-track-forced(\
+    //   p -> p'
+    //   where <is-placeholder> p
+    //   with p' := []
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        Var("p"), Var("p'"), [
+          WhereClause(BA(CallNoArgs(SVar("is-placeholder")), Var("p"))),
+          WithClause(Assign(Var("p'"), NoAnnoList(List([]))))
+        ]
+      )
+    ),
+    // // downgrade-list(s) = origin-track-forced(\
+    // //   [e]{anno*} -> [e']{anno*}
+    // //   with e' := <s> e
+    // // \)
+    // SDef($[downgrade-list],
+    //   [DefaultVarDec("s")],
+    //   <origin-preserving-rule> Rule(
+    //     AnnoList(List([Var("e")]), [Var(ListVar("anno*"))]),
+    //     AnnoList(List([Var("e'")]), [Var(ListVar("anno*"))]), [
+    //       WithClause(Assign(Var("e'"), App(CallNoArgs(SVar("s")), Var("e"))))
+    //     ]
+    //   )
+    // ),
+    // downgrade-list(s) = origin-track-forced(\
+    //   []{anno*} -> []{anno*}
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))]),
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // downgrade-list(s) = origin-track-forced(\
+    //   [e|es]{anno*} -> [e'|es']{anno*}
+    //     with e' := <s> e
+    //        ; es' := <downgrade-list(s)> es
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        AnnoList(ListTail([Var("e")], Var("es")), [Var(ListVar("anno*"))]),
+        AnnoList(ListTail([Var("e'")], Var("es'")), [Var(ListVar("anno*"))]), [
+          WithClause(Seq(
+            Assign(Var("e'"), App(CallNoArgs(SVar("s")), Var("e"))),
+            Assign(Var("es'"), App(Call(SVar("downgrade-list"), [CallNoArgs(SVar("s"))]), Var("es")))
+          ))
+        ]
+      )
+    )
+    
+  ]
+
