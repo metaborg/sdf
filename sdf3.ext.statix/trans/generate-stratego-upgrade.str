@@ -421,7 +421,7 @@ rules
         ]
       )
     ),
-    // FUTURE: List placeholders are not currently supported, so this rule always fails.
+    // FIXME: List placeholders are not currently supported, so this rule always fails.
     // upgrade-list(s) = origin-track-forced(\
     //   l -> l'
     //   where <fail> l
@@ -440,54 +440,40 @@ rules
 
   geninj-downgrade-generic-rules: _ -> [
     // downgrade-option(s) = origin-track-forced(\
-    //   [] -> None()
+    //   None() -> None()
     // \)
     SDef($[downgrade-option],
       [DefaultVarDec("s")],
       <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("None", []), [Var(ListVar("anno*"))]),
         AnnoList(Op("None", []), [Var(ListVar("anno*"))])
       )
     ),
     // downgrade-option(s) = origin-track-forced(\
-    //   [t] -> Some(<s> t)
+    //   Some(t) -> Some(<s> t)
     // \)
     SDef($[downgrade-option],
       [DefaultVarDec("s")],
       <origin-preserving-rule> RuleNoCond(
-        AnnoList(List([Var("t")]), [Var(ListVar("anno*"))]),
+        AnnoList(Op("Some", [Var("t")]), [Var(ListVar("anno*"))]),
         AnnoList(Op("Some", [App(CallNoArgs(SVar("s")), Var("t"))]), [Var(ListVar("anno*"))])
       )
     ),
-    // downgrade-option(s) = origin-track-forced(\
-    //   [_, _|_] -> <fatal-err(|"Cannot downgrade multi-element list to option.")>
-    // \)
-    SDef($[downgrade-option],
-      [DefaultVarDec("s")],
-      <origin-preserving-rule> RuleNoCond(
-        ListTail([Wld(), Wld()], Wld()),
-        RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
-      )
-    ),
+    // // downgrade-option(s) = origin-track-forced(\
+    // //   [_, _|_] -> <fatal-err(|"Cannot downgrade multi-element list to option.")>
+    // // \)
+    // SDef($[downgrade-option],
+    //   [DefaultVarDec("s")],
+    //   <origin-preserving-rule> RuleNoCond(
+    //     ListTail([Wld(), Wld()], Wld()),
+    //     RootApp(CallT(SVar("fatal-err"), [], [NoAnnoList(Str("\"Cannot downgrade multi-element list to option.\""))]))
+    //   )
+    // ),
+	// FIXME: List placeholders are not currently supported, so we replace it with an empty list.
     // downgrade-list(s) = origin-track-forced(\
-    //   l -> l'
-    //   where <is-list> l
-    //   with l' := <map(s)> l
-    // \)
-    SDef($[downgrade-list],
-      [DefaultVarDec("s")],
-      <origin-preserving-rule> Rule(
-        Var("l"), Var("l'"), [
-          WhereClause(BA(CallNoArgs(SVar("is-list")), Var("l"))),
-          WithClause(Assign(Var("l'"), App(Call(SVar("map"), [CallNoArgs(SVar("s"))]), Var("l"))))
-        ]
-      )
-    ),
-	// FUTURE: List placeholders are not currently supported, so we replace it with an empty list.
-    // downgrade-list(s) = origin-track-forced(\
-    //   l -> l'
-    //   where <is-placeholder> l
-    //   with l' := []
+    //   p -> p'
+    //   where <is-placeholder> p
+    //   with p' := []
     // \)
     SDef($[downgrade-list],
       [DefaultVarDec("s")],
@@ -497,6 +483,47 @@ rules
           WithClause(Assign(Var("p'"), NoAnnoList(List([]))))
         ]
       )
+    ),
+    // // downgrade-list(s) = origin-track-forced(\
+    // //   [e]{anno*} -> [e']{anno*}
+    // //   with e' := <s> e
+    // // \)
+    // SDef($[downgrade-list],
+    //   [DefaultVarDec("s")],
+    //   <origin-preserving-rule> Rule(
+    //     AnnoList(List([Var("e")]), [Var(ListVar("anno*"))]),
+    //     AnnoList(List([Var("e'")]), [Var(ListVar("anno*"))]), [
+    //       WithClause(Assign(Var("e'"), App(CallNoArgs(SVar("s")), Var("e"))))
+    //     ]
+    //   )
+    // ),
+    // downgrade-list(s) = origin-track-forced(\
+    //   []{anno*} -> []{anno*}
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> RuleNoCond(
+        AnnoList(List([]), [Var(ListVar("anno*"))]),
+        AnnoList(List([]), [Var(ListVar("anno*"))])
+      )
+    ),
+    // downgrade-list(s) = origin-track-forced(\
+    //   [e|es]{anno*} -> [e'|es']{anno*}
+    //     with e' := <s> e
+    //        ; es' := <downgrade-list(s)> es
+    // \)
+    SDef($[downgrade-list],
+      [DefaultVarDec("s")],
+      <origin-preserving-rule> Rule(
+        AnnoList(ListTail([Var("e")], Var("es")), [Var(ListVar("anno*"))]),
+        AnnoList(ListTail([Var("e'")], Var("es'")), [Var(ListVar("anno*"))]), [
+          WithClause(Seq(
+            Assign(Var("e'"), App(CallNoArgs(SVar("s")), Var("e"))),
+            Assign(Var("es'"), App(Call(SVar("downgrade-list"), [CallNoArgs(SVar("s"))]), Var("es")))
+          ))
+        ]
+      )
     )
+    
   ]
 
