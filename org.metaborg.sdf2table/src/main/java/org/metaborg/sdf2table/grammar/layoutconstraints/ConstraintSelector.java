@@ -6,9 +6,9 @@ public enum ConstraintSelector {
     RIGHT("right"),
     LAST("last");
 
-    private String str;
+    final private String str;
 
-    ConstraintSelector(String str) {
+    private ConstraintSelector(String str) {
         this.str = str;
     }
 
