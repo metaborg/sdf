@@ -29,15 +29,11 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
     protected LayoutConstraintAttribute(IStrategoTerm constraint) throws Exception {
         this.constraint = constraint;
-        lc = createLayoutConstraint(constraint);
+        this.lc = this.createLayoutConstraint(constraint);
     }
 
     @Override public String toString() {
-        if(TermUtils.isAppl(constraint) && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
-            return "ignore-layout";
-        } else {
-            return lc.toString();
-        }
+        return this.lc.toString();
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
@@ -46,7 +42,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         }
 
         try {
-            IStrategoTerm sdf2Constraint = toSDF2constraint(constraint, tf);
+            IStrategoTerm sdf2Constraint = this.toSDF2constraint(constraint, tf);
             return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("layout", 1),
                 (sdf2Constraint != null ? sdf2Constraint : tf.makeAppl(tf.makeConstructor("null", 0)))));
         } catch(Exception e) {
@@ -64,7 +60,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     public ILayoutConstraint getLayoutConstraint() {
-        return lc;
+        return this.lc;
     }
 
     private ILayoutConstraint createLayoutConstraint(IStrategoTerm constraintTerm) throws Exception {
@@ -157,63 +153,66 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     private IStrategoTerm toSDF2constraint(IStrategoTerm c, ITermFactory tf) throws Exception {
-        if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("IgnoreLayout")) {
-            return tf.makeAppl(tf.makeConstructor("ignore-layout", 0));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Num")) {
-            String tree = c.getSubterm(0).toString();
-            return tf.makeAppl(tf.makeConstructor("num", 1), tf.makeString(tree));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("And")) {
-            return tf.makeAppl(tf.makeConstructor("and", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Or")) {
-            return tf.makeAppl(tf.makeConstructor("or", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Not")) {
-            return tf.makeAppl(tf.makeConstructor("not", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Lt")) {
-            return tf.makeAppl(tf.makeConstructor("lt", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Gt")) {
-            return tf.makeAppl(tf.makeConstructor("gt", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Le")) {
-            return tf.makeAppl(tf.makeConstructor("le", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Ge")) {
-            return tf.makeAppl(tf.makeConstructor("ge", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Eq")) {
-            return tf.makeAppl(tf.makeConstructor("eq", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Add")) {
-            return tf.makeAppl(tf.makeConstructor("add", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Sub")) {
-            return tf.makeAppl(tf.makeConstructor("sub", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Div")) {
-            return tf.makeAppl(tf.makeConstructor("div", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Mul")) {
-            return tf.makeAppl(tf.makeConstructor("mul", 2), toSDF2constraint(c.getSubterm(0), tf),
-                toSDF2constraint(c.getSubterm(1), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Line")) {
-            return tf.makeAppl(tf.makeConstructor("line", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Col")) {
-            return tf.makeAppl(tf.makeConstructor("col", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("First")) {
-            return tf.makeAppl(tf.makeConstructor("first", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Last")) {
-            return tf.makeAppl(tf.makeConstructor("last", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Left")) {
-            return tf.makeAppl(tf.makeConstructor("left", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("Right")) {
-            return tf.makeAppl(tf.makeConstructor("right", 1), toSDF2constraint(c.getSubterm(0), tf));
-        } else if(TermUtils.isAppl(c) && ((IStrategoAppl) c).getName().equals("PosRef")) {
-            String tree = c.getSubterm(0).toString();
-            return tf.makeInt(Integer.parseInt(tree.substring(1, tree.length() - 1)));
-        } else {
-            throw new Exception("Not a valid Layout Constraint: " + c);
+        if (!TermUtils.isAppl(c)) {
+            throw new Exception("Not a valid Layout Constraint: " + constraint);
+        }
+        final String termName = ((IStrategoAppl) c).getName();
+
+        switch (termName) {
+            case "Num":
+                return tf.makeAppl(tf.makeConstructor("num", 1), tf.makeString(c.getSubterm(0).toString()));
+            case "And":
+                return tf.makeAppl(tf.makeConstructor("and", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Or":
+                return tf.makeAppl(tf.makeConstructor("or", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Not":
+                return tf.makeAppl(tf.makeConstructor("not", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "Lt":
+                return tf.makeAppl(tf.makeConstructor("lt", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Gt":
+                return tf.makeAppl(tf.makeConstructor("gt", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Le":
+                return tf.makeAppl(tf.makeConstructor("le", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Ge":
+                return tf.makeAppl(tf.makeConstructor("ge", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Eq":
+                return tf.makeAppl(tf.makeConstructor("eq", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Add":
+                return tf.makeAppl(tf.makeConstructor("add", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Sub":
+                return tf.makeAppl(tf.makeConstructor("sub", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Div":
+                return tf.makeAppl(tf.makeConstructor("div", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Mul":
+                return tf.makeAppl(tf.makeConstructor("mul", 2), toSDF2constraint(c.getSubterm(0), tf),
+                        toSDF2constraint(c.getSubterm(1), tf));
+            case "Line":
+                return tf.makeAppl(tf.makeConstructor("line", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "Col":
+                return tf.makeAppl(tf.makeConstructor("col", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "First":
+                return tf.makeAppl(tf.makeConstructor("first", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "Last":
+                return tf.makeAppl(tf.makeConstructor("last", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "Left":
+                return tf.makeAppl(tf.makeConstructor("left", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "Right":
+                return tf.makeAppl(tf.makeConstructor("right", 1), toSDF2constraint(c.getSubterm(0), tf));
+            case "PosRef":
+                final String tree = c.getSubterm(0).toString();
+                return tf.makeInt(Integer.parseInt(tree.substring(1, tree.length() - 1)));
+            default:
+                throw new Exception("Not a valid Layout Constraint: " + c);
         }
     }
 }
