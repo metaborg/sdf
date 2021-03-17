@@ -37,12 +37,12 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        if(TermUtils.isAppl(constraint) && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
+        if(TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
             return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("ignore-layout", 0)));
         }
 
         try {
-            IStrategoTerm sdf2Constraint = this.toSDF2constraint(constraint, tf);
+            IStrategoTerm sdf2Constraint = this.toSDF2constraint(this.constraint, tf);
             return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("layout", 1),
                 (sdf2Constraint != null ? sdf2Constraint : tf.makeAppl(tf.makeConstructor("null", 0)))));
         } catch(Exception e) {
@@ -52,72 +52,72 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
-        if(TermUtils.isAppl(constraint) && ((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
+        if(TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
             return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("IgnoreLayout", 0)));
         }
 
-        return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("layout", 1), constraint));
+        return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("layout", 1), this.constraint));
     }
 
     public ILayoutConstraint getLayoutConstraint() {
         return this.lc;
     }
 
-    private ILayoutConstraint createLayoutConstraint(IStrategoTerm constraintTerm) throws Exception {
-        if (!TermUtils.isAppl(constraintTerm)) {
-            throw new Exception("Not a valid Layout Constraint: " + constraint);
+    private ILayoutConstraint createLayoutConstraint(IStrategoTerm c) throws Exception {
+        if (!TermUtils.isAppl(c)) {
+            throw new Exception("Not a valid Layout Constraint: " + c);
         }
-        final String termName = ((IStrategoAppl) constraintTerm).getName();
+        final String termName = ((IStrategoAppl) c).getName();
         switch (termName) {
             case "IgnoreLayout":
                 return new IgnoreLayoutConstraint();
             case "Num":
                 return new NumericLayoutConstraint(
-                    Integer.parseInt(((IStrategoString) constraintTerm.getSubterm(0)).stringValue()));
+                    Integer.parseInt(((IStrategoString) c.getSubterm(0)).stringValue()));
             case "And":
-                return new BooleanLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintBooleanOperator.AND, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintBooleanOperator.AND, createLayoutConstraint(c.getSubterm(1)));
             case "Or":
-                return new BooleanLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintBooleanOperator.OR, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintBooleanOperator.OR, createLayoutConstraint(c.getSubterm(1)));
             case "Not":
-                return new BooleanLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
+                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
                     LayoutConstraintBooleanOperator.NOT, null);
             case "Lt":
-                return new ComparisonLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.LT, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ComparisonLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintComparisonOperator.LT, createLayoutConstraint(c.getSubterm(1)));
             case "Gt":
-                return new ComparisonLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.GT, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ComparisonLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintComparisonOperator.GT, createLayoutConstraint(c.getSubterm(1)));
             case "Le":
-                return new ComparisonLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.LE, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ComparisonLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintComparisonOperator.LE, createLayoutConstraint(c.getSubterm(1)));
             case "Ge":
-                return new ComparisonLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.GE, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ComparisonLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintComparisonOperator.GE, createLayoutConstraint(c.getSubterm(1)));
             case "Eq":
-                return new ComparisonLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.EQ, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ComparisonLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintComparisonOperator.EQ, createLayoutConstraint(c.getSubterm(1)));
             case "Add":
-                return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.ADD, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ArithmeticLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintArithmeticOperator.ADD, createLayoutConstraint(c.getSubterm(1)));
             case "Sub":
-                return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.SUB, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ArithmeticLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintArithmeticOperator.SUB, createLayoutConstraint(c.getSubterm(1)));
             case "Div":
-                return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.DIV, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ArithmeticLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintArithmeticOperator.DIV, createLayoutConstraint(c.getSubterm(1)));
             case "Mul":
-                return new ArithmeticLayoutConstraint(createLayoutConstraint(constraintTerm.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.MUL, createLayoutConstraint(constraintTerm.getSubterm(1)));
+                return new ArithmeticLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                    LayoutConstraintArithmeticOperator.MUL, createLayoutConstraint(c.getSubterm(1)));
             case "Line":
-                return new NumericLayoutConstraint(ConstraintElement.LINE, createToken(constraintTerm.getSubterm(0)),
-                    createTree(constraintTerm.getSubterm(0).getSubterm(0)));
+                return new NumericLayoutConstraint(ConstraintElement.LINE, createToken(c.getSubterm(0)),
+                    createTree(c.getSubterm(0).getSubterm(0)));
             case "Col":
-                return new NumericLayoutConstraint(ConstraintElement.COL, createToken(constraintTerm.getSubterm(0)),
-                    createTree(constraintTerm.getSubterm(0).getSubterm(0)));
+                return new NumericLayoutConstraint(ConstraintElement.COL, createToken(c.getSubterm(0)),
+                    createTree(c.getSubterm(0).getSubterm(0)));
             default:
-                throw new Exception("Not a valid Layout Constraint: " + constraint);
+                throw new Exception("Not a valid Layout Constraint: " + c);
         }
     }
 
@@ -154,7 +154,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
     private IStrategoTerm toSDF2constraint(IStrategoTerm c, ITermFactory tf) throws Exception {
         if (!TermUtils.isAppl(c)) {
-            throw new Exception("Not a valid Layout Constraint: " + constraint);
+            throw new Exception("Not a valid Layout Constraint: " + c);
         }
         final String termName = ((IStrategoAppl) c).getName();
 
