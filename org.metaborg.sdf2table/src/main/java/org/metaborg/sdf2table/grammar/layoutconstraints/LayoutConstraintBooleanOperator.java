@@ -5,9 +5,9 @@ public enum LayoutConstraintBooleanOperator {
     OR("||"),
     NOT("!");
 
-    private String str;
+    final private String str;
 
-    LayoutConstraintBooleanOperator(String str) {
+    private LayoutConstraintBooleanOperator(String str) {
         this.str = str;
     }
 

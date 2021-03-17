@@ -7,9 +7,9 @@ public enum LayoutConstraintComparisonOperator {
     LE("<="),
     EQ("==");
 
-    private String str;
+    final private String str;
 
-    LayoutConstraintComparisonOperator(String str) {
+    private LayoutConstraintComparisonOperator(String str) {
         this.str = str;
     }
 

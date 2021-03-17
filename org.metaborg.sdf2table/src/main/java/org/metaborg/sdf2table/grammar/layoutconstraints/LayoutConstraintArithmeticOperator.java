@@ -6,9 +6,9 @@ public enum LayoutConstraintArithmeticOperator {
     MUL("*"),
     DIV("/");
 
-    private String str;
+    final private String str;
 
-    LayoutConstraintArithmeticOperator(String str) {
+    private LayoutConstraintArithmeticOperator(String str) {
         this.str = str;
     }
 
