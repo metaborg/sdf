@@ -6,13 +6,13 @@ public enum LayoutConstraintArithmeticOperator {
     MUL("*"),
     DIV("/");
 
-    final private String str;
+    private final String str;
 
     private LayoutConstraintArithmeticOperator(String str) {
         this.str = str;
     }
 
     @Override public String toString() {
-        return str;
+        return this.str;
     }
 }

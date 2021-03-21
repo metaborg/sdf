@@ -6,13 +6,13 @@ public enum ConstraintSelector {
     RIGHT("right"),
     LAST("last");
 
-    final private String str;
+    private final String str;
 
     private ConstraintSelector(String str) {
         this.str = str;
     }
 
     @Override public String toString() {
-        return str;
+        return this.str;
     }
 }
