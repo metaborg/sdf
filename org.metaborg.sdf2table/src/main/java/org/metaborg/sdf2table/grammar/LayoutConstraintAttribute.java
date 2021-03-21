@@ -75,35 +75,39 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
             throw new InvalidLayoutConstraint(c);
         }
         final String termName = ((IStrategoAppl) c).getName();
-        switch (termName) {
-            case "IgnoreLayout":
-                return new IgnoreLayoutConstraint();
-            case "And":
-                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
-                    LayoutConstraintBooleanOperator.AND, createLayoutConstraint(c.getSubterm(1)));
-            case "Or":
-                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
-                    LayoutConstraintBooleanOperator.OR, createLayoutConstraint(c.getSubterm(1)));
-            case "Not":
-                return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
-                    LayoutConstraintBooleanOperator.NOT, null);
-            case "Lt":
-                return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.LT, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Gt":
-                return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.GT, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Le":
-                return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.LE, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Ge":
-                return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.GE, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Eq":
-                return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintComparisonOperator.EQ, createLayoutConstraintExpression(c.getSubterm(1)));
-            default:
-                throw new InvalidLayoutConstraint(c);
+        try {
+            switch (termName) {
+                case "IgnoreLayout":
+                    return new IgnoreLayoutConstraint();
+                case "And":
+                    return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                        LayoutConstraintBooleanOperator.AND, createLayoutConstraint(c.getSubterm(1)));
+                case "Or":
+                    return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                        LayoutConstraintBooleanOperator.OR, createLayoutConstraint(c.getSubterm(1)));
+                case "Not":
+                    return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
+                        LayoutConstraintBooleanOperator.NOT, null);
+                case "Lt":
+                    return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintComparisonOperator.LT, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Gt":
+                    return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintComparisonOperator.GT, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Le":
+                    return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintComparisonOperator.LE, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Ge":
+                    return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintComparisonOperator.GE, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Eq":
+                    return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintComparisonOperator.EQ, createLayoutConstraintExpression(c.getSubterm(1)));
+                default:
+                    throw new InvalidLayoutConstraint(c);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new InvalidLayoutConstraint(c.toString(), e);
         }
     }
 
@@ -112,30 +116,34 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
             throw new InvalidLayoutConstraintExpression(c);
         }
         final String termName = ((IStrategoAppl) c).getName();
-        switch (termName) {
-            case "Num":
-                return new NumericLayoutConstraint(
-                    Integer.parseInt(((IStrategoString) c.getSubterm(0)).stringValue()));
-            case "Add":
-                return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.ADD, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Sub":
-                return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.SUB, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Div":
-                return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.DIV, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Mul":
-                return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
-                    LayoutConstraintArithmeticOperator.MUL, createLayoutConstraintExpression(c.getSubterm(1)));
-            case "Line":
-                return new TreeRef(ConstraintElement.LINE, createToken(c.getSubterm(0)),
-                    createTree(c.getSubterm(0).getSubterm(0)));
-            case "Col":
-                return new TreeRef(ConstraintElement.COL, createToken(c.getSubterm(0)),
-                    createTree(c.getSubterm(0).getSubterm(0)));
-            default:
-                throw new InvalidLayoutConstraintExpression(c);
+        try {
+            switch (termName) {
+                case "Num":
+                    return new NumericLayoutConstraint(
+                        Integer.parseInt(((IStrategoString) c.getSubterm(0)).stringValue()));
+                case "Add":
+                    return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintArithmeticOperator.ADD, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Sub":
+                    return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintArithmeticOperator.SUB, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Div":
+                    return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintArithmeticOperator.DIV, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Mul":
+                    return new ArithmeticLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
+                        LayoutConstraintArithmeticOperator.MUL, createLayoutConstraintExpression(c.getSubterm(1)));
+                case "Line":
+                    return new TreeRef(ConstraintElement.LINE, createToken(c.getSubterm(0)),
+                        createTree(c.getSubterm(0).getSubterm(0)));
+                case "Col":
+                    return new TreeRef(ConstraintElement.COL, createToken(c.getSubterm(0)),
+                        createTree(c.getSubterm(0).getSubterm(0)));
+                default:
+                    throw new InvalidLayoutConstraintExpression(c);
+            }
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            throw new InvalidLayoutConstraintExpression(c.toString(), e);
         }
     }
 

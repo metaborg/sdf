@@ -9,4 +9,8 @@ public class InvalidLayoutConstraint extends LayoutConstraintException {
     public InvalidLayoutConstraint(IStrategoTerm c) {
         super("Not a valid Layout Constraint: " + c.toString());
     }
+
+    public InvalidLayoutConstraint(String invalid, Throwable cause) {
+        super("Not a valid Layout Constraint: " + invalid, cause);
+    }
 }
