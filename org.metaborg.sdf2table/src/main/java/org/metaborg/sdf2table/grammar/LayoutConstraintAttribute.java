@@ -15,6 +15,11 @@ import org.metaborg.sdf2table.grammar.layoutconstraints.LayoutConstraintBooleanO
 import org.metaborg.sdf2table.grammar.layoutconstraints.LayoutConstraintComparisonOperator;
 import org.metaborg.sdf2table.grammar.layoutconstraints.NumericLayoutConstraint;
 import org.metaborg.sdf2table.grammar.layoutconstraints.TreeRef;
+import org.metaborg.sdf2table.grammar.layoutconstraints.exceptions.InvalidLayoutConstraint;
+import org.metaborg.sdf2table.grammar.layoutconstraints.exceptions.InvalidLayoutConstraintExpression;
+import org.metaborg.sdf2table.grammar.layoutconstraints.exceptions.InvalidPosRef;
+import org.metaborg.sdf2table.grammar.layoutconstraints.exceptions.InvalidTreeSelector;
+import org.metaborg.sdf2table.grammar.layoutconstraints.exceptions.LayoutConstraintException;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -29,7 +34,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
     private final IStrategoTerm constraint;
 
-    protected LayoutConstraintAttribute(IStrategoTerm constraint) throws Exception {
+    protected LayoutConstraintAttribute(IStrategoTerm constraint) throws LayoutConstraintException {
         this.constraint = constraint;
         this.lc = this.createLayoutConstraint(constraint);
     }
@@ -39,7 +44,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        if(TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
+        if (TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
             return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("ignore-layout", 0)));
         }
 
@@ -54,7 +59,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
-        if(TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
+        if (TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
             return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("IgnoreLayout", 0)));
         }
 
@@ -65,9 +70,9 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         return this.lc;
     }
 
-    private ILayoutConstraint createLayoutConstraint(IStrategoTerm c) throws Exception {
+    private ILayoutConstraint createLayoutConstraint(IStrategoTerm c) throws LayoutConstraintException {
         if (!TermUtils.isAppl(c)) {
-            throw new Exception("Not a valid Layout Constraint: " + c);
+            throw new InvalidLayoutConstraint(c);
         }
         final String termName = ((IStrategoAppl) c).getName();
         switch (termName) {
@@ -98,13 +103,13 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
                 return new ComparisonLayoutConstraint(createLayoutConstraintExpression(c.getSubterm(0)),
                     LayoutConstraintComparisonOperator.EQ, createLayoutConstraintExpression(c.getSubterm(1)));
             default:
-                throw new Exception("Not a valid Layout Constraint: " + c);
+                throw new InvalidLayoutConstraint(c);
         }
     }
 
-    private ILayoutConstraintExpression createLayoutConstraintExpression(IStrategoTerm c) throws Exception {
+    private ILayoutConstraintExpression createLayoutConstraintExpression(IStrategoTerm c) throws LayoutConstraintException {
         if (!TermUtils.isAppl(c)) {
-            throw new Exception("Not a valid Layout Constraint expression: " + c);
+            throw new InvalidLayoutConstraintExpression(c);
         }
         final String termName = ((IStrategoAppl) c).getName();
         switch (termName) {
@@ -130,25 +135,26 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
                 return new TreeRef(ConstraintElement.COL, createToken(c.getSubterm(0)),
                     createTree(c.getSubterm(0).getSubterm(0)));
             default:
-                throw new Exception("Not a valid Layout Constraint expression: " + c);
+                throw new InvalidLayoutConstraintExpression(c);
         }
     }
 
-    private int createTree(IStrategoTerm term) throws Exception {
-        if(TermUtils.isAppl(term) && ((IStrategoAppl) term).getName().equals("PosRef")) {
+    private int createTree(IStrategoTerm term) throws LayoutConstraintException {
+        if (TermUtils.isAppl(term) && ((IStrategoAppl) term).getName().equals("PosRef")) {
             try {
                 return Integer.parseInt(((IStrategoString) term.getSubterm(0)).stringValue());
             } catch(Exception e) {
-                throw new Exception("Expected valid integer corresponding to PosRef.");
+                throw new InvalidPosRef(term.toString(), e);
             }
         } else {
-            throw new Exception("Expected valid term corresponding to PosRef.");
+            throw new InvalidPosRef(term.toString());
         }
     }
 
-    private ConstraintSelector createToken(IStrategoTerm t) throws Exception {
-        if(TermUtils.isAppl(t)) {
-            switch(((IStrategoAppl) t).getName()) {
+    private ConstraintSelector createToken(IStrategoTerm t) throws LayoutConstraintException {
+        if (TermUtils.isAppl(t)) {
+            final String termName = ((IStrategoAppl) t).getName();
+            switch (termName) {
                 case "First":
                     return ConstraintSelector.FIRST;
                 case "Last":
@@ -158,16 +164,16 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
                 case "Right":
                     return ConstraintSelector.RIGHT;
                 default:
-                    throw new Exception("Expected first, last, left or right as tree selector.");
+                    throw new InvalidTreeSelector(termName);
             }
         } else {
-            throw new Exception("Expected first, last, left or right as tree selector.");
+            throw new InvalidTreeSelector(t.toString());
         }
     }
 
-    private IStrategoTerm toSDF2constraint(IStrategoTerm c, ITermFactory tf) throws Exception {
+    private IStrategoTerm toSDF2constraint(IStrategoTerm c, ITermFactory tf) throws LayoutConstraintException {
         if (!TermUtils.isAppl(c)) {
-            throw new Exception("Not a valid Layout Constraint: " + c);
+            throw new InvalidLayoutConstraint(c);
         }
         final String termName = ((IStrategoAppl) c).getName();
 
@@ -225,7 +231,7 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
                 final String tree = c.getSubterm(0).toString();
                 return tf.makeInt(Integer.parseInt(tree.substring(1, tree.length() - 1)));
             default:
-                throw new Exception("Not a valid Layout Constraint: " + c);
+                throw new InvalidLayoutConstraint(c);
         }
     }
 }
