@@ -61,4 +61,15 @@ public class NumericLayoutConstraint implements Serializable, ILayoutConstraint 
             normalizedtree++;
         }
     }
+
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof NumericLayoutConstraint)) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        NumericLayoutConstraint c = (NumericLayoutConstraint) other;
+        return this.elem == c.elem && this.token == c.token && this.tree == c.tree;
+    }
 }

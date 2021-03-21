@@ -15,4 +15,8 @@ public class IgnoreLayoutConstraint implements Serializable, ILayoutConstraint {
 
     @Override public void normalizeConstraint(List<ISymbol> rhs) {
     }
+
+    @Override public boolean equals(Object other) {
+        return other instanceof IgnoreLayoutConstraint;
+    }
 }
