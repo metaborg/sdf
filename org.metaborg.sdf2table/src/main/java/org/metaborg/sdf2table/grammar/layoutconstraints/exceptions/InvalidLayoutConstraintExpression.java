@@ -1,0 +1,12 @@
+package org.metaborg.sdf2table.grammar.layoutconstraints.exceptions;
+
+import org.spoofax.interpreter.terms.IStrategoTerm;
+
+public class InvalidLayoutConstraintExpression extends LayoutConstraintException {
+
+    private static final long serialVersionUID = -3440718716034087519L;
+
+    public InvalidLayoutConstraintExpression(IStrategoTerm c) {
+        super("Not a valid Layout Constraint Expression: " + c.toString());
+    }
+}
