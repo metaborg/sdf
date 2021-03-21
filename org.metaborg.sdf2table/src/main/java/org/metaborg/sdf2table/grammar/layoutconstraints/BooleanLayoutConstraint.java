@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar.layoutconstraints;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 
@@ -42,6 +43,16 @@ public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint 
     @Override public void normalizeConstraint(List<ISymbol> rhs) {
         c1.normalizeConstraint(rhs);
         c2.normalizeConstraint(rhs);
-        
+    }
+
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof BooleanLayoutConstraint)) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        BooleanLayoutConstraint c = (BooleanLayoutConstraint) other;
+        return Objects.equals(this.c1, c.c1) && this.op == c.op && Objects.equals(this.c2, c.c2);
     }
 }

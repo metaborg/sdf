@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar.layoutconstraints;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 
@@ -10,16 +11,16 @@ public class ArithmeticLayoutConstraint implements Serializable, ILayoutConstrai
 
     private final ILayoutConstraint c1;
     private final LayoutConstraintArithmeticOperator op;
-    private final ILayoutConstraint c2;    
-    
+    private final ILayoutConstraint c2;
+
     public ArithmeticLayoutConstraint(ILayoutConstraint c1, LayoutConstraintArithmeticOperator op,
         ILayoutConstraint c2) {
         this.c1 = c1;
         this.op = op;
         this.c2 = c2;
     }
-    
-    @Override public String toString() {        
+
+    @Override public String toString() {
         return c1.toString() + " " + op.toString() + " " + c2.toString();
     }
 
@@ -38,7 +39,16 @@ public class ArithmeticLayoutConstraint implements Serializable, ILayoutConstrai
     @Override public void normalizeConstraint(List<ISymbol> rhs) {
         c1.normalizeConstraint(rhs);
         c2.normalizeConstraint(rhs);
-        
     }
-    
+
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof ArithmeticLayoutConstraint)) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        ArithmeticLayoutConstraint c = (ArithmeticLayoutConstraint) other;
+        return Objects.equals(this.c1, c.c1) && this.op == c.op && Objects.equals(this.c2, c.c2);
+    }
 }
