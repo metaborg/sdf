@@ -52,13 +52,15 @@ public class Sort extends Symbol {
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
         if(type == LiteralType.CiLit) {
-            return tf.makeAppl(tf.makeConstructor("cilit", 1),
-                tf.makeString(name.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'")));
+            return tf.makeAppl(tf.makeConstructor("cilit", 1), tf.makeString(decodeLiteral(name)));
         } else if(type == LiteralType.Lit) {
-            return tf.makeAppl(tf.makeConstructor("lit", 1),
-                tf.makeString(name.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'")));
+            return tf.makeAppl(tf.makeConstructor("lit", 1), tf.makeString(decodeLiteral(name)));
         }
         return tf.makeAppl(tf.makeConstructor("sort", 1), tf.makeString(name));
+    }
+    
+    private String decodeLiteral(String literal) {
+        return literal.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'");
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf, Map<Set<Context>, Integer> ctx_vals, Integer ctx_val) {
@@ -103,7 +105,7 @@ public class Sort extends Symbol {
 
     @Override public ISymbol toParseTableSymbol(SyntaxContext syntaxContext, SortCardinality cardinality) {
         if(type == LiteralType.CiLit || type == LiteralType.Lit)
-            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, name);
+            return new org.metaborg.parsetable.symbols.LiteralSymbol(syntaxContext, cardinality, decodeLiteral(name));
         else
             return new org.metaborg.parsetable.symbols.SortSymbol(syntaxContext, cardinality, name);
     }
