@@ -53,6 +53,13 @@ rules
     SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
   ]
 
+  geninj-sort-to-is-sort-or-inj-rule(|lang): CfSort(sortname) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+  ]
+
 rules
 
   geninj-sort-to-plhdrsig: CfSort(sortname) ->
