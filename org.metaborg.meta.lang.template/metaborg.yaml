@@ -24,6 +24,8 @@ generates:
   directory: src-gen
 - language: SDF
   directory: src-gen/syntax
+- language: TemplateLang
+  directory: src-gen/syntax
 - language: ds
   directory: src-gen
 exports:
