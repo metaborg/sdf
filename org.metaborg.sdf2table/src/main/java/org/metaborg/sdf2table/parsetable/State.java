@@ -30,36 +30,19 @@ public class State implements IState, Comparable<State>, Serializable {
     ParseTable pt;
 
     private final int label;
-    private Set<Goto> gotos;
-    private Map<Integer, IGoto> gotosMapping;
+    private final Set<Goto> gotos;
+    private final Map<Integer, IGoto> gotosMapping;
     private final Set<LRItem> kernel;
-    private Set<LRItem> items;
-    private LinkedHashMultimap<Symbol, LRItem> symbol_items;
-    private LinkedHashMultimap<ICharacterClass, Action> lr_actions;
+    private final Set<LRItem> items;
+    private final LinkedHashMultimap<Symbol, LRItem> symbol_items;
+    private final LinkedHashMultimap<ICharacterClass, Action> lr_actions;
     IActionsForCharacter actionsForCharacter;
     private boolean rejectable;
 
     private StateStatus status = StateStatus.VISIBLE;
 
-    public Set<State> states = Sets.newHashSet();
-
-    public State(IProduction p, ParseTable pt) {
-        items = Sets.newLinkedHashSet();
-        gotos = Sets.newLinkedHashSet();
-        gotosMapping = Maps.newHashMap();
-        kernel = Sets.newLinkedHashSet();
-        symbol_items = LinkedHashMultimap.create();
-        lr_actions = LinkedHashMultimap.create();
-        this.rejectable = false;
-
-        this.pt = pt;
-        label = this.pt.totalStates();
-        this.pt.stateLabels().put(label, this);
-        this.pt.incTotalStates();
-
-        LRItem item = new LRItem(p, 0, pt);
-        kernel.add(item);
-        pt.kernelMap().put(kernel, this);
+    public State(IProduction initialProduction, ParseTable pt) {
+        this(Collections.singleton(new LRItem(initialProduction, 0, pt)), pt);
     }
 
     public State(Set<LRItem> kernel, ParseTable pt) {
@@ -315,6 +298,10 @@ public class State implements IState, Comparable<State>, Serializable {
 
     public int getLabel() {
         return label;
+    }
+
+    public Set<LRItem> getKernel() {
+        return kernel;
     }
 
     public Set<LRItem> getItems() {
