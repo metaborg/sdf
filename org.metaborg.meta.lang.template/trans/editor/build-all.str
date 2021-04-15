@@ -51,15 +51,16 @@ rules
       (filename1*, string1*) := <generate-all-base> t;
       (filename2*, string2*) := <sdf3-to-namespaced(generate-all-namespaced(|t))> t
 
-  generate-all : t -> <generate-all-base> t
+  generate-all:
+    t -> <generate-all-base> t
     where
       None() := <sdf3-to-namespaced(generate-all-namespaced(|t))> t
 
   generate-all-namespaced(|(selected, position, _, _, project-path)):
     (namespaced-filename, namespaced-ast) -> ([namespaced-filename | filename*], [namespaced-string | string*])
-  where
-    namespaced-string := <pp-SDF3-string> namespaced-ast;
-    (filename*, string*) := <generate-all-base> (selected, position, namespaced-ast, namespaced-filename, project-path)
+    where
+      namespaced-string := <pp-SDF3-string> namespaced-ast;
+      (filename*, string*) := <generate-all-base> (selected, position, namespaced-ast, namespaced-filename, project-path)
 
   generate-all-base:
     (selected, position, ast, path, project-path) -> result
