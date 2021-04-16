@@ -46,6 +46,7 @@ rules
   namespace-module-name:
     mn -> mn'
     where
+      // TODO: test if module exists in this project, otherwise don't rename
       lang       := <language-spec-name>;
       mn'        :=  <concat-strings> [lang, "/", mn, "-namespaced"]
       
@@ -58,6 +59,7 @@ rules
   namespace-sort:
     Sort(x) -> Sort(x')
     where
+      // TODO: test if only defined in this project, otherwise don't rename
       capital-lang-name := <string-as-chars(to-upper-first-char)> <language-spec-name>;
       x'                := <concat-strings> [capital-lang-name, "-", x]
       
