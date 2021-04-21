@@ -1,0 +1,7 @@
+module test
+
+language sdf3-meta-integrationtest
+
+start symbol Start
+
+test bar [[bar]] parse succeeds

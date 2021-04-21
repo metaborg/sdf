@@ -1,0 +1,10 @@
+module Main
+
+language
+
+  extensions : s3mit
+
+  provider : target/metaborg/stratego.ctree
+
+  table         : target/metaborg/sdf.tbl
+  start symbols : Start
