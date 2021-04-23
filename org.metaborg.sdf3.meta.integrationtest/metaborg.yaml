@@ -8,6 +8,7 @@ dependencies:
   - org.metaborg:org.metaborg.meta.lang.spt:${metaborgVersion}
   source:
   - org.metaborg:meta.lib.spoofax:${metaborgVersion}
+  - org.metaborg:stratego.lang:${metaborgVersion}
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar

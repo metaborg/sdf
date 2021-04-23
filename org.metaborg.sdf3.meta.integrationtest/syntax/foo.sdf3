@@ -1,13 +1,18 @@
 module foo
 
+imports
+
+  StrategoLang/import
+  thesyntax
+
 context-free start-symbols
-  
-  Start
 
-context-free sorts
-
-  Start
+  StrategoLang-Module
 
 context-free syntax
-  
-  Start.Foo = <foo>
+
+  StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
+  StrategoLang-PreTerm.ToTerm = <stmt |[ <Stmt> ]|>
+
+  Exp.FromTerm = [~[StrategoLang-Term]]
+  Exp.FromTerm = [~exp:[StrategoLang-Term]]
