@@ -75,7 +75,7 @@ rules
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       dirname := <dirname> path;
       lang := <language-spec-name>;
-      if <not(is-substring(!"namespaced"))> dirname then
+      if <not(is-substring(!"namespaced"))> mn then
         norm-namespaced-filename       := <get-src-gen(|project-path, $[syntax/[lang]], "-namespaced.sdf3")> mn;
         norm-namespaced-ast            := <module-to-namespaced> ast;
         norm-namespaced-result         := <s> (norm-namespaced-filename, norm-namespaced-ast)
