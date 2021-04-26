@@ -9,7 +9,6 @@ import org.metaborg.sdf2table.grammar.layoutconstraints.ConstraintElement;
 import org.metaborg.sdf2table.grammar.layoutconstraints.ConstraintSelector;
 import org.metaborg.sdf2table.grammar.layoutconstraints.ILayoutConstraint;
 import org.metaborg.sdf2table.grammar.layoutconstraints.ILayoutConstraintExpression;
-import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.grammar.layoutconstraints.LayoutConstraintArithmeticOperator;
 import org.metaborg.sdf2table.grammar.layoutconstraints.LayoutConstraintBooleanOperator;
 import org.metaborg.sdf2table.grammar.layoutconstraints.LayoutConstraintComparisonOperator;
@@ -30,21 +29,33 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
 
     private static final long serialVersionUID = -6962864785117290116L;
 
+    private final boolean ignoreLayout;
     private final ILayoutConstraint lc;
 
     private final IStrategoTerm constraint;
 
     protected LayoutConstraintAttribute(IStrategoTerm constraint) throws LayoutConstraintException {
         this.constraint = constraint;
-        this.lc = this.createLayoutConstraint(constraint);
+
+        if (((IStrategoAppl) constraint).getName().equals("IgnoreLayout")) {
+            this.ignoreLayout = true;
+            this.lc = null;
+        } else {
+            this.ignoreLayout = false;
+            this.lc = this.createLayoutConstraint(constraint);
+        }
     }
 
     @Override public String toString() {
-        return this.lc.toString();
+        if (this.ignoreLayout) {
+            return "ignore-layout";
+        } else {
+            return this.lc.toString();
+        }
     }
 
     @Override public IStrategoTerm toAterm(ITermFactory tf) {
-        if (TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
+        if (this.ignoreLayout) {
             return tf.makeAppl(tf.makeConstructor("term", 1), tf.makeAppl(tf.makeConstructor("ignore-layout", 0)));
         }
 
@@ -59,11 +70,15 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
     }
 
     @Override public IStrategoTerm toSDF3Aterm(ITermFactory tf) {
-        if (TermUtils.isAppl(this.constraint) && ((IStrategoAppl) this.constraint).getName().equals("IgnoreLayout")) {
+        if (this.ignoreLayout) {
             return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("IgnoreLayout", 0)));
         }
 
         return tf.makeAppl(tf.makeConstructor("Term", 1), tf.makeAppl(tf.makeConstructor("layout", 1), this.constraint));
+    }
+
+    public boolean ignoreLayout() {
+        return this.ignoreLayout;
     }
 
     public ILayoutConstraint getLayoutConstraint() {
@@ -77,8 +92,6 @@ public class LayoutConstraintAttribute implements IAttribute, Serializable {
         final String termName = ((IStrategoAppl) c).getName();
         try {
             switch (termName) {
-                case "IgnoreLayout":
-                    return new IgnoreLayoutConstraint();
                 case "And":
                     return new BooleanLayoutConstraint(createLayoutConstraint(c.getSubterm(0)),
                         LayoutConstraintBooleanOperator.AND, createLayoutConstraint(c.getSubterm(1)));

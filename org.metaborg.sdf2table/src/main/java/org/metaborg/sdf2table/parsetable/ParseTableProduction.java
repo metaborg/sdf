@@ -13,7 +13,6 @@ import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.*;
-import org.metaborg.sdf2table.grammar.layoutconstraints.IgnoreLayoutConstraint;
 import org.metaborg.sdf2table.io.ParseTableIO;
 
 import com.google.common.collect.BiMap;
@@ -181,7 +180,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         boolean longestMatch = false;
         for(IAttribute attr : attrs) {
             if(attr instanceof LayoutConstraintAttribute) {
-                if(((LayoutConstraintAttribute) attr).getLayoutConstraint() instanceof IgnoreLayoutConstraint) {
+                if(((LayoutConstraintAttribute) attr).ignoreLayout()) {
                     ignoreLayout = true;
                 } else {
                     layoutConstraints.add(normalizeConstraint((LayoutConstraintAttribute) attr, p.rightHand()));
