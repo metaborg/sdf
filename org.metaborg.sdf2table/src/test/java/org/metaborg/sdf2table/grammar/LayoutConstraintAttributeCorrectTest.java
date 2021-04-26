@@ -29,7 +29,7 @@ public class LayoutConstraintAttributeCorrectTest {
     @Parameters(name = "{index}: {0} = {1}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { "IgnoreLayout()", new IgnoreLayoutConstraint() },
+            { "IgnoreLayout()", null },
             { "Eq(Num(\"1\"), Num(\"2\"))", new ComparisonLayoutConstraint(new NumericLayoutConstraint(1), LayoutConstraintComparisonOperator.EQ, new NumericLayoutConstraint(2)) },
             { "Lt(Num(\"1\"), Num(\"2\"))", new ComparisonLayoutConstraint(new NumericLayoutConstraint(1), LayoutConstraintComparisonOperator.LT, new NumericLayoutConstraint(2)) },
             { "Gt(Num(\"1\"), Num(\"2\"))", new ComparisonLayoutConstraint(new NumericLayoutConstraint(1), LayoutConstraintComparisonOperator.GT, new NumericLayoutConstraint(2)) },
