@@ -39,14 +39,16 @@ rules
   module-to-namespaced:
     Module(Unparameterized(mn), i*, sections*) -> Module(Unparameterized(mn'), i'*, sections'*)
     where
-      mn'        :=  <concat-strings> [mn, "-namespaced"];
+      mn'        :=  <namespace-module-name> mn;
       sections'* := <topdown(try(namespace-sort))> sections*;
-      i'*        := <topdown(try(namespace-module-name))> i*
+      i'*        := <topdown(try(Module(Unparameterized(namespace-module-name))))> i*
       
   namespace-module-name:
-    Module(Unparameterized(mn)) -> Module(Unparameterized(mn'))
+    mn -> mn'
     where
-      mn'        :=  <concat-strings> [mn, "-namespaced"]
+      // TODO: test if module exists in this project, otherwise don't rename
+      lang       := <language-spec-name>;
+      mn'        :=  <concat-strings> [lang, "/", mn, "-namespaced"]
       
   namespace-sort:
     DeclSort(x) -> DeclSort(x')
@@ -57,6 +59,7 @@ rules
   namespace-sort:
     Sort(x) -> Sort(x')
     where
+      // TODO: test if only defined in this project, otherwise don't rename
       capital-lang-name := <string-as-chars(to-upper-first-char)> <language-spec-name>;
       x'                := <concat-strings> [capital-lang-name, "-", x]
       
