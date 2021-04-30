@@ -54,6 +54,10 @@ public final class State implements IState {
         return productionToGoto.get(productionId);
     }
 
+    @Override public int getGotoId(int productionId, int defaultValue) {
+        return productionToGoto.get(productionId, defaultValue);
+    }
+
     @Override public boolean equals(Object obj) {
         if(!(obj instanceof State))
             return false;

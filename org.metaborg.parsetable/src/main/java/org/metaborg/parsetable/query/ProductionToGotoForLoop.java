@@ -31,4 +31,14 @@ public class ProductionToGotoForLoop implements IProductionToGoto {
         throw new IllegalStateException();
     }
 
+    @Override public int get(int productionId, int defaultValue) {
+        for(IGoto gotoAction : gotos) {
+            for(int gotoActionProductionId : gotoAction.productionIds())
+                if(gotoActionProductionId == productionId)
+                    return gotoAction.gotoStateId();
+        }
+
+        return defaultValue;
+    }
+
 }

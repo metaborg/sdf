@@ -360,6 +360,11 @@ public class State implements IState, Comparable<State>, Serializable {
         return gotosMapping.get(productionId).gotoStateId();
     }
 
+    @Override public int getGotoId(int productionId, int defaultValue) {
+        IGoto iGoto = gotosMapping.get(productionId);
+        return iGoto == null ? defaultValue : iGoto.gotoStateId();
+    }
+
     public void calculateActionsForCharacter() {
         // TODO: this should take into account which states only contain recovery reduces
         actionsForCharacter = new ActionsForCharacterDisjointSorted(readActions(), Collections.emptySet());
