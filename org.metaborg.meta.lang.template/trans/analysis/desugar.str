@@ -216,14 +216,14 @@ rules
   create-productions-align-list(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
   create-productions-align-list(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
     where
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -231,7 +231,7 @@ rules
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -239,7 +239,7 @@ rules
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
     where
       rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), collapse-lists); not(?[])> attrs*;
+      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
       non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
       prods*         := <filter(generate-align-productions)> non-terminals*
 
@@ -323,7 +323,7 @@ rules
       constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
 
   get-tree-position(|rhs*):
-    PosRef(p) -> PosRef(<dec> p)
+    PosRef(p) -> PosRef(p)
 
   get-tree-position(|rhs*):
     LiteralRef(l) -> PosRef(<dec; int-to-string> p)
@@ -339,10 +339,10 @@ rules
       p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)
 
   get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int> p, rhs*)
+    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int; inc> p, rhs*)
 
   get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index> (<string-to-int> p, rhs*)
+    PosRef(p) -> <index> (<string-to-int; inc> p, rhs*)
 
   get-non-terminal-symbol(|rhs*):
     LabelRef(l) -> symbol
