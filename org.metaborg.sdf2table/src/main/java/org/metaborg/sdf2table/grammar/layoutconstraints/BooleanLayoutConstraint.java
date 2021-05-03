@@ -1,11 +1,11 @@
 package org.metaborg.sdf2table.grammar.layoutconstraints;
 
-import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 
-public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint {
+public class BooleanLayoutConstraint implements ILayoutConstraint {
 
     private static final long serialVersionUID = -3495667446825489885L;
 
@@ -20,28 +20,38 @@ public class BooleanLayoutConstraint implements Serializable, ILayoutConstraint 
     }
 
     @Override public String toString() {
-        if(op == LayoutConstraintBooleanOperator.NOT) {
-            return op.toString() + c1.toString();
+        if (this.op == LayoutConstraintBooleanOperator.NOT) {
+            return this.op.toString() + " " + this.c1.toString();
         } else {
-            return c1.toString() + " " + op.toString() + " " + c2.toString();
+            return this.c1.toString() + " " + this.op.toString() + " " + this.c2.toString();
         }
     }
 
     public ILayoutConstraint getC1() {
-        return c1;
+        return this.c1;
     }
 
     public LayoutConstraintBooleanOperator getOp() {
-        return op;
+        return this.op;
     }
 
     public ILayoutConstraint getC2() {
-        return c2;
+        return this.c2;
     }
 
     @Override public void normalizeConstraint(List<ISymbol> rhs) {
-        c1.normalizeConstraint(rhs);
-        c2.normalizeConstraint(rhs);
-        
+        this.c1.normalizeConstraint(rhs);
+        this.c2.normalizeConstraint(rhs);
+    }
+
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof BooleanLayoutConstraint)) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        BooleanLayoutConstraint c = (BooleanLayoutConstraint) other;
+        return Objects.equals(this.c1, c.c1) && this.op == c.op && Objects.equals(this.c2, c.c2);
     }
 }
