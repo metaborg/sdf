@@ -169,7 +169,7 @@ rules
   __str-split-exit: (acc, curr, []) ->
   <reverse> [<reverse; implode-string> curr|acc]
 
-  
+
 rules
 
   errormsg(msg) = errormsg(msg, id)
