@@ -31,13 +31,21 @@ public interface IProduction {
 
     ConcreteSyntaxContext concreteSyntaxContext();
 
-    boolean isContextFree();
+    default boolean isContextFree() {
+        return concreteSyntaxContext() == ConcreteSyntaxContext.ContextFree;
+    }
 
-    boolean isLayout();
+    default boolean isLayout() {
+        return concreteSyntaxContext() == ConcreteSyntaxContext.Layout;
+    }
 
-    boolean isLiteral();
+    default boolean isLiteral() {
+        return concreteSyntaxContext() == ConcreteSyntaxContext.Literal;
+    }
 
-    boolean isLexical();
+    default boolean isLexical() {
+        return concreteSyntaxContext() == ConcreteSyntaxContext.Lexical;
+    }
 
     default boolean isSkippableInParseForest() {
         return !isContextFree();
@@ -51,6 +59,10 @@ public interface IProduction {
 
     default boolean isWater() {
         return (sort() != null && sort().contains("WATER")) || "WATER".equals(constructor());
+    }
+
+    default boolean isInsertion() {
+        return "INSERTION".equals(constructor());
     }
 
     boolean isCompletion();

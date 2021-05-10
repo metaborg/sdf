@@ -67,15 +67,18 @@ rules
         ast'     := <desugar-templates> selected;
         result   := <module-to-permissive-productions; pp-SDF3-string> ast'
 
-  sdf3-to-namespaced:
+  sdf3-to-namespaced = sdf3-to-namespaced((id, pp-SDF3-string))
+
+  sdf3-to-namespaced(s):
     (selected, position, ast, path, project-path) -> norm-namespaced-result
     where
       <?Module(Unparameterized(mn), i*, sections)> ast ;
       dirname := <dirname> path;
-      if <not(is-substring(!"namespaced"))> dirname then
-        norm-namespaced-filename       := <concat-strings> [project-path, "/syntax/namespaced/", mn, "-namespaced.sdf3"];
+      lang := <language-spec-name>;
+      if <not(is-substring(!"namespaced"))> mn then
+        norm-namespaced-filename       := <get-src-gen(|project-path, $[syntax/[lang]], "-namespaced.sdf3")> mn;
         norm-namespaced-ast            := <module-to-namespaced> ast;
-        norm-namespaced-result         := (norm-namespaced-filename, <pp-SDF3-string> norm-namespaced-ast)
+        norm-namespaced-result         := <s> (norm-namespaced-filename, norm-namespaced-ast)
       else
         result := None()
       end

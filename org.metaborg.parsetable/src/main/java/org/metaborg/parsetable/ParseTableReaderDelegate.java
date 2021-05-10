@@ -59,7 +59,12 @@ class ParseTableReaderDelegate {
 
         markRejectableStates(states);
 
-        return new ParseTable(states, startStateId, hasLayoutConstraint(productionsTermList));
+        return new ParseTable(states, startStateId, productionsToList(productions),
+            hasLayoutConstraint(productionsTermList));
+    }
+
+    private List<IProduction> productionsToList(IProduction[] productions) {
+        return Arrays.asList(Arrays.copyOfRange(productions, 257, productions.length));
     }
 
     private boolean hasLayoutConstraint(IStrategoList productionsTermList) {

@@ -3,27 +3,29 @@ package org.metaborg.parsetable.productions;
 import static org.spoofax.terms.util.TermUtils.*;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
+import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.symbols.ISymbol;
 import org.metaborg.parsetable.symbols.SymbolReader;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-import org.spoofax.terms.TermVisitor;
 
 import com.google.common.collect.ImmutableSet;
 
 public class ProductionReader {
 
     private final CharacterClassReader characterClassReader;
+    private final ICharacterClass digitsCharacterClass;
 
     public ProductionReader(CharacterClassReader characterClassReader) {
         this.characterClassReader = characterClassReader;
+        this.digitsCharacterClass = characterClassReader.characterClassFactory
+            .finalize(characterClassReader.characterClassFactory.fromRange('0', '9'));
     }
 
     public IProduction read(IStrategoTerm productionWithIdTerm) throws ParseTableReadException {
@@ -62,30 +64,12 @@ public class ProductionReader {
             return false;
     }
 
-    private boolean getIsStringLiteral(IStrategoTerm rhs) {
-        return topdownHasSpaces(rhs);
-    }
+    private boolean getIsStringLiteral(IStrategoList rhs) {
+        for(IStrategoTerm term : rhs) {
+            if(isAppl(term)) {
+                ICharacterClass cc = getCharacterClass(toAppl(term));
 
-    private boolean getIsNumberLiteral(IStrategoTerm rhs) {
-        IStrategoTerm range = getFirstRange(rhs);
-
-        return range != null && toJavaIntAt(range, 0) == '0' && toJavaIntAt(range, 1) == '9';
-    }
-
-    private boolean topdownHasSpaces(IStrategoTerm term) {
-        Iterator<IStrategoTerm> iterator = TermVisitor.tryGetListIterator(term);
-
-        for(int i = 0, max = term.getSubtermCount(); i < max; i++) {
-            IStrategoTerm child = iterator == null ? term.getSubterm(i) : iterator.next();
-
-            if(isRangeAppl(child)) {
-                int start = toJavaIntAt(child, 0);
-                int end = toJavaIntAt(child, 1);
-
-                if(start <= ' ' && ' ' <= end)
-                    return true;
-            } else {
-                if(topdownHasSpaces(child))
+                if(cc != null && cc.contains(' '))
                     return true;
             }
         }
@@ -93,25 +77,23 @@ public class ProductionReader {
         return false;
     }
 
-    private boolean isRangeAppl(IStrategoTerm child) {
-        return isAppl(child) && ((IStrategoAppl) child).getName().equals("range");
-    }
+    private boolean getIsNumberLiteral(IStrategoList rhs) {
+        if(isApplAt(rhs, 0)) {
+            ICharacterClass cc = getCharacterClass(toApplAt(rhs, 0));
 
-    private IStrategoTerm getFirstRange(IStrategoTerm term) {
-        for(int i = 0; i < term.getSubtermCount(); i++) {
-            IStrategoTerm child = term.getSubterm(i);
-
-            if(isRangeAppl(child))
-                return child;
-            else {
-                child = getFirstRange(child);
-
-                if(child != null)
-                    return child;
-            }
+            return cc != null && cc.equals(digitsCharacterClass);
         }
 
-        return null;
+        return false;
+    }
+
+    private ICharacterClass getCharacterClass(IStrategoAppl term) {
+        if("char-class".equals(term.getName()))
+            return characterClassReader.read(toListAt(term, 0));
+        else if("lex".equals(term.getName()) || "iter".equals(term.getName()) || "iter-star".equals(term.getName()))
+            return getCharacterClass(toApplAt(term, 0));
+        else
+            return null;
     }
 
     private ProductionAttributes readProductionAttributes(IStrategoAppl attributesTerm) throws ParseTableReadException {

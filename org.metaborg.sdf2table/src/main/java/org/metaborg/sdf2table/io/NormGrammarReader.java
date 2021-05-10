@@ -623,7 +623,8 @@ public class NormGrammarReader {
         } else if(term.getConstructor().getName().equals("Fun")) {
             String termName = ((IStrategoString) term.getSubterm(0).getSubterm(0)).stringValue();
             if(((IStrategoAppl) term.getSubterm(0)).getConstructor().getName().equals("Quoted")) {
-                termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'").substring(1,
+                termName = termName.replace("\\\"", "\"").replace("\\\\", "\\").replace("\\'", "\'");
+                termName = termName.substring(1,
                     termName.length() - 1);
             }
             return termFactory.makeString(termName);

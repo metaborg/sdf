@@ -188,7 +188,7 @@ rules
         position -> <id>
         where
           intPos := <string-to-int> position;
-          <gt> (intPos, <production-arity(|chars)> p)
+          <gt> (intPos, <production-arity(|chars); dec> p)
 
     production-arity(|chars) :
       SdfProduction(_, Rhs(rhs*), _) -> <length> rhs*
@@ -299,16 +299,16 @@ rules
   prod-without-constructor:
         p@SdfProduction(SortDef(s), Rhs(prod-sorts), Attrs(attrs*)) -> s
         where
-            <not(?[Sort(sort)] + ?[])> prod-sorts;
+            <not(?[Sort(sort)] + ?[Label(_, Sort(sort))] + ?[])> prod-sorts;
             s'      := <strip-annos> s;
-            <not(?[_, Sort(sort), _]; <strip-annos; ?s'> sort)> prod-sorts
+            <not(?[_, Sort(sort), _] + ?[_, Label(_, Sort(sort)), _]; <strip-annos; ?s'> sort)> prod-sorts
             ; <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
 
     prod-without-constructor:
         t@TemplateProduction(SortDef(s), template, Attrs(attrs*)) -> s
         where
             rhs* := <template-to-sdf(|["(", ")"], None(), "")> template;
-            <not(?[sort(sort)] + ?[])> rhs* ;
+            <not(?[sort(sort)] + ?[label(_, sort(sort))] + ?[])> rhs* ;
             s'      := <strip-annos> s;
             <not(?[_, sort(sort), _]; <strip-annos; ?s'> sort)> rhs*;
             <not(fetch-elem(?Bracket() + ?Reject()))> attrs*
