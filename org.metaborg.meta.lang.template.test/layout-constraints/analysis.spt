@@ -69,6 +69,11 @@ test align list index invalid non-terminal [[align-list [[3]] ]] 1 error at #1
 test align list index invalid terminal [[align-list [[1]] ]] 1 error at #1
 test align list out of bounds index [[align-list [[6]] ]] 1 error at #1
 test align list invalid label [[align-list [[z]] ]] 1 error at #1
+test not align-list [[ [[!align-list l]] ]] 1 error at #1
+test or align-list [[1.first.line == 1 || [[align-list l]] ]] 1 error at #1
+test not and or nested align-list [[
+align-list l && ([[align-list l]] || [[align-list l]] || ![[align-list l]]) && align-list c
+]] 3 errors at #1, #2, #3
 
 test newline indent label one [[newline-indent b c]] analysis succeeds
 test newline indent index one [[newline-indent 1 2]] analysis succeeds

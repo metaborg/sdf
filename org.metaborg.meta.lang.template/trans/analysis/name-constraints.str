@@ -182,9 +182,11 @@ rules
     where
       rhs := <get-production-rhs(|chars)> prod;
       attrs := <get-production-attrs> prod;
+      <try(check-for-multiple-layout; create-errors(|ctx))> attrs;
       <try(check-for-pos-ref; create-errors(|ctx))> (rhs, attrs);
       <try(check-for-literals; create-errors(|ctx))> (rhs, attrs);
       <try(check-align-list; create-errors(|ctx))> (rhs, attrs);
+      <try(check-align-list-in-and; create-errors(|ctx))> attrs;
       <try(check-offside; create-errors(|ctx))> (rhs, attrs);
       <try(check-duplicate; create-errors(|ctx))> (rhs, attrs);
       <try(check-order; create-errors(|ctx))> (rhs, attrs);
@@ -202,6 +204,11 @@ rules
   get-production-attrs: SdfProductionWithCons(_, _, Attrs(attrs)) -> attrs
   get-production-attrs: TemplateProduction(_, _, Attrs(attrs)) -> attrs
   get-production-attrs: TemplateProductionWithCons(_, _, Attrs(attrs)) -> attrs
+
+
+  check-for-multiple-layout: attrs -> (invalids, "Cannot have multiple definitions of layout or ignore-layout")
+    where
+      invalids := <collect-all(?LayoutConstraint(_) + ?IgnoreLayout(), conc); ?[_|<id>]; not(?[])> attrs
 
 
   check-for-pos-ref: (rhs, attrs) -> (invalids, "Invalid tree selector - index ouf of bounds")
@@ -230,6 +237,11 @@ rules
       invalids := <filter-invalid-pos(not-iter|rhs)> positions
 
   not-iter = not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _))
+
+
+  check-align-list-in-and: attrs -> (invalids, "align-list cannot be used inside '!' or '||'")
+    where
+      invalids := <collect-all(?Or(_, _) + ?Not(_)); collect-all(?AlignList(_), conc); not(?[])> attrs
 
 
   check-offside: (rhs, attrs) -> (invalids, "Invalid tree selector - offside with single argument should be applied to non-terminal")
