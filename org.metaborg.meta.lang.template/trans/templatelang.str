@@ -115,3 +115,7 @@ rules // Debugging
 
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
+
+rules  // Testing
+
+  test-desugar-layout-constraints: Module(name, i, sections) -> Module(name, i, <desugar-layout-constraints(|[])> sections)

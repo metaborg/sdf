@@ -1,0 +1,90 @@
+module desugar
+
+language TemplateLang
+
+test desugar pos ref [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]]
+
+test desugar literal ref [[
+module desugar
+context-free syntax
+A.A = "A" {layout("A".first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]]
+
+test desugar label ref [[
+module desugar
+context-free syntax
+A.A = a:A {layout(a.first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A {layout(0.first.line == 1)}
+]]
+
+test desugar ref in exp [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(a.first.line + b.last.line >= 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(0.first.line + 1.last.line >= 1)}
+]]
+
+test template desugar ref in nested constraints [[
+module desugar
+context-free syntax
+A.A = <<a:A> <b:A> c> {
+  layout(a.first.line >= 1 && b.last.col == 2 || ! "c".right.line == 1)
+}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <<a:A> <b:A> c> {
+  layout(0.first.line >= 1 && 1.last.col == 2 || ! 2.right.line == 1)
+}
+]]
+
+test desugar offside one [[
+module desugar
+context-free syntax
+A.A = a:A {layout(offside a)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A {layout(0.left.col > 0.first.col)}
+]]
+
+test desugar offside multiple [[
+module desugar
+context-free syntax
+A.A = a:A b:A "c" "d" {layout(offside a b, "c", 3)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A "c" "d" {
+  layout(
+    1.left.col > 0.first.col && (2.left.col > 0.first.col && (3.left.col > 0.first.col)))
+  }
+]]
+
+test desugar offside or offside [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(offside a || offside b)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(0.left.col > 0.first.col || 1.left.col > 1.first.col)}
+]]
