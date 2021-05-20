@@ -346,7 +346,7 @@ rules
   get-non-terminal-symbol(|rhs*):
     LiteralRef(l) -> symbol
     where
-      symbol := <fetch-elem(?Lit(l))> rhs*
+      symbol := <fetch-elem(?Lit(l) + ?CiLit(l))> rhs*
 
   create-offside-constraint(|ref-pos):
     PosRef(p) -> Gt(Col(Left(PosRef(p))), Col(First(ref-pos)))

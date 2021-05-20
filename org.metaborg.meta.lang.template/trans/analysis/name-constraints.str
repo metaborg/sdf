@@ -247,7 +247,7 @@ rules
   check-offside: (rhs, attrs) -> (invalids, "Invalid tree selector - offside with single argument should be applied to non-terminal")
     where
       positions := <collect-all(?Offside(<id>, []) + ?PPOffside(<id>, []), conc); not(?[])> attrs;
-      invalids := <filter-invalid-pos(?Lit(_)|rhs)> positions
+      invalids := <filter-invalid-pos(?Lit(_) + ?CiLit(_)|rhs)> positions
 
 
   filter-invalid-pos(invalid|rhs) = filter(where(get-non-terminal-symbol(|rhs); invalid))
