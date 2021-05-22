@@ -318,35 +318,44 @@ rules
     PosRef(p) -> PosRef(p)
 
   get-tree-position(|rhs*):
-    LiteralRef(l) -> PosRef(<dec; int-to-string> p)
-    where
-      p := <get-index> (Lit(l), rhs*)
-
-  get-tree-position(|rhs*):
     LabelRef(l) -> PosRef(<dec; int-to-string> p)
     where
-      l'    := <strip-annos> l;
-      rhs'* := <strip-annos> rhs*;
-      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*;
-      p := <get-index> (Label(Unquoted(l'), symbol), rhs'*)
+      l' := <strip-annos> l;
+      p := <add-indices; fetch-elem({ i, s: ?(i, s); <where(strip-annos; get-labeled-symbol(|l'))> s; !i})> rhs*
+
+  get-tree-position(|rhs*):
+    LiteralRef(l) -> PosRef(<dec; int-to-string> p)
+    where
+      unquoted := <strip-annos; un-double-quote> l;
+      p := <add-indices; fetch-elem({ i, s: ?(i, s); <where(symbol-is-literal(|unquoted))> s; !i})> rhs*
 
   get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index; ?Label(_, <id>)> (<string-to-int; inc> p, rhs*)
-
-  get-non-terminal-symbol(|rhs*):
-    PosRef(p) -> <index> (<string-to-int; inc> p, rhs*)
+    PosRef(p) -> <index; try(?Label(_, <id>))> (<string-to-int; inc> p, rhs*)
 
   get-non-terminal-symbol(|rhs*):
     LabelRef(l) -> symbol
     where
-      l'    := <strip-annos> l;
-      rhs'* := <strip-annos> rhs*;
-      <fetch-elem(?Label(Unquoted(l'), symbol))> rhs'*
+      l' := <strip-annos> l;
+      symbol := <fetch-elem(strip-annos; get-labeled-symbol(|l'))> rhs*
 
   get-non-terminal-symbol(|rhs*):
     LiteralRef(l) -> symbol
     where
-      symbol := <fetch-elem(?Lit(l) + ?CiLit(l))> rhs*
+      unquoted := <strip-annos; un-double-quote> l;
+      symbol := <fetch-elem(unwrap-label; where (symbol-is-literal(|unquoted)))> rhs*
+
+  /**
+   * Succeeds if a given `Symbol` term is a literal equal to l.
+   * l should be unquoted.
+   */
+  symbol-is-literal(|l) = strip-annos; unwrap-label; (?Lit(<un-double-quote>) + ?CiLit(<un-single-quote>)); ?l
+
+  unwrap-label = try(?Label(_, <id>))
+
+  get-labeled-symbol(|l): Label(Unquoted(l), symbol) -> symbol
+  get-labeled-symbol(|l): Label(Quoted(str), symbol) -> symbol
+    where <un-double-quote> str => l
+
 
   create-offside-constraint(|ref-pos):
     PosRef(p) -> Gt(Col(Left(PosRef(p))), Col(First(ref-pos)))

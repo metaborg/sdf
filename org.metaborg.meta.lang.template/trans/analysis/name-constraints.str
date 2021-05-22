@@ -223,12 +223,17 @@ rules
 
   check-for-literals: (rhs, attrs) -> (invalids, "Invalid tree selector - undefined or duplicated literal")
     where
-      litRefs := <collect-all(?LiteralRef(<id>), conc)> attrs;
+      litRefs := <collect-all(?LiteralRef(_), conc)> attrs;
       invalids := <filter(is-invalid-lit(|rhs))> litRefs
 
   is-invalid-lit(|rhs): lit -> <id>
     where
-      <not(eq)> (1, <filter(?Lit(lit)); length> rhs)
+      <not(eq)> (1, <get-all-literal-symbols(|rhs); length> lit)
+
+  get-all-literal-symbols(|rhs): LiteralRef(l) -> symbols
+    where
+      unquoted := <strip-annos; un-double-quote> l;
+      symbols := <filter(where(symbol-is-literal(|unquoted)))> rhs
 
 
   check-align-list: (rhs, attrs) -> (invalids, "Invalid tree selector - align-list should be applied to list non-terminal")
