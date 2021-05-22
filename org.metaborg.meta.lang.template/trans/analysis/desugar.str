@@ -318,11 +318,11 @@ rules // Layout declarations desugaring
 rules // Util
 
   /**
-   * Combines a list of constraints in a left associative manner.
+   * Combines a list of constraints into `And` in a left associative manner.
    */
   combine-constraints = reverse; combine-constraints-
   combine-constraints-: [x] -> x
-  combine-constraints-: [x | xs] -> And(<combine-constraints> xs, x)
+  combine-constraints-: [x | xs] -> And(<combine-constraints-> xs, x)
     where <not(?[])> xs
 
 

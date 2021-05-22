@@ -114,9 +114,8 @@ A.A = a:A b:A "c" "d" {layout(offside a b, "c", 3)}
 module desugar
 context-free syntax
 A.A = a:A b:A "c" "d" {
-  layout(
-    1.left.col > 0.first.col && (2.left.col > 0.first.col && (3.left.col > 0.first.col)))
-  }
+  layout(1.left.col > 0.first.col && 2.left.col > 0.first.col && 3.left.col > 0.first.col)
+}
 ]]
 
 test desugar offside or offside [[
@@ -169,7 +168,9 @@ B.B = <b>
 ]] run test-desugar-layout-constraints to [[
 module desugar
 context-free syntax
-A.A = <i <b1:B> <b2:B> <b3:B>> {layout(1.first.col > 0.first.col && (2.first.col > 0.first.col && (3.first.col > 0.first.col)))}
+A.A = <i <b1:B> <b2:B> <b3:B>> {
+  layout(1.first.col > 0.first.col && 2.first.col > 0.first.col && 3.first.col > 0.first.col)
+}
 B.B = <b>
 ]]
 
@@ -190,7 +191,9 @@ A.A = <a b c d> {layout(align "a" "b", 2, "d")}
 ]] run test-desugar-layout-constraints to [[
 module desugar
 context-free syntax
-A.A = <a b c d> {layout(1.first.col == 0.first.col && (2.first.col == 0.first.col && (3.first.col == 0.first.col)))}
+A.A = <a b c d> {
+  layout(1.first.col == 0.first.col && 2.first.col == 0.first.col && 3.first.col == 0.first.col)
+}
 ]]
 
 test desugar newline-indent one [[
@@ -213,8 +216,8 @@ module desugar
 context-free syntax
 A.A = <a <b:B> c <B>> {
   layout((1.first.col > 0.first.col && 1.first.line > 0.last.line) &&
-         ((2.first.col > 0.first.col && 2.first.line > 0.last.line) &&
-         (3.first.col > 0.first.col && 3.first.line > 0.last.line))
+         (2.first.col > 0.first.col && 2.first.line > 0.last.line) &&
+         (3.first.col > 0.first.col && 3.first.line > 0.last.line)
         )
 }
 B.B = "b"
