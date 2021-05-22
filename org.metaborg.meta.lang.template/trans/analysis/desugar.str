@@ -261,16 +261,16 @@ rules // Layout declarations desugaring
       attrs' := <desugar-lc-attrs(|rhs)> attrs
 
   desugar-lc-prod(|chars):
-    t@TemplateProduction(lhs, _, Attrs(attrs)) -> TemplateProduction(lhs, rhs, Attrs(attrs'))
+    t@TemplateProduction(lhs, rhs, Attrs(attrs)) -> TemplateProduction(lhs, rhs, Attrs(attrs'))
     where
-      rhs := <get-production-rhs(|chars)> t;
-      attrs' := <desugar-lc-attrs(|rhs)> attrs
+      rhs' := <get-production-rhs(|chars)> t;
+      attrs' := <desugar-lc-attrs(|rhs')> attrs
 
   desugar-lc-prod(|chars):
-    t@TemplateProductionWithCons(lhs, _, Attrs(attrs)) -> TemplateProductionWithCons(lhs, rhs, Attrs(attrs'))
+    t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs)) -> TemplateProductionWithCons(lhs, rhs, Attrs(attrs'))
     where
-      rhs := <get-production-rhs(|chars)> t;
-      attrs' := <desugar-lc-attrs(|rhs)> attrs
+      rhs' := <get-production-rhs(|chars)> t;
+      attrs' := <desugar-lc-attrs(|rhs')> attrs
 
 
   desugar-lc-attrs(|rhs) =
