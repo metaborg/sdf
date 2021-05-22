@@ -202,85 +202,81 @@ rules
       sections'* := <map(try(desugar-lc-section(|chars)))> sections*
 
   desugar-lc-section(|chars):
-    SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax([p'*, align-list*]))
+    SDFSection(ContextFreeSyntax(p*)) -> SDFSection(ContextFreeSyntax(<conc> (p'*, align-list*)))
     where
       align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
-      p'*         := <map(desugar-lc-prod(|chars)); topdown(repeat(remove-align-list-and-pp-constraints)); topdown(try(flatten-list))> p*
+      p'*         := <map(desugar-lc-prod(|chars))> p*
 
   desugar-lc-section(|chars):
-    SDFSection(Kernel(p*)) -> SDFSection(Kernel([p'*, align-list*]))
+    SDFSection(Kernel(p*)) -> SDFSection(Kernel(<conc> (p'*, align-list*)))
     where
       align-list* := <filter(create-productions-align-list(|chars)); flatten-list; nub> p*;
-      p'*         := <map(desugar-lc-prod(|chars)); topdown(repeat(remove-align-list-and-pp-constraints)); topdown(try(flatten-list))> p*
+      p'*         := <map(desugar-lc-prod(|chars))> p*
 
   create-productions-align-list(|chars):
-    SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
-    where
-      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
-      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
-      prods*         := <filter(generate-align-productions)> non-terminals*
+    SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> <create-align-productions(|rhs*)> attrs*
 
   create-productions-align-list(|chars):
-    SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> prods*
-    where
-      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
-      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
-      prods*         := <filter(generate-align-productions)> non-terminals*
+    SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> <create-align-productions(|rhs*)> attrs*
 
   create-productions-align-list(|chars):
-    t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> prods*
+    t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> <create-align-productions(|rhs*)> attrs*
     where
-      rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
-      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
-      prods*         := <filter(generate-align-productions)> non-terminals*
+      rhs*  := <get-production-rhs(|chars)> t
 
   create-productions-align-list(|chars):
-    t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> prods*
+    t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> <create-align-productions(|rhs*)> attrs*
     where
-      rhs*           := <get-production-rhs(|chars)> t;
-      pos*           := <collect-all(?AlignList(<id>), conc); not(?[])> attrs*;
-      non-terminals* := <map(get-non-terminal-symbol(|rhs*))> pos*;
-      prods*         := <filter(generate-align-productions)> non-terminals*
+      rhs*  := <get-production-rhs(|chars)> t
 
-  generate-align-productions:
+  create-align-productions(|rhs*) =
+    collect-all(?AlignList(<id>), conc);
+    map(get-non-terminal-symbol(|rhs*));
+    filter(create-align-production)
+
+  create-align-production:
     Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("1")))))]))
 
-  generate-align-productions:
+  create-align-production:
     IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("1")))))]))
 
-  generate-align-productions:
+  create-align-production:
     IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("2")))))]))
 
-  generate-align-productions:
+  create-align-production:
     IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(PosRef("0"))), Col(First(PosRef("2")))))]))
 
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
     where
-      attrs'* := <map(try(desugar-lc-attr(|rhs*)))> attrs*
+      attrs'* := <desugar-lc-attrs(|rhs*)> attrs*
 
   desugar-lc-prod(|chars):
     SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProductionWithCons(lhs, Rhs(rhs*), Attrs(attrs'*))
       where
-      attrs'* := <map(try(desugar-lc-attr(|rhs*)))> attrs*
+      attrs'* := <desugar-lc-attrs(|rhs*)> attrs*
 
   desugar-lc-prod(|chars):
     t@TemplateProduction(lhs, rhs, Attrs(attrs*)) -> TemplateProduction(lhs, rhs, Attrs(attrs'*))
     where
       rhs*    := <get-production-rhs(|chars)> t;
-      attrs'* := <map(try(desugar-lc-attr(|rhs*)))> attrs*
+      attrs'* := <desugar-lc-attrs(|rhs*)> attrs*
 
   desugar-lc-prod(|chars):
     t@TemplateProductionWithCons(lhs, rhs, Attrs(attrs*)) -> TemplateProductionWithCons(lhs, rhs, Attrs(attrs'*))
     where
       rhs*    := <get-production-rhs(|chars)> t;
-      attrs'* := <map(try(desugar-lc-attr(|rhs*)))> attrs*
+      attrs'* := <desugar-lc-attrs(|rhs*)> attrs*
+
+  desugar-lc-attrs(|rhs*) =
+    innermost(remove-align-list-and-pp-constraints);
+    flatten-list;
+    map(try(desugar-lc-attr(|rhs*)))
 
   desugar-lc-attr(|rhs*):
     LayoutConstraint(constraint) -> LayoutConstraint(constraint')
     where
-      constraint' := <topdown(try(get-tree-position(|rhs*))); topdown(try(rewrite-constraint(|rhs*)))> constraint
+      constraint' := <bottomup(try(get-tree-position(|rhs*) <+ rewrite-constraint(|rhs*)))> constraint
 
   rewrite-constraint(|rhs*):
     Indent(ref-pos, pos*) -> constraint
@@ -387,4 +383,14 @@ rules
   remove-align-list-and-pp-constraints:
     LayoutConstraint(<remove-constraint>) -> []
 
-  remove-constraint = ?AlignList(_) + ?PPAlignList(_) + ?PPOffside(_, _) + ?PPIndent(_, _) + ?PPAlign(_, _) + ?PPNewLineIndent(_, _) + ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _)
+  remove-constraint =
+      ?[]
+    + ?AlignList(_)
+    + ?PPAlignList(_)
+    + ?PPOffside(_, _)
+    + ?PPIndent(_, _)
+    + ?PPAlign(_, _)
+    + ?PPNewLineIndent(_, _)
+    + ?PPNewLineIndentBy(_, _, _)
+    + ?PPNewLine(_)
+    + ?PPNewLineBy(_, _)
