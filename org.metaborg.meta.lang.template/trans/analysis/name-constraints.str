@@ -187,9 +187,10 @@ rules
       <try(check-for-literals; create-errors(|ctx))> (rhs, attrs);
       <try(check-align-list; create-errors(|ctx))> (rhs, attrs);
       <try(check-align-list-in-and; create-errors(|ctx))> attrs;
-      <try(check-offside; create-errors(|ctx))> (rhs, attrs);
+      <try(check-single-literal; create-errors(|ctx))> (rhs, attrs);
       <try(check-duplicate; create-errors(|ctx))> (rhs, attrs);
       <try(check-order; create-errors(|ctx))> (rhs, attrs);
+      <try(check-arity-single-line; create-errors(|ctx))> attrs;
       <try(check-irrelevant; create-warnings(|ctx))> (rhs, attrs)
 
 
@@ -249,9 +250,9 @@ rules
       invalids := <collect-all(?Or(_, _) + ?Not(_)); collect-all(?AlignList(_), conc); not(?[])> attrs
 
 
-  check-offside: (rhs, attrs) -> (invalids, "Invalid tree selector - offside with single argument should be applied to non-terminal")
+  check-single-literal: (rhs, attrs) -> (invalids, "Invalid tree selector - declaration with single argument cannot be applied to literal")
     where
-      positions := <collect-all(?Offside(<id>, []) + ?PPOffside(<id>, []), conc); not(?[])> attrs;
+      positions := <collect-all(?Offside(<id>, []) + ?PPOffside(<id>, []) + ?SingleLine([<id>]), conc); not(?[])> attrs;
       invalids := <filter-invalid-pos(?Lit(_) + ?CiLit(_)|rhs)> positions
 
 
@@ -272,6 +273,7 @@ rules
   decls-to-arguments: NewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
   decls-to-arguments: PPNewLineIndent(p, ps) -> [p | ps] where <not(?[])> ps
   decls-to-arguments: PPNewLineIndentBy(_, p, ps) -> [p | ps] where <not(?[])> ps
+  decls-to-arguments: SingleLine(ps) -> ps where <length; int-gt(|1)> ps
 
   get-duplicate-pos(|rhs): positions -> dups
     where
@@ -293,6 +295,7 @@ rules
       invalids := <map(get-out-of-order(|rhs)); flatten-list> positions
 
   decls-to-pair: Offside(p, ps) -> (p, ps) where <not(?[])> ps
+  decls-to-pair: SingleLine([p|ps]) -> (p, ps) where <not(?[])> ps
   decls-to-pair: PPOffside(p, ps) -> (p, ps) where <not(?[])> ps
   decls-to-pair: NewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
   decls-to-pair: PPNewLineIndent(p, ps) -> (p, ps) where <not(?[])> ps
@@ -306,6 +309,10 @@ rules
     where
       PosRef(tree) := <get-tree-position(|rhs)> pos
 
+
+  check-arity-single-line: attrs -> (invalids, "Applying single-line to more than two arguments is the same as applying it to the first and last")
+    where
+      invalids := <collect-all({ xs: ?SingleLine(xs); where(<length; int-gt(|2)> xs) }, conc); not(?[])> attrs
 
   check-irrelevant: (rhs, attrs) -> (warnings, "Irrelevant layout constraint, no reference of tree selectors")
     where
