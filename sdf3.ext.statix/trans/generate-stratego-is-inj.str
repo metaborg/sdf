@@ -1,0 +1,185 @@
+module generate-stratego-is-inj
+
+imports
+  libstratego-lib
+  libstrc
+  analysis/types
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  generation/gen-utils/to-str
+  analysis/desugar
+
+imports
+  common
+  utils
+
+imports
+  signatures/aliases/-
+  signatures/aterms/-
+  signatures/basic/-
+  signatures/characterclass/-
+  signatures/constants/-
+  signatures/grammar/-
+  signatures/kernel/-
+  signatures/labels/-
+  signatures/layout/-
+  signatures/layout-constraints/-
+  signatures/lifting/-
+  signatures/literals/-
+  signatures/modules/-
+  signatures/priority/-
+  signatures/regular/-
+  signatures/renaming/-
+  signatures/restrictions/-
+  signatures/sdf2-core/-
+  signatures/sorts/-
+  signatures/symbols/-
+  signatures/TemplateLang-sig
+
+
+/////////////////////////////
+// is-MyLang-MySort-or-inj //
+/////////////////////////////
+
+rules
+
+  geninj-sort-to-is-sort-or-inj-rule(|lang): LexSort(sortname) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = is-string
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string]))),
+    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+  ]
+
+  geninj-sort-to-is-sort-or-inj-rule(|lang): CfSort(sortname) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+  ]
+
+rules
+
+  geninj-sort-to-plhdrsig: CfSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
+
+  geninj-sort-to-plhdrsig: LexSort(sortname) ->
+    // MySort-Plhdr : MySort
+    OpDecl($[[sortname]-Plhdr], ConstType(SortNoArgs(sortname)))
+
+rules
+
+  geninj-sig-to-is-sort-or-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = [...]
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], is-call)
+  ]
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; is-call    := <geninj-symbol-to-is-call(|lang)> tosort
+
+  geninj-sig-to-is-sort-or-inj-rule(|lang): CfSignature(sortname, Some(consname), params) -> [
+    // is-MyLang-MySort-or-inj :: MySort -> MySort
+    DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // is-MyLang-MySort-or-inj = ?MyCons(_)
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op(consname, args))))
+  ]
+  with args := <map(!Wld())> params
+
+
+//////////////////////////////////
+// is-MyLang-MySort-or-inj-cons //
+//////////////////////////////////
+
+rules
+
+  geninj-sort-to-is-inj-rule(|lang): CfSort(sortname) -> [
+    // is-MyLang-inj-cons :: ? -> ?
+    DefHasType($[is-[lang]-inj-cons], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // is-MyLang-inj-cons = is-MyLang-MySort-inj-cons
+    SDefNoArgs($[is-[lang]-inj-cons], CallNoArgs(SVar($[is-[lang]-[sortname]-inj-cons]))),
+
+    // is-MyLang-inj-cons :: ? -> ?
+    DefHasType($[is-[lang]-[sortname]-inj-cons], FunNoArgsType(DynT(Dyn()), DynT(Dyn()))),
+    // We generate a fail rule, to prevent calling an undefined rule when there is no injection defined in any file
+    // is-MyLang-inj-cons = fail
+    SDefNoArgs($[is-[lang]-[sortname]-inj-cons], Fail())
+  ]
+
+rules
+
+
+  geninj-sig-to-is-inj-rule(|lang): CfSignature(sortname, None(), [param@Param(tosort, _)]) -> [
+    // is-MyLang-MyOtherSort-inj-cons = ?MySort2MyOtherSort(_)
+    SDefNoArgs($[is-[lang]-[tosortname]-inj-cons], Match(NoAnnoList(Op(consname, [Wld()]))))
+  ]
+  with consname   := <geninj-generate-inj-name> (sortname, [param])
+     ; tosortname := <geninj-symbol-to-sortname> tosort
+
+rules
+
+  geninj-symbol-to-is-call(|lang): Sort(name)                             -> CallNoArgs(SVar($[is-[lang]-[name]-or-inj]))
+  geninj-symbol-to-is-call(|lang): Opt(symbol)                            -> <geninj-symbol-to-is-call-opt(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Iter(symbol)                           -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterSep(symbol, _)                     -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterStar(symbol)                       -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): IterStarSep(symbol, _)                 -> <geninj-symbol-to-is-call-list(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Cf(symbol)                             -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Lex(symbol)                            -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Var(symbol)                            -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Varsym(symbol)                         -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Label(_, symbol)                       -> <geninj-symbol-to-is-call(|lang)> symbol
+  geninj-symbol-to-is-call(|lang): Alt(_, _)                              -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): CharClass(_)                           -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): CiLit(_)                               -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): EOF()                                  -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-is-call(|lang): FileStart()                            -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-is-call(|lang): Lit(_)                                 -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): ParameterizedSort(_, _)                -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): Sequence(_, _)                         -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-is-call(|lang): Start()                                -> <errormsg(!"Start is not supported"); fail>
+
+  geninj-symbol-to-is-call-list(|lang): nestedSort ->
+    // is-list; map(is-MyLang-MySort-or-inj)
+    Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-call(|lang)> nestedSort]))
+
+  geninj-symbol-to-is-call-opt(|lang): nestedSort ->
+    // Some(is-MyLang-MySort-or-inj) + ?None()
+    Choice(Call(SVar("Some"), [<geninj-symbol-to-is-call(|lang)> nestedSort]), Call(SVar("None"), []))
+
+rules
+
+  geninj-symbol-to-is-inj-cons-call(|lang): Sort(name)                    -> CallNoArgs(SVar($[is-[lang]-[name]-inj-cons]))
+  geninj-symbol-to-is-inj-cons-call(|lang): Opt(symbol)                   -> <geninj-symbol-to-is-inj-cons-call-opt(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Iter(symbol)                  -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterSep(symbol, _)            -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterStar(symbol)              -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): IterStarSep(symbol, _)        -> <geninj-symbol-to-is-inj-cons-call-list(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Cf(symbol)                    -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Lex(symbol)                   -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Var(symbol)                   -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Varsym(symbol)                -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Label(_, symbol)              -> <geninj-symbol-to-is-inj-cons-call(|lang)> symbol
+  geninj-symbol-to-is-inj-cons-call(|lang): Alt(_, _)                     -> <errormsg(!"Alternative are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): CharClass(_)                  -> <errormsg(!"Character classes are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): CiLit(_)                      -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): EOF()                         -> <errormsg(!"EOF is not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): FileStart()                   -> <errormsg(!"Filestart is not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Lit(_)                        -> <errormsg(!"Literals are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): ParameterizedSort(_, _)       -> <errormsg(!"Parameterized sorts are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Sequence(_, _)                -> <errormsg(!"Sequences are not supported"); fail>
+  geninj-symbol-to-is-inj-cons-call(|lang): Start()                       -> <errormsg(!"Start is not supported"); fail>
+
+  geninj-symbol-to-is-inj-cons-call-list(|lang): nestedSort ->
+    // is-list; map(is-MyLang-MySort-inj-cons)
+    Seq(CallNoArgs(SVar("is-list")), Call(SVar("map"), [<geninj-symbol-to-is-inj-cons-call(|lang)> nestedSort]))
+
+  geninj-symbol-to-is-inj-cons-call-opt(|lang): nestedSort ->
+    // Some(is-MyLang-MySort-inj-cons) + ?None()
+    Choice(Call(SVar("Some"), [<geninj-symbol-to-is-inj-cons-call(|lang)> nestedSort]), Call(SVar("None"), []))
+
+
+

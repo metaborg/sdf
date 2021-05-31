@@ -241,6 +241,13 @@ rules
   geninj-sort-to-extsort: DeclSortLex(name) -> LexSort(name)
   geninj-sort-to-extsort: DeclSortVar(name) -> VarSort(name)
 
+rules
+
+  geninj-params-to-vars = map(geninj-param-to-var)
+  geninj-param-to-var: Param(_, newname) -> Var(newname)
+
+  geninj-params-to-vars-tick = map(geninj-param-to-var-tick)
+  geninj-param-to-var-tick: Param(_, newname) -> Var($[[newname]'])
 
 rules
 
@@ -348,3 +355,20 @@ rules
 
   // Identifiers cannot start with a number
   geninj-is-invalid-name = string-as-chars([is-num|id])
+
+rules
+
+  // Makes a list of strategy calls into nested Seq calls with the strategies
+  geninj-strs-to-seqs: [] -> Id()
+  geninj-strs-to-seqs: [x] -> x
+  geninj-strs-to-seqs: [x|xs@[_|_]] -> Seq(x, <geninj-strs-to-seqs> xs)
+
+  origin-preserving:      s -> Call(SVar("origin-track-forced"), [s])
+  origin-preserving-rule: r -> <origin-preserving> LRule(r)
+  
+  geninj-debug-pre(|n):  t -> []
+  geninj-debug-post(|n): t -> []
+  
+  geninj-sdef-0-0(|n): body -> SDefNoArgs(n, extbody)
+  with extbody := <concat; geninj-strs-to-seqs> [ <geninj-debug-pre(|n)> body, [body], <geninj-debug-post(|n)> body ]
+  

@@ -244,16 +244,16 @@ rules
       prods*         := <filter(generate-align-productions)> non-terminals*
 
   generate-align-productions:
-    Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
+    Iter(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("1")))))]))
 
   generate-align-productions:
-    IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("2")))))]))
+    IterStar(s) -> SdfProduction(Iter(s), Rhs([Iter(s), s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("1")))))]))
 
   generate-align-productions:
-    IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+    IterSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("2")))))]))
 
   generate-align-productions:
-    IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("1"))), Col(First(Tree("3")))))]))
+    IterStarSep(s, sep) -> SdfProduction(IterSep(s, sep), Rhs([IterSep(s, sep), sep, s]), Attrs([LayoutConstraint(Eq(Col(First(Tree("0"))), Col(First(Tree("2")))))]))
 
   desugar-lc-prod(|chars):
     SdfProduction(lhs, Rhs(rhs*), Attrs(attrs*)) -> SdfProduction(lhs, Rhs(rhs*), Attrs(attrs'*))
@@ -323,15 +323,15 @@ rules
       constraint := <map(get-tree-position(|rhs*); create-align-constraint(|ref-pos')); flatten-list; combine-constraints> pos*
 
   get-tree-position(|rhs*):
-    PosRef(p) -> Tree(p)
+    PosRef(p) -> Tree(<dec> p)
 
   get-tree-position(|rhs*):
-    LiteralRef(l) -> Tree(<int-to-string> p)
+    LiteralRef(l) -> Tree(<dec; int-to-string> p)
     where
       p := <get-index> (Lit(l), rhs*)
 
   get-tree-position(|rhs*):
-    LabelRef(l) -> Tree(<int-to-string> p)
+    LabelRef(l) -> Tree(<dec; int-to-string> p)
     where
       l'    := <strip-annos> l;
       rhs'* := <strip-annos> rhs*;

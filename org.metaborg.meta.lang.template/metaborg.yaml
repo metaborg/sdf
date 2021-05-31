@@ -2,7 +2,7 @@
 id: org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
 name: TemplateLang
 metaborgVersion: 2.6.0-SNAPSHOT
-metaborgBaselineVersion: 2.3.0
+metaborgBaselineVersion: 2.5.14
 dependencies:
   compile:
   - org.metaborg:org.metaborg.meta.lang.template:${metaborgBaselineVersion}
@@ -47,7 +47,7 @@ pardonedLanguages:
 - NameBindingLanguage
 language:
   sdf:
-    sdf2table: c
+    sdf2table: java 
     args:
     - -Idef
     - ${path:root}/lib/SDF.def
