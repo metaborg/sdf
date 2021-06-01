@@ -14,14 +14,14 @@ spoofaxLanguageSpecification {
   addCompileDependenciesFromMetaborgYaml.set(false)
 }
 dependencies {
-  compileLanguage("org.metaborg:org.metaborg.meta.lang.template:$spoofax2BaselineVersion")
-  compileLanguage("org.metaborg:org.metaborg.meta.lang.nabl:$spoofax2BaselineVersion")
-  compileLanguage("org.metaborg:org.metaborg.meta.lang.esv:$spoofax2BaselineVersion")
-  compileLanguage("org.metaborg:org.metaborg.meta.lang.ts:$spoofax2BaselineVersion")
-  compileLanguage(compositeBuild("statix.lang"))
+  compileLanguage(compositeBuild("org.metaborg.meta.lang.esv"))
 
-  sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
   sourceLanguage(compositeBuild("meta.lib.spoofax"))
+  sourceLanguage(compositeBuild("org.metaborg.meta.lang.template"))
+  sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
+  sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.shared"))
+  sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.runtime"))
+  sourceLanguage(compositeBuild("statix.lang"))
   sourceLanguage(compositeBuild("statix.runtime"))
 }
 

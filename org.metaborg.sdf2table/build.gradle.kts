@@ -4,12 +4,15 @@ plugins {
   `java-test-fixtures`
 }
 
+fun compositeBuild(name: String) = "$group:$name:$version"
+val spoofax2Version: String by ext
 dependencies {
-  api(platform("org.metaborg:parent:$version"))
+  api(platform("org.metaborg:parent:$spoofax2Version"))
 
-  api("org.metaborg:org.metaborg.util:$version")
+  api(compositeBuild("org.metaborg.util"))
+
   api(project(":org.metaborg.parsetable"))
-  api("com.google.inject:guice")
+  implementation("com.google.inject:guice")
   compileOnly("com.google.code.findbugs:jsr305")
   testImplementation(testFixtures(project(":org.metaborg.parsetable")))
   testCompileOnly("junit:junit")
