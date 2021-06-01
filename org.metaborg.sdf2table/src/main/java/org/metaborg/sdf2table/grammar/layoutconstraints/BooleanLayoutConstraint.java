@@ -41,7 +41,9 @@ public class BooleanLayoutConstraint implements ILayoutConstraint {
 
     @Override public void normalizeConstraint(List<ISymbol> rhs) {
         this.c1.normalizeConstraint(rhs);
-        this.c2.normalizeConstraint(rhs);
+        if (this.op != LayoutConstraintBooleanOperator.NOT) {
+            this.c2.normalizeConstraint(rhs);
+        }
     }
 
     @Override public boolean equals(Object other) {
