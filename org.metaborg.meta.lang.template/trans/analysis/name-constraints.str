@@ -182,9 +182,11 @@ rules
     where
       rhs := <get-production-rhs(|chars)> prod;
       attrs := <get-production-attrs> prod;
+      <try(check-for-multiple-layout; create-errors(|ctx))> attrs;
       <try(check-for-pos-ref; create-errors(|ctx))> (rhs, attrs);
       <try(check-for-literals; create-errors(|ctx))> (rhs, attrs);
       <try(check-align-list; create-errors(|ctx))> (rhs, attrs);
+      <try(check-align-list-in-and; create-errors(|ctx))> attrs;
       <try(check-offside; create-errors(|ctx))> (rhs, attrs);
       <try(check-duplicate; create-errors(|ctx))> (rhs, attrs);
       <try(check-order; create-errors(|ctx))> (rhs, attrs);
@@ -204,6 +206,11 @@ rules
   get-production-attrs: TemplateProductionWithCons(_, _, Attrs(attrs)) -> attrs
 
 
+  check-for-multiple-layout: attrs -> (invalids, "Cannot have multiple definitions of layout or ignore-layout")
+    where
+      invalids := <collect-all(?LayoutConstraint(_) + ?IgnoreLayout(), conc); ?[_|<id>]; not(?[])> attrs
+
+
   check-for-pos-ref: (rhs, attrs) -> (invalids, "Invalid tree selector - index ouf of bounds")
     where
       posRefs := <collect-all(?PosRef(<id>), conc)> attrs;
@@ -216,12 +223,17 @@ rules
 
   check-for-literals: (rhs, attrs) -> (invalids, "Invalid tree selector - undefined or duplicated literal")
     where
-      litRefs := <collect-all(?LiteralRef(<id>), conc)> attrs;
+      litRefs := <collect-all(?LiteralRef(_), conc)> attrs;
       invalids := <filter(is-invalid-lit(|rhs))> litRefs
 
   is-invalid-lit(|rhs): lit -> <id>
     where
-      <not(eq)> (1, <filter(?Lit(lit)); length> rhs)
+      <not(eq)> (1, <get-all-literal-symbols(|rhs); length> lit)
+
+  get-all-literal-symbols(|rhs): LiteralRef(l) -> symbols
+    where
+      unquoted := <strip-annos; un-double-quote> l;
+      symbols := <filter(where(symbol-is-literal(|unquoted)))> rhs
 
 
   check-align-list: (rhs, attrs) -> (invalids, "Invalid tree selector - align-list should be applied to list non-terminal")
@@ -232,10 +244,15 @@ rules
   not-iter = not(?Iter(_) <+ ?IterStar(_) <+ ?IterSep(_, _) <+ ?IterStarSep(_, _))
 
 
+  check-align-list-in-and: attrs -> (invalids, "align-list cannot be used inside '!' or '||'")
+    where
+      invalids := <collect-all(?Or(_, _) + ?Not(_)); collect-all(?AlignList(_), conc); not(?[])> attrs
+
+
   check-offside: (rhs, attrs) -> (invalids, "Invalid tree selector - offside with single argument should be applied to non-terminal")
     where
       positions := <collect-all(?Offside(<id>, []) + ?PPOffside(<id>, []), conc); not(?[])> attrs;
-      invalids := <filter-invalid-pos(?Lit(_)|rhs)> positions
+      invalids := <filter-invalid-pos(?Lit(_) + ?CiLit(_)|rhs)> positions
 
 
   filter-invalid-pos(invalid|rhs) = filter(where(get-non-terminal-symbol(|rhs); invalid))

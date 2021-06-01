@@ -1,0 +1,43 @@
+module layout-constraints/analysis-attributes
+
+language TemplateLang
+
+test 2 layout attributes [[
+module layout-constraints/analysis-attributes
+
+context-free syntax
+  A.A = "A" {layout(0.first.line == 1), [[layout(0.first.line == 2)]]}
+]] 1 error at #1
+
+test more layout attributes [[
+module layout-constraints/analysis-attributes
+
+context-free syntax
+  A.A = "A" {
+    layout(0.first.line == 1),
+    [[layout(0.first.line == 2)]],
+    deprecated,
+    [[layout(0.first.line == 3)]]
+ }
+]] 2 error at #1, #2
+
+test layout and ignore-layout [[
+module layout-constraints/analysis-attributes
+
+context-free syntax
+  A.A = "A" {layout(0.first.line == 1), [[ignore-layout]]}
+]] 1 error at #1
+
+test ignore-layout and layout [[
+module layout-constraints/analysis-attributes
+
+context-free syntax
+  A.A = "A" {ignore-layout, [[layout(0.first.line == 1)]]}
+]] 1 error at #1
+
+test ignore-layout and layout and ignore-layout [[
+module layout-constraints/analysis-attributes
+
+context-free syntax
+  A.A = "A" {ignore-layout, [[layout(0.first.line == 1)]], [[ignore-layout]]}
+]] 2 errors at #1, #2
