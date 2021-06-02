@@ -30,4 +30,8 @@ public class ProductionToGotoJavaHashMap implements IProductionToGoto {
         return productionToGoto.get(productionId);
     }
 
+    @Override public int get(int productionId, int defaultValue) {
+        return productionToGoto.getOrDefault(productionId, defaultValue);
+    }
+
 }
