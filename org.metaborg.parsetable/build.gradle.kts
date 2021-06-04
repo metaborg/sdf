@@ -12,12 +12,15 @@ sourceSets {
   }
 }
 
+fun compositeBuild(name: String) = "$group:$name:$version"
+val spoofax2Version: String by ext
 dependencies {
-  api(platform("org.metaborg:parent:$version"))
+  api(platform("org.metaborg:parent:$spoofax2Version"))
 
-  api("org.metaborg:org.spoofax.terms:$version")
+  api(compositeBuild("org.spoofax.terms"))
+
   compileOnly("com.google.code.findbugs:jsr305")
-  api("com.google.guava:guava")
+  implementation("com.google.guava:guava")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")

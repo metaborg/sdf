@@ -17,4 +17,6 @@ public interface IState {
 
     int getGotoId(int productionId);
 
+    int getGotoId(int productionId, int defaultValue);
+
 }

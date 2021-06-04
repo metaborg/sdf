@@ -63,7 +63,7 @@ rules
       <not(fetch-elem(?Reject()))> a*
 
   lexsort-to-injection:
-    s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    s -> OpDeclInj(FunType([SortVar("string")], SortType(s)))
 
   section-to-sig:
     SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]
