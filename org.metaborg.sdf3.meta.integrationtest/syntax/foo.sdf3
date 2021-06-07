@@ -2,7 +2,8 @@ module foo
 
 imports
 
-  StrategoLang/import
+  StrategoLang/import-namespaced
+  StrategoLang/sugar/terms-namespaced
   thesyntax
 
 context-free start-symbols
