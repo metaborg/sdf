@@ -14,6 +14,7 @@ dependencies:
   - org.metaborg:org.metaborg.meta.nabl2.runtime:${metaborgVersion}
   - org.metaborg:statix.lang:${metaborgVersion}
   - org.metaborg:statix.runtime:${metaborgVersion}
+  - org.metaborg:stratego.lang:${metaborgVersion}
 pardonedLanguages:
 - EditorService
 - Stratego-Sugar
