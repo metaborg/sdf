@@ -280,40 +280,46 @@ rules // Layout declarations desugaring
 
   desugar-lc-attr(|rhs): LayoutConstraint(constraint) -> LayoutConstraint(constraint')
     where
-      constraint' := <bottomup(try(get-tree-position(|rhs) <+ rewrite-constraint))> constraint
+      constraint' := <bottomup(try(get-tree-position(|rhs) <+ rewrite-constraint(|rhs)))> constraint
 
 
   /**
    * Rewrites a layout declaration to layout constraints.
    * It is assumed that all `ConstraintTreeRef` have been desugared to `PosRef`.
    */
-  rewrite-constraint: Indent(ref-pos, pos*) -> constraint
+  rewrite-constraint(|rhs): Indent(ref-pos, pos*) -> constraint
     where
       constraint := <map(create-indent-constraint(|ref-pos)); combine-constraints> pos*
 
   create-indent-constraint(|ref-pos): PosRef(p) -> Gt(Col(First(PosRef(p))), Col(First(ref-pos)))
 
-  rewrite-constraint: NewLineIndent(ref-pos, pos*) -> constraint
+  rewrite-constraint(|rhs): NewLineIndent(ref-pos, pos*) -> constraint
     where
       constraint := <map(create-newline-indent-constraint(|ref-pos)); combine-constraints> pos*
 
   create-newline-indent-constraint(|ref-pos): PosRef(p) ->
     And(Gt(Col(First(PosRef(p))), Col(First(ref-pos))), Gt(Line(First(PosRef(p))), Line(Last(ref-pos))))
 
-  rewrite-constraint: Offside(ref-pos, []) -> Gt(Col(Left(ref-pos)), Col(First(ref-pos)))
+  rewrite-constraint(|rhs): Offside(ref-pos, []) -> Gt(Col(Left(ref-pos)), Col(First(ref-pos)))
 
-  rewrite-constraint: Offside(ref-pos, pos*) -> constraint
+  rewrite-constraint(|rhs): Offside(ref-pos, pos*) -> constraint
     where
       <not(?[])> pos*;
       constraint := <map(create-offside-constraint(|ref-pos)); combine-constraints> pos*
 
   create-offside-constraint(|ref-pos): PosRef(p) -> Gt(Col(Left(PosRef(p))), Col(First(ref-pos)))
 
-  rewrite-constraint: Align(ref-pos, pos*) -> constraint
+  rewrite-constraint(|rhs): Align(ref-pos, pos*) -> constraint
     where
       constraint := <map(create-align-constraint(|ref-pos)); combine-constraints> pos*
 
   create-align-constraint(|ref-pos): PosRef(p) -> Eq(Col(First(PosRef(p))), Col(First(ref-pos)))
+
+  rewrite-constraint(|rhs): SingleLine([]) -> Eq(Line(First(PosRef("0"))), Line(Last(PosRef(last))))
+    where last := <length; dec; int-to-string> rhs
+
+  rewrite-constraint(|rhs): SingleLine([p|ps]) -> Eq(Line(First(p)), Line(Last(last)))
+    where last := <last <+ !p> ps
 
 rules // Util
 

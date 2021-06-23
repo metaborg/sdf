@@ -101,6 +101,16 @@ test newline-indent one [[newline-indent ref other]] parse succeeds
 test newline-indent more [[newline-indent ref other, more]] parse succeeds
 test newline-indent more non-separated [[newline-indent ref other more]] parse fails
 
+test single-line none [[single-line]] parse succeeds
+test single-line one no space [[single-line1]] parse fails
+test single-line one [[single-line 0]] parse succeeds
+test single-line two [[single-line 0 1]] parse succeeds
+test single-line two , separated [[single-line 0, 1]] parse fails
+test single-line two , separated [[single-line 0 1, 2]] parse fails
+test single-line more [[single-line 0 1 2 3]] parse succeeds
+test single-line refs [[single-line a b]] parse succeeds
+test single-line labels [[single-line "a""b"]] parse succeeds
+
 test not declaration [[!offside ref]] parse succeeds
 test declaration and declaration [[align this that && indent that other]] parse succeeds
 test declaration or declaration [[align this that || align this other]] parse succeeds

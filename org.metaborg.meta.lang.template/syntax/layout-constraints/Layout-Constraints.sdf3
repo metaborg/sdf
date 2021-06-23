@@ -52,6 +52,7 @@ context-free syntax
   Constraint.Align = <align <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
   Constraint.AlignList = <align-list <ConstraintTreeRef>>
   Constraint.NewLineIndent = <newline-indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
+  Constraint.SingleLine = <single-line <ConstraintTreeRef*>>
 
   Constraint.PPOffside = <pp-offside <ConstraintTreeRef> <{ConstraintTreeRef ", "}*>>
   Constraint.PPIndent = <pp-indent <ConstraintTreeRef> <{ConstraintTreeRef ", "}+>>
@@ -75,4 +76,4 @@ context-free priorities
     Constraint.And >
     Constraint.Or,
 
-    {left: ConstraintExp.Mul ConstraintExp.Div } > {left: ConstraintExp.Add ConstraintExp.Sub}
+    {left: ConstraintExp.Mul ConstraintExp.Div} > {left: ConstraintExp.Add ConstraintExp.Sub}

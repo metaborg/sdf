@@ -275,6 +275,66 @@ B.B = <b>
 B+ = B+ B {layout(0.first.col == 1.first.col)}
 ]]
 
+test desugar single line no args [[
+module desugar
+context-free syntax
+A.A = B {layout(single-line)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B {layout(0.first.line == 0.last.line)}
+B.B = <b>
+]]
+
+test desugar single line no args [[
+module desugar
+context-free syntax
+A.A = B "a" B {layout(single-line)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B "a" B {layout(0.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar single line one [[
+module desugar
+context-free syntax
+A.A = B "a" b:B {layout(single-line b)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B "a" b:B {layout(2.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar single line two [[
+module desugar
+context-free syntax
+A.A = <if <B>: <B>> {layout(single-line "if" ":")}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <if <B>: <B>> {layout(0.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar multiple single line two [[
+module desugar
+context-free syntax
+A.A = <if <B> then <B> elif <B>: <B>> {layout(single-line "if" "then" && single-line "elif" ":")}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <if <B> then <B> elif <B>: <B>> {layout(0.first.line == 2.last.line && 4.first.line == 6.last.line)}
+B.B = <b>
+]]
+
 test desugar multiple sections productions [[
 module desugar
 context-free syntax
