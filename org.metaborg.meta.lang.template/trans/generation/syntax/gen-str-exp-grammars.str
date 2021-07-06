@@ -46,6 +46,9 @@ rules
      m@Module(Unparameterized(mn), _, sections*) -> 
         Module 
      |[ module ~mn 
+     
+        imports
+          libstratego-lib
         
         signature
           constructors
