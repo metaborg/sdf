@@ -23,9 +23,11 @@ rules // Editor
 
 signature constructors // Types
 
-  SORT : Occurrence        -> TYPE
-  PROD : list(TYPE) * TYPE -> TYPE
-  ITER : TYPE              -> TYPE
+  SORT   : Occurrence        -> TYPE
+  PROD   : list(TYPE) * TYPE -> TYPE
+  ITER   : TYPE              -> TYPE
+  STRING : TYPE
+  LAYOUT : TYPE
 
 rules // Types
 
@@ -42,10 +44,13 @@ rules // Types
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
 
   to-compatible-type:
-    PROD(ts, t) -> FunType(<map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
+    PROD(ts, t) -> FunType(<remove-all(?STRING() <+ ?LAYOUT());map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
 
   to-compatible-type:
     ITER(t) -> ConstType(Sort("List", [<try(to-compatible-type)> t]))
+
+  to-compatible-type:
+    STRING() -> SortVar("string")
 
 rules // Debugging
 
