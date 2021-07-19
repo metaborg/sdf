@@ -1,0 +1,26 @@
+module swap
+
+imports
+
+  libstratego-lib
+  signatures/-
+
+rules
+
+  swap-editor-abstract-syntax        = swap-editor(swap-exp-abstract-syntax|)
+  swap-editor-concrete-syntax        = swap-editor(swap-exp-concrete-syntax|)
+  swap-editor-concrete-syntax-simple = swap-editor(swap-exp-concrete-syntax-simple|)
+
+  swap-editor(swap-exp|):
+    (_, _, ast, path, _) -> (path, <topdown(try(swap-exp))> ast) 
+
+  swap-exp-abstract-syntax:
+    Add(e1, e2) -> Add(e2, e1)
+
+  swap-exp-concrete-syntax:
+    stmt |[ ~exp:e1 + ~exp:e2 ; ]| ->
+    stmt |[ ~exp:e2 + ~exp:e1 ; ]|
+
+  swap-exp-concrete-syntax-simple:
+    |[ ~e1 + ~e2 ; ]| ->
+    |[ ~e2 + ~e1 ; ]|

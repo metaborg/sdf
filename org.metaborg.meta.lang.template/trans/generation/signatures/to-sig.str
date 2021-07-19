@@ -39,7 +39,7 @@ rules
     Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, s'])
   with
     m'    := <conc-strings> ("signatures/", m, "-sig");
-    is*   := <map(to-str-import(|"-sig", "signatures"))> i*;
+    is*   := <map(to-str-import(|"-sig", "signatures"));![Imports([Import("libstratego-lib")])|<id>]> i*;
     sort* := <filter(sorts-section-to-sig)> s*;
     cons* := <filter(section-to-sig); flatten-list> s*;
     s'    := Signature([sort*, Constructors(cons*)])
@@ -63,7 +63,7 @@ rules
       <not(fetch-elem(?Reject()))> a*
 
   lexsort-to-injection:
-    s -> OpDeclInj(FunType([SortType("String")], SortType(s)))
+    s -> OpDeclInj(FunType([SortVar("string")], SortType(s)))
 
   section-to-sig:
     SDFSection(ContextFreeSyntax(p*)) -> <not(?[])> [sig*, cc-sig*, cc-ins-sig*, cc-opt-sig*]

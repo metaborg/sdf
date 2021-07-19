@@ -37,6 +37,8 @@ imports
   signatures/symbols/-
   signatures/TemplateLang-sig
 
+  signatures/StrategoLang/gradual-types/-
+
 
 /////////////////////////////
 // is-MyLang-MySort-or-inj //

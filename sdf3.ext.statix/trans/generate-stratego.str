@@ -41,6 +41,8 @@ imports
   signatures/symbols/-
   signatures/TemplateLang-sig
 
+  signatures/StrategoLang/gradual-types/-
+
 rules
 
   // geninj-generate-stratego :: SDF3.Module -> Stratego.Module
@@ -70,6 +72,7 @@ rules
      ; lang               := <language-spec-name>
      // Imports
      ; imports0           := Imports([
+         Import("libstratego-lib"),
          Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
          Import(<to-str-module-name(|"-pp","pp")> Module(modname)),
          Import("libspoofax/term/origin")

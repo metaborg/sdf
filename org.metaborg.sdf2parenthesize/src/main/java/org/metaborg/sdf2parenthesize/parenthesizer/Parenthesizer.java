@@ -340,7 +340,9 @@ public class Parenthesizer {
         // Signature Constructor
         IStrategoTerm signature = tf.makeAppl(tf.makeConstructor("Signature", 1),
             tf.makeList(tf.makeAppl(tf.makeConstructor("Constructors", 1),
-                tf.makeList(defineSignature("Parenthetical", Lists.newArrayList("Unknown"), "Unknown")))));
+                tf.makeList(defineSignature("Parenthetical", Lists.newArrayList("Unknown"), "Unknown"),
+                    defineSignature("Snoc", Lists.newArrayList("Unknown", "Unknown"), "Unknown"),
+                    defineSignature("Ins", Lists.newArrayList("Unknown"), "Unknown")))));
 
         IStrategoTerm strategies = tf.makeAppl(tf.makeConstructor("Strategies", 1),
             tf.makeList(ioStrategy, parenthesizeStrategy, getTermSort));
