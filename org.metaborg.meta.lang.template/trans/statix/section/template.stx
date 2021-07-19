@@ -50,7 +50,7 @@ rules
     declareSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
-    Tprod == PROD(Tsymbols, Tsort),
+    Tprod == INJ(Tsymbols, Tsort),
     injectionProductionOK(Tprod, attrs, symbolDef),
     @template.type := Tprod.
   typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
