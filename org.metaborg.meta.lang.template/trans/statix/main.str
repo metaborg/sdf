@@ -54,7 +54,7 @@ rules // Types
     PROD(ts, t) -> FunType(<remove-unnecessary-types; map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
 
   to-compatible-type:
-    ITER(t) -> ConstType(Sort("List", [<try(remove-unnecessary-types; to-compatible-type)> t]))
+    ITER(t) -> ConstType(Sort("List", [<try(to-compatible-type)> t]))
 
 rules // Debugging
 
