@@ -5,6 +5,6 @@ import java.util.List;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 
-public interface ILayoutConstraint extends Serializable {
+public interface ILayoutConstraintExpression extends Serializable {
     void normalizeConstraint(List<ISymbol> rhs);
 }

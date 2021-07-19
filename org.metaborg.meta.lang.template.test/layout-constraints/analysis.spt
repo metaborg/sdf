@@ -1,0 +1,100 @@
+module layout-constraints/analysis
+
+language TemplateLang
+
+fixture [[
+module layout-constraints/analysis
+
+context-free syntax
+  A.A = <<l:L*> test - <b:B> - <c:C+>> {layout([[...]])}
+  L.L = "L"
+  B.B = "B"
+  C.C = "C"
+]]
+
+
+test constraint irrelevant eq [[ [[1 == 1]] ]] 1 warning at #1
+test constraint irrelevant lt [[ [[1 + 1 < 1]] ]] 1 warning at #1
+test constraint irrelevant le [[ [[1 - 2 <= 1]] ]] 1 warning at #1
+test constraint irrelevant gt [[ [[1 > 1 * 4]] ]] 1 warning at #1
+test constraint irrelevant ge [[ [[1 >= 2 / 1]] ]] 1 warning at #1
+
+test constraint index num [[1.first.line == 0]] analysis succeeds
+test constraint label num [[b.first.line == 0]] analysis succeeds
+test constraint index [[1.first.line == 5.last.line]] analysis succeeds
+test constraint label [[l.first.line == b.last.line]] analysis succeeds
+test constraint literal [["test".first.line == "test".last.line]] analysis succeeds
+test constraint out of bounds index [[7.first.col == 0]] analysis fails
+test constraint dupblicate literal [["-".first.col == "-".first.col]] analysis fails
+
+test offside label one [[offside b]] analysis succeeds
+test offside index one [[offside 3]] analysis succeeds
+test offside index terminal [[offside [[1]] ]] 1 error at #1
+test offside label more [[offside l b, c]] analysis succeeds
+test offside index more [[offside 1 2, 4]] analysis succeeds
+test offside mixed ref more [[offside b c, 4]] analysis succeeds
+test offside before invalid [[offside c [[b]], [[1]] ]] 2 errors at #1, #2
+test offside same [[offside b [[3]], c, [[5]] ]] 2 errors at #1, #2
+test offside list not in order [[offside 1 c, b]] analysis succeeds
+test offside out of bounds index [[offside [[7]] [[8]],[[9]] ]] 3 errors at #1, #2, #3
+test offside invalid label [[offside [[f]] [[g]] ]] 2 errors at #1, #2
+
+test indent label one [[indent b c]] analysis succeeds
+test indent index one [[indent 1 2]] analysis succeeds
+test indent label index [[indent b 5]] analysis succeeds
+test indent index label [[indent 2 b]] analysis succeeds
+test indent more [[indent l 1, b, 4, c]] analysis succeeds
+test indent same [[indent b 3]] analysis fails
+test indent out of order [[indent c b]] analysis succeeds
+test indent out of bounds index [[indent b [[6]] ]] 1 error at #1
+test indent invalid label [[indent b [[d]] ]] 1 error at #1
+
+test align label one [[align b c]] analysis succeeds
+test align index one [[align 2 3]] analysis succeeds
+test align label index [[align b 4]] analysis succeeds
+test align index label [[align 1 b]] analysis succeeds
+test align mixed more [[align l 1, 2, b, 4, c]] analysis succeeds
+test align same [[align b 3, b]] analysis fails
+test align out of order [[align c b]] analysis succeeds
+test align out of bounds index [[align c [[6]] ]] 1 error at #1
+test align invalid label [[align [[d]] 3]] 1 error at #1
+
+test align list label zero or more [[align-list l]] analysis succeeds
+test align list label one or more [[align-list c]] analysis succeeds
+test align list index zero or more [[align-list 0]] analysis succeeds
+test align list index one or more [[align-list 5]] analysis succeeds
+test align list literal [[align-list [["test"]] ]] 1 error at #1
+test align list label invalid non-terminal [[align-list [[b]] ]] 1 error at #1
+test align list index invalid non-terminal [[align-list [[3]] ]] 1 error at #1
+test align list index invalid terminal [[align-list [[1]] ]] 1 error at #1
+test align list out of bounds index [[align-list [[6]] ]] 1 error at #1
+test align list invalid label [[align-list [[z]] ]] 1 error at #1
+test not align-list [[ [[!align-list l]] ]] 1 error at #1
+test or align-list [[1.first.line == 1 || [[align-list l]] ]] 1 error at #1
+test not and or nested align-list [[
+align-list l && ([[align-list l]] || [[align-list l]] || ![[align-list l]]) && align-list c
+]] 3 errors at #1, #2, #3
+
+test newline indent label one [[newline-indent b c]] analysis succeeds
+test newline indent index one [[newline-indent 1 2]] analysis succeeds
+test newline indent label more [[newline-indent l b, c]] analysis succeeds
+test newline indent index more [[newline-indent 1 2, 4]] analysis succeeds
+test newline indent literal label [[newline-indent "test" b]] analysis succeeds
+test newline indent mixed [[newline-indent 1 b, 4, c]] analysis succeeds
+test newline indent same [[newline-indent b 3]] analysis fails
+test newline indent out of order [[newline-indent c [[b]], [[4]] ]] 2 errors at #1, #2
+test newline indent undefined literal [[newline-indent [["["]] c]] 1 error at #1
+test newline indent duplicate literal [[newline-indent [["-"]] c]] 1 error at #1
+test newline indent out of bounds index [[newline-indent b [[7]], [[8]] ]] 2 errors at #1, #2
+test newline indent invalid label [[newline-indent [[d]] [[z]] ]] 2 errors at #1, #2
+
+test single-line no args [[single-line]] analysis succeeds
+test single-line one [[single-line l]] analysis succeeds
+test single-line two [[single-line b c]] analysis succeeds
+test single-line twice same [[single-line b [[b]] ]] 1 error at #1
+test single-line more [[ [[single-line l b c]] ]] 1 error at #1
+test single-line single literal [[single-line [[1]] ]] 1 error at #1
+test single-line out of order [[single-line c [[b]] ]] 1 error at #1
+test single-line undefined literal [[single-line [["|"]] ]] 1 error at #1
+test single-line duplicate literal [[single-line "test" [["-"]] ]] 1 error at #1
+test single-line out of bounds [[single-line [[9]] ]] 1 error at #1
