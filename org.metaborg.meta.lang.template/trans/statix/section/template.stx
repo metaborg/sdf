@@ -1,0 +1,108 @@
+module statix/section/template
+
+imports
+
+  statix/section/section
+  statix/name
+  statix/type
+  statix/sort_cons
+  statix/symbol
+  statix/production
+  statix/attribute
+
+signature // Section
+
+  constructors
+    TemplateSection : list(TemplateProduction) -> Section
+
+  sorts TemplateProduction constructors
+    TemplateProduction         : SymbolDef * Template * Attributes -> TemplateProduction
+    TemplateProductionWithCons : SortCons  * Template * Attributes -> TemplateProduction
+
+  sorts Template constructors
+    Template           : list(TemplateLine) -> Template
+    TemplateSquare     : list(TemplateLine) -> Template
+    SingleLineTemplate : list(TemplatePart) -> Template
+
+  sorts TemplateLine constructors
+    Line : list(TemplatePart) -> TemplateLine
+
+  sorts TemplatePart constructors
+    Angled       : Placeholder -> TemplatePart
+    Squared      : Placeholder -> TemplatePart
+    BreakAngled  :                TemplatePart
+    BreakSquared :                TemplatePart
+    String       : string      -> TemplatePart
+    Escape       : string      -> TemplatePart
+    Layout       : string      -> TemplatePart
+
+  sorts Placeholder constructors
+    Placeholder : Symbol * PlaceholderOptions -> Placeholder
+
+  sorts PlaceholderOptions
+
+rules
+
+  sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
+
+  typeOfTemplateProduction: scope * TemplateProduction -> TYPE
+  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef),
+    @template.type := Tprod.
+  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    new sProd, sProd -P-> s,
+    typeOfTemplate(sProd, template) == Tsymbols,
+    @template.type := Tprod.
+  typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
+
+  typeOfTemplate: scope * Template -> list(TYPE)
+  typeOfTemplate(s, Template(lines))            = flattenTypes(typeOfTemplateLines(s, lines)).     /* Flatten nested list */
+  typeOfTemplate(s, TemplateSquare(lines))      = flattenTypes(typeOfTemplateLines(s, lines)).     /* Flatten nested list */
+  typeOfTemplate(s, SingleLineTemplate([p|ps])) = appendTypes(TmaybePart, Trest) /* Append maybe-list */ :-
+    maybeTypeOfTemplatePart(s, p) == TmaybePart,
+    typeOfTemplate(s, SingleLineTemplate(ps)) == Trest.
+  typeOfTemplate(s, SingleLineTemplate([])) = [].
+
+  // Returns nested lists of types, as a template has multiple lines, with multiple parts.
+  typeOfTemplateLines : scope * list(TemplateLine) -> list(list(TYPE))
+  typeOfTemplateLines(s, [l|ls]) = [Tline|Tlines] :-
+    typeOfTemplateLine(s, l) == Tline,
+    typeOfTemplateLines(s, ls) == Tlines.
+  typeOfTemplateLines(s, [    ]) = [].
+
+  typeOfTemplateLine: scope * TemplateLine -> list(TYPE)
+  typeOfTemplateLine(s, Line([p|ps])) = appendTypes(TmaybePart, Trest) /* Append maybe-list */ :-
+    maybeTypeOfTemplatePart(s, p) == TmaybePart,
+    typeOfTemplateLine(s, Line(ps)) == Trest.
+  typeOfTemplateLine(s, Line([    ])) = [].
+
+  // Emulate option type: returns list of one type for sorts, and empty list for others.
+  maybeTypeOfTemplatePart: scope * TemplatePart -> list(TYPE)
+  maybeTypeOfTemplatePart(s, Angled(placeholder))  = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, Squared(placeholder)) = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, _)                    = [].
+
+  typeOfPlaceholder: scope * Placeholder -> TYPE
+  typeOfPlaceholder(s, Placeholder(symbol, _)) = typeOfSymbol(s, symbol).
+
+signature // Options
+
+  constructors
+    TemplateOptions : list(TemplateOption) -> Section
+
+  sorts TemplateOption constructors
+    KeywordAttributes : SymbolDef * Attributes -> TemplateOption
+
+rules
+
+  sectionOK(s, TemplateOptions(templateOptions)) :- templateOptionsOK(s, templateOptions).
+
+  templateOptionOK: scope * TemplateOption
+  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- declareSymbolDef(s, symbolDef) == _.
+  templateOptionOK(s, _).
+  templateOptionsOK maps templateOptionOK(*, list(*))

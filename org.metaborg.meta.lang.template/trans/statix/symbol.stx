@@ -1,0 +1,77 @@
+module statix/symbol
+
+imports
+
+  statix/type
+  statix/sort_cons
+  statix/label
+
+signature
+
+  sorts Symbol constructors
+    Sort              : string                -> Symbol
+    ParameterizedSort : string * list(Symbol) -> Symbol
+
+    Cf          : Symbol                -> Symbol
+    Lex         : Symbol                -> Symbol
+    Varsym      : Symbol                -> Symbol
+    Label       : Label  * Symbol       -> Symbol
+    Sequence    : Symbol * list(Symbol) -> Symbol
+    Opt         : Symbol                -> Symbol
+    Iter        : Symbol                -> Symbol
+    IterStar    : Symbol                -> Symbol
+    IterSep     : Symbol * Separator    -> Symbol
+    IterStarSep : Symbol * Separator    -> Symbol
+    Alt         : Symbol * Symbol       -> Symbol
+
+    Layout    :              Symbol
+    CharClass : CharClass -> Symbol
+    Lit       : string    -> Symbol
+    CiLit     : string    -> Symbol
+
+  sorts Separator CharClass
+
+rules
+
+  typeOfSymbol: scope * Symbol -> TYPE
+
+  typeOfSymbol(s, sy@Sort(name)) = T :-
+    typeOfSort(s, name) == T,
+    @sy.type := T.
+  typeOfSymbol(s, sy@ParameterizedSort(name, symbols)) = T :-
+    typeOfSort(s, name) == T,
+    typesOfSymbols(s, symbols) == _,
+    @sy.type := T.
+
+  typeOfSymbol(s, Cf(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Lex(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Varsym(symbol)) = T :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Label(label, symbol)) = T :-
+    labelOK(s, label),
+    typeOfSymbol(s, symbol)  == T.
+  typeOfSymbol(s, Sequence(symbol, symbols)) = SEQ(T, TS) :-
+    typeOfSymbol(s, symbol) == T,
+    typesOfSymbols(s, symbols) == TS.
+  typeOfSymbol(s, Opt(symbol)) = OPT(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Iter(symbol)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterStar(symbol)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterSep(symbol, _)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, IterStarSep(symbol, _)) = ITER(T) :-
+    typeOfSymbol(s, symbol) == T.
+  typeOfSymbol(s, Alt(symbol1, symbol2)) = ALT(T1, T2) :-
+    typeOfSymbol(s, symbol1) == T1,
+    typeOfSymbol(s, symbol2) == T2.
+
+  typeOfSymbol(s, Layout())     = LAYOUT().
+  typeOfSymbol(s, CharClass(_)) = STRING().
+  typeOfSymbol(s, Lit(_))       = STRING().
+  typeOfSymbol(s, CiLit(_))     = STRING().
+
+  typesOfSymbols maps typeOfSymbol(*, list(*)) = list(*)

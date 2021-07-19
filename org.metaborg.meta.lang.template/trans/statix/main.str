@@ -15,7 +15,7 @@ imports
 
 rules // Editor
 
-  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/statics", "projectOK", "moduleOK")
+  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/main", "projectOK", "fileOK")
 
   statix-editor-resolve = stx-editor-resolve
 

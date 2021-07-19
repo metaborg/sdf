@@ -1,0 +1,29 @@
+module statix/attribute
+
+imports
+
+  statix/util
+
+signature
+
+  sorts Attributes constructors
+    Attrs   : list(Attribute) -> Attributes
+    NoAttrs :                    Attributes
+
+  sorts Attribute constructors
+    Reject  : Attribute
+    Bracket : Attribute
+
+rules
+
+  hasAttribute: Attribute * Attributes -> BOOL
+  hasAttribute(attr, attrs) = hasAttributeInList(attr, attributes(attrs)).
+
+  attributes: Attributes -> list(Attribute)
+  attributes(Attrs(attributes)) = attributes.
+  attributes(NoAttrs())         = [].
+
+  hasAttributeInList: Attribute * list(Attribute) -> BOOL
+  hasAttributeInList(attr, [attr|_]) = TRUE().
+  hasAttributeInList(attr, [_   |s]) = hasAttributeInList(attr, s).
+  hasAttributeInList(attr, [      ]) = FALSE().

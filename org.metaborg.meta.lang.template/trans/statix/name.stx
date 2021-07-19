@@ -1,0 +1,20 @@
+module statix/name
+
+imports
+
+  statix/module
+
+signature
+
+  namespaces
+    Module      : ModuleId
+    Sort        : string
+    Constructor : string
+    Label       : string
+
+  name-resolution
+    labels P I
+    resolve Module      filter P* min $ < P
+    resolve Sort        filter P* | (P* I)
+    resolve Constructor filter P* | (P* I)
+    resolve Label       filter e min

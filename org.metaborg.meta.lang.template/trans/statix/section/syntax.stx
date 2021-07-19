@@ -1,0 +1,82 @@
+module statix/section/syntax
+
+imports
+
+  statix/section/grammar
+  statix/section/template
+  statix/name
+  statix/type
+  statix/sort_cons
+  statix/symbol
+  statix/production
+  statix/attribute
+
+signature
+
+  constructors
+    Syntax                 : list(Production)        -> Grammar
+    Lexical                : list(Production)        -> Grammar
+    Contextfree            : list(Production)        -> Grammar
+    Variables              : list(Production)        -> Grammar
+    LexVariables           : list(Production)        -> Grammar
+    VariablesProductive    : list(SdfProduction)     -> Grammar
+    LexVariablesProductive : list(SdfProduction)     -> Grammar
+    Kernel                 : list(SdfProduction)     -> Grammar
+    LexicalSyntax          : list(SdfProduction)     -> Grammar
+    ContextFreeSyntax      : list(GeneralProduction) -> Grammar
+
+  sorts Production constructors // Kernel-style productions
+    Prod : list(Symbol) * Symbol * Attributes -> Production
+
+  sorts GeneralProduction constructors // General productions (explicated injection)
+    GeneralProduction_SdfProduction      : SdfProduction      -> GeneralProduction
+    GeneralProduction_TemplateProduction : TemplateProduction -> GeneralProduction
+
+  sorts SdfProduction constructors // SDF2-style productions
+    SdfProduction         : SymbolDef * RHS * Attributes -> SdfProduction
+    SdfProductionWithCons : SortCons  * RHS * Attributes -> SdfProduction
+
+  sorts RHS constructors
+    Rhs : list(Symbol) -> RHS
+
+rules
+
+  grammarOK(s, Syntax(productions))                    :- productionsOK(s, productions).
+  grammarOK(s, Lexical(productions))                   :- productionsOK(s, productions).
+  grammarOK(s, Contextfree(productions))               :- productionsOK(s, productions).
+  grammarOK(s, Variables(productions))                 :- productionsOK(s, productions).
+  grammarOK(s, LexVariables(productions))              :- productionsOK(s, productions).
+  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, sdfProductions) == _.
+  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
+
+  productionOK: scope * Production
+  productionOK(s, Prod(symbols, symbol, _)) :- {sProd}
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == _,
+    typeOfSymbol(sProd, symbol) == _.
+  productionsOK maps productionOK(*, list(*))
+
+  generalProductionOK: scope * GeneralProduction
+  generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
+    typeOfSdfProduction(s, sdfProduction) == _.
+  generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
+    typeOfTemplateProduction(s, templateProduction) == _.
+  generalProductionsOK maps generalProductionOK(*, list(*))
+
+  typeOfSdfProduction: scope * SdfProduction -> TYPE
+  typeOfSdfProduction(s, SdfProduction(symbolDef, rhs@Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols,
+    Tprod == PROD(Tsymbols, Tsort),
+    injectionProductionOK(Tprod, attrs, symbolDef),
+    @rhs.type := Tprod.
+  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
+    declareSortCons(s, Tsymbols, sortCons) == Tprod,
+    new sProd, sProd -P-> s,
+    typesOfSymbols(sProd, symbols) == Tsymbols,
+    @rhs.type := Tprod.
+  typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)

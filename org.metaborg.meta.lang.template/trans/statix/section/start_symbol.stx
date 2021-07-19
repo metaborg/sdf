@@ -1,0 +1,19 @@
+module statix/section/start_symbol
+
+imports
+
+  statix/section/grammar
+  statix/symbol
+
+signature
+
+  constructors
+    KernelStartSymbols      : list(Symbol) -> Grammar
+    LexicalStartSymbols     : list(Symbol) -> Grammar
+    ContextFreeStartSymbols : list(Symbol) -> Grammar
+
+rules
+
+  grammarOK(s, KernelStartSymbols(symbols))      :- typesOfSymbols(s, symbols) == _.
+  grammarOK(s, LexicalStartSymbols(symbols))     :- typesOfSymbols(s, symbols) == _.
+  grammarOK(s, ContextFreeStartSymbols(symbols)) :- typesOfSymbols(s, symbols) == _.

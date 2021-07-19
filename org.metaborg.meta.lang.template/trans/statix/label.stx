@@ -1,0 +1,37 @@
+module statix/label
+
+imports
+  
+  statix/name
+  statix/util
+
+signature
+
+  sorts Label constructors
+    Quoted   : string -> Label
+    Unquoted : string -> Label
+
+rules
+
+  labelOK: scope * Label
+  labelOK(s, Quoted(name))   :- declareLabel(s, name).
+  labelOK(s, Unquoted(name)) :- declareLabel(s, name).
+
+rules // Label reusable predicates
+
+  declareLabel : scope * string
+  declareLabel(s, name) :-
+    s -> Label{name},
+    Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]].
+
+  resolveLabel : scope * string
+  resolveLabel(s, name)  :- {paths}
+    Label{name} in s |-> paths,
+    resolveLabels(name, paths, NON_EMPTY()).
+
+  resolveLabels : string * list((path * occurrence)) * EMPTINESS
+  resolveLabels(name, [(_, (Label{name'}))|labels], _) :-
+    @name.ref += name',
+    resolveLabels(name, labels, MAYBE_EMPTY()).
+  resolveLabels(name, [], NON_EMPTY()) :- false | error $[Label [name] not defined].
+  resolveLabels(name, [], MAYBE_EMPTY()).
