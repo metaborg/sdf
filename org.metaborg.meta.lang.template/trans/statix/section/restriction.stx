@@ -1,0 +1,28 @@
+module statix/section/restriction
+
+imports
+
+  statix/section/grammar
+  statix/symbol
+
+signature
+
+  constructors
+    Restrictions            : list(Restriction) -> Grammar
+    LexicalRestrictions     : list(Restriction) -> Grammar
+    ContextFreeRestrictions : list(Restriction) -> Grammar
+
+  sorts Restriction constructors
+    Follow : list(Symbol) * Lookaheads -> Restriction
+
+  sorts Lookaheads
+
+rules
+
+  grammarOK(s, Restrictions(restrictions))            :- restrictionsOK(s, restrictions).
+  grammarOK(s, LexicalRestrictions(restrictions))     :- restrictionsOK(s, restrictions).
+  grammarOK(s, ContextFreeRestrictions(restrictions)) :- restrictionsOK(s, restrictions).
+
+  restrictionOK: scope * Restriction
+  restrictionOK(s, Follow(symbols, _)) :- typesOfSymbols(s, symbols) == _.
+  restrictionsOK maps restrictionOK(*, list(*))

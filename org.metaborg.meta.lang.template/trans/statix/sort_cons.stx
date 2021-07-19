@@ -1,0 +1,105 @@
+module statix/sort_cons
+
+imports
+
+  statix/name
+  statix/type
+  statix/symbol
+  statix/util
+
+signature
+
+  sorts SortCons constructors
+    SortCons : SymbolDef * Constructor -> SortCons
+
+  sorts Constructor constructors
+    Constructor : string -> Constructor
+
+  sorts SymbolDef constructors
+    SortDef          : string    -> SymbolDef
+    SymbolDefCf      : SymbolDef -> SymbolDef
+    SymbolDefLex     : SymbolDef -> SymbolDef
+    SymbolDefVar     : SymbolDef -> SymbolDef
+    SymbolDef_Symbol : Symbol    -> SymbolDef
+
+  sorts SortConsRef constructors
+    SortConsRef : Symbol * Constructor -> SortConsRef
+
+rules
+
+  declareSortCons: scope * list(TYPE) * SortCons -> TYPE
+  declareSortCons(s, Tsymbols, SortCons(symbolDef, Constructor(constructorName))) = Tprod :- {Tsort}
+    declareSymbolDef(s, symbolDef) == Tsort,
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
+
+  declareSymbolDef: scope * SymbolDef -> TYPE
+  declareSymbolDef(s, SortDef(name))            = Tsort :- declareSort(s, name)           == Tsort.
+  declareSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- declareSymbolDef(s, symbolDef) == T.
+  declareSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)        == T.
+
+  typeOfSortConsRef: scope * SortConsRef -> TYPE
+  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}
+    typeOfSymbol(s, symbol) == Tsort,
+    typeOfConstructorInSort(s, constructorName, Tsort) == Tprod.
+  typeOfSortConsRefs maps typeOfSortConsRef(*, list(*)) = list(*)
+
+rules // Sort reusable predicates
+
+  declareSort : scope * string -> TYPE
+  declareSort(s, name) = Tsort :-
+    Tsort == SORT(Sort{name}),
+    s -> Sort{name} with typeOfDecl Tsort,
+    @name.type := Tsort.
+
+  typeOfSort : scope * string -> TYPE
+  typeOfSort(s, name) = Tsort :- {paths}
+    typeOfDecl of Sort{name} in s |-> paths,
+    resolveSorts(name, paths, NON_EMPTY()) == Tsort,
+    @name.type := Tsort.
+
+  resolveSorts : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+    @name.ref += name',
+    resolveSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+  resolveSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] not defined].
+  resolveSorts(name, [], MAYBE_EMPTY()) = _.
+
+rules // Constructor reusable predicates
+
+  declareConstructor : scope * list(TYPE) * TYPE * string -> TYPE
+  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :- {results}
+    Tprod == PROD(Tsymbols, Tsort),
+    s -> Constructor{name} with typeOfDecl Tprod,
+    typeOfDecl of Constructor{name} in s |-> results,
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]], // TODO: should be a warning: the generated pretty-printer might not work properly
+    @name.type := Tprod.
+
+  typeOfConstructor : scope * string -> TYPE
+  typeOfConstructor(s, name) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructors(name, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructors : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructors(name, [(_, (Constructor{name'}, Tprod))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructors(name, paths, MAYBE_EMPTY()) == Tprod.
+  resolveConstructors(name, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined].
+  resolveConstructors(name, [], MAYBE_EMPTY()) = _.
+
+  typeOfConstructorInSort : scope * string * TYPE -> TYPE
+  typeOfConstructorInSort(s, name, Tsort) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructorsInSort(name, Tsort, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructorsInSort : string * TYPE * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructorsInSort(name, Tsort, paths, MAYBE_EMPTY()) == _.
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, _))|paths], emptiness) = Tprod :-
+    resolveConstructorsInSort(name, Tsort, paths, emptiness) == Tprod.
+  resolveConstructorsInSort(name, Tsort, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined in [Tsort]].
+  resolveConstructorsInSort(name, Tsort, [], MAYBE_EMPTY()) = _.

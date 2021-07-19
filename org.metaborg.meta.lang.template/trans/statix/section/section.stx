@@ -1,0 +1,10 @@
+module statix/section/section
+
+signature
+
+  sorts Section
+
+rules
+
+  sectionOK: scope * Section
+  sectionsOK maps sectionOK(*, list(*))

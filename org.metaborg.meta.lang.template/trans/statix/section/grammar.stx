@@ -1,0 +1,18 @@
+module statix/section/grammar
+
+imports
+
+  statix/section/section
+
+signature
+
+  sorts Grammar
+
+  constructors
+    SDFSection : Grammar -> Section
+
+rules
+
+  grammarOK: scope * Grammar
+
+  sectionOK(s, SDFSection(grammar)) :- grammarOK(s, grammar).

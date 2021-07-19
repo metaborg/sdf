@@ -1,0 +1,37 @@
+module statix/type
+
+signature
+
+  sorts TYPE constructors
+    SORT   : occurrence        -> TYPE
+    SEQ    : TYPE * list(TYPE) -> TYPE
+    OPT    : TYPE              -> TYPE
+    ITER   : TYPE              -> TYPE
+    ALT    : TYPE * TYPE       -> TYPE
+    LAYOUT :                      TYPE
+    STRING :                      TYPE
+    PROD   : list(TYPE) * TYPE -> TYPE
+    MOD    : scope             -> TYPE
+
+  relations
+    typeOfDecl : occurrence -> TYPE
+
+rules
+
+  onlyOneOf : TYPE * list((path * (occurrence * TYPE)))
+  onlyOneOf(ty, [(_, (_, ty ))|ps]) :- noneOf(ty, ps).
+  onlyOneOf(ty, [(_, (_, ty'))|ps]) :- onlyOneOf(ty, ps).
+  onlyOneOf(ty, [])                 :- false.
+
+  noneOf : TYPE * list((path * (occurrence * TYPE)))
+  noneOf(ty, [(_, (_, ty ))|ps]) :- false.
+  noneOf(ty, [(_, (_, ty'))|ps]) :- noneOf(ty, ps).
+  noneOf(ty, [])                 :- true.
+
+  appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
+  appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
+  appendTypes([    ], types) = types.
+
+  flattenTypes : list(list(TYPE)) -> list(TYPE)
+  flattenTypes([ts|tts]) = appendTypes(ts, flattenTypes(tts)).
+  flattenTypes([      ]) = [].
