@@ -69,9 +69,9 @@ rules
     typeOfSymbol(s, symbol1) == T1,
     typeOfSymbol(s, symbol2) == T2.
 
-  typeOfSymbol(s, Layout())     = LAYOUT().
-  typeOfSymbol(s, CharClass(_)) = STRING().
-  typeOfSymbol(s, Lit(_))       = STRING().
-  typeOfSymbol(s, CiLit(_))     = STRING().
+  typeOfSymbol(s, Layout())     = TERMINAL().
+  typeOfSymbol(s, CharClass(_)) = TERMINAL().
+  typeOfSymbol(s, Lit(_))       = TERMINAL().
+  typeOfSymbol(s, CiLit(_))     = TERMINAL().
 
   typesOfSymbols maps typeOfSymbol(*, list(*)) = list(*)

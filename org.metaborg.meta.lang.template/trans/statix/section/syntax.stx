@@ -71,7 +71,7 @@ rules
     declareSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
-    Tprod == PROD(Tsymbols, Tsort),
+    Tprod == INJ(Tsymbols, Tsort),
     injectionProductionOK(Tprod, attrs, symbolDef),
     @rhs.type := Tprod.
   typeOfSdfProduction(s, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}

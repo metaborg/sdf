@@ -3,15 +3,15 @@ module statix/type
 signature
 
   sorts TYPE constructors
-    SORT   : occurrence        -> TYPE
-    SEQ    : TYPE * list(TYPE) -> TYPE
-    OPT    : TYPE              -> TYPE
-    ITER   : TYPE              -> TYPE
-    ALT    : TYPE * TYPE       -> TYPE
-    LAYOUT :                      TYPE
-    STRING :                      TYPE
-    PROD   : list(TYPE) * TYPE -> TYPE
-    MOD    : scope             -> TYPE
+    SORT     : occurrence        -> TYPE
+    SEQ      : TYPE * list(TYPE) -> TYPE
+    OPT      : TYPE              -> TYPE
+    ITER     : TYPE              -> TYPE
+    ALT      : TYPE * TYPE       -> TYPE
+    TERMINAL :                      TYPE
+    PROD     : list(TYPE) * TYPE -> TYPE
+    INJ      : list(TYPE) * TYPE -> TYPE
+    MOD      : scope             -> TYPE
 
   relations
     typeOfDecl : occurrence -> TYPE
