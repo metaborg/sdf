@@ -68,7 +68,7 @@ rules
 
   typeOfSdfProduction: scope * SdfProduction -> TYPE
   typeOfSdfProduction(s, SdfProduction(symbolDef, rhs@Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSymbolDef(s, symbolDef) == Tsort,
+    typeOfSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),

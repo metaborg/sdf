@@ -1,0 +1,45 @@
+module statix/cons
+
+imports
+ 
+  statix/name
+  statix/type
+  statix/util
+
+rules // Constructor reusable predicates
+
+  declareConstructor : scope * list(TYPE) * TYPE * string -> TYPE
+  declareConstructor(s, Tsymbols, Tsort, name) = Tprod :- {results}
+    Tprod == PROD(Tsymbols, Tsort),
+    s -> Constructor{name} with typeOfDecl Tprod,
+    typeOfDecl of Constructor{name} in s |-> results,
+    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]]@name,
+    @name.type := Tprod.
+
+  typeOfConstructor : scope * string -> TYPE
+  typeOfConstructor(s, name) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructors(name, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructors : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructors(name, [(_, (Constructor{name'}, Tprod))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructors(name, paths, MAYBE_EMPTY()) == Tprod.
+  resolveConstructors(name, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined]@name.
+  resolveConstructors(name, [], MAYBE_EMPTY()) = _.
+
+  typeOfConstructorInSort : scope * string * TYPE -> TYPE
+  typeOfConstructorInSort(s, name, Tsort) = Tprod :- {paths}
+    typeOfDecl of Constructor{name} in s |-> paths,
+    resolveConstructorsInSort(name, Tsort, paths, NON_EMPTY()) == Tprod,
+    @name.type := Tprod.
+
+  resolveConstructorsInSort : string * TYPE * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, Tprod@PROD(_, Tsort)))|paths], _) = Tprod :-
+    @name.ref += name',
+    resolveConstructorsInSort(name, Tsort, paths, MAYBE_EMPTY()) == _.
+  resolveConstructorsInSort(name, Tsort, [(_, (Constructor{name'}, _))|paths], emptiness) = Tprod :-
+    resolveConstructorsInSort(name, Tsort, paths, emptiness) == Tprod.
+  resolveConstructorsInSort(name, Tsort, [], NON_EMPTY())   = _ :- false | error $[Constructor [name] not defined in [Tsort]]@name.
+  resolveConstructorsInSort(name, Tsort, [], MAYBE_EMPTY()) = _.

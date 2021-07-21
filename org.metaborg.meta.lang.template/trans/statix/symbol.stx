@@ -3,7 +3,7 @@ module statix/symbol
 imports
 
   statix/type
-  statix/sort_cons
+  statix/sort
   statix/label
 
 signature
