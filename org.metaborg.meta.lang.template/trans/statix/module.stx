@@ -38,7 +38,7 @@ rules
   declareModule(sGlobal, sMod, name) :- {id}
     idOfModuleName(name) == id,
     sGlobal -> Module{id} with typeOfDecl MOD(sMod),
-    Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]].
+    Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]]@id.
 
   typeOfModule : scope * ModuleName -> TYPE
   typeOfModule(s, name) = Tmod :- {id paths}
@@ -50,7 +50,7 @@ rules
   resolveModules(id, [(_, (Module{id'}, Tmod))|paths], _) = Tmod :-
     @id.ref += id',
     resolveModules(id, paths, MAYBE_EMPTY()) == Tmod.
-  resolveModules(id, [], NON_EMPTY())   = _ :- false | error $[Module [id] not defined].
+  resolveModules(id, [], NON_EMPTY())   = _ :- false | error $[Module [id] is not defined]@id.
   resolveModules(id, [], MAYBE_EMPTY()) = _.
 
   idOfModuleName : ModuleName -> ModuleId

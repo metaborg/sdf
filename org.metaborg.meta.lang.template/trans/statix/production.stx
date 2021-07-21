@@ -4,7 +4,7 @@ imports
 
   statix/type
   statix/attribute
-  statix/symbol
+  statix/sort_cons
 
 rules
 

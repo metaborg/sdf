@@ -22,7 +22,7 @@ rules // Label reusable predicates
   declareLabel : scope * string
   declareLabel(s, name) :-
     s -> Label{name},
-    Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]].
+    Label{name} in s |-> [(_, (_))] | error $[Duplicate definition of label [name]]@name.
 
   resolveLabel : scope * string
   resolveLabel(s, name)  :- {paths}
@@ -33,5 +33,5 @@ rules // Label reusable predicates
   resolveLabels(name, [(_, (Label{name'}))|labels], _) :-
     @name.ref += name',
     resolveLabels(name, labels, MAYBE_EMPTY()).
-  resolveLabels(name, [], NON_EMPTY()) :- false | error $[Label [name] not defined].
+  resolveLabels(name, [], NON_EMPTY()) :- false | error $[Label [name] is not defined]@name.
   resolveLabels(name, [], MAYBE_EMPTY()).

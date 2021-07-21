@@ -47,7 +47,7 @@ rules
 
   typeOfTemplateProduction: scope * TemplateProduction -> TYPE
   typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
-    declareSymbolDef(s, symbolDef) == Tsort,
+    typeOfSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
@@ -103,6 +103,6 @@ rules
   sectionOK(s, TemplateOptions(templateOptions)) :- templateOptionsOK(s, templateOptions).
 
   templateOptionOK: scope * TemplateOption
-  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- declareSymbolDef(s, symbolDef) == _.
+  templateOptionOK(s, KeywordAttributes(symbolDef, _)) :- typeOfSymbolDef(s, symbolDef) == _.
   templateOptionOK(s, _).
   templateOptionsOK maps templateOptionOK(*, list(*))
