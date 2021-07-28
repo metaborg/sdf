@@ -42,7 +42,7 @@ rules
     is*   := <map(to-str-import(|"-sig", "signatures"));![Imports([Import("libstratego-lib")])|<id>]> i*;
     sort* := <filter(sorts-section-to-sig)> s*;
     cons* := <filter(section-to-sig); flatten-list> s*;
-    s'    := Signature([sort*, Constructors(cons*)])
+    s'    := Signature([sort*, Sorts([SortNoArgs("COMPLETION-INSERTION"), Sort("List", [SortVar("a")])]), Constructors(cons*)])
 
   sorts-section-to-sig:
     SDFSection(Sorts(s*)) -> Sorts(s'*)
