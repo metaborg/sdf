@@ -41,11 +41,23 @@ rules
     
 rules
 
-  module-to-pp:
+  module-to-pp = module-to-pp(|<stratego-version>)
+
+  module-to-pp(|stratego-version):
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0   := Imports([Import("libstratego-lib"), Import("libstratego-gpp"), Import("libspoofax/sdf/pp"), Import("libspoofax/term/origin"), Import("libspoofax/term/annotation"), Import("libstratego-sglr"),  Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0   := Imports([
+                Import(<libstratego-name> stratego-version),
+                Import("libstratego-gpp"),
+                Import("libstratego-sglr"),
+
+                Import("libspoofax/sdf/pp"),
+                Import("libspoofax/term/origin"),
+                Import("libspoofax/term/annotation"),
+
+                Import(<to-str-module-name(|"-sig","signatures")> Module(m))
+              ])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
     ; lang := <language-spec-name>

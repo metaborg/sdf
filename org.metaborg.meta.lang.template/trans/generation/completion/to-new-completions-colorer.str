@@ -20,7 +20,7 @@ rules
   Module(m, i*, s*) -> Module(m', i'*, [Colorer("", c*)])
   with
      m'  := <to-str-module-name(|"-cc-esv", "completion/colorer")> Module(m);
-     i'* := <mapconcat(?Imports(<id>)); not(?[]); ![Imports([Import("libstratego-lib")|<id>])]; map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;
+     i'* := <mapconcat(?Imports(<id>)); not(?[]); map(to-str-import(|"-cc-esv", "completion/colorer")) <+ ![]> i*;
      c*  := <filter(section-to-cmp-colorer); flatten-list> s*
     
   section-to-cmp-colorer:
