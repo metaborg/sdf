@@ -12,10 +12,11 @@ imports
   generation/syntax/to-namespaced
   generation/syntax/gen-exp-grammars
   generation/syntax/gen-str-exp-grammars
+  generation/gen-utils/to-str
   libspoofax/stratego/debug
 
 rules
-  get-contextual-grammar = prim("SSL_EXT_get_contextual_grammar", <id>) <+ "file not found"
+  get-contextual-grammar = prim("SSL_EXT_get_contextual_grammar", <id>) <+ !"file not found"
 
 rules
   generate-sdf-abstract:
@@ -100,10 +101,13 @@ rules
       exp-grammar-filename := <get-src-gen(|project-path, "syntax/exp-grammars",  ".sdf3_")> mn;
       exp-grammar-result   := (exp-grammar-filename, <pp-SDF3-string> ast)
 
-  generate-exp-grammar-str-file(|project-path):
+  generate-exp-grammar-str-file(|project-path) =
+    generate-exp-grammar-str-file(|project-path, <stratego-version;stratego-file-ext>)
+
+  generate-exp-grammar-str-file(|project-path, ext):
     (mn, ast) -> stratego-result
     where
-      exp-grammar-filename := <get-src-gen(|project-path, "syntax/exp-grammars",  ".str")> mn;
+      exp-grammar-filename := <get-src-gen(|project-path, "syntax/exp-grammars", $[.[ext]])> mn;
       stratego-ast         := <module-to-str-expr-grammar> ast;
       stratego-result      := (exp-grammar-filename, <pp-stratego-string> stratego-ast)
 

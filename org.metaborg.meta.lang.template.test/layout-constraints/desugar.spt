@@ -1,0 +1,357 @@
+module layout-constraints/desugar
+
+language TemplateLang
+
+test desugar pos ref [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]]
+
+test desugar literal ref [[
+module desugar
+context-free syntax
+A.A = "A" {layout("A".first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = "A" {layout(0.first.line == 1)}
+]]
+
+test desugar label ref [[
+module desugar
+context-free syntax
+A.A = a:A {layout(a.first.line == 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A {layout(0.first.line == 1)}
+]]
+
+test desugar quoted label [[
+module desugar
+context-free syntax
+A.A = "a":A {layout(a.first.line == a.last.line)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = "a":A {layout(0.first.line == 0.last.line)}
+]]
+
+test desugar labeled quoted literal [[
+module desugar
+context-free syntax
+A.A = a:"a" b:"b" {layout(a.first.line == "b".last.line)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:"a" b:"b" {layout(0.first.line == 1.last.line)}
+]]
+
+test desugar single quoted literal [[
+module desugar
+context-free syntax
+A.A = 'a' 'b' {layout("a".first.line == "b".last.line)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = 'a' 'b' {layout(0.first.line == 1.last.line)}
+]]
+
+test desugar single quoted literal [[
+module desugar
+context-free syntax
+A.A = a:"a" b:"b" {layout(a.first.line == b.last.line)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:"a" b:"b" {layout(0.first.line == 1.last.line)}
+]]
+
+test desugar ref in exp [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(a.first.line + b.last.line >= 1)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(0.first.line + 1.last.line >= 1)}
+]]
+
+test template desugar ref in nested constraints [[
+module desugar
+context-free syntax
+A.A = <<a:A> <b:A> c> {
+  layout(a.first.line >= 1 && b.last.col == 2 || ! "c".right.line == 1)
+}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <<a:A> <b:A> c> {
+  layout(0.first.line >= 1 && 1.last.col == 2 || ! 2.right.line == 1)
+}
+]]
+
+test desugar offside one [[
+module desugar
+context-free syntax
+A.A = a:A {layout(offside a)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A {layout(0.left.col > 0.first.col)}
+]]
+
+test desugar offside multiple [[
+module desugar
+context-free syntax
+A.A = a:A b:A "c" "d" {layout(offside a b, "c", 3)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A "c" "d" {
+  layout(1.left.col > 0.first.col && 2.left.col > 0.first.col && 3.left.col > 0.first.col)
+}
+]]
+
+test desugar offside or offside [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(offside a || offside b)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(0.left.col > 0.first.col || 1.left.col > 1.first.col)}
+]]
+
+test desugar offisde and offside [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(offside a && offside b)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(0.left.col > 0.first.col && 1.left.col > 1.first.col)}
+]]
+
+test desugar not offside [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(!offside a b)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = a:A b:A {layout(!1.left.col > 0.first.col)}
+]]
+
+test desugar indent one [[
+module desugar
+context-free syntax
+A.A = <i <b:B>> {layout(indent "i" b)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <i <b:B>> {layout(1.first.col > 0.first.col)}
+B.B = <b>
+]]
+
+test desugar indent multiple [[
+module desugar
+context-free syntax
+A.A = <i <b1:B> <b2:B> <b3:B>> {layout(indent "i" b1, b2, b3)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <i <b1:B> <b2:B> <b3:B>> {
+  layout(1.first.col > 0.first.col && 2.first.col > 0.first.col && 3.first.col > 0.first.col)
+}
+B.B = <b>
+]]
+
+test desugar align one [[
+module desugar
+context-free syntax
+A.A = <a b> {layout(align "a" "b")}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <a b> {layout(1.first.col == 0.first.col)}
+]]
+
+test desugar multiple [[
+module desugar
+context-free syntax
+A.A = <a b c d> {layout(align "a" "b", 2, "d")}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <a b c d> {
+  layout(1.first.col == 0.first.col && 2.first.col == 0.first.col && 3.first.col == 0.first.col)
+}
+]]
+
+test desugar newline-indent one [[
+module desugar
+context-free syntax
+A.A = <a b> {layout(newline-indent "a" "b")}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <a b> {layout(1.first.col > 0.first.col && 1.first.line > 0.last.line)}
+]]
+
+test desugar newline-indent one [[
+module desugar
+context-free syntax
+A.A = <a <b:B> c <B>> {layout(newline-indent "a" b, "c", 3)}
+B.B = "b"
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <a <b:B> c <B>> {
+  layout((1.first.col > 0.first.col && 1.first.line > 0.last.line) &&
+         (2.first.col > 0.first.col && 2.first.line > 0.last.line) &&
+         (3.first.col > 0.first.col && 3.first.line > 0.last.line)
+        )
+}
+B.B = "b"
+]]
+
+test desugar align-list iter [[
+module desugar
+context-free syntax
+A.A = b:B+ {layout(align-list b)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = b:B+ {}
+B.B = <b>
+B+ = B+ B {layout(0.first.col == 1.first.col)}
+]]
+
+test desugar align-list iter index [[
+module desugar
+context-free syntax
+A.A = B+ {layout(align-list 0)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B+ {}
+B.B = <b>
+B+ = B+ B {layout(0.first.col == 1.first.col)}
+]]
+
+test desugar align-list iterstar [[
+module desugar
+context-free syntax
+A.A = b:B* {layout(align-list b)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = b:B* {}
+B.B = <b>
+B+ = B+ B {layout(0.first.col == 1.first.col)}
+]]
+
+test desugar align-list iterstar [[
+module desugar
+context-free syntax
+A.A = B* {layout(align-list 0)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B* {}
+B.B = <b>
+B+ = B+ B {layout(0.first.col == 1.first.col)}
+]]
+
+test desugar single line no args [[
+module desugar
+context-free syntax
+A.A = B {layout(single-line)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B {layout(0.first.line == 0.last.line)}
+B.B = <b>
+]]
+
+test desugar single line no args [[
+module desugar
+context-free syntax
+A.A = B "a" B {layout(single-line)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B "a" B {layout(0.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar single line one [[
+module desugar
+context-free syntax
+A.A = B "a" b:B {layout(single-line b)}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B "a" b:B {layout(2.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar single line two [[
+module desugar
+context-free syntax
+A.A = <if <B>: <B>> {layout(single-line "if" ":")}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <if <B>: <B>> {layout(0.first.line == 2.last.line)}
+B.B = <b>
+]]
+
+test desugar multiple single line two [[
+module desugar
+context-free syntax
+A.A = <if <B> then <B> elif <B>: <B>> {layout(single-line "if" "then" && single-line "elif" ":")}
+B.B = <b>
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = <if <B> then <B> elif <B>: <B>> {layout(0.first.line == 2.last.line && 4.first.line == 6.last.line)}
+B.B = <b>
+]]
+
+test desugar multiple sections productions [[
+module desugar
+context-free syntax
+A.A = B C {layout(align 0 1)}
+A.B = <a <b:B>> {layout(offside "a" b)}
+context-free syntax
+B.B = <b <c:C>> {layout("b".first.line == c.last.line)}
+context-free syntax
+C.C = <c d> {layout("c".first.col == "d".first.col)}
+]] run test-desugar-layout-constraints to [[
+module desugar
+context-free syntax
+A.A = B C {layout(1.first.col == 0.first.col)}
+A.B = <a <b:B>> {layout(1.left.col > 0.first.col)}
+context-free syntax
+B.B = <b <c:C>> {layout(0.first.line == 1.last.line)}
+context-free syntax
+C.C = <c d> {layout(0.first.col == 1.first.col)}
+]]
+

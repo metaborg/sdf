@@ -44,7 +44,7 @@ public class Parenthesizer {
     private static final ILogger logger = LoggerUtils.logger(Parenthesizer.class);
     private final static ITermFactory tf = new TermFactory();
 
-    public static IStrategoTerm generateParenthesizer(String moduleName, File outputFile, ParseTable table) {
+    public static IStrategoTerm generateParenthesizer(String moduleName, File outputFile, ParseTable table, boolean stratego2) {
         // add pp/
         final String name = moduleName;
         moduleName = "pp/" + moduleName + "-parenthesize";
@@ -54,7 +54,11 @@ public class Parenthesizer {
         // FIXME import all subfolders
 
         List<IStrategoTerm> importsList = Lists.newArrayList();
-        importsList.add(importModule("libstratego-lib"));
+        if(stratego2) {
+            importsList.add(importModule("strategolib"));
+        } else {
+            importsList.add(importModule("libstratego-lib"));
+        }
 
         Set<String> paths = Sets.newHashSet();
         for(File f : grammar.getFilesRead()) {
@@ -339,7 +343,9 @@ public class Parenthesizer {
 
         // Signature Constructor
         IStrategoTerm signature = tf.makeAppl(tf.makeConstructor("Signature", 1),
-            tf.makeList(tf.makeAppl(tf.makeConstructor("Constructors", 1),
+            tf.makeList(
+                tf.makeAppl("Sorts", tf.makeList(tf.makeAppl("SortNoArgs", tf.makeString("Unknown")))),
+                tf.makeAppl(tf.makeConstructor("Constructors", 1),
                 tf.makeList(defineSignature("Parenthetical", Lists.newArrayList("Unknown"), "Unknown"),
                     defineSignature("Snoc", Lists.newArrayList("Unknown", "Unknown"), "Unknown"),
                     defineSignature("Ins", Lists.newArrayList("Unknown"), "Unknown")))));

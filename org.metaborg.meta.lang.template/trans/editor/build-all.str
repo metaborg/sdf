@@ -69,18 +69,20 @@ rules
     where
       filename := <base-filename> path;
       ast'     := <desugar-templates> ast;
-      <?Module(Unparameterized(mn), i*, sections)> ast
+      <?Module(Unparameterized(mn), i*, sections)> ast;
+      sv := <stratego-version>;
+      ext := <stratego-file-ext> sv
     where
       esv-cc-filename      := <get-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
       esv-cc-string        := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
       esv-result           := (esv-cc-filename, esv-cc-string)
     where
-      ncp-string           := <module-to-new-cmp; pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-      ncp-filename         := <get-src-gen(|project-path, "completion", "-cp.str")> mn;
+      ncp-string           := <module-to-new-cmp(|sv); pp-stratego-string <+ !""; debug(!"New Completions files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      ncp-filename         := <get-src-gen(|project-path, "completion", $[-cp.[ext]])> mn;
       ncp-result           := (ncp-filename, ncp-string)
     where
-      sig-string           := <module-to-sig; pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
-      sig-filename         := <get-src-gen(|project-path, "signatures", "-sig.str")> mn;
+      sig-string           := <module-to-sig(|sv); pp-stratego-string <+ !""; debug(!"Signature files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
+      sig-filename         := <get-src-gen(|project-path, "signatures", $[-sig.[ext]])> mn;
       sig-result           := (sig-filename, sig-string)
     where
       ds-sig-string        := <module-to-ds-sig; pp-ds-to-string  <+ !""; debug(!"The ds signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast';
@@ -154,8 +156,8 @@ rules
         end
       end
     where
-        pp-string            := <module-to-pp; pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
-      ; pp-filename          := <get-src-gen(|project-path, "pp", "-pp.str")> mn;
+        pp-string            := <module-to-pp(|sv); pp-stratego-string <+ !""; debug(!"PP files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
+      ; pp-filename          := <get-src-gen(|project-path, "pp", $[-pp.[ext]])> mn;
         pp-result            := (pp-filename, pp-string)
     where
         result := <unzip> [
