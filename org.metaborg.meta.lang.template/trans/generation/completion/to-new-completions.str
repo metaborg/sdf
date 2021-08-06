@@ -39,7 +39,7 @@ imports
   
 rules
 
-  module-to-new-cmp = module-to-new-cmp(|<stratego-version>)
+  module-to-new-cmp = module-to-new-cmp(|"1")
   
   module-to-new-cmp(|stratego-version):
   Module(Unparameterized(m), i*, s*) -> Module(m',  <flatten-list> [i0, i1, is*, s1, s2, s3])

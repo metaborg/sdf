@@ -42,7 +42,7 @@ signature constructors
   
 rules
 
-   module-to-str-expr-grammar = module-to-str-expr-grammar(|<stratego-version>)
+   module-to-str-expr-grammar = module-to-str-expr-grammar(|"1")
 
    module-to-str-expr-grammar(|stratego-version):
      m@Module(Unparameterized(mn), _, sections*) -> 

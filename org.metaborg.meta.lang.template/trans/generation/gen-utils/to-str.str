@@ -14,8 +14,6 @@ rules
   to-str-module-name(|ext, folder):
     Module(Unparameterized(m)) -> <conc-strings> (folder, "/" , m, ext)
 
-  stratego-version = prim("stratego_version")
-
   libstratego-name =
     switch id
       case ?"1": !"libstratego-lib"

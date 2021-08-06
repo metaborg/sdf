@@ -20,7 +20,7 @@ rules
      // ; fn       :=  <get-filename> mn
       ; filename := <get-src-gen(|project-path, "pp", ".pp.aterm")> mn//fn
 
-  generate-pp-concrete = generate-pp-concrete(|<stratego-version;stratego-file-ext>)
+  generate-pp-concrete = generate-pp-concrete(|"str")
 
   generate-pp-concrete(|ext):
     (selected, position, ast, path, project-path) -> (filename, result)

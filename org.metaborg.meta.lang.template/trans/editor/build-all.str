@@ -32,6 +32,7 @@ imports
   generation/signatures/-
   generation/syntax/-
   generation/syntax/to-namespaced
+  generation/gen-utils/to-str
   libstrc
   normalization/to-normal-form
   libstratego-aterm

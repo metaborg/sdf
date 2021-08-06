@@ -102,7 +102,7 @@ rules
       exp-grammar-result   := (exp-grammar-filename, <pp-SDF3-string> ast)
 
   generate-exp-grammar-str-file(|project-path) =
-    generate-exp-grammar-str-file(|project-path, <stratego-version;stratego-file-ext>)
+    generate-exp-grammar-str-file(|project-path, "str")
 
   generate-exp-grammar-str-file(|project-path, ext):
     (mn, ast) -> stratego-result
