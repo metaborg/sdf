@@ -52,8 +52,6 @@ rules // Analysis
 
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
-  
-  get-sdf3-type = get-type
       
 rules // Editor services
 

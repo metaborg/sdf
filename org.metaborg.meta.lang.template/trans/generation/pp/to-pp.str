@@ -41,7 +41,7 @@ rules
     
 rules
 
-  module-to-pp = module-to-pp(|<stratego-version>)
+  module-to-pp = module-to-pp(|"1")
 
   module-to-pp(|stratego-version):
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])

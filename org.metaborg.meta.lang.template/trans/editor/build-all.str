@@ -32,6 +32,7 @@ imports
   generation/signatures/-
   generation/syntax/-
   generation/syntax/to-namespaced
+  generation/gen-utils/to-str
   libstrc
   normalization/to-normal-form
   libstratego-aterm
@@ -64,13 +65,17 @@ rules
       namespaced-string := <pp-SDF3-string> namespaced-ast;
       (filename*, string*) := <generate-all-base> (selected, position, namespaced-ast, namespaced-filename, project-path)
 
-  generate-all-base:
+  generate-all-base =
+    where((fn1*, s1*) := <generate-all-base(|"1")>)
+  ; where((fn2*, s2*) := <generate-all-base(|"2")>)
+  ; !([fn1*, fn2*], [s1*, s2*])
+
+  generate-all-base(|sv):
     (selected, position, ast, path, project-path) -> result
     where
       filename := <base-filename> path;
       ast'     := <desugar-templates> ast;
       <?Module(Unparameterized(mn), i*, sections)> ast;
-      sv := <stratego-version>;
       ext := <stratego-file-ext> sv
     where
       esv-cc-filename      := <get-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;

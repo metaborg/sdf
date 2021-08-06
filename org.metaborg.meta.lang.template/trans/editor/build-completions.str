@@ -19,7 +19,7 @@ rules
         filename := <get-src-gen(|project-path, "completion/colorer" ,"-cc-esv.esv")> mn;
         result   := <module-to-cmp-colorer; pp-esv-to-string <+ !""; debug(!"ESV files could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> ast'
 
-  generate-new-completions-stratego = generate-new-completions-stratego(|<stratego-version;stratego-file-ext>)
+  generate-new-completions-stratego = generate-new-completions-stratego(|"str")
 
   generate-new-completions-stratego(|ext):
     (selected, position, ast, path, project-path) -> (filename, result)

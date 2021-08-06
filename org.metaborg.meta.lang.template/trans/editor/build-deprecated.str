@@ -11,7 +11,7 @@ imports
 
 rules
 
-   generate-ast-checker-concrete = generate-ast-checker-concrete(|<stratego-version;stratego-file-ext>)
+   generate-ast-checker-concrete = generate-ast-checker-concrete(|"str")
 
    generate-ast-checker-concrete(|ext):
     (selected, position, ast, path, project-path) -> (filename, result)

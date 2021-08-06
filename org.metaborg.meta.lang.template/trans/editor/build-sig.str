@@ -7,10 +7,11 @@ imports
   analysis/desugar
   editor/build-utils
   generation/signatures/-
+  generation/gen-utils/to-str
 
 rules
 
-  generate-sig-abstract = generate-sig-abstract(|<stratego-version>)
+  generate-sig-abstract = generate-sig-abstract(|"1")
 
   generate-sig-abstract(|sv):
     (selected, position, ast, path, project-path) -> (filename, result)
@@ -21,7 +22,7 @@ rules
       result   := <module-to-sig(|sv)> selected'
       ; filename := <get-src-gen(|project-path, "signatures", ".sig.aterm")> mn
 
-  generate-sig-concrete = generate-sig-concrete(|<stratego-version>)
+  generate-sig-concrete = generate-sig-concrete(|"1")
 
   generate-sig-concrete(|sv):
     (selected, position, ast, path, project-path) -> (filename, result)

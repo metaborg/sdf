@@ -35,7 +35,7 @@ imports
   
 rules
 
-  module-to-chk = module-to-chk(|<stratego-version>)
+  module-to-chk = module-to-chk(|"1")
 
   module-to-chk(|stratego-version):
     Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g, s'*])//Module(m', [i0, s'*])

@@ -35,7 +35,7 @@ imports
 
 rules
 
-  module-to-sig = module-to-sig(|<stratego-version>)
+  module-to-sig = module-to-sig(|"1")
 
   module-to-sig(|stratego-version):
     Module(Unparameterized(m), i*, s*) -> Module(m',  [is*, s'])
@@ -186,3 +186,4 @@ rules
             , FunType([ConstType(SortNoArgs("COMPLETION-INSERTION"))], ConstType(SortNoArgs($[[sort]])))
             )
 
+  get-sdf3-type = get-type
