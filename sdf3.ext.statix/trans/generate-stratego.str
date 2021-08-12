@@ -46,11 +46,12 @@ imports
 rules
 
   // geninj-generate-stratego :: SDF3.Module -> Stratego.Module
-  geninj-generate-stratego = strip-annos; geninj-module-to-injections
+  geninj-generate-stratego = geninj-generate-stratego(|"1")
+  geninj-generate-stratego(|stratego-version) = strip-annos; geninj-module-to-injections(|stratego-version)
 
   // Generate Stratego strategies and rules for explicating and implicating injections
   // geninj-module-to-injections :: SDF3.Module -> Stratego.Module
-  geninj-module-to-injections:
+  geninj-module-to-injections(|stratego-version):
     Module(modname, imports, sections)		// SDF3
     -> <remove-gradual-types; remove-empty-sections>
     Module(modname', [						// Stratego
@@ -72,10 +73,11 @@ rules
      ; lang               := <language-spec-name>
      // Imports
      ; imports0           := Imports([
-         Import("libstratego-lib"),
+         Import(<libstratego-name> stratego-version),
          Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
          Import(<to-str-module-name(|"-pp","pp")> Module(modname)),
-         Import("libspoofax/term/origin")
+         Import("libspoofax/term/origin"),
+         Import("libspoofax/term/amb")
        ])
      ; imports1*          := <map(to-str-import(|"-injections", "injections"))> imports
      // Collect CF and LEX sorts
