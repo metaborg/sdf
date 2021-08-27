@@ -22,6 +22,7 @@ rules
   declareSort(s, name, kind) = Tsort :-
     Tsort == SORT(Sort{name}),
     s -> Sort{name} with typeOfDecl Tsort and kindOfSort kind,
+    Sort{name} in s |-> [(_, (_))] | error $[Sort [name] is already defined],
     @name.type := Tsort.
 
   typeOfSort : scope * string -> TYPE
