@@ -34,12 +34,23 @@ rules
     typeOfSymbolDef(s, symbolDef) == Tsort,
     declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
 
+  kindOfSortCons: scope * SortCons -> SORT_KIND
+  kindOfSortCons(s, SortCons(symbolDef, Constructor(_))) = K :-
+    kindOfSymbolDef(s, symbolDef) == K.
+
   typeOfSymbolDef: scope * SymbolDef -> TYPE
   typeOfSymbolDef(s, SortDef(name))            = Tsort :- typeOfSort(s, name)           == Tsort.
   typeOfSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- typeOfSymbolDef(s, symbolDef) == T.
   typeOfSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- typeOfSymbolDef(s, symbolDef) == T.
   typeOfSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- typeOfSymbolDef(s, symbolDef) == T.
   typeOfSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)       == T.
+
+  kindOfSymbolDef: scope * SymbolDef -> SORT_KIND
+  kindOfSymbolDef(s, SortDef(name))   = K :- kindOfSort(s, name) == K.
+  kindOfSymbolDef(s, SymbolDefCf(_))  = CONTEXTFREE().
+  kindOfSymbolDef(s, SymbolDefLex(_)) = LEXICAL().
+  kindOfSymbolDef(s, SymbolDefVar(_)) = VAR().
+  kindOfSymbolDef(s, SymbolDef_Symbol(symbol)) = K :- kindOfSymbol(s, symbol) == K.
 
   typeOfSortConsRef: scope * SortConsRef -> TYPE
   typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}

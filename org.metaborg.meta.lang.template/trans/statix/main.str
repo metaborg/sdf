@@ -15,7 +15,7 @@ imports
 
 rules // Editor
 
-  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/main", "projectOK", "fileOK")
+  statix-editor-analyze = stx-editor-analyze(pre-analyze, post-analyze|"statix/main", "projectOK", "fileOK")
 
   statix-editor-resolve = stx-editor-resolve
 
@@ -67,18 +67,18 @@ rules // Debugging
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"statix-pre-transformed.aterm")> path;
-      result   := <statix-pre> selected
+      result   := <pre-analyze> selected
 
   statix-debug-show-pre-post-transformed:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"statix-pre-post-transformed.aterm")> path;
-      result   := <statix-pre; statix-post> selected
+      result   := <pre-analyze; post-analyze> selected
 
 rules // Statix pre and post-transformation
 
-  statix-pre  = lift-all; explicate-all-injections; disambiguate-all-constructors
-  statix-post = ambiguate-all-constructors; unexplicate-all-injections
+  pre-analyze  = lift-all; explicate-all-injections; disambiguate-all-constructors
+  post-analyze = ambiguate-all-constructors; unexplicate-all-injections
 
   explicate-all-injections   = topdown(try(  explicate-injection))
   unexplicate-all-injections = topdown(try(unexplicate-injection))

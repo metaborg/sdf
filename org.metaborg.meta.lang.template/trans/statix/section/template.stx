@@ -43,22 +43,27 @@ signature // Section
 
 rules
 
-  sectionOK(s, TemplateSection(templateProductions)) :- typeOfTemplateProductions(s, templateProductions) == _.
+  sectionOK(s, TemplateSection(templateProductions)) :-
+    typeOfTemplateProductions(s, CONTEXTFREE(), templateProductions) == _.
 
-  typeOfTemplateProduction: scope * TemplateProduction -> TYPE
-  typeOfTemplateProduction(s, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfTemplateProduction: scope * SORT_KIND * TemplateProduction -> TYPE
+  typeOfTemplateProduction(s, Kexpected, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort}
+    kindOfSymbolDef(s, symbolDef) == Kactual,
+    try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@symbolDef,
     typeOfSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
     injectionProductionOK(Tprod, attrs, symbolDef),
     @template.type := Tprod.
-  typeOfTemplateProduction(s, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfTemplateProduction(s, Kexpected, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {Kactual sProd Tsymbols Tsort}
+    kindOfSortCons(s, sortCons) == Kactual,
+    try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@sortCons,
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     @template.type := Tprod.
-  typeOfTemplateProductions maps typeOfTemplateProduction(*, list(*)) = list(*)
+  typeOfTemplateProductions maps typeOfTemplateProduction(*, *, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
   typeOfTemplate(s, Template(lines))            = flattenTypes(typeOfTemplateLines(s, lines)).     /* Flatten nested list */
