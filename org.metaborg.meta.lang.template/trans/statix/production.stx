@@ -2,30 +2,63 @@ module statix/production
 
 imports
 
+  statix/util
+  statix/name
   statix/type
   statix/attribute
   statix/sort_cons
 
 rules
 
-  injectionProductionOK: TYPE * Attributes * SymbolDef
-  // Disabled for now: produces spurious errors in some cases.
-  //injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
-  //  try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
-  injectionProductionOK(_, _, _).
+  symbolDefProductionOK: SORT_KIND * TYPE * Attributes * SymbolDef
+  
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[_, _, _|_], SORT(_)), attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
+    } | error $[Missing constructor; add a constructor to this production, turn it into an injection in the form of A = B, or turn it into a bracket rule in the form of A = "(" A ")" {bracket}]@symbolDef,
+    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
+    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
+    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[_, _|_], SORT(_)), attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
+    } | error $[Missing constructor; either add a constructor to this production, or turn it into an injection in the form of A = B]@symbolDef,
+    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
+    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
+    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, _), _, symbolDef) :-
+    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
+    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
+    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+    
+  symbolDefProductionOK(_, _, _, _).
 
-  // TODO: error: Missing bracket attribute or constructor name
-  // - LHS must be a single sort (injection)
-  // - RHS must be in the form of '(' Sort ')'
-  // - attributes must NOT contain Bracket() nor Reject()
+rules
 
-  // TODO: warning: Illegal use of the {bracket} attribute
-  // - HS must be a single sort (injection)
-  // - RHS must NOT be in the form of '(' Sort ')'
-  // - attributes must contain Bracket()
-  // - attributes must NOT contain Reject()
+  sortConsProductionOK: SORT_KIND * TYPE * Attributes * SortCons
 
-  // TODO: warning: Illegal use of the {bracket} attribute
-  // - LHS must be a sort + constructor (not an injection)
-  // - attributes must contain Bracket()
-  // - attributes must NOT contain Reject()
+  sortConsProductionOK(CONTEXTFREE(), PROD(ts, _), _, sortCons) :-
+    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@sortCons,
+    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@sortCons,
+    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@sortCons.
+  sortConsProductionOK(LEXICAL(), PROD(_, _), _, sortCons) :-
+    try { false } | warning $[Constructor in lexical syntax; remove this constructor from the production]@sortCons.
+  
+  sortConsProductionOK(_, _, _, _).
+
+rules
+
+  containsOpt: list(TYPE) -> BOOL
+  containsOpt([OPT(_)|ts]) = TRUE().
+  containsOpt([_|ts])      = containsOpt(ts).
+  containsOpt([])          = FALSE().
+  
+  containsAlt: list(TYPE) -> BOOL
+  containsAlt([ALT(_, _)|ts]) = TRUE().
+  containsAlt([_|ts])         = containsAlt(ts).
+  containsAlt([])             = FALSE().
+  
+  containsSeq: list(TYPE) -> BOOL
+  containsSeq([SEQ(_, _)|ts]) = TRUE().
+  containsSeq([_|ts])         = containsSeq(ts).
+  containsSeq([])             = FALSE().

@@ -28,6 +28,7 @@ signature constructors // Types
   INJ      : list(TYPE) * TYPE -> TYPE
   ITER     : TYPE              -> TYPE
   TERMINAL : TYPE
+  LAYOUT   : TYPE
 
 rules // Types
 
@@ -40,7 +41,7 @@ rules // Types
 
   fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
 
-  remove-unnecessary-types = remove-all(?TERMINAL())
+  remove-unnecessary-types = remove-all(?TERMINAL() + ?LAYOUT())
 
   to-compatible-type:
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)

@@ -54,14 +54,15 @@ rules
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
-    injectionProductionOK(Tprod, attrs, symbolDef),
+    symbolDefProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, symbolDef),
     @template.type := Tprod.
-  typeOfTemplateProduction(s, Kexpected, TemplateProductionWithCons(sortCons, template, _)) = Tprod :- {Kactual sProd Tsymbols Tsort}
+  typeOfTemplateProduction(s, Kexpected, TemplateProductionWithCons(sortCons, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort}
     kindOfSortCons(s, sortCons) == Kactual,
     try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@sortCons,
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
+    sortConsProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, sortCons),
     @template.type := Tprod.
   typeOfTemplateProductions maps typeOfTemplateProduction(*, *, list(*)) = list(*)
 
@@ -90,6 +91,9 @@ rules
   maybeTypeOfTemplatePart: scope * TemplatePart -> list(TYPE)
   maybeTypeOfTemplatePart(s, Angled(placeholder))  = [typeOfPlaceholder(s, placeholder)].
   maybeTypeOfTemplatePart(s, Squared(placeholder)) = [typeOfPlaceholder(s, placeholder)].
+  maybeTypeOfTemplatePart(s, String(_))            = [TERMINAL()].
+  maybeTypeOfTemplatePart(s, Escape(_))            = [TERMINAL()].
+  maybeTypeOfTemplatePart(s, Layout(_))            = [LAYOUT()].
   maybeTypeOfTemplatePart(s, _)                    = [].
 
   typeOfPlaceholder: scope * Placeholder -> TYPE
