@@ -8,6 +8,7 @@ imports
   signatures/-
   signatures/sorts/Sorts-sig
   signatures/priority/Priority-sig
+  signatures/kernel/-
 
 imports
 
@@ -178,3 +179,14 @@ rules
   ambiguate-symboldef-constructor: SymbolDefCf (symbolDef) -> Cf (symbolDef)
   ambiguate-symboldef-constructor: SymbolDefLex(symbolDef) -> Lex(symbolDef)
   ambiguate-symboldef-constructor: SymbolDefVar(symbolDef) -> Var(symbolDef)
+
+signature constructors // Layout constraints line
+
+  ConstraintExpLine : ConstraintToken -> ConstraintExp
+  
+rules
+
+  disambiguate-constructor = Attrs(topdown(try(disambiguate-constraint-line-constructor)))
+  disambiguate-constraint-line-constructor: Line(token) -> ConstraintExpLine(token)
+  ambiguate-constructor = Attrs(topdown(try(ambiguate-constraint-line-constructor)))
+  ambiguate-constraint-line-constructor: ConstraintExpLine(token) -> Line(token)

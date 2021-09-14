@@ -1,0 +1,14 @@
+module statix/constant
+
+signature
+
+  sorts IdCon constructors
+    Default : string -> IdCon
+    
+  sorts StrCon constructors
+    // TODO: rename constructor in pre/post analyze.
+    // Default : string -> StrCon
+  
+  sorts NatCon constructors
+    Digits : int -> NatCon // TODO: it is a string in the AST, can this be int?
+  
