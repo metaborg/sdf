@@ -31,18 +31,29 @@ rules
 
   appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
   appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
-  appendTypes([    ], types) = types.
+  appendTypes([], types)     = types.
 
   flattenTypes : list(list(TYPE)) -> list(TYPE)
   flattenTypes([ts|tts]) = appendTypes(ts, flattenTypes(tts)).
-  flattenTypes([      ]) = [].
+  flattenTypes([])       = [].
 
   removeLayout : list(TYPE) -> list(TYPE)
   removeLayout([LAYOUT()|ts]) = removeLayout(ts).
   removeLayout([t|ts])        = [t|removeLayout(ts)].
-  removeLayout([ ])           = [].
+  removeLayout([])            = [].
 
   removeLayoutFromProdResult : TYPE -> TYPE
   removeLayoutFromProdResult(PROD(ts, t)) = PROD(removeLayout(ts), t).
   removeLayoutFromProdResult(INJ(ts, t))  = INJ(removeLayout(ts), t).
   removeLayoutFromProdResult(t)           = t.
+
+  countProdResult : TYPE -> int
+  countProdResult(PROD(ts, _)) = countTypeList(ts).
+  countProdResult(INJ(ts, _))  = countTypeList(ts).
+  countProdResult(_)           = 0.
+
+  countTypeList : list(TYPE) -> int
+  countTypeList([_|ts]) = c :- {cts}
+    cts == countTypeList(ts),
+    c #= 1 + cts.
+  countTypeList([]) = 0.

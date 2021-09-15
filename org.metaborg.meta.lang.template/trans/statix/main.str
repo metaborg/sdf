@@ -190,3 +190,8 @@ rules
   disambiguate-constraint-line-constructor: Line(token) -> ConstraintExpLine(token)
   ambiguate-constructor = Attrs(topdown(try(ambiguate-constraint-line-constructor)))
   ambiguate-constraint-line-constructor: ConstraintExpLine(token) -> Line(token)
+
+rules // PosRef contents to int
+
+  disambiguate-constructor = PosRef(string-to-int)
+  ambiguate-constructor = PosRef(int-to-string)

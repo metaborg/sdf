@@ -18,7 +18,7 @@ signature
     LayoutConstraint : Constraint -> Attribute
     
   sorts ConstraintTreeRef constructors
-    PosRef     : string -> ConstraintTreeRef
+    PosRef     : int -> ConstraintTreeRef
     LiteralRef : string -> ConstraintTreeRef
     LabelRef   : string -> ConstraintTreeRef
     
@@ -78,8 +78,10 @@ rules
 rules
 
   constraintTreeRefOk : scope * int * ConstraintTreeRef
-  constraintTreeRefOk(s, numNonTerminals, PosRef(index)).
-    // TODO: check index
+  constraintTreeRefOk(s, numNonTerminals, PosRef(index)). //:-
+    // disabled: cannot check indices as parser does some tokenization on template syntax that is not apparent from the
+    // surface syntax.
+    //try { index #< numNonTerminals } | error $[Index [index] (0-based) exeeds the number of non-layout elements [numNonTerminals]. Change the index to be < [numNonTerminals]].
   constraintTreeRefOk(s, numNonTerminals, LiteralRef(literal)).
     // TODO: check literal
   constraintTreeRefOk(s, numNonTerminals, LabelRef(label)) :-
@@ -140,7 +142,7 @@ rules
   constraintOk(s, numNonTerminals, Or(c1, c2)) :- 
     constraintOk(s, numNonTerminals, c1),
     constraintOk(s, numNonTerminals, c2).
-  
+
   constraintOk(s, numNonTerminals, Offside(ref, refs)) :- 
     constraintTreeRefOk(s, numNonTerminals, ref),
     constraintTreeRefsOk(s, numNonTerminals, refs).
@@ -181,7 +183,7 @@ rules
   constraintOk(s, numNonTerminals, PPNewLineBy(Digits(index), ref)) :- 
     constraintTreeRefOk(s, numNonTerminals, ref).
     // TODO: check index
-          
+
 rules
 
   hasAttribute: Attribute * Attributes -> BOOL
@@ -195,3 +197,4 @@ rules
   hasAttributeInList(attr, [attr|_]) = TRUE().
   hasAttributeInList(attr, [_   |s]) = hasAttributeInList(attr, s).
   hasAttributeInList(attr, [      ]) = FALSE().
+
