@@ -9,6 +9,7 @@ imports
   signatures/sorts/Sorts-sig
   signatures/priority/Priority-sig
   signatures/kernel/-
+  statix/check
 
 imports
 
