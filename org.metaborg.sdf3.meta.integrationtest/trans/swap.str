@@ -24,3 +24,7 @@ rules
   swap-exp-concrete-syntax-simple:
     |[ ~e1 + ~e2 ; ]| ->
     |[ ~e2 + ~e1 ; ]|
+
+  swap-exp-concrete-syntax-meta-var-amb:
+    |[ e_1 + e_2 ; ]| ->
+    |[ e_2 + e_1 ; ]|

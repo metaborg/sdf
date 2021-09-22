@@ -5,7 +5,7 @@ lexical sorts
 
 lexical syntax
   LAYOUT = [\t\ \n\r]
-  VAR = [a-z]+
+  VAR = [a-z0-9\_]+
 
 context-free restrictions
   LAYOUT? -/- [\ \t\n\r]

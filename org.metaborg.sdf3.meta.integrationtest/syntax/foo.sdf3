@@ -17,3 +17,7 @@ context-free syntax
 
   Exp.FromTerm = [~[StrategoLang-Term]]
   Exp.FromTerm = [~exp:[StrategoLang-Term]]
+
+variables
+
+  Exp = "e_" [0-9]*
