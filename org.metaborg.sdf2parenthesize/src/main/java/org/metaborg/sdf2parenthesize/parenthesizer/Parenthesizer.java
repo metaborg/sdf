@@ -50,9 +50,7 @@ public class Parenthesizer {
         moduleName = "pp/" + moduleName + "-parenthesize";
         final String rule_name = name + "Parenthesize";
         NormGrammar grammar = table.normalizedGrammar();
-
-        // FIXME import all subfolders
-
+        
         List<IStrategoTerm> importsList = Lists.newArrayList();
         if(stratego2) {
             importsList.add(importModule("strategolib"));
@@ -60,20 +58,12 @@ public class Parenthesizer {
             importsList.add(importModule("libstratego-lib"));
         }
 
-        Set<String> paths = Sets.newHashSet();
-        for(File f : grammar.getFilesRead()) {
-            String path = f.getParent();
-            if(path.split("/normalized/").length == 2) {
-                String subfolder = path.split("/normalized/")[1];
-                if(paths.contains(subfolder)) {
-                    continue;
-                }
-                paths.add(subfolder);
-                importsList.add(importModuleWildCard("signatures/" + subfolder));
-            }
+        for(String inputModuleName : grammar.getModulesRead()) {
+            inputModuleName = inputModuleName
+                .replaceFirst("^normalized/", "")
+                .replaceFirst("-norm$", "");
+            importsList.add(importModule("signatures/" + inputModuleName + "-sig"));
         }
-
-        importsList.add(importModuleWildCard("signatures"));
 
         // Imports
         IStrategoTerm imports = tf.makeAppl(tf.makeConstructor("Imports", 1), tf.makeList(importsList));

@@ -15,8 +15,8 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     private static final long serialVersionUID = -13739894962185282L;
 
-    // all files used in this grammar
-    private final Set<File> filesRead;
+    // all module names used in this grammar
+    private final Set<String> modulesRead;
 
     // factory to create all symbols in the grammar
     private final GrammarFactory gf;
@@ -79,7 +79,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<ISymbol, ISymbol> rightDerivable;
 
     public NormGrammar() {
-        this.filesRead = Sets.newHashSet();
+        this.modulesRead = Sets.newHashSet();
         this.gf = new GrammarFactory();
         this.uniqueProductionMapping = Maps.newLinkedHashMap();
         this.sortConsProductionMapping = Maps.newHashMap();
@@ -159,8 +159,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         return priorities;
     }
 
-    public Set<File> getFilesRead() {
-        return filesRead;
+    public Set<String> getModulesRead() {
+        return modulesRead;
     }
 
     public Set<ISymbol> getSymbols() {
@@ -303,7 +303,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.symbolProductionsMapping.clear();
         this.transitivePriorities.clear();
         this.transitivePriorityArgs.clear();
-        this.filesRead.clear();
     }
 
     public SetMultimap<ISymbol, ISymbol> getLeftDerivable() {

@@ -67,6 +67,7 @@ public class NormGrammarReader {
             if(app.getName().equals("Module")) {
                 String modName = moduleName(app);
                 moduleAsts.put(modName, module);
+                grammar.getModulesRead().add(modName);
             }
         }
     }
@@ -122,6 +123,7 @@ public class NormGrammarReader {
             if(app.getName().equals("Module")) {
                 // Module attributes
                 String modName = moduleName(app);
+                grammar.getModulesRead().add(modName);
 
                 // Module has already been processed
                 if(processedModules.contains(modName)) {
@@ -944,8 +946,6 @@ public class NormGrammarReader {
             throw new Exception(
                 "Cannot open module file '" + file.getPath() + "'. Try cleaning the project and rebuilding.");
         }
-
-        grammar.getFilesRead().add(file);
 
         return term;
     }
