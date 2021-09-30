@@ -8,7 +8,7 @@ imports
   statix/attribute
   statix/sort_cons
 
-rules
+rules // SymbolDef (no constructor) production checks
 
   symbolDefProductionOK: SORT_KIND * TYPE * Attributes * SymbolDef
   
@@ -16,49 +16,101 @@ rules
     try { 
       bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
     } | error $[Missing constructor; add a constructor to this production, turn it into an injection in the form of A = B, or turn it into a bracket rule in the form of A = "(" A ")" {bracket}]@symbolDef,
-    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
-    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
-    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+    
   symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[_, _|_], SORT(_)), attrs, symbolDef) :-
     try { 
       bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
     } | error $[Missing constructor; either add a constructor to this production, or turn it into an injection in the form of A = B]@symbolDef,
-    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
-    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
-    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
   symbolDefProductionOK(CONTEXTFREE(), INJ(ts, _), _, symbolDef) :-
-    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
-    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
-    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
-    
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+
+  symbolDefProductionOK(LEXICAL(), _, attrs, symbolDef) :-
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@symbolDef.
+
   symbolDefProductionOK(_, _, _, _).
 
-rules
+rules // SortCons (constructor) production checks
 
   sortConsProductionOK: SORT_KIND * TYPE * Attributes * SortCons
 
-  sortConsProductionOK(CONTEXTFREE(), PROD(ts, _), _, sortCons) :-
-    try { containsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@sortCons,
-    try { containsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@sortCons,
-    try { containsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@sortCons.
-  sortConsProductionOK(LEXICAL(), PROD(_, _), _, sortCons) :-
-    try { false } | warning $[Constructor in lexical syntax; remove this constructor from the production]@sortCons.
+  sortConsProductionOK(CONTEXTFREE(), PROD(ts, _), attrs, sortCons) :-
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket annotation on production with a constructor; either remove the constructor or the bracket annotation from the production]@sortCons,
+    sortConsCheckForLegacyTypesInContextFree(ts, sortCons).
+  sortConsProductionOK(LEXICAL(), PROD(_, _), attrs, sortCons) :-
+    try { false } | warning $[Constructor in lexical syntax; remove this constructor from the production]@sortCons,
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@sortCons.
   
   sortConsProductionOK(_, _, _, _).
 
-rules
+rules // Check for legacy symbols in context-free syntax 
 
-  containsOpt: list(TYPE) -> BOOL
-  containsOpt([OPT(_)|ts]) = TRUE().
-  containsOpt([_|ts])      = containsOpt(ts).
-  containsOpt([])          = FALSE().
-  
-  containsAlt: list(TYPE) -> BOOL
-  containsAlt([ALT(_, _)|ts]) = TRUE().
-  containsAlt([_|ts])         = containsAlt(ts).
-  containsAlt([])             = FALSE().
-  
-  containsSeq: list(TYPE) -> BOOL
-  containsSeq([SEQ(_, _)|ts]) = TRUE().
-  containsSeq([_|ts])         = containsSeq(ts).
-  containsSeq([])             = FALSE().
+  symbolDefCheckForLegacyTypesInContextFree: list(TYPE) * SymbolDef
+  symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef) :- 
+    try { listContainsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
+    try { listContainsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
+    try { listContainsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+
+  sortConsCheckForLegacyTypesInContextFree: list(TYPE) * SortCons
+  sortConsCheckForLegacyTypesInContextFree(ts, sortCons) :- 
+    try { listContainsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@sortCons,
+    try { listContainsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@sortCons,
+    try { listContainsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@sortCons.
+    
+rules // Opt symbol checking
+
+  typeIsOrContainsOpt: TYPE -> BOOL
+  typeIsOrContainsOpt(OPT(_))      = TRUE().
+  typeIsOrContainsOpt(SEQ(t, ts))  = bOr(isOpt(t), listContainsOpt(ts)).
+  typeIsOrContainsOpt(ITER(t))     = typeIsOrContainsOpt(t).
+  typeIsOrContainsOpt(ALT(t1, t2)) = bOr(isOpt(t1), isOpt(t2)).
+  typeIsOrContainsOpt(PROD(ts, t)) = bOr(listContainsOpt(ts), isOpt(t)).
+  typeIsOrContainsOpt(INJ(ts, t))  = bOr(listContainsOpt(ts), isOpt(t)).
+  typeIsOrContainsOpt(_)           = FALSE().
+
+  isOpt: TYPE -> BOOL
+  isOpt(OPT(_)) = TRUE().
+  isOpt(_)      = FALSE().
+
+  listContainsOpt: list(TYPE) -> BOOL
+  listContainsOpt([t|ts]) = bOr(typeIsOrContainsOpt(t), listContainsOpt(ts)).
+  listContainsOpt([])     = FALSE().
+
+rules // Alt symbol checking
+
+  typeIsOrContainsAlt: TYPE -> BOOL
+  typeIsOrContainsAlt(ALT(_, _))   = TRUE().
+  typeIsOrContainsAlt(SEQ(t, ts))  = bOr(isAlt(t), listContainsAlt(ts)).
+  typeIsOrContainsAlt(ITER(t))     = typeIsOrContainsAlt(t).
+  typeIsOrContainsAlt(OPT(t))      = isAlt(t).
+  typeIsOrContainsAlt(PROD(ts, t)) = bOr(listContainsAlt(ts), isAlt(t)).
+  typeIsOrContainsAlt(INJ(ts, t))  = bOr(listContainsAlt(ts), isAlt(t)).
+  typeIsOrContainsAlt(_)           = FALSE().
+
+  isAlt: TYPE -> BOOL
+  isAlt(ALT(_, _)) = TRUE().
+  isAlt(_)         = FALSE().
+
+  listContainsAlt: list(TYPE) -> BOOL
+  listContainsAlt([t|ts]) = bOr(typeIsOrContainsAlt(t), listContainsAlt(ts)).
+  listContainsAlt([])     = FALSE().
+
+rules // Seq symbol checking
+
+  typeIsOrContainsSeq: TYPE -> BOOL
+  typeIsOrContainsSeq(SEQ(_, _))   = TRUE().
+  typeIsOrContainsSeq(OPT(t))      = isSeq(t).
+  typeIsOrContainsSeq(ITER(t))     = typeIsOrContainsSeq(t).
+  typeIsOrContainsSeq(ALT(t1, t2)) = bOr(isSeq(t1), isSeq(t2)).
+  typeIsOrContainsSeq(PROD(ts, t)) = bOr(listContainsSeq(ts), isSeq(t)).
+  typeIsOrContainsSeq(INJ(ts, t))  = bOr(listContainsSeq(ts), isSeq(t)).
+  typeIsOrContainsSeq(_)           = FALSE().
+
+  isSeq: TYPE -> BOOL
+  isSeq(SEQ(_, _)) = TRUE().
+  isSeq(_)         = FALSE().
+
+  listContainsSeq: list(TYPE) -> BOOL
+  listContainsSeq([t|ts]) = bOr(typeIsOrContainsSeq(t), listContainsSeq(ts)).
+  listContainsSeq([])     = FALSE().

@@ -65,123 +65,123 @@ signature
 
 rules
 
-  attributesOk : scope * int * Attributes
-  attributesOk(s, numNonTerminals, attrs) :-
-    singleAttributesOk(s, numNonTerminals, attributes(attrs)).
+  attributesOk : scope * Attributes
+  attributesOk(s, attrs) :-
+    singleAttributesOk(s, attributes(attrs)).
 
-  attributeOk : scope * int * Attribute
-  attributeOk(s, numNonTerminals, LayoutConstraint(constraint)) :-
-    constraintOk(s, numNonTerminals, constraint).
-  attributeOk(_, _, _).
-  singleAttributesOk maps attributeOk(*, *, list(*))
+  attributeOk : scope * Attribute
+  attributeOk(s, LayoutConstraint(constraint)) :-
+    constraintOk(s, constraint).
+  attributeOk(_, _).
+  singleAttributesOk maps attributeOk(*, list(*))
   
 rules
 
-  constraintTreeRefOk : scope * int * ConstraintTreeRef
-  constraintTreeRefOk(s, numNonTerminals, PosRef(index)). //:-
+  constraintTreeRefOk : scope * ConstraintTreeRef
+  constraintTreeRefOk(s, PosRef(index)). //:-
     // disabled: cannot check indices as parser does some tokenization on template syntax that is not apparent from the
     // surface syntax.
     //try { index #< numNonTerminals } | error $[Index [index] (0-based) exeeds the number of non-layout elements [numNonTerminals]. Change the index to be < [numNonTerminals]].
-  constraintTreeRefOk(s, numNonTerminals, LiteralRef(literal)).
+  constraintTreeRefOk(s, LiteralRef(literal)).
     // TODO: check literal
-  constraintTreeRefOk(s, numNonTerminals, LabelRef(label)) :-
+  constraintTreeRefOk(s, LabelRef(label)) :-
     resolveLabel(s, label). 
-  constraintTreeRefsOk maps constraintTreeRefOk(*, *, list(*))
+  constraintTreeRefsOk maps constraintTreeRefOk(*, list(*))
 
-  constraintTokenOk : scope * int * ConstraintToken
-  constraintTokenOk(s, numNonTerminals, First(ref)) :-
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintTokenOk(s, numNonTerminals, Left(ref)) :-
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintTokenOk(s, numNonTerminals, Right(ref)) :-
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintTokenOk(s, numNonTerminals, Last(ref)) :-
-    constraintTreeRefOk(s, numNonTerminals, ref).
+  constraintTokenOk : scope * ConstraintToken
+  constraintTokenOk(s, First(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Left(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Right(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Last(ref)) :-
+    constraintTreeRefOk(s, ref).
     
-  constraintExpOk : scope * int * ConstraintExp
-  constraintExpOk(s, numNonTerminals, Mul(exp1, exp2)) :-
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintExpOk(s, numNonTerminals, Div(exp1, exp2)) :-
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintExpOk(s, numNonTerminals, Add(exp1, exp2)) :-
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintExpOk(s, numNonTerminals, Sub(exp1, exp2)) :-
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintExpOk(s, numNonTerminals, ConstraintExpLine(token)) :-
-    constraintTokenOk(s, numNonTerminals, token).
-  constraintExpOk(s, numNonTerminals, Col(token)) :-
-    constraintTokenOk(s, numNonTerminals, token).
-  constraintExpOk(s, numNonTerminals, Num(Digits(index))).
+  constraintExpOk : scope * ConstraintExp
+  constraintExpOk(s, Mul(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Div(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Add(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Sub(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, ConstraintExpLine(token)) :-
+    constraintTokenOk(s, token).
+  constraintExpOk(s, Col(token)) :-
+    constraintTokenOk(s, token).
+  constraintExpOk(s, Num(Digits(index))).
     // TODO: check index
         
-  constraintOk : scope * int * Constraint
-  constraintOk(s, numNonTerminals, Eq(exp1, exp2)) :- 
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintOk(s, numNonTerminals, Lt(exp1, exp2)) :- 
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintOk(s, numNonTerminals, Le(exp1, exp2)) :- 
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintOk(s, numNonTerminals, Gt(exp1, exp2)) :- 
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintOk(s, numNonTerminals, Ge(exp1, exp2)) :- 
-    constraintExpOk(s, numNonTerminals, exp1),
-    constraintExpOk(s, numNonTerminals, exp2).
-  constraintOk(s, numNonTerminals, Not(c)) :- 
-    constraintOk(s, numNonTerminals, c).
-  constraintOk(s, numNonTerminals, And(c1, c2)) :- 
-    constraintOk(s, numNonTerminals, c1),
-    constraintOk(s, numNonTerminals, c2).
-  constraintOk(s, numNonTerminals, Or(c1, c2)) :- 
-    constraintOk(s, numNonTerminals, c1),
-    constraintOk(s, numNonTerminals, c2).
+  constraintOk : scope * Constraint
+  constraintOk(s, Eq(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Lt(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Le(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Gt(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Ge(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Not(c)) :- 
+    constraintOk(s, c).
+  constraintOk(s, And(c1, c2)) :- 
+    constraintOk(s, c1),
+    constraintOk(s, c2).
+  constraintOk(s, Or(c1, c2)) :- 
+    constraintOk(s, c1),
+    constraintOk(s, c2).
 
-  constraintOk(s, numNonTerminals, Offside(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, Indent(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, Align(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, AlignList(ref)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintOk(s, numNonTerminals, NewLineIndent(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, SingleLine(refs)) :- 
-    constraintTreeRefsOk(s, numNonTerminals, refs).
+  constraintOk(s, Offside(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, Indent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, Align(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, AlignList(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, NewLineIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, SingleLine(refs)) :- 
+    constraintTreeRefsOk(s, refs).
 
-  constraintOk(s, numNonTerminals, PPOffside(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, PPIndent(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, PPAlign(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, PPAlignList(ref)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintOk(s, numNonTerminals, PPNewLineIndent(ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
-  constraintOk(s, numNonTerminals, PPNewLineIndentBy(Digits(index), ref, refs)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref),
-    constraintTreeRefsOk(s, numNonTerminals, refs).
+  constraintOk(s, PPOffside(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPAlign(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPAlignList(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, PPNewLineIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPNewLineIndentBy(Digits(index), ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
     // TODO: check index
-  constraintOk(s, numNonTerminals, PPNewLine(ref)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref).
-  constraintOk(s, numNonTerminals, PPNewLineBy(Digits(index), ref)) :- 
-    constraintTreeRefOk(s, numNonTerminals, ref).
+  constraintOk(s, PPNewLine(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, PPNewLineBy(Digits(index), ref)) :- 
+    constraintTreeRefOk(s, ref).
     // TODO: check index
 
 rules

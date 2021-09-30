@@ -46,14 +46,3 @@ rules
   removeLayoutFromProdResult(PROD(ts, t)) = PROD(removeLayout(ts), t).
   removeLayoutFromProdResult(INJ(ts, t))  = INJ(removeLayout(ts), t).
   removeLayoutFromProdResult(t)           = t.
-
-  countProdResult : TYPE -> int
-  countProdResult(PROD(ts, _)) = countTypeList(ts).
-  countProdResult(INJ(ts, _))  = countTypeList(ts).
-  countProdResult(_)           = 0.
-
-  countTypeList : list(TYPE) -> int
-  countTypeList([_|ts]) = c :- {cts}
-    cts == countTypeList(ts),
-    c #= 1 + cts.
-  countTypeList([]) = 0.

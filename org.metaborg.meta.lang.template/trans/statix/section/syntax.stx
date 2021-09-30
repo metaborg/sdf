@@ -77,9 +77,8 @@ rules
     typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
     @rhs.type := Tprod,
-    TprodNoLayout == removeLayoutFromProdResult(Tprod),
-    symbolDefProductionOK(Kexpected, TprodNoLayout, attrs, symbolDef),
-    attributesOk(sProd, countProdResult(TprodNoLayout), attrs).
+    symbolDefProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, symbolDef),
+    attributesOk(sProd, attrs).
   typeOfSdfProduction(s, Kexpected, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort TprodNoLayout}
     kindOfSortCons(s, sortCons) == Kactual,
     try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@sortCons,
@@ -87,7 +86,6 @@ rules
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
     @rhs.type := Tprod,
-    TprodNoLayout == removeLayoutFromProdResult(Tprod),
-    sortConsProductionOK(Kexpected, TprodNoLayout, attrs, sortCons),
-    attributesOk(sProd, countProdResult(TprodNoLayout), attrs).
+    sortConsProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, sortCons),
+    attributesOk(sProd, attrs).
   typeOfSdfProductions maps typeOfSdfProduction(*, *, list(*)) = list(*)

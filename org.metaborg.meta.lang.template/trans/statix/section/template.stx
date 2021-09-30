@@ -47,7 +47,7 @@ rules
     typeOfTemplateProductions(s, CONTEXTFREE(), templateProductions) == _.
 
   typeOfTemplateProduction: scope * SORT_KIND * TemplateProduction -> TYPE
-  typeOfTemplateProduction(s, Kexpected, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort TprodNoLayout}
+  typeOfTemplateProduction(s, Kexpected, TemplateProduction(symbolDef, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort}
     kindOfSymbolDef(s, symbolDef) == Kactual,
     try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@symbolDef,
     typeOfSymbolDef(s, symbolDef) == Tsort,
@@ -55,19 +55,17 @@ rules
     typeOfTemplate(sProd, template) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
     @template.type := Tprod,
-    TprodNoLayout == removeLayoutFromProdResult(Tprod),
-    symbolDefProductionOK(Kexpected, TprodNoLayout, attrs, symbolDef),
-    attributesOk(sProd, countProdResult(TprodNoLayout), attrs).
-  typeOfTemplateProduction(s, Kexpected, TemplateProductionWithCons(sortCons, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort TprodNoLayout}
+    symbolDefProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, symbolDef),
+    attributesOk(sProd, attrs).
+  typeOfTemplateProduction(s, Kexpected, TemplateProductionWithCons(sortCons, template, attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort}
     kindOfSortCons(s, sortCons) == Kactual,
     try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@sortCons,
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
     typeOfTemplate(sProd, template) == Tsymbols,
     @template.type := Tprod,
-    TprodNoLayout == removeLayoutFromProdResult(Tprod),
-    sortConsProductionOK(Kexpected, TprodNoLayout, attrs, sortCons),
-    attributesOk(sProd, countProdResult(TprodNoLayout), attrs).
+    sortConsProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, sortCons),
+    attributesOk(sProd, attrs).
   typeOfTemplateProductions maps typeOfTemplateProduction(*, *, list(*)) = list(*)
 
   typeOfTemplate: scope * Template -> list(TYPE)
