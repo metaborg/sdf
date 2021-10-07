@@ -88,11 +88,11 @@ rules
     kindsOfSymbols(s, symbols) == _,
     @sy.kind := K.
 
-  kindOfSymbol(s, Cf(symbol)) = CONTEXTFREE() :-
+  kindOfSymbol(s, Cf(symbol)) = KERNEL() :-
     kindOfSymbol(s, symbol) == _. // TODO: check kind?
-  kindOfSymbol(s, Lex(symbol)) = LEXICAL() :-
+  kindOfSymbol(s, Lex(symbol)) = KERNEL() :-
     kindOfSymbol(s, symbol) == _. // TODO: check kind?
-  kindOfSymbol(s, Varsym(symbol)) = VAR() :-
+  kindOfSymbol(s, Varsym(symbol)) = KERNEL() :-
     kindOfSymbol(s, symbol) == _. // TODO: check kind?
   kindOfSymbol(s, Label(label, symbol)) = K :-
     labelOK(s, label),
