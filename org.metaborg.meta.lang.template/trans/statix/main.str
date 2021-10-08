@@ -28,9 +28,14 @@ signature constructors // Types
   SORT     : Occurrence        -> TYPE
   PROD     : list(TYPE) * TYPE -> TYPE
   INJ      : list(TYPE) * TYPE -> TYPE
+  
   ITER     : TYPE              -> TYPE
   TERMINAL : TYPE
   LAYOUT   : TYPE
+  
+  SEQ      : TYPE * list(TYPE) -> TYPE
+  OPT      : TYPE              -> TYPE
+  ALT      : TYPE * TYPE       -> TYPE
 
 rules // Types
 
@@ -43,7 +48,19 @@ rules // Types
 
   fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
 
-  remove-unnecessary-types = remove-all(?TERMINAL() + ?LAYOUT())
+  is-concrete-syntax-type = ?TERMINAL()
+  is-concrete-syntax-type = ?LAYOUT()
+  is-concrete-syntax-type: SEQ(t, _) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: SEQ(_, ts) -> <one(is-concrete-syntax-type)> ts
+  is-concrete-syntax-type: OPT(t) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: ALT(t, _) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: ALT(_, t) -> <is-concrete-syntax-type> t
+  
+  is-legacy-type = ?SEQ(_, _)
+  is-legacy-type = ?OPT(_)
+  is-legacy-type = ?ALT(_, _)
+   
+  remove-unnecessary-types = remove-all(is-concrete-syntax-type <+ is-legacy-type)
 
   to-compatible-type:
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
