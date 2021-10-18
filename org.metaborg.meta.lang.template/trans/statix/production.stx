@@ -11,25 +11,35 @@ imports
 rules // SymbolDef (no constructor) production checks
 
   symbolDefProductionOK: SORT_KIND * TYPE * Attributes * SymbolDef
-  
-  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[_, _, _|_], SORT(_)), attrs, symbolDef) :-
+
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[TERMINAL(), SORT(_), TERMINAL()], SORT(_)), attrs, symbolDef) :-
     try { 
       bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
-    } | error $[Missing constructor; add a constructor to this production, turn it into an injection in the form of A = B, or turn it into a bracket rule in the form of A = "(" A ")" {bracket}]@symbolDef,
+    } | error $[Missing constructor; add a constructor to this production, turn it into an injection in the form of A = B, or turn it into a bracket production in the form of A = "(" B ")" {bracket}]@symbolDef,
     symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
-    
-  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[_, _|_], SORT(_)), attrs, symbolDef) :-
+
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[SORT(_)], SORT(_)), attrs, symbolDef) :- // Correct injection
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[ITER(_)], SORT(_)), attrs, symbolDef) :- // Correct injection
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, SORT(_)), attrs, symbolDef) :-
     try { 
       bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
-    } | error $[Missing constructor; either add a constructor to this production, or turn it into an injection in the form of A = B]@symbolDef,
+    } | error $[Missing constructor; add a constructor to this production]@symbolDef,
+    symbolDefCheckForCorrectBracketUsage(ts, attrs, symbolDef),
     symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
-  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, _), _, symbolDef) :-
+
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, _), attrs, symbolDef) :-
+    symbolDefCheckForCorrectBracketUsage(ts, attrs, symbolDef),
     symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+
 
   symbolDefProductionOK(LEXICAL(), _, attrs, symbolDef) :-
     try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@symbolDef.
 
   symbolDefProductionOK(_, _, _, _).
+
 
 rules // SortCons (constructor) production checks
 
@@ -38,13 +48,25 @@ rules // SortCons (constructor) production checks
   sortConsProductionOK(CONTEXTFREE(), PROD(ts, _), attrs, sortCons) :-
     try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket annotation on production with a constructor; either remove the constructor or the bracket annotation from the production]@sortCons,
     sortConsCheckForLegacyTypesInContextFree(ts, sortCons).
+
+
   sortConsProductionOK(LEXICAL(), PROD(_, _), attrs, sortCons) :-
     try { false } | warning $[Constructor in lexical syntax; remove this constructor from the production]@sortCons,
     try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@sortCons.
-  
+
   sortConsProductionOK(_, _, _, _).
 
-rules // Check for legacy symbols in context-free syntax 
+
+rules // Check for correct bracket usage
+
+  symbolDefCheckForCorrectBracketUsage: list(TYPE) * Attributes * SymbolDef
+  symbolDefCheckForCorrectBracketUsage([TERMINAL(), SORT(_), TERMINAL()], _, _). // Correct bracket usage
+  symbolDefCheckForCorrectBracketUsage(_, attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), bNot(hasAttribute(Bracket(), attrs))) == TRUE()
+    } | error $[Incorrect bracket production; either turn it into a regular production, or a bracket production in the form of A = "(" B ")"]@symbolDef.
+
+rules // Check for legacy symbols in context-free syntax
 
   symbolDefCheckForLegacyTypesInContextFree: list(TYPE) * SymbolDef
   symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef) :- 
@@ -57,7 +79,8 @@ rules // Check for legacy symbols in context-free syntax
     try { listContainsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@sortCons,
     try { listContainsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@sortCons,
     try { listContainsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@sortCons.
-    
+
+
 rules // Opt symbol checking
 
   typeIsOrContainsOpt: TYPE -> BOOL
@@ -77,6 +100,7 @@ rules // Opt symbol checking
   listContainsOpt([t|ts]) = bOr(typeIsOrContainsOpt(t), listContainsOpt(ts)).
   listContainsOpt([])     = FALSE().
 
+
 rules // Alt symbol checking
 
   typeIsOrContainsAlt: TYPE -> BOOL
@@ -95,6 +119,7 @@ rules // Alt symbol checking
   listContainsAlt: list(TYPE) -> BOOL
   listContainsAlt([t|ts]) = bOr(typeIsOrContainsAlt(t), listContainsAlt(ts)).
   listContainsAlt([])     = FALSE().
+
 
 rules // Seq symbol checking
 
