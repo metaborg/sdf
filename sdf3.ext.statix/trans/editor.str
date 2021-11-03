@@ -74,21 +74,25 @@ rules
 
 
   generate-stratego:
-    input@(_, _, ast, _, project-path) -> (filename, result)
+    input@(_, _, ast, _, project-path) -> (filenames, results)
     where <?Module(Unparameterized(mn), _, _)> ast
-        ; filename      := <get-src-gen(|project-path, "injections", "-injections.str")> mn
-        ; (_, output)   := <generate-stratego-abstract> input
-        ; result        := <pp-stratego-string <+ !""; debug(!"Pretty-printing failed; the Stratego file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> output
+        ; filename1     := <get-src-gen(|project-path, "injections", "-injections.str")> mn
+        ; filename2     := <get-src-gen(|project-path, "injections", "-injections.str2")> mn
+        ; (_, outputs)  := <generate-stratego-abstract> input
+        ; results       := <map(pp-stratego-string <+ !""; debug(!"Pretty-printing failed; the Stratego file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail)> outputs
+        ; filenames     := [filename1, filename2]
 
   generate-stratego-abstract:
-    (selected, position, ast, path, project-path) -> (filename, result)
+    (selected, position, ast, path, project-path) -> ([filename1, filename2], [result1, result2])
     where <?Module(Unparameterized(m), _, sections)> ast
          ; m' := <strip-annos; string-tokenize(|['/']); last> m
          ; <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The Stratego file could not be generated.\n"); fail> path
     where <?Module(Unparameterized(mn), _, _)> ast
         ; selected'     := <desugar-templates> selected
-        ; result        := <geninj-generate-stratego> selected'
-        ; filename      := <get-src-gen(|project-path, "injections", "-injections.str.aterm")> mn
+        ; result1       := <geninj-generate-stratego(|"1")> selected'
+        ; filename1     := <get-src-gen(|project-path, "injections", "-injections.str.aterm")> mn
+        ; result2       := <geninj-generate-stratego(|"2")> selected'
+        ; filename2     := <get-src-gen(|project-path, "injections", "-injections.str2.aterm")> mn
 
 
 
