@@ -21,6 +21,7 @@ dependencies {
 
   compileOnly("com.google.code.findbugs:jsr305")
   implementation("com.google.guava:guava")
+  implementation("com.google.guava:failureaccess")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")
