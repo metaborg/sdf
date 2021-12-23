@@ -25,3 +25,9 @@ rules
       case ?"1": !"str"
       case ?"2": !"str2"
     end
+
+  stratego-imports =
+    switch id
+      case ?"1": ![Import("libstratego-lib"), Import("libstratego-gpp")]
+      case ?"2": ![Import("strategolib"), Import("gpp")]
+    end
