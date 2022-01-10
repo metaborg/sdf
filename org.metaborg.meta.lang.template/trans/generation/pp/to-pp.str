@@ -44,12 +44,10 @@ rules
   module-to-pp = module-to-pp(|"1")
 
   module-to-pp(|stratego-version):
-    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, i3, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
     ; i0   := Imports([
-                Import(<libstratego-name> stratego-version),
-                Import("libstratego-gpp"),
                 Import("libstratego-sglr"),
 
                 Import("libspoofax/sdf/pp"),
@@ -60,6 +58,7 @@ rules
               ])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
+    ; i3   := Imports(<stratego-imports> stratego-version)
     ; lang := <language-spec-name>
     ; g1   := Strategies([ SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))
                          , SDefNoArgs($[prettyprint-[lang]], Fail())
