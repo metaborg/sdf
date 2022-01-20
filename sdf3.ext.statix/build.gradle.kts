@@ -1,3 +1,5 @@
+import org.metaborg.core.language.*
+
 plugins {
   id("org.metaborg.gradle.config.java-library")
   id("org.metaborg.devenv.spoofax.gradle.langspec")
@@ -12,6 +14,8 @@ val spoofax2Version: String by ext
 spoofaxLanguageSpecification {
   addSourceDependenciesFromMetaborgYaml.set(false)
   addCompileDependenciesFromMetaborgYaml.set(false)
+  addLanguageContributionsFromMetaborgYaml.set(false)
+  languageContributions.add(LanguageContributionIdentifier(LanguageIdentifier("$group", "org.metaborg.meta.lang.template", LanguageVersion.parse("$version")), "TemplateLang"))
 }
 dependencies {
   compileLanguage(compositeBuild("org.metaborg.meta.lang.esv"))
