@@ -28,11 +28,11 @@ signature constructors // Types
   SORT     : Occurrence        -> TYPE
   PROD     : list(TYPE) * TYPE -> TYPE
   INJ      : list(TYPE) * TYPE -> TYPE
-  
+
   ITER     : TYPE              -> TYPE
   TERMINAL : TYPE
   LAYOUT   : TYPE
-  
+
   SEQ      : TYPE * list(TYPE) -> TYPE
   OPT      : TYPE              -> TYPE
   ALT      : TYPE * TYPE       -> TYPE
@@ -55,11 +55,11 @@ rules // Types
   is-concrete-syntax-type: OPT(t) -> <is-concrete-syntax-type> t
   is-concrete-syntax-type: ALT(t, _) -> <is-concrete-syntax-type> t
   is-concrete-syntax-type: ALT(_, t) -> <is-concrete-syntax-type> t
-  
+
   is-legacy-type = ?SEQ(_, _)
   is-legacy-type = ?OPT(_)
   is-legacy-type = ?ALT(_, _)
-   
+
   remove-unnecessary-types = remove-all(is-concrete-syntax-type <+ is-legacy-type)
 
   to-compatible-type:
@@ -159,14 +159,18 @@ rules
   explicate-injection = TemplateProduction        (explicate-symboldef, id, id)
   explicate-injection = TemplateProductionWithCons(explicate-injection, id, id)
   explicate-injection = KeywordAttributes         (explicate-symboldef, id)
-  unexplicate-injection = SdfProduction             (unexplicate-symboldef, id, id)
+  unexplicate-injection = SdfProduction             (bottomup(try(unexplicate-symboldef)), id, id)
   unexplicate-injection = SdfProductionWithCons     (unexplicate-injection, id, id)
-  unexplicate-injection = TemplateProduction        (unexplicate-symboldef, id, id)
+  unexplicate-injection = TemplateProduction        (bottomup(try(unexplicate-symboldef)), id, id)
   unexplicate-injection = TemplateProductionWithCons(unexplicate-injection, id, id)
-  unexplicate-injection = KeywordAttributes         (unexplicate-symboldef, id)
+  unexplicate-injection = KeywordAttributes         (bottomup(try(unexplicate-symboldef)), id)
 
   explicate-symboldef: symbol -> SymbolDef_Symbol(symbol)
   where <not(?SortDef(_) <+ ?Cf(_) <+ ?Lex(_) <+ ?Var(_))> symbol
+  explicate-symboldef = Cf(explicate-symboldef)
+  explicate-symboldef = Lex(explicate-symboldef)
+  explicate-symboldef = Var(explicate-symboldef)
+  explicate-symboldef = ?SortDef(_)
   unexplicate-symboldef: SymbolDef_Symbol(symbol) -> symbol
 
 signature constructors // SymbolDef and ambiguous constructors
@@ -201,7 +205,7 @@ rules
 signature constructors // Layout constraints line
 
   ConstraintExpLine : ConstraintToken -> ConstraintExp
-  
+
 rules
 
   disambiguate-constructor = Attrs(topdown(try(disambiguate-constraint-line-constructor)))
