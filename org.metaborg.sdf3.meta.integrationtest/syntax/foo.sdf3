@@ -15,12 +15,16 @@ context-free syntax
   StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
   StrategoLang-PreTerm.ToTerm = <stmt |[ <Stmt> ]|>
 
+  StrategoLang-PreTerm.ToTerm = <|[ <Start> ]|>
+  StrategoLang-PreTerm.ToTerm = <program |[ <Start> ]|>
+
   Exp.FromTerm = [~[StrategoLang-Term]]
   Exp.FromTerm = [~exp:[StrategoLang-Term]]
 
 // TODO: support variables section in SDF3 or document this as the way to write Stratego mix syntax
 
   Exp.meta-var = ExpVar
+  Stmt+.meta-list-var = StmtListVar
 
 lexical sorts
 
@@ -29,3 +33,8 @@ lexical sorts
 lexical syntax
 
   ExpVar = 'exp' [0-9]*
+  StmtListVar = 'stmt' [0-9]* '*'
+
+lexical restrictions
+
+  ExpVar -/- [0-9]

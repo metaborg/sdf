@@ -27,5 +27,10 @@ rules
     |[ ~e2 + ~e1 ; ]|
 
   swap-exp-concrete-syntax-var:
-    |[ exp1 + exp2 ; ]| ->
-    |[ exp2 + exp1 ; ]|
+    |[ exp + exp2 ; ]| ->
+    |[ exp2 + exp ; ]|
+
+//  reverse-stmts-concrete:
+//    |[ stmt1* ]| ->
+//    |[ stmt2* ]|
+//  where stmt2* := <reverse> stmt1*

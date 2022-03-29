@@ -15,7 +15,7 @@ context-free sorts
 
 context-free syntax
 
-  Start.Program = Stmt
+  Start.Program = Stmt+
   Stmt.Stmt = [[Exp];]
   Exp.Add = [[Exp] + [Exp]]
   Exp.Var = VAR
