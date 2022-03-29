@@ -10,6 +10,7 @@ rules
   swap-editor-abstract-syntax        = swap-editor(swap-exp-abstract-syntax|)
   swap-editor-concrete-syntax        = swap-editor(swap-exp-concrete-syntax|)
   swap-editor-concrete-syntax-simple = swap-editor(swap-exp-concrete-syntax-simple|)
+  swap-editor-concrete-syntax-var    = swap-editor(swap-exp-concrete-syntax-var|)
 
   swap-editor(swap-exp|):
     (_, _, ast, path, _) -> (path, <topdown(try(swap-exp))> ast) 
@@ -24,3 +25,7 @@ rules
   swap-exp-concrete-syntax-simple:
     |[ ~e1 + ~e2 ; ]| ->
     |[ ~e2 + ~e1 ; ]|
+
+  swap-exp-concrete-syntax-var:
+    |[ exp1 + exp2 ; ]| ->
+    |[ exp2 + exp1 ; ]|

@@ -17,3 +17,15 @@ context-free syntax
 
   Exp.FromTerm = [~[StrategoLang-Term]]
   Exp.FromTerm = [~exp:[StrategoLang-Term]]
+
+// TODO: support variables section in SDF3 or document this as the way to write Stratego mix syntax
+
+  Exp.meta-var = ExpVar
+
+lexical sorts
+
+  ExpVar
+
+lexical syntax
+
+  ExpVar = 'exp' [0-9]*
