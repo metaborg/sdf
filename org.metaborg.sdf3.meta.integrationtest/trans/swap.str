@@ -30,7 +30,7 @@ rules
     |[ exp + exp2 ; ]| ->
     |[ exp2 + exp ; ]|
 
-//  reverse-stmts-concrete:
-//    |[ stmt1* ]| ->
-//    |[ stmt2* ]|
-//  where stmt2* := <reverse> stmt1*
+  reverse-stmts-concrete:
+    |[ stmt1* ]| ->
+    |[ stmt2* ]|
+  where stmt2* := <reverse> stmt1*

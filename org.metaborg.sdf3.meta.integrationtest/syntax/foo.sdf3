@@ -24,7 +24,7 @@ context-free syntax
 // TODO: support variables section in SDF3 or document this as the way to write Stratego mix syntax
 
   Exp.meta-var = ExpVar
-  Stmt+.meta-list-var = StmtListVar
+  Stmt+.meta-listvar = StmtListVar
 
 lexical sorts
 
