@@ -7,11 +7,12 @@ imports
 
 rules
 
-  editor-action-swap-exps-abstract-syntax             = editor-action(swap-exps-abstract-syntax)
-  editor-action-swap-exps-concrete-syntax             = editor-action(swap-exps-concrete-syntax)
-  editor-action-swap-exps-concrete-syntax-simple      = editor-action(swap-exps-concrete-syntax-simple)
-  editor-action-swap-exps-concrete-syntax-var         = editor-action(swap-exps-concrete-syntax-var)
-  editor-action-reverse-stmts-concrete-syntax-varlist = editor-action(reverse-stmts-concrete-syntax-varlist)
+  editor-action-swap-exps-abstract-syntax              = editor-action(swap-exps-abstract-syntax)
+  editor-action-swap-exps-concrete-syntax              = editor-action(swap-exps-concrete-syntax)
+  editor-action-swap-exps-concrete-syntax-simple       = editor-action(swap-exps-concrete-syntax-simple)
+  editor-action-swap-exps-concrete-syntax-var          = editor-action(swap-exps-concrete-syntax-var)
+  editor-action-reverse-stmts-concrete-syntax-varlist  = editor-action(reverse-stmts-concrete-syntax-varlist)
+  editor-action-surround-stmts-concrete-syntax-varlist = editor-action(surround-stmts-concrete-syntax-varlist)
 
   editor-action(s):
     (_, _, ast, path, _) -> (path, <topdown(try(s))> ast) 
@@ -35,3 +36,9 @@ rules
     |[ stmt1* ]| ->
     |[ stmt2* ]|
   where stmt2* := <reverse> stmt1*
+
+  surround-stmts-concrete-syntax-varlist:
+    |[ stmt1* ]| ->
+    program |[ //a; // adding anything before the meta-listvar breaks parsing
+       stmt1*
+       a; ]|

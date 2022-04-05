@@ -13,8 +13,9 @@ menus
 
   menu: "Transform"
 
-    action: "Swap exps (abstract syntax)"             = editor-action-swap-exps-abstract-syntax             (source)
-    action: "Swap exps (concrete syntax)"             = editor-action-swap-exps-concrete-syntax             (source)
-    action: "Swap exps (concrete syntax simple)"      = editor-action-swap-exps-concrete-syntax-simple      (source)
-    action: "Swap exps (concrete syntax var)"         = editor-action-swap-exps-concrete-syntax-var         (source)
-    action: "Reverse stmts (concrete syntax varlist)" = editor-action-reverse-stmts-concrete-syntax-varlist (source)
+    action: "Swap exps (abstract syntax)"              = editor-action-swap-exps-abstract-syntax              (source)
+    action: "Swap exps (concrete syntax)"              = editor-action-swap-exps-concrete-syntax              (source)
+    action: "Swap exps (concrete syntax simple)"       = editor-action-swap-exps-concrete-syntax-simple       (source)
+    action: "Swap exps (concrete syntax var)"          = editor-action-swap-exps-concrete-syntax-var          (source)
+    action: "Reverse stmts (concrete syntax varlist)"  = editor-action-reverse-stmts-concrete-syntax-varlist  (source)
+    action: "Surround stmts (concrete syntax varlist)" = editor-action-surround-stmts-concrete-syntax-varlist (source)
