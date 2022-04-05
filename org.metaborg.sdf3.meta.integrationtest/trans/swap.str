@@ -11,6 +11,7 @@ rules
   swap-editor-concrete-syntax        = swap-editor(swap-exp-concrete-syntax|)
   swap-editor-concrete-syntax-simple = swap-editor(swap-exp-concrete-syntax-simple|)
   swap-editor-concrete-syntax-var    = swap-editor(swap-exp-concrete-syntax-var|)
+  reverse-editor-stmts-concrete-syntax-varlist = swap-editor(reverse-stmts-concrete|)
 
   swap-editor(swap-exp|):
     (_, _, ast, path, _) -> (path, <topdown(try(swap-exp))> ast) 

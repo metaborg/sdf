@@ -11,3 +11,5 @@ test swap [[x + y;]] transform "Transform -> Swap (concrete syntax)"        to [
 test swap [[x + y;]] transform "Transform -> Swap (concrete syntax simple)" to [[y + x;]]
 
 test swap [[x + y;]] transform "Transform -> Swap (concrete syntax var)"    to [[y + x;]]
+
+test swap [[x; y;]] transform "Transform -> Reverse stmts (concrete syntax varlist)" to [[y; x;]]
