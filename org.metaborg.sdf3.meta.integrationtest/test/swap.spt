@@ -15,6 +15,4 @@ test swap [[x + y;]] transform "Transform -> Swap exps (concrete syntax var)"   
 test swap [[x; y;]] transform "Transform -> Reverse stmts (concrete syntax varlist)" to [[y; x;]]
 
 // This test will fail due to broken Conc generation, not sure why yet
-test swap [[x; y;]] transform "Transform -> Surround stmts (concrete syntax varlist)" to [[
-  //a;
-  x; y; a;]]
+test swap [[x; y;]] transform "Transform -> Surround stmts (concrete syntax varlist)" to [[a; x; y; a;]]

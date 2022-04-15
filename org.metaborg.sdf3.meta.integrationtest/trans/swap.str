@@ -39,6 +39,4 @@ rules
 
   surround-stmts-concrete-syntax-varlist:
     |[ stmt1* ]| ->
-    program |[ //a; // adding anything before the meta-listvar breaks parsing
-       stmt1*
-       a; ]|
+    program |[ a; stmt1* a; ]|

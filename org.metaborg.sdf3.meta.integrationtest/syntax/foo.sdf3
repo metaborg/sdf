@@ -25,6 +25,7 @@ context-free syntax
 
   Exp.meta-var = ExpVar
   Stmt+.meta-listvar = StmtListVar
+  Stmt+.Snoc = Stmt+ StmtListVar
 
 lexical sorts
 
