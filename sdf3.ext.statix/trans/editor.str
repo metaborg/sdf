@@ -45,7 +45,8 @@ rules
         ; <string-ends-with(|"_StrategoMix")> mn
 
 
-  // Called when using the menu item
+  generate-all-on-save = apply-or-nullify(generate-all, should-skip)
+
   generate-all:
     input@(selected, position, ast, path, project-path) -> results
     with  <?Module(Unparameterized(mn), _, _)> ast
@@ -55,8 +56,8 @@ rules
             statix-results,
             stratego-results
           ]
-          ; <debug(!"Results: ")> results
 
+  generate-statix-on-save = apply-or-nullify(generate-statix, should-skip)
 
   generate-statix:
     input@(_, _, ast, _, project-path) -> ([filename], [result'])
@@ -77,6 +78,7 @@ rules
         ; result          := <geninj-generate-statix> selected'
 
 
+  generate-stratego-on-save = apply-or-nullify(generate-stratego, should-skip)
 
   generate-stratego:
     input@(_, _, ast, _, project-path) -> ([str1_filename, str2_filename], [str1_result', str2_result'])
@@ -110,6 +112,14 @@ rules
   where code' := <s < (<concat-strings> ["// ", <id>, "\n", code]) + !code> input
 
   /**
+   * Applies strategy `s`, but if `s_skip` succeeds, nullifies the file by changing its extension to `.txt`, replacing its original extension.
+   */
+  apply-or-nullify(s, s_skip): input -> (newfilenames, contents)
+    with (filenames, contents) := <s> input
+       ; newfilenames := <s_skip < (<map(guarantee-extension(|"txt"))> filenames) + !filenames> input
+
+
+  /**
    * Pretty-print statix.
    */
   pp-statix-to-string = pp-Statix-string(prettyprint-Statix-start-symbols)
@@ -134,8 +144,7 @@ rules
   get-dir(|path): s -> s'
     with names  := <strip-annos; string-tokenize(|['/'])> s
        ; names' := <at-last(![])> names
-       ; if [h | tl] := names'
-         then
+       ; if [h | tl] := names' then
            s' := <concat-strings> [path, "/",  <separate-by(|"/"); concat-strings> names']
          else
            s' := path
