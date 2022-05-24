@@ -53,6 +53,7 @@ rules
                 Import("libspoofax/sdf/pp"),
                 Import("libspoofax/term/origin"),
                 Import("libspoofax/term/annotation"),
+                Import("libspoofax/editor/refactoring/construct-text"),
 
                 Import(<to-str-module-name(|"-sig","signatures")> Module(m))
               ])
