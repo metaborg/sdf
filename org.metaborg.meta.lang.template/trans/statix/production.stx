@@ -1,0 +1,31 @@
+module statix/production
+
+imports
+
+  statix/type
+  statix/attribute
+  statix/sort_cons
+
+rules
+
+  injectionProductionOK: TYPE * Attributes * SymbolDef
+  // Disabled for now: produces spurious errors in some cases.
+  //injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
+  //  try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
+  injectionProductionOK(_, _, _).
+
+  // TODO: error: Missing bracket attribute or constructor name
+  // - LHS must be a single sort (injection)
+  // - RHS must be in the form of '(' Sort ')'
+  // - attributes must NOT contain Bracket() nor Reject()
+
+  // TODO: warning: Illegal use of the {bracket} attribute
+  // - HS must be a single sort (injection)
+  // - RHS must NOT be in the form of '(' Sort ')'
+  // - attributes must contain Bracket()
+  // - attributes must NOT contain Reject()
+
+  // TODO: warning: Illegal use of the {bracket} attribute
+  // - LHS must be a sort + constructor (not an injection)
+  // - attributes must contain Bracket()
+  // - attributes must NOT contain Reject()

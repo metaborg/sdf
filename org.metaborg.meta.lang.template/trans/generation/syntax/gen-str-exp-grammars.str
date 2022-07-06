@@ -6,7 +6,7 @@ imports
   libspoofax/resource/cache
   libspoofax/stratego/debug
   generation/gen-utils/remove-template
-  libstratego-lib
+  generation/gen-utils/to-str
   libstrc
   generation/syntax/gen-exp-grammars
   analysis/desugar
@@ -41,11 +41,16 @@ signature constructors
   NonAssoc    : SortCons1 * SortCons2 -> PrioRelation
   
 rules
-  
-   module-to-str-expr-grammar:
+
+   module-to-str-expr-grammar = module-to-str-expr-grammar(|"1")
+
+   module-to-str-expr-grammar(|stratego-version):
      m@Module(Unparameterized(mn), _, sections*) -> 
         Module 
      |[ module ~mn 
+     
+        imports
+          ~x_libstratego-lib
         
         signature
           constructors
@@ -74,7 +79,8 @@ rules
         operators*        := NoAnnoList(List(<filter(get-operators-str)> productions));
         prec*             := <filter(collect-prio-relations); flatten-list; add-transitive-relations; make-set; map(create-str-prio-rule)> priorities;
         associativity*    := <flatten-list; make-set; map(create-str-prio-rule)> [<filter(create-assoc-from-prod)> productions, <filter(create-assoc-from-prio)> priorities];
-        prec-and-assoc*   := [prec*, associativity*]
+        prec-and-assoc*   := [prec*, associativity*];
+        x_libstratego-lib := <libstratego-name> stratego-version
         
         
   get-constructor-list(|chars):

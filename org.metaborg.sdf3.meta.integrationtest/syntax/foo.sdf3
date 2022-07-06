@@ -1,0 +1,19 @@
+module foo
+
+imports
+
+  StrategoLang/import-namespaced
+  StrategoLang/sugar/terms-namespaced
+  thesyntax
+
+context-free start-symbols
+
+  StrategoLang-Module
+
+context-free syntax
+
+  StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
+  StrategoLang-PreTerm.ToTerm = <stmt |[ <Stmt> ]|>
+
+  Exp.FromTerm = [~[StrategoLang-Term]]
+  Exp.FromTerm = [~exp:[StrategoLang-Term]]

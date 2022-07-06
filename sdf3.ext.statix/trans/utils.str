@@ -181,3 +181,10 @@ rules
   where fmsg  := <concat-strings> ["ERRROR: ", <msg> t, " (", ofile, ":", oline, ":", ocol, "): "]
       ; <fprintnl> (stderr(), [fmsg,<pp> t])
 
+rules
+
+  libstratego-name =
+    switch id
+      case ?"1": !"libstratego-lib"
+      case ?"2": !"strategolib"
+    end

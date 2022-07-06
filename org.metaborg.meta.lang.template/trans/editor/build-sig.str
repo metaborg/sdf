@@ -7,29 +7,35 @@ imports
   analysis/desugar
   editor/build-utils
   generation/signatures/-
+  generation/gen-utils/to-str
 
 rules
 
-  generate-sig-abstract:
+  generate-sig-abstract = generate-sig-abstract(|"1")
+
+  generate-sig-abstract(|sv):
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
 
-      result   := <module-to-sig> selected'
+      result   := <module-to-sig(|sv)> selected'
       ; filename := <get-src-gen(|project-path, "signatures", ".sig.aterm")> mn
 
-  generate-sig-concrete:
+  generate-sig-concrete = generate-sig-concrete(|"1")
+
+  generate-sig-concrete(|sv):
     (selected, position, ast, path, project-path) -> (filename, result)
     where
+      ext := <stratego-file-ext> sv;
       <?Module(Unparameterized(m), i*, sections)> ast ;
       m' := <strip-annos; string-tokenize(|['/']); last> m;
         <base-filename; remove-extension; ?m' <+ debug(!"Module name does not correspond to file name. The signature file could not be generated.\n"); fail> path
     where
       <?Module(Unparameterized(mn), i*, _)> ast ;
       selected'     := <desugar-templates> selected;
-      result   := <module-to-sig; pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
-      ; filename := <get-src-gen(|project-path, "signatures", "-sig.str")> mn
+      result   := <module-to-sig(|sv); pp-stratego-string <+ !""; debug(!"The signature file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
+      ; filename := <get-src-gen(|project-path, "signatures", $[-sig.[ext]])> mn
 
   generate-dynsem:
     (selected, position, ast, path, project-path) -> (filename, result)

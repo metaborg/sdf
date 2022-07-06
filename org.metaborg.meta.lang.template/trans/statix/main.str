@@ -15,7 +15,7 @@ imports
 
 rules // Editor
 
-  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/statics", "projectOK", "moduleOK")
+  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/main", "projectOK", "fileOK")
 
   statix-editor-resolve = stx-editor-resolve
 
@@ -23,9 +23,11 @@ rules // Editor
 
 signature constructors // Types
 
-  SORT : Occurrence        -> TYPE
-  PROD : list(TYPE) * TYPE -> TYPE
-  ITER : TYPE              -> TYPE
+  SORT     : Occurrence        -> TYPE
+  PROD     : list(TYPE) * TYPE -> TYPE
+  INJ      : list(TYPE) * TYPE -> TYPE
+  ITER     : TYPE              -> TYPE
+  TERMINAL : TYPE
 
 rules // Types
 
@@ -38,11 +40,18 @@ rules // Types
 
   fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
 
+  remove-unnecessary-types = remove-all(?TERMINAL())
+
   to-compatible-type:
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
 
+  // Injections are used in cfg-to-sig rules that produce OpDeclInj, and expect only the list of symbols.
   to-compatible-type:
-    PROD(ts, t) -> FunType(<map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
+    INJ(ts, _) -> <remove-unnecessary-types; map(try(to-compatible-type))> ts
+
+  // Productions are used in cons-to-decl an expect a FunType.
+  to-compatible-type:
+    PROD(ts, t) -> FunType(<remove-unnecessary-types; map(try(to-compatible-type))> ts, <try(to-compatible-type)> t)
 
   to-compatible-type:
     ITER(t) -> ConstType(Sort("List", [<try(to-compatible-type)> t]))

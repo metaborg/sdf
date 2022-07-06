@@ -1,0 +1,11 @@
+module swap
+
+language sdf3-meta-integrationtest
+
+start symbol Start
+
+test swap [[x + y;]] transform "Transform -> Swap (abstract syntax)"        to [[y + x;]]
+
+test swap [[x + y;]] transform "Transform -> Swap (concrete syntax)"        to [[y + x;]]
+
+test swap [[x + y;]] transform "Transform -> Swap (concrete syntax simple)" to [[y + x;]]

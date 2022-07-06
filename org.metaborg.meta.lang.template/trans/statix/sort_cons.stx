@@ -1,0 +1,48 @@
+module statix/sort_cons
+
+imports
+
+  statix/name
+  statix/type
+  statix/sort
+  statix/cons
+  statix/symbol
+  statix/util
+
+signature
+
+  sorts SortCons constructors
+    SortCons : SymbolDef * Constructor -> SortCons
+
+  sorts Constructor constructors
+    Constructor : string -> Constructor
+
+  sorts SymbolDef constructors
+    SortDef          : string    -> SymbolDef
+    SymbolDefCf      : SymbolDef -> SymbolDef
+    SymbolDefLex     : SymbolDef -> SymbolDef
+    SymbolDefVar     : SymbolDef -> SymbolDef
+    SymbolDef_Symbol : Symbol    -> SymbolDef
+
+  sorts SortConsRef constructors
+    SortConsRef : Symbol * Constructor -> SortConsRef
+
+rules
+
+  declareSortCons: scope * list(TYPE) * SortCons -> TYPE
+  declareSortCons(s, Tsymbols, SortCons(symbolDef, Constructor(constructorName))) = Tprod :- {Tsort}
+    typeOfSymbolDef(s, symbolDef) == Tsort,
+    declareConstructor(s, Tsymbols, Tsort, constructorName) == Tprod.
+
+  typeOfSymbolDef: scope * SymbolDef -> TYPE
+  typeOfSymbolDef(s, SortDef(name))            = Tsort :- typeOfSort(s, name)           == Tsort.
+  typeOfSymbolDef(s, SymbolDefCf(symbolDef))   = T     :- typeOfSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDefLex(symbolDef))  = T     :- typeOfSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDefVar(symbolDef))  = T     :- typeOfSymbolDef(s, symbolDef) == T.
+  typeOfSymbolDef(s, SymbolDef_Symbol(symbol)) = T     :- typeOfSymbol(s, symbol)       == T.
+
+  typeOfSortConsRef: scope * SortConsRef -> TYPE
+  typeOfSortConsRef(s, SortConsRef(symbol, Constructor(constructorName))) = Tprod :- {Tsort}
+    typeOfSymbol(s, symbol) == Tsort,
+    typeOfConstructorInSort(s, constructorName, Tsort) == Tprod.
+  typeOfSortConsRefs maps typeOfSortConsRef(*, list(*)) = list(*)

@@ -52,8 +52,6 @@ rules // Analysis
 
   
   editor-save =  generate-all//analysis-save-default(|<language>); generate-all 
-  
-  get-sdf3-type = get-type
       
 rules // Editor services
 
@@ -115,3 +113,7 @@ rules // Debugging
 
   // analysis-default-debug-interface(msg) = debug(msg)
   // analysis-default-debug-interface = debug
+
+rules  // Testing
+
+  test-desugar-layout-constraints: Module(name, i, sections) -> Module(name, i, <desugar-layout-constraints(|[])> sections)

@@ -1,0 +1,65 @@
+module statix/section/priority
+
+imports
+
+  statix/section/grammar
+  statix/section/syntax
+  statix/sort_cons
+
+signature
+
+  constructors
+    Priorities             : list(Priority) -> Grammar
+    LexicalPriorities      : list(Priority) -> Grammar
+    ContextFreePriorities  : list(Priority) -> Grammar
+
+  sorts Priority constructors
+    Chain : list(Group)                   -> Priority
+    Assoc : Group * Associativity * Group -> Priority
+
+  sorts Group constructors
+    WithArguments  : Group * ArgumentIndicator                -> Group
+    NonTransitive  : Group                                    -> Group
+    SimpleGroup    : PriorityProduction                       -> Group
+    ProdsGroup     : list(PriorityProduction)                 -> Group
+    AssocGroup     : Associativity * list(PriorityProduction) -> Group
+    SimpleRefGroup : SortConsRef                              -> Group
+    ProdsRefGroup  : list(SortConsRef)                        -> Group
+    AssocRefGroup  : Associativity * list(SortConsRef)        -> Group
+
+  sorts PriorityProduction constructors
+    PriorityProduction_SdfProduction : SdfProduction -> PriorityProduction
+    PriorityProduction_Production    : Production    -> PriorityProduction
+
+  sorts ArgumentIndicator Associativity
+
+rules
+
+  grammarOK(s, Priorities(priorities))            :- prioritiesOK(s, priorities).
+  grammarOK(s, LexicalPriorities(priorities))     :- prioritiesOK(s, priorities).
+  grammarOK(s, ContextFreePriorities(priorities)) :- prioritiesOK(s, priorities).
+
+  priorityOK: scope * Priority
+  priorityOK(s, Chain(groups)) :-
+    groupsOK(s, groups).
+  priorityOK(s, Assoc(group1, _, group2)) :-
+    groupOK(s, group1),
+    groupOK(s, group2).
+  prioritiesOK maps priorityOK(*, list(*))
+
+  groupOK: scope * Group
+  groupOK(s, WithArguments(group, _))            :- groupOK(s, group).
+  groupOK(s, NonTransitive(group))               :- groupOK(s, group).
+  groupOK(s, SimpleGroup(priorityProduction))    :- priorityProductionOK(s, priorityProduction).
+  groupOK(s, ProdsGroup(priorityProductions))    :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, AssocGroup(_, priorityProductions)) :- priorityProductionsOK(s, priorityProductions).
+  groupOK(s, SimpleRefGroup(sortConsRef))        :- typeOfSortConsRef(s, sortConsRef) == _.
+  groupOK(s, ProdsRefGroup(sortConsRefs))        :- typeOfSortConsRefs(s, sortConsRefs) == _.
+  groupOK(s, AssocRefGroup(_, sortConsRefs))     :- typeOfSortConsRefs(s, sortConsRefs) == _.
+  groupsOK maps groupOK(*, list(*))
+
+  priorityProductionOK: scope * PriorityProduction
+  // TODO: these should not declare new productions, but instead should be checked against existing ones?
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, sdfProduction) == _.
+  priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
+  priorityProductionsOK maps priorityProductionOK(*, list(*))

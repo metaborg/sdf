@@ -7,13 +7,13 @@ public enum LayoutConstraintComparisonOperator {
     LE("<="),
     EQ("==");
 
-    private String str;
+    private final String str;
 
-    LayoutConstraintComparisonOperator(String str) {
+    private LayoutConstraintComparisonOperator(String str) {
         this.str = str;
     }
 
     @Override public String toString() {
-        return str;
+        return this.str;
     }
 }

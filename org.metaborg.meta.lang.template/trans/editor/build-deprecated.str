@@ -11,7 +11,9 @@ imports
 
 rules
 
-   generate-ast-checker-concrete:
+   generate-ast-checker-concrete = generate-ast-checker-concrete(|"str")
+
+   generate-ast-checker-concrete(|ext):
     (selected, position, ast, path, project-path) -> (filename, result)
     where
       <?Module(Unparameterized(m), i*, sections)> ast ;
@@ -22,7 +24,7 @@ rules
       selected'     := <desugar-templates> selected;
       result   := <module-to-chk; pp-stratego-string <+ !""; debug(!"The check file could not be generated. Try Reset and Reanalyze or check for unresolved references.\n"); fail> selected'
       //; fn       :=  <get-filename> mn
-      ; filename := <get-src-gen(|project-path, "check", "-chk.str")> mn
+      ; filename := <get-src-gen(|project-path, "check", $[-chk.[ext]])> mn
 
    generate-ast-checker-abstract:
     (selected, position, ast, path, project-path) -> (filename, result)

@@ -13,4 +13,21 @@ rules
     
   to-str-module-name(|ext, folder):
     Module(Unparameterized(m)) -> <conc-strings> (folder, "/" , m, ext)
-    
+
+  libstratego-name =
+    switch id
+      case ?"1": !"libstratego-lib"
+      case ?"2": !"strategolib"
+    end
+
+  stratego-file-ext =
+    switch id
+      case ?"1": !"str"
+      case ?"2": !"str2"
+    end
+
+  stratego-imports =
+    switch id
+      case ?"1": ![Import("libstratego-lib"), Import("libstratego-gpp")]
+      case ?"2": ![Import("strategolib"), Import("gpp")]
+    end

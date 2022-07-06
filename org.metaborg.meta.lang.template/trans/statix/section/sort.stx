@@ -1,0 +1,26 @@
+module statix/section/sort
+
+imports
+
+  statix/section/grammar
+  statix/sort
+
+signature
+
+  constructors
+    Sorts : list(DeclSymbol) -> Grammar
+
+  sorts DeclSymbol constructors
+    DeclSort    : string -> DeclSymbol
+    DeclSortLex : string -> DeclSymbol
+    DeclSortVar : string -> DeclSymbol
+
+rules
+
+  grammarOK(s, Sorts(declSymbols)) :- declSymbolsOK(s, declSymbols).
+
+  declSymbolOK: scope * DeclSymbol
+  declSymbolOK(s, DeclSort(name))    :- declareSort(s, name, CONTEXTFREE()) == _.
+  declSymbolOK(s, DeclSortLex(name)) :- declareSort(s, name, LEXICAL()) == _.
+  declSymbolOK(s, DeclSortVar(name)) :- declareSort(s, name, VAR()) == _.
+  declSymbolsOK maps declSymbolOK(*, list(*))

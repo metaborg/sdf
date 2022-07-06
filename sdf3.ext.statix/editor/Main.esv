@@ -4,8 +4,8 @@ language
 
   context  : none
   provider : target/metaborg/stratego.ctree
-  on save  : generate-statix
-  on save  : generate-stratego
+  on save  : generate-statix-on-save
+  on save  : generate-stratego-on-save
 
 menus
 

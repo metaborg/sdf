@@ -31,8 +31,7 @@ Attribute.Avoid = <avoid> {deprecated("Prefer and avoid are deprecated and will 
 Attribute.Bracket = <bracket>
 Attribute.Assoc = <<Associativity>>
 
-Attribute.LayoutConstraint = <layout(<Constraint>)> 
-Attribute.LayoutConstraint = <layout(<ShortConstraint>)> 
+Attribute.LayoutConstraint = <layout(<Constraint>)>
 
 Attribute.IgnoreLayout = <ignore-layout>
 Attribute.EnforceNewLine = <enforce-newline>

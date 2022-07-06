@@ -1,0 +1,29 @@
+module statix/main
+
+imports
+
+  statix/name
+  statix/type
+  statix/module
+  statix/section/section
+  statix/section/grammar
+  statix/section/template
+  statix/section/syntax
+  statix/section/start_symbol
+  statix/section/sort
+  statix/section/priority
+  statix/section/restriction
+  statix/production
+  statix/sort_cons
+  statix/symbol
+  statix/attribute
+  statix/label
+  statix/util
+
+rules
+
+  projectOK : scope
+  projectOK(s).
+
+  fileOK: scope * Module
+  fileOK(s, m) :- moduleOK(s, m).

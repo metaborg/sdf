@@ -1,0 +1,52 @@
+module statix/sort
+
+imports
+
+  statix/name
+  statix/type
+  statix/util
+
+signature
+
+  sorts SORT_KIND constructors
+    CONTEXTFREE :  SORT_KIND
+    LEXICAL     :  SORT_KIND
+    VAR         :  SORT_KIND
+
+  relations
+    kindOfSort : occurrence -> SORT_KIND
+
+rules
+
+  declareSort : scope * string * SORT_KIND -> TYPE
+  declareSort(s, name, kind) = Tsort :-
+    Tsort == SORT(Sort{name}),
+    s -> Sort{name} with typeOfDecl Tsort and kindOfSort kind,
+    Sort{name} in s |-> [(_, (_))] | error $[Sort [name] is already defined],
+    @name.type := Tsort.
+
+  typeOfSort : scope * string -> TYPE
+  typeOfSort(s, name) = Tsort :- {paths}
+    typeOfDecl of Sort{name} in s |-> paths,
+    resolveTypeOfSorts(name, paths, NON_EMPTY()) == Tsort,
+    @name.type := Tsort.
+
+  resolveTypeOfSorts : string * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveTypeOfSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+    @name.ref += name',
+    resolveTypeOfSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+  resolveTypeOfSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] is not defined]@name.
+  resolveTypeOfSorts(name, [], MAYBE_EMPTY()) = _.
+
+  kindOfSort : scope * string -> SORT_KIND
+  kindOfSort(s, name) = Tsort :- {paths}
+    kindOfSort of Sort{name} in s |-> paths,
+    resolveKindOfSorts(name, paths, NON_EMPTY()) == Tsort,
+    @name.type := Tsort.
+
+  resolveKindOfSorts : string * list((path * (occurrence * SORT_KIND))) * EMPTINESS -> SORT_KIND
+  resolveKindOfSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+    @name.ref += name',
+    resolveKindOfSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+  resolveKindOfSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] is not defined]@name.
+  resolveKindOfSorts(name, [], MAYBE_EMPTY()) = _.

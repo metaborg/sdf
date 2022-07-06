@@ -41,13 +41,24 @@ rules
     
 rules
 
-  module-to-pp:
-    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, g1, g2, s'*])
+  module-to-pp = module-to-pp(|"1")
+
+  module-to-pp(|stratego-version):
+    Module(m, i*, s*) -> Module(m', [i0, i1*, i2*, i3, g1, g2, s'*])
     with
       m'   := <to-str-module-name(|"-pp", "pp")> Module(m)
-    ; i0   := Imports([Import("libstratego-gpp"), Import("libspoofax/sdf/pp"), Import("libspoofax/term/origin"), Import("libspoofax/term/annotation"), Import("libstratego-sglr"),  Import("libstratego-sglr"), Import(<to-str-module-name(|"-sig","signatures")> Module(m))])
+    ; i0   := Imports([
+                Import("libstratego-sglr"),
+
+                Import("libspoofax/sdf/pp"),
+                Import("libspoofax/term/origin"),
+                Import("libspoofax/term/annotation"),
+
+                Import(<to-str-module-name(|"-sig","signatures")> Module(m))
+              ])
     ; i1*  := <map(to-str-import(|"-sig", "signatures"))> i*
     ; i2*  := <map(to-str-import(|"-pp", "pp"))> i*
+    ; i3   := Imports(<stratego-imports> stratego-version)
     ; lang := <language-spec-name>
     ; g1   := Strategies([ SDefNoArgs($[prettyprint-example], CallNoArgs(SVar($[prettyprint-[lang]])))
                          , SDefNoArgs($[prettyprint-[lang]], Fail())
@@ -267,7 +278,7 @@ rules
     with
         <reset-counter> "pp";
         line'*           := <map(introduce-labels-line)> line*;
-        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?Align(_) <+ ?PPOffside(_, []) <+ ?PPAlign(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+        lc-selectors*    := <collect-om(?Offside(_, []) <+ ?AlignList(_) <+ ?PPOffside(_, []) <+ ?PPAlignList(_) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), conc); strip-annos; nub> a*;
         line''*          := <annotate-lines(|lc-selectors*)> line'*;
         output           := <map(template-line-to-stratego(|lang))> line''*;
         arg*             := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -285,7 +296,7 @@ rules
     with
         layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
                                            ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
-                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), conc)> a*;// collect layout constraints ;
         if <?[]> layout-constraints then
           rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), with*)
         else
@@ -297,13 +308,13 @@ rules
   apply-align-layout-constraint(|t, a*):
     SingleLineTemplate(elem*) -> SingleLineTemplate(elem'*)
     where
-      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?AlignList(<id>) + ?PPAlignList(<id>), conc); not(?[])> a*;
       elem'*   := <replace-list-align(|pos-ref*)> (1, elem*)
       
   apply-align-layout-constraint(|t, a*):
     Template(line*) -> Template(line'*)
     where
-      pos-ref* := <collect-all(?Align(<id>) + ?PPAlign(<id>), collapse-lists); not(?[])> a*;
+      pos-ref* := <collect-all(?AlignList(<id>) + ?PPAlignList(<id>), conc); not(?[])> a*;
       line'*   := <replace-list-align-line(|pos-ref*)> (1, line*)
       
   replace-list-align-line(|pos-ref*):
@@ -539,7 +550,7 @@ rules
     with
       <reset-counter> "pp";
       line'*        := <map(introduce-labels-line)> line*;
-      lc-selectors* := <collect-om(?Align(_) <+ ?Offside(_, []) <+ ?PPAlign(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), collapse-lists); strip-annos; nub> a*;
+      lc-selectors* := <collect-om(?AlignList(_) <+ ?Offside(_, []) <+ ?PPAlignList(_) <+ ?PPOffside(_, []) <+ ?PosRef(_) <+ ?LabelRef(_) <+ ?LiteralRef(_), conc); strip-annos; nub> a*;
       line''*       := <annotate-lines(|lc-selectors*)> line'*;
       output        := <map(template-line-to-stratego(|lang))> line''*;
       arg*          := <mapconcat(?Line(<filter(placeholder-to-var)>))> line'*;
@@ -563,7 +574,7 @@ rules
     with
         layout-constraints := <collect-all(?Align(_, [_ | _]) + ?Offside(_, [_ | _]) + ?Indent(_, _) + ?NewLineIndent(_, _) + 
                                            ?PPAlign(_, [_ | _]) + ?PPOffside(_, [_ | _]) + ?PPIndent(_, _) + ?PPNewLineIndent(_, _) + 
-                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), collapse-lists)> a*;// collect layout constraints ;
+                                           ?PPNewLineIndentBy(_, _, _) + ?PPNewLine(_) + ?PPNewLineBy(_, _), conc)> a*;// collect layout constraints ;
         if <?[]> layout-constraints then
           rule := Rule(NoAnnoList(input), NoAnnoList(List(output')), cond*)
         else
@@ -578,10 +589,10 @@ rules
     PPAlign(ref, target*) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
   
   create-constraint-term:
-    Align(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    AlignList(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
     
   create-constraint-term:
-    PPAlign(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
+    PPAlignList(ref) -> NoAnnoList(Op("Align", [ <create-term-from-ref> ref]))
   
   create-constraint-term:
     Offside(ref, target*) -> NoAnnoList(Op("Offside", [ <create-term-from-ref> ref, NoAnnoList(List(<map(create-term-from-ref)> target*))]))
@@ -669,10 +680,10 @@ rules
       else
         elem'' := elem'
       end;
-      if align-list-or-offside-constraint := <fetch-elem(?Align(LabelRef(label')) + 
-                                                         ?Align(PosRef(start-pos')) +
-                                                         ?PPAlign(LabelRef(label')) + 
-                                                         ?PPAlign(PosRef(start-pos')) +
+      if align-list-or-offside-constraint := <fetch-elem(?AlignList(LabelRef(label')) + 
+                                                         ?AlignList(PosRef(start-pos')) +
+                                                         ?PPAlignList(LabelRef(label')) + 
+                                                         ?PPAlignList(PosRef(start-pos')) +
                                                          ?Offside(LabelRef(label'), []) +
                                                          ?Offside(PosRef(start-pos'), []) +
                                                          ?PPOffside(LabelRef(label'), []) +

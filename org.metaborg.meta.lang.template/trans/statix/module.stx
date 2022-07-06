@@ -1,0 +1,78 @@
+module statix/module
+
+imports
+
+  statix/section/section
+  statix/name
+  statix/type
+  statix/symbol
+
+signature // Declarations
+
+  sorts Module constructors
+    Module : ModuleName * list(ImpSection) * list(Section) -> Module
+
+  sorts ModuleName constructors
+    Unparameterized : ModuleId                -> ModuleName
+    Parameterized   : ModuleId * list(Symbol) -> ModuleName
+
+  sorts ModuleId // Use module identifiers as-is.
+
+rules
+
+  moduleOK : scope * Module
+  moduleOK(sGlobal, Module(name, importSections, sections)) :- {sMod}
+    new sMod, sMod -P-> sGlobal,
+    declareModule(sGlobal, sMod, name),
+    moduleNameOK(sMod, name),
+    importSectionsOK(sMod, importSections),
+    sectionsOK(sMod, sections).
+
+  moduleNameOK : scope * ModuleName
+  moduleNameOK(s, Parameterized(_, symbols)) :- typesOfSymbols(s, symbols) == _.
+  moduleNameOK(s, _).
+
+rules
+
+  declareModule : scope * scope * ModuleName
+  declareModule(sGlobal, sMod, name) :- {id}
+    idOfModuleName(name) == id,
+    sGlobal -> Module{id} with typeOfDecl MOD(sMod),
+    Module{id} in sGlobal |-> [(_, (_))] | error $[Duplicate definition of module [id]]@id.
+
+  typeOfModule : scope * ModuleName -> TYPE
+  typeOfModule(s, name) = Tmod :- {id paths}
+    idOfModuleName(name) == id,
+    typeOfDecl of Module{id} in s |-> paths,
+    resolveModules(id, paths, NON_EMPTY()) == Tmod.
+
+  resolveModules : ModuleId * list((path * (occurrence * TYPE))) * EMPTINESS -> TYPE
+  resolveModules(id, [(_, (Module{id'}, Tmod))|paths], _) = Tmod :-
+    @id.ref += id',
+    resolveModules(id, paths, MAYBE_EMPTY()) == Tmod.
+  resolveModules(id, [], NON_EMPTY())   = _ :- false | error $[Module [id] is not defined]@id.
+  resolveModules(id, [], MAYBE_EMPTY()) = _.
+
+  idOfModuleName : ModuleName -> ModuleId
+  idOfModuleName(Unparameterized(id))  = id.
+  idOfModuleName(Parameterized(id, _)) = id.
+
+signature // Imports
+
+  sorts ImpSection constructors
+    Imports : list(Import) -> ImpSection
+
+  sorts Import constructors
+    Module : ModuleName -> Import
+
+rules
+
+  importSectionOK : scope * ImpSection
+  importSectionOK(s, Imports(imports)) :- importsOK(s, imports).
+  importSectionsOK maps importSectionOK(*, list(*))
+
+  importOK : scope * Import
+  importOK(s, Module(name)) :- {sMod}
+    typeOfModule(s, name) == MOD(sMod),
+    s -I-> sMod.
+  importsOK maps importOK(*, list(*))

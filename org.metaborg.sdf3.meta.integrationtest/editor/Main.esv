@@ -1,0 +1,18 @@
+module Main
+
+language
+
+  extensions : s3mit
+
+  provider : target/metaborg/stratego.ctree
+
+  table         : target/metaborg/sdf.tbl
+  start symbols : Start
+
+menus
+
+  menu: "Transform"
+
+    action: "Swap (abstract syntax)"        = swap-editor-abstract-syntax        (source)
+    action: "Swap (concrete syntax)"        = swap-editor-concrete-syntax        (source)
+    action: "Swap (concrete syntax simple)" = swap-editor-concrete-syntax-simple (source)
