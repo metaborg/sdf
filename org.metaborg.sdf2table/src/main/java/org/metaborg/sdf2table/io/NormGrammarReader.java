@@ -945,7 +945,7 @@ public class NormGrammarReader {
                 "Cannot open module file '" + file.getPath() + "'. Try cleaning the project and rebuilding.");
         }
 
-        grammar.getFilesRead().add(file);
+        grammar.getFilesRead().add(file.toPath());
 
         return term;
     }
