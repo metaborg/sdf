@@ -1,7 +1,7 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +16,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private static final long serialVersionUID = -13739894962185282L;
 
     // all files used in this grammar
-    private final Set<Path> filesRead;
+    private final Set<File> filesRead;
 
     // factory to create all symbols in the grammar
     private final GrammarFactory gf;
@@ -159,7 +159,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         return priorities;
     }
 
-    public Set<Path> getFilesRead() {
+    public Set<File> getFilesRead() {
         return filesRead;
     }
 
@@ -303,8 +303,10 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.symbolProductionsMapping.clear();
         this.transitivePriorities.clear();
         this.transitivePriorityArgs.clear();
-        // filesRead is used in org.metaborg.sdf2parenthesize.parenthesizer.Parenthesizer#generateParenthesizer
-//        this.filesRead.clear();
+    }
+
+    public void postParenthesizerCleanup() {
+        this.filesRead.clear();
     }
 
     public SetMultimap<ISymbol, ISymbol> getLeftDerivable() {

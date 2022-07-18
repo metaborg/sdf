@@ -62,7 +62,7 @@ public class Parenthesizer {
         }
 
         Set<String> paths = new HashSet<>();
-        for(Path f : grammar.getFilesRead()) {
+        for(File f : grammar.getFilesRead()) {
             String path = f.getParent().toString();
             if(path.split("/normalized/").length == 2) {
                 String subfolder = path.split("/normalized/")[1];
@@ -73,6 +73,7 @@ public class Parenthesizer {
                 importsList.add(importModuleWildCard("signatures/" + subfolder));
             }
         }
+        grammar.postParenthesizerCleanup();
 
         importsList.add(importModuleWildCard("signatures"));
 
