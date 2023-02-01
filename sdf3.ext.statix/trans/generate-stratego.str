@@ -53,7 +53,7 @@ rules
   // geninj-module-to-injections :: SDF3.Module -> Stratego.Module
   geninj-module-to-injections(|stratego-version):
     Module(modname, imports, sections)		// SDF3
-    -> <remove-gradual-types; remove-empty-sections>
+    -> <maybe-remove-gradual-types(|stratego-version); remove-empty-sections>
     Module(modname', [						// Stratego
       imports0,
       imports1*,
@@ -61,63 +61,69 @@ rules
       Signature([Constructors(plhdr-signatures)]),
       Rules([sort-is-rules*, sig-is-rules*]),
       Rules([sort-is-inj-rules*, sig-is-inj-rules*]),
-      Rules([expl-sort-rules*, expl-sig-rules*, expl-plhdr-rules*, expl-amb-rules*]),
-      Rules([impl-sort-rules*, impl-sig-rules*, impl-plhdr-rules*, impl-amb-rules*]),
-      Rules([upgr-sort-rules*, upgr-sig-rules*, upgr-plhdr-rules*, upgr-amb-rules*]),
-      Rules([dngr-sort-rules*, dngr-sig-rules*, dngr-plhdr-rules*, dngr-amb-rules*]),
+      Rules([expl-sort-rules*, expl-sig-rules*, expl-plhdr-rules*, expl-nabl2Var-rules*, expl-amb-rules*]),
+      Rules([impl-sort-rules*, impl-sig-rules*, impl-plhdr-rules*, impl-nabl2Var-rules*, impl-amb-rules*]),
+      Rules([upgr-sort-rules*, upgr-sig-rules*, upgr-plhdr-rules*, upgr-nabl2var-rules*, upgr-amb-rules*]),
+      Rules([dngr-sort-rules*, dngr-sig-rules*, dngr-plhdr-rules*, dngr-nabl2var-rules*, dngr-amb-rules*]),
       // Extra: should be in a library
       Rules([expl-gen-rules*, impl-gen-rules*]),
       Rules([upgr-gen-rules*, dngr-gen-rules*])
     ])
-  with modname'           := <to-str-module-name(|"-injections", "injections")> Module(modname)
-     ; lang               := <language-spec-name>
+  with modname'             := <to-str-module-name(|"-injections", "injections")> Module(modname)
+     ; lang                 := <language-spec-name>
      // Imports
-     ; imports0           := Imports([
+     ; imports0             := Imports([
          Import(<libstratego-name> stratego-version),
          Import(<to-str-module-name(|"-sig","signatures")> Module(modname)),
          Import(<to-str-module-name(|"-pp","pp")> Module(modname)),
          Import("libspoofax/term/origin"),
          Import("libspoofax/term/amb")
        ])
-     ; imports1*          := <map(to-str-import(|"-injections", "injections"))> imports
+     ; imports1*            := <map(to-str-import(|"-injections", "injections"))> imports
      // Collect CF and LEX sorts
-     ; allsorts           := <geninj-sections-to-sorts> sections
+     ; allsorts             := <geninj-sections-to-sorts> sections
      // Collect signatures
-     ; allsigs            := <geninj-sections-to-signatures> sections
+     ; allsigs              := <geninj-sections-to-signatures> sections
      // Stratego signatures
-     ; signatures         := <filter(geninj-sig-to-strsig)> allsigs
-     ; plhdr-signatures   := <filter(geninj-sort-to-plhdrsig)> allsorts
+     ; signatures           := <filter(geninj-sig-to-strsig)> allsigs
+     ; plhdr-signatures     := <filter(geninj-sort-to-plhdrsig)> allsorts
      // is-X-or-inj
-     ; sort-is-rules*     := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
-     ; sig-is-rules*      := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
+     ; sort-is-rules*       := <flatfilter(geninj-sort-to-is-sort-or-inj-rule(|lang))> allsorts
+     ; sig-is-rules*        := <flatfilter(geninj-sig-to-is-sort-or-inj-rule(|lang))> allsigs
      // is-inj
-     ; sort-is-inj-rules* := <flatfilter(geninj-sort-to-is-inj-rule(|lang))> allsorts
-     ; sig-is-inj-rules*  := <flatfilter(geninj-sig-to-is-inj-rule(|lang))> allsigs
+     ; sort-is-inj-rules*   := <flatfilter(geninj-sort-to-is-inj-rule(|lang))> allsorts
+     ; sig-is-inj-rules*    := <flatfilter(geninj-sig-to-is-inj-rule(|lang))> allsigs
      // explicate-injections
-     ; expl-sort-rules*   := <flatfilter(geninj-sort-to-explicate-rule(|lang))> allsorts
-     ; expl-sig-rules*    := <flatfilter(geninj-sig-to-explicate-rule(|lang))> allsigs
-     ; expl-plhdr-rules*  := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
-     ; expl-amb-rules*    := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
+     ; expl-sort-rules*     := <flatfilter(geninj-sort-to-explicate-rule(|lang))> allsorts
+     ; expl-sig-rules*      := <flatfilter(geninj-sig-to-explicate-rule(|lang))> allsigs
+     ; expl-plhdr-rules*    := <flatfilter(geninj-sort-to-explicate-placeholder-rule(|lang))> allsorts
+     ; expl-nabl2Var-rules* := <flatfilter(geninj-sort-to-explicate-nabl2Var-rule(|lang))> allsorts
+     ; expl-amb-rules*      := <flatfilter(geninj-sort-to-explicate-ambiguity-rule(|lang))> allsorts
      // implicate-injections
-     ; impl-sort-rules*   := <flatfilter(geninj-sort-to-implicate-rule(|lang))> allsorts
-     ; impl-sig-rules*    := <flatfilter(geninj-sig-to-implicate-rule(|lang))> allsigs
-     ; impl-plhdr-rules*  := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
-     ; impl-amb-rules*    := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
+     ; impl-sort-rules*     := <flatfilter(geninj-sort-to-implicate-rule(|lang))> allsorts
+     ; impl-sig-rules*      := <flatfilter(geninj-sig-to-implicate-rule(|lang))> allsigs
+     ; impl-plhdr-rules*    := <flatfilter(geninj-sort-to-implicate-placeholder-rule(|lang))> allsorts
+     ; impl-nabl2Var-rules* := <flatfilter(geninj-sort-to-implicate-nabl2Var-rule(|lang))> allsorts
+     ; impl-amb-rules*      := <flatfilter(geninj-sort-to-implicate-ambiguity-rule(|lang))> allsorts
      // upgrade-placeholders
-     ; upgr-sort-rules*   := <flatfilter(geninj-sort-to-upgrade-rule(|lang))> allsorts
-     ; upgr-sig-rules*    := <flatfilter(geninj-sig-to-upgrade-rule(|lang))> allsigs
-     ; upgr-plhdr-rules*  := <flatfilter(geninj-sort-to-upgrade-placeholder-rule(|lang))> allsorts
-     ; upgr-amb-rules*    := <flatfilter(geninj-sort-to-upgrade-ambiguity-rule(|lang))> allsorts
+     ; upgr-sort-rules*     := <flatfilter(geninj-sort-to-upgrade-rule(|lang))> allsorts
+     ; upgr-sig-rules*      := <flatfilter(geninj-sig-to-upgrade-rule(|lang))> allsigs
+     ; upgr-plhdr-rules*    := <flatfilter(geninj-sort-to-upgrade-placeholder-rule(|lang))> allsorts
+     ; upgr-nabl2var-rules* := <flatfilter(geninj-sort-to-upgrade-nabl2Var-rule(|lang))> allsorts
+     ; upgr-amb-rules*      := <flatfilter(geninj-sort-to-upgrade-ambiguity-rule(|lang))> allsorts
      // downgrade-placeholders
-     ; dngr-sort-rules*   := <flatfilter(geninj-sort-to-downgrade-rule(|lang))> allsorts
-     ; dngr-sig-rules*    := <flatfilter(geninj-sig-to-downgrade-rule(|lang))> allsigs
-     ; dngr-plhdr-rules*  := <flatfilter(geninj-sort-to-downgrade-placeholder-rule(|lang))> allsorts
-     ; dngr-amb-rules*    := <flatfilter(geninj-sort-to-downgrade-ambiguity-rule(|lang))> allsorts
+     ; dngr-sort-rules*     := <flatfilter(geninj-sort-to-downgrade-rule(|lang))> allsorts
+     ; dngr-sig-rules*      := <flatfilter(geninj-sig-to-downgrade-rule(|lang))> allsigs
+     ; dngr-plhdr-rules*    := <flatfilter(geninj-sort-to-downgrade-placeholder-rule(|lang))> allsorts
+     ; dngr-nabl2var-rules* := <flatfilter(geninj-sort-to-downgrade-nabl2Var-rule(|lang))> allsorts
+     ; dngr-amb-rules*      := <flatfilter(geninj-sort-to-downgrade-ambiguity-rule(|lang))> allsorts
      // Generic option rules (library)
-     ; expl-gen-rules*    := <geninj-explicate-generic-rules>
-     ; impl-gen-rules*    := <geninj-implicate-generic-rules>
-     ; upgr-gen-rules*    := <geninj-upgrade-generic-rules>
-     ; dngr-gen-rules*    := <geninj-downgrade-generic-rules>
+     ; expl-gen-rules*      := <geninj-explicate-generic-rules>
+     ; impl-gen-rules*      := <geninj-implicate-generic-rules>
+     ; upgr-gen-rules*      := <geninj-upgrade-generic-rules>
+     ; dngr-gen-rules*      := <geninj-downgrade-generic-rules>
+
+   maybe-remove-gradual-types(|stratego-version) = try(test(<not(fail /* temporarily disabled */; ?"2")> stratego-version); remove-gradual-types)
 
    remove-gradual-types = topdown(try(remove-all(?DefHasType(_, _))))
 

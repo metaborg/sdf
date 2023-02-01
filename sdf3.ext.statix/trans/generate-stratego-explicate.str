@@ -9,6 +9,7 @@ imports
   runtime/types/-
   generation/gen-utils/to-str
   analysis/desugar
+  generate-stratego-is-inj
 
 imports
   common
@@ -120,6 +121,32 @@ rules
     SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))]),
       AnnoList(Op($[[sortname]-Plhdr], []), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+rules
+
+  geninj-sort-to-explicate-nabl2Var-rule(|lang): CfSort(sortname) -> [
+    // explicate-injections-MyLang-MySort :: MySort -> MySort
+    DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // explicate-injections-MyLang-MySort = origin-track-forced(\
+    //   \ "nabl2.Var"#([resource, name]){anno*} -> "nabl2.Var"#([resource, name]){anno*} \
+    // /)
+    SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))]),
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sort-to-implicate-nabl2Var-rule(|lang): CfSort(sortname) -> [
+    // implicate-injections-MyLang-MySort :: MySort -> MySort
+    DefHasType($[implicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // implicate-injections-MyLang-MySort = origin-track-forced(\
+    //   \ "nabl2.Var"#([resource, name]){anno*} -> "nabl2.Var"#([resource, name]){anno*} \
+    // \)
+    SDefNoArgs($[implicate-injections-[lang]-[sortname]], <origin-preserving-rule> RuleNoCond(
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))]),
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))])
     ))
   ]
 
