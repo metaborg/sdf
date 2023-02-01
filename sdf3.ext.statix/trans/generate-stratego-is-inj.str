@@ -52,14 +52,18 @@ rules
     // is-MyLang-MySort-or-inj = is-string
     SDefNoArgs($[is-[lang]-[sortname]-or-inj], CallNoArgs(SVar($[is-string]))),
     // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
-    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))),
+    // is-MyLang-MySort-or-inj = ?"nabl2.Var"#([_, _])
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Wld(), Wld()]))))))
   ]
 
   geninj-sort-to-is-sort-or-inj-rule(|lang): CfSort(sortname) -> [
     // is-MyLang-MySort-or-inj :: MySort -> MySort
     DefHasType($[is-[lang]-[sortname]-or-inj], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // is-MyLang-MySort-or-inj = ?MySort-Plhdr()
-    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], []))))
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))),
+    // is-MyLang-MySort-or-inj = ?"nabl2.Var"#([_, _])
+    SDefNoArgs($[is-[lang]-[sortname]-or-inj], Match(NoAnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Wld(), Wld()]))))))
   ]
 
 rules
