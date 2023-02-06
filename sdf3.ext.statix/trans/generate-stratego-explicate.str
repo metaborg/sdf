@@ -191,11 +191,11 @@ rules
     DefHasType($[explicate-injections-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
     // explicate-injections-MyLang-MySort = origin-track-forced(\
     //   t -> ToSort2MySort(<explicate-injections-MyLang-ToSort> t)
-    //   where <is-MyLang-MySort-or-inj> t
+    //   where <is-MyLang-MySort-or-inj; not(?"nabl2.Var"#(_))> t
     // \)
     SDefNoArgs($[explicate-injections-[lang]-[sortname]], <origin-preserving-rule> Rule(
       Var(varname), NoAnnoList(Op(consname, [expl-call])),
-      BA(is-call, Var(varname))
+      BA(Seq(is-call, Not(Match(NoAnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), Wld()))))), Var(varname))
     ))
   ]
   with consname   := <geninj-generate-inj-name> (sortname, [param])
