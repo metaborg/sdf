@@ -5,7 +5,6 @@ import java.util.*;
 
 import org.metaborg.parsetable.IParseTable;
 import org.metaborg.parsetable.states.IState;
-import org.metaborg.parsetable.symbols.LiteralSymbol;
 import org.metaborg.sdf2table.deepconflicts.*;
 import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.util.CheckOverlap;
@@ -40,11 +39,11 @@ public class ParseTable implements IParseTable, Serializable {
 
     private BiMap<IProduction, Integer> productionLabels;
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
-    private Queue<State> stateQueue = Lists.newLinkedList();
+    private Queue<State> stateQueue = new LinkedList<>();
     private Map<Integer, State> stateLabels = Maps.newLinkedHashMap();
 
-    private final Set<IProduction> danglingSuffix = Sets.newHashSet();
-    private final Set<IProduction> danglingPrefix = Sets.newHashSet();
+    private final Set<IProduction> danglingSuffix = new HashSet<IProduction>();
+    private final Set<IProduction> danglingPrefix = new HashSet<IProduction>();
 
     // mapping from a symbol X to all items A = α . X β to all states s that have that item
     private SymbolStatesMapping symbolStatesMapping = new SymbolStatesMapping();
@@ -52,7 +51,7 @@ public class ParseTable implements IParseTable, Serializable {
     private Map<Set<LRItem>, State> kernelStatesMapping = Maps.newLinkedHashMap();
     private Map<LRItem, Set<LRItem>> itemDerivedItemsCache = Maps.newLinkedHashMap();
 
-    private List<org.metaborg.parsetable.productions.IProduction> productions = Lists.newArrayList();
+    private List<org.metaborg.parsetable.productions.IProduction> productions = new ArrayList<>();
     Map<IProduction, ParseTableProduction> productionsMapping = Maps.newLinkedHashMap();
 
     // fields to implement declarative disambiguation using contextual grammars
@@ -60,7 +59,7 @@ public class ParseTable implements IParseTable, Serializable {
     private final ParseTableConfiguration config;
 
     // maps a set of contexts to a unique integer
-    private Map<Set<Context>, Integer> ctxUniqueInt = Maps.newHashMap();
+    private Map<Set<Context>, Integer> ctxUniqueInt = new HashMap<>();
     private final Map<Integer, Integer> leftmostContextsMapping = Maps.newLinkedHashMap();
     private final Map<Integer, Integer> rightmostContextsMapping = Maps.newLinkedHashMap();
 
@@ -186,15 +185,15 @@ public class ParseTable implements IParseTable, Serializable {
         // direct and indirect left recursion :
         // depth first search, whenever finding a cycle, those symbols are left recursive with respect to each other
 
-        List<IProduction> prodsVisited = Lists.newArrayList();
+        List<IProduction> prodsVisited = new ArrayList<>();
         for(Production p : grammar.getUniqueProductionMapping().values()) {
-            leftRecursive(p, Lists.newArrayList(), Lists.newArrayList());
+            leftRecursive(p, new ArrayList<Symbol>(), new ArrayList<IProduction>());
         }
 
         // similar idea with right recursion
         prodsVisited.clear();
         for(Production p : grammar.getUniqueProductionMapping().values()) {
-            rightRecursive(p, Lists.newArrayList(), Lists.newArrayList());
+            rightRecursive(p, new ArrayList<ISymbol>(), new ArrayList<IProduction>());
         }
 
         for(Production p : grammar.getUniqueProductionMapping().values()) {
@@ -212,7 +211,7 @@ public class ParseTable implements IParseTable, Serializable {
     // FIXME consider nullable symbols
     private void calculateDerivations() {
 
-        List<ISymbol> processedSymbols = Lists.newArrayList();
+        List<ISymbol> processedSymbols = new ArrayList<>();
         for(ISymbol s : grammar.getSymbolProductionsMapping().keySet()) {
             calculateDerivations(s, processedSymbols);
         }
@@ -302,7 +301,7 @@ public class ParseTable implements IParseTable, Serializable {
         for(ISymbol s : prod.rightHand()) {
             if(just_seen.contains(s)) {
                 // found a cycle
-                Set<Symbol> cycle = Sets.newHashSet();
+                Set<Symbol> cycle = new HashSet<Symbol>();
                 int pos = just_seen.size() - 1;
                 while(pos != just_seen.indexOf(s)) {
                     cycle.add(just_seen.get(pos));
@@ -347,7 +346,7 @@ public class ParseTable implements IParseTable, Serializable {
             ISymbol s = prod.rightHand().get(i);
             if(just_seen.contains(s)) {
                 // found a cycle
-                Set<ISymbol> cycle = Sets.newHashSet();
+                Set<ISymbol> cycle = new HashSet<ISymbol>();
                 int pos = just_seen.size() - 1;
                 while(pos != just_seen.indexOf(s)) {
                     cycle.add(just_seen.get(pos));
@@ -378,7 +377,7 @@ public class ParseTable implements IParseTable, Serializable {
                 // mutually recursive priorities = operator precedence
                 if(mutuallyRecursive(p)) {
                     // p1 > p2 becomes p1 left p2 and p1 right p2
-                    Set<Integer> new_values = Sets.newHashSet();
+                    Set<Integer> new_values = new HashSet<Integer>();
 
                     // if p2 : A = A w, priority should affect only right recursive position of p1
                     if(p.lower().leftRecursivePosition() != -1 && p.lower().rightRecursivePosition() == -1) {
@@ -571,7 +570,7 @@ public class ParseTable implements IParseTable, Serializable {
                 symbs.addAll(scc.getNodesMapping().get(nonTerminalExpGrammar));
             }
 
-            Set<IProduction> combinedGrammars = Sets.newHashSet();
+            Set<IProduction> combinedGrammars = new HashSet<IProduction>();
             for(ISymbol recursive : symbs) {
                 combinedGrammars.addAll(grammar.getExpressionGrammars().get(recursive));
             }
@@ -639,7 +638,7 @@ public class ParseTable implements IParseTable, Serializable {
     private void checkMissingPriorities() {
         SetMultimap<ISymbol, Production> leftRecursive = HashMultimap.create();
         SetMultimap<ISymbol, Production> rightRecursive = HashMultimap.create();
-        Set<ISymbol> recursiveSymbols = Sets.newHashSet();
+        Set<ISymbol> recursiveSymbols = new HashSet<ISymbol>();
 
         // operator-style ambiguities due to lack of priorities
         for(Production p : grammar.getUniqueProductionMapping().values()) {
@@ -782,9 +781,9 @@ public class ParseTable implements IParseTable, Serializable {
     private void checkHarmfulOverlap(SCCNodes<ISymbol> scc) {
         // for each expression grammar check productions with any overlap at all
         for(Set<IProduction> expProds : grammar.getCombinedExpressionGrammars()) {
-            Set<IProduction> emptyOperatorOverlappingProds = Sets.newHashSet();
+            Set<IProduction> emptyOperatorOverlappingProds = new HashSet<IProduction>();
 
-            Set<ISymbol> literals = Sets.newHashSet();
+            Set<ISymbol> literals = new HashSet<ISymbol>();
 
             // collect literals to check for overlap
             for(IProduction p : expProds) {
@@ -810,7 +809,7 @@ public class ParseTable implements IParseTable, Serializable {
             }
 
             // check expression productions with any overlap at all
-            Set<ISymbol> literalsConsidered = Sets.newHashSet();
+            Set<ISymbol> literalsConsidered = new HashSet<ISymbol>();
 
             for(ISymbol lit : literals) {
                 boolean detectedHarmfulOverlap = false;
@@ -920,8 +919,8 @@ public class ParseTable implements IParseTable, Serializable {
     }
 
     private boolean containsSameOperators(Set<IProduction> p, Set<IProduction> q) {
-        Set<ISymbol> operatorsP = Sets.newHashSet();
-        Set<ISymbol> operatorsQ = Sets.newHashSet();
+        Set<ISymbol> operatorsP = new HashSet<ISymbol>();
+        Set<ISymbol> operatorsQ = new HashSet<ISymbol>();
 
         for(IProduction prods : p) {
             for(ISymbol symb_rhs : prods.rightHand()) {
@@ -946,9 +945,9 @@ public class ParseTable implements IParseTable, Serializable {
         IProduction[] element = new IProduction[set.size()];
         set.toArray(element);
         final int SET_LENGTH = 1 << element.length;
-        List<Set<IProduction>> powerSet = Lists.newArrayList();
+        List<Set<IProduction>> powerSet = new ArrayList<>();
         for(int binarySet = 0; binarySet < SET_LENGTH; binarySet++) {
-            Set<IProduction> subset = Sets.newHashSet();
+            Set<IProduction> subset = new HashSet<IProduction>();
             for(int bit = 0; bit < element.length; bit++) {
                 int mask = 1 << bit;
                 if((binarySet & mask) != 0) {
@@ -1085,7 +1084,7 @@ public class ParseTable implements IParseTable, Serializable {
         }
 
         Queue<ContextualSymbol> contextual_symbols = Queues.newArrayDeque(grammar.getContextualSymbols());
-        Set<ContextualSymbol> processed_symbols = Sets.newHashSet();
+        Set<ContextualSymbol> processed_symbols = new HashSet<ContextualSymbol>();
 
         while(!contextual_symbols.isEmpty()) {
             ContextualSymbol ctx_s = contextual_symbols.poll();

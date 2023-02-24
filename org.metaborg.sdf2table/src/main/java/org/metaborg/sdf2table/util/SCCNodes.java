@@ -1,14 +1,13 @@
 package org.metaborg.sdf2table.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class SCCNodes<T> {
     final Graph<T> orig;
@@ -19,8 +18,8 @@ public class SCCNodes<T> {
 
     public SCCNodes(Graph<T> orig) {
         this.orig = orig;
-        sccNodes = Lists.newArrayList();
-        nodeSCCNodesMapping = Maps.newHashMap();
+        sccNodes = new ArrayList<>();
+        nodeSCCNodesMapping = new HashMap<>();
     }
 
     // The main function that finds and prints all strongly
@@ -53,7 +52,7 @@ public class SCCNodes<T> {
 
             // Print Strongly connected component of the popped vertex
             if(visited[v] == false) {
-                nodesComponent = Sets.newHashSet();
+                nodesComponent = new HashSet<T>();
                 DFSUtil(gr, v, visited);
                 if(nodesComponent.size() > 1) {
                     sccNodes.add(nodesComponent);

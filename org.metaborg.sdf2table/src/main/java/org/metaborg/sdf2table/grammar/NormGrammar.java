@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.grammar;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,15 +80,15 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<ISymbol, ISymbol> rightDerivable;
 
     public NormGrammar() {
-        this.filesRead = Sets.newHashSet();
+        this.filesRead = new HashSet<File>();
         this.gf = new GrammarFactory();
         this.uniqueProductionMapping = Maps.newLinkedHashMap();
-        this.sortConsProductionMapping = Maps.newHashMap();
+        this.sortConsProductionMapping = new HashMap<>();
         this.prodContextualProdMapping = HashBiMap.create();
         this.leftRecursiveSymbolsMapping = HashMultimap.create();
         this.rightRecursiveSymbolsMapping = HashMultimap.create();
-        this.derivedContextualProds = Sets.newHashSet();
-        this.contextualSymbols = Sets.newHashSet();
+        this.derivedContextualProds = new HashSet<ContextualProduction>();
+        this.contextualSymbols = new HashSet<ContextualSymbol>();
         this.longestMatchProdsFront = LinkedHashMultimap.create();
         this.longestMatchProdsBack = LinkedHashMultimap.create();
         this.shortestMatchProdsFront = LinkedHashMultimap.create();
@@ -95,20 +96,20 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.productionAttributesMapping = HashMultimap.create();
         this.priorities = HashMultimap.create();
         this.indexedPriorities = HashMultimap.create();
-        this.constructors = Maps.newHashMap();
-        this.transitivePriorities = Sets.newHashSet();
-        this.nonTransitivePriorities = Sets.newHashSet();
-        this.productionsOnPriorities = Sets.newHashSet();
+        this.constructors = new HashMap<>();
+        this.transitivePriorities = new HashSet<Priority>();
+        this.nonTransitivePriorities = new HashSet<Priority>();
+        this.productionsOnPriorities = new HashSet<Production>();
         this.transitivePriorityArgs = HashMultimap.create();
         this.nonTransitivePriorityArgs = HashMultimap.create();
         this.higherPriorityProductions = HashMultimap.create();
         this.symbolProductionsMapping = HashMultimap.create();
-        this.cacheSymbolsRead = Maps.newHashMap();
-        this.cacheProductionsRead = Maps.newHashMap();
-        this.symbols = Sets.newHashSet();
+        this.cacheSymbolsRead = new HashMap<>();
+        this.cacheProductionsRead = new HashMap<>();
+        this.symbols = new HashSet<ISymbol>();
         this.literalProductionsMapping = HashMultimap.create();
         this.expressionGrammars = HashMultimap.create();
-        this.combinedExpressionGrammars = Sets.newHashSet();
+        this.combinedExpressionGrammars = new HashSet<Set<IProduction>>();
         this.leftDerivable = HashMultimap.create();
         this.rightDerivable = HashMultimap.create();
     }

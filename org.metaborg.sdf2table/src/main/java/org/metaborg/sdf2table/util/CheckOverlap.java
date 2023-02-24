@@ -1,5 +1,8 @@
 package org.metaborg.sdf2table.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +14,6 @@ import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
@@ -21,8 +23,8 @@ public class CheckOverlap {
     private final Set<IProduction> p;
     private final Set<IProduction> q;
     private final int maxDepth;
-    private final Map<Integer, Set<Node>> depthToTreesP = Maps.newHashMap();
-    private final Map<Integer, Set<Node>> depthToTreesQ = Maps.newHashMap();
+    private final Map<Integer, Set<Node>> depthToTreesP = new HashMap<>();
+    private final Map<Integer, Set<Node>> depthToTreesQ = new HashMap<>();
     private final SetMultimap<String, Node> yieldsP = HashMultimap.create();
     private final SetMultimap<String, Node> yieldsQ = HashMultimap.create();
 
@@ -35,15 +37,15 @@ public class CheckOverlap {
 
         public Node(ISymbol s) {
             this.symbol = s;
-            leaves = Lists.newArrayList();
-            children = Lists.newArrayList();
-            productions = Sets.newHashSet();
+            leaves = new ArrayList<>();
+            children = new ArrayList<>();
+            productions = new HashSet<IProduction>();
         }
 
         public Node(IProduction p) {
             this.symbol = p.leftHand();
-            leaves = Lists.newArrayList();
-            children = Lists.newArrayList();
+            leaves = new ArrayList<>();
+            children = new ArrayList<>();
             productions = Sets.newHashSet(p);
             for(ISymbol symb_rhs : p.rightHand()) {
                 Node child = new Node(symb_rhs);
@@ -54,8 +56,8 @@ public class CheckOverlap {
 
         public Node(Node n) {
             this.symbol = n.symbol;
-            this.leaves = Lists.newArrayList();
-            this.children = Lists.newArrayList();
+            this.leaves = new ArrayList<>();
+            this.children = new ArrayList<>();
             this.productions = Sets.newHashSet(n.productions);
 
 
@@ -150,8 +152,8 @@ public class CheckOverlap {
 
     public String checkHarmfulOverlap() {
         int depth = 0;
-        Set<Node> treesP = Sets.newHashSet();
-        Set<Node> treesQ = Sets.newHashSet();
+        Set<Node> treesP = new HashSet<Node>();
+        Set<Node> treesQ = new HashSet<Node>();
 
         for(IProduction prod : p) {
             Node node = new Node(prod);
@@ -179,8 +181,8 @@ public class CheckOverlap {
                 Set<Node> nodesQ = yieldsQ.get(yield);
 
                 if(!nodesP.equals(nodesQ)) {
-                    Set<IProduction> prodsP = Sets.newHashSet();
-                    Set<IProduction> prodsQ = Sets.newHashSet();
+                    Set<IProduction> prodsP = new HashSet<IProduction>();
+                    Set<IProduction> prodsQ = new HashSet<IProduction>();
 
                     for(Node n : nodesP) {
                         prodsP.addAll(n.productions);
@@ -208,7 +210,7 @@ public class CheckOverlap {
     }
 
     private Set<Node> getNewTrees(char set, int depth) {
-        Set<Node> oldTrees, newTrees = Sets.newHashSet();
+        Set<Node> oldTrees, newTrees = new HashSet<Node>();
         if(set == 'p') {
             oldTrees = depthToTreesP.get(depth - 1);
             for(Node n : oldTrees) {

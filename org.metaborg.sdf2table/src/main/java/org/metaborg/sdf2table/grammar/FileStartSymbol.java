@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,14 +11,12 @@ import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Lists;
-
 public class FileStartSymbol extends Symbol {
 
     private static final long serialVersionUID = 3822777948371151629L;
 
     protected FileStartSymbol() {
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
 

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.io;
 
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         removedPrios = HashMultimap.create(Multimaps.filterEntries(referencePriorities,
             e -> !currentPriorities.containsEntry(e.getKey(), e.getValue())));
 
-        changedSymbols = Sets.newHashSet();
+        changedSymbols = new HashSet<Symbol>();
 
         boolean changed = !(additionalPrios.isEmpty() && removedPrios.isEmpty() && additionalProds.isEmpty()
             && removedProds.isEmpty());

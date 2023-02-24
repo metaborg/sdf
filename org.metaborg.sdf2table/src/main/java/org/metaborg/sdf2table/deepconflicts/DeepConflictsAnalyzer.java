@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.deepconflicts;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +25,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -262,7 +262,7 @@ public class DeepConflictsAnalyzer {
         // conflicting position
         int conflict_pos = higher.leftRecursivePosition();
 
-        Set<Context> contexts = Sets.newHashSet();
+        Set<Context> contexts = new HashSet<Context>();
         int labelLower = productionLabels.get(prio.lower());
         if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
             rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
@@ -270,7 +270,7 @@ public class DeepConflictsAnalyzer {
         Context new_context = deepContextFrom(labelLower, ContextPosition.RIGHTMOST);
         contexts.add(new_context);
 
-        Set<Integer> conflicting_args = Sets.newHashSet();
+        Set<Integer> conflicting_args = new HashSet<Integer>();
         conflicting_args.add(conflict_pos);
 
         // create production E = E<lower> in E
@@ -298,7 +298,7 @@ public class DeepConflictsAnalyzer {
         // conflicting position
         int conflict_pos = higher.rightRecursivePosition();
 
-        Set<Context> contexts = Sets.newHashSet();
+        Set<Context> contexts = new HashSet<Context>();
         int labelLower = productionLabels.get(prio.lower());
         if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
             leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
@@ -306,7 +306,7 @@ public class DeepConflictsAnalyzer {
         Context new_context = deepContextFrom(labelLower, ContextPosition.LEFTMOST);
         contexts.add(new_context);
 
-        Set<Integer> conflicting_args = Sets.newHashSet();
+        Set<Integer> conflicting_args = new HashSet<Integer>();
         conflicting_args.add(conflict_pos);
 
         // create production E = E in E<lower>
@@ -329,7 +329,7 @@ public class DeepConflictsAnalyzer {
             if(conflict < 0)
                 continue;
 
-            Set<Context> contexts = Sets.newHashSet();
+            Set<Context> contexts = new HashSet<Context>();
             int labelLower = productionLabels.get(prio.lower());
             if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
@@ -339,7 +339,7 @@ public class DeepConflictsAnalyzer {
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
-            Set<Integer> conflicting_args = Sets.newHashSet();
+            Set<Integer> conflicting_args = new HashSet<Integer>();
             conflicting_args.add(conflict);
 
             // create production E = pre E<lower> in E
@@ -367,7 +367,7 @@ public class DeepConflictsAnalyzer {
             if(conflict < 0 || lower.getRhs().size() < (higher.getRhs().size() - conflict))
                 continue;
 
-            Set<Context> contexts = Sets.newHashSet();
+            Set<Context> contexts = new HashSet<Context>();
             int labelLower = productionLabels.get(prio.lower());
             if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                 leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
@@ -377,7 +377,7 @@ public class DeepConflictsAnalyzer {
             contexts.add(new_context_right);
             contexts.add(new_context_left);
 
-            Set<Integer> conflicting_args = Sets.newHashSet();
+            Set<Integer> conflicting_args = new HashSet<Integer>();
             conflicting_args.add(conflict);
 
             // create production E = E in E<lower> pos
@@ -411,10 +411,10 @@ public class DeepConflictsAnalyzer {
                 // is and indirect conflict
                 && !higher.getRhs().get(arg).equals(prio.lower().leftHand())) {
 
-                Set<Integer> conflicting_args = Sets.newHashSet();
+                Set<Integer> conflicting_args = new HashSet<Integer>();
                 conflicting_args.add(arg);
 
-                Set<Context> contexts = Sets.newHashSet();
+                Set<Context> contexts = new HashSet<Context>();
                 int labelLower = productionLabels.get(prio.lower());
                 // if(!isContextMappingStable && !rightmostContextsMapping.containsKey(labelLower)) {
                 // rightmostContextsMapping.put(labelLower, rightmostContextsMapping.size());
@@ -444,10 +444,10 @@ public class DeepConflictsAnalyzer {
                 // is an indirect conflict
                 && !higher.getRhs().get(arg).equals(prio.lower().leftHand())) {
 
-                Set<Integer> conflicting_args = Sets.newHashSet();
+                Set<Integer> conflicting_args = new HashSet<Integer>();
                 conflicting_args.add(arg);
 
-                Set<Context> contexts = Sets.newHashSet();
+                Set<Context> contexts = new HashSet<Context>();
                 int labelLower = productionLabels.get(prio.lower());
                 if(!isContextMappingStable && !leftmostContextsMapping.containsKey(labelLower)) {
                     leftmostContextsMapping.put(labelLower, leftmostContextsMapping.size());
@@ -473,7 +473,7 @@ public class DeepConflictsAnalyzer {
     }
 
     private void handleLongestMatchConflictFront(ParseTable pt2, Symbol s) {
-        Set<Context> contexts = Sets.newHashSet();
+        Set<Context> contexts = new HashSet<Context>();
         GrammarFactory gf = this.pt.normalizedGrammar().getGrammarFactory();
 
         Set<Production> longestMatchProds = pt.normalizedGrammar().getLongestMatchProdsFront().get(s);
@@ -521,7 +521,7 @@ public class DeepConflictsAnalyzer {
     }
 
     private void handleLongestMatchConflictBack(ParseTable pt, Symbol s) {
-        Set<Context> contexts = Sets.newHashSet();
+        Set<Context> contexts = new HashSet<Context>();
         GrammarFactory gf = this.pt.normalizedGrammar().getGrammarFactory();
 
         Set<Production> longestMatchProds = pt.normalizedGrammar().getLongestMatchProdsBack().get(s);
@@ -578,7 +578,7 @@ public class DeepConflictsAnalyzer {
                             }
 
                             // create A.C = α A{C} S+
-                            List<Symbol> new_rhs = Lists.newArrayList();
+                            List<Symbol> new_rhs = new ArrayList<>();
                             for(int i = 0; i < p.arity() - 1; i++) {
                                 new_rhs.add(p.getRhs().get(i));
                             }

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.deepconflicts;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +129,7 @@ public final class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContext(Context context) {
-        Set<Context> newContexts = Sets.newHashSet();
+        Set<Context> newContexts = new HashSet<Context>();
         newContexts.addAll(this.getContexts());
         newContexts.add(context);
 
@@ -141,7 +142,7 @@ public final class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
-        Set<Context> newContexts = Sets.newHashSet();
+        Set<Context> newContexts = new HashSet<Context>();
         newContexts.addAll(this.getContexts());
         newContexts.addAll(contexts);
 

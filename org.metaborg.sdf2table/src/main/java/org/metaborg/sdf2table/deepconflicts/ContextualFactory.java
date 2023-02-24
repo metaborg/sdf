@@ -1,6 +1,8 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -12,7 +14,6 @@ import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class ContextualFactory implements Serializable {
@@ -24,9 +25,9 @@ public class ContextualFactory implements Serializable {
     private final Map<Set<Object>, ContextualSymbol> contextualSymbols;
 
     public ContextualFactory() {
-        contexts = Maps.newHashMap();
-        contextualProductions = Maps.newHashMap();
-        contextualSymbols = Maps.newHashMap();
+        contexts = new HashMap<>();
+        contextualProductions = new HashMap<>();
+        contextualSymbols = new HashMap<>();
     }
 
     public Context createContext(int c, ContextType type, ContextPosition position,
@@ -62,7 +63,7 @@ public class ContextualFactory implements Serializable {
     public ContextualProduction createContextualProduction(Production origProduction, Set<Context> contexts,
         Set<Integer> args, int origProductionLabel, ContextualFactory cf) {
         ISymbol lhs = origProduction.leftHand();
-        List<ISymbol> rhs = Lists.newArrayList();
+        List<ISymbol> rhs = new ArrayList<>();
 
         for(int i = 0; i < origProduction.arity(); i++) {
             if(args.contains(i)) {

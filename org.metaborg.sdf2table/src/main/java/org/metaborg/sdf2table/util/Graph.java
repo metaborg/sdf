@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
 
 public class Graph<T> {
 
@@ -27,7 +26,7 @@ public class Graph<T> {
         adjacencyList = new LinkedList[v];
         for(int i = 0; i < v; i++) {
             for(int j = 0; j < v; j++) {
-                adjacencyList[i] = Lists.newLinkedList();
+                adjacencyList[i] = new LinkedList<>();
             }
         }
     }
@@ -38,7 +37,7 @@ public class Graph<T> {
         addVertices(orig_labels);
         for(int i = 0; i < orig_labels.size(); i++) {
             for(int j = 0; j < orig_labels.size(); j++) {
-                adjacencyList[i] = Lists.newLinkedList();
+                adjacencyList[i] = new LinkedList<>();
             }
         }
     }

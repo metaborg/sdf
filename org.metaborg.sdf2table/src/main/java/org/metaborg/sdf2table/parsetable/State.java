@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +20,6 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
@@ -48,7 +48,7 @@ public class State implements IState, Comparable<State>, Serializable {
     public State(Set<LRItem> kernel, ParseTable pt) {
         items = Sets.newLinkedHashSet();
         gotos = Sets.newLinkedHashSet();
-        gotosMapping = Maps.newHashMap();
+        gotosMapping = new HashMap<>();
         symbol_items = LinkedHashMultimap.create();
         lr_actions = LinkedHashMultimap.create();
         this.rejectable = false;

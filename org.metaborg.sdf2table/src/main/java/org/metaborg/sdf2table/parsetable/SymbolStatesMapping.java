@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -10,7 +11,6 @@ import org.metaborg.sdf2table.grammar.Symbol;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public class SymbolStatesMapping implements Serializable {
 
@@ -25,7 +25,7 @@ public class SymbolStatesMapping implements Serializable {
     }
 
     public Set<State> getStatesfromSymbol(Symbol symb) {
-        Set<State> result = Sets.newHashSet();
+        Set<State> result = new HashSet<State>();
 
         for(LRItem item : symbolItems.get(symb)) {
             result.addAll(itemStates.get(item));
@@ -34,7 +34,7 @@ public class SymbolStatesMapping implements Serializable {
     }
 
     public Set<State> getStatesfromProduction(IProduction prod, SetMultimap<Priority, Integer> priorities) {
-        Set<State> result = Sets.newHashSet();
+        Set<State> result = new HashSet<State>();
 
         for(LRItem item : symbolItems.get(prod.leftHand())) {
             if(!item.isPriorityConflict(prod)) {

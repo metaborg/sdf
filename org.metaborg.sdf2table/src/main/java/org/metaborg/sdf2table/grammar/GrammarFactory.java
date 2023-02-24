@@ -1,6 +1,8 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +10,6 @@ import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class GrammarFactory implements Serializable {
 
@@ -39,30 +40,30 @@ public class GrammarFactory implements Serializable {
     private EOFSymbol eofSymbol;
 
     public GrammarFactory() {
-        altSymbols = Maps.newHashMap();
-        characterClassSymbols = Maps.newHashMap();
-        constructorAttributes = Maps.newHashMap();
-        contextFreeSymbols = Maps.newHashMap();
-        lexicalSymbols = Maps.newHashMap();
-        optionalSymbols = Maps.newHashMap();
-        deprecatedAttributes = Maps.newHashMap();
-        generalAttributes = Maps.newHashMap();
-        iterSepSymbols = Maps.newHashMap();
-        iterStarSepSymbols = Maps.newHashMap();
-        iterStarSymbols = Maps.newHashMap();
-        iterSymbols = Maps.newHashMap();
-        priorities = Maps.newHashMap();
-        sequenceSymbols = Maps.newHashMap();
-        productions = Maps.newHashMap();
-        uniqueProductions = Maps.newHashMap();
-        productionReferences = Maps.newHashMap();
-        sorts = Maps.newHashMap();
-        termAttributes = Maps.newHashMap();
+        altSymbols = new HashMap<>();
+        characterClassSymbols = new HashMap<>();
+        constructorAttributes = new HashMap<>();
+        contextFreeSymbols = new HashMap<>();
+        lexicalSymbols = new HashMap<>();
+        optionalSymbols = new HashMap<>();
+        deprecatedAttributes = new HashMap<>();
+        generalAttributes = new HashMap<>();
+        iterSepSymbols = new HashMap<>();
+        iterStarSepSymbols = new HashMap<>();
+        iterStarSymbols = new HashMap<>();
+        iterSymbols = new HashMap<>();
+        priorities = new HashMap<>();
+        sequenceSymbols = new HashMap<>();
+        productions = new HashMap<>();
+        uniqueProductions = new HashMap<>();
+        productionReferences = new HashMap<>();
+        sorts = new HashMap<>();
+        termAttributes = new HashMap<>();
     }
 
 
     public AltSymbol createAltSymbol(Symbol s1, Symbol s2) {
-        List<Object> altSymbolFields = Lists.newArrayList();
+        List<Object> altSymbolFields = new ArrayList<>();
         altSymbolFields.add(s1);
         altSymbolFields.add(s2);
 
@@ -146,7 +147,7 @@ public class GrammarFactory implements Serializable {
 
 
     public IterSepSymbol createIterSepSymbol(Symbol symbol, Sort separator) {
-        List<Object> iterSepFields = Lists.newArrayList();
+        List<Object> iterSepFields = new ArrayList<>();
         iterSepFields.add(symbol);
         iterSepFields.add(separator);
 
@@ -161,7 +162,7 @@ public class GrammarFactory implements Serializable {
     }
 
     public IterStarSepSymbol createIterStarSepSymbol(Symbol s, Sort sep) {
-        List<Object> iterStarSepFields = Lists.newArrayList();
+        List<Object> iterStarSepFields = new ArrayList<>();
         iterStarSepFields.add(s);
         iterStarSepFields.add(sep);
 
@@ -218,7 +219,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Priority createPriority(Production higher, Production lower, boolean transitive) {
-        List<Object> priorityFields = Lists.newArrayList();
+        List<Object> priorityFields = new ArrayList<>();
         priorityFields.add(higher);
         priorityFields.add(lower);
         priorityFields.add(transitive);
@@ -236,7 +237,7 @@ public class GrammarFactory implements Serializable {
 
     public Production createProduction(Symbol lhs, List<Symbol> rhs) {
         // inline rhs as fields
-        List<Object> productionFields = Lists.newArrayList();
+        List<Object> productionFields = new ArrayList<>();
         productionFields.add(lhs);
         productionFields.addAll(rhs);
 
@@ -252,7 +253,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Production createProduction(Symbol lhs, List<Symbol> rhs, int leftRecursivePos, int rightRecursivePos) {
-        List<Object> productionFields = Lists.newArrayList();
+        List<Object> productionFields = new ArrayList<>();
         productionFields.add(lhs);
         productionFields.addAll(rhs);
 
@@ -367,7 +368,7 @@ public class GrammarFactory implements Serializable {
 
 
     public UniqueProduction createUniqueProduction(Symbol lhs, List<Symbol> rhs) {
-        List<Object> uniqueProductionFields = Lists.newArrayList();
+        List<Object> uniqueProductionFields = new ArrayList<>();
         uniqueProductionFields.add(lhs);
         uniqueProductionFields.addAll(rhs);
         if(uniqueProductions.containsKey(uniqueProductionFields)) {

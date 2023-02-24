@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import static org.metaborg.sdf2table.grammar.AssociativityInfo.getAllProductionLabels;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,6 @@ import org.metaborg.sdf2table.io.ParseTableIO;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class ParseTableProduction implements org.metaborg.parsetable.productions.IProduction, Serializable {
 
@@ -175,7 +175,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
         this.isOperator = isLiteral && checkNotIsLetter(p.leftHand());
 
-        layoutConstraints = Sets.newHashSet();
+        layoutConstraints = new HashSet<LayoutConstraintAttribute>();
         boolean ignoreLayout = false;
         boolean longestMatch = false;
         for(IAttribute attr : attrs) {

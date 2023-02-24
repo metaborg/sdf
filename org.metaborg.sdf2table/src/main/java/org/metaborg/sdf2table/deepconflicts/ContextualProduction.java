@@ -1,6 +1,8 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -19,7 +21,6 @@ import org.spoofax.interpreter.terms.ITermFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public final class ContextualProduction implements IProduction, Serializable {
 
@@ -51,8 +52,8 @@ public final class ContextualProduction implements IProduction, Serializable {
 
     public ContextualProduction addContext(Context context, Set<Integer> conflictingArgs) {
         ISymbol newLhs = lhs;
-        List<ISymbol> newRhs = Lists.newArrayList();
-        Set<Context> contexts = Sets.newHashSet();
+        List<ISymbol> newRhs = new ArrayList<>();
+        Set<Context> contexts = new HashSet<Context>();
         contexts.add(context);
 
         // FIXME pass contextual tokens considering nullable symbols
@@ -93,7 +94,7 @@ public final class ContextualProduction implements IProduction, Serializable {
 
     public ContextualProduction addContexts(Set<Context> contexts, Set<Integer> conflictingArgs) {
         ISymbol newLhs = lhs;
-        List<ISymbol> newRhs = Lists.newArrayList();
+        List<ISymbol> newRhs = new ArrayList<>();
 
         // FIXME pass context considering nullable symbols
         // add context to all possible conflicting symbols
@@ -135,7 +136,7 @@ public final class ContextualProduction implements IProduction, Serializable {
         Set<ContextualSymbol> processedSymbols, ParseTable pt) {
 
         List<ISymbol> newRhs = Lists.newArrayList(rhs);
-        Set<Context> contexts = Sets.newHashSet();
+        Set<Context> contexts = new HashSet<Context>();
         contexts.addAll(context);
 
         // FIXME pass contextual token considering nullable symbols
