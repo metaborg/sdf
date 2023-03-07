@@ -303,6 +303,9 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.symbolProductionsMapping.clear();
         this.transitivePriorities.clear();
         this.transitivePriorityArgs.clear();
+    }
+
+    public void postParenthesizerCleanup() {
         this.filesRead.clear();
     }
 

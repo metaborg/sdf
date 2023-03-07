@@ -51,6 +51,7 @@ rules
                 Import("libstratego-sglr"),
 
                 Import("libspoofax/sdf/pp"),
+                Import("libspoofax/editor/refactoring/construct-text"),
                 Import("libspoofax/term/origin"),
                 Import("libspoofax/term/annotation"),
 
