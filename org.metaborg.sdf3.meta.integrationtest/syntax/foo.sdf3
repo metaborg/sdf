@@ -10,6 +10,10 @@ context-free start-symbols
 
   StrategoLang-Module
 
+context-free sorts
+
+  StmtMLV
+
 context-free syntax
 
   StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
@@ -24,12 +28,26 @@ context-free syntax
 // TODO: support variables section in SDF3 or document this as the way to write Stratego mix syntax
 
   Exp.meta-var = ExpVar
-  Stmt+.meta-listvar = StmtListVar
-  Stmt+.Snoc = Stmt+ StmtListVar
+
+/*
+  Stmt* =            // Nil
+  Stmt* = Stmt+      // (injection)
+  Stmt+ = Stmt       // Ins
+  Stmt+ = Stmt+ Stmt // Snoc
+
+  // Stmt+ = Stmt Stmt+ // (would be Cons)
+  // Stmt+ = Stmt+ Stmt+ {right} // (old Conc rule before Snoc)
+*/
+
+
+  StmtMLV.meta-listvar = StmtListVar
+
+  Stmt+ = StmtMLV
+  Stmt+.Conc = Stmt+ StmtMLV
 
 lexical sorts
 
-  ExpVar
+  ExpVar StmtListVar
 
 lexical syntax
 

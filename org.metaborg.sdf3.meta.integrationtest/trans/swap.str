@@ -15,7 +15,7 @@ rules
   editor-action-surround-stmts-concrete-syntax-varlist = editor-action(surround-stmts-concrete-syntax-varlist)
 
   editor-action(s):
-    (_, _, ast, path, _) -> (path, <topdown(try(s))> ast) 
+    (_, _, ast, path, _) -> (path, <oncetd(s)> ast) 
 
   swap-exps-abstract-syntax:
     Add(e1, e2) -> Add(e2, e1)
@@ -38,5 +38,5 @@ rules
   where stmt2* := <reverse> stmt1*
 
   surround-stmts-concrete-syntax-varlist:
-    |[ stmt1* ]| ->
-    program |[ a; stmt1* a; ]|
+    |[ stmt1* ]|  ->
+    program |[ a; stmt1* b; ]|
