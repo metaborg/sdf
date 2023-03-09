@@ -8,13 +8,15 @@ imports
 
 context-free start-symbols
 
-  StrategoLang-Module
+  Module
 
 context-free sorts
 
-  StmtMLV
+  Module StmtListMeta
 
 context-free syntax
+
+  Module = StrategoLang-Module
 
   StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
   StrategoLang-PreTerm.ToTerm = <stmt |[ <Stmt> ]|>
@@ -24,26 +26,17 @@ context-free syntax
 
   Exp.FromTerm = [~[StrategoLang-Term]]
   Exp.FromTerm = [~exp:[StrategoLang-Term]]
+  
+  StmtListMeta.FromTerm = [~*[StrategoLang-Term]]
 
-// TODO: support variables section in SDF3 or document this as the way to write Stratego mix syntax
+  Stmt+ = StmtListMeta
+  Stmt+.Conc = Stmt+ StmtListMeta
+
+context-free syntax // meta variables
 
   Exp.meta-var = ExpVar
-
-/*
-  Stmt* =            // Nil
-  Stmt* = Stmt+      // (injection)
-  Stmt+ = Stmt       // Ins
-  Stmt+ = Stmt+ Stmt // Snoc
-
-  // Stmt+ = Stmt Stmt+ // (would be Cons)
-  // Stmt+ = Stmt+ Stmt+ {right} // (old Conc rule before Snoc)
-*/
-
-
-  StmtMLV.meta-listvar = StmtListVar
-
-  Stmt+ = StmtMLV
-  Stmt+.Conc = Stmt+ StmtMLV
+  
+  StmtListMeta.meta-listvar = StmtListVar
 
 lexical sorts
 
