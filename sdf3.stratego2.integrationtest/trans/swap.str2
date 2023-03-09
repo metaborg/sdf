@@ -1,0 +1,72 @@
+module swap
+
+imports
+
+  strategolib
+  signatures/-
+
+rules
+
+  swap-editor-abstract-syntax :: ? * ? * ? * ? * ? -> ? * ?
+  swap-editor-abstract-syntax        = editor-action(is(Exp);swap-exps-abstract-syntax|)
+
+  swap-editor-concrete-syntax :: ? * ? * ? * ? * ? -> ? * ?
+  swap-editor-concrete-syntax        = editor-action(is(Stmt);swap-exps-concrete-syntax|)
+
+  swap-editor-concrete-syntax-simple :: ? * ? * ? * ? * ? -> ? * ?
+  swap-editor-concrete-syntax-simple = editor-action(is(Stmt);swap-exps-concrete-syntax-simple|)
+
+  swap-editor-concrete-syntax-var :: ? * ? * ? * ? * ? -> ? * ?
+  swap-editor-concrete-syntax-var = editor-action(is(Stmt);swap-exps-concrete-syntax-var|)
+
+  reverse-editor-concrete-syntax-varlist :: ? * ? * ? * ? * ? -> ? * ?
+  reverse-editor-concrete-syntax-varlist = editor-action(is(Start);reverse-stmts-concrete-syntax-varlist|)
+
+  surround-editor-concrete-syntax-varlist :: ? * ? * ? * ? * ? -> ? * ?
+  surround-editor-concrete-syntax-varlist = editor-action(is(Start);surround-stmts-concrete-syntax-varlist|)
+
+  editor-action(? -> ?|) :: a * b * ? * d * e -> d * ?
+  editor-action(swap-exp|):
+    (_, _, ast, path, _) -> (path, <oncetd(swap-exp)> ast) 
+
+  swap-exps-abstract-syntax :: Exp -> Exp
+  swap-exps-abstract-syntax:
+    Add(e1, e2) -> Add(e2, e1)
+
+  swap-exps-concrete-syntax :: Stmt -> Stmt
+  swap-exps-concrete-syntax:
+    stmt |[ ~exp:e1 + ~exp:e2; ]| ->
+    stmt |[ ~exp:e2 + ~exp:e1; ]|
+
+  swap-exps-concrete-syntax-simple :: Stmt -> Stmt
+  swap-exps-concrete-syntax-simple:
+    |[ ~e1 + ~e2; ]| ->
+    |[ ~e2 + ~e1; ]|
+
+  swap-exps-concrete-syntax-var :: Stmt -> Stmt
+  swap-exps-concrete-syntax-var:
+    |[ exp + exp2 ; ]| ->
+    |[ exp2 + exp ; ]|
+
+  reverse-stmts-concrete-syntax-varlist :: Start -> Start
+  reverse-stmts-concrete-syntax-varlist:
+    |[ stmt1* ]| ->
+    |[ stmt2* ]|
+  where stmt2* := <reverse> stmt1*
+
+  surround-stmts-concrete-syntax-varlist :: Start -> Start
+  surround-stmts-concrete-syntax-varlist:
+    |[ stmt1* ]|  ->
+    program |[ a; stmt1* b; ]|
+
+  surround-stmts-concrete-syntax-varlist2 :: Start -> Start
+  surround-stmts-concrete-syntax-varlist2:
+    |[ stmt1* ]|  ->
+    program |[ stmt2* a; stmt1* stmt1* b; stmt2* ]|
+  where stmt2* := <reverse> stmt1*
+
+  surround-stmts-concrete-syntax-list-fromterm :: Start -> Start
+  surround-stmts-concrete-syntax-list-fromterm:
+    |[ ~*stmt1* ]|  ->
+    program |[ a; ~*stmt1* b; ]|
+  where stmt2* := <reverse> stmt1*

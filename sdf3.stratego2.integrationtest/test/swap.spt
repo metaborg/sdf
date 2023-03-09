@@ -1,0 +1,21 @@
+module swap
+
+language sdf3-stratego2-integrationtest
+
+start symbol Start
+
+test swap [[x + y;]] transform "Transform -> Swap (abstract syntax)"        to [[y + x;]]
+
+test swap [[x + y;]] transform "Transform -> Swap (concrete syntax)"        to [[y + x;]]
+
+test swap [[x + y;]] transform "Transform -> Swap (concrete syntax simple)" to [[y + x;]]
+
+test swap [[x + y;]] transform "Transform -> Swap exps (concrete syntax var)"    to [[y + x;]]
+
+test swap [[x; y;]] transform "Transform -> Reverse stmts (concrete syntax varlist)" to [[y; x;]]
+
+test swap [[x; y;]] transform "Transform -> Surround stmts (concrete syntax varlist)" to [[a; x; y; b;]]
+
+test swap [[x; y;]] transform "Transform -> Surround stmts 2 (concrete syntax varlist)" to [[y; x; a; x; y; x; y; b; y; x;]]
+
+test swap [[x; y;]] transform "Transform -> Surround stmts (concrete syntax list fromterm)" to [[a; x; y; b;]]

@@ -1,0 +1,21 @@
+module thesyntax
+
+lexical sorts
+  VAR
+
+lexical syntax
+  LAYOUT = [\t\ \n\r]
+  VAR = [a-z]+
+
+context-free restrictions
+  LAYOUT? -/- [\ \t\n\r]
+
+context-free sorts
+  Start Stmt Exp
+
+context-free syntax
+
+  Start.Program = Stmt+
+  Stmt.Stmt = [[Exp];]
+  Exp.Add = [[Exp] + [Exp]]
+  Exp.Var = VAR
