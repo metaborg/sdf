@@ -40,33 +40,33 @@ rules
 
   swap-exps-concrete-syntax-simple :: Stmt -> Stmt
   swap-exps-concrete-syntax-simple:
-    |[ ~e1 + ~e2; ]| ->
-    |[ ~e2 + ~e1; ]|
+    stmt |[ ~e1 + ~e2; ]| ->
+    stmt |[ ~e2 + ~e1; ]|
 
   swap-exps-concrete-syntax-var :: Stmt -> Stmt
   swap-exps-concrete-syntax-var:
-    |[ exp + exp2 ; ]| ->
-    |[ exp2 + exp ; ]|
+    stmt |[ exp + exp2 ; ]| ->
+    stmt |[ exp2 + exp ; ]|
 
   reverse-stmts-concrete-syntax-varlist :: Start -> Start
   reverse-stmts-concrete-syntax-varlist:
-    |[ stmt1* ]| ->
-    |[ stmt2* ]|
+    program |[ stmt1* ]| ->
+    program |[ stmt2* ]|
   where stmt2* := <reverse> stmt1*
 
   surround-stmts-concrete-syntax-varlist :: Start -> Start
   surround-stmts-concrete-syntax-varlist:
-    |[ stmt1* ]|  ->
+    program |[ stmt1* ]|  ->
     program |[ a; stmt1* b; ]|
 
   surround-stmts-concrete-syntax-varlist2 :: Start -> Start
   surround-stmts-concrete-syntax-varlist2:
-    |[ stmt1* ]|  ->
+    program |[ stmt1* ]|  ->
     program |[ stmt2* a; stmt1* stmt1* b; stmt2* ]|
   where stmt2* := <reverse> stmt1*
 
   surround-stmts-concrete-syntax-list-fromterm :: Start -> Start
   surround-stmts-concrete-syntax-list-fromterm:
-    |[ ~*stmt1* ]|  ->
+    program |[ ~*stmt1* ]|  ->
     program |[ a; ~*stmt1* b; ]|
   where stmt2* := <reverse> stmt1*

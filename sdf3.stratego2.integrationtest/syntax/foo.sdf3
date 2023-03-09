@@ -18,7 +18,6 @@ context-free syntax
 
   Module = StrategoLang-Module
 
-  StrategoLang-PreTerm.ToTerm = <|[ <Stmt> ]|>
   StrategoLang-PreTerm.ToTerm = <stmt |[ <Stmt> ]|>
   StrategoLang-PreTerm.ToTerm = <program |[ <Start> ]|>
 
@@ -44,6 +43,7 @@ lexical syntax
 
   ExpVar = 'exp' [0-9]*
   StmtListVar = 'stmt' [0-9]* '*'
+  Var = ExpVar {reject}
 
 lexical restrictions
 
