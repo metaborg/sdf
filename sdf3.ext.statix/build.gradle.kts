@@ -26,6 +26,7 @@ dependencies {
   sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.runtime"))
   sourceLanguage(compositeBuild("statix.lang"))
   sourceLanguage(compositeBuild("statix.runtime"))
+  sourceLanguage(compositeBuild("stratego.lang"))
 }
 
 metaborg { // Do not create Java publication; this project is already published as a Spoofax 2 language.
