@@ -4,13 +4,16 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 
-import com.google.common.collect.*;
+import org.metaborg.util.collection.BiMap2;
+import org.metaborg.util.collection.LinkedSetMultimap;
+import org.metaborg.util.collection.SetMultimap;
 
 public class NormGrammar implements INormGrammar, Serializable {
 
@@ -38,15 +41,15 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     // necessary for calculating deep priority conflicts
     private final Map<UniqueProduction, Production> uniqueProductionMapping;
-    private final BiMap<Production, ContextualProduction> prodContextualProdMapping;
+    private final BiMap2<IProduction, ContextualProduction> prodContextualProdMapping;
     private final Set<ContextualProduction> derivedContextualProds;
     private final Set<ContextualSymbol> contextualSymbols;
     private final SetMultimap<ISymbol, ISymbol> leftRecursiveSymbolsMapping;
     private final SetMultimap<ISymbol, ISymbol> rightRecursiveSymbolsMapping;
-    private final SetMultimap<Symbol, Production> longestMatchProdsFront;
-    private final SetMultimap<Symbol, Production> shortestMatchProdsFront;
-    private final SetMultimap<Symbol, Production> longestMatchProdsBack;
-    private final SetMultimap<Symbol, Production> shortestMatchProdsBack;
+    private final LinkedSetMultimap<Symbol, Production> longestMatchProdsFront;
+    private final LinkedSetMultimap<Symbol, Production> shortestMatchProdsFront;
+    private final LinkedSetMultimap<Symbol, Production> longestMatchProdsBack;
+    private final LinkedSetMultimap<Symbol, Production> shortestMatchProdsBack;
 
     // priorities
     private final Set<Priority> transitivePriorities;
@@ -82,36 +85,36 @@ public class NormGrammar implements INormGrammar, Serializable {
     public NormGrammar() {
         this.filesRead = new HashSet<File>();
         this.gf = new GrammarFactory();
-        this.uniqueProductionMapping = Maps.newLinkedHashMap();
+        this.uniqueProductionMapping = new LinkedHashMap<>();
         this.sortConsProductionMapping = new HashMap<>();
-        this.prodContextualProdMapping = HashBiMap.create();
-        this.leftRecursiveSymbolsMapping = HashMultimap.create();
-        this.rightRecursiveSymbolsMapping = HashMultimap.create();
+        this.prodContextualProdMapping = new BiMap2<>();
+        this.leftRecursiveSymbolsMapping = new SetMultimap<>();
+        this.rightRecursiveSymbolsMapping = new SetMultimap<>();
         this.derivedContextualProds = new HashSet<ContextualProduction>();
         this.contextualSymbols = new HashSet<ContextualSymbol>();
-        this.longestMatchProdsFront = LinkedHashMultimap.create();
-        this.longestMatchProdsBack = LinkedHashMultimap.create();
-        this.shortestMatchProdsFront = LinkedHashMultimap.create();
-        this.shortestMatchProdsBack = LinkedHashMultimap.create();
-        this.productionAttributesMapping = HashMultimap.create();
-        this.priorities = HashMultimap.create();
-        this.indexedPriorities = HashMultimap.create();
+        this.longestMatchProdsFront = new LinkedSetMultimap<>();
+        this.longestMatchProdsBack = new LinkedSetMultimap<>();
+        this.shortestMatchProdsFront = new LinkedSetMultimap<>();
+        this.shortestMatchProdsBack = new LinkedSetMultimap<>();
+        this.productionAttributesMapping = new SetMultimap<>();
+        this.priorities = new SetMultimap<>();
+        this.indexedPriorities = new SetMultimap<>();
         this.constructors = new HashMap<>();
         this.transitivePriorities = new HashSet<Priority>();
         this.nonTransitivePriorities = new HashSet<Priority>();
         this.productionsOnPriorities = new HashSet<Production>();
-        this.transitivePriorityArgs = HashMultimap.create();
-        this.nonTransitivePriorityArgs = HashMultimap.create();
-        this.higherPriorityProductions = HashMultimap.create();
-        this.symbolProductionsMapping = HashMultimap.create();
+        this.transitivePriorityArgs = new SetMultimap<>();
+        this.nonTransitivePriorityArgs = new SetMultimap<>();
+        this.higherPriorityProductions = new SetMultimap<>();
+        this.symbolProductionsMapping = new SetMultimap<>();
         this.cacheSymbolsRead = new HashMap<>();
         this.cacheProductionsRead = new HashMap<>();
         this.symbols = new HashSet<ISymbol>();
-        this.literalProductionsMapping = HashMultimap.create();
-        this.expressionGrammars = HashMultimap.create();
+        this.literalProductionsMapping = new SetMultimap<>();
+        this.expressionGrammars = new SetMultimap<>();
         this.combinedExpressionGrammars = new HashSet<Set<IProduction>>();
-        this.leftDerivable = HashMultimap.create();
-        this.rightDerivable = HashMultimap.create();
+        this.leftDerivable = new SetMultimap<>();
+        this.rightDerivable = new SetMultimap<>();
     }
 
     public Map<UniqueProduction, Production> syntax() {
@@ -180,7 +183,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         return uniqueProductionMapping;
     }
 
-    public BiMap<Production, ContextualProduction> getProdContextualProdMapping() {
+    public BiMap2<IProduction, ContextualProduction> getProdContextualProdMapping() {
         return prodContextualProdMapping;
     }
 
@@ -200,19 +203,19 @@ public class NormGrammar implements INormGrammar, Serializable {
         return rightRecursiveSymbolsMapping;
     }
 
-    public SetMultimap<Symbol, Production> getLongestMatchProdsFront() {
+    public LinkedSetMultimap<Symbol, Production> getLongestMatchProdsFront() {
         return longestMatchProdsFront;
     }
 
-    public SetMultimap<Symbol, Production> getLongestMatchProdsBack() {
+    public LinkedSetMultimap<Symbol, Production> getLongestMatchProdsBack() {
         return longestMatchProdsBack;
     }
 
-    public SetMultimap<Symbol, Production> getShortestMatchProdsFront() {
+    public LinkedSetMultimap<Symbol, Production> getShortestMatchProdsFront() {
         return shortestMatchProdsFront;
     }
 
-    public SetMultimap<Symbol, Production> getShortestMatchProdsBack() {
+    public LinkedSetMultimap<Symbol, Production> getShortestMatchProdsBack() {
         return shortestMatchProdsBack;
     }
 

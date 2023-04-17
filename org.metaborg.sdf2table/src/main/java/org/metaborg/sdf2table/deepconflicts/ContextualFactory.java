@@ -2,7 +2,9 @@ package org.metaborg.sdf2table.deepconflicts;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -12,9 +14,6 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.ParseTable;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class ContextualFactory implements Serializable {
 
@@ -33,7 +32,7 @@ public class ContextualFactory implements Serializable {
     public Context createContext(int c, ContextType type, ContextPosition position,
         final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
         List<Object> contextFields =
-            Lists.newArrayList(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
+            Arrays.asList(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
 
         if(contexts.containsKey(contextFields)) {
             return contexts.get(contextFields);
@@ -47,7 +46,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualProduction createContextualProduction(Production origProduction, ISymbol lhs, List<ISymbol> rhs,
         int origProductionLabel, ContextualFactory cf) {
-        List<Object> contextualProductionFields = Lists.newArrayList(origProduction, lhs, origProductionLabel, cf);
+        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, cf));
         contextualProductionFields.addAll(rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
@@ -73,7 +72,7 @@ public class ContextualFactory implements Serializable {
             }
         }
 
-        List<Object> contextualProductionFields = Lists.newArrayList(origProduction, lhs, origProductionLabel, cf);
+        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, cf));
         contextualProductionFields.addAll(rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
@@ -90,7 +89,7 @@ public class ContextualFactory implements Serializable {
         Queue<ContextualSymbol> contextualSymbols, Set<ContextualSymbol> processedSymbols, int origProductionLabel,
         ParseTable pt) {
         ISymbol lhs = createContextualSymbol(origProduction.getLhs(), contexts, this);
-        List<ISymbol> rhs = Lists.newArrayList(origProduction.getRhs());
+        List<ISymbol> rhs = new ArrayList<>(origProduction.getRhs());
 
 
         // FIXME propagate context considering nullable symbols
@@ -150,7 +149,7 @@ public class ContextualFactory implements Serializable {
             }
         }
 
-        List<Object> contextualProductionFields = Lists.newArrayList(origProduction, lhs, origProductionLabel, this);
+        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, this));
         contextualProductionFields.addAll(rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
@@ -165,7 +164,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Set<Context> contexts, ContextualFactory cf) {
         // use Set instead of List to account for the Set<Contexts>
-        Set<Object> contextualSymbolFields = Sets.newHashSet(s);
+        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
         contextualSymbolFields.addAll(contexts);
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
@@ -187,7 +186,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Context context, ContextualFactory cf) {
         // use Set instead of List to account for the Set<Contexts>
-        Set<Object> contextualSymbolFields = Sets.newHashSet(s);
+        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
         contextualSymbolFields.add(context);
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
@@ -204,7 +203,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Set<Context> contexts, long deepContextBitmap,
         ContextualFactory cf) {
-        Set<Object> contextualSymbolFields = Sets.newHashSet(s);
+        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
         contextualSymbolFields.addAll(contexts);
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {

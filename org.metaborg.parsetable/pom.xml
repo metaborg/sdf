@@ -17,18 +17,18 @@
       <version>${metaborg-version}</version>
     </dependency>
     <dependency>
+      <groupId>org.metaborg</groupId>
+      <artifactId>org.metaborg.util</artifactId>
+      <version>${metaborg-version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <!-- Required for Guava >= 27.0: -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>failureaccess</artifactId>
+      <groupId>io.usethesource</groupId>
+      <artifactId>capsule</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

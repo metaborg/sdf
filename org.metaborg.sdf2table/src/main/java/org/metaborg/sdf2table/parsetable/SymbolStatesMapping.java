@@ -9,8 +9,7 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Symbol;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import org.metaborg.util.collection.SetMultimap;
 
 public class SymbolStatesMapping implements Serializable {
 
@@ -20,8 +19,8 @@ public class SymbolStatesMapping implements Serializable {
     public SetMultimap<LRItem, State> itemStates;
 
     public SymbolStatesMapping() {
-        this.symbolItems = HashMultimap.create();
-        this.itemStates = HashMultimap.create();
+        this.symbolItems = new SetMultimap<>();
+        this.itemStates = new SetMultimap<>();
     }
 
     public Set<State> getStatesfromSymbol(Symbol symb) {

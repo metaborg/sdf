@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,10 +19,7 @@ import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
-
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import org.metaborg.util.collection.LinkedSetMultimap;
 
 public class State implements IState, Comparable<State>, Serializable {
 
@@ -34,8 +32,8 @@ public class State implements IState, Comparable<State>, Serializable {
     private final Map<Integer, IGoto> gotosMapping;
     private final Set<LRItem> kernel;
     private final Set<LRItem> items;
-    private final LinkedHashMultimap<Symbol, LRItem> symbol_items;
-    private final LinkedHashMultimap<ICharacterClass, Action> lr_actions;
+    private final LinkedSetMultimap<Symbol, LRItem> symbol_items;
+    private final LinkedSetMultimap<ICharacterClass, Action> lr_actions;
     IActionsForCharacter actionsForCharacter;
     private boolean rejectable;
 
@@ -46,14 +44,14 @@ public class State implements IState, Comparable<State>, Serializable {
     }
 
     public State(Set<LRItem> kernel, ParseTable pt) {
-        items = Sets.newLinkedHashSet();
-        gotos = Sets.newLinkedHashSet();
+        items = new LinkedHashSet<>();
+        gotos = new LinkedHashSet<>();
         gotosMapping = new HashMap<>();
-        symbol_items = LinkedHashMultimap.create();
-        lr_actions = LinkedHashMultimap.create();
+        symbol_items = new LinkedSetMultimap<>();
+        lr_actions = new LinkedSetMultimap<>();
         this.rejectable = false;
 
-        this.kernel = Sets.newLinkedHashSet();
+        this.kernel = new LinkedHashSet<>();
         this.kernel.addAll(kernel);
         pt.kernelMap().put(kernel, this);
 
@@ -75,9 +73,9 @@ public class State implements IState, Comparable<State>, Serializable {
     public void doShift() {
         for(Symbol s_at_dot : symbol_items.keySet()) {
             if(s_at_dot instanceof CharacterClassSymbol) {
-                Set<LRItem> new_kernel = Sets.newLinkedHashSet();
-                Set<Goto> new_gotos = Sets.newLinkedHashSet();
-                Set<Shift> new_shifts = Sets.newLinkedHashSet();
+                Set<LRItem> new_kernel = new LinkedHashSet<LRItem>();
+                Set<Goto> new_gotos = new LinkedHashSet<Goto>();
+                Set<Shift> new_shifts = new LinkedHashSet<Shift>();
                 for(LRItem item : symbol_items.get(s_at_dot)) {
                     Shift shift = new Shift(((CharacterClassSymbol) s_at_dot).getCC());
                     new_kernel.add(item.shiftDot());
@@ -96,9 +94,9 @@ public class State implements IState, Comparable<State>, Serializable {
                         p = pt.normalizedGrammar().getProdContextualProdMapping().get(p);
                     }
 
-                    Set<LRItem> new_kernel = Sets.newLinkedHashSet();
-                    Set<Goto> new_gotos = Sets.newLinkedHashSet();
-                    Set<Shift> new_shifts = Sets.newLinkedHashSet();
+                    Set<LRItem> new_kernel = new LinkedHashSet<LRItem>();
+                    Set<Goto> new_gotos = new LinkedHashSet<Goto>();
+                    Set<Shift> new_shifts = new LinkedHashSet<Shift>();
                     for(LRItem item : symbol_items.get(s_at_dot)) {
                         // if item.prod does not conflict with p
                         if(!item.isPriorityConflict(p)) {
@@ -153,7 +151,7 @@ public class State implements IState, Comparable<State>, Serializable {
         ICharacterClass final_range = cc;
         ParseTableProduction prod = pt.productionsMapping().get(p);
 
-        LinkedHashMultimap<ICharacterClass, Action> newLR_actions = LinkedHashMultimap.create();
+        LinkedSetMultimap<ICharacterClass, Action> newLR_actions = new LinkedSetMultimap<>();
 
         for(ICharacterClass range : lr_actions.keySet()) {
             if(final_range.isEmpty()) {
@@ -328,11 +326,11 @@ public class State implements IState, Comparable<State>, Serializable {
     }
 
     public Iterable<Action> actions() {
-        Set<Action> actions = Sets.newHashSet(lr_actions.values());
+        Set<Action> actions = org.metaborg.util.iterators.Iterables2.toHashSet(lr_actions.values());
         return actions;
     }
 
-    public SetMultimap<ICharacterClass, Action> actionsMapping() {
+    public LinkedSetMultimap<ICharacterClass, Action> actionsMapping() {
         return lr_actions;
     }
 

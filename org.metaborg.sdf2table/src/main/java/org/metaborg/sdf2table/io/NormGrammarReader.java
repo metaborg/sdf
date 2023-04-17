@@ -15,8 +15,6 @@ import org.metaborg.sdf2table.grammar.*;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.StrategoAppl;
 
-import com.google.common.collect.Lists;
-
 import org.spoofax.terms.io.binary.TermReader;
 import org.spoofax.terms.util.TermUtils;
 
@@ -96,7 +94,7 @@ public class NormGrammarReader {
     }
 
     private void normalizeIndexedPriorities() {
-        for(Priority p : grammar.priorities().keys()) {
+        for(Priority p : grammar.priorities().keySet()) {
             for(Integer arg : grammar.priorities().get(p)) {
                 if(arg != -1 && arg != Integer.MIN_VALUE && arg != Integer.MAX_VALUE) {
                     grammar.getIndexedPriorities().put(p, arg);
@@ -104,7 +102,7 @@ public class NormGrammarReader {
             }
         }
 
-        for(Priority p : grammar.getIndexedPriorities().keys()) {
+        for(Priority p : grammar.getIndexedPriorities().keySet()) {
             for(Integer arg : grammar.getIndexedPriorities().get(p)) {
                 grammar.priorities().get(p).remove(arg);
             }
@@ -692,7 +690,7 @@ public class NormGrammarReader {
                     break;
                 // NON TERMINALS
                 case "Seq":
-                    List<ICharacterClass> lookahead = Lists.newArrayList(processCharClass(app.getSubterm(0)));
+                    List<ICharacterClass> lookahead = new ArrayList<>(Arrays.asList(processCharClass(app.getSubterm(0))));
                     createNewLookahead(app.getSubterm(1), lookahead, restrictionsLookahead);
                     break;
                 // TERMINALS
@@ -718,7 +716,7 @@ public class NormGrammarReader {
                 case "List":
                     slist = TermUtils.toListAt(app, 0);
                     for(IStrategoTerm t : slist) {
-                        List<ICharacterClass> firstChars = Lists.newArrayList(lookahead);
+                        List<ICharacterClass> firstChars = new ArrayList<>(lookahead);
                         createNewLookahead(t, firstChars, restrictionsLookahead);
                     }
                     break;

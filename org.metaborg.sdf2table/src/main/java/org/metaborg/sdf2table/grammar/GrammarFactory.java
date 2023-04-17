@@ -2,14 +2,14 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
-
-import com.google.common.collect.Lists;
 
 public class GrammarFactory implements Serializable {
 
@@ -272,7 +272,7 @@ public class GrammarFactory implements Serializable {
 
 
     public ProductionReference createProductionReference(Symbol s, ConstructorAttribute cons) {
-        List<Object> productionReferenceFields = Lists.newArrayList(s, cons);
+        List<Object> productionReferenceFields = Arrays.asList(s, cons);
         if(productionReferences.containsKey(productionReferenceFields)) {
             return productionReferences.get(productionReferenceFields);
         }
@@ -284,7 +284,7 @@ public class GrammarFactory implements Serializable {
 
 
     public SequenceSymbol createSequenceSymbol(Symbol first, List<Symbol> tail) {
-        List<Object> sequenceSymbolFields = Lists.newArrayList(first);
+        List<Object> sequenceSymbolFields = new ArrayList<>(Arrays.asList(first));
         sequenceSymbolFields.addAll(tail);
         if(sequenceSymbols.containsKey(sequenceSymbolFields)) {
             return sequenceSymbols.get(sequenceSymbolFields);
@@ -297,7 +297,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Sort createSort(String s) {
-        List<Object> sortFields = Lists.newArrayList(s, null);
+        List<Object> sortFields = new ArrayList<>(Arrays.asList(s, null));
 
         if(sorts.containsKey(sortFields)) {
             return sorts.get(sortFields);
@@ -310,7 +310,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Symbol createSort(String s, LiteralType lit) {
-        List<Object> sortFields = Lists.newArrayList(s, lit);
+        List<Object> sortFields = Arrays.asList(s, lit);
 
         if(sorts.containsKey(sortFields)) {
             return sorts.get(sortFields);
@@ -355,7 +355,7 @@ public class GrammarFactory implements Serializable {
 
 
     public TermAttribute createTermAttribute(IStrategoTerm t, String s) {
-        List<Object> termAttributeFields = Lists.newArrayList(t, s);
+        List<Object> termAttributeFields = Arrays.asList(t, s);
         if(termAttributes.containsKey(termAttributeFields)) {
             return termAttributes.get(termAttributeFields);
         }

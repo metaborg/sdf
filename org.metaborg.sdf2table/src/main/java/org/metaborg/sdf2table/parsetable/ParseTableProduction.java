@@ -15,9 +15,9 @@ import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.io.ParseTableIO;
+import org.metaborg.util.collection.BiMap2;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableSet;
+import io.usethesource.capsule.util.stream.CapsuleCollectors;
 
 public class ParseTableProduction implements org.metaborg.parsetable.productions.IProduction, Serializable {
 
@@ -51,7 +51,7 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
 
     public ParseTableProduction(int productionNumber, IProduction p, Set<IAttribute> attrs,
         Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping,
-        BiMap<IProduction, Integer> labels) {
+        BiMap2<IProduction, Integer> labels) {
         this.p = p;
 
         if(leftmostContextsMapping.containsKey(productionNumber)) {
@@ -196,9 +196,9 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         AssociativityInfo associativityInfo = ((Production) p).getAssociativityInfo();
         if(associativityInfo != null) {
             nonAssocWith = associativityInfo.getNonAssocWith().stream().flatMap(o -> getAllProductionLabels(labels, o))
-                .collect(ImmutableSet.toImmutableSet());
+                .collect(CapsuleCollectors.toSet());
             nonNestedWith = associativityInfo.getNonNestedWith().stream()
-                .flatMap(o -> getAllProductionLabels(labels, o)).collect(ImmutableSet.toImmutableSet());
+                .flatMap(o -> getAllProductionLabels(labels, o)).collect(CapsuleCollectors.toSet());
         } else
             nonAssocWith = nonNestedWith = null;
     }

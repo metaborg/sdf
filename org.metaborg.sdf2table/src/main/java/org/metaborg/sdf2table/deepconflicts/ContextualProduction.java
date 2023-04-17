@@ -15,12 +15,10 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.io.ParseTableIO;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.metaborg.util.collection.SetMultimap;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
 
 public final class ContextualProduction implements IProduction, Serializable {
 
@@ -135,13 +133,13 @@ public final class ContextualProduction implements IProduction, Serializable {
     public ContextualProduction mergeContext(Set<Context> context, Queue<ContextualSymbol> contextualSymbols,
         Set<ContextualSymbol> processedSymbols, ParseTable pt) {
 
-        List<ISymbol> newRhs = Lists.newArrayList(rhs);
+        List<ISymbol> newRhs = new ArrayList<>(rhs);
         Set<Context> contexts = new HashSet<Context>();
         contexts.addAll(context);
 
         // FIXME pass contextual token considering nullable symbols
         ISymbol new_lhs = cf.createContextualSymbol(getOrigProduction().getLhs(), contexts, cf);
-        List<ISymbol> rhs = Lists.newArrayList(getOrigProduction().getRhs());
+        List<ISymbol> rhs = new ArrayList<>(getOrigProduction().getRhs());
 
         for(Context c : contexts) {
             ISymbol nonTerminalContext = pt.productionLabels().inverse().get(c.getContext()).leftHand();

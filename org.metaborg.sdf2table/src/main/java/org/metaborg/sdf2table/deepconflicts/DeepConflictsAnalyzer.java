@@ -1,8 +1,11 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,14 +23,8 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.UniqueProduction;
 import org.metaborg.sdf2table.parsetable.ParseTable;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import org.metaborg.util.collection.BiMap2;
+import org.metaborg.util.collection.SetMultimap;
 
 public class DeepConflictsAnalyzer {
 
@@ -55,15 +52,15 @@ public class DeepConflictsAnalyzer {
         this.pt = pt;
 
         this.isContextMappingStable = false;
-        this.leftmostContextsMapping = Maps.newLinkedHashMap();
-        this.rightmostContextsMapping = Maps.newLinkedHashMap();
+        this.leftmostContextsMapping = new LinkedHashMap<>();
+        this.rightmostContextsMapping = new LinkedHashMap<>();
 
-        this.uniqueProductionMapping = Maps.newLinkedHashMap(pt.normalizedGrammar().getUniqueProductionMapping());
-        this.prodContextualProdMapping = HashBiMap.create(pt.normalizedGrammar().getProdContextualProdMapping());
-        this.productionLabels = HashBiMap.create(pt.productionLabels());
-        this.symbolProductionsMapping = HashMultimap.create(pt.normalizedGrammar().getSymbolProductionsMapping());
-        this.productionAttributesMapping = HashMultimap.create(pt.normalizedGrammar().getProductionAttributesMapping());
-        this.priorities = HashMultimap.create(pt.normalizedGrammar().priorities());
+        this.uniqueProductionMapping = new LinkedHashMap<>(pt.normalizedGrammar().getUniqueProductionMapping());
+        this.prodContextualProdMapping = new BiMap2<>(pt.normalizedGrammar().getProdContextualProdMapping());
+        this.productionLabels = new BiMap2<>(pt.productionLabels());
+        this.symbolProductionsMapping = new SetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
+        this.productionAttributesMapping = new SetMultimap<>(pt.normalizedGrammar().getProductionAttributesMapping());
+        this.priorities = new SetMultimap<>(pt.normalizedGrammar().priorities());
     }
 
     private DeepConflictsAnalyzer(ParseTable pt, Map<Integer, Integer> leftmostContextsMapping,
@@ -71,15 +68,15 @@ public class DeepConflictsAnalyzer {
         this.pt = pt;
 
         this.isContextMappingStable = true;
-        this.leftmostContextsMapping = ImmutableMap.copyOf(leftmostContextsMapping);
-        this.rightmostContextsMapping = ImmutableMap.copyOf(rightmostContextsMapping);
+        this.leftmostContextsMapping = Collections.unmodifiableMap(new LinkedHashMap<>(leftmostContextsMapping));
+        this.rightmostContextsMapping = Collections.unmodifiableMap(new LinkedHashMap<>(rightmostContextsMapping));
 
-        this.uniqueProductionMapping = Maps.newHashMap(pt.normalizedGrammar().getUniqueProductionMapping());
-        this.prodContextualProdMapping = HashBiMap.create(pt.normalizedGrammar().getProdContextualProdMapping());
-        this.productionLabels = HashBiMap.create(pt.productionLabels());
-        this.symbolProductionsMapping = HashMultimap.create(pt.normalizedGrammar().getSymbolProductionsMapping());
-        this.productionAttributesMapping = HashMultimap.create(pt.normalizedGrammar().getProductionAttributesMapping());
-        this.priorities = HashMultimap.create(pt.normalizedGrammar().priorities());
+        this.uniqueProductionMapping = new HashMap<>(pt.normalizedGrammar().getUniqueProductionMapping());
+        this.prodContextualProdMapping = new BiMap2<>(pt.normalizedGrammar().getProdContextualProdMapping());
+        this.productionLabels = new BiMap2<>(pt.productionLabels());
+        this.symbolProductionsMapping = new SetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
+        this.productionAttributesMapping = new SetMultimap<>(pt.normalizedGrammar().getProductionAttributesMapping());
+        this.priorities = new SetMultimap<>(pt.normalizedGrammar().priorities());
     }
 
     private final ParseTable pt;
@@ -91,8 +88,8 @@ public class DeepConflictsAnalyzer {
 
     // phase 2
     /* -w */ private final Map<UniqueProduction, Production> uniqueProductionMapping;
-    /* rw */ private final BiMap<Production, ContextualProduction> prodContextualProdMapping;
-    /* rw */ private final BiMap<IProduction, Integer> productionLabels;
+    /* rw */ private final BiMap2<IProduction, ContextualProduction> prodContextualProdMapping;
+    /* rw */ private final BiMap2<IProduction, Integer> productionLabels;
     /* rw */ private final SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
     /* rw */ private final SetMultimap<IProduction, IAttribute> productionAttributesMapping;
     /* rw */ private final SetMultimap<Priority, Integer> priorities;
@@ -504,7 +501,7 @@ public class DeepConflictsAnalyzer {
 
             if(p.arity() > 1) {
                 ContextualProduction ctx_p = pt.getContextualFactory().createContextualProduction((Production) p,
-                    contexts, Sets.newHashSet(2), productionLabels.get(p), pt.getContextualFactory());
+                    contexts, new HashSet<>(Arrays.asList(2)), productionLabels.get(p), pt.getContextualFactory());
 
                 // if contextual production does not exist add it
                 if(!prodContextualProdMapping.containsKey(p)) {
@@ -513,7 +510,7 @@ public class DeepConflictsAnalyzer {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = prodContextualProdMapping.get(p);
                     prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(2)));
+                        existing_prod.addContexts(contexts, new HashSet<>(Arrays.asList(2))));
                 }
             }
         }
@@ -535,7 +532,7 @@ public class DeepConflictsAnalyzer {
         }
 
         Symbol iterList = s;
-        Map<Production, Production> newProductions = Maps.newLinkedHashMap();
+        Map<Production, Production> newProductions = new LinkedHashMap<>();
 
         if(s instanceof ContextFreeSymbol) {
             // check whether s is a * list
@@ -612,14 +609,14 @@ public class DeepConflictsAnalyzer {
                     int pos = newProductions.get(newProd).arity() - 3; // second to last symbol
                     if(!prodContextualProdMapping.containsKey(newProd)) {
                         ContextualProduction ctx_p2 = pt.getContextualFactory().createContextualProduction(newProd,
-                            contexts, Sets.newHashSet(pos), productionLabels.get(newProd), pt.getContextualFactory());
+                            contexts, new HashSet<>(Arrays.asList(pos)), productionLabels.get(newProd), pt.getContextualFactory());
                         contexts = Collections.unmodifiableSet(contexts);
                         prodContextualProdMapping.put(newProd, ctx_p2);
                     } else {
                         // add new context to correct arguments of existing contextual production
                         ContextualProduction existing_prod = prodContextualProdMapping.get(newProductions.get(newProd));
                         prodContextualProdMapping.replace(newProd,
-                            existing_prod.addContexts(contexts, Sets.newHashSet(pos)));
+                            existing_prod.addContexts(contexts, new HashSet<>(Arrays.asList(pos))));
                     }
                 }
 
@@ -645,7 +642,7 @@ public class DeepConflictsAnalyzer {
 
             if(p.arity() > 1) {
                 ContextualProduction ctx_p = pt.getContextualFactory().createContextualProduction((Production) p,
-                    contexts, Sets.newHashSet(0), productionLabels.get(p), pt.getContextualFactory());
+                    contexts, new HashSet<>(Arrays.asList(0)), productionLabels.get(p), pt.getContextualFactory());
 
                 // if contextual production does not exist add it
                 if(!prodContextualProdMapping.containsKey(p)) {
@@ -654,7 +651,7 @@ public class DeepConflictsAnalyzer {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = prodContextualProdMapping.get(p);
                     prodContextualProdMapping.replace((Production) p,
-                        existing_prod.addContexts(contexts, Sets.newHashSet(0)));
+                        existing_prod.addContexts(contexts, new HashSet<>(Arrays.asList(0))));
                 }
             }
         }

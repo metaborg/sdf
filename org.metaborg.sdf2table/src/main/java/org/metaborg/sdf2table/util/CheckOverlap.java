@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,10 +13,7 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.Symbol;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import io.usethesource.capsule.SetMultimap;
 
 public class CheckOverlap {
 
@@ -25,8 +23,8 @@ public class CheckOverlap {
     private final int maxDepth;
     private final Map<Integer, Set<Node>> depthToTreesP = new HashMap<>();
     private final Map<Integer, Set<Node>> depthToTreesQ = new HashMap<>();
-    private final SetMultimap<String, Node> yieldsP = HashMultimap.create();
-    private final SetMultimap<String, Node> yieldsQ = HashMultimap.create();
+    private final SetMultimap.Transient<String, Node> yieldsP = SetMultimap.Transient.of();
+    private final SetMultimap.Transient<String, Node> yieldsQ = SetMultimap.Transient.of();
 
     private class Node {
 
@@ -46,7 +44,7 @@ public class CheckOverlap {
             this.symbol = p.leftHand();
             leaves = new ArrayList<>();
             children = new ArrayList<>();
-            productions = Sets.newHashSet(p);
+            productions = new HashSet<>(Arrays.asList(p));
             for(ISymbol symb_rhs : p.rightHand()) {
                 Node child = new Node(symb_rhs);
                 children.add(child);
@@ -58,7 +56,7 @@ public class CheckOverlap {
             this.symbol = n.symbol;
             this.leaves = new ArrayList<>();
             this.children = new ArrayList<>();
-            this.productions = Sets.newHashSet(n.productions);
+            this.productions = new HashSet<>(n.productions);
 
 
             // if the child object is the same as the leaf object, create new object which is a copy of it
@@ -91,7 +89,7 @@ public class CheckOverlap {
                     if(scc.nodeSCCNodesMapping.get(leafSymb) != null) {
                         result += "[";
 
-                        List<ISymbol> sccNode = Lists.newArrayList(scc.nodeSCCNodesMapping.get(leafSymb));
+                        List<ISymbol> sccNode = new ArrayList<>(scc.nodeSCCNodesMapping.get(leafSymb));
 
                         for(int i = 0; i < sccNode.size() - 1; i++) {
                             result += Symbol.getSort(sccNode.get(i)) + ", ";
@@ -157,14 +155,14 @@ public class CheckOverlap {
 
         for(IProduction prod : p) {
             Node node = new Node(prod);
-            yieldsP.put(node.getYield(), node);
+            yieldsP.__insert(node.getYield(), node);
             node.productions.add(prod);
             treesP.add(node);
         }
 
         for(IProduction prod : q) {
             Node node = new Node(prod);
-            yieldsQ.put(node.getYield(), node);
+            yieldsQ.__insert(node.getYield(), node);
             treesQ.add(node);
         }
 
@@ -173,7 +171,7 @@ public class CheckOverlap {
 
         while(depth < 2) {
 
-            Set<String> intersectingYields = Sets.newHashSet(yieldsP.keySet());
+            Set<String> intersectingYields = new HashSet<>(yieldsP.keySet());
             intersectingYields.retainAll(yieldsQ.keySet());
 
             for(String yield : intersectingYields) {
@@ -231,10 +229,10 @@ public class CheckOverlap {
                             }
                             String yield = newTree.getYield();
                             if(yieldsP.containsKey(yield)) {
-                                yieldsP.put(yield, newTree);
+                                yieldsP.__insert(yield, newTree);
                                 continue;
                             }
-                            yieldsP.put(yield, newTree);
+                            yieldsP.__insert(yield, newTree);
                             newTrees.add(newTree);
                         }
                     }
@@ -266,10 +264,10 @@ public class CheckOverlap {
                             }
                             String yield = newTree.getYield();
                             if(yieldsQ.containsKey(yield)) {
-                                yieldsQ.put(yield, newTree);
+                                yieldsQ.__insert(yield, newTree);
                                 continue;
                             }
-                            yieldsQ.put(yield, newTree);
+                            yieldsQ.__insert(yield, newTree);
                             newTrees.add(newTree);
                         }
                     }

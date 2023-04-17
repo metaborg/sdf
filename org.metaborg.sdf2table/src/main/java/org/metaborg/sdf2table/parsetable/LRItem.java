@@ -10,8 +10,8 @@ import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
-
-import com.google.common.collect.SetMultimap;
+import org.metaborg.util.collection.LinkedSetMultimap;
+import org.metaborg.util.collection.SetMultimap;
 
 public class LRItem implements Serializable {
 
@@ -34,7 +34,7 @@ public class LRItem implements Serializable {
         this.prod_label = pt.productionLabels().get(prod);
     }
 
-    public void process(Set<LRItem> items, SetMultimap<Symbol, LRItem> symbol_items, State originalState) {
+    public void process(Set<LRItem> items, LinkedSetMultimap<Symbol, LRItem> symbol_items, State originalState) {
 
         items.add(this);
 

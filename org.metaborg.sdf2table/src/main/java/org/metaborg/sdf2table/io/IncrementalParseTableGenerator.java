@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.io;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.sdf2table.grammar.IAttribute;
@@ -14,12 +15,10 @@ import org.metaborg.sdf2table.parsetable.LRItem;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.sdf2table.parsetable.State;
 import org.metaborg.sdf2table.parsetable.StateStatus;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import org.metaborg.util.collection.BiMap2;
+import org.metaborg.util.collection.SetMultimap;
+import org.metaborg.util.iterators.Iterables2;
+import org.metaborg.util.stream.Collectors2;
 
 public class IncrementalParseTableGenerator extends ParseTableIO {
 
@@ -42,11 +41,13 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         Set<IProduction> currentProductions = current.productionLabels().keySet();
         Set<IProduction> referenceProductions = reference.productionLabels().keySet();
 
-        additionalProds = Sets.newHashSet(Sets.filter(currentProductions, e -> !referenceProductions.contains(e)));
-        removedProds = Sets.newHashSet(Sets.filter(referenceProductions, e -> !currentProductions.contains(e)));
+        additionalProds = currentProductions.stream().filter(e -> !referenceProductions.contains(e)).collect(
+            Collectors2.toHashSet());
+        removedProds = referenceProductions.stream().filter(e -> !currentProductions.contains(e)).collect(
+            Collectors2.toHashSet());
         
         if(!additionalProds.isEmpty()) {
-            additionalProdAttributes = HashMultimap.create();
+            additionalProdAttributes = new SetMultimap<>();
         }
         
         
@@ -58,10 +59,9 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         SetMultimap<Priority, Integer> currentPriorities = current.normalizedGrammar().priorities();
         SetMultimap<Priority, Integer> referencePriorities = reference.normalizedGrammar().priorities();
 
-        additionalPrios = HashMultimap.create(Multimaps.filterEntries(currentPriorities,
-            e -> !referencePriorities.containsEntry(e.getKey(), e.getValue())));
-        removedPrios = HashMultimap.create(Multimaps.filterEntries(referencePriorities,
-            e -> !currentPriorities.containsEntry(e.getKey(), e.getValue())));
+        additionalPrios = currentPriorities.entries().filter(e -> !referencePriorities.containsEntry(e.getKey(), e.getValue())).collect(SetMultimap.collector());
+        removedPrios = referencePriorities.entries().filter(
+            e -> !currentPriorities.containsEntry(e.getKey(), e.getValue())).collect(SetMultimap.collector());
 
         changedSymbols = new HashSet<Symbol>();
 
@@ -77,18 +77,18 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         ParseTable currentPT = (ParseTable) this.getParseTable();
         
         // update priorities
-        for(Entry<Priority, Integer> f : additionalPrios.entries()) {
+        additionalPrios.entries().forEach((Entry<Priority, Integer> f) -> {
             currentPT.normalizedGrammar().priorities().put(f.getKey(), f.getValue());
             changedSymbols.add((Symbol) f.getKey().lower().leftHand());
-        }
-        
-        for(Entry<Priority, Integer> f : removedPrios.entries()) {
+        });
+
+        removedPrios.entries().forEach((Entry<Priority, Integer> f) -> {
             currentPT.normalizedGrammar().priorities().remove(f.getKey(), f.getValue());
             changedSymbols.add((Symbol) f.getKey().lower().leftHand());
-        }
+        });
 
         // update productions
-        BiMap<IProduction, Integer> prod_labels = this.getParseTable().productionLabels();
+        BiMap2<IProduction, Integer> prod_labels = this.getParseTable().productionLabels();
 
         for(IProduction p : removedProds) {
             currentPT.getProdLabelFactory().releaseLabel(prod_labels.remove(p));
