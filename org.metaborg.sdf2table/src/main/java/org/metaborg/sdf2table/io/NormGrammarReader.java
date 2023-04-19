@@ -104,7 +104,7 @@ public class NormGrammarReader {
 
         for(Priority p : grammar.getIndexedPriorities().keySet()) {
             for(Integer arg : grammar.getIndexedPriorities().get(p)) {
-                grammar.priorities().get(p).remove(arg);
+                grammar.priorities().remove(p, arg);
             }
         }
     }
