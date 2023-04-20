@@ -191,6 +191,10 @@ public class NormGrammarReader {
     }
 
     private void addProds(IStrategoAppl section) throws Exception {
+        // Even looking at the history of this method, there is no reason for the code duplication
+        //  in the bodies of the ifs. And given its current usage only in readModule, none of the
+        //  if conditions are necessary either. But this is not my code, and I'm already doing other
+        //  refactoring atm, so I'm not touching this. Braver souls: do simplify, but also test!
         if(TermUtils.isAppl(section, "ContextFreeSyntax")) {
             IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
             for(IStrategoTerm t : sdf_productions) {
