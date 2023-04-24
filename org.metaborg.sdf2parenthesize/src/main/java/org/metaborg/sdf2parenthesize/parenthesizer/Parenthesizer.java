@@ -3,7 +3,6 @@ package org.metaborg.sdf2parenthesize.parenthesizer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -73,7 +72,9 @@ public class Parenthesizer {
                 importsList.add(importModuleWildCard("signatures/" + subfolder));
             }
         }
-        grammar.postParenthesizerCleanup();
+        // parenthesize is called multiple times, the file is overwritten with a version that doesn't have the right
+        //  imports if you clean up the read files...
+        //grammar.postParenthesizerCleanup();
 
         importsList.add(importModuleWildCard("signatures"));
 
