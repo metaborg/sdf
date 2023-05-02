@@ -72,24 +72,18 @@ rules
 
   
   section-to-pp(|lang):
-    SDFSection(CfSorts(s*)) -> Strategies(<not(?[])> [s1*])
-    with
-       s1* := <map(sort-def-to-pp(|lang))> s*
-
-  
-  section-to-pp(|lang):
-    SDFSection(LexSorts(s*)) -> Strategies(<not(?[])> [s1*])
-    with
-       s1* := <map(sort-def-to-pp(|lang))> s*
-
-  
-  section-to-pp(|lang):
     SDFSection(Sorts(s*)) -> Strategies(<not(?[])> [s1*])
     with
-       s1* := <map(?DeclSort(<sort-def-to-pp(|lang)>))> s*
+       s1* := <map(sort-def-to-pp(|lang))> s*
 
   sort-def-to-pp(|lang):
-    x -> SDefNoArgs($[prettyprint-[lang]-[x]], Fail())
+    DeclSort(x) -> SDefNoArgs($[prettyprint-[lang]-[x]], Fail())
+
+  sort-def-to-pp(|lang):
+    DeclSortLex(x) -> SDefNoArgs($[prettyprint-[lang]-[x]], Fail())
+
+  sort-def-to-pp(|lang):
+    DeclSortVar(x) -> SDefNoArgs($[prettyprint-[lang]-[x]], Fail())
 
   
   section-to-pp(|lang):
