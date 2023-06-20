@@ -39,7 +39,7 @@ public class ParseTable implements IParseTable, Serializable {
 
     private BiMap2<IProduction, Integer> productionLabels;
     private LabelFactory prodLabelFactory = new LabelFactory(ParseTable.FIRST_PRODUCTION_LABEL);
-    private Queue<State> stateQueue = new LinkedList<>();
+    private Queue<State> stateQueue = new ArrayDeque<>();
     private Map<Integer, State> stateLabels = new LinkedHashMap<>();
 
     private final Set<IProduction> danglingSuffix = new HashSet<>();
