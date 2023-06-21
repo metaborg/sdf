@@ -520,27 +520,52 @@ public class ParseTable implements IParseTable, Serializable {
             || grammar.getRightRecursiveSymbolsMapping().get(p.higher().getLhs()).contains(p.lower().leftHand());
     }
 
-    /*
-     * TODO calculate first and follow sets private void calculateFirstFollow() { for(IProduction p :
-     * getGrammar().prods.values()) { p.calculateDependencies(getGrammar()); }
-     * 
-     * tarjanStack = new Stack<>(); first_components = Sets.newHashSet(); for(IProduction p :
-     * getGrammar().prods.values()) { if(p.firstSet().index == -1) { stronglyConnectedTarjan(p.firstSet(),
-     * first_components); } } }
-     * 
-     * 
-     * private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) { // Set the depth index for v to
-     * the smallest unused index v.index = index; v.low_link = index; index++; tarjanStack.push(v); v.onStack = true;
-     * 
-     * for(TableSet d : v.depends_on) { if(d.index == -1) { // Successor w has not yet been visited; recurse on it
-     * stronglyConnectedTarjan(d, components); v.add(d.value); d.low_link = Math.min(v.low_link, d.low_link); } else
-     * if(d.onStack) { // Successor w is in stack S and hence in the current SCC v.low_link = Math.min(v.low_link,
-     * d.index); } }
-     * 
-     * TableSet t; // If v is a root node, pop the stack and generate an SCC if(v.low_link == v.index) { Set<TableSet>
-     * component = Sets.newHashSet(); do { t = tarjanStack.pop(); t.onStack = false; t.add(v.value); component.add(t); }
-     * while(t != v); components.add(component); } }
-     */
+    // TODO calculate first and follow sets
+//    private void calculateFirstFollow() {
+//        for(IProduction p : getGrammar().prods.values()) {
+//            p.calculateDependencies(getGrammar());
+//        }
+//
+//        tarjanStack = new Stack<>();
+//        first_components = Sets.newHashSet();
+//        for(IProduction p : getGrammar().prods.values()) {
+//            if(p.firstSet().index == -1) {
+//                stronglyConnectedTarjan(p.firstSet(), first_components);
+//            }
+//        }
+//    }
+//
+//
+//    private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) {
+//        // Set the depth index for v to the smallest unused index
+//        v.index = index;
+//        v.low_link = index;
+//        index++;
+//        tarjanStack.push(v);
+//        v.onStack = true;
+//
+//        for(TableSet d : v.depends_on) {
+//            if(d.index == -1) { // Successor w has not yet been visited; recurse on it
+//                stronglyConnectedTarjan(d, components);
+//                v.add(d.value);
+//                d.low_link = Math.min(v.low_link, d.low_link);
+//            } else if(d.onStack) { // Successor w is in stack S and hence in the current SCC
+//                v.low_link = Math.min(v.low_link, d.index);
+//            }
+//        }
+//
+//        TableSet t; // If v is a root node, pop the stack and generate an SCC
+//        if(v.low_link == v.index) {
+//            Set<TableSet> component = Sets.newHashSet();
+//            do {
+//                t = tarjanStack.pop();
+//                t.onStack = false;
+//                t.add(v.value);
+//                component.add(t);
+//            } while(t != v);
+//            components.add(component);
+//        }
+//    }
 
     private void extractExpressionGrammars(SCCNodes<ISymbol> scc) {
 

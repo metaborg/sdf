@@ -11,7 +11,6 @@ import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.util.collection.LinkedSetMultimap;
-import org.metaborg.util.collection.SetMultimap;
 
 public class LRItem implements Serializable {
 

@@ -67,6 +67,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final HashMap<String, Production> cacheProductionsRead; // caching productions read
 
     // get all productions for a certain symbol
+    // N.B. for some sick reason, if you preserve insertion-order in this multimap, there are edgecases where JSGLR2 will exhibit a bug in org.spoofax.jsglr2.integrationtest.features.RejectTest#testBoth
     private final SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
 
     // get all productions that contain a particular literal
@@ -83,15 +84,15 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<ISymbol, ISymbol> rightDerivable;
 
     public NormGrammar() {
-        this.filesRead = new HashSet<File>();
+        this.filesRead = new HashSet<>();
         this.gf = new GrammarFactory();
         this.uniqueProductionMapping = new LinkedHashMap<>();
         this.sortConsProductionMapping = new HashMap<>();
         this.prodContextualProdMapping = new BiMap2<>();
         this.leftRecursiveSymbolsMapping = new SetMultimap<>();
         this.rightRecursiveSymbolsMapping = new SetMultimap<>();
-        this.derivedContextualProds = new HashSet<ContextualProduction>();
-        this.contextualSymbols = new HashSet<ContextualSymbol>();
+        this.derivedContextualProds = new HashSet<>();
+        this.contextualSymbols = new HashSet<>();
         this.longestMatchProdsFront = new LinkedSetMultimap<>();
         this.longestMatchProdsBack = new LinkedSetMultimap<>();
         this.shortestMatchProdsFront = new LinkedSetMultimap<>();
@@ -100,19 +101,19 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.priorities = new SetMultimap<>();
         this.indexedPriorities = new SetMultimap<>();
         this.constructors = new HashMap<>();
-        this.transitivePriorities = new HashSet<Priority>();
-        this.nonTransitivePriorities = new HashSet<Priority>();
-        this.productionsOnPriorities = new HashSet<Production>();
+        this.transitivePriorities = new HashSet<>();
+        this.nonTransitivePriorities = new HashSet<>();
+        this.productionsOnPriorities = new HashSet<>();
         this.transitivePriorityArgs = new SetMultimap<>();
         this.nonTransitivePriorityArgs = new SetMultimap<>();
         this.higherPriorityProductions = new SetMultimap<>();
         this.symbolProductionsMapping = new SetMultimap<>();
         this.cacheSymbolsRead = new HashMap<>();
         this.cacheProductionsRead = new HashMap<>();
-        this.symbols = new HashSet<ISymbol>();
+        this.symbols = new HashSet<>();
         this.literalProductionsMapping = new SetMultimap<>();
         this.expressionGrammars = new SetMultimap<>();
-        this.combinedExpressionGrammars = new HashSet<Set<IProduction>>();
+        this.combinedExpressionGrammars = new HashSet<>();
         this.leftDerivable = new SetMultimap<>();
         this.rightDerivable = new SetMultimap<>();
     }

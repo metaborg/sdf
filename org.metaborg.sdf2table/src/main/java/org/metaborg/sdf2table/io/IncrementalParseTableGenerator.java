@@ -3,7 +3,6 @@ package org.metaborg.sdf2table.io;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.vfs2.FileObject;
 import org.metaborg.sdf2table.grammar.IAttribute;
@@ -17,7 +16,6 @@ import org.metaborg.sdf2table.parsetable.State;
 import org.metaborg.sdf2table.parsetable.StateStatus;
 import org.metaborg.util.collection.BiMap2;
 import org.metaborg.util.collection.SetMultimap;
-import org.metaborg.util.iterators.Iterables2;
 import org.metaborg.util.stream.Collectors2;
 
 public class IncrementalParseTableGenerator extends ParseTableIO {
@@ -97,7 +95,8 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
         for(IProduction p : additionalProds) {
             prod_labels.put(p, currentPT.getProdLabelFactory().getNextLabel());
             currentPT.normalizedGrammar().getProductionAttributesMapping().putAll(additionalProdAttributes);
-            this.getParseTable().normalizedGrammar().getSymbolProductionsMapping().put((Symbol) p.leftHand(), p);
+            this.getParseTable().normalizedGrammar().getSymbolProductionsMapping()
+                .put((Symbol) p.leftHand(), p);
             changedSymbols.add((Symbol) p.leftHand());
         }
 

@@ -505,11 +505,11 @@ public class DeepConflictsAnalyzer {
 
                 // if contextual production does not exist add it
                 if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
+                    prodContextualProdMapping.put(p, ctx_p);
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
+                    prodContextualProdMapping.replace(p,
                         existing_prod.addContexts(contexts, new HashSet<>(Arrays.asList(2))));
                 }
             }
@@ -646,11 +646,11 @@ public class DeepConflictsAnalyzer {
 
                 // if contextual production does not exist add it
                 if(!prodContextualProdMapping.containsKey(p)) {
-                    prodContextualProdMapping.put((Production) p, ctx_p);
+                    prodContextualProdMapping.put(p, ctx_p);
                 } else {
                     // add new context to correct arguments of existing contextual production
                     ContextualProduction existing_prod = prodContextualProdMapping.get(p);
-                    prodContextualProdMapping.replace((Production) p,
+                    prodContextualProdMapping.replace(p,
                         existing_prod.addContexts(contexts, new HashSet<>(Arrays.asList(0))));
                 }
             }
