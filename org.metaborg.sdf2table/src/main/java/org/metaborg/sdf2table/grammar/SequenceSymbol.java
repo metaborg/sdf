@@ -13,8 +13,6 @@ import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Lists;
-
 public class SequenceSymbol extends Symbol {
 
     private static final long serialVersionUID = -1328952925094286799L;
@@ -26,7 +24,7 @@ public class SequenceSymbol extends Symbol {
     protected SequenceSymbol(Symbol first, List<Symbol> tail) {        
         this.first = first;
         this.tail = tail;
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
 

@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,8 +10,6 @@ import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.Lists;
 
 public class Sort extends Symbol {
 
@@ -22,14 +21,14 @@ public class Sort extends Symbol {
     protected Sort(String name) {
         this.name = name;
         this.type = null;
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
 
     protected Sort(String name, LiteralType type) {
         this.name = name;
         this.type = type;
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
 

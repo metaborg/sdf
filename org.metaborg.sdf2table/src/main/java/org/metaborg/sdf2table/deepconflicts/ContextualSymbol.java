@@ -1,5 +1,7 @@
 package org.metaborg.sdf2table.deepconflicts;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,8 +13,6 @@ import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.Sets;
 
 public final class ContextualSymbol extends Symbol {
 
@@ -45,7 +45,7 @@ public final class ContextualSymbol extends Symbol {
 
     public ContextualSymbol(Symbol s, Context context, ContextualFactory cf) {
         this.s = s;
-        this.contexts = Sets.newHashSet(context);
+        this.contexts = new HashSet<>(Arrays.asList(context));
         this.cf = cf;
 
         if(context.getType() == ContextType.DEEP || context.getType() == ContextType.DANGLING) {
@@ -128,7 +128,7 @@ public final class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContext(Context context) {
-        Set<Context> newContexts = Sets.newHashSet();
+        Set<Context> newContexts = new HashSet<Context>();
         newContexts.addAll(this.getContexts());
         newContexts.add(context);
 
@@ -141,7 +141,7 @@ public final class ContextualSymbol extends Symbol {
     }
 
     public ContextualSymbol addContexts(Set<Context> contexts) {
-        Set<Context> newContexts = Sets.newHashSet();
+        Set<Context> newContexts = new HashSet<Context>();
         newContexts.addAll(this.getContexts());
         newContexts.addAll(contexts);
 

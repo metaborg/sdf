@@ -1,10 +1,9 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 public class LabelFactory implements Serializable {
 
@@ -38,7 +37,7 @@ public class LabelFactory implements Serializable {
     
     public void releaseLabel(int l) {
         if(labelPool == null) {
-            labelPool = Sets.newHashSet();
+            labelPool = new HashSet<Integer>();
         }
         labelPool.add(l);
     }

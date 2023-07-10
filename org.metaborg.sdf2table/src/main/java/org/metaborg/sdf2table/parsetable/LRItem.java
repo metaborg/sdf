@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -9,9 +10,7 @@ import org.metaborg.sdf2table.deepconflicts.ContextualSymbol;
 import org.metaborg.sdf2table.grammar.Priority;
 import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Symbol;
-
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import org.metaborg.util.collection.LinkedSetMultimap;
 
 public class LRItem implements Serializable {
 
@@ -34,7 +33,7 @@ public class LRItem implements Serializable {
         this.prod_label = pt.productionLabels().get(prod);
     }
 
-    public void process(Set<LRItem> items, SetMultimap<Symbol, LRItem> symbol_items, State originalState) {
+    public void process(Set<LRItem> items, LinkedSetMultimap<Symbol, LRItem> symbol_items, State originalState) {
 
         items.add(this);
 
@@ -51,7 +50,7 @@ public class LRItem implements Serializable {
         } else {
             items.add(this);
 
-            Set<LRItem> derivedItems = Sets.newHashSet();
+            Set<LRItem> derivedItems = new HashSet<LRItem>();
 
             if(dotPosition < prod.arity()) {
                 Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
