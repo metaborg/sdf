@@ -52,7 +52,7 @@ language:
     - -Idef
     - ${path:root}/lib/SDF.def
   stratego:
-    format: ctree
+    format: jar
     args:
     - -la
     - stratego-lib
@@ -70,7 +70,7 @@ language:
     - strc
 build:
   stratego-cli:
-  - phase: compile
+  - phase: generateSources
     strategy: org.strategoxt.tools.main-parse-pp-table
     args:
     - -i

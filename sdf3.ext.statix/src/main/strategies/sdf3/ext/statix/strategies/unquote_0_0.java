@@ -1,4 +1,4 @@
-package org.metaborg.meta.lang.template.strategies;
+package sdf3.ext.statix.strategies;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;

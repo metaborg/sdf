@@ -15,9 +15,6 @@ import org.metaborg.sdf2table.grammar.*;
 import org.spoofax.interpreter.terms.*;
 import org.spoofax.terms.StrategoAppl;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.spoofax.terms.io.binary.TermReader;
 import org.spoofax.terms.util.TermUtils;
 
@@ -34,22 +31,22 @@ public class NormGrammarReader {
     private final GrammarFactory gf;
 
     public NormGrammarReader() {
-        this.moduleAsts = Maps.newHashMap();
+        this.moduleAsts = new HashMap<>();
         this.processedModules = new HashSet<>();
         this.grammar = new NormGrammar();
         this.paths = Collections.emptyList();
         this.fileVisitors = new LinkedList<>();
-        this.prioritySections = Lists.newArrayList();
+        this.prioritySections = new ArrayList<>();
         this.gf = grammar.getGrammarFactory();
     }
 
     public NormGrammarReader(List<String> paths) {
-        this.moduleAsts = Maps.newHashMap();
+        this.moduleAsts = new HashMap<>();
         this.processedModules = new HashSet<>();
         this.grammar = new NormGrammar();
         this.paths = paths;
         this.fileVisitors = new LinkedList<>();
-        this.prioritySections = Lists.newArrayList();
+        this.prioritySections = new ArrayList<>();
         this.gf = grammar.getGrammarFactory();
     }
 
@@ -98,7 +95,7 @@ public class NormGrammarReader {
     }
 
     private void normalizeIndexedPriorities() {
-        for(Priority p : grammar.priorities().keys()) {
+        for(Priority p : grammar.priorities().keySet()) {
             for(Integer arg : grammar.priorities().get(p)) {
                 if(arg != -1 && arg != Integer.MIN_VALUE && arg != Integer.MAX_VALUE) {
                     grammar.getIndexedPriorities().put(p, arg);
@@ -106,9 +103,9 @@ public class NormGrammarReader {
             }
         }
 
-        for(Priority p : grammar.getIndexedPriorities().keys()) {
+        for(Priority p : grammar.getIndexedPriorities().keySet()) {
             for(Integer arg : grammar.getIndexedPriorities().get(p)) {
-                grammar.priorities().get(p).remove(arg);
+                grammar.priorities().remove(p, arg);
             }
         }
     }
@@ -196,6 +193,10 @@ public class NormGrammarReader {
     }
 
     private void addProds(IStrategoAppl section) throws Exception {
+        // Even looking at the history of this method, there is no reason for the code duplication
+        //  in the bodies of the ifs. And given its current usage only in readModule, none of the
+        //  if conditions are necessary either. But this is not my code, and I'm already doing other
+        //  refactoring atm, so I'm not touching this. Braver souls: do simplify, but also test!
         if(TermUtils.isAppl(section, "ContextFreeSyntax")) {
             IStrategoList sdf_productions = TermUtils.toListAt(section, 0);
             for(IStrategoTerm t : sdf_productions) {
@@ -232,8 +233,8 @@ public class NormGrammarReader {
                 Symbol symbol;
                 String cons = null;
                 ConstructorAttribute cons_attr = null;
-                List<Symbol> rhs_symbols = Lists.newArrayList();
-                Set<ISymbol> literals = Sets.newHashSet();
+                List<Symbol> rhs_symbols = new ArrayList<>();
+                Set<ISymbol> literals = new HashSet<ISymbol>();
                 IStrategoAppl tattrs;
 
                 if(with_cons) {
@@ -257,7 +258,7 @@ public class NormGrammarReader {
 
                 // Read attributes
                 tattrs = (IStrategoAppl) app.getSubterm(2);
-                Set<IAttribute> attrs = Sets.newHashSet();
+                Set<IAttribute> attrs = new HashSet<IAttribute>();
                 switch(tattrs.getName()) {
                     case "NoAttrs":
                         break;
@@ -477,7 +478,7 @@ public class NormGrammarReader {
     }
 
     public List<Symbol> processSymbolList(IStrategoTerm term) {
-        List<Symbol> list = Lists.newLinkedList();
+        List<Symbol> list = new LinkedList<>();
 
         if(TermUtils.isList(term)) {
             IStrategoList slist = TermUtils.toList(term);
@@ -660,7 +661,7 @@ public class NormGrammarReader {
             IStrategoAppl res = TermUtils.toAppl(restriction);
             switch(res.getName()) {
                 case "Follow":
-                    List<ICharacterClass[]> restrictionLookahead = Lists.newArrayList();
+                    List<ICharacterClass[]> restrictionLookahead = new ArrayList<>();
                     ICharacterClass restrictionNoLookahead =
                         importFollowRestriction(res.getSubterm(1), restrictionLookahead);
                     IStrategoList subjects = TermUtils.toListAt(res, 0);
@@ -695,7 +696,7 @@ public class NormGrammarReader {
                     break;
                 // NON TERMINALS
                 case "Seq":
-                    List<ICharacterClass> lookahead = Lists.newArrayList(processCharClass(app.getSubterm(0)));
+                    List<ICharacterClass> lookahead = new ArrayList<>(Arrays.asList(processCharClass(app.getSubterm(0))));
                     createNewLookahead(app.getSubterm(1), lookahead, restrictionsLookahead);
                     break;
                 // TERMINALS
@@ -721,7 +722,7 @@ public class NormGrammarReader {
                 case "List":
                     slist = TermUtils.toListAt(app, 0);
                     for(IStrategoTerm t : slist) {
-                        List<ICharacterClass> firstChars = Lists.newArrayList(lookahead);
+                        List<ICharacterClass> firstChars = new ArrayList<>(lookahead);
                         createNewLookahead(t, firstChars, restrictionsLookahead);
                     }
                     break;
@@ -757,7 +758,7 @@ public class NormGrammarReader {
             IStrategoList groups = (IStrategoList) chain.getSubterm(0);
             Production higher = null, lower = null;
             boolean transitive = true;
-            List<Integer> arguments = Lists.newArrayList();
+            List<Integer> arguments = new ArrayList<>();
 
             if(groups.size() != 2) {
                 throw new Exception("Unexpected normalized priority: " + chain.toString()
@@ -882,7 +883,7 @@ public class NormGrammarReader {
 
     private List<Integer> normalizePriorityArguments(Production production, List<Integer> arguments) {
         ISymbol optLayout = gf.createContextFreeSymbol(gf.createOptionalSymbol(gf.createLayoutSymbol()));
-        List<Integer> norm_arguments = Lists.newArrayList();
+        List<Integer> norm_arguments = new ArrayList<>();
         for(int arg : arguments) {
             int norm_arg = 0;
             for(ISymbol s : production.rightHand()) {

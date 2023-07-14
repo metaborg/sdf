@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,8 +10,6 @@ import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.Lists;
 
 public final class AltSymbol extends Symbol {
 
@@ -24,7 +23,7 @@ public final class AltSymbol extends Symbol {
         this.alt1 = alt1;
         this.alt2 = alt2;
         this.name = alt1.name() + " | " + alt2.name();
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
     

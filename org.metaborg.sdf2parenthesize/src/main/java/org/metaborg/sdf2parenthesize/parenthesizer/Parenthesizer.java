@@ -3,6 +3,9 @@ package org.metaborg.sdf2parenthesize.parenthesizer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -25,19 +28,16 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.metaborg.util.collection.SetMultimap;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
+import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoString;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
+import org.spoofax.jsglr.shared.ArrayDeque;
 import org.spoofax.terms.TermFactory;
 import org.strategoxt.strc.pp_stratego_string_0_0;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 
 public class Parenthesizer {
 
@@ -50,8 +50,8 @@ public class Parenthesizer {
         moduleName = "pp/" + moduleName + "-parenthesize";
         final String rule_name = name + "Parenthesize";
         NormGrammar grammar = table.normalizedGrammar();
-        
-        List<IStrategoTerm> importsList = Lists.newArrayList();
+
+        List<IStrategoTerm> importsList = new ArrayList<>();
         if(stratego2) {
             importsList.add(importModule("strategolib"));
         } else {
@@ -64,6 +64,11 @@ public class Parenthesizer {
                 .replaceFirst("-norm$", "");
             importsList.add(importModule("signatures/" + inputModuleName + "-sig"));
         }
+        // parenthesize is called multiple times, the file is overwritten with a version that doesn't have the right
+        //  imports if you clean up the read files...
+        //grammar.postParenthesizerCleanup();
+
+        importsList.add(importModuleWildCard("signatures"));
 
         // Imports
         IStrategoTerm imports = tf.makeAppl(tf.makeConstructor("Imports", 1), tf.makeList(importsList));
@@ -83,17 +88,17 @@ public class Parenthesizer {
             + "          , Build(NoAnnoList(Str(\"\\\"unknown\\\"\")))\n" + "          )\n" + "        )");
 
         // Rules
-        List<IStrategoTerm> shallowConflictRuleList = Lists.newArrayList();
+        List<IStrategoTerm> shallowConflictRuleList = new ArrayList<>();
 
 
         // processed list non-terminals
-        List<ISymbol> listNonTerminals = Lists.newArrayList();
+        List<ISymbol> listNonTerminals = new ArrayList<>();
 
         for(Production prod : grammar.getHigherPriorityProductions().keySet()) {
             String constructor = getConstructor(prod, grammar);
 
             if(constructor != null && !Sort.isListNonTerminal(prod.leftHand())) {
-                SetMultimap<Integer, IProduction> conflicts = HashMultimap.create();
+                SetMultimap<Integer, IProduction> conflicts = new SetMultimap<>();
                 for(Priority prio : grammar.getHigherPriorityProductions().get(prod)) {
                     for(Integer arg : grammar.priorities().get(prio)) {
                         if(arg != -1 && arg != Integer.MAX_VALUE && arg != Integer.MIN_VALUE) {
@@ -123,7 +128,7 @@ public class Parenthesizer {
 
                     IStrategoTerm arg_term =
                         tf.makeAppl(tf.makeConstructor("Var", 1), tf.makeString("t_" + normalizeArg(arg, prod)));
-                    IStrategoTerm matches = createMatches(Queues.newArrayDeque(conflicts.get(arg)), grammar);
+                    IStrategoTerm matches = createMatches(new ArrayDeque<>(conflicts.get(arg)), grammar);
 
                     IStrategoTerm condition = tf.makeAppl(tf.makeConstructor("BA", 2), matches, arg_term);
 
@@ -229,12 +234,12 @@ public class Parenthesizer {
         }
 
 
-        List<IStrategoTerm> deepConflictRuleList = Lists.newArrayList();
+        List<IStrategoTerm> deepConflictRuleList = new ArrayList<>();
         for(ContextualProduction prod : grammar.getProdContextualProdMapping().inverse().keySet()) {
             String constructor = getConstructor(prod.getOrigProduction(), grammar);
             if(constructor != null) {
-                SetMultimap<Integer, IProduction> leftConflicts = HashMultimap.create();
-                SetMultimap<Integer, IProduction> rightConflicts = HashMultimap.create();
+                SetMultimap<Integer, IProduction> leftConflicts = new SetMultimap<>();
+                SetMultimap<Integer, IProduction> rightConflicts = new SetMultimap<>();
                 for(int i = 0; i < prod.rightHand().size(); i++) {
                     ISymbol s = prod.rightHand().get(i);
                     if(s instanceof ContextualSymbol) {
@@ -270,7 +275,7 @@ public class Parenthesizer {
                             tf.makeAppl(tf.makeConstructor("Choice", 2),
                                 tf.makeAppl(tf.makeConstructor("Call", 2), tf.parseFromString("SVar(\"LeftContext\")"),
                                     tf.makeList(
-                                        createMatchesNoFail(Queues.newArrayDeque(leftConflicts.get(arg)), grammar))),
+                                        createMatchesNoFail(new ArrayDeque<>(leftConflicts.get(arg)), grammar))),
                                 tf.makeAppl(tf.makeConstructor("Fail", 0))),
                             tf.makeAppl(tf.makeConstructor("Var", 1),
                                 tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction())))));
@@ -300,7 +305,7 @@ public class Parenthesizer {
                             tf.makeAppl(tf.makeConstructor("Choice", 2),
                                 tf.makeAppl(tf.makeConstructor("Call", 2), tf.parseFromString("SVar(\"RightContext\")"),
                                     tf.makeList(
-                                        createMatchesNoFail(Queues.newArrayDeque(rightConflicts.get(arg)), grammar))),
+                                        createMatchesNoFail(new ArrayDeque<>(rightConflicts.get(arg)), grammar))),
                                 tf.makeAppl(tf.makeConstructor("Fail", 0))),
                             tf.makeAppl(tf.makeConstructor("Var", 1),
                                 tf.makeString("t_" + normalizeArg(arg, prod.getOrigProduction())))));
@@ -336,9 +341,9 @@ public class Parenthesizer {
             tf.makeList(
                 tf.makeAppl("Sorts", tf.makeList(tf.makeAppl("SortNoArgs", tf.makeString("Unknown")))),
                 tf.makeAppl(tf.makeConstructor("Constructors", 1),
-                tf.makeList(defineSignature("Parenthetical", Lists.newArrayList("Unknown"), "Unknown"),
-                    defineSignature("Snoc", Lists.newArrayList("Unknown", "Unknown"), "Unknown"),
-                    defineSignature("Ins", Lists.newArrayList("Unknown"), "Unknown")))));
+                tf.makeList(defineSignature("Parenthetical", Arrays.asList("Unknown"), "Unknown"),
+                    defineSignature("Snoc", Arrays.asList("Unknown", "Unknown"), "Unknown"),
+                    defineSignature("Ins", Arrays.asList("Unknown"), "Unknown")))));
 
         IStrategoTerm strategies = tf.makeAppl(tf.makeConstructor("Strategies", 1),
             tf.makeList(ioStrategy, parenthesizeStrategy, getTermSort));
@@ -420,7 +425,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermParenthesizedVars(IProduction prod, int arg) {
-        List<IStrategoTerm> vars = Lists.newArrayList();
+        List<IStrategoTerm> vars = new ArrayList<>();
         for(int i = 0; i < getArity(prod); i++) {
             if(i == arg) {
                 vars.add(createStrategoTermParentheticalTerm(i));
@@ -447,7 +452,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermVarsResult(IProduction prod, Integer arg) {
-        List<IStrategoTerm> vars = Lists.newArrayList();
+        List<IStrategoTerm> vars = new ArrayList<>();
         for(int i = 0; i < getArity(prod); i++) {
             if(i == arg) {
                 vars.add(tf.makeAppl(tf.makeConstructor("Var", 1), tf.makeString("t_" + i + "'")));
@@ -459,7 +464,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermVars(IProduction prod) {
-        List<IStrategoTerm> vars = Lists.newArrayList();
+        List<IStrategoTerm> vars = new ArrayList<>();
         for(int i = 0; i < getArity(prod); i++) {
             vars.add(tf.makeAppl(tf.makeConstructor("Var", 1), tf.makeString("t_" + i)));
         }
@@ -471,7 +476,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermVarsWld(IProduction prod) {
-        List<IStrategoTerm> vars = Lists.newArrayList();
+        List<IStrategoTerm> vars = new ArrayList<>();
         for(int i = 0; i < getArity(prod); i++) {
             vars.add(tf.makeAppl(tf.makeConstructor("Wld", 0)));
         }
@@ -505,7 +510,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermConstTypeNoArgsList(List<String> sorts) {
-        List<IStrategoTerm> terms = Lists.newLinkedList();
+        IStrategoList.Builder terms = tf.arrayListBuilder(sorts.size());
         for(String sort : sorts) {
             terms.add(createStrategoTermConstTypeNoArgs(sort));
         }
@@ -513,7 +518,7 @@ public class Parenthesizer {
     }
 
     private static IStrategoTerm createStrategoTermCheckContextRules() {
-        List<IStrategoTerm> checkContextRuleList = Lists.newArrayList();
+        List<IStrategoTerm> checkContextRuleList = new ArrayList<>();
 
         /* @formatter:off         
         

@@ -4,41 +4,39 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
+import org.metaborg.util.collection.BiMap2;
 
 public class Graph<T> {
 
-    public BiMap<T, Integer> getLabels() {
+    public BiMap2<T, Integer> getLabels() {
         return labels;
     }
 
-    public void setLabels(BiMap<T, Integer> labels) {
+    public void setLabels(BiMap2<T, Integer> labels) {
         this.labels = labels;
     }
 
     private int labelCount = 0; // total number of vertices
-    private BiMap<T, Integer> labels;
+    private BiMap2<T, Integer> labels;
     private List<Integer> adjacencyList[];
 
     public Graph(int v) {
-        labels = HashBiMap.create();
+        labels = new BiMap2<>();
         adjacencyList = new LinkedList[v];
         for(int i = 0; i < v; i++) {
             for(int j = 0; j < v; j++) {
-                adjacencyList[i] = Lists.newLinkedList();
+                adjacencyList[i] = new LinkedList<>();
             }
         }
     }
 
     public Graph(Collection<T> orig_labels) {
-        labels = HashBiMap.create();
+        labels = new BiMap2<>();
         adjacencyList = new LinkedList[orig_labels.size()];
         addVertices(orig_labels);
         for(int i = 0; i < orig_labels.size(); i++) {
             for(int j = 0; j < orig_labels.size(); j++) {
-                adjacencyList[i] = Lists.newLinkedList();
+                adjacencyList[i] = new LinkedList<>();
             }
         }
     }

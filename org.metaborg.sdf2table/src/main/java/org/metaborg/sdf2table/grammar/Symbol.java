@@ -1,20 +1,18 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 
-import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.parsetable.symbols.SortCardinality;
 import org.metaborg.parsetable.symbols.SyntaxContext;
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.Lists;
 
 public abstract class Symbol implements Serializable, ISymbol {
 
@@ -94,7 +92,7 @@ public abstract class Symbol implements Serializable, ISymbol {
 
         // if the character of the follow restriction already occurs without a lookahead
         // the follow restriction with lookahead is redundant
-        List<ICharacterClass[]> redundantFRLookahead = Lists.newArrayList();
+        List<ICharacterClass[]> redundantFRLookahead = new ArrayList<>();
         for(ICharacterClass[] fr : followRestrictionsLookahead) {
             ICharacterClass intersection = fr[0].intersection(followRestrictionsNoLookahead);
             if(intersection.equals(fr[0])) {
