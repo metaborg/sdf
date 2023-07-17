@@ -1,5 +1,6 @@
 package org.metaborg.sdf2table.grammar;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,8 +11,6 @@ import org.metaborg.sdf2table.deepconflicts.Context;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 
-import com.google.common.collect.Lists;
-
 public class LexicalSymbol extends Symbol {
     
     private static final long serialVersionUID = 1481976564637864975L;
@@ -20,7 +19,7 @@ public class LexicalSymbol extends Symbol {
 
     protected LexicalSymbol(Symbol symbol) {
         this.symbol = symbol;
-        followRestrictionsLookahead = Lists.newArrayList();
+        followRestrictionsLookahead = new ArrayList<>();
         followRestrictionsNoLookahead = null;
     }
 

@@ -3,7 +3,6 @@ package org.metaborg.sdf2parenthesize.parenthesizer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +28,7 @@ import org.metaborg.sdf2table.grammar.Production;
 import org.metaborg.sdf2table.grammar.Sort;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.parsetable.ParseTable;
+import org.metaborg.util.collection.SetMultimap;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoList;
@@ -38,9 +38,6 @@ import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.jsglr.shared.ArrayDeque;
 import org.spoofax.terms.TermFactory;
 import org.strategoxt.strc.pp_stratego_string_0_0;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 
 public class Parenthesizer {
 
@@ -73,7 +70,9 @@ public class Parenthesizer {
                 importsList.add(importModuleWildCard("signatures/" + subfolder));
             }
         }
-        grammar.postParenthesizerCleanup();
+        // parenthesize is called multiple times, the file is overwritten with a version that doesn't have the right
+        //  imports if you clean up the read files...
+        //grammar.postParenthesizerCleanup();
 
         importsList.add(importModuleWildCard("signatures"));
 
@@ -105,7 +104,7 @@ public class Parenthesizer {
             String constructor = getConstructor(prod, grammar);
 
             if(constructor != null && !Sort.isListNonTerminal(prod.leftHand())) {
-                SetMultimap<Integer, IProduction> conflicts = HashMultimap.create();
+                SetMultimap<Integer, IProduction> conflicts = new SetMultimap<>();
                 for(Priority prio : grammar.getHigherPriorityProductions().get(prod)) {
                     for(Integer arg : grammar.priorities().get(prio)) {
                         if(arg != -1 && arg != Integer.MAX_VALUE && arg != Integer.MIN_VALUE) {
@@ -245,8 +244,8 @@ public class Parenthesizer {
         for(ContextualProduction prod : grammar.getProdContextualProdMapping().inverse().keySet()) {
             String constructor = getConstructor(prod.getOrigProduction(), grammar);
             if(constructor != null) {
-                SetMultimap<Integer, IProduction> leftConflicts = HashMultimap.create();
-                SetMultimap<Integer, IProduction> rightConflicts = HashMultimap.create();
+                SetMultimap<Integer, IProduction> leftConflicts = new SetMultimap<>();
+                SetMultimap<Integer, IProduction> rightConflicts = new SetMultimap<>();
                 for(int i = 0; i < prod.rightHand().size(); i++) {
                     ISymbol s = prod.rightHand().get(i);
                     if(s instanceof ContextualSymbol) {

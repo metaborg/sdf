@@ -14,15 +14,13 @@ import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.ContextualProduction;
 import org.metaborg.sdf2table.grammar.*;
 import org.metaborg.sdf2table.parsetable.*;
+import org.metaborg.util.collection.SetMultimap;
 import org.metaborg.util.log.ILogger;
 import org.metaborg.util.log.LoggerUtils;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
 import org.spoofax.terms.TermFactory;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 
 public class ParseTableIO implements IParseTableGenerator {
 
@@ -208,40 +206,45 @@ public class ParseTableIO implements IParseTableGenerator {
     }
 
     private static IStrategoTerm generatePrioritiesAterm(ParseTable pt) throws Exception {
-        SetMultimap<Priority, Integer> allPriorities = HashMultimap.create();
+        SetMultimap<Priority, Integer> allPriorities = new SetMultimap<>();
 
         allPriorities.putAll(pt.normalizedGrammar().priorities());
         allPriorities.putAll(pt.normalizedGrammar().getIndexedPriorities());
 
         IStrategoList.Builder terms = termFactory.arrayListBuilder(allPriorities.size());
-        for(java.util.Map.Entry<Priority, Integer> e : allPriorities.entries()) {
-            IProduction prod_higher = e.getKey().higher();
-            IProduction prod_lower = e.getKey().lower();
-            // because non-contextual production got replaced
-            if(pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod_higher)) {
-                prod_higher = pt.normalizedGrammar().getProdContextualProdMapping().get(e.getKey().higher());
-            }
-            if(pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod_lower)) {
-                prod_lower = pt.normalizedGrammar().getProdContextualProdMapping().get(e.getKey().lower());
-            }
-            Integer label_higher = pt.productionLabels().get(prod_higher);
-            Integer label_lower = pt.productionLabels().get(prod_lower);
-            if(label_higher == null || label_lower == null) {
-                throw new Exception("Production label not found.");
-            }
-            if(e.getValue() == -1) {
-                IStrategoTerm prio_term = termFactory.makeAppl(termFactory.makeConstructor("gtr-prio", 2),
-                    termFactory.makeInt(label_higher), termFactory.makeInt(label_lower));
-                terms.add(prio_term);
-            } else {
-                if(e.getValue() == Integer.MAX_VALUE || e.getValue() == Integer.MIN_VALUE)
-                    continue;
+        try {
+            allPriorities.entries().forEach((java.util.Map.Entry<Priority, Integer> e) -> {
+                IProduction prod_higher = e.getKey().higher();
+                IProduction prod_lower = e.getKey().lower();
+                // because non-contextual production got replaced
+                if(pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod_higher)) {
+                    prod_higher = pt.normalizedGrammar().getProdContextualProdMapping()
+                        .get(e.getKey().higher());
+                }
+                if(pt.normalizedGrammar().getProdContextualProdMapping().containsKey(prod_lower)) {
+                    prod_lower = pt.normalizedGrammar().getProdContextualProdMapping().get(e.getKey().lower());
+                }
+                Integer label_higher = pt.productionLabels().get(prod_higher);
+                Integer label_lower = pt.productionLabels().get(prod_lower);
+                if(label_higher == null || label_lower == null) {
+                    throw new ProductionLabelNotFoundException();
+                }
+                if(e.getValue() == -1) {
+                    IStrategoTerm prio_term =
+                        termFactory.makeAppl(termFactory.makeConstructor("gtr-prio", 2), termFactory.makeInt(label_higher), termFactory.makeInt(label_lower));
+                    terms.add(prio_term);
+                } else {
+                    if(e.getValue() == Integer.MAX_VALUE || e.getValue() == Integer.MIN_VALUE)
+                        return;
 
-                IStrategoTerm prio_term = termFactory.makeAppl(termFactory.makeConstructor("arg-gtr-prio", 3),
-                    termFactory.makeInt(label_higher), termFactory.makeInt(e.getValue()),
-                    termFactory.makeInt(label_lower));
-                terms.add(prio_term);
-            }
+                    IStrategoTerm prio_term = termFactory.makeAppl(termFactory.makeConstructor("arg-gtr-prio", 3),
+                        termFactory.makeInt(label_higher), termFactory.makeInt(e.getValue()),
+                        termFactory.makeInt(label_lower));
+                    terms.add(prio_term);
+                }
+            });
+        } catch(ProductionLabelNotFoundException e) {
+            throw new Exception("Production label not found.");
         }
 
         return termFactory.makeAppl(termFactory.makeConstructor("priorities", 1), termFactory.makeList(terms));
@@ -324,4 +327,6 @@ public class ParseTableIO implements IParseTableGenerator {
         return ccFactory;
     }
 
+    private static class ProductionLabelNotFoundException extends RuntimeException {
+    }
 }

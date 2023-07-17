@@ -19,7 +19,7 @@ language:
       prefix: "$"
     version: sdf2
   stratego:
-    format: ctree
+    format: jar
     args:
     - -la
     - stratego-lib

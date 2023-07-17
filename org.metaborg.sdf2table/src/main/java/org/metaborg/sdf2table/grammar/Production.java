@@ -1,6 +1,7 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,13 +9,11 @@ import java.util.stream.Collectors;
 
 import org.metaborg.sdf2table.deepconflicts.Context;
 import org.metaborg.sdf2table.io.ParseTableIO;
+import org.metaborg.util.collection.BiMap2;
+import org.metaborg.util.collection.SetMultimap;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.interpreter.terms.ITermFactory;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
 
 public class Production implements IProduction, Serializable {
 
@@ -30,13 +29,13 @@ public class Production implements IProduction, Serializable {
 
     protected Production(Symbol lhs, List<Symbol> rhs) {
         this.lhs = lhs;
-        this.rhs = Lists.newArrayList(rhs);
+        this.rhs = new ArrayList<>(rhs);
         arity = rhs.size();
     }
 
     protected Production(Symbol lhs, List<Symbol> rhs, int leftRecPos, int rightRecPos) {
         this.lhs = lhs;
-        this.rhs = Lists.newArrayList(rhs);
+        this.rhs = new ArrayList<>(rhs);
         arity = rhs.size();
         leftRecursivePos = leftRecPos;
         rightRecursivePos = rightRecPos;
@@ -104,7 +103,7 @@ public class Production implements IProduction, Serializable {
     }
 
     public IStrategoTerm toAterm(SetMultimap<IProduction, IAttribute> prod_attrs,
-        BiMap<IProduction, Integer> productionLabels) {
+        BiMap2<IProduction, Integer> productionLabels) {
         ITermFactory tf = ParseTableIO.getTermfactory();
         IStrategoList.Builder rhs_terms = tf.arrayListBuilder(rhs.size());
         for(ISymbol s : rhs) {

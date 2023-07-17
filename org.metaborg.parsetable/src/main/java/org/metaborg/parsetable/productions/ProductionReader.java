@@ -4,6 +4,7 @@ import static org.spoofax.terms.util.TermUtils.*;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
@@ -15,7 +16,7 @@ import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
-import com.google.common.collect.ImmutableSet;
+import io.usethesource.capsule.util.stream.CapsuleCollectors;
 
 public class ProductionReader {
 
@@ -149,7 +150,7 @@ public class ProductionReader {
                             String assocName = assocInfoAppl.getConstructor().getName();
                             Set<Integer> assocWithSet =
                                 Arrays.stream(toList(assocInfoAppl.getSubterm(0)).getAllSubterms())
-                                    .map(t -> toInt(t).intValue()).collect(ImmutableSet.toImmutableSet());
+                                    .map(t -> toInt(t).intValue()).collect(CapsuleCollectors.toSet());
                             switch(assocName) {
                                 case "non-assoc":
                                     nonAssocWith = assocWithSet;

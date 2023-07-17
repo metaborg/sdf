@@ -7,10 +7,7 @@ import java.util.*;
 
 import org.metaborg.parsetable.actions.IAction;
 import org.metaborg.parsetable.actions.IReduce;
-
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
+import org.metaborg.util.collection.MultiSet;
 
 public final class ActionsForCharacterDisjointSorted implements IActionsForCharacter, Serializable {
 
@@ -37,7 +34,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
             ranges[i] = actionsPerCharacterClasses[i].characterClass.getRanges();
         }
         int[] indices = new int[ranges.length];
-        Multiset<IAction> newRangeActions = HashMultiset.create();
+        MultiSet.Transient<IAction> newRangeActions = MultiSet.Transient.of();
 
         int previous = 0;
         int minIndex;
@@ -57,7 +54,7 @@ public final class ActionsForCharacterDisjointSorted implements IActionsForChara
             if((j & 1) == 0) // We're currently at the start of the range; add actions
                 newRangeActions.addAll(actionsPerCharacterClasses[minIndex].actions);
             else // We're currently after the end of the range; remove actions
-                Multisets.removeOccurrences(newRangeActions, actionsPerCharacterClasses[minIndex].actions);
+                newRangeActions.removeAll(actionsPerCharacterClasses[minIndex].actions);
         }
 
         assert newRangeActions.isEmpty();
