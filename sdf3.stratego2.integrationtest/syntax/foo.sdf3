@@ -3,6 +3,7 @@ module foo
 imports
 
   StrategoLang/import-namespaced
+  StrategoLang/core/modules-namespaced
   StrategoLang/sugar/terms-namespaced
   thesyntax
 
