@@ -186,4 +186,4 @@ rules
             , FunType([ConstType(SortNoArgs("COMPLETION-INSERTION"))], ConstType(SortNoArgs($[[sort]])))
             )
 
-  get-sdf3-type = get-type
+  get-sdf3-type = where(prim("spoofax_version"); ?2) < get-type + statix-get-type
