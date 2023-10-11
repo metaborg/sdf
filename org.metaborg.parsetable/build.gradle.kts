@@ -18,9 +18,8 @@ dependencies {
   api(platform("org.metaborg:parent:$spoofax2Version"))
 
   api(compositeBuild("org.spoofax.terms"))
-  api(compositeBuild("org.metaborg.util"))
-  
-  api("io.usethesource:capsule")
+  implementation(compositeBuild("org.metaborg.util"))
+  implementation("io.usethesource:capsule")
 
   compileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("junit:junit")
