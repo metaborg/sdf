@@ -16,6 +16,8 @@ import org.metaborg.util.log.LoggerUtils;
 
 import com.google.common.collect.*;
 
+import static org.metaborg.parsetable.characterclasses.CharacterClassFactory.EOF_SINGLETON;
+
 public class ParseTable implements IParseTable, Serializable {
 
     // FIXME Currently generating an LR(0) table, compute first/follow sets to generate SLR(1)
@@ -117,6 +119,10 @@ public class ParseTable implements IParseTable, Serializable {
         // create JSGLR parse table productions
         createJSGLRParseTableProductions(productionLabels);
 
+        // calculate FIRST-set and FOLLOW-set
+        calculateFirst();
+        calculateFollow();
+
         // create states if the table should not be generated dynamically
         initialProduction = grammar.getInitialProduction();
 
@@ -180,6 +186,143 @@ public class ParseTable implements IParseTable, Serializable {
             }
 
         } while(markedNullable);
+    }
+
+    // Based on https://compilers.iecc.com/comparch/article/01-04-079
+    private void calculateFirst() {
+        SetMultimap<ISymbol, IProduction> symbolProductionsMapping = grammar.getSymbolProductionsMapping();
+        Set<ISymbol> symbols = grammar.getSymbols();
+        SetMultimap<ISymbol, ISymbol> containsTheFirstOf = HashMultimap.create();
+
+        for(ISymbol s : symbols) {
+            // The FIRST set of a CharacterClass symbol is equal to the character class it represents.
+            if(s instanceof CharacterClassSymbol) {
+                s.setFirst(((CharacterClassSymbol) s).getCC());
+                continue;
+            }
+            // The FIRST set of an EOFSymbol is equal to the EOF singleton character class.
+            if(s instanceof EOFSymbol) {
+                s.setFirst(EOF_SINGLETON);
+                continue;
+            }
+
+            for(IProduction p : symbolProductionsMapping.get(s)) {
+                // Direct contributions:
+                // If p is of the shape A = A0 ... Ak a Am ... An where all symbols up to Ak are nullable
+                for(ISymbol rhs : p.rightHand()) {
+                    // Then, a is in FIRST(A).
+                    if(rhs instanceof CharacterClassSymbol) {
+                        s.setFirst(((CharacterClassSymbol) rhs).getCC());
+                        break;
+                    }
+
+                    // Indirect contributions: calculate contains-the-FIRSTs-of
+                    // If p is of the shape A = A0 ... Ak B Am ... An where all symbols up to Ak are nullable
+                    // Then, A contains-the-FIRSTs-of B
+                    containsTheFirstOf.put(s, rhs);
+
+                    if(!rhs.isNullable())
+                        break;
+                }
+            }
+        }
+
+        // Indirect contributions: Tarjan's algorithm for strongly connected components
+        final int DONE = symbols.size();
+        final Map<ISymbol, Integer> low = new HashMap<>();
+        final Stack<ISymbol> stack = new Stack<>();
+        for(ISymbol v : symbols) {
+            if(low.get(v) == null /* CLEAN */)
+                traverseFirst(v, containsTheFirstOf, DONE, low, stack);
+        }
+    }
+
+    private void traverseFirst(ISymbol v, SetMultimap<ISymbol, ISymbol> containsTheFirstOf, int DONE,
+        Map<ISymbol, Integer> low, Stack<ISymbol> stack) {
+        stack.push(v);
+        int top1 = stack.size() - 1;
+        low.put(v, top1);
+        for(ISymbol w : containsTheFirstOf.get(v)) {
+            if(low.get(w) == null /* CLEAN */) {
+                traverseFirst(w, containsTheFirstOf, DONE, low, stack);
+            }
+            // Change compared to the article at compilers.iecc.com: this line is moved outside of the previous if-block
+            v.setFirst(v.getFirst().union(w.getFirst())); // union!
+            if(low.get(w) < low.get(v))
+                low.put(v, low.get(w));
+        }
+        if(low.get(v) == top1) // v is the root of this SCC
+            while(stack.size() - 1 >= top1) {
+                ISymbol w = stack.pop();
+                w.setFirst(v.getFirst()); // distribute!
+                low.put(w, DONE);
+            }
+    }
+
+    // Based on https://compilers.iecc.com/comparch/article/01-04-079
+    // and Modern Compiler Implementation in Java, Second Edition - Andrew Appel, 2004
+    private void calculateFollow() {
+        SetMultimap<ISymbol, IProduction> symbolProductionsMapping = grammar.getSymbolProductionsMapping();
+        Set<ISymbol> symbols = grammar.getSymbols();
+        SetMultimap<ISymbol, ISymbol> containsTheFirstOf = HashMultimap.create();
+        SetMultimap<ISymbol, ISymbol> containsTheFollowOf = HashMultimap.create();
+
+        for(ISymbol s : symbols) {
+            for(IProduction p : symbolProductionsMapping.get(s)) {
+                List<ISymbol> rightHand = p.rightHand();
+                i: for(int i = 0, rightHandSize = rightHand.size(); i < rightHandSize; i++) {
+                    ISymbol symbolI = rightHand.get(i);
+
+                    // If p is of the shape A = A0 ... Ai Ak ... Am Aj ... An
+                    for(int j = i + 1; j < rightHandSize; j++) {
+                        // If Ak ... Am are all nullable, FOLLOW(Ai) contains FIRST(Aj)
+                        ISymbol symbolJ = rightHand.get(j);
+                        containsTheFirstOf.put(symbolI, symbolJ);
+
+                        // If Ak ... An are NOT all nullable, continue with next Ai
+                        if(!symbolJ.isNullable())
+                            continue i;
+                    }
+
+                    // If Ak ... An are all nullable, FOLLOW(Ai) contains FOLLOW(A)
+                    containsTheFollowOf.put(symbolI, s);
+                }
+            }
+        }
+
+        // Indirect contributions: Tarjan's algorithm for strongly connected components
+        final int DONE = symbols.size();
+        final Map<ISymbol, Integer> low = new HashMap<>();
+        final Stack<ISymbol> stack = new Stack<>();
+        for(ISymbol v : symbols) {
+            if(low.get(v) == null /* CLEAN */)
+                traverseFollow(v, containsTheFirstOf, containsTheFollowOf, DONE, low, stack);
+        }
+    }
+
+    private void traverseFollow(ISymbol v, SetMultimap<ISymbol, ISymbol> containsTheFirstOf,
+        SetMultimap<ISymbol, ISymbol> containsTheFollowOf, int DONE, Map<ISymbol, Integer> low, Stack<ISymbol> stack) {
+        stack.push(v);
+        int top1 = stack.size() - 1;
+        low.put(v, top1);
+        for(ISymbol w : containsTheFirstOf.get(v)) {
+            v.setFollow(v.getFollow().union(w.getFirst())); // union!
+        }
+        for(ISymbol w : containsTheFollowOf.get(v)) {
+            if(low.get(w) == null /* CLEAN */) {
+                traverseFollow(w, containsTheFirstOf, containsTheFollowOf, DONE, low, stack);
+            }
+            // Change compared to the article at compilers.iecc.com: this line is moved outside of the previous if-block
+            v.setFollow(v.getFollow().union(w.getFollow())); // union!
+            if(low.get(w) < low.get(v))
+                low.put(v, low.get(w));
+        }
+        if(low.get(v) == top1) // v is the root of this SCC
+            while(stack.size() - 1 >= top1) {
+                ISymbol w = stack.pop();
+                w.setFollow(v.getFollow()); // distribute!
+                low.put(w, DONE);
+            }
     }
 
     private void calculateRecursion() {
@@ -520,28 +663,6 @@ public class ParseTable implements IParseTable, Serializable {
         return grammar.getLeftRecursiveSymbolsMapping().get(p.higher().getLhs()).contains(p.lower().leftHand())
             || grammar.getRightRecursiveSymbolsMapping().get(p.higher().getLhs()).contains(p.lower().leftHand());
     }
-
-    /*
-     * TODO calculate first and follow sets private void calculateFirstFollow() { for(IProduction p :
-     * getGrammar().prods.values()) { p.calculateDependencies(getGrammar()); }
-     * 
-     * tarjanStack = new Stack<>(); first_components = Sets.newHashSet(); for(IProduction p :
-     * getGrammar().prods.values()) { if(p.firstSet().index == -1) { stronglyConnectedTarjan(p.firstSet(),
-     * first_components); } } }
-     * 
-     * 
-     * private void stronglyConnectedTarjan(TableSet v, Set<Set<TableSet>> components) { // Set the depth index for v to
-     * the smallest unused index v.index = index; v.low_link = index; index++; tarjanStack.push(v); v.onStack = true;
-     * 
-     * for(TableSet d : v.depends_on) { if(d.index == -1) { // Successor w has not yet been visited; recurse on it
-     * stronglyConnectedTarjan(d, components); v.add(d.value); d.low_link = Math.min(v.low_link, d.low_link); } else
-     * if(d.onStack) { // Successor w is in stack S and hence in the current SCC v.low_link = Math.min(v.low_link,
-     * d.index); } }
-     * 
-     * TableSet t; // If v is a root node, pop the stack and generate an SCC if(v.low_link == v.index) { Set<TableSet>
-     * component = Sets.newHashSet(); do { t = tarjanStack.pop(); t.onStack = false; t.add(v.value); component.add(t); }
-     * while(t != v); components.add(component); } }
-     */
 
     private void extractExpressionGrammars(SCCNodes<ISymbol> scc) {
 
