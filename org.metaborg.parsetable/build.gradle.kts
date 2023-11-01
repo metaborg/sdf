@@ -19,7 +19,7 @@ dependencies {
 
   api(compositeBuild("org.spoofax.terms"))
 
-  compileOnly("jakarta.annotation:jakarta.annotation-api")
+  implementation("jakarta.annotation:jakarta.annotation-api")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")

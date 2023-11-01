@@ -13,5 +13,5 @@ dependencies {
   implementation(compositeBuild("org.strategoxt.strj"))
   implementation(compositeBuild("org.metaborg.util"))
 
-  compileOnly("jakarta.annotation:jakarta.annotation-api")
+  implementation("jakarta.annotation:jakarta.annotation-api")
 }
