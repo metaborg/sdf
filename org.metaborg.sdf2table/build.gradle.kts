@@ -13,7 +13,7 @@ dependencies {
 
   api(project(":org.metaborg.parsetable"))
   implementation("com.google.inject:guice")
-  compileOnly("com.google.code.findbugs:jsr305")
+  implementation("jakarta.annotation:jakarta.annotation-api")
   testImplementation(testFixtures(project(":org.metaborg.parsetable")))
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")

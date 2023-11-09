@@ -1,12 +1,11 @@
 package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.sdf2table.grammar.IProduction;
-
-import com.google.common.collect.Sets;
 
 public class TableSet implements Serializable {
 
@@ -14,8 +13,8 @@ public class TableSet implements Serializable {
 
     IProduction p;
     ICharacterClass value;
-    Set<TableSet> depends_on = Sets.newHashSet();
-    Set<TableSet> dependents = Sets.newHashSet();
+    Set<TableSet> depends_on = new HashSet<TableSet>();
+    Set<TableSet> dependents = new HashSet<TableSet>();
 
     // Tarjan variables
     int index = -1;

@@ -9,6 +9,7 @@ imports
   runtime/types/-
   generation/gen-utils/to-str
   analysis/desugar
+  generate-stratego-is-inj
 
 imports
   common
@@ -157,6 +158,33 @@ rules
         CallNoArgs(SVar("is-placeholder")),
         Match(NoAnnoList(Op($[[sortname]-Plhdr], [])))
       ), Var("p"))
+    ))
+  ]
+
+
+rules
+
+  geninj-sort-to-upgrade-nabl2Var-rule(|lang): CfSort(sortname) -> [
+    // upgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[upgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // upgrade-placeholders-MyLang-MySort = origin-track-forced(
+    //   \ "nabl2.Var"#([resource, name]){anno*} -> "nabl2.Var"#([resource, name]){anno*} \
+    // )
+    <geninj-sdef-0-0(|$[upgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))]),
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))])
+    ))
+  ]
+
+  geninj-sort-to-downgrade-nabl2Var-rule(|lang): CfSort(sortname) -> [
+    // downgrade-placeholders-MyLang-MySort :: MySort -> MySort
+    DefHasType($[downgrade-placeholders-[lang]-[sortname]], FunNoArgsType(SortNoArgs(sortname), SortNoArgs(sortname))),
+    // downgrade-placeholders-MyLang-MySort = origin-track-forced(
+    //   \ "nabl2.Var"#([resource, name]){anno*} -> "nabl2.Var"#([resource, name]){anno*} \
+    // )
+    <geninj-sdef-0-0(|$[downgrade-placeholders-[lang]-[sortname]])> (<origin-preserving-rule> RuleNoCond(
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))]),
+      AnnoList(Explode(NoAnnoList(Str("\"nabl2.Var\"")), NoAnnoList(List([Var("resource"), Var("name")]))), [Var(ListVar("anno*"))])
     ))
   ]
 
@@ -526,6 +554,6 @@ rules
         ]
       )
     )
-    
+
   ]
 

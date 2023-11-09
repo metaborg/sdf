@@ -1,5 +1,5 @@
 ---
-id: org.metaborg:sdf3.meta.integrationtest:2.5.18
+id: org.metaborg:sdf3.meta.integrationtest:2.6.0-SNAPSHOT
 name: sdf3-meta-integrationtest
 dependencies:
   compile:
@@ -23,7 +23,7 @@ language:
     placeholder:
       prefix: "$"
   stratego:
-    format: ctree
+    format: jar
     args:
     - -la
     - stratego-lib

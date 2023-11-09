@@ -19,10 +19,7 @@ dependencies {
 
   api(compositeBuild("org.spoofax.terms"))
 
-  compileOnly("com.google.code.findbugs:jsr305")
-  implementation("com.google.guava:guava")
-  // Required for Guava >= 27.0:
-  // implementation("com.google.guava:failureaccess")
+  implementation("jakarta.annotation:jakarta.annotation-api")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")
