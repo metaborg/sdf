@@ -1,0 +1,8 @@
+module sdf3-stratego2-integrationtest
+
+imports
+  thesyntax
+
+context-free start-symbols
+
+  Start
