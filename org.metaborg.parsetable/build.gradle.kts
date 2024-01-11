@@ -21,7 +21,7 @@ dependencies {
   implementation(compositeBuild("org.metaborg.util"))
   implementation("io.usethesource:capsule")
 
-  compileOnly("com.google.code.findbugs:jsr305")
+  implementation("jakarta.annotation:jakarta.annotation-api")
   testCompileOnly("junit:junit")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testFixturesCompileOnly("junit:junit")

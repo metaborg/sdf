@@ -18,7 +18,7 @@ import org.spoofax.terms.StrategoAppl;
 import org.spoofax.terms.io.binary.TermReader;
 import org.spoofax.terms.util.TermUtils;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public class NormGrammarReader {
 
