@@ -3,6 +3,8 @@ package org.metaborg.parsetable.productions;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISymbol;
 
+import jsglr.shared.IToken;
+
 public interface IProduction {
 
     int id();
@@ -83,5 +85,27 @@ public interface IProduction {
     boolean isNonAssocWith(IProduction other);
 
     boolean isNonNestedWith(IProduction other);
+
+    static IToken.Kind getTokenKind(IProduction production) {
+        if(production == null) {
+            return IToken.Kind.TK_STRING; // indicates a character/int terminal, e.g. 'x'
+        } else if(production.isLayout()) {
+            return IToken.Kind.TK_LAYOUT;
+        } else if(production.isLiteral()) {
+            if(production.isOperator())
+                return IToken.Kind.TK_OPERATOR;
+            else
+                return IToken.Kind.TK_KEYWORD;
+        } else if(production.isLexical()) {
+            if(production.isStringLiteral())
+                return IToken.Kind.TK_STRING;
+            else if(production.isNumberLiteral())
+                return IToken.Kind.TK_NUMBER;
+            else
+                return IToken.Kind.TK_IDENTIFIER;
+        } else {
+            throw new IllegalStateException("invalid production/token type");
+        }
+    }
 
 }

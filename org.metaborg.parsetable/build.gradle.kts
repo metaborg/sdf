@@ -18,6 +18,7 @@ dependencies {
   api(platform("org.metaborg:parent:$spoofax2Version"))
 
   api(compositeBuild("org.spoofax.terms"))
+  api(compositeBuild("jsglr.shared"))
 
   implementation("jakarta.annotation:jakarta.annotation-api")
   testCompileOnly("junit:junit")
