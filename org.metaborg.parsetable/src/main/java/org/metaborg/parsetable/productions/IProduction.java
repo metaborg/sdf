@@ -3,7 +3,7 @@ package org.metaborg.parsetable.productions;
 import org.metaborg.parsetable.symbols.ConcreteSyntaxContext;
 import org.metaborg.parsetable.symbols.ISymbol;
 
-import jsglr.shared.IToken;
+import mb.jsglr.shared.IToken;
 
 public interface IProduction {
 
