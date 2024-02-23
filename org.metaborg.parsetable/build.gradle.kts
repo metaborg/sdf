@@ -1,26 +1,48 @@
 plugins {
-  id("org.metaborg.gradle.config.java-library")
-  id("org.metaborg.gradle.config.junit-testing")
-  `java-test-fixtures`
+    `java-library`
+    `java-test-fixtures`
+}
+
+// FIXME: Move this to a common spot
+repositories {
+    mavenCentral()
+    maven("https://nexus.usethesource.io/content/repositories/releases/")
+    maven("https://artifacts.metaborg.org/content/groups/public/")
+}
+
+dependencies {
+    // FIXME: Move these platform definitions to a common spot
+    api(platform(libs.spoofax3.bom))
+    testImplementation(platform(libs.spoofax3.bom))
+    annotationProcessor(platform(libs.spoofax3.bom))
+    testAnnotationProcessor(platform(libs.spoofax3.bom))
+
+    // !! Update dependencies in pom.xml as well
+
+    api(libs.spoofax2.terms)
+
+    api(libs.spoofax2.metaborg.util)
+    implementation(libs.capsule)
+
+    // Annotations & Annotation Processing
+    implementation(libs.jakarta.annotation)
+
+    // Testing
+    testImplementation(libs.junit4)
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.vintage)
+    testImplementation(libs.logback)
+
+    testFixturesImplementation(libs.junit4)
+    testFixturesImplementation(libs.junit)
+
+    // !! Update dependencies in pom.xml as well
 }
 
 sourceSets {
-  testFixtures {
-    java {
-      srcDirs("src/test/java")
+    testFixtures {
+        java {
+            srcDirs("src/test/java")
+        }
     }
-  }
-}
-
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2Version: String by ext
-dependencies {
-  api(platform("org.metaborg:parent:$spoofax2Version"))
-
-  api(compositeBuild("org.spoofax.terms"))
-
-  implementation("jakarta.annotation:jakarta.annotation-api")
-  testCompileOnly("junit:junit")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-  testFixturesCompileOnly("junit:junit")
 }
