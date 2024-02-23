@@ -35,6 +35,6 @@ dependencies {
     compileLanguage(libs.spoofax.lang.statix)
 
     sourceLanguage(libs.spoofax2.meta.lib.analysis)
-    sourceLanguage(libs.spoofax2.meta.lib)
+    sourceLanguage(libs.spoofax2.meta.lib.spoofax)
     sourceLanguage(libs.spoofax.meta.statix.runtime)
 }
