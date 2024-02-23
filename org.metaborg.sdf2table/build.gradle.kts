@@ -1,27 +1,50 @@
 plugins {
-  id("org.metaborg.gradle.config.java-library")
-  id("org.metaborg.gradle.config.junit-testing")
-  `java-test-fixtures`
+    `java-library`
 }
 
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2Version: String by ext
+// FIXME: Move this to a common spot
+repositories {
+    mavenCentral()
+    maven("https://nexus.usethesource.io/content/repositories/releases/")
+    maven("https://artifacts.metaborg.org/content/groups/public/")
+}
+
 dependencies {
-  api(platform("org.metaborg:parent:$spoofax2Version"))
+    // FIXME: Move these platform definitions to a common spot
+    api(platform(libs.spoofax3.bom))
+    testImplementation(platform(libs.spoofax3.bom))
+    annotationProcessor(platform(libs.spoofax3.bom))
+    testAnnotationProcessor(platform(libs.spoofax3.bom))
 
-  api(compositeBuild("org.metaborg.util"))
+    // !! Update dependencies in pom.xml as well
 
-  api(project(":org.metaborg.parsetable"))
-  implementation("com.google.inject:guice")
-  implementation("jakarta.annotation:jakarta.annotation-api")
-  testImplementation(testFixtures(project(":org.metaborg.parsetable")))
-  testCompileOnly("junit:junit")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+    implementation(libs.spoofax2.metaborg.util)
+
+    api(project(":org.metaborg.parsetable"))
+
+    // Dependency injection
+    implementation(libs.guice)
+
+    // Annotations & Annotation Processing
+    implementation(libs.jakarta.annotation)
+
+    // Utils
+    implementation(libs.commons.io)
+
+    // Testing
+    testImplementation(testFixtures(project(":org.metaborg.parsetable")))
+    testImplementation(libs.junit4)
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.vintage)
+
+    // !! Update dependencies in pom.xml as well
 }
 
-// Copy test resources into classes directory, to make them accessible as classloader resources at runtime.
-val copyTestResourcesTask = tasks.create<Copy>("copyTestResources") {
-  from("$projectDir/src/test/resources")
-  into("$buildDir/classes/java/test")
-}
-tasks.getByName("processTestResources").dependsOn(copyTestResourcesTask)
+
+// FIXME: If this is necessary, use testFixtures instead
+//// Copy test resources into classes directory, to make them accessible as classloader resources at runtime.
+//val copyTestResourcesTask = tasks.create<Copy>("copyTestResources") {
+//  from("$projectDir/src/test/resources")
+//  into("$buildDir/classes/java/test")
+//}
+//tasks.getByName("processTestResources").dependsOn(copyTestResourcesTask)

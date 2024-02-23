@@ -8,6 +8,11 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven("https://artifacts.metaborg.org/content/groups/public/")
+    }
+
     versionCatalogs {
         create("libs") {
             from("dev.spoofax:spoofax3-catalog:0.0.0-SNAPSHOT")
@@ -17,6 +22,7 @@ dependencyResolutionManagement {
 
 include("org.metaborg.meta.lang.template")
 include("org.metaborg.parsetable")
+include("org.metaborg.sdf2table")
 //include("org.metaborg.sdf2parenthesize")
-//include("org.metaborg.sdf2table")
+
 //include("sdf3.ext.statix")

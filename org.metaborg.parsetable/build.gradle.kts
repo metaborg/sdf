@@ -21,8 +21,8 @@ dependencies {
 
     api(libs.spoofax2.terms)
 
-    api(libs.spoofax2.metaborg.util)
     implementation(libs.capsule)
+    implementation(libs.spoofax2.metaborg.util)
 
     // Annotations & Annotation Processing
     implementation(libs.jakarta.annotation)
