@@ -1,17 +1,30 @@
 plugins {
-  id("org.metaborg.gradle.config.java-library")
-  `java-test-fixtures`
+    `java-library`
 }
 
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2Version: String by ext
+// FIXME: Move this to a common spot
+repositories {
+    mavenCentral()
+    maven("https://nexus.usethesource.io/content/repositories/releases/")
+    maven("https://artifacts.metaborg.org/content/groups/public/")
+}
+
 dependencies {
-  api(platform("org.metaborg:parent:$spoofax2Version"))
+    // FIXME: Move these platform definitions to a common spot
+    api(platform(libs.spoofax3.bom))
+    testImplementation(platform(libs.spoofax3.bom))
+    annotationProcessor(platform(libs.spoofax3.bom))
+    testAnnotationProcessor(platform(libs.spoofax3.bom))
 
-  implementation(project(":sdf2table"))
-  api(project(":org.metaborg.parsetable"))
-  implementation(compositeBuild("org.strategoxt.strj"))
-  implementation(compositeBuild("org.metaborg.util"))
+    // !! Update dependencies in pom.xml as well
 
-  implementation("jakarta.annotation:jakarta.annotation-api")
+    implementation(project(":org.metaborg.sdf2table"))
+    api(project(":org.metaborg.parsetable"))
+    implementation(libs.spoofax2.strategoxt.strj)
+    implementation(libs.spoofax2.metaborg.util)
+
+    // Annotations & Annotation Processing
+    implementation(libs.jakarta.annotation)
+
+    // !! Update dependencies in pom.xml as well
 }
