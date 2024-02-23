@@ -1,33 +1,44 @@
 plugins {
-  id("org.metaborg.gradle.config.java-library")
-  id("org.metaborg.devenv.spoofax.gradle.langspec")
-  id("de.set.ecj") // Use ECJ to speed up compilation of Stratego's generated Java files.
-  `maven-publish`
+    `java-library`
+    `maven-publish`
+    id("dev.spoofax.spoofax2.gradle.langspec")
 }
 
-// Replace language dependencies with overridden/local ones.
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2BaselineVersion: String by ext
-val spoofax2Version: String by ext
+// FIXME: Move this to a common spot
 spoofaxLanguageSpecification {
-  addSourceDependenciesFromMetaborgYaml.set(false)
-  addCompileDependenciesFromMetaborgYaml.set(false)
+    addCompileDependenciesFromMetaborgYaml.set(false)
+    addSourceDependenciesFromMetaborgYaml.set(false)
+    addJavaDependenciesFromMetaborgYaml.set(false)
 }
+
+// FIXME: Move this to a common spot
+repositories {
+    mavenCentral()
+    maven("https://nexus.usethesource.io/content/repositories/releases/")
+    maven("https://artifacts.metaborg.org/content/groups/public/")
+}
+
 dependencies {
-  compileLanguage(compositeBuild("org.metaborg.meta.lang.esv"))
+    // FIXME: Move these platform definitions to a common spot
+    compileLanguage(platform(libs.spoofax3.bom))
+    sourceLanguage(platform(libs.spoofax3.bom))
+    api(platform(libs.spoofax3.bom))
+    testImplementation(platform(libs.spoofax3.bom))
+    annotationProcessor(platform(libs.spoofax3.bom))
+    testAnnotationProcessor(platform(libs.spoofax3.bom))
 
-  sourceLanguage(compositeBuild("meta.lib.spoofax"))
-  sourceLanguage(compositeBuild("org.metaborg.meta.lang.template"))
-  sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
-  sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.shared"))
-  sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.runtime"))
-  sourceLanguage(compositeBuild("statix.lang"))
-  sourceLanguage(compositeBuild("statix.runtime"))
-}
+    // Languages
+    compileLanguage(libs.spoofax.lang.sdf3)
+    compileLanguage(libs.spoofax.lang.nabl)
+    compileLanguage(libs.spoofax.lang.esv)
+    compileLanguage(libs.spoofax.lang.ts)
 
-ecj {
-  toolVersion = "3.21.0"
-}
-tasks.withType<JavaCompile> { // ECJ does not support headerOutputDirectory (-h argument).
-  options.headerOutputDirectory.convention(provider { null })
+    sourceLanguage(libs.spoofax.lang.sdf3)
+    sourceLanguage(libs.spoofax.lang.statix)
+    sourceLanguage(libs.spoofax.lang.stratego2)
+    sourceLanguage(libs.spoofax2.meta.lib.analysis)
+    sourceLanguage(libs.spoofax2.meta.lib.spoofax)
+    sourceLanguage(libs.spoofax.meta.statix.runtime)
+    sourceLanguage(libs.spoofax.meta.nabl2.runtime)
+    sourceLanguage(libs.spoofax.meta.nabl2.shared)
 }

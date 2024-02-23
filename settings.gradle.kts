@@ -24,5 +24,4 @@ include("org.metaborg.meta.lang.template")
 include("org.metaborg.parsetable")
 include("org.metaborg.sdf2table")
 include("org.metaborg.sdf2parenthesize")
-
-//include("sdf3.ext.statix")
+include("sdf3.ext.statix")
