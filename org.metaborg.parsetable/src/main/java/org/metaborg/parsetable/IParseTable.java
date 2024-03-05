@@ -17,4 +17,5 @@ public interface IParseTable {
 
     boolean isLayoutSensitive();
 
+    void serializeNormGrammar(String variant);
 }

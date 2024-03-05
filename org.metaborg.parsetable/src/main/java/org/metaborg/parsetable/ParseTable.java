@@ -39,4 +39,9 @@ public class ParseTable implements IParseTable {
         return isLayoutSensitive;
     }
 
+    @Override
+    public void serializeNormGrammar(String variant) {
+
+    }
+
 }

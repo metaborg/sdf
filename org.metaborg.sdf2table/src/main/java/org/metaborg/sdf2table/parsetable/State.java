@@ -87,6 +87,7 @@ public class State implements IState, Comparable<State>, Serializable {
                     checkKernel(new_kernel, new_gotos, new_shifts);
                 }
             } else {
+                // N.B. symbolProductionMapping order may matter here?
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
 
                     // p might be a contextual production
@@ -123,6 +124,7 @@ public class State implements IState, Comparable<State>, Serializable {
                 ISymbol leftHandSymbol = item.getProd().leftHand();
                 ICharacterClass fr = leftHandSymbol.followRestriction();
                 if((fr == null || fr.isEmpty()) && leftHandSymbol.followRestrictionLookahead() == null) {
+                    // This is dead code as leftHandSymbol.followRestrictionLookahead() is always non-null... null check should probably be an .isEmpty() check instead.
                     addReduceAction(item.getProd(), prod_label, CharacterClassFactory.FULL_RANGE, null);
                 } else {
                     ICharacterClass final_range = CharacterClassFactory.FULL_RANGE;
@@ -216,32 +218,32 @@ public class State implements IState, Comparable<State>, Serializable {
         String buf = "";
         int i = 0;
         buf += "State " + getLabel();
-        if(!gotos.isEmpty()) {
-            buf += "\nGotos: ";
-        }
-        for(IGoto g : gotos) {
-            if(i != 0)
-                buf += "\n     , ";
-            buf += g;
-            i++;
-        }
-        if(!lr_actions.isEmpty()) {
-            buf += "\nActions: ";
-        }
-        i = 0;
-        for(ICharacterClass cc : lr_actions.keySet()) {
-            if(i != 0)
-                buf += "\n       , ";
-            buf += cc + ": ";
-            int j = 0;
-            for(IAction a : lr_actions.get(cc)) {
-                if(j != 0)
-                    buf += ", ";
-                buf += a;
-                j++;
-            }
-            i++;
-        }
+//        if(!gotos.isEmpty()) {
+//            buf += "\nGotos: ";
+//        }
+//        for(IGoto g : gotos) {
+//            if(i != 0)
+//                buf += "\n     , ";
+//            buf += g;
+//            i++;
+//        }
+//        if(!lr_actions.isEmpty()) {
+//            buf += "\nActions: ";
+//        }
+//        i = 0;
+//        for(ICharacterClass cc : lr_actions.keySet()) {
+//            if(i != 0)
+//                buf += "\n       , ";
+//            buf += cc + ": ";
+//            int j = 0;
+//            for(IAction a : lr_actions.get(cc)) {
+//                if(j != 0)
+//                    buf += ", ";
+//                buf += a;
+//                j++;
+//            }
+//            i++;
+//        }
         if(!items.isEmpty()) {
             buf += "\nItems: ";
 

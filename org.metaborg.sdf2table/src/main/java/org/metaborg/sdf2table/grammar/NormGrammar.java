@@ -64,7 +64,7 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     // get all productions for a certain symbol
     // N.B. for some sick reason, if you preserve insertion-order in this multimap, there are edgecases where JSGLR2 will exhibit a bug in org.spoofax.jsglr2.integrationtest.features.RejectTest#testBoth
-    private final SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
+    private final LinkedSetMultimap<ISymbol, IProduction> symbolProductionsMapping;
 
     // get all productions that contain a particular literal
     private final SetMultimap<ISymbol, IProduction> literalProductionsMapping;
@@ -103,7 +103,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.transitivePriorityArgs = new SetMultimap<>();
         this.nonTransitivePriorityArgs = new SetMultimap<>();
         this.higherPriorityProductions = new SetMultimap<>();
-        this.symbolProductionsMapping = new SetMultimap<>();
+        this.symbolProductionsMapping = new LinkedSetMultimap<>();
         this.cacheSymbolsRead = new HashMap<>();
         this.cacheProductionsRead = new HashMap<>();
         this.symbols = new HashSet<>();
@@ -244,7 +244,7 @@ public class NormGrammar implements INormGrammar, Serializable {
         return cacheProductionsRead;
     }
 
-    public SetMultimap<ISymbol, IProduction> getSymbolProductionsMapping() {
+    public LinkedSetMultimap<ISymbol, IProduction> getSymbolProductionsMapping() {
         return symbolProductionsMapping;
     }
 
@@ -287,23 +287,23 @@ public class NormGrammar implements INormGrammar, Serializable {
     }
 
     public void cleanupGrammar() {
-        this.cacheProductionsRead.clear();
-        this.cacheSymbolsRead.clear();
-        this.combinedExpressionGrammars.clear();
-        this.contextualSymbols.clear();
-        this.derivedContextualProds.clear();
-        this.expressionGrammars.clear();
-        this.leftRecursiveSymbolsMapping.clear();
-        this.rightRecursiveSymbolsMapping.clear();
-        this.literalProductionsMapping.clear();
-        this.longestMatchProdsBack.clear();
-        this.longestMatchProdsFront.clear();
-        this.nonTransitivePriorities.clear();
-        this.nonTransitivePriorityArgs.clear();
-        this.productionsOnPriorities.clear();
-        this.symbolProductionsMapping.clear();
-        this.transitivePriorities.clear();
-        this.transitivePriorityArgs.clear();
+//        this.cacheProductionsRead.clear();
+//        this.cacheSymbolsRead.clear();
+//        this.combinedExpressionGrammars.clear();
+//        this.contextualSymbols.clear();
+//        this.derivedContextualProds.clear();
+//        this.expressionGrammars.clear();
+//        this.leftRecursiveSymbolsMapping.clear();
+//        this.rightRecursiveSymbolsMapping.clear();
+//        this.literalProductionsMapping.clear();
+//        this.longestMatchProdsBack.clear();
+//        this.longestMatchProdsFront.clear();
+//        this.nonTransitivePriorities.clear();
+//        this.nonTransitivePriorityArgs.clear();
+//        this.productionsOnPriorities.clear();
+//        this.symbolProductionsMapping.clear();
+//        this.transitivePriorities.clear();
+//        this.transitivePriorityArgs.clear();
     }
 
     public void postParenthesizerCleanup() {

@@ -24,6 +24,7 @@ import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.sdf2table.grammar.UniqueProduction;
 import org.metaborg.sdf2table.parsetable.ParseTable;
 import org.metaborg.util.collection.BiMap2;
+import org.metaborg.util.collection.LinkedSetMultimap;
 import org.metaborg.util.collection.SetMultimap;
 
 public class DeepConflictsAnalyzer {
@@ -58,7 +59,7 @@ public class DeepConflictsAnalyzer {
         this.uniqueProductionMapping = new LinkedHashMap<>(pt.normalizedGrammar().getUniqueProductionMapping());
         this.prodContextualProdMapping = new BiMap2<>(pt.normalizedGrammar().getProdContextualProdMapping());
         this.productionLabels = new BiMap2<>(pt.productionLabels());
-        this.symbolProductionsMapping = new SetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
+        this.symbolProductionsMapping = new LinkedSetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
         this.productionAttributesMapping = new SetMultimap<>(pt.normalizedGrammar().getProductionAttributesMapping());
         this.priorities = new SetMultimap<>(pt.normalizedGrammar().priorities());
     }
@@ -74,7 +75,7 @@ public class DeepConflictsAnalyzer {
         this.uniqueProductionMapping = new HashMap<>(pt.normalizedGrammar().getUniqueProductionMapping());
         this.prodContextualProdMapping = new BiMap2<>(pt.normalizedGrammar().getProdContextualProdMapping());
         this.productionLabels = new BiMap2<>(pt.productionLabels());
-        this.symbolProductionsMapping = new SetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
+        this.symbolProductionsMapping = new LinkedSetMultimap<>(pt.normalizedGrammar().getSymbolProductionsMapping());
         this.productionAttributesMapping = new SetMultimap<>(pt.normalizedGrammar().getProductionAttributesMapping());
         this.priorities = new SetMultimap<>(pt.normalizedGrammar().priorities());
     }
@@ -90,7 +91,7 @@ public class DeepConflictsAnalyzer {
     /* -w */ private final Map<UniqueProduction, Production> uniqueProductionMapping;
     /* rw */ private final BiMap2<IProduction, ContextualProduction> prodContextualProdMapping;
     /* rw */ private final BiMap2<IProduction, Integer> productionLabels;
-    /* rw */ private final SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
+    /* rw */ private final LinkedSetMultimap<ISymbol, IProduction> symbolProductionsMapping;
     /* rw */ private final SetMultimap<IProduction, IAttribute> productionAttributesMapping;
     /* rw */ private final SetMultimap<Priority, Integer> priorities;
 
