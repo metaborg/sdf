@@ -1,14 +1,7 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Production;
@@ -219,5 +212,16 @@ public class ContextualFactory implements Serializable {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextualFactory that = (ContextualFactory) o;
+        return Objects.equals(contexts, that.contexts) && Objects.equals(contextualProductions, that.contextualProductions) && Objects.equals(contextualSymbols, that.contextualSymbols);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(contexts, contextualProductions, contextualSymbols);
+    }
 }

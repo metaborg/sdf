@@ -1,12 +1,7 @@
 package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.spoofax.interpreter.terms.IStrategoTerm;
@@ -381,4 +376,16 @@ public class GrammarFactory implements Serializable {
         return up;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GrammarFactory that = (GrammarFactory) o;
+        return Objects.equals(altSymbols, that.altSymbols) && Objects.equals(characterClassSymbols, that.characterClassSymbols) && Objects.equals(constructorAttributes, that.constructorAttributes) && Objects.equals(contextFreeSymbols, that.contextFreeSymbols) && Objects.equals(lexicalSymbols, that.lexicalSymbols) && Objects.equals(optionalSymbols, that.optionalSymbols) && Objects.equals(deprecatedAttributes, that.deprecatedAttributes) && Objects.equals(generalAttributes, that.generalAttributes) && Objects.equals(iterSepSymbols, that.iterSepSymbols) && Objects.equals(iterStarSepSymbols, that.iterStarSepSymbols) && Objects.equals(iterStarSymbols, that.iterStarSymbols) && Objects.equals(iterSymbols, that.iterSymbols) && Objects.equals(sequenceSymbols, that.sequenceSymbols) && Objects.equals(sorts, that.sorts) && Objects.equals(priorities, that.priorities) && Objects.equals(productions, that.productions) && Objects.equals(uniqueProductions, that.uniqueProductions) && Objects.equals(productionReferences, that.productionReferences) && Objects.equals(termAttributes, that.termAttributes) && Objects.equals(layoutSymbol, that.layoutSymbol) && Objects.equals(fileStartSymbol, that.fileStartSymbol) && Objects.equals(startSymbol, that.startSymbol) && Objects.equals(eofSymbol, that.eofSymbol);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(altSymbols, characterClassSymbols, constructorAttributes, contextFreeSymbols, lexicalSymbols, optionalSymbols, deprecatedAttributes, generalAttributes, iterSepSymbols, iterStarSepSymbols, iterStarSymbols, iterSymbols, sequenceSymbols, sorts, priorities, productions, uniqueProductions, productionReferences, termAttributes, layoutSymbol, fileStartSymbol, startSymbol, eofSymbol);
+    }
 }
