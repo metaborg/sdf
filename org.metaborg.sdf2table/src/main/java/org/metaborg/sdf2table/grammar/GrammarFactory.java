@@ -62,7 +62,7 @@ public class GrammarFactory implements Serializable {
         altSymbolFields.add(s1);
         altSymbolFields.add(s2);
 
-        if(altSymbols.containsKey(altSymbolFields)) {
+        if (altSymbols.containsKey(altSymbolFields)) {
             return altSymbols.get(altSymbolFields);
         }
 
@@ -74,7 +74,7 @@ public class GrammarFactory implements Serializable {
 
 
     public CharacterClassSymbol createCharClassSymbol(ICharacterClass cc) {
-        if(characterClassSymbols.containsKey(cc)) {
+        if (characterClassSymbols.containsKey(cc)) {
             return characterClassSymbols.get(cc);
         }
 
@@ -86,7 +86,7 @@ public class GrammarFactory implements Serializable {
 
 
     public ConstructorAttribute createConstructorAttribute(String cons) {
-        if(constructorAttributes.containsKey(cons)) {
+        if (constructorAttributes.containsKey(cons)) {
             return constructorAttributes.get(cons);
         }
 
@@ -98,7 +98,7 @@ public class GrammarFactory implements Serializable {
 
 
     public ContextFreeSymbol createContextFreeSymbol(Symbol symbol) {
-        if(contextFreeSymbols.containsKey(symbol)) {
+        if (contextFreeSymbols.containsKey(symbol)) {
             return contextFreeSymbols.get(symbol);
         }
 
@@ -109,7 +109,7 @@ public class GrammarFactory implements Serializable {
     }
 
     public LexicalSymbol createLexicalSymbol(Symbol s) {
-        if(lexicalSymbols.containsKey(s)) {
+        if (lexicalSymbols.containsKey(s)) {
             return lexicalSymbols.get(s);
         }
 
@@ -121,7 +121,7 @@ public class GrammarFactory implements Serializable {
 
 
     public IterSymbol createIterSymbol(Symbol s) {
-        if(iterSymbols.containsKey(s)) {
+        if (iterSymbols.containsKey(s)) {
             return iterSymbols.get(s);
         }
 
@@ -131,7 +131,7 @@ public class GrammarFactory implements Serializable {
     }
 
     public IterStarSymbol createIterStarSymbol(Symbol s) {
-        if(iterStarSymbols.containsKey(s)) {
+        if (iterStarSymbols.containsKey(s)) {
             return iterStarSymbols.get(s);
         }
 
@@ -146,7 +146,7 @@ public class GrammarFactory implements Serializable {
         iterSepFields.add(symbol);
         iterSepFields.add(separator);
 
-        if(iterSepSymbols.containsKey(iterSepFields)) {
+        if (iterSepSymbols.containsKey(iterSepFields)) {
             return iterSepSymbols.get(iterSepFields);
         }
 
@@ -161,7 +161,7 @@ public class GrammarFactory implements Serializable {
         iterStarSepFields.add(s);
         iterStarSepFields.add(sep);
 
-        if(iterStarSepSymbols.containsKey(iterStarSepFields)) {
+        if (iterStarSepSymbols.containsKey(iterStarSepFields)) {
             return iterStarSepSymbols.get(iterStarSepFields);
         }
 
@@ -173,7 +173,7 @@ public class GrammarFactory implements Serializable {
 
 
     public OptionalSymbol createOptionalSymbol(Symbol s) {
-        if(optionalSymbols.containsKey(s)) {
+        if (optionalSymbols.containsKey(s)) {
             return optionalSymbols.get(s);
         }
 
@@ -184,7 +184,7 @@ public class GrammarFactory implements Serializable {
     }
 
     public DeprecatedAttribute createDeprecatedAttribute(String message) {
-        if(deprecatedAttributes.containsKey(message)) {
+        if (deprecatedAttributes.containsKey(message)) {
             return deprecatedAttributes.get(message);
         }
 
@@ -195,7 +195,7 @@ public class GrammarFactory implements Serializable {
 
 
     public GeneralAttribute createGeneralAttribute(String name) {
-        if(generalAttributes.containsKey(name)) {
+        if (generalAttributes.containsKey(name)) {
             return generalAttributes.get(name);
         }
 
@@ -219,7 +219,7 @@ public class GrammarFactory implements Serializable {
         priorityFields.add(lower);
         priorityFields.add(transitive);
 
-        if(priorities.containsKey(priorityFields)) {
+        if (priorities.containsKey(priorityFields)) {
             return priorities.get(priorityFields);
         }
 
@@ -236,7 +236,7 @@ public class GrammarFactory implements Serializable {
         productionFields.add(lhs);
         productionFields.addAll(rhs);
 
-        if(productions.containsKey(productionFields)) {
+        if (productions.containsKey(productionFields)) {
             return productions.get(productionFields);
         }
 
@@ -252,7 +252,7 @@ public class GrammarFactory implements Serializable {
         productionFields.add(lhs);
         productionFields.addAll(rhs);
 
-        if(productions.containsKey(productionFields)) {
+        if (productions.containsKey(productionFields)) {
             Production p = productions.get(productionFields);
             p.setLeftRecursivePosition(leftRecursivePos);
             p.setRightRecursivePosition(rightRecursivePos);
@@ -268,7 +268,7 @@ public class GrammarFactory implements Serializable {
 
     public ProductionReference createProductionReference(Symbol s, ConstructorAttribute cons) {
         List<Object> productionReferenceFields = Arrays.asList(s, cons);
-        if(productionReferences.containsKey(productionReferenceFields)) {
+        if (productionReferences.containsKey(productionReferenceFields)) {
             return productionReferences.get(productionReferenceFields);
         }
 
@@ -281,7 +281,7 @@ public class GrammarFactory implements Serializable {
     public SequenceSymbol createSequenceSymbol(Symbol first, List<Symbol> tail) {
         List<Object> sequenceSymbolFields = new ArrayList<>(Arrays.asList(first));
         sequenceSymbolFields.addAll(tail);
-        if(sequenceSymbols.containsKey(sequenceSymbolFields)) {
+        if (sequenceSymbols.containsKey(sequenceSymbolFields)) {
             return sequenceSymbols.get(sequenceSymbolFields);
         }
 
@@ -294,7 +294,7 @@ public class GrammarFactory implements Serializable {
     public Sort createSort(String s) {
         List<Object> sortFields = new ArrayList<>(Arrays.asList(s, null));
 
-        if(sorts.containsKey(sortFields)) {
+        if (sorts.containsKey(sortFields)) {
             return sorts.get(sortFields);
         }
 
@@ -307,7 +307,7 @@ public class GrammarFactory implements Serializable {
     public Symbol createSort(String s, LiteralType lit) {
         List<Object> sortFields = Arrays.asList(s, lit);
 
-        if(sorts.containsKey(sortFields)) {
+        if (sorts.containsKey(sortFields)) {
             return sorts.get(sortFields);
         }
 
@@ -318,7 +318,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Layout createLayoutSymbol() {
-        if(layoutSymbol == null) {
+        if (layoutSymbol == null) {
             layoutSymbol = new Layout();
         }
         return layoutSymbol;
@@ -326,7 +326,7 @@ public class GrammarFactory implements Serializable {
 
 
     public FileStartSymbol createFileStartSymbol() {
-        if(fileStartSymbol == null) {
+        if (fileStartSymbol == null) {
             fileStartSymbol = new FileStartSymbol();
         }
         return fileStartSymbol;
@@ -334,7 +334,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Symbol createStartSymbol() {
-        if(startSymbol == null) {
+        if (startSymbol == null) {
             startSymbol = new StartSymbol();
         }
         return startSymbol;
@@ -342,7 +342,7 @@ public class GrammarFactory implements Serializable {
 
 
     public Symbol createEOFSymbol() {
-        if(eofSymbol == null) {
+        if (eofSymbol == null) {
             eofSymbol = new EOFSymbol();
         }
         return eofSymbol;
@@ -351,7 +351,7 @@ public class GrammarFactory implements Serializable {
 
     public TermAttribute createTermAttribute(IStrategoTerm t, String s) {
         List<Object> termAttributeFields = Arrays.asList(t, s);
-        if(termAttributes.containsKey(termAttributeFields)) {
+        if (termAttributes.containsKey(termAttributeFields)) {
             return termAttributes.get(termAttributeFields);
         }
 
@@ -366,7 +366,7 @@ public class GrammarFactory implements Serializable {
         List<Object> uniqueProductionFields = new ArrayList<>();
         uniqueProductionFields.add(lhs);
         uniqueProductionFields.addAll(rhs);
-        if(uniqueProductions.containsKey(uniqueProductionFields)) {
+        if (uniqueProductions.containsKey(uniqueProductionFields)) {
             return uniqueProductions.get(uniqueProductionFields);
         }
 

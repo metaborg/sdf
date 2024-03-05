@@ -131,17 +131,17 @@ public class ParseTable implements IParseTable, Serializable {
     }
 
     private void cleanupTable() {
-        this.danglingPrefix.clear();
-        this.danglingSuffix.clear();
-        this.symbolStatesMapping.itemStates.clear();
-        this.symbolStatesMapping.symbolItems.clear();
-        this.itemDerivedItemsCache.clear();
-        this.kernelStatesMapping.clear();
-        this.leftmostContextsMapping.clear();
-        this.cachedItems().clear();
-        this.productionsMapping.clear();
-        this.rightmostContextsMapping.clear();
-        this.grammar.cleanupGrammar();
+//        this.danglingPrefix.clear();
+//        this.danglingSuffix.clear();
+//        this.symbolStatesMapping.itemStates.clear();
+//        this.symbolStatesMapping.symbolItems.clear();
+//        this.itemDerivedItemsCache.clear();
+//        this.kernelStatesMapping.clear();
+//        this.leftmostContextsMapping.clear();
+//        this.cachedItems().clear();
+//        this.productionsMapping.clear();
+//        this.rightmostContextsMapping.clear();
+//        this.grammar.cleanupGrammar();
     }
 
     private void calculateNullable() {
@@ -1335,6 +1335,25 @@ public class ParseTable implements IParseTable, Serializable {
     }
 
     @Override
+    public void serializeNormGrammar(String variant) {
+        try {
+            final File file = new File("~/normgrammars/parsetables/pt_" + UUID.randomUUID());
+            if(file.createNewFile()) {
+                try (final FileOutputStream fout = new FileOutputStream(file)) {
+                    try (final ObjectOutputStream oos = new ObjectOutputStream(fout)) {
+                        oos.writeObject(this);
+                        oos.writeObject(variant);
+                    }
+                }
+            } else {
+                throw new IOException(file + " already exists, not gonna overwrite it.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -1347,4 +1366,107 @@ public class ParseTable implements IParseTable, Serializable {
         return Objects.hash(grammar, cf, processedStates, totalStates, initialProduction, productionLabels, prodLabelFactory, stateQueue, stateLabels, danglingSuffix, danglingPrefix, symbolStatesMapping, kernelStatesMapping, itemDerivedItemsCache, productions, productionsMapping, config, ctxUniqueInt, leftmostContextsMapping, rightmostContextsMapping);
     }
 
+    public boolean diff(ParseTable that) {
+        if(processedStates != that.processedStates) {
+            System.err.println("processedStates different");
+        }
+        if(totalStates != that.totalStates) {
+            System.err.println("totalStates different");
+        }
+        if(!Objects.equals(grammar, that.grammar)) {
+            System.err.println("grammar different");
+        }
+        if(!Objects.equals(cf, that.cf)) {
+            System.err.println("cf different");
+        }
+        if(!Objects.equals(initialProduction, that.initialProduction)) {
+            System.err.println("initialProduction different");
+        }
+        if(!Objects.equals(productionLabels, that.productionLabels)) {
+            System.err.println("productionLabels different");
+        }
+        if(!Objects.equals(prodLabelFactory, that.prodLabelFactory)) {
+            System.err.println("prodLabelFactory different");
+        }
+        if(!Arrays.equals(stateQueue.toArray(), that.stateQueue.toArray())) {
+            System.err.println("stateQueue different");
+        }
+        if(!Objects.equals(stateLabels, that.stateLabels)) {
+            System.err.println("stateLabels different");
+        }
+        if(!Objects.equals(danglingSuffix, that.danglingSuffix)) {
+            System.err.println("danglingSuffix different");
+        }
+        if(!Objects.equals(danglingPrefix, that.danglingPrefix)) {
+            System.err.println("danglingPrefix different");
+        }
+        if(!Objects.equals(symbolStatesMapping, that.symbolStatesMapping)) {
+            System.err.println("symbolStatesMapping different");
+        }
+        if(!Objects.equals(kernelStatesMapping, that.kernelStatesMapping)) {
+            System.err.println("kernelStatesMapping different");
+        }
+        if(!Objects.equals(itemDerivedItemsCache, that.itemDerivedItemsCache)) {
+            System.err.println("itemDerivedItemsCache different");
+        }
+        if(!Objects.equals(productions, that.productions)) {
+            System.err.println("productions different");
+        }
+        if(!Objects.equals(productionsMapping, that.productionsMapping)) {
+            System.err.println("productionsMapping different");
+        }
+        if(!Objects.equals(config, that.config)) {
+            System.err.println("config different");
+        }
+        if(!Objects.equals(ctxUniqueInt, that.ctxUniqueInt)) {
+            System.err.println("ctxUniqueInt different");
+        }
+        if(!Objects.equals(leftmostContextsMapping, that.leftmostContextsMapping)) {
+            System.err.println("leftmostContextsMapping different");
+        }
+        if(!Objects.equals(rightmostContextsMapping, that.rightmostContextsMapping)) {
+            System.err.println("rightmostContextsMapping different");
+        }
+        return this.equals(that);
+    }
+
+    public String toGraphViz() {
+        StringBuilder b = new StringBuilder();
+        b.append("digraph {\n");
+        this.stateLabels.forEach((label, state) -> {
+            b.append("N")
+                    .append(label)
+                    .append(" [shape=box, label=\"")
+                    .append(gvEscape(state.toString()))
+                    .append("\"];\n");
+            state.actionsMapping().forEach((cc, actions) -> {
+                for (Action action : actions) {
+                    if(action instanceof Shift) {
+                        b.append("N")
+                                .append(label)
+                                .append(" -> N")
+                                .append(((Shift) action).getState())
+                                .append(" [label=\"")
+                                .append(gvEscape(cc.toString()))
+                                .append("\"];\n");
+                    }
+                }
+            });
+            for (Goto aGoto : state.gotos()) {
+                b.append("N")
+                        .append(label)
+                        .append(" -> N")
+                        .append(aGoto.getState())
+                        .append(" [label=\"")
+                        .append(gvEscape(aGoto.pt.productionLabels().inverse().get(aGoto.label).leftHand().toString()))
+                        .append("\"];\n");
+            }
+        });
+        b.append("}");
+        return b.toString();
+    }
+
+    public static String gvEscape(String in) {
+        return in.replace("\n", "\\n").replace("\"", "\\\"");
+    }
 }

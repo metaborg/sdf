@@ -55,6 +55,8 @@ public class LRItem implements Serializable {
             if(dotPosition < prod.arity()) {
                 Symbol s_at_dot = (Symbol) prod.rightHand().get(dotPosition);
 
+                // N.B. this is where the ordering of the symbolProductionsMapping matters!
+                //   Why does this make broken parse tables sometimes? Don't know yet.
                 for(IProduction p : pt.normalizedGrammar().getSymbolProductionsMapping().get(s_at_dot)) {
                     if(!isPriorityConflict(p)) {
                         // p might be the problematic contextual production
