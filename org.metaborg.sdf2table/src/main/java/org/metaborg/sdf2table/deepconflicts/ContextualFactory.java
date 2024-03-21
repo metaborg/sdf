@@ -209,7 +209,7 @@ public class ContextualFactory implements Serializable {
         return Objects.hash(contexts, contextualProductions, contextualSymbols);
     }
 
-    private static final class ContextKey {
+    private static final class ContextKey implements Serializable {
         private final int c;
         private final ContextType type;
         private final ContextPosition position;
@@ -249,7 +249,7 @@ public class ContextualFactory implements Serializable {
         }
     }
 
-    private static final class ContextualProductionKey {
+    private static final class ContextualProductionKey implements Serializable {
         private final Production origProduction;
         private final ISymbol lhs;
         private final int origProductionLabel;
@@ -289,7 +289,7 @@ public class ContextualFactory implements Serializable {
         }
     }
 
-    private static final class ContextualSymbolKey {
+    private static final class ContextualSymbolKey implements Serializable {
         private final Set<Symbol> es;
         private final Set<Context> contexts;
 
