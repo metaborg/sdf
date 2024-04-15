@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.grammar;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UniqueProduction implements Serializable{
 
@@ -13,6 +14,11 @@ public class UniqueProduction implements Serializable{
     protected UniqueProduction(Symbol lhs, List<Symbol> rhs_symbols) {
         this.lhs = lhs;
         this.rhs = rhs_symbols;
+    }
+
+    @Override public String toString() {
+        return lhs.name() + " -> " +
+                rhs.stream().map(ISymbol::name).collect(Collectors.joining(" "));
     }
 
     @Override public int hashCode() {

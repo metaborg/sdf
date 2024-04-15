@@ -3,6 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 public class LabelFactory implements Serializable {
@@ -43,5 +44,16 @@ public class LabelFactory implements Serializable {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LabelFactory that = (LabelFactory) o;
+        return nextLabel == that.nextLabel && Objects.equals(labelPool, that.labelPool);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(nextLabel, labelPool);
+    }
 }

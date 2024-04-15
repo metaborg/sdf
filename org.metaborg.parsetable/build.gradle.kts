@@ -20,6 +20,7 @@ dependencies {
   api(compositeBuild("org.spoofax.terms"))
   implementation(compositeBuild("org.metaborg.util"))
   implementation("io.usethesource:capsule")
+  api(compositeBuild("jsglr.shared"))
 
   implementation("jakarta.annotation:jakarta.annotation-api")
   testCompileOnly("junit:junit")

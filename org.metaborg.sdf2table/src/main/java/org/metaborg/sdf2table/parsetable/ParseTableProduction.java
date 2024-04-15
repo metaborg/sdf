@@ -3,10 +3,7 @@ package org.metaborg.sdf2table.parsetable;
 import static org.metaborg.sdf2table.grammar.AssociativityInfo.getAllProductionLabels;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.productions.ProductionType;
@@ -444,4 +441,16 @@ public class ParseTableProduction implements org.metaborg.parsetable.productions
         return nonNestedWith != null && nonNestedWith.contains(other.id());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParseTableProduction that = (ParseTableProduction) o;
+        return productionNumber == that.productionNumber && isLayout == that.isLayout && isLiteral == that.isLiteral && isLexical == that.isLexical && isList == that.isList && isOptional == that.isOptional && isStringLiteral == that.isStringLiteral && isNumberLiteral == that.isNumberLiteral && isBracket == that.isBracket && isOperator == that.isOperator && isRecovery == that.isRecovery && isCompletion == that.isCompletion && isIgnoreLayoutConstraint == that.isIgnoreLayoutConstraint && isLongestMatch == that.isLongestMatch && cachedContextBitmapL == that.cachedContextBitmapL && cachedContextBitmapR == that.cachedContextBitmapR && Objects.equals(p, that.p) && Objects.equals(sort, that.sort) && Objects.equals(constructor, that.constructor) && type == that.type && Objects.equals(layoutConstraints, that.layoutConstraints) && Objects.equals(nonAssocWith, that.nonAssocWith) && Objects.equals(nonNestedWith, that.nonNestedWith);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(p, productionNumber, sort, isLayout, isLiteral, isLexical, isList, isOptional, isStringLiteral, isNumberLiteral, isBracket, isOperator, isRecovery, isCompletion, constructor, type, layoutConstraints, isIgnoreLayoutConstraint, isLongestMatch, nonAssocWith, nonNestedWith, cachedContextBitmapL, cachedContextBitmapR);
+    }
 }

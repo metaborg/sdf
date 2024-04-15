@@ -1,14 +1,7 @@
 package org.metaborg.sdf2table.deepconflicts;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Production;
@@ -19,9 +12,9 @@ public class ContextualFactory implements Serializable {
 
     private static final long serialVersionUID = -5796688665070378982L;
 
-    private final Map<List<Object>, Context> contexts;
-    private final Map<List<Object>, ContextualProduction> contextualProductions;
-    private final Map<Set<Object>, ContextualSymbol> contextualSymbols;
+    private final Map<ContextKey, Context> contexts;
+    private final Map<ContextualProductionKey, ContextualProduction> contextualProductions;
+    private final Map<ContextualSymbolKey, ContextualSymbol> contextualSymbols;
 
     public ContextualFactory() {
         contexts = new HashMap<>();
@@ -31,8 +24,8 @@ public class ContextualFactory implements Serializable {
 
     public Context createContext(int c, ContextType type, ContextPosition position,
         final Map<Integer, Integer> leftmostContextsMapping, final Map<Integer, Integer> rightmostContextsMapping) {
-        List<Object> contextFields =
-            Arrays.asList(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
+        ContextKey contextFields =
+            new ContextKey(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
 
         if(contexts.containsKey(contextFields)) {
             return contexts.get(contextFields);
@@ -46,8 +39,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualProduction createContextualProduction(Production origProduction, ISymbol lhs, List<ISymbol> rhs,
         int origProductionLabel, ContextualFactory cf) {
-        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, cf));
-        contextualProductionFields.addAll(rhs);
+        ContextualProductionKey contextualProductionFields = new ContextualProductionKey(origProduction, lhs, origProductionLabel, cf, rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
             return contextualProductions.get(contextualProductionFields);
@@ -61,7 +53,6 @@ public class ContextualFactory implements Serializable {
 
     public ContextualProduction createContextualProduction(Production origProduction, Set<Context> contexts,
         Set<Integer> args, int origProductionLabel, ContextualFactory cf) {
-        ISymbol lhs = origProduction.leftHand();
         List<ISymbol> rhs = new ArrayList<>();
 
         for(int i = 0; i < origProduction.arity(); i++) {
@@ -72,17 +63,7 @@ public class ContextualFactory implements Serializable {
             }
         }
 
-        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, cf));
-        contextualProductionFields.addAll(rhs);
-
-        if(contextualProductions.containsKey(contextualProductionFields)) {
-            return contextualProductions.get(contextualProductionFields);
-        }
-
-        ContextualProduction cp = new ContextualProduction(origProduction, lhs, rhs, origProductionLabel, cf);
-        contextualProductions.put(contextualProductionFields, cp);
-
-        return cp;
+        return this.createContextualProduction(origProduction, origProduction.leftHand(), rhs, origProductionLabel, cf);
     }
 
     public ContextualProduction createContextualProduction(Production origProduction, Set<Context> contexts,
@@ -149,8 +130,7 @@ public class ContextualFactory implements Serializable {
             }
         }
 
-        List<Object> contextualProductionFields = new ArrayList<>(Arrays.asList(origProduction, lhs, origProductionLabel, this));
-        contextualProductionFields.addAll(rhs);
+        ContextualProductionKey contextualProductionFields = new ContextualProductionKey(origProduction, lhs, origProductionLabel, this, rhs);
 
         if(contextualProductions.containsKey(contextualProductionFields)) {
             return contextualProductions.get(contextualProductionFields);
@@ -164,8 +144,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Set<Context> contexts, ContextualFactory cf) {
         // use Set instead of List to account for the Set<Contexts>
-        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
-        contextualSymbolFields.addAll(contexts);
+        ContextualSymbolKey contextualSymbolFields = new ContextualSymbolKey(Collections.singleton(s), contexts);
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
@@ -186,8 +165,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Context context, ContextualFactory cf) {
         // use Set instead of List to account for the Set<Contexts>
-        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
-        contextualSymbolFields.add(context);
+        ContextualSymbolKey contextualSymbolFields = new ContextualSymbolKey(Collections.singleton(s), Collections.singleton(context));
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
@@ -203,8 +181,7 @@ public class ContextualFactory implements Serializable {
 
     public ContextualSymbol createContextualSymbol(Symbol s, Set<Context> contexts, long deepContextBitmap,
         ContextualFactory cf) {
-        Set<Object> contextualSymbolFields = new HashSet<>(Arrays.asList(s));
-        contextualSymbolFields.addAll(contexts);
+        ContextualSymbolKey contextualSymbolFields = new ContextualSymbolKey(Collections.singleton(s), contexts);
 
         if(contextualSymbols.containsKey(contextualSymbolFields)) {
             ContextualSymbol cs = contextualSymbols.get(contextualSymbolFields);
@@ -219,5 +196,127 @@ public class ContextualFactory implements Serializable {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextualFactory that = (ContextualFactory) o;
+        return Objects.equals(contexts, that.contexts) && Objects.equals(contextualProductions, that.contextualProductions) && Objects.equals(contextualSymbols, that.contextualSymbols);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(contexts, contextualProductions, contextualSymbols);
+    }
+
+    private static final class ContextKey implements Serializable {
+        private final int c;
+        private final ContextType type;
+        private final ContextPosition position;
+        private final Map<Integer, Integer> leftmostContextsMapping;
+        private final Map<Integer, Integer> rightmostContextsMapping;
+
+        public ContextKey(int c, ContextType type, ContextPosition position, Map<Integer, Integer> leftmostContextsMapping, Map<Integer, Integer> rightmostContextsMapping) {
+            this.c = c;
+            this.type = type;
+            this.position = position;
+            this.leftmostContextsMapping = leftmostContextsMapping;
+            this.rightmostContextsMapping = rightmostContextsMapping;
+        }
+
+        @Override
+        public String toString() {
+            return "ContextKey{" +
+                    "c=" + c +
+                    ", type=" + type +
+                    ", position=" + position +
+                    ", leftmostContextsMapping=" + leftmostContextsMapping +
+                    ", rightmostContextsMapping=" + rightmostContextsMapping +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ContextKey that = (ContextKey) o;
+            return c == that.c && type == that.type && position == that.position && Objects.equals(leftmostContextsMapping, that.leftmostContextsMapping) && Objects.equals(rightmostContextsMapping, that.rightmostContextsMapping);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(c, type, position, leftmostContextsMapping, rightmostContextsMapping);
+        }
+    }
+
+    private static final class ContextualProductionKey implements Serializable {
+        private final Production origProduction;
+        private final ISymbol lhs;
+        private final int origProductionLabel;
+        private final ContextualFactory cf;
+        private final List<ISymbol> rhs;
+
+        public ContextualProductionKey(Production origProduction, ISymbol lhs, int origProductionLabel, ContextualFactory cf, List<ISymbol> rhs) {
+            this.origProduction = origProduction;
+            this.lhs = lhs;
+            this.origProductionLabel = origProductionLabel;
+            this.cf = cf;
+            this.rhs = rhs;
+        }
+
+        @Override
+        public String toString() {
+            return "ContextualContextKey{" +
+                    "origProduction=" + origProduction +
+                    ", lhs=" + lhs +
+                    ", origProductionLabel=" + origProductionLabel +
+                    ", cf=" + cf +
+                    ", rhs=" + rhs +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ContextualProductionKey that = (ContextualProductionKey) o;
+            return origProductionLabel == that.origProductionLabel && Objects.equals(origProduction, that.origProduction) && Objects.equals(lhs, that.lhs) && cf == that.cf && Objects.equals(rhs, that.rhs);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(origProduction, lhs, origProductionLabel, System.identityHashCode(cf), rhs);
+        }
+    }
+
+    private static final class ContextualSymbolKey implements Serializable {
+        private final Set<Symbol> es;
+        private final Set<Context> contexts;
+
+        public ContextualSymbolKey(Set<Symbol> es, Set<Context> contexts) {
+            this.es = es;
+            this.contexts = contexts;
+        }
+
+        @Override
+        public String toString() {
+            return "ContextualSymbolKey{" +
+                    "es=" + es +
+                    ", contexts=" + contexts +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ContextualSymbolKey that = (ContextualSymbolKey) o;
+            return Objects.equals(es, that.es) && Objects.equals(contexts, that.contexts);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(es, contexts);
+        }
+    }
 }
