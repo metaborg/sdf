@@ -60,6 +60,6 @@ rules
 
   priorityProductionOK: scope * PriorityProduction
   // TODO: these should not declare new productions, but instead should be checked against existing ones?
-  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, sdfProduction) == _.
-  priorityProductionOK(s, PriorityProduction_Production(production))       :- productionOK(s, production).
+  priorityProductionOK(s, PriorityProduction_SdfProduction(sdfProduction)) :- typeOfSdfProduction(s, CONTEXTFREE(), sdfProduction) == _.
+  priorityProductionOK(s, PriorityProduction_Production(production))       :- kernelProductionOK(s, CONTEXTFREE(), production).
   priorityProductionsOK maps priorityProductionOK(*, list(*))

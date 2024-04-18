@@ -58,23 +58,17 @@ public class Parenthesizer {
             importsList.add(importModule("libstratego-lib"));
         }
 
-        Set<String> paths = new HashSet<>();
-        for(File f : grammar.getFilesRead()) {
-            String path = f.getParent().toString();
-            if(path.split("/normalized/").length == 2) {
-                String subfolder = path.split("/normalized/")[1];
-                if(paths.contains(subfolder)) {
-                    continue;
-                }
-                paths.add(subfolder);
-                importsList.add(importModuleWildCard("signatures/" + subfolder));
-            }
+        for(String inputModuleName : grammar.getModulesRead()) {
+            inputModuleName = inputModuleName
+                .replaceFirst("^normalized/", "")
+                .replaceFirst("-norm$", "");
+            importsList.add(importModule("signatures/" + inputModuleName + "-sig"));
         }
         // parenthesize is called multiple times, the file is overwritten with a version that doesn't have the right
         //  imports if you clean up the read files...
         //grammar.postParenthesizerCleanup();
 
-        importsList.add(importModuleWildCard("signatures"));
+//        importsList.add(importModuleWildCard("signatures"));
 
         // Imports
         IStrategoTerm imports = tf.makeAppl(tf.makeConstructor("Imports", 1), tf.makeList(importsList));
@@ -158,14 +152,14 @@ public class Parenthesizer {
                         continue;
                     }
 
-                    /*  @formatter:off         
+                    /*  @formatter:off
                         LangParenthesize :
                             l* -> l'*
                             where
                               s := <get-term-sort(|l*)>;
                               <?LHS-SORT> s;
                               l'* := <map(parenthesize-elem-LHS-SORT <+ id)> l*;
-                              <not(?l*)> l'*           
+                              <not(?l*)> l'*
                     @formatter:on */
 
 
@@ -526,16 +520,16 @@ public class Parenthesizer {
     private static IStrategoTerm createStrategoTermCheckContextRules() {
         List<IStrategoTerm> checkContextRuleList = new ArrayList<>();
 
-        /* @formatter:off         
-        
-         RULE 1: 
+        /* @formatter:off
+
+         RULE 1:
          RightContext(s) :
             t@cons#(args*) -> cons#(args'*)
               where
                 <not(?[])> cons;
                 <not(?Parenthetical(_))> t;
                 args'* := <at-last(RightContext(s) <+ fail)> args*
-         
+
          @formatter:on */
 
         IStrategoTerm srcRightContext1 =
@@ -555,12 +549,12 @@ public class Parenthesizer {
             tf.parseFromString("[DefaultVarDec(\"s\")]"),
             tf.makeAppl(tf.makeConstructor("Rule", 3), srcRightContext1, targetRightContext1, conditionRightContext1)));
 
-        /* @formatter:off   
-        
-        RULE 2:       
+        /* @formatter:off
+
+        RULE 2:
           RightContext(s) :
             [t] -> [<RightContext(s)> t]
-        
+
         @formatter:on */
 
         IStrategoTerm srcRightContext2 = tf.parseFromString("NoAnnoList(List([Var(\"t\")]))");
@@ -571,14 +565,14 @@ public class Parenthesizer {
             tf.parseFromString("[DefaultVarDec(\"s\")]"),
             tf.makeAppl(tf.makeConstructor("RuleNoCond", 2), srcRightContext2, targetRightContext2)));
 
-        /* @formatter:off   
-        
-        RULE 3:       
+        /* @formatter:off
+
+        RULE 3:
           RightContext(s) :
             t -> Parenthetical(t)
               where <not(is-list)> t;
                     <s> t
-        
+
          @formatter:on */
 
         IStrategoTerm srcRightContext3 = tf.parseFromString("Var(\"t\")");
@@ -591,9 +585,9 @@ public class Parenthesizer {
             tf.parseFromString("[DefaultVarDec(\"s\")]"),
             tf.makeAppl(tf.makeConstructor("Rule", 3), srcRightContext3, targetRightContext3, conditionRightContext3)));
 
-        /* @formatter:off         
-        
-        RULE 1: 
+        /* @formatter:off
+
+        RULE 1:
         LeftContext(s) :
           t@cons#(args*) -> cons#(args'*)
             where
@@ -601,7 +595,7 @@ public class Parenthesizer {
               <not(?Parenthetical(_))> t;
               head := <?[<(LeftContext(s) <+ fail)> | hs]> args*;
               args'* := [head | hs]
-        
+
         @formatter:on */
 
         IStrategoTerm srcLeftContext1 =
@@ -621,12 +615,12 @@ public class Parenthesizer {
             tf.parseFromString("[DefaultVarDec(\"s\")]"),
             tf.makeAppl(tf.makeConstructor("Rule", 3), srcLeftContext1, targetLeftContext1, conditionLeftContext1)));
 
-        /* @formatter:off   
-       
-       RULE 2:       
+        /* @formatter:off
+
+       RULE 2:
          LeftContext(s) :
            [t] -> [<LeftContext(s)> t]
-       
+
        @formatter:on */
 
         IStrategoTerm srcLeftContext2 = tf.parseFromString("NoAnnoList(List([Var(\"t\")]))");
@@ -637,14 +631,14 @@ public class Parenthesizer {
             tf.parseFromString("[DefaultVarDec(\"s\")]"),
             tf.makeAppl(tf.makeConstructor("RuleNoCond", 2), srcLeftContext2, targetLeftContext2)));
 
-        /* @formatter:off   
-       
-       RULE 3:       
+        /* @formatter:off
+
+       RULE 3:
          LeftContext(s) :
            t -> Parenthetical(t)
              where <not(is-list)> t;
                    <s> t
-       
+
         @formatter:on */
 
         IStrategoTerm srcLeftContext3 = tf.parseFromString("Var(\"t\")");
