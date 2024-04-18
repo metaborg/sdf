@@ -12,7 +12,6 @@ dependencies {
   api(compositeBuild("org.metaborg.util"))
 
   api(project(":org.metaborg.parsetable"))
-  implementation("com.google.inject:guice")
   implementation("jakarta.annotation:jakarta.annotation-api")
   testImplementation(testFixtures(project(":org.metaborg.parsetable")))
   testCompileOnly("junit:junit")
