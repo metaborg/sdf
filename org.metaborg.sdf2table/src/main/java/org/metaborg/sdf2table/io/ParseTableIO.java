@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.input.ClassLoaderObjectInputStream;
+import org.metaborg.util.stream.ClassLoaderObjectInputStream;
 import org.metaborg.parsetable.IParseTableGenerator;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
