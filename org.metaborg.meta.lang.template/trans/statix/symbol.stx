@@ -69,9 +69,54 @@ rules
     typeOfSymbol(s, symbol1) == T1,
     typeOfSymbol(s, symbol2) == T2.
 
-  typeOfSymbol(s, Layout())     = TERMINAL().
+  typeOfSymbol(s, Layout())     = LAYOUT().
   typeOfSymbol(s, CharClass(_)) = TERMINAL().
   typeOfSymbol(s, Lit(_))       = TERMINAL().
   typeOfSymbol(s, CiLit(_))     = TERMINAL().
 
   typesOfSymbols maps typeOfSymbol(*, list(*)) = list(*)
+
+rules
+
+  kindOfSymbol: scope * Symbol -> SORT_KIND
+
+  kindOfSymbol(s, sy@Sort(name)) = K :-
+    kindOfSort(s, name) == K,
+    @sy.kind := K.
+  kindOfSymbol(s, sy@ParameterizedSort(name, symbols)) = K :-
+    kindOfSort(s, name) == K,
+    kindsOfSymbols(s, symbols) == _,
+    @sy.kind := K.
+
+  kindOfSymbol(s, Cf(symbol)) = KERNEL() :-
+    kindOfSymbol(s, symbol) == _. // TODO: check kind?
+  kindOfSymbol(s, Lex(symbol)) = KERNEL() :-
+    kindOfSymbol(s, symbol) == _. // TODO: check kind?
+  kindOfSymbol(s, Varsym(symbol)) = KERNEL() :-
+    kindOfSymbol(s, symbol) == _. // TODO: check kind?
+  kindOfSymbol(s, Label(label, symbol)) = K :-
+    labelOK(s, label),
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, Sequence(symbol, symbols)) = K :- // TODO: what is the kind of a sequence?
+    kindOfSymbol(s, symbol) == K,
+    kindsOfSymbols(s, symbols) == _. // TODO: check kinds?
+  kindOfSymbol(s, Opt(symbol)) = K :- // TODO: what is the kind of an option?
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, Iter(symbol)) = K :- // TODO: what is the kind of an iter?
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, IterStar(symbol)) = K :- // TODO: what is the kind of an iterstar?
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, IterSep(symbol, _)) = K :- // TODO: what is the kind of an itersep?
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, IterStarSep(symbol, _)) = K :- // TODO: what is the kind of an iterstarsep?
+    kindOfSymbol(s, symbol) == K.
+  kindOfSymbol(s, Alt(symbol1, symbol2)) = K :- // TODO: what is the kind of an alt?
+    kindOfSymbol(s, symbol1) == K,
+    kindOfSymbol(s, symbol2) == _. // TODO: check kinds?
+
+  kindOfSymbol(s, Layout())     = LEXICAL().
+  kindOfSymbol(s, CharClass(_)) = LEXICAL().
+  kindOfSymbol(s, Lit(_))       = LEXICAL().
+  kindOfSymbol(s, CiLit(_))     = LEXICAL().
+
+  kindsOfSymbols maps kindOfSymbol(*, list(*)) = list(*)

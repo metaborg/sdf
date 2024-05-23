@@ -21,3 +21,7 @@ rules
   bOr: BOOL  * BOOL    -> BOOL
   bOr(FALSE(), FALSE()) = FALSE().
   bOr(_      , _      ) = TRUE().
+
+  bNot: BOOL -> BOOL
+  bNot(FALSE()) = TRUE().
+  bNot(TRUE())  = FALSE().

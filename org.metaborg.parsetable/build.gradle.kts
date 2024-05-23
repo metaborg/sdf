@@ -20,7 +20,7 @@ dependencies {
     // !! Update dependencies in pom.xml as well
 
     api(libs.spoofax2.terms)
-
+    implementation(libs.spoofax2.jsglr.shared)
     implementation(libs.capsule)
     implementation(libs.spoofax2.metaborg.util)
 

@@ -12,8 +12,11 @@ rules // Constructor reusable predicates
   declareConstructor(s, Tsymbols, Tsort, name) = Tprod :- {results}
     Tprod == PROD(Tsymbols, Tsort),
     s -> Constructor{name} with typeOfDecl Tprod,
-    typeOfDecl of Constructor{name} in s |-> results,
-    onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]]@name,
+    //typeOfDecl of Constructor{name} in s |-> results,
+    //onlyOneOf(Tprod, results) | error $[Duplicate definition of constructor [name]]@name,
+    // Check if constructor is globally unique, as Statix currently does not support the use of duplicate constructors
+    // even if they are defined on a different sort.
+    Constructor{name} in s |-> [(_, (_))] | error $[Constructor [name] is already defined],
     @name.type := Tprod.
 
   typeOfConstructor : scope * string -> TYPE

@@ -41,42 +41,51 @@ signature
 
 rules
 
-  grammarOK(s, Syntax(productions))                    :- productionsOK(s, productions).
-  grammarOK(s, Lexical(productions))                   :- productionsOK(s, productions).
-  grammarOK(s, Contextfree(productions))               :- productionsOK(s, productions).
-  grammarOK(s, Variables(productions))                 :- productionsOK(s, productions).
-  grammarOK(s, LexVariables(productions))              :- productionsOK(s, productions).
-  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, sdfProductions) == _.
-  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, generalProductions).
+  grammarOK(s, Syntax(productions))                    :- kernelProductionsOK(s, KERNEL(), productions).
+  grammarOK(s, Lexical(productions))                   :- kernelProductionsOK(s, LEXICAL(), productions).
+  grammarOK(s, Contextfree(productions))               :- kernelProductionsOK(s, CONTEXTFREE(), productions).
+  grammarOK(s, Variables(productions))                 :- kernelProductionsOK(s, VAR(), productions).
+  grammarOK(s, LexVariables(productions))              :- kernelProductionsOK(s, VAR(), productions).
+  grammarOK(s, VariablesProductive(sdfProductions))    :- typeOfSdfProductions(s, VAR(), sdfProductions) == _.
+  grammarOK(s, LexVariablesProductive(sdfProductions)) :- typeOfSdfProductions(s, VAR(), sdfProductions) == _.
+  grammarOK(s, Kernel(sdfProductions))                 :- typeOfSdfProductions(s, KERNEL(), sdfProductions) == _.
+  grammarOK(s, LexicalSyntax(sdfProductions))          :- typeOfSdfProductions(s, LEXICAL(), sdfProductions) == _.
+  grammarOK(s, ContextFreeSyntax(generalProductions))  :- generalProductionsOK(s, CONTEXTFREE(), generalProductions).
 
-  productionOK: scope * Production
-  productionOK(s, Prod(symbols, symbol, _)) :- {sProd}
+  kernelProductionOK: scope * SORT_KIND * Production
+  kernelProductionOK(s, Kexpected, Prod(symbols, symbol, _)) :- {Kactual sProd}
+    kindOfSymbol(s, symbol) == Kactual,
+    try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@symbol,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == _,
     typeOfSymbol(sProd, symbol) == _.
-  productionsOK maps productionOK(*, list(*))
+  kernelProductionsOK maps kernelProductionOK(*, *, list(*))
 
-  generalProductionOK: scope * GeneralProduction
-  generalProductionOK(s, GeneralProduction_SdfProduction(sdfProduction))           :-
-    typeOfSdfProduction(s, sdfProduction) == _.
-  generalProductionOK(s, GeneralProduction_TemplateProduction(templateProduction)) :-
-    typeOfTemplateProduction(s, templateProduction) == _.
-  generalProductionsOK maps generalProductionOK(*, list(*))
+  generalProductionOK: scope * SORT_KIND * GeneralProduction
+  generalProductionOK(s, Kexpected, GeneralProduction_SdfProduction(sdfProduction))           :-
+    typeOfSdfProduction(s, Kexpected, sdfProduction) == _.
+  generalProductionOK(s, Kexpected, GeneralProduction_TemplateProduction(templateProduction)) :-
+    typeOfTemplateProduction(s, Kexpected, templateProduction) == _.
+  generalProductionsOK maps generalProductionOK(*, *, list(*))
 
-  typeOfSdfProduction: scope * SdfProduction -> TYPE
-  typeOfSdfProduction(s, SdfProduction(symbolDef, rhs@Rhs(symbols), attrs)) = Tprod :- {sProd Tsymbols Tsort}
+  typeOfSdfProduction: scope * SORT_KIND * SdfProduction -> TYPE
+  typeOfSdfProduction(s, Kexpected, SdfProduction(symbolDef, rhs@Rhs(symbols), attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort TprodNoLayout}
+    kindOfSymbolDef(s, symbolDef) == Kactual,
+    try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@symbolDef,
     typeOfSymbolDef(s, symbolDef) == Tsort,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
     Tprod == INJ(Tsymbols, Tsort),
-    injectionProductionOK(Tprod, attrs, symbolDef),
-    @rhs.type := Tprod.
-  typeOfSdfProduction(s, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), _)) = Tprod :- {sProd Tsymbols Tsort}
+    @rhs.type := Tprod,
+    symbolDefProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, symbolDef),
+    attributesOk(sProd, attrs).
+  typeOfSdfProduction(s, Kexpected, SdfProductionWithCons(sortCons, rhs@Rhs(symbols), attrs)) = Tprod :- {Kactual sProd Tsymbols Tsort TprodNoLayout}
+    kindOfSortCons(s, sortCons) == Kactual,
+    try { Kactual == Kexpected } | error $[Sort of production is of kind [Kactual], but expected it to be of kind [Kexpected] due to the section the production is defined in]@sortCons,
     declareSortCons(s, Tsymbols, sortCons) == Tprod,
     new sProd, sProd -P-> s,
     typesOfSymbols(sProd, symbols) == Tsymbols,
-    @rhs.type := Tprod.
-  typeOfSdfProductions maps typeOfSdfProduction(*, list(*)) = list(*)
+    @rhs.type := Tprod,
+    sortConsProductionOK(Kexpected, removeLayoutFromProdResult(Tprod), attrs, sortCons),
+    attributesOk(sProd, attrs).
+  typeOfSdfProductions maps typeOfSdfProduction(*, *, list(*)) = list(*)
