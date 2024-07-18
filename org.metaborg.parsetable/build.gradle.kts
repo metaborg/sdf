@@ -17,7 +17,7 @@ sourceSets {
 fun compositeBuild(name: String) = "$group:$name:$version"
 val spoofax2Version: String by ext
 dependencies {
-    api(platform("org.metaborg:parent:$spoofax2Version"))
+    api(platform(libs.metaborg.platform)) { version { require("latest.integration") } }
 
     api(compositeBuild("org.spoofax.terms"))
     implementation(compositeBuild("org.metaborg.util"))
