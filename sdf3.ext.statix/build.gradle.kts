@@ -8,10 +8,6 @@ plugins {
     id("org.metaborg.devenv.spoofax.gradle.langspec")
 }
 
-// Replace language dependencies with overridden/local ones.
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2BaselineVersion: String by ext
-val spoofax2Version: String by ext
 spoofaxLanguageSpecification {
     addSourceDependenciesFromMetaborgYaml.set(false)
     addCompileDependenciesFromMetaborgYaml.set(false)
@@ -19,17 +15,16 @@ spoofaxLanguageSpecification {
     languageContributions.add(LanguageContributionIdentifier(LanguageIdentifier("$group", "org.metaborg.meta.lang.template", LanguageVersion.parse("$version")), "TemplateLang"))
 }
 dependencies {
-    compileLanguage(compositeBuild("org.metaborg.meta.lang.esv"))
+    compileLanguage(libs.spoofax2.esv.lang)     // Bootstrap using Spoofax 2 artifact
 
-    sourceLanguage(compositeBuild("meta.lib.spoofax"))
-    sourceLanguage(compositeBuild("org.metaborg.meta.lang.template"))
-    sourceLanguage("org.metaborg:org.metaborg.meta.lib.analysis:$spoofax2Version")
-    sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.shared"))
-    sourceLanguage(compositeBuild("org.metaborg.meta.nabl2.runtime"))
-    sourceLanguage(compositeBuild("statix.lang"))
-    sourceLanguage(compositeBuild("statix.runtime"))
-    sourceLanguage(compositeBuild("stratego.lang"))
-}
+    sourceLanguage(libs.spoofax2.meta.lib.spoofax)
+    sourceLanguage(libs.sdf3.lang)
+    sourceLanguage(libs.meta.lib.analysis)
+    sourceLanguage(libs.nabl2.shared)
+    sourceLanguage(libs.nabl2.runtime)
+    sourceLanguage(libs.statix.lang)
+    sourceLanguage(libs.statix.runtime)
+    sourceLanguage(libs.stratego2.lang)
 
 metaborg { // Do not create Java publication; this project is already published as a Spoofax 2 language.
     javaCreatePublication = false

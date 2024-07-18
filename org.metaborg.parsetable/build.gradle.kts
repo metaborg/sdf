@@ -14,18 +14,17 @@ sourceSets {
     }
 }
 
-fun compositeBuild(name: String) = "$group:$name:$version"
-val spoofax2Version: String by ext
 dependencies {
     api(platform(libs.metaborg.platform)) { version { require("latest.integration") } }
 
-    api(compositeBuild("org.spoofax.terms"))
-    implementation(compositeBuild("org.metaborg.util"))
-    implementation("io.usethesource:capsule")
-    api(compositeBuild("jsglr.shared"))
+    api(libs.spoofax.terms)
+    implementation(libs.metaborg.util)
+    implementation(libs.capsule)
+    api(libs.jsglr.shared)
 
-    implementation("jakarta.annotation:jakarta.annotation-api")
-    testCompileOnly("junit:junit")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-    testFixturesCompileOnly("junit:junit")
+    implementation(libs.jakarta.annotation)
+    testImplementation(libs.junit)
+    testCompileOnly(libs.junit4)
+    testRuntimeOnly(libs.junit.vintage)
+    testFixturesCompileOnly(libs.junit4)
 }
