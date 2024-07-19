@@ -3,6 +3,7 @@ plugins {
     `maven-publish`
     id("org.metaborg.convention.java")
     id("org.metaborg.convention.maven-publish")
+    id("org.metaborg.convention.junit")
     `java-test-fixtures`
 }
 
@@ -14,7 +15,6 @@ dependencies {
     api(project(":org.metaborg.parsetable"))
     implementation(libs.jakarta.annotation)
     testImplementation(testFixtures(project(":org.metaborg.parsetable")))
-    testImplementation(libs.junit)
     testCompileOnly(libs.junit4)
     testRuntimeOnly(libs.junit.vintage)
 }
