@@ -16,15 +16,15 @@ spoofaxLanguageSpecification {
     addSpoofaxRepository.set(false)
 }
 dependencies {
-    compileLanguage(libs.spoofax2.sdf3.lang)    // Bootstrap using Spoofax 2 artifact
-    compileLanguage(libs.spoofax2.nabl.lang)    // Bootstrap using Spoofax 2 artifact
-    compileLanguage(libs.spoofax2.esv.lang)     // Bootstrap using Spoofax 2 artifact
-    compileLanguage(libs.spoofax2.ts.lang)      // Bootstrap using Spoofax 2 artifact
-    compileLanguage(libs.statix.lang)
+    compileLanguage(libs.spoofax2.sdf3.lang)            // Bootstrap using Spoofax 2 artifact
+    compileLanguage(libs.spoofax2.nabl.lang)            // Bootstrap using Spoofax 2 artifact
+    compileLanguage(libs.spoofax2.esv.lang)             // Bootstrap using Spoofax 2 artifact
+    compileLanguage(libs.spoofax2.ts.lang)              // Bootstrap using Spoofax 2 artifact
+    compileLanguage(libs.spoofax2.statix.lang)          // Bootstrap using Spoofax 2 artifact
 
-    sourceLanguage(libs.meta.lib.analysis)
-    sourceLanguage(libs.spoofax2.meta.lib.spoofax)
-    sourceLanguage(libs.statix.runtime)
+    sourceLanguage(libs.spoofax2.meta.lib.analysis)     // Bootstrap using Spoofax 2 artifact
+    sourceLanguage(libs.spoofax2.meta.lib.spoofax)      // Bootstrap using Spoofax 2 artifact
+    sourceLanguage(libs.spoofax2.statix.runtime)        // Bootstrap using Spoofax 2 artifact
 
-    compileOnly(libs.spoofax2.core)
+    compileOnly(libs.spoofax.core)
 }

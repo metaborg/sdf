@@ -9,10 +9,10 @@ plugins {
 }
 
 spoofaxLanguageSpecification {
-    addSourceDependenciesFromMetaborgYaml.set(false)
     addCompileDependenciesFromMetaborgYaml.set(false)
+    addSourceDependenciesFromMetaborgYaml.set(false)
     addLanguageContributionsFromMetaborgYaml.set(false)
-    languageContributions.add(LanguageContributionIdentifier(LanguageIdentifier("org.metaborg.devenv", "org.metaborg.meta.lang.template", LanguageVersion.parse("$version")), "TemplateLang"))
+    languageContributions.add(LanguageContributionIdentifier(LanguageIdentifier("org.metaborg.devenv", "org.metaborg.meta.lang.template", LanguageVersion.parse("$version")), "TemplateLang"))  // TODO
 
     // We add the dependency manually and don't change the repositories
     // Eventually, this functionality should be removed from spoofax.gradle
@@ -20,17 +20,17 @@ spoofaxLanguageSpecification {
     addSpoofaxRepository.set(false)
 }
 dependencies {
-    compileLanguage(libs.spoofax2.esv.lang)     // Bootstrap using Spoofax 2 artifact
+    compileLanguage(libs.esv.lang)
 
-    sourceLanguage(libs.spoofax2.meta.lib.spoofax)
+    sourceLanguage(libs.meta.lib.spoofax)
     sourceLanguage(libs.sdf3.lang)
-    sourceLanguage(libs.meta.lib.analysis)
+    sourceLanguage(libs.spoofax2.meta.lib.analysis)
     sourceLanguage(libs.nabl2.shared)
     sourceLanguage(libs.nabl2.runtime)
     sourceLanguage(libs.statix.lang)
     sourceLanguage(libs.statix.runtime)
     sourceLanguage(libs.stratego2.lang)
 
-    compileOnly(libs.spoofax2.core)
+    compileOnly(libs.spoofax.core)
 }
 
