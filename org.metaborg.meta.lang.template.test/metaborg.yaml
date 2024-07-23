@@ -1,6 +1,6 @@
 id: org.example:org.metaborg.meta.lang.template.test:${metaborgVersion}
 name: Entity
-metaborgVersion: 2.6.0-SNAPSHOT
+metaborgVersion: "2.5.20"
 dependencies:
   compile:
   - org.metaborg:org.metaborg.meta.lang.template:${metaborgVersion}
