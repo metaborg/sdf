@@ -1,7 +1,7 @@
 ---
 id: org.metaborg:sdf3.ext.statix:${metaborgVersion}
 name: Sdf3ExtStatix
-metaborgVersion: 2.6.0-SNAPSHOT
+metaborgVersion: 2.5.21
 
 dependencies:
   compile:
