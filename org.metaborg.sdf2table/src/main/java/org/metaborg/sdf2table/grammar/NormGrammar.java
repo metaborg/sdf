@@ -15,8 +15,8 @@ public class NormGrammar implements INormGrammar, Serializable {
 
     private static final long serialVersionUID = -13739894962185282L;
 
-    // all files used in this grammar
-    private final Set<File> filesRead;
+    // all module names used in this grammar
+    private final Set<String> modulesRead;
 
     // factory to create all symbols in the grammar
     private final GrammarFactory gf;
@@ -80,7 +80,7 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final SetMultimap<ISymbol, ISymbol> rightDerivable;
 
     public NormGrammar() {
-        this.filesRead = new HashSet<>();
+        this.modulesRead = new HashSet<>();
         this.gf = new GrammarFactory();
         this.uniqueProductionMapping = new LinkedHashMap<>();
         this.sortConsProductionMapping = new HashMap<>();
@@ -160,8 +160,8 @@ public class NormGrammar implements INormGrammar, Serializable {
         return priorities;
     }
 
-    public Set<File> getFilesRead() {
-        return filesRead;
+    public Set<String> getModulesRead() {
+        return modulesRead;
     }
 
     public Set<ISymbol> getSymbols() {
@@ -306,10 +306,6 @@ public class NormGrammar implements INormGrammar, Serializable {
         this.transitivePriorityArgs.clear();
     }
 
-    public void postParenthesizerCleanup() {
-        this.filesRead.clear();
-    }
-
     public SetMultimap<ISymbol, ISymbol> getLeftDerivable() {
         return leftDerivable;
     }
@@ -323,11 +319,11 @@ public class NormGrammar implements INormGrammar, Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NormGrammar that = (NormGrammar) o;
-        return Objects.equals(filesRead, that.filesRead) && Objects.equals(gf, that.gf) && Objects.equals(initialProduction, that.initialProduction) && Objects.equals(symbols, that.symbols) && Objects.equals(sortConsProductionMapping, that.sortConsProductionMapping) && Objects.equals(productionAttributesMapping, that.productionAttributesMapping) && Objects.equals(constructors, that.constructors) && Objects.equals(uniqueProductionMapping, that.uniqueProductionMapping) && Objects.equals(prodContextualProdMapping, that.prodContextualProdMapping) && Objects.equals(derivedContextualProds, that.derivedContextualProds) && Objects.equals(contextualSymbols, that.contextualSymbols) && Objects.equals(leftRecursiveSymbolsMapping, that.leftRecursiveSymbolsMapping) && Objects.equals(rightRecursiveSymbolsMapping, that.rightRecursiveSymbolsMapping) && Objects.equals(longestMatchProdsFront, that.longestMatchProdsFront) && Objects.equals(shortestMatchProdsFront, that.shortestMatchProdsFront) && Objects.equals(longestMatchProdsBack, that.longestMatchProdsBack) && Objects.equals(shortestMatchProdsBack, that.shortestMatchProdsBack) && Objects.equals(transitivePriorities, that.transitivePriorities) && Objects.equals(nonTransitivePriorities, that.nonTransitivePriorities) && Objects.equals(priorities, that.priorities) && Objects.equals(indexedPriorities, that.indexedPriorities) && Objects.equals(productionsOnPriorities, that.productionsOnPriorities) && Objects.equals(transitivePriorityArgs, that.transitivePriorityArgs) && Objects.equals(nonTransitivePriorityArgs, that.nonTransitivePriorityArgs) && Objects.equals(higherPriorityProductions, that.higherPriorityProductions) && Objects.equals(cacheSymbolsRead, that.cacheSymbolsRead) && Objects.equals(cacheProductionsRead, that.cacheProductionsRead) && Objects.equals(symbolProductionsMapping, that.symbolProductionsMapping) && Objects.equals(literalProductionsMapping, that.literalProductionsMapping) && Objects.equals(expressionGrammars, that.expressionGrammars) && Objects.equals(combinedExpressionGrammars, that.combinedExpressionGrammars) && Objects.equals(leftDerivable, that.leftDerivable) && Objects.equals(rightDerivable, that.rightDerivable);
+        return Objects.equals(modulesRead, that.modulesRead) && Objects.equals(gf, that.gf) && Objects.equals(initialProduction, that.initialProduction) && Objects.equals(symbols, that.symbols) && Objects.equals(sortConsProductionMapping, that.sortConsProductionMapping) && Objects.equals(productionAttributesMapping, that.productionAttributesMapping) && Objects.equals(constructors, that.constructors) && Objects.equals(uniqueProductionMapping, that.uniqueProductionMapping) && Objects.equals(prodContextualProdMapping, that.prodContextualProdMapping) && Objects.equals(derivedContextualProds, that.derivedContextualProds) && Objects.equals(contextualSymbols, that.contextualSymbols) && Objects.equals(leftRecursiveSymbolsMapping, that.leftRecursiveSymbolsMapping) && Objects.equals(rightRecursiveSymbolsMapping, that.rightRecursiveSymbolsMapping) && Objects.equals(longestMatchProdsFront, that.longestMatchProdsFront) && Objects.equals(shortestMatchProdsFront, that.shortestMatchProdsFront) && Objects.equals(longestMatchProdsBack, that.longestMatchProdsBack) && Objects.equals(shortestMatchProdsBack, that.shortestMatchProdsBack) && Objects.equals(transitivePriorities, that.transitivePriorities) && Objects.equals(nonTransitivePriorities, that.nonTransitivePriorities) && Objects.equals(priorities, that.priorities) && Objects.equals(indexedPriorities, that.indexedPriorities) && Objects.equals(productionsOnPriorities, that.productionsOnPriorities) && Objects.equals(transitivePriorityArgs, that.transitivePriorityArgs) && Objects.equals(nonTransitivePriorityArgs, that.nonTransitivePriorityArgs) && Objects.equals(higherPriorityProductions, that.higherPriorityProductions) && Objects.equals(cacheSymbolsRead, that.cacheSymbolsRead) && Objects.equals(cacheProductionsRead, that.cacheProductionsRead) && Objects.equals(symbolProductionsMapping, that.symbolProductionsMapping) && Objects.equals(literalProductionsMapping, that.literalProductionsMapping) && Objects.equals(expressionGrammars, that.expressionGrammars) && Objects.equals(combinedExpressionGrammars, that.combinedExpressionGrammars) && Objects.equals(leftDerivable, that.leftDerivable) && Objects.equals(rightDerivable, that.rightDerivable);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filesRead, gf, initialProduction, symbols, sortConsProductionMapping, productionAttributesMapping, constructors, uniqueProductionMapping, prodContextualProdMapping, derivedContextualProds, contextualSymbols, leftRecursiveSymbolsMapping, rightRecursiveSymbolsMapping, longestMatchProdsFront, shortestMatchProdsFront, longestMatchProdsBack, shortestMatchProdsBack, transitivePriorities, nonTransitivePriorities, priorities, indexedPriorities, productionsOnPriorities, transitivePriorityArgs, nonTransitivePriorityArgs, higherPriorityProductions, cacheSymbolsRead, cacheProductionsRead, symbolProductionsMapping, literalProductionsMapping, expressionGrammars, combinedExpressionGrammars, leftDerivable, rightDerivable);
+        return Objects.hash(modulesRead, gf, initialProduction, symbols, sortConsProductionMapping, productionAttributesMapping, constructors, uniqueProductionMapping, prodContextualProdMapping, derivedContextualProds, contextualSymbols, leftRecursiveSymbolsMapping, rightRecursiveSymbolsMapping, longestMatchProdsFront, shortestMatchProdsFront, longestMatchProdsBack, shortestMatchProdsBack, transitivePriorities, nonTransitivePriorities, priorities, indexedPriorities, productionsOnPriorities, transitivePriorityArgs, nonTransitivePriorityArgs, higherPriorityProductions, cacheSymbolsRead, cacheProductionsRead, symbolProductionsMapping, literalProductionsMapping, expressionGrammars, combinedExpressionGrammars, leftDerivable, rightDerivable);
     }
 }

@@ -9,6 +9,7 @@ signature
     ITER     : TYPE              -> TYPE
     ALT      : TYPE * TYPE       -> TYPE
     TERMINAL :                      TYPE
+    LAYOUT   :                      TYPE
     PROD     : list(TYPE) * TYPE -> TYPE
     INJ      : list(TYPE) * TYPE -> TYPE
     MOD      : scope             -> TYPE
@@ -30,8 +31,18 @@ rules
 
   appendTypes : list(TYPE) * list(TYPE) -> list(TYPE)
   appendTypes([t|ts], types) = [t|appendTypes(ts, types)].
-  appendTypes([    ], types) = types.
+  appendTypes([], types)     = types.
 
   flattenTypes : list(list(TYPE)) -> list(TYPE)
   flattenTypes([ts|tts]) = appendTypes(ts, flattenTypes(tts)).
-  flattenTypes([      ]) = [].
+  flattenTypes([])       = [].
+
+  removeLayout : list(TYPE) -> list(TYPE)
+  removeLayout([LAYOUT()|ts]) = removeLayout(ts).
+  removeLayout([t|ts])        = [t|removeLayout(ts)].
+  removeLayout([])            = [].
+
+  removeLayoutFromProdResult : TYPE -> TYPE
+  removeLayoutFromProdResult(PROD(ts, t)) = PROD(removeLayout(ts), t).
+  removeLayoutFromProdResult(INJ(ts, t))  = INJ(removeLayout(ts), t).
+  removeLayoutFromProdResult(t)           = t.

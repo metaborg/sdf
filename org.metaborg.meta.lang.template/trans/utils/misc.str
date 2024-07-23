@@ -19,3 +19,11 @@ strategies
     string-replace(|"\r", "\\r");
     string-replace(|"\n", "\\n");
     string-replace(|"\"", "\\\"")
+
+// Locally redefine constructors/congruences that would otherwise conflict between libraries
+signature constructors
+  Id : Term -> Term
+
+strategies
+
+  internal Id(x) = ?Id(a){a*}; !Id(<x> a){a*}

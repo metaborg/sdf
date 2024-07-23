@@ -8,6 +8,8 @@ imports
   signatures/-
   signatures/sorts/Sorts-sig
   signatures/priority/Priority-sig
+  signatures/kernel/-
+  statix/check
 
 imports
 
@@ -15,7 +17,7 @@ imports
 
 rules // Editor
 
-  statix-editor-analyze = stx-editor-analyze(statix-pre, statix-post|"statix/main", "projectOK", "fileOK")
+  statix-editor-analyze = stx-editor-analyze(pre-analyze, post-analyze|"statix/main", "projectOK", "fileOK")
 
   statix-editor-resolve = stx-editor-resolve
 
@@ -26,8 +28,14 @@ signature constructors // Types
   SORT     : Occurrence        -> TYPE
   PROD     : list(TYPE) * TYPE -> TYPE
   INJ      : list(TYPE) * TYPE -> TYPE
+
   ITER     : TYPE              -> TYPE
   TERMINAL : TYPE
+  LAYOUT   : TYPE
+
+  SEQ      : TYPE * list(TYPE) -> TYPE
+  OPT      : TYPE              -> TYPE
+  ALT      : TYPE * TYPE       -> TYPE
 
 rules // Types
 
@@ -40,7 +48,19 @@ rules // Types
 
   fail-msg(|msg) = err-msg(|$[get-type: [msg]]); fail
 
-  remove-unnecessary-types = remove-all(?TERMINAL())
+  is-concrete-syntax-type = ?TERMINAL()
+  is-concrete-syntax-type = ?LAYOUT()
+  is-concrete-syntax-type: SEQ(t, _) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: SEQ(_, ts) -> <one(is-concrete-syntax-type)> ts
+  is-concrete-syntax-type: OPT(t) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: ALT(t, _) -> <is-concrete-syntax-type> t
+  is-concrete-syntax-type: ALT(_, t) -> <is-concrete-syntax-type> t
+
+  is-legacy-type = ?SEQ(_, _)
+  is-legacy-type = ?OPT(_)
+  is-legacy-type = ?ALT(_, _)
+
+  remove-unnecessary-types = remove-all(is-concrete-syntax-type <+ is-legacy-type)
 
   to-compatible-type:
     SORT(occ) -> SortType(<stx-get-occurrence-terms; Hd> occ)
@@ -67,18 +87,18 @@ rules // Debugging
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"statix-pre-transformed.aterm")> path;
-      result   := <statix-pre> selected
+      result   := <pre-analyze> selected
 
   statix-debug-show-pre-post-transformed:
     (selected, position, ast, path, project-path) -> (filename, result)
     with
       filename := <guarantee-extension(|"statix-pre-post-transformed.aterm")> path;
-      result   := <statix-pre; statix-post> selected
+      result   := <pre-analyze; post-analyze> selected
 
 rules // Statix pre and post-transformation
 
-  statix-pre  = lift-all; explicate-all-injections; disambiguate-all-constructors
-  statix-post = ambiguate-all-constructors; unexplicate-all-injections
+  pre-analyze  = lift-all; explicate-all-injections; disambiguate-all-constructors
+  post-analyze = ambiguate-all-constructors; unexplicate-all-injections
 
   explicate-all-injections   = topdown(try(  explicate-injection))
   unexplicate-all-injections = topdown(try(unexplicate-injection))
@@ -139,14 +159,18 @@ rules
   explicate-injection = TemplateProduction        (explicate-symboldef, id, id)
   explicate-injection = TemplateProductionWithCons(explicate-injection, id, id)
   explicate-injection = KeywordAttributes         (explicate-symboldef, id)
-  unexplicate-injection = SdfProduction             (unexplicate-symboldef, id, id)
+  unexplicate-injection = SdfProduction             (bottomup(try(unexplicate-symboldef)), id, id)
   unexplicate-injection = SdfProductionWithCons     (unexplicate-injection, id, id)
-  unexplicate-injection = TemplateProduction        (unexplicate-symboldef, id, id)
+  unexplicate-injection = TemplateProduction        (bottomup(try(unexplicate-symboldef)), id, id)
   unexplicate-injection = TemplateProductionWithCons(unexplicate-injection, id, id)
-  unexplicate-injection = KeywordAttributes         (unexplicate-symboldef, id)
+  unexplicate-injection = KeywordAttributes         (bottomup(try(unexplicate-symboldef)), id)
 
   explicate-symboldef: symbol -> SymbolDef_Symbol(symbol)
   where <not(?SortDef(_) <+ ?Cf(_) <+ ?Lex(_) <+ ?Var(_))> symbol
+  explicate-symboldef = Cf(explicate-symboldef)
+  explicate-symboldef = Lex(explicate-symboldef)
+  explicate-symboldef = Var(explicate-symboldef)
+  explicate-symboldef = ?SortDef(_)
   unexplicate-symboldef: SymbolDef_Symbol(symbol) -> symbol
 
 signature constructors // SymbolDef and ambiguous constructors
@@ -177,3 +201,19 @@ rules
   ambiguate-symboldef-constructor: SymbolDefCf (symbolDef) -> Cf (symbolDef)
   ambiguate-symboldef-constructor: SymbolDefLex(symbolDef) -> Lex(symbolDef)
   ambiguate-symboldef-constructor: SymbolDefVar(symbolDef) -> Var(symbolDef)
+
+signature constructors // Layout constraints line
+
+  ConstraintExpLine : ConstraintToken -> ConstraintExp
+
+rules
+
+  disambiguate-constructor = Attrs(topdown(try(disambiguate-constraint-line-constructor)))
+  disambiguate-constraint-line-constructor: Line(token) -> ConstraintExpLine(token)
+  ambiguate-constructor = Attrs(topdown(try(ambiguate-constraint-line-constructor)))
+  ambiguate-constraint-line-constructor: ConstraintExpLine(token) -> Line(token)
+
+rules // PosRef contents to int
+
+  disambiguate-constructor = PosRef(string-to-int)
+  ambiguate-constructor = PosRef(int-to-string)

@@ -1,10 +1,10 @@
 package org.metaborg.sdf2table.io;
 
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.vfs2.FileObject;
 import org.metaborg.sdf2table.grammar.IAttribute;
 import org.metaborg.sdf2table.grammar.IProduction;
 import org.metaborg.sdf2table.grammar.ISymbol;
@@ -31,8 +31,8 @@ public class IncrementalParseTableGenerator extends ParseTableIO {
 
     // TODO: Handle changes in restrictions
 
-    public IncrementalParseTableGenerator(FileObject grammarFile, ParseTable reference) throws Exception {
-        super(grammarFile);
+    public IncrementalParseTableGenerator(InputStream grammarFileStream, ParseTable reference) throws Exception {
+        super(grammarFileStream, true);
         
         ParseTable current = this.getParseTable();
 

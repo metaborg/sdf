@@ -9,9 +9,10 @@ imports
 signature
 
   sorts SORT_KIND constructors
-    CONTEXTFREE :  SORT_KIND
-    LEXICAL     :  SORT_KIND
-    VAR         :  SORT_KIND
+    CONTEXTFREE : SORT_KIND
+    LEXICAL     : SORT_KIND
+    VAR         : SORT_KIND
+    KERNEL      : SORT_KIND
 
   relations
     kindOfSort : occurrence -> SORT_KIND
@@ -39,14 +40,14 @@ rules
   resolveTypeOfSorts(name, [], MAYBE_EMPTY()) = _.
 
   kindOfSort : scope * string -> SORT_KIND
-  kindOfSort(s, name) = Tsort :- {paths}
+  kindOfSort(s, name) = K :- {paths}
     kindOfSort of Sort{name} in s |-> paths,
-    resolveKindOfSorts(name, paths, NON_EMPTY()) == Tsort,
-    @name.type := Tsort.
+    resolveKindOfSorts(name, paths, NON_EMPTY()) == K,
+    @name.kind := K.
 
   resolveKindOfSorts : string * list((path * (occurrence * SORT_KIND))) * EMPTINESS -> SORT_KIND
-  resolveKindOfSorts(name, [(_, (Sort{name'}, Tsort))|paths], _) = Tsort :-
+  resolveKindOfSorts(name, [(_, (Sort{name'}, K))|paths], _) = K :-
     @name.ref += name',
-    resolveKindOfSorts(name, paths, MAYBE_EMPTY()) == Tsort.
+    resolveKindOfSorts(name, paths, MAYBE_EMPTY()) == K.
   resolveKindOfSorts(name, [], NON_EMPTY())   = _ :- false | error $[Sort [name] is not defined]@name.
   resolveKindOfSorts(name, [], MAYBE_EMPTY()) = _.

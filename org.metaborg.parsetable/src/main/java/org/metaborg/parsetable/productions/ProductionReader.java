@@ -4,7 +4,6 @@ import static org.spoofax.terms.util.TermUtils.*;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.metaborg.parsetable.ParseTableReadException;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;

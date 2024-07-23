@@ -16,8 +16,11 @@ language
 
   provider : target/metaborg/stratego.jar
   observer : editor-analyze (multifile)
+  //observer: statix-editor-analyze (constraint) (multifile)
   on save  : editor-save
 
 references
 
   reference _ : editor-resolve
+  //reference _ : stx-editor-resolve
+  //hover _ : stx-editor-hover
