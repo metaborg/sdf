@@ -1,0 +1,89 @@
+---
+repoOwner: "metaborg"
+repoName: "sdf"
+mainBranch: "master"
+mavenGroup: "org.metaborg.devenv"
+
+title: "SDF"
+description: |
+  Meta-languages for declarative syntax.
+inceptionYear: "2016"
+
+spoofax3Languages:
+  - group: "org.metaborg.devenv"
+    name: "org.metaborg.meta.lang.template"
+  - group: "org.metaborg.devenv"
+    name: "sdf3.ext.statix"
+
+spoofax3Libraries:
+  - group: "org.metaborg.devenv"
+    name: "org.metaborg.parsetable"
+  - group: "org.metaborg.devenv"
+    name: "sdf2parenthesize"
+  - group: "org.metaborg.devenv"
+    name: "sdf2table"
+
+spoofax2Languages:
+  - group: "org.metaborg"
+    name: "org.metaborg.meta.lang.sdf"
+  - group: "org.metaborg"
+    name: "org.metaborg.meta.lang.template"
+  - group: "org.metaborg"
+    name: "sdf3.ext.statix"
+
+spoofax2Libraries:
+  - group: "org.metaborg"
+    name: "org.metaborg.meta.lang.sdf.eclipse"
+  - group: "org.metaborg"
+    name: "org.metaborg.meta.lang.template.eclipse"
+  - group: "org.metaborg"
+    name: "org.metaborg.parsetable"
+  - group: "org.metaborg"
+    name: "sdf2parenthesize"
+  - group: "org.metaborg"
+    name: "sdf2table"
+  - group: "org.metaborg"
+    name: "sdf3.ext.statix.eclipse"
+
+contributors:
+  - id: "udesou"
+    name: "Eduardo Souza"
+  - id: "Gohla"
+    name: "Gabriel Konat"
+  - id: "lennartcl"
+    name: "Lennart Kats"
+  - id: "Virtlink"
+    name: "Daniel A. A. Pelsmaeker"
+  - id: "tvo"
+    name: "Tobi Vollebregt"
+  - id: "jasperdenkers"
+    name: "Jasper Denkers"
+  - id: "Olavhaasie"
+    name: "Olav de Haas"
+  - id: "Apanatshka"
+    name: "Jeff Smits"
+  - id: "udesou"
+    name: "Eduardo Souza"
+  - id: "mpsijm"
+    name: "Maarten Sijm"
+  - id: "hendrikvanantwerpen"
+    name: "Hendrik van Antwerpen"
+
+developers:
+  - id: "Apanatshka"
+    name: "Jeff Smits"
+
+files:
+  githubWorkflows:
+    publishRelease: true
+    publishSnapshot: true
+  gradleRootProject:
+    generate: true
+    rootProjectName: "sdf-project"
+    includedProjects:
+      - name: ":org.metaborg.meta.lang.template"
+      - name: ":org.metaborg.parsetable"
+      - name: ":org.metaborg.sdf2parenthesize"
+      - name: ":org.metaborg.sdf2table"
+      - name: ":sdf3.ext.statix"
+
