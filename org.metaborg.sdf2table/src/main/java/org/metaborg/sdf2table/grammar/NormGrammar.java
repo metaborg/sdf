@@ -63,7 +63,6 @@ public class NormGrammar implements INormGrammar, Serializable {
     private final HashMap<String, Production> cacheProductionsRead; // caching productions read
 
     // get all productions for a certain symbol
-    // N.B. for some sick reason, if you preserve insertion-order in this multimap, there are edgecases where JSGLR2 will exhibit a bug in org.spoofax.jsglr2.integrationtest.features.RejectTest#testBoth
     private final SetMultimap<ISymbol, IProduction> symbolProductionsMapping;
 
     // get all productions that contain a particular literal
