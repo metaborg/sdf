@@ -2,8 +2,11 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 
 import org.metaborg.parsetable.IParseTable;
+import org.metaborg.parsetable.ParseTableReaderDelegate;
+import org.metaborg.parsetable.states.IMutableState;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.*;
 import org.metaborg.sdf2table.grammar.*;
@@ -125,8 +128,14 @@ public class ParseTable implements IParseTable, Serializable {
             processStateQueue();
             cleanupTable();
         }
-        
-        
+
+        // mark rejectable states
+        int max_state_number = this.stateLabels.keySet().stream().mapToInt(i -> i).max().orElse(-1);
+        IMutableState[] states = new IMutableState[max_state_number+1];
+        for(Map.Entry<Integer, State> entry : this.stateLabels.entrySet()) {
+            states[entry.getKey()] = entry.getValue();
+        }
+        ParseTableReaderDelegate.markRejectableStates(states);
 
     }
 

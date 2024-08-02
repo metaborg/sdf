@@ -14,6 +14,7 @@ import org.metaborg.parsetable.actions.IReduce;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
 import org.metaborg.parsetable.query.*;
+import org.metaborg.parsetable.states.IMutableState;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.grammar.CharacterClassSymbol;
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -21,7 +22,7 @@ import org.metaborg.sdf2table.grammar.ISymbol;
 import org.metaborg.sdf2table.grammar.Symbol;
 import org.metaborg.util.collection.LinkedSetMultimap;
 
-public class State implements IState, Comparable<State>, Serializable {
+public class State implements IMutableState, Comparable<State>, Serializable {
 
     private static final long serialVersionUID = 7118071460461287164L;
 
@@ -325,9 +326,8 @@ public class State implements IState, Comparable<State>, Serializable {
         return gotos;
     }
 
-    public Iterable<Action> actions() {
-        Set<Action> actions = org.metaborg.util.iterators.Iterables2.toHashSet(lr_actions.values());
-        return actions;
+    @Override public Iterable<IAction> actions() {
+        return org.metaborg.util.iterators.Iterables2.toHashSet(lr_actions.values());
     }
 
     public LinkedSetMultimap<ICharacterClass, Action> actionsMapping() {
@@ -352,6 +352,11 @@ public class State implements IState, Comparable<State>, Serializable {
 
     @Override public Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode) {
         return actionsForCharacter.getApplicableReduceActions(actionQuery, parsingMode);
+    }
+
+    @Override
+    public boolean hasGoto(int productionId) {
+        return gotosMapping.containsKey(productionId);
     }
 
     @Override public int getGotoId(int productionId) {
