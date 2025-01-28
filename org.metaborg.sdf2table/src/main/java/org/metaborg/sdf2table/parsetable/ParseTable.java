@@ -2,10 +2,13 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.metaborg.parsetable.IParseTable;
 import org.metaborg.parsetable.ParseTableReaderDelegate;
+import org.metaborg.parsetable.actions.IAction;
+import org.metaborg.parsetable.actions.IReduce;
+import org.metaborg.parsetable.actions.IShift;
 import org.metaborg.parsetable.states.IMutableState;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.*;
@@ -65,6 +68,9 @@ public class ParseTable implements IParseTable, Serializable {
     private Map<Set<Context>, Integer> ctxUniqueInt = new HashMap<>();
     private final Map<Integer, Integer> leftmostContextsMapping = new LinkedHashMap<>();
     private final Map<Integer, Integer> rightmostContextsMapping = new LinkedHashMap<>();
+
+    // ordering between rejectable states with a shared parent state. Reduce on states in order of their number
+    private final Map<State, Integer> rejectableStateOrder = new HashMap<>();
 
     public ParseTable(NormGrammar grammar, ParseTableConfiguration config) {
         this.grammar = grammar;
@@ -137,6 +143,72 @@ public class ParseTable implements IParseTable, Serializable {
         }
         ParseTableReaderDelegate.markRejectableStates(states);
 
+        this.computeRejectableStateOrder();
+    }
+
+    /**
+     * Use the LRItem set of the shared parent state of multiple rejectable states to find a static ordering between
+     * those rejectable states.
+     */
+    private void computeRejectableStateOrder() {
+        final ArrayList<State> parents = new ArrayList<>();
+        // find states with more than 1 goto to a rejectable state
+        for (State state : stateLabels.values()) {
+            if(state.gotos().stream().map(g -> this.stateLabels.get(g.gotoStateId())).filter(State::isRejectable).collect(Collectors.toSet()).size() > 1) {
+                parents.add(state);
+            }
+        }
+        for(State parent : parents) {
+            // find an ordering from a rejectable non-terminal to another through any rules that may shift nullable non-terminals.
+            final SetMultimap<ISymbol, IProduction> ordering = new SetMultimap<>();
+            final Set<LRItem> parentItems = parent.getItems();
+            final Queue<LRItem> worklist = parentItems.stream().filter(p -> /* TODO */ true).collect(ArrayDeque::new, ArrayDeque::add, ArrayDeque::addAll);
+
+            while(!worklist.isEmpty()) {
+                final LRItem worklistItem = worklist.remove();
+                final ISymbol lhs = worklistItem.getProd().leftHand();
+                parentItems:
+                for (LRItem parentItem : parentItems) {
+                    final IProduction parentProd = parentItem.getProd();
+                    // find an item in the parent that can shift the symbol reduced in the worklistItem.
+                    if (parentProd.rightHand().get(parentItem.getDotPosition()).equals(lhs)) {
+                        // if this item is at the
+                        if(parentItem.getDotPosition() != parentProd.rightHand().size() - 1) {
+                            final List<ISymbol> parentItemRHS = parentProd.rightHand();
+                            for(int i = parentItem.getDotPosition(); i < parentItemRHS.size(); i++) {
+                                final ISymbol symbol = parentItemRHS.get(i);
+                                if(!symbol.isNullable()) {
+                                    continue parentItems;
+                                }
+                                worklist.add(parentItem);
+                                ordering.put(lhs, parentProd);
+                            }
+                        } else {
+                            worklist.add(parentItem);
+                            ordering.put(lhs, parentProd);
+                        }
+                    }
+                }
+            }
+
+
+            final SetMultimap<ISymbol, LRItem> lhsToItem = new SetMultimap<>();
+            for(LRItem item : parentItems) {
+                lhsToItem.put(item.getProd().leftHand(), item);
+            }
+            items:
+            for(LRItem item : parentItems) {
+                final List<ISymbol> rhsSize = item.getProd().rightHand();
+                for(int i = item.getDotPosition(); i < rhsSize.size(); i++) {
+                    final ISymbol symbol = rhsSize.get(i);
+                    if(!symbol.isNullable() && i != rhsSize.size() - 1) {
+                        continue items;
+                    }
+                }
+                final ISymbol lastSymbol = item.getProd().rightHand().get(rhsSize.size() - 1);
+                ordering.put(lastSymbol, item.getProd());
+            }
+        }
     }
 
     private void cleanupTable() {
