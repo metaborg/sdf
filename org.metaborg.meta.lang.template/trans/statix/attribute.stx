@@ -3,6 +3,8 @@ module statix/attribute
 imports
 
   statix/util
+  statix/constant
+  statix/label
 
 signature
 
@@ -11,8 +13,176 @@ signature
     NoAttrs :                    Attributes
 
   sorts Attribute constructors
-    Reject  : Attribute
-    Bracket : Attribute
+    Reject           :               Attribute
+    Bracket          :               Attribute
+    LayoutConstraint : Constraint -> Attribute
+    
+  sorts ConstraintTreeRef constructors
+    PosRef     : int -> ConstraintTreeRef
+    LiteralRef : string -> ConstraintTreeRef
+    LabelRef   : string -> ConstraintTreeRef
+    
+  sorts ConstraintToken constructors
+    First : ConstraintTreeRef -> ConstraintToken
+    Left  : ConstraintTreeRef -> ConstraintToken
+    Right : ConstraintTreeRef -> ConstraintToken
+    Last  : ConstraintTreeRef -> ConstraintToken
+    
+  sorts ConstraintExp constructors
+    Mul               : ConstraintExp * ConstraintExp -> ConstraintExp
+    Div               : ConstraintExp * ConstraintExp -> ConstraintExp
+    Add               : ConstraintExp * ConstraintExp -> ConstraintExp
+    Sub               : ConstraintExp * ConstraintExp -> ConstraintExp
+    ConstraintExpLine : ConstraintToken               -> ConstraintExp
+    Col               : ConstraintToken               -> ConstraintExp
+    Num               : NatCon                        -> ConstraintExp
+    
+  sorts Constraint constructors
+    Eq  : ConstraintExp * ConstraintExp -> Constraint
+    Lt  : ConstraintExp * ConstraintExp -> Constraint
+    Le  : ConstraintExp * ConstraintExp -> Constraint
+    Gt  : ConstraintExp * ConstraintExp -> Constraint
+    Ge  : ConstraintExp * ConstraintExp -> Constraint
+    Not : Constraint                    -> Constraint
+    And : Constraint * Constraint       -> Constraint
+    Or  : Constraint * Constraint       -> Constraint
+    
+    Offside       : ConstraintTreeRef * list(ConstraintTreeRef) -> Constraint
+    Indent        : ConstraintTreeRef * list(ConstraintTreeRef) -> Constraint
+    Align         : ConstraintTreeRef * list(ConstraintTreeRef) -> Constraint
+    AlignList     : ConstraintTreeRef                           -> Constraint
+    NewLineIndent : ConstraintTreeRef * list(ConstraintTreeRef) -> Constraint
+    SingleLine    : list(ConstraintTreeRef)                     -> Constraint
+
+    PPOffside         : ConstraintTreeRef * list(ConstraintTreeRef)          -> Constraint
+    PPIndent          : ConstraintTreeRef * list(ConstraintTreeRef)          -> Constraint
+    PPAlign           : ConstraintTreeRef * list(ConstraintTreeRef)          -> Constraint
+    PPAlignList       : ConstraintTreeRef                                    -> Constraint
+    PPNewLineIndent   : ConstraintTreeRef * list(ConstraintTreeRef)          -> Constraint
+    PPNewLineIndentBy : NatCon * ConstraintTreeRef * list(ConstraintTreeRef) -> Constraint
+    PPNewLine         : ConstraintTreeRef                                    -> Constraint
+    PPNewLineBy       : NatCon * ConstraintTreeRef                           -> Constraint
+
+rules
+
+  attributesOk : scope * Attributes
+  attributesOk(s, attrs) :-
+    singleAttributesOk(s, attributes(attrs)).
+
+  attributeOk : scope * Attribute
+  attributeOk(s, LayoutConstraint(constraint)) :-
+    constraintOk(s, constraint).
+  attributeOk(_, _).
+  singleAttributesOk maps attributeOk(*, list(*))
+  
+rules
+
+  constraintTreeRefOk : scope * ConstraintTreeRef
+  constraintTreeRefOk(s, PosRef(index)). //:-
+    // disabled: cannot check indices as parser does some tokenization on template syntax that is not apparent from the
+    // surface syntax.
+    //try { index #< numNonTerminals } | error $[Index [index] (0-based) exeeds the number of non-layout elements [numNonTerminals]. Change the index to be < [numNonTerminals]].
+  constraintTreeRefOk(s, LiteralRef(literal)).
+    // TODO: check literal
+  constraintTreeRefOk(s, LabelRef(label)) :-
+    resolveLabel(s, label). 
+  constraintTreeRefsOk maps constraintTreeRefOk(*, list(*))
+
+  constraintTokenOk : scope * ConstraintToken
+  constraintTokenOk(s, First(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Left(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Right(ref)) :-
+    constraintTreeRefOk(s, ref).
+  constraintTokenOk(s, Last(ref)) :-
+    constraintTreeRefOk(s, ref).
+    
+  constraintExpOk : scope * ConstraintExp
+  constraintExpOk(s, Mul(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Div(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Add(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, Sub(exp1, exp2)) :-
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintExpOk(s, ConstraintExpLine(token)) :-
+    constraintTokenOk(s, token).
+  constraintExpOk(s, Col(token)) :-
+    constraintTokenOk(s, token).
+  constraintExpOk(s, Num(Digits(index))).
+    // TODO: check index
+        
+  constraintOk : scope * Constraint
+  constraintOk(s, Eq(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Lt(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Le(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Gt(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Ge(exp1, exp2)) :- 
+    constraintExpOk(s, exp1),
+    constraintExpOk(s, exp2).
+  constraintOk(s, Not(c)) :- 
+    constraintOk(s, c).
+  constraintOk(s, And(c1, c2)) :- 
+    constraintOk(s, c1),
+    constraintOk(s, c2).
+  constraintOk(s, Or(c1, c2)) :- 
+    constraintOk(s, c1),
+    constraintOk(s, c2).
+
+  constraintOk(s, Offside(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, Indent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, Align(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, AlignList(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, NewLineIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, SingleLine(refs)) :- 
+    constraintTreeRefsOk(s, refs).
+
+  constraintOk(s, PPOffside(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPAlign(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPAlignList(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, PPNewLineIndent(ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+  constraintOk(s, PPNewLineIndentBy(Digits(index), ref, refs)) :- 
+    constraintTreeRefOk(s, ref),
+    constraintTreeRefsOk(s, refs).
+    // TODO: check index
+  constraintOk(s, PPNewLine(ref)) :- 
+    constraintTreeRefOk(s, ref).
+  constraintOk(s, PPNewLineBy(Digits(index), ref)) :- 
+    constraintTreeRefOk(s, ref).
+    // TODO: check index
 
 rules
 
@@ -27,3 +197,4 @@ rules
   hasAttributeInList(attr, [attr|_]) = TRUE().
   hasAttributeInList(attr, [_   |s]) = hasAttributeInList(attr, s).
   hasAttributeInList(attr, [      ]) = FALSE().
+

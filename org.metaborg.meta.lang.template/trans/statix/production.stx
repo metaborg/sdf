@@ -2,30 +2,140 @@ module statix/production
 
 imports
 
+  statix/util
+  statix/name
   statix/type
   statix/attribute
   statix/sort_cons
 
-rules
+rules // SymbolDef (no constructor) production checks
 
-  injectionProductionOK: TYPE * Attributes * SymbolDef
-  // Disabled for now: produces spurious errors in some cases.
-  //injectionProductionOK(PROD([_, _|_], SORT(_)), attrs, loc) :-
-  //  try { hasAttribute(Reject(), attrs) == TRUE() } | warning $[Missing constructor name: the generated pretty printer might not work properly] @loc.
-  injectionProductionOK(_, _, _).
+  symbolDefProductionOK: SORT_KIND * TYPE * Attributes * SymbolDef
 
-  // TODO: error: Missing bracket attribute or constructor name
-  // - LHS must be a single sort (injection)
-  // - RHS must be in the form of '(' Sort ')'
-  // - attributes must NOT contain Bracket() nor Reject()
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[TERMINAL(), SORT(_), TERMINAL()], SORT(_)), attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
+    } | error $[Missing constructor; add a constructor to this production, turn it into an injection in the form of A = B, or turn it into a bracket production in the form of A = "(" B ")" {bracket}]@symbolDef,
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
 
-  // TODO: warning: Illegal use of the {bracket} attribute
-  // - HS must be a single sort (injection)
-  // - RHS must NOT be in the form of '(' Sort ')'
-  // - attributes must contain Bracket()
-  // - attributes must NOT contain Reject()
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[SORT(_)], SORT(_)), attrs, symbolDef) :- // Correct injection
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts@[ITER(_)], SORT(_)), attrs, symbolDef) :- // Correct injection
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
 
-  // TODO: warning: Illegal use of the {bracket} attribute
-  // - LHS must be a sort + constructor (not an injection)
-  // - attributes must contain Bracket()
-  // - attributes must NOT contain Reject()
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, SORT(_)), attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), hasAttribute(Bracket(), attrs)) == TRUE()
+    } | error $[Missing constructor; add a constructor to this production]@symbolDef,
+    symbolDefCheckForCorrectBracketUsage(ts, attrs, symbolDef),
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+
+  symbolDefProductionOK(CONTEXTFREE(), INJ(ts, _), attrs, symbolDef) :-
+    symbolDefCheckForCorrectBracketUsage(ts, attrs, symbolDef),
+    symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef).
+
+
+  symbolDefProductionOK(LEXICAL(), _, attrs, symbolDef) :-
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@symbolDef.
+
+  symbolDefProductionOK(_, _, _, _).
+
+
+rules // SortCons (constructor) production checks
+
+  sortConsProductionOK: SORT_KIND * TYPE * Attributes * SortCons
+
+  sortConsProductionOK(CONTEXTFREE(), PROD(ts, _), attrs, sortCons) :-
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket annotation on production with a constructor; either remove the constructor or the bracket annotation from the production]@sortCons,
+    sortConsCheckForLegacyTypesInContextFree(ts, sortCons).
+
+
+  sortConsProductionOK(LEXICAL(), PROD(_, _), attrs, sortCons) :-
+    try { false } | warning $[Constructor in lexical syntax; remove this constructor from the production]@sortCons,
+    try { hasAttribute(Bracket(), attrs) == FALSE() } | error $[Bracket in lexical syntax; remove the bracket annotation from the production]@sortCons.
+
+  sortConsProductionOK(_, _, _, _).
+
+
+rules // Check for correct bracket usage
+
+  symbolDefCheckForCorrectBracketUsage: list(TYPE) * Attributes * SymbolDef
+  symbolDefCheckForCorrectBracketUsage([TERMINAL(), SORT(_), TERMINAL()], _, _). // Correct bracket usage
+  symbolDefCheckForCorrectBracketUsage(_, attrs, symbolDef) :-
+    try { 
+      bOr(hasAttribute(Reject(), attrs), bNot(hasAttribute(Bracket(), attrs))) == TRUE()
+    } | error $[Incorrect bracket production; either turn it into a regular production, or a bracket production in the form of A = "(" B ")"]@symbolDef.
+
+rules // Check for legacy symbols in context-free syntax
+
+  symbolDefCheckForLegacyTypesInContextFree: list(TYPE) * SymbolDef
+  symbolDefCheckForLegacyTypesInContextFree(ts, symbolDef) :- 
+    try { listContainsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@symbolDef,
+    try { listContainsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@symbolDef,
+    try { listContainsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@symbolDef.
+
+  sortConsCheckForLegacyTypesInContextFree: list(TYPE) * SortCons
+  sortConsCheckForLegacyTypesInContextFree(ts, sortCons) :- 
+    try { listContainsOpt(ts) == FALSE() } | error $[Optionals (A?) are not allowed in context-free syntax]@sortCons,
+    try { listContainsAlt(ts) == FALSE() } | error $[Alternations (A | B) are not allowed in context-free syntax]@sortCons,
+    try { listContainsSeq(ts) == FALSE() } | error $[Sequences ((A B ... Z)) are not allowed in context-free syntax]@sortCons.
+
+
+rules // Opt symbol checking
+
+  typeIsOrContainsOpt: TYPE -> BOOL
+  typeIsOrContainsOpt(OPT(_))      = TRUE().
+  typeIsOrContainsOpt(SEQ(t, ts))  = bOr(isOpt(t), listContainsOpt(ts)).
+  typeIsOrContainsOpt(ITER(t))     = typeIsOrContainsOpt(t).
+  typeIsOrContainsOpt(ALT(t1, t2)) = bOr(isOpt(t1), isOpt(t2)).
+  typeIsOrContainsOpt(PROD(ts, t)) = bOr(listContainsOpt(ts), isOpt(t)).
+  typeIsOrContainsOpt(INJ(ts, t))  = bOr(listContainsOpt(ts), isOpt(t)).
+  typeIsOrContainsOpt(_)           = FALSE().
+
+  isOpt: TYPE -> BOOL
+  isOpt(OPT(_)) = TRUE().
+  isOpt(_)      = FALSE().
+
+  listContainsOpt: list(TYPE) -> BOOL
+  listContainsOpt([t|ts]) = bOr(typeIsOrContainsOpt(t), listContainsOpt(ts)).
+  listContainsOpt([])     = FALSE().
+
+
+rules // Alt symbol checking
+
+  typeIsOrContainsAlt: TYPE -> BOOL
+  typeIsOrContainsAlt(ALT(_, _))   = TRUE().
+  typeIsOrContainsAlt(SEQ(t, ts))  = bOr(isAlt(t), listContainsAlt(ts)).
+  typeIsOrContainsAlt(ITER(t))     = typeIsOrContainsAlt(t).
+  typeIsOrContainsAlt(OPT(t))      = isAlt(t).
+  typeIsOrContainsAlt(PROD(ts, t)) = bOr(listContainsAlt(ts), isAlt(t)).
+  typeIsOrContainsAlt(INJ(ts, t))  = bOr(listContainsAlt(ts), isAlt(t)).
+  typeIsOrContainsAlt(_)           = FALSE().
+
+  isAlt: TYPE -> BOOL
+  isAlt(ALT(_, _)) = TRUE().
+  isAlt(_)         = FALSE().
+
+  listContainsAlt: list(TYPE) -> BOOL
+  listContainsAlt([t|ts]) = bOr(typeIsOrContainsAlt(t), listContainsAlt(ts)).
+  listContainsAlt([])     = FALSE().
+
+
+rules // Seq symbol checking
+
+  typeIsOrContainsSeq: TYPE -> BOOL
+  typeIsOrContainsSeq(SEQ(_, _))   = TRUE().
+  typeIsOrContainsSeq(OPT(t))      = isSeq(t).
+  typeIsOrContainsSeq(ITER(t))     = typeIsOrContainsSeq(t).
+  typeIsOrContainsSeq(ALT(t1, t2)) = bOr(isSeq(t1), isSeq(t2)).
+  typeIsOrContainsSeq(PROD(ts, t)) = bOr(listContainsSeq(ts), isSeq(t)).
+  typeIsOrContainsSeq(INJ(ts, t))  = bOr(listContainsSeq(ts), isSeq(t)).
+  typeIsOrContainsSeq(_)           = FALSE().
+
+  isSeq: TYPE -> BOOL
+  isSeq(SEQ(_, _)) = TRUE().
+  isSeq(_)         = FALSE().
+
+  listContainsSeq: list(TYPE) -> BOOL
+  listContainsSeq([t|ts]) = bOr(typeIsOrContainsSeq(t), listContainsSeq(ts)).
+  listContainsSeq([])     = FALSE().

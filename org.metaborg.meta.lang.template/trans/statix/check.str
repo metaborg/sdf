@@ -1,0 +1,29 @@
+module statix/check
+
+imports
+
+  signatures/-
+
+signature constructors
+
+  Message : Term * string -> Message
+
+rules
+
+  spoofax3-check: 
+    ast -> (errors, warnings, notes)
+    with
+      errors   := <collect-all(spoofax3-collect-error, conc)> ast
+    ; warnings := <collect-all(spoofax3-collect-warning, conc)> ast
+    ; notes    := <collect-all(spoofax3-collect-note, conc)> ast
+  
+  spoofax3-collect-note = fail
+  spoofax3-collect-warning = fail
+  spoofax3-collect-error = fail
+  
+rules
+
+  spoofax3-collect-error: 
+    SortCons(_, Constructor(constructorName)) -> Message(constructorName, $[Constructor '[constructorName]' does not start with a capital character])
+    where
+      <explode-string; Hd; is-lower>  constructorName

@@ -5,8 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.input.ClassLoaderObjectInputStream;
-import org.apache.commons.vfs2.FileObject;
+import org.metaborg.util.stream.ClassLoaderObjectInputStream;
 import org.metaborg.parsetable.IParseTableGenerator;
 import org.metaborg.parsetable.characterclasses.CharacterClassFactory;
 import org.metaborg.parsetable.characterclasses.ICharacterClass;
@@ -46,10 +45,6 @@ public class ParseTableIO implements IParseTableGenerator {
 
     public ParseTableIO(File tableFile) throws Exception {
         this(new FileInputStream(tableFile), true);
-    }
-
-    public ParseTableIO(FileObject tableFile) throws Exception {
-        this(tableFile.getContent().getInputStream(), true);
     }
 
     public ParseTableIO(InputStream is, boolean classLoaderObjectInputStream) throws Exception {

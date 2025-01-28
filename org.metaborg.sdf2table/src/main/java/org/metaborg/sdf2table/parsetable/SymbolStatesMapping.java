@@ -2,6 +2,7 @@ package org.metaborg.sdf2table.parsetable;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.metaborg.sdf2table.grammar.IProduction;
@@ -54,5 +55,18 @@ public class SymbolStatesMapping implements Serializable {
     public void addLink(Symbol symb, LRItem item, State state) {
         symbolItems.put(symb, item);
         itemStates.put(item, state);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SymbolStatesMapping that = (SymbolStatesMapping) o;
+        return Objects.equals(symbolItems, that.symbolItems) && Objects.equals(itemStates, that.itemStates);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(symbolItems, itemStates);
     }
 }

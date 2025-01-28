@@ -1,9 +1,12 @@
 package org.metaborg.sdf2table.parsetable;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 
 import org.metaborg.parsetable.IParseTable;
+import org.metaborg.parsetable.ParseTableReaderDelegate;
+import org.metaborg.parsetable.states.IMutableState;
 import org.metaborg.parsetable.states.IState;
 import org.metaborg.sdf2table.deepconflicts.*;
 import org.metaborg.sdf2table.grammar.*;
@@ -125,8 +128,14 @@ public class ParseTable implements IParseTable, Serializable {
             processStateQueue();
             cleanupTable();
         }
-        
-        
+
+        // mark rejectable states
+        int max_state_number = this.stateLabels.keySet().stream().mapToInt(i -> i).max().orElse(-1);
+        IMutableState[] states = new IMutableState[max_state_number+1];
+        for(Map.Entry<Integer, State> entry : this.stateLabels.entrySet()) {
+            states[entry.getKey()] = entry.getValue();
+        }
+        ParseTableReaderDelegate.markRejectableStates(states);
 
     }
 
@@ -142,7 +151,6 @@ public class ParseTable implements IParseTable, Serializable {
         this.productionsMapping.clear();
         this.rightmostContextsMapping.clear();
         this.grammar.cleanupGrammar();
-        System.gc();
     }
 
     private void calculateNullable() {
@@ -1335,5 +1343,17 @@ public class ParseTable implements IParseTable, Serializable {
         return config.isLayoutSensitive();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParseTable that = (ParseTable) o;
+        return processedStates == that.processedStates && totalStates == that.totalStates && Objects.equals(grammar, that.grammar) && Objects.equals(cf, that.cf) && Objects.equals(initialProduction, that.initialProduction) && Objects.equals(productionLabels, that.productionLabels) && Objects.equals(prodLabelFactory, that.prodLabelFactory) && Arrays.equals(stateQueue.toArray(), that.stateQueue.toArray()) && Objects.equals(stateLabels, that.stateLabels) && Objects.equals(danglingSuffix, that.danglingSuffix) && Objects.equals(danglingPrefix, that.danglingPrefix) && Objects.equals(symbolStatesMapping, that.symbolStatesMapping) && Objects.equals(kernelStatesMapping, that.kernelStatesMapping) && Objects.equals(itemDerivedItemsCache, that.itemDerivedItemsCache) && Objects.equals(productions, that.productions) && Objects.equals(productionsMapping, that.productionsMapping) && Objects.equals(config, that.config) && Objects.equals(ctxUniqueInt, that.ctxUniqueInt) && Objects.equals(leftmostContextsMapping, that.leftmostContextsMapping) && Objects.equals(rightmostContextsMapping, that.rightmostContextsMapping);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(grammar, cf, processedStates, totalStates, initialProduction, productionLabels, prodLabelFactory, stateQueue, stateLabels, danglingSuffix, danglingPrefix, symbolStatesMapping, kernelStatesMapping, itemDerivedItemsCache, productions, productionsMapping, config, ctxUniqueInt, leftmostContextsMapping, rightmostContextsMapping);
+    }
 
 }
