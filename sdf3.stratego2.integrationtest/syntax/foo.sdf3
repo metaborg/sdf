@@ -13,7 +13,7 @@ context-free start-symbols
 
 context-free sorts
   
-  Module StmtListMeta
+  Module
 
 context-free syntax
 
@@ -25,16 +25,13 @@ context-free syntax
   Exp.FromTerm = [~[StrategoLang-Term]]
   Exp.FromTerm = [~exp:[StrategoLang-Term]]
   
-  StmtListMeta.FromTerm = [~*[StrategoLang-Term]]
-
-  Stmt+ = StmtListMeta
-  Stmt+.Conc = Stmt+ StmtListMeta
+  Stmt.FromTerm = [~[StrategoLang-Term]]
 
 context-free syntax // meta variables
 
   Exp.meta-var = ExpVar
-  
-  StmtListMeta.meta-listvar = StmtListVar
+
+  Stmt.meta-listvar = StmtListVar
 
 lexical sorts
 
@@ -44,8 +41,9 @@ lexical syntax
 
   ExpVar = 'exp' [0-9]*
   StmtListVar = 'stmt' [0-9]* '*'
-  Var = ExpVar {reject}
+  VAR = ExpVar {reject}
 
 lexical restrictions
 
   ExpVar -/- [0-9]
+  

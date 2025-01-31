@@ -1,0 +1,52 @@
+module pp
+
+imports
+  strategolib
+
+imports
+
+  gpp
+  libspoofax/sdf/pp
+  libspoofax/editor/refactoring/-
+  pp/sdf3-stratego2-integrationtest-parenthesize
+  pp/sdf3-stratego2-integrationtest-pp
+
+rules
+  editor-format :: ? * ? * ? * string * string -> string * ?
+  editor-format:
+    (node, _, ast, path, project-path) -> (filename, result)
+    with
+      ext      := <get-extension> path
+    ; filename := <guarantee-extension(|$[pp.[ext]])> path
+    ; result   := <pp-debug> node
+
+rules
+  
+  pp-sdf3-stratego2-integrationtest-string =
+    parenthesize-sdf3-stratego2-integrationtest
+    ; prettyprint-sdf3-stratego2-integrationtest-start-symbols
+    ; !V([], <id>)
+    ; box2text-string(|120)
+      
+  pp-partial-sdf3-stratego2-integrationtest-string =
+    parenthesize-sdf3-stratego2-integrationtest
+    ; prettyprint-sdf3-stratego2-integrationtest
+    ; !V([], <id>)
+    ; box2text-string(|120)
+    
+  pp-partial-sdf3-stratego2-integrationtest-string(|sort) =
+    parenthesize-sdf3-stratego2-integrationtest
+    ; prettyprint-sdf3-stratego2-integrationtest(|sort)
+    ; !V([], <id>)
+    ; box2text-string(|120)  
+      
+  pp-debug :
+    ast -> result
+    with
+       result := <pp-sdf3-stratego2-integrationtest-string> ast
+    <+ <bottomup(try(not(is-string); not(is-list); not(pp-sdf3-stratego2-integrationtest-string); debug(!"cannot pp ")))> ast
+    ;  result := ""
+
+rules
+  
+  construct-textual-change = construct-textual-change(pp-partial-sdf3-stratego2-integrationtest-string, parenthesize, override-reconstruction, resugar)

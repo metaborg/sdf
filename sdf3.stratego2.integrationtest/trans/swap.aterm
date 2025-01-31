@@ -1,6 +1,21 @@
 Module(
   "swap"
 , [ Imports([Import("strategolib"), ImportWildcard("signatures")])
+  , Signature(
+      [ Constructors(
+          [ OpDecl(
+              "Conc"
+            , OpFunType(
+                [ ConstType(Sort("List", [SortVar("a")]))
+                , ConstType(Sort("List", [SortVar("a")]))
+                ]
+              , ConstType(Sort("List", [SortVar("a")]))
+              )
+            )
+          ]
+        )
+      ]
+    )
   , Rules(
       [ DefHasTypeNoArgs(
           "swap-editor-abstract-syntax"
@@ -16,7 +31,7 @@ Module(
           "swap-editor-abstract-syntax"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Exp")), CallNoArgs(SVar("swap-exps-abstract-syntax")))]
+          , [Seq(TypeTest(SortTNoArgs("Exp")), CallNoArgs(SVar("swap-exps-abstract-syntax")))]
           , []
           )
         )
@@ -34,7 +49,7 @@ Module(
           "swap-editor-concrete-syntax"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax")))]
+          , [Seq(TypeTest(SortTNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax")))]
           , []
           )
         )
@@ -52,7 +67,7 @@ Module(
           "swap-editor-concrete-syntax-simple"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax-simple")))]
+          , [Seq(TypeTest(SortTNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax-simple")))]
           , []
           )
         )
@@ -70,7 +85,7 @@ Module(
           "swap-editor-concrete-syntax-var"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax-var")))]
+          , [Seq(TypeTest(SortTNoArgs("Stmt")), CallNoArgs(SVar("swap-exps-concrete-syntax-var")))]
           , []
           )
         )
@@ -88,7 +103,7 @@ Module(
           "reverse-editor-concrete-syntax-varlist"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Start")), CallNoArgs(SVar("reverse-stmts-concrete-syntax-varlist")))]
+          , [Seq(TypeTest(SortTNoArgs("Start")), CallNoArgs(SVar("reverse-stmts-concrete-syntax-varlist")))]
           , []
           )
         )
@@ -106,7 +121,7 @@ Module(
           "surround-editor-concrete-syntax-varlist"
         , CallT(
             SVar("editor-action")
-          , [Seq(TypeTest(SortNoArgs("Start")), CallNoArgs(SVar("surround-stmts-concrete-syntax-varlist")))]
+          , [Seq(TypeTest(SortTNoArgs("Start")), CallNoArgs(SVar("surround-stmts-concrete-syntax-varlist")))]
           , []
           )
         )
@@ -116,10 +131,10 @@ Module(
         , []
         , FunNoArgsType(
             TupleT(
-              SortVar("a")
-            , [SortVar("b"), DynT(Dyn()), SortVar("d"), SortVar("e")]
+              SortTVar("a")
+            , [SortTVar("b"), DynT(Dyn()), SortTVar("d"), SortTVar("e")]
             )
-          , TupleT(SortVar("d"), [DynT(Dyn())])
+          , TupleT(SortTVar("d"), [DynT(Dyn())])
           )
         )
       , RDefT(
@@ -145,7 +160,7 @@ Module(
           , []
           )
         )
-      , DefHasTypeNoArgs("swap-exps-abstract-syntax", FunNoArgsType(SortNoArgs("Exp"), SortNoArgs("Exp")))
+      , DefHasTypeNoArgs("swap-exps-abstract-syntax", FunNoArgsType(SortTNoArgs("Exp"), SortTNoArgs("Exp")))
       , RDefNoArgs(
           "swap-exps-abstract-syntax"
         , Rule(
@@ -154,7 +169,7 @@ Module(
           , []
           )
         )
-      , DefHasTypeNoArgs("swap-exps-concrete-syntax", FunNoArgsType(SortNoArgs("Stmt"), SortNoArgs("Stmt")))
+      , DefHasTypeNoArgs("swap-exps-concrete-syntax", FunNoArgsType(SortTNoArgs("Stmt"), SortTNoArgs("Stmt")))
       , RDefNoArgs(
           "swap-exps-concrete-syntax"
         , Rule(
@@ -171,7 +186,7 @@ Module(
           , []
           )
         )
-      , DefHasTypeNoArgs("swap-exps-concrete-syntax-simple", FunNoArgsType(SortNoArgs("Stmt"), SortNoArgs("Stmt")))
+      , DefHasTypeNoArgs("swap-exps-concrete-syntax-simple", FunNoArgsType(SortTNoArgs("Stmt"), SortTNoArgs("Stmt")))
       , RDefNoArgs(
           "swap-exps-concrete-syntax-simple"
         , Rule(
@@ -188,7 +203,7 @@ Module(
           , []
           )
         )
-      , DefHasTypeNoArgs("swap-exps-concrete-syntax-var", FunNoArgsType(SortNoArgs("Stmt"), SortNoArgs("Stmt")))
+      , DefHasTypeNoArgs("swap-exps-concrete-syntax-var", FunNoArgsType(SortTNoArgs("Stmt"), SortTNoArgs("Stmt")))
       , RDefNoArgs(
           "swap-exps-concrete-syntax-var"
         , Rule(
@@ -197,7 +212,28 @@ Module(
           , []
           )
         )
-      , DefHasTypeNoArgs("reverse-stmts-concrete-syntax-varlist", FunNoArgsType(SortNoArgs("Start"), SortNoArgs("Start")))
+      , DefHasTypeNoArgs("reverse-stmts-abstract-syntax", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
+      , RDefNoArgs(
+          "reverse-stmts-abstract-syntax"
+        , Rule(
+            NoAnnoList(Op("Program", [Var(ListVar("stmt1*"))]))
+          , NoAnnoList(Op("Program", [Var(ListVar("stmt2*"))]))
+          , [ WhereClause(
+                Assign(
+                  Var(ListVar("stmt2*"))
+                , App(
+                    Seq(
+                      TypeTest(SortT("List", [SortTNoArgs("Stmt")]))
+                    , CallNoArgs(SVar("reverse"))
+                    )
+                  , Var(ListVar("stmt1*"))
+                  )
+                )
+              )
+            ]
+          )
+        )
+      , DefHasTypeNoArgs("reverse-stmts-concrete-syntax-varlist", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
       , RDefNoArgs(
           "reverse-stmts-concrete-syntax-varlist"
         , Rule(
@@ -206,13 +242,51 @@ Module(
           , [ WhereClause(
                 Assign(
                   Var(ListVar("stmt2*"))
-                , App(CallNoArgs(SVar("reverse")), Var(ListVar("stmt1*")))
+                , App(
+                    Seq(
+                      TypeTest(SortT("List", [SortTNoArgs("Stmt")]))
+                    , CallNoArgs(SVar("reverse"))
+                    )
+                  , Var(ListVar("stmt1*"))
+                  )
                 )
               )
             ]
           )
         )
-      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-varlist", FunNoArgsType(SortNoArgs("Start"), SortNoArgs("Start")))
+      , DefHasTypeNoArgs("surround-stmts-abstract-syntax", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
+      , RDefNoArgs(
+          "surround-stmts-abstract-syntax"
+        , Rule(
+            NoAnnoList(Op("Program", [Var(ListVar("stmt1*"))]))
+          , NoAnnoList(
+              Op(
+                "Program"
+              , [ NoAnnoList(
+                    List(
+                      [ NoAnnoList(
+                          Op(
+                            "Stmt"
+                          , [NoAnnoList(Op("Var", [NoAnnoList(Str("\"a\""))]))]
+                          )
+                        )
+                      , Var(ListVar("stmt1*"))
+                      , NoAnnoList(
+                          Op(
+                            "Stmt"
+                          , [NoAnnoList(Op("Var", [NoAnnoList(Str("\"b\""))]))]
+                          )
+                        )
+                      ]
+                    )
+                  )
+                ]
+              )
+            )
+          , []
+          )
+        )
+      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-varlist", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
       , RDefNoArgs(
           "surround-stmts-concrete-syntax-varlist"
         , Rule(
@@ -220,14 +294,61 @@ Module(
           , NoAnnoList(
               ToTerm(
                 Program(
-                  [Stmt(Var("a")), meta-listvar("stmt1*"), Stmt(Var("b"))]
+                  [Conc(Stmt(Var("a")), meta-listvar("stmt1*")), Stmt(Var("b"))]
                 )
               )
             )
           , []
           )
         )
-      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-varlist2", FunNoArgsType(SortNoArgs("Start"), SortNoArgs("Start")))
+      , DefHasTypeNoArgs("surround-stmts-abstract-syntax2", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
+      , RDefNoArgs(
+          "surround-stmts-abstract-syntax2"
+        , Rule(
+            NoAnnoList(Op("Program", [Var(ListVar("stmt1*"))]))
+          , NoAnnoList(
+              Op(
+                "Program"
+              , [ NoAnnoList(
+                    List(
+                      [ Var(ListVar("stmt2*"))
+                      , NoAnnoList(
+                          Op(
+                            "Stmt"
+                          , [NoAnnoList(Op("Var", [NoAnnoList(Str("\"a\""))]))]
+                          )
+                        )
+                      , Var(ListVar("stmt1*"))
+                      , Var(ListVar("stmt1*"))
+                      , NoAnnoList(
+                          Op(
+                            "Stmt"
+                          , [NoAnnoList(Op("Var", [NoAnnoList(Str("\"b\""))]))]
+                          )
+                        )
+                      , Var(ListVar("stmt2*"))
+                      ]
+                    )
+                  )
+                ]
+              )
+            )
+          , [ WhereClause(
+                Assign(
+                  Var(ListVar("stmt2*"))
+                , App(
+                    Seq(
+                      TypeTest(SortT("List", [SortTNoArgs("Stmt")]))
+                    , CallNoArgs(SVar("reverse"))
+                    )
+                  , Var(ListVar("stmt1*"))
+                  )
+                )
+              )
+            ]
+          )
+        )
+      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-varlist2", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
       , RDefNoArgs(
           "surround-stmts-concrete-syntax-varlist2"
         , Rule(
@@ -235,26 +356,33 @@ Module(
           , NoAnnoList(
               ToTerm(
                 Program(
-                  [ meta-listvar("stmt2*")
-                  , Stmt(Var("a"))
-                  , meta-listvar("stmt1*")
-                  , meta-listvar("stmt1*")
+                  Conc(
+                    Conc(
+                      Conc(meta-listvar("stmt2*"), Stmt(Var("a")), meta-listvar("stmt1*"))
+                    , meta-listvar("stmt1*")
+                    )
                   , Stmt(Var("b"))
                   , meta-listvar("stmt2*")
-                  ]
+                  )
                 )
               )
             )
           , [ WhereClause(
                 Assign(
                   Var(ListVar("stmt2*"))
-                , App(CallNoArgs(SVar("reverse")), Var(ListVar("stmt1*")))
+                , App(
+                    Seq(
+                      TypeTest(SortT("List", [SortTNoArgs("Stmt")]))
+                    , CallNoArgs(SVar("reverse"))
+                    )
+                  , Var(ListVar("stmt1*"))
+                  )
                 )
               )
             ]
           )
         )
-      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-list-fromterm", FunNoArgsType(SortNoArgs("Start"), SortNoArgs("Start")))
+      , DefHasTypeNoArgs("surround-stmts-concrete-syntax-list-fromterm", FunNoArgsType(SortTNoArgs("Start"), SortTNoArgs("Start")))
       , RDefNoArgs(
           "surround-stmts-concrete-syntax-list-fromterm"
         , Rule(
@@ -262,8 +390,7 @@ Module(
           , NoAnnoList(
               ToTerm(
                 Program(
-                  [ Stmt(Var("a"))
-                  , FromTerm(Var(ListVar("stmt1*")))
+                  [ Conc(Stmt(Var("a")), FromTerm(Var(ListVar("stmt1*"))))
                   , Stmt(Var("b"))
                   ]
                 )
@@ -272,7 +399,13 @@ Module(
           , [ WhereClause(
                 Assign(
                   Var(ListVar("stmt2*"))
-                , App(CallNoArgs(SVar("reverse")), Var(ListVar("stmt1*")))
+                , App(
+                    Seq(
+                      TypeTest(SortT("List", [SortTNoArgs("Stmt")]))
+                    , CallNoArgs(SVar("reverse"))
+                    )
+                  , Var(ListVar("stmt1*"))
+                  )
                 )
               )
             ]

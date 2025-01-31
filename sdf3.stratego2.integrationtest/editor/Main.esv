@@ -4,7 +4,7 @@ language
 
   extensions : s3mit
 
-//  provider : target/metaborg/stratego.ctree
+  provider : target/metaborg/stratego.jar
 
   table         : target/metaborg/sdf.tbl
   start symbols : Start

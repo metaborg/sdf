@@ -4,11 +4,11 @@ language sdf3-stratego2-integrationtest
 
 start symbol Start
 
-test swap [[x + y;]] transform "Transform -> Swap (abstract syntax)"        to [[y + x;]]
+test swap [[x + y;]] transform "Transform -> Swap exps (abstract syntax)"        to [[y + x;]]
 
-test swap [[x + y;]] transform "Transform -> Swap (concrete syntax)"        to [[y + x;]]
+test swap [[x + y;]] transform "Transform -> Swap exps (concrete syntax)"        to [[y + x;]]
 
-test swap [[x + y;]] transform "Transform -> Swap (concrete syntax simple)" to [[y + x;]]
+test swap [[x + y;]] transform "Transform -> Swap exps (concrete syntax simple)" to [[y + x;]]
 
 test swap [[x + y;]] transform "Transform -> Swap exps (concrete syntax var)"    to [[y + x;]]
 
