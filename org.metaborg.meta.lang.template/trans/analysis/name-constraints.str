@@ -428,3 +428,17 @@ rules
       where
         <?s> s';
         <eq> (<length> ty*, <length> ty'*)
+
+rules
+
+  nabl-constraint(|ctx):
+      section@VariablesProductive(_) -> <fail>
+  where
+      msg := "The SDF2 variables section is no longer support, please write your own A.meta-var and A.meta-listvar definitions in context-free syntax";
+      <task-create-error(|ctx, msg)> section
+
+  nabl-constraint(|ctx):
+      section@LexVariablesProductive(_) -> <fail>
+  where
+      msg := "The SDF2 variables section is no longer support, please write your own A.meta-var and A.meta-listvar definitions in context-free syntax";
+      <task-create-error(|ctx, msg)> section
