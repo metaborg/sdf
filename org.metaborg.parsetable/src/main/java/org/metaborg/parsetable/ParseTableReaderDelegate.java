@@ -5,10 +5,12 @@ import static org.spoofax.terms.util.TermUtils.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.metaborg.parsetable.actions.*;
 import org.metaborg.parsetable.characterclasses.CharacterClassReader;
@@ -18,15 +20,14 @@ import org.metaborg.parsetable.productions.Production;
 import org.metaborg.parsetable.productions.ProductionReader;
 import org.metaborg.parsetable.productions.ProductionType;
 import org.metaborg.parsetable.query.ActionsPerCharacterClass;
-import org.metaborg.parsetable.states.IState;
+import org.metaborg.parsetable.states.IMutableState;
 import org.metaborg.parsetable.states.IStateFactory;
-import org.metaborg.parsetable.states.State;
 import org.spoofax.interpreter.terms.IStrategoAppl;
 import org.spoofax.interpreter.terms.IStrategoList;
 import org.spoofax.interpreter.terms.IStrategoNamed;
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
-class ParseTableReaderDelegate {
+public class ParseTableReaderDelegate {
 
     private final IActionsFactory actionsFactory;
     private final IStateFactory stateFactory;
@@ -55,7 +56,7 @@ class ParseTableReaderDelegate {
 
         IProduction[] productions = readProductions(productionsTermList);
 
-        IState[] states = readStates(statesTermList, productions);
+        IMutableState[] states = readStates(statesTermList, productions);
 
         markRejectableStates(states);
 
@@ -86,7 +87,7 @@ class ParseTableReaderDelegate {
         return productions;
     }
 
-    private IState[] readStates(IStrategoList statesTermList, IProduction[] productions)
+    private IMutableState[] readStates(IStrategoList statesTermList, IProduction[] productions)
         throws ParseTableReadException {
         int stateCount = statesTermList.getSubtermCount();
 
@@ -108,7 +109,7 @@ class ParseTableReaderDelegate {
         Set<Integer> recoveryStateIds = IntStream.range(0, stateCount)
             .filter(stateId -> containsOnlyRecoveryReduces(stateActions[stateId])).boxed().collect(Collectors.toSet());
 
-        IState[] states = new IState[stateCount];
+        IMutableState[] states = new IMutableState[stateCount];
 
         for(int stateId = 0; stateId < stateCount; stateId++) {
             states[stateId] = stateFactory.from(stateId, stateGotos[stateId], stateActions[stateId], recoveryStateIds);
@@ -254,21 +255,23 @@ class ParseTableReaderDelegate {
 
     // Mark states that are reachable by a reject production as rejectable. "Reachable" means the parser could
     // transition into such state by means of a goto action after reducing a production.
-    private void markRejectableStates(IState[] states) {
+    public static void markRejectableStates(IMutableState[] states) {
         final Set<Integer> rejectProductionIds =
-            Stream.of(states).flatMap(state -> Stream.of(((State) state).actions()))
-                .filter(this::isReduceOrReduceLookahead).map(IReduce.class::cast).filter(IReduce::isRejectProduction)
+            Stream.of(states).filter(Objects::nonNull)
+                .flatMap(state -> StreamSupport.stream(state.actions().spliterator(), false))
+                .filter(ParseTableReaderDelegate::isReduceOrReduceLookahead).map(IReduce.class::cast).filter(IReduce::isRejectProduction)
                 .map(IReduce::production).map(IProduction::id).collect(Collectors.toSet());
 
-        final Set<Integer> rejectableStateIds = Stream.of(states)
-            .flatMap(state -> rejectProductionIds.stream().filter(((State) state)::hasGoto).map(state::getGotoId))
-            .collect(Collectors.toSet());
+        final Set<Integer> rejectableStateIds =
+            Stream.of(states).filter(Objects::nonNull)
+                .flatMap(state -> rejectProductionIds.stream().filter(state::hasGoto).map(state::getGotoId))
+                .collect(Collectors.toSet());
 
         // A state is marked as rejectable if it is reachable by at least one reject production.
-        rejectableStateIds.forEach(gotoId -> ((State) states[gotoId]).markRejectable());
+        rejectableStateIds.forEach(gotoId -> states[gotoId].markRejectable());
     }
 
-    private boolean isReduceOrReduceLookahead(IAction action) {
+    private static boolean isReduceOrReduceLookahead(IAction action) {
         return action.actionType() == ActionType.REDUCE || action.actionType() == ActionType.REDUCE_LOOKAHEAD;
     }
 

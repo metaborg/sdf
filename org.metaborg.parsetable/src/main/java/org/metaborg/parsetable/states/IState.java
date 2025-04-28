@@ -15,6 +15,10 @@ public interface IState {
 
     Iterable<IReduce> getApplicableReduceActions(IActionQuery actionQuery, ParsingMode parsingMode);
 
+    boolean hasGoto(int productionId);
+
+    Iterable<IAction> actions();
+
     int getGotoId(int productionId);
 
     int getGotoId(int productionId, int defaultValue);

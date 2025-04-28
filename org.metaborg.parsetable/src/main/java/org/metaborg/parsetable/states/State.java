@@ -7,7 +7,9 @@ import org.metaborg.parsetable.query.IActionsForCharacter;
 import org.metaborg.parsetable.query.IProductionToGoto;
 import org.metaborg.parsetable.query.ParsingMode;
 
-public final class State implements IState {
+import java.util.Arrays;
+
+public final class State implements IMutableState {
 
     private final int stateId;
     private boolean rejectable;
@@ -34,8 +36,8 @@ public final class State implements IState {
         this.rejectable = true;
     }
 
-    public IAction[] actions() {
-        return actionsForCharacter.getActions();
+    public Iterable<IAction> actions() {
+        return Arrays.asList(actionsForCharacter.getActions());
     }
 
     @Override public Iterable<IAction> getApplicableActions(IActionQuery actionQuery, ParsingMode parsingMode) {
@@ -46,7 +48,7 @@ public final class State implements IState {
         return actionsForCharacter.getApplicableReduceActions(actionQuery, parsingMode);
     }
 
-    public boolean hasGoto(int productionId) {
+    @Override public boolean hasGoto(int productionId) {
         return productionToGoto.contains(productionId);
     }
 
