@@ -1,0 +1,7 @@
+module sdf3_stratego2_integrationtest
+
+imports
+
+  swap
+  completion/completion
+  pp

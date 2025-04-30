@@ -1,0 +1,77 @@
+module swap
+
+imports
+
+  strategolib
+  signatures/-
+
+rules
+
+  editor-action-swap-exps-abstract-syntax :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-swap-exps-abstract-syntax        = editor-action(is(Exp);swap-exps-abstract-syntax|)
+
+  editor-action-swap-exps-concrete-syntax :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-swap-exps-concrete-syntax        = editor-action(is(Stmt);swap-exps-concrete-syntax|)
+
+  editor-action-swap-exps-concrete-syntax-simple :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-swap-exps-concrete-syntax-simple = editor-action(is(Stmt);swap-exps-concrete-syntax-simple|)
+
+  editor-action-swap-exps-concrete-syntax-var :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-swap-exps-concrete-syntax-var = editor-action(is(Stmt);swap-exps-concrete-syntax-var|)
+
+  editor-action-reverse-stmts-concrete-syntax-varlist :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-reverse-stmts-concrete-syntax-varlist = editor-action(is(Start);reverse-stmts-concrete-syntax-varlist|)
+
+  editor-action-surround-stmts-concrete-syntax-varlist :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-surround-stmts-concrete-syntax-varlist = editor-action(is(Start);surround-stmts-concrete-syntax-varlist|)
+
+  editor-action-surround-stmts-concrete-syntax-varlist2 :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-surround-stmts-concrete-syntax-varlist2 = editor-action(is(Start);surround-stmts-concrete-syntax-varlist2|)
+
+  editor-action-surround-stmts-concrete-syntax-list-fromterm :: ? * ? * ? * ? * ? -> ? * ?
+  editor-action-surround-stmts-concrete-syntax-list-fromterm = editor-action(is(Start);surround-stmts-concrete-syntax-list-fromterm|)
+
+  editor-action(? -> ?|) :: a * b * ? * d * e -> d * ?
+  editor-action(swap-exp|):
+    (_, _, ast, path, _) -> (path, <oncetd(swap-exp)> ast) 
+
+  swap-exps-abstract-syntax :: Exp -> Exp
+  swap-exps-abstract-syntax:
+    Add(e1, e2) -> Add(e2, e1)
+
+  swap-exps-concrete-syntax :: Stmt -> Stmt
+  swap-exps-concrete-syntax:
+    stmt |[ ~exp:e1 + ~exp:e2; ]| ->
+    stmt |[ ~exp:e2 + ~exp:e1; ]|
+
+  swap-exps-concrete-syntax-simple :: Stmt -> Stmt
+  swap-exps-concrete-syntax-simple:
+    stmt |[ ~e1 + ~e2; ]| ->
+    stmt |[ ~e2 + ~e1; ]|
+
+  swap-exps-concrete-syntax-var :: Stmt -> Stmt
+  swap-exps-concrete-syntax-var:
+    stmt |[ exp + exp2 ; ]| ->
+    stmt |[ exp2 + exp ; ]|
+
+  reverse-stmts-concrete-syntax-varlist :: Start -> Start
+  reverse-stmts-concrete-syntax-varlist:
+    program |[ stmt1* ]| ->
+    program |[ stmt2* ]|
+  where stmt2* := <reverse> stmt1*
+
+  surround-stmts-concrete-syntax-varlist :: Start -> Start
+  surround-stmts-concrete-syntax-varlist:
+    program |[ stmt1* ]|  ->
+    program |[ a; stmt1* b; ]|
+
+  surround-stmts-concrete-syntax-varlist2 :: Start -> Start
+  surround-stmts-concrete-syntax-varlist2:
+    program |[ stmt1* ]|  ->
+    program |[ stmt2* a; stmt1* stmt1* b; stmt2* ]|
+  where stmt2* := <reverse> stmt1*
+
+  surround-stmts-concrete-syntax-list-fromterm :: Start -> Start
+  surround-stmts-concrete-syntax-list-fromterm:
+    program |[ ~stmt1* ]|  ->
+    program |[ a; ~stmt1* b; ]|

@@ -1,6 +1,6 @@
 module swap
 
-language sdf3-meta-integrationtest
+language sdf3-stratego2-integrationtest
 
 start symbol Start
 
